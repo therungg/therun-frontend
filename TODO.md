@@ -10,7 +10,6 @@ https://trello.com/b/xw842PmA/therungg-roadmap for more ideas.
 - The Activity tab on the users page doesn't take into account game/category, can only show global.
 - The games pages just retrieve all data, and are very slow or crash sometimes. Should lazy load much more and be much
   smarter about loading data.
--
 
 # Frontend only
 

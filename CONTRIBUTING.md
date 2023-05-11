@@ -8,6 +8,10 @@ If you want to contribute to more complicated code, make sure you know about:
 - TypeScript
 - next.js
 
+## Find an issue
+
+I'm in the works of implementing GitHub issues. For now, check out the TODO.md file in the root directory.
+
 ## Get in touch
 
 - [Join our Discord](https://therun.gg/discord)
