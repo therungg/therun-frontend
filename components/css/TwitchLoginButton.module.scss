@@ -1,0 +1,40 @@
+@media (min-width: 992px) {
+    .userMenu {
+        margin-left: 1rem;
+    }
+}
+
+@media (max-width: 1200px) {
+    .name {
+        display: none;
+    }
+}
+
+@media (max-width: 992px) {
+    .userMenu {
+        margin-top: 1rem;
+    }
+
+    .name {
+        display: revert;
+    }
+}
+
+.icon {
+    float: left;
+    display: inline;
+    width: 2rem;
+    height: 2rem;
+    margin-right: 0.5rem;
+}
+
+.icon:hover {
+    cursor: pointer;
+}
+
+.name {
+    float: left;
+    width: 49%;
+    padding-top: 0.3rem;
+    color: var(--color-link);
+}

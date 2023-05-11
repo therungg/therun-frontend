@@ -1,0 +1,21 @@
+.uploadKeyContainer {
+    padding: 1rem;
+    background-color: var(--color-secondary);
+    border: 1px solid var(--color-tertiary);
+}
+
+.uploadKeyBox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.uploadKey {
+    margin-left: 1rem;
+    cursor: pointer;
+}
+
+.copied {
+    font-size: 1.3rem;
+    margin-left: 1rem;
+}

@@ -1,0 +1,86 @@
+.supportTitle {
+    display: flex;
+    justify-content: center;
+}
+
+.becomeAPatreon {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 0.5rem;
+}
+
+.unlockText {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.goToPatreonButton {
+    display: flex;
+    justify-content: center;
+    font-size: x-large;
+}
+
+.explainText {
+    display: flex;
+    justify-content: center;
+}
+
+.explainTextMargin {
+    @extend .explainText;
+    margin-bottom: 1rem;
+}
+
+.supportOption {
+    background-color: var(--color-secondary);
+    margin: 1rem 5rem;
+    padding: 2.5rem;
+    border-radius: 15px;
+    border: solid 1px var(--color-gold);
+}
+
+.supportOptionStripe {
+    background-color: var(--color-secondary);
+    margin: 1rem 5rem;
+    padding: 2.5rem;
+    border-radius: 15px;
+    border: solid 1px var(--color-link);
+}
+
+.learnMoreButton {
+    width: 15rem;
+    height: 4rem;
+    background-color: var(--color-tertiary);
+    border-color: var(--color-gold);
+    font-weight: 500;
+    color: var(--color-text);
+    font-size: 1.4rem;
+}
+
+.learnMoreButton:hover {
+    background-color: var(--color-gold);
+    border-color: var(--color-gold);
+    color: var(--color-bg);
+}
+
+.learnMoreButtonStripe {
+    width: 15rem;
+    height: 4rem;
+    background-color: var(--color-tertiary);
+    border-color: var(--color-link);
+    font-weight: 500;
+    color: var(--color-text);
+    font-size: 1.4rem;
+}
+
+.learnMoreButtonStripe:hover {
+    background-color: var(--color-link);
+    border-color: var(--color-link);
+}
+
+.patron {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+    font-size: 1.4rem;
+}

@@ -1,0 +1,120 @@
+.homeContainer {
+    display: flex;
+    position: relative;
+    flex-direction: column;
+    height: 100%;
+    text-align: center;
+    margin-bottom: 5rem;
+}
+
+.title {
+    padding-top: 2.5rem;
+    font-size: 5rem;
+    font-weight: 500;
+}
+
+.subtitle {
+    padding-top: 1rem;
+    font-size: 2rem;
+    font-weight: 300;
+    padding-bottom: 2rem;
+}
+
+.learnMoreButtonContainer {
+    padding-top: 1rem;
+}
+
+.learnMoreButton {
+    width: 10rem;
+    height: 3rem;
+    background-color: rgba(100, 100, 100, 0.2);
+    border-color: var(--color-link);
+    font-weight: 500;
+    color: var(--color-text);
+    margin-left: 1rem;
+}
+
+.learnMoreButton:hover {
+    background-color: var(--color-link);
+    border-color: var(--color-link);
+}
+
+.supportMeButton {
+    width: 10rem;
+    height: 3rem;
+    background-color: rgba(100, 100, 100, 0.2);
+    border-color: var(--color-gold);
+    font-weight: 500;
+    color: var(--color-text);
+    margin-right: 1rem;
+}
+
+.supportMeButton:hover {
+    background-color: var(--color-gold);
+    border-color: var(--color-gold);
+    color: var(--color-bg);
+}
+
+.submitEventButton {
+    width: 100%;
+    height: 3rem;
+    background-color: rgba(100, 100, 100, 0.2);
+    border-color: var(--color-link);
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.submitEventButton:hover {
+    background-color: var(--color-link);
+    border-color: var(--color-link);
+}
+
+.dataTitle {
+    text-align: center;
+}
+
+.dataContainer {
+}
+
+.dataContainerBottom {
+}
+
+.flexLarge {
+    display: flex;
+}
+
+.logoMedia {
+    margin-left: 5rem;
+}
+
+.runPreviewTitle {
+    text-align: center;
+    margin-left: 0;
+    font-size: large;
+}
+
+.runPreviewInfo {
+    margin-bottom: 0;
+    margin-right: 0;
+    text-align: center;
+    font-size: smaller;
+}
+
+@media screen and (max-width: 1200px) {
+    .dataContainerBottom {
+        margin-top: 2rem;
+    }
+
+    .flexLarge {
+        display: revert;
+    }
+
+    .logoMedia {
+        margin-left: 0;
+    }
+}
+
+@media screen and (min-width: 576px) {
+    .dataContainer {
+    }
+}

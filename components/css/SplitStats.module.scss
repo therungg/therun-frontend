@@ -1,0 +1,48 @@
+.graph {
+    min-width: 25rem;
+}
+
+.splitDetailColumn {
+}
+
+.splitDetailColumnHidden {
+    display: none;
+}
+
+.splitComparisonOption {
+    display: none;
+}
+
+.consistencyColor {
+    color: var(--color-text);
+}
+
+.options {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.middleOption {
+    margin: 0 2rem;
+}
+
+@media screen and (max-width: 1200px) {
+    .splitDetailColumn {
+        display: none;
+    }
+
+    .splitComparisonOption {
+        display: revert;
+    }
+
+    .middleOption {
+        margin: 0 1rem 0 0;
+    }
+}
+
+@media screen and (max-width: 766px) {
+    .options {
+        display: revert;
+    }
+}

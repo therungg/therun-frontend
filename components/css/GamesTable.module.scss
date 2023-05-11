@@ -1,0 +1,37 @@
+.category {
+    width: 100%;
+    text-align: left;
+}
+
+.game {
+    text-align: center;
+    margin-left: 1rem;
+    font-size: larger;
+    padding-top: 0.4rem;
+}
+
+.bestTimeUser {
+    float: right;
+}
+
+.popularGameCell {
+    margin: 0;
+    padding: 0;
+}
+
+.popularGameImage {
+    margin-right: 0;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    float: left;
+}
+
+.popularGameContainer {
+    margin-right: 3rem;
+}
+
+.popularGame {
+    text-align: center;
+    margin-right: 0;
+    font-size: smaller;
+}

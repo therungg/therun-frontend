@@ -1,0 +1,29 @@
+.optionalColumn {
+}
+
+@media screen and (max-width: 768px) {
+    .optionalColumn {
+        display: none;
+    }
+}
+
+.learnMoreButton {
+    width: 10rem;
+    background-color: rgba(100, 100, 100, 0.2);
+    border-color: var(--color-link);
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.learnMoreButton:hover {
+    background-color: var(--color-link);
+    border-color: var(--color-link);
+}
+
+.filter {
+    margin-right: 1rem;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    cursor: pointer;
+    font-style: italic;
+}

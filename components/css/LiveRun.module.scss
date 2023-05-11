@@ -1,0 +1,447 @@
+.liveRunContainer {
+    border: 1px solid var(--color-tertiary);
+    background-color: var(--color-secondary);
+    display: flex;
+    height: 110px;
+}
+
+.activeRunContainer {
+    background-color: var(--color-tertiary);
+}
+
+.liveRunContainer:hover {
+    cursor: pointer;
+    background-color: var(--color-tertiary);
+}
+
+.splitsContainer {
+    background-color: var(--color-secondary);
+    display: flex;
+    height: 100%;
+    padding: 0;
+    border: 1px solid var(--color-tertiary);
+}
+
+.uploadKeyButton {
+    font-size: 1.5rem;
+    height: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-self: flex-end;
+}
+
+.recommendedStreamContainer {
+    margin-bottom: 2rem;
+    margin-top: 1rem;
+}
+
+.searchContainer {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 0.3rem;
+}
+
+.gameImage {
+    height: 108px;
+}
+
+.infoBody {
+    margin-left: 1.5rem;
+    margin-right: 1.5rem;
+
+    width: 100%;
+}
+
+.maxHeight {
+    height: 100%;
+}
+
+.metadataBody {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    max-width: 390px;
+}
+
+.timerBody {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.username {
+    font-size: x-large;
+    display: flex;
+}
+
+.game {
+    font-size: large;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.category {
+    font-size: large;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gameSmall {
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.timer {
+    font-size: x-large;
+}
+
+.delta {
+    font-size: large;
+}
+
+.recommendedRunContainer {
+    padding: 0 0.5rem;
+}
+
+.recommendedRunRow {
+}
+
+.splitsContainerContainer {
+    width: 100%;
+    height: 337px;
+}
+
+.splitsHeader {
+    height: 15%;
+    background-color: var(--color-tertiary);
+}
+
+.splitsHeaderGameContainer {
+    padding-left: 1.5rem;
+}
+
+.splitsHeaderGame {
+    display: flex;
+    justify-content: flex-start;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.splitsHeaderComparisonContainer {
+    padding-right: 1.5rem;
+}
+
+.splitsHeaderComparison {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.splitsBox {
+    width: 100%;
+    overflow-y: scroll;
+    height: 55%;
+}
+
+.splitsTable {
+    width: 100%;
+}
+
+.splitRow {
+    width: 100%;
+}
+
+.splitRow:hover {
+    background-color: var(--color-tertiary);
+    cursor: pointer;
+}
+
+.finalSplitRow {
+}
+
+.finalSplitRow:hover {
+    background-color: var(--color-border);
+    cursor: pointer;
+}
+
+.splitRow:not(:last-child) {
+    border-bottom: 1px solid var(--color-tertiary);
+}
+
+.splitNameContainer {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0.1rem 0.5rem;
+}
+
+.splitName {
+    width: 250px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.splitTimeContainer {
+    width: 18%;
+}
+
+.splitTime {
+    display: flex;
+    justify-content: flex-end;
+    padding-right: 0.5rem;
+}
+
+.splitTimerContainer {
+    height: 30%;
+    background-color: var(--color-tertiary);
+}
+
+.seperator {
+    margin: 0;
+    color: var(--color-text);
+}
+
+.splitsTimerContainer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    height: 90%;
+    padding: 0 1rem;
+    margin-bottom: -0.35rem;
+}
+
+.splitsTimer {
+    font-size: 1.5rem;
+}
+
+.splitIndividualContainer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    height: 100%;
+    padding: 0 1rem;
+    margin: 0;
+}
+
+.splitIndividualTimer {
+    font-size: medium;
+}
+
+.splitsFooterContainer {
+    height: 3.5rem;
+}
+
+.splitsFooterStatsContainer {
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+.splitsFooterStats {
+    margin: 1.5rem 0.5rem 0.5rem;
+}
+
+.splitsFooterPossibleContainer {
+    display: flex;
+    align-items: flex-end;
+}
+
+.splitsFooterPossible {
+    font-size: 0.8rem;
+}
+
+.splitsFooterTimeSave {
+    font-size: 0.8rem;
+    width: 64px;
+}
+
+.splitsFooterStatsTime {
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    margin-bottom: -1px;
+    width: 100%;
+}
+
+.splitsFooterTimerContainer {
+    margin-top: 0.22rem;
+    margin-right: 0.3rem;
+}
+
+.splitsFooterTimerMainContainer {
+    margin-bottom: 0.13rem;
+}
+
+.twitchStream {
+    height: 340px;
+}
+
+.splitsStatsContainer {
+    border: 1px solid var(--color-tertiary);
+    background-color: var(--color-secondary);
+    display: flex;
+    height: 340px;
+}
+
+.sortButton {
+    background-color: var(--color-secondary);
+    width: 100%;
+    border-color: var(--color-tertiary);
+}
+
+.sortButtonActive {
+    background-color: var(--color-tertiary);
+}
+
+.sortButton:hover {
+    background-color: var(--color-tertiary);
+    border-color: var(--color-tertiary);
+}
+
+.tournamentInfo {
+    width: 100%;
+}
+
+.tournamentInfoLogo {
+    margin-bottom: 0;
+}
+
+.tournamentHowDoesThisWorkButton {
+    margin-bottom: -1.5rem;
+    font-size: 1.5rem;
+    height: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    margin-top: 1rem;
+}
+
+.tournamentTimer {
+    margin-bottom: -5rem;
+}
+
+@media screen and (max-width: 1900px) {
+    .metadataBody {
+        max-width: 350px;
+    }
+
+    .splitName {
+        width: 220px;
+    }
+}
+
+@media screen and (max-width: 1200px) {
+    .splitsContainer {
+        margin-bottom: 1rem;
+    }
+
+    .metadataBody {
+        max-width: 320px;
+    }
+
+    .tournamentInfoLogo {
+        margin-bottom: 0;
+    }
+
+    .tournamentHowDoesThisWorkButton {
+        margin-bottom: 1rem;
+    }
+
+    .tournamentTimer {
+        margin-bottom: 0;
+    }
+}
+
+@media screen and (max-width: 574px) {
+    .infoBody {
+        margin-left: 0.8rem;
+        margin-right: 0.8rem;
+    }
+
+    .metadataBody {
+        max-width: 210px;
+    }
+
+    .twitchStream {
+        height: 100%;
+    }
+}
+
+@media screen and (max-width: 992px) {
+    .twitchStream {
+        height: 400px;
+        padding: 0;
+        margin-bottom: 1rem;
+    }
+}
+
+@media screen and (max-width: 766px) {
+    .twitchStream {
+        height: 295px;
+        padding: 0;
+    }
+
+    .username {
+        font-size: large;
+    }
+}
+
+@media screen and (min-width: 1200px) {
+    @media screen and (max-width: 1599px) {
+        .infoBody {
+            margin-left: 1.2rem;
+            margin-right: 1.2rem;
+        }
+
+        .metadataBody {
+            max-width: 293px;
+        }
+
+        .splitName {
+            width: 185px;
+        }
+    }
+
+    @media screen and (max-width: 1399px) {
+        .metadataBody {
+            max-width: 250px;
+        }
+
+        .username {
+            font-size: large;
+        }
+
+        .game {
+            font-size: medium;
+        }
+
+        .category {
+            font-size: medium;
+        }
+
+        .timer {
+            font-size: large;
+        }
+
+        .delta {
+            font-size: medium;
+        }
+
+        .infoBody {
+            margin-left: 1rem;
+            margin-right: 1rem;
+        }
+
+        .splitName {
+            width: 141px;
+        }
+    }
+}

@@ -1,0 +1,26 @@
+.datePicker {
+    background-color: var(--color-secondary);
+    color: var(--color-text);
+    width: 7rem;
+    border-radius: 0.25rem;
+    font-size: 1rem;
+    height: 38px;
+    cursor: pointer;
+    border-color: var(--color-text);
+    border: 1px solid;
+    padding: 0.5rem 0.5rem 0.5rem 0.8rem;
+}
+
+.datePicker:hover {
+    background-color: var(--color-tertiary);
+}
+
+.datePicker:active {
+    border-color: revert;
+    box-shadow: none;
+}
+
+.datePicker:focus {
+    border-color: revert;
+    box-shadow: none;
+}

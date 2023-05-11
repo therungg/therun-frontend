@@ -1,0 +1,56 @@
+fieldset.fieldset {
+    padding: 0.5rem 2rem;
+}
+
+.editInfoButtonContainer {
+    padding-top: 0.5rem;
+}
+
+.editInfoButton {
+    width: 15rem;
+    height: 2.5rem;
+    background-color: var(--color-secondary);
+    border-color: var(--color-link);
+    font-weight: 0;
+    color: var(--color-text);
+}
+
+.editInfoButton:hover {
+    background-color: var(--color-link);
+    border-color: var(--color-link);
+}
+
+.editInfoButton:active {
+    background-color: var(--color-link);
+    border-color: var(--color-link);
+}
+
+.editInfoButton:focus {
+    background-color: var(--color-link);
+    border-color: var(--color-link);
+}
+
+.cancelButton {
+    margin-left: 1rem;
+    width: 5rem;
+    height: 2.5rem;
+    background-color: var(--color-secondary);
+    border-color: darkred;
+    font-weight: 0;
+    color: var(--color-text);
+}
+
+.cancelButton:hover {
+    background-color: darkred;
+    border-color: darkred;
+}
+
+.cancelButton:active {
+    background-color: darkred;
+    border-color: darkred;
+}
+
+.cancelButton:focus {
+    background-color: darkred;
+    border-color: darkred;
+}

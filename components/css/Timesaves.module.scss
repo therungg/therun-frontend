@@ -1,0 +1,84 @@
+.numberInput {
+    background-color: var(--color-secondary);
+    color: var(--color-text);
+    border: none;
+    background-image: none;
+    width: 8rem;
+    margin-left: 0.5rem;
+}
+
+.numberInput:active {
+    color: var(--color-text);
+}
+
+.numberInput:focus {
+    background-color: var(--color-tertiary);
+    border-color: var(--color-link);
+    box-shadow: 1px var(--color-link);
+    color: var(--color-text);
+}
+
+.numberInput:after {
+    display: none;
+}
+
+.numberInput:hover {
+    cursor: text;
+}
+
+.modeToggle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.optionalColumn {
+}
+
+.visual {
+    margin-top: 1rem;
+}
+
+.visualTimesave {
+    height: 5rem;
+    color: var(--color-text);
+    margin-bottom: 4px;
+    border-radius: 20px;
+    padding-left: 2rem;
+}
+
+.visualSplitname {
+    height: 100%;
+    font-size: 1.5rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+.visualSplitData {
+    padding-top: 0.3rem;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    font-size: 1.1rem;
+}
+
+@media screen and (max-width: 992px) {
+    .optionalColumn {
+        display: none;
+    }
+
+    .modeToggle {
+        justify-content: revert;
+    }
+
+    .visualTimesave {
+        height: 11rem;
+        padding-top: 0;
+    }
+
+    .visualSplitData {
+        height: revert;
+        padding-top: 0;
+    }
+}

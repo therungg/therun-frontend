@@ -1,0 +1,75 @@
+.gameHeader {
+    margin-bottom: 1rem;
+}
+
+.gameImage {
+    float: left;
+    margin-right: 1rem;
+}
+
+.gameTitleContainer {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.gameTimeFormContainer {
+    align-self: flex-end;
+}
+
+.gamesNavigationContainer {
+    position: relative;
+}
+
+.tabsContainer {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 1rem;
+}
+
+.statsHorizontal {
+}
+
+.statsVertical {
+    display: none;
+}
+
+.navigation {
+    margin-bottom: 1rem;
+    position: absolute;
+    width: 101.6%;
+    padding-top: 1rem;
+}
+
+.form {
+}
+
+.optionalColumn {
+}
+
+@media screen and (max-width: 766px) {
+    .statsHorizontal {
+        display: none;
+    }
+
+    .statsVertical {
+        display: revert;
+    }
+
+    .navigation {
+        margin: 0;
+        width: 100%;
+        padding: 0;
+        position: revert;
+    }
+    .form {
+        margin: 0;
+        padding: 0;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .optionalColumn {
+        display: none;
+    }
+}
