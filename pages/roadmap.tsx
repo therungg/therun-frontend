@@ -10,103 +10,93 @@ export const Roadmap = () => {
             <h2>Done!</h2>
             <ul>
                 <li>
-                    <strike>
+                    <s>
                         Frontend/design revamp + make usable (enough) on mobile
-                    </strike>
+                    </s>
                 </li>
                 <li>
-                    <strike>
+                    <s>
                         Navigating through games/categories/runners improvement
                         (breadcrumbs?)
-                    </strike>
+                    </s>
                 </li>
                 <li>
-                    <strike>
-                        Support Game Time as well instead of only Real Time
-                    </strike>
+                    <s>Support Game Time as well instead of only Real Time</s>
                 </li>
                 <li>
-                    <strike>
+                    <s>
                         Give users a profile for deleting/hiding/highlighting
                         runs etc, editing some settings and probably a lot more
-                    </strike>
+                    </s>
                 </li>
                 <li>
-                    <strike>
+                    <s>
                         Compare run to same run of other user or compare runs
                         within same splits
-                    </strike>
+                    </s>
                 </li>
                 <li>
-                    <strike>
-                        Discord/socials to better communicate/handle feedback
-                    </strike>
+                    <s>Discord/socials to better communicate/handle feedback</s>
                 </li>
                 <li>
-                    <strike>
-                        Overview page for most popular games (or all)
-                    </strike>
+                    <s>Overview page for most popular games (or all)</s>
                 </li>
                 <li>
-                    <strike>Feedback form</strike>
+                    <s>Feedback form</s>
                 </li>
                 <li>
-                    <strike>
+                    <s>
                         Option to add other data to runs, like vod url,
                         description etc
-                    </strike>
+                    </s>
                 </li>
                 <li>
-                    <strike>Download splits from run</strike>
+                    <s>Download splits from run</s>
                 </li>
                 <li>
-                    <strike>Compare to different splits within file</strike>
+                    <s>Compare to different splits within file</s>
                 </li>
                 <li>
-                    <strike>Dark mode</strike>
+                    <s>Dark mode</s>
                 </li>
                 <li>
-                    <strike>Footer</strike>
+                    <s>Footer</s>
                 </li>
                 <li>
-                    <strike>Privacy/Terms of use</strike>
+                    <s>Privacy/Terms of use</s>
                 </li>
                 <li>
-                    <strike>Show game art next to games</strike>
+                    <s>Show game art next to games</s>
                 </li>
                 <li>
-                    <strike>
-                        Twitch panel for under stream with your data
-                    </strike>
+                    <s>Twitch panel for under stream with your data</s>
                 </li>
                 <li>
-                    <strike>Tab to analyze gold splits</strike>
+                    <s>Tab to analyze gold splits</s>
                 </li>
                 <li>
-                    <strike>
+                    <s>
                         Important time saves overview / Overview of strong and
                         weak splits or parts of run in pb
-                    </strike>
+                    </s>
                 </li>
                 <li>
-                    <strike>
+                    <s>
                         Show how often a sub-x time was achieved for splits/runs
-                    </strike>
+                    </s>
                 </li>
 
                 <li>
-                    <strike>
+                    <s>
                         Handle secondary data from livesplit (region - platform
                         - custom vars)
-                    </strike>
+                    </s>
                 </li>
                 <li>
-                    <strike>
-                        Upload automatically from LiveSplit with a plugin
-                    </strike>
+                    <s>Upload automatically from LiveSplit with a plugin</s>
                 </li>
                 <li>
-                    <strike>The Run Live</strike>
+                    <s>The Run Live</s>
                 </li>
             </ul>
 

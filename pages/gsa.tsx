@@ -7,7 +7,7 @@ export const getServerSideProps: GetServerSideProps = async (
     context: GetServerSidePropsContext
 ) => {
     context.params = {
-        tournament: "SWRC Season 2: Metroid Dread",
+        tournament: "GSA PACE Qualifiers 3",
     };
 
     return getServerSidePropsGeneric(context);

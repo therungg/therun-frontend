@@ -135,25 +135,19 @@ export const GenericTournament = ({
         );
     };
 
-    // const renderCountdownToStart = ({
-    //     days,
-    //     hours,
-    //     minutes,
-    //     seconds,
-    //     completed,
-    // }) => {
-    //     if (completed) {
-    //         return <></>;
-    //     }
-    //
-    //     return (
-    //         <h2>
-    //             Event starts in {!!days && `${days} days, `}{" "}
-    //             {hours && `${hours} hours and `}{" "}
-    //             {`${minutes} minute${minutes === 1 ? "" : "s"}!`}
-    //         </h2>
-    //     );
-    // };
+    const renderCountdownToStart = ({ days, hours, minutes, completed }) => {
+        if (completed) {
+            return <></>;
+        }
+
+        return (
+            <h2>
+                Event starts in {!!days && `${days} days, `}{" "}
+                {hours && `${hours} hours and `}{" "}
+                {`${minutes} minute${minutes === 1 ? "" : "s"}!`}
+            </h2>
+        );
+    };
 
     return (
         <div>
@@ -254,13 +248,17 @@ export const GenericTournament = ({
 
             <div style={{ display: "flex", justifyContent: "center" }}>
                 <h2 className={runStyles.tournamentTimer}>
-                    {/*<Countdown*/}
-                    {/*    date={new Date(tournament.eligiblePeriods && tournament.eligiblePeriods.length > 0 ? tournament.eligiblePeriods[1].startDate : tournament.startDate)}*/}
-                    {/*    renderer={renderCountdownToStart}>*/}
-                    {/*    <div>*/}
-                    {/*        Tournament ended!*/}
-                    {/*    </div>*/}
-                    {/*</Countdown>*/}
+                    <Countdown
+                        date={
+                            new Date(
+                                tournament.eligiblePeriods &&
+                                tournament.eligiblePeriods.length > 0
+                                    ? tournament.eligiblePeriods[0].startDate
+                                    : tournament.startDate
+                            )
+                        }
+                        renderer={renderCountdownToStart}
+                    ></Countdown>
                     <Countdown
                         date={
                             new Date(
