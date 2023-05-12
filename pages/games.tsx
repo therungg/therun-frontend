@@ -217,7 +217,13 @@ export const Games = ({ initGames }: { initGames: Game[] }) => {
                                                             {category.display}
                                                         </b>
                                                     </Col>
-                                                    <Col md={6} sm={7}>
+                                                    <Col
+                                                        md={6}
+                                                        sm={7}
+                                                        className={
+                                                            styles.timeUser
+                                                        }
+                                                    >
                                                         <div
                                                             style={{
                                                                 width: "3rem",
