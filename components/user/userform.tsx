@@ -6,7 +6,7 @@ import { countries } from "../../common/countries";
 import { hasFlag } from "country-flag-icons";
 import { NameAsPatreon } from "../patreon/patreon-name";
 
-import { TimezoneSelect } from "../../vendor/timezone-select-js/lib/index";
+import { TimezoneSelect } from "../../vendor/timezone-select-js/lib";
 import Image from "next/image";
 
 //TODO:: Would be better to use some form lib, not sure why i built it this way
@@ -386,7 +386,7 @@ export const CountryIcon = ({ countryCode }) => {
             width={24}
             height={16}
             alt={countries()[countryCode] as string}
-            src={`https://purecatamphetamine.github.io/country-flag-icons/3x2/${countryCode}.svg`}
+            src={`https://raw.githubusercontent.com/hampusborgos/country-flags/main/svg/${countryCode.toLowerCase()}.svg`}
         />
     );
 };

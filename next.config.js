@@ -1,12 +1,13 @@
-const { withAxiom } = require("next-axiom");
+import { withAxiom } from "next-axiom";
 
-/** @type {import('next').NextConfig} */
-module.exports = withAxiom({
+const nextConfig = withAxiom({
     typescript: {
         ignoreBuildErrors: true,
     },
     reactStrictMode: true,
     images: {
-        domains: ["static-cdn.jtvnw.net"],
+        domains: ["static-cdn.jtvnw.net", "raw.githubusercontent.com"],
     },
 });
+
+export default nextConfig;
