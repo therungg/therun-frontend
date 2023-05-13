@@ -7,7 +7,8 @@
   ],
   "plugins": [
     "react",
-    "github"
+    "github",
+    "prettier"
   ],
   "rules": {
     "@next/next/no-page-custom-font": "off",
@@ -18,6 +19,12 @@
     "import/no-named-as-default": "off",
     "github/array-foreach": "off",
     "eqeqeq": "off",
-    "i18n-text/no-en": "off"
+    "i18n-text/no-en": "off",
+    "prettier/prettier": [
+      "error",
+      {
+        "endOfLine": "auto"
+      }
+    ]
   }
 }
