@@ -53,14 +53,14 @@ export const patreonStyles = () => {
                 id: colorArray[3],
                 style: [
                     {
-                        background: `-webkit-linear-gradient(left, ${darkModeString})`,
+                        backgroundImage: `-webkit-linear-gradient(left, ${darkModeString})`,
                         WebkitBackgroundClip: "text",
                         backgroundClip: "text",
                         color: "transparent",
                         WebkitTextFillColor: "transparent",
                     },
                     {
-                        background: `-webkit-linear-gradient(left, ${lightModeString})`,
+                        backgroundImage: `-webkit-linear-gradient(left, ${lightModeString})`,
                         WebkitBackgroundClip: "text",
                         backgroundClip: "text",
                         color: "transparent",
