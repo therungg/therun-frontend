@@ -49,7 +49,7 @@ const Home = () => {
 const DataSection = () => {
     const { data, error } = useSWR("/api/frontpagedata", fetcher);
 
-    //if (error) return <div>Whoops, something went wrong...</div>;
+    if (error) return <div>Whoops, something went wrong...</div>;
 
     let runs;
     let gamestats;
