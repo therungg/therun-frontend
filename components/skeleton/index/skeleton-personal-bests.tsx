@@ -7,9 +7,9 @@ export const SkeletonPersonalBests = (props) => (
         height={100}
         viewBox="0 0 100% 657"
         style={{ width: "100%", height: "657" }}
-        speed={1.5}
-        backgroundColor="#e0e0e0"
-        foregroundColor="#eee"
+        speed={2}
+        backgroundColor="var(--color-secondary)"
+        foregroundColor="var(--color-bg)"
         {...props}
     >
         <rect x="0" y="0" width="1" height="641" />
