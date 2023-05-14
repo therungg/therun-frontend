@@ -22,6 +22,7 @@ import {
 } from "../../components/tournament/tournament-info";
 import { TournamentRuns } from "../../components/tournament/tournament-runs";
 import { TournamentStandings } from "../../components/tournament/tournament-standings";
+import websocketOptions from "../../common/websocketOptions";
 
 export const GenericTournament = ({
     liveDataMap,
@@ -65,7 +66,12 @@ export const GenericTournament = ({
     );
 
     const eventStarted = new Date() > new Date(tournament.startDate);
-    const { lastMessage } = useWebSocket(process.env.NEXT_PUBLIC_WEBSOCKET_URL);
+    const { lastMessage, sendMessage } = useWebSocket(
+        process.env.NEXT_PUBLIC_WEBSOCKET_URL,
+        websocketOptions
+    );
+
+    setInterval(() => sendMessage(""), 9 * 60 * 1000);
 
     useEffect(() => {
         if (lastMessage !== null) {

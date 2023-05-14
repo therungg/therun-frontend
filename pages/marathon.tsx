@@ -7,6 +7,7 @@ import useWebSocket from "react-use-websocket";
 import styles from "../components/css/Search.module.scss";
 import MarathonRun from "../components/marathon/marathon-run";
 import { Col, Row } from "react-bootstrap";
+import websocketOptions from "../common/websocketOptions";
 
 export const Marathon = ({
     liveDataMap,
@@ -19,7 +20,12 @@ export const Marathon = ({
     const [selectedUser, setSelectedUser] = useState("");
     const [currentUserData, setCurrentUserData] = useState();
 
-    const { lastMessage } = useWebSocket(process.env.NEXT_PUBLIC_WEBSOCKET_URL);
+    const { lastMessage, sendMessage } = useWebSocket(
+        process.env.NEXT_PUBLIC_WEBSOCKET_URL,
+        websocketOptions
+    );
+
+    setInterval(() => sendMessage(""), 9 * 60 * 1000);
 
     useEffect(() => {
         if (lastMessage !== null) {

@@ -23,6 +23,7 @@ import {
 import useWebSocket from "react-use-websocket";
 import Stats from "../components/user/stats";
 import { TwitchEmbed } from "../vendor/react-twitch-embed/dist/index";
+import websocketOptions from "../common/websocketOptions";
 
 export interface UserPageProps {
     runs: Run[];
@@ -54,9 +55,12 @@ const User = ({
     const [, forceUpdate] = useReducer((x) => x + 1, 0);
     const [liveRun, setLiveRun] = useState(liveData);
 
-    const { lastMessage } = useWebSocket(
-        `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}?username=${username}`
+    const { lastMessage, sendMessage } = useWebSocket(
+        `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}?username=${username}`,
+        websocketOptions
     );
+
+    setInterval(() => sendMessage(""), 9 * 60 * 1000);
 
     useEffect(() => {
         if (lastMessage !== null) {

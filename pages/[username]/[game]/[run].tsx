@@ -36,6 +36,7 @@ import {
 } from "../../../components/live/live-user-run";
 import useWebSocket from "react-use-websocket";
 import { getLiveRunForUser } from "../../../lib/live-runs";
+import websocketOptions from "../../../common/websocketOptions";
 
 interface RunPageProps extends AppProps {
     run: Run;
@@ -85,9 +86,12 @@ const RunPage = ({
     const [gameTimeRuns, setGameTimeRuns] = useState(null);
     const [liveRun, setLiveRun] = useState(liveData);
 
-    const { lastMessage } = useWebSocket(
-        `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}?username=${username}`
+    const { lastMessage, sendMessage } = useWebSocket(
+        `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}?username=${username}`,
+        websocketOptions
     );
+
+    setInterval(() => sendMessage(""), 9 * 60 * 1000);
 
     useEffect(() => {
         if (lastMessage !== null) {

@@ -22,6 +22,7 @@ import {
     DurationAsTimer,
 } from "../components/util/datetime";
 import Timer from "../vendor/timer/src/index";
+import websocketOptions from "../common/websocketOptions";
 
 export type LiveDataMap = {
     [user: string]: LiveRun;
@@ -47,7 +48,12 @@ export const Live = ({
     const [currentlyViewing, setCurrentlyViewing] = useState(
         getRecommendedStream(liveDataMap, username)
     );
-    const { lastMessage } = useWebSocket(process.env.NEXT_PUBLIC_WEBSOCKET_URL);
+    const { lastMessage, sendMessage } = useWebSocket(
+        process.env.NEXT_PUBLIC_WEBSOCKET_URL,
+        websocketOptions
+    );
+
+    setInterval(() => sendMessage(""), 9 * 60 * 1000);
 
     useEffect(() => {
         if (lastMessage !== null) {
