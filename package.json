@@ -5,9 +5,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint -- --fix",
+    "lint": "next lint",
+    "lint-fix": "next lint --fix",
     "prepare": "husky install",
-    "prepush": "next lint -- --fix"
+    "prepush": "next lint --fix"
   },
   "dependencies": {
     "@uiw/react-heat-map": "^2.0.5",
