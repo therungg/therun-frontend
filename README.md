@@ -1,15 +1,15 @@
 # [The Run](therun.gg): The Free Speedrun Statistics Site
 
-_Therun_ is a free speedrun statistics website. It provides live data and advanced stats for participating
+_Therun_ is a free speedrun statistics website. It provides live data and advanced statistics for participating
 speedrunners.
 
 ## Features
 
-- Live Runs tracking
-- Advanced statistics
-- Games overview
-- Splits backup
-- Twitch Extension
+-   Live Runs tracking
+-   Advanced statistics
+-   Games overview
+-   Splits backup
+-   Twitch Extension
 
 and many, many more.
 
@@ -27,9 +27,8 @@ Navigate to `localhost:3000`
 
 ## Support
 
-You can support the project on [Patreon](patreon.com/therungg)!
+Love what we do? You can support the project on [Patreon](patreon.com/therungg)!
 
 ## Contribute
 
 Check out our [Contribution guide](https://github.com/therungg/therun-frontend/blob/main/CONTRIBUTING.md).
-
