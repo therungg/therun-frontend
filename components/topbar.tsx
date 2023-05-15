@@ -55,8 +55,9 @@ const Topbar = ({
                             style={{
                                 alignSelf: "flex-start",
                                 marginRight: "0.5rem",
-                            }}
-                        />
+                                maxWidth: "100%",
+                                height: "auto"
+                            }} />
                         <div style={{ alignSelf: "center" }}>
                             The Run{" "}
                             <i>

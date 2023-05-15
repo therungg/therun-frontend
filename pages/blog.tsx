@@ -344,7 +344,10 @@ export const getBlogs = (): BlogInterface[] => {
                                 <Image
                                     src={"/media/speedruns.png"}
                                     alt={"component"}
-                                />
+                                    style={{
+                                        maxWidth: "100%",
+                                        height: "auto"
+                                    }} />
                             </a>
                         </span>
                     </p>

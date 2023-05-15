@@ -27,7 +27,10 @@ export const TwitchLoginButton = ({
                                     width={30}
                                     height={30}
                                     layout={"responsive"}
-                                />
+                                    style={{
+                                        maxWidth: "100%",
+                                        height: "auto"
+                                    }} />
                             </div>
                             <div className={styles.name}>{username}</div>
                         </div>
