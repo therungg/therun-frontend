@@ -2,6 +2,8 @@ import styles from "../components/css/Home.module.scss";
 import { Button, Col, Row } from "react-bootstrap";
 import { PopularGames } from "../components/game/popular-games";
 import { DataHolder } from "../components/frontpage/data-holder";
+import { SkeletonPersonalBests } from "../components/skeleton/index/skeleton-personal-bests";
+import { SkeletonPopularGames } from "../components/skeleton/index/skeleton-popular-games";
 import useSWR from "swr";
 import React from "react";
 import { PatreonBunnySvg } from "./patron";
@@ -63,7 +65,7 @@ const DataSection = () => {
                 <Col xl={6} lg={12} className={styles.dataContainer}>
                     <h2>Recent Personal Bests</h2>
                     {data && <DataHolder runs={runs} />}
-                    {!data && <div> Loading... </div>}
+                    {!data && <SkeletonPersonalBests />}
                 </Col>
                 <Col
                     xl={6}
@@ -72,7 +74,7 @@ const DataSection = () => {
                 >
                     <h2>Popular Games</h2>
                     {data && <PopularGames gamestats={gamestats} />}
-                    {!data && <div> Loading... </div>}
+                    {!data && <SkeletonPopularGames />}
                 </Col>
             </Row>
         </div>
