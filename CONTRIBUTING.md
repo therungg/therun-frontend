@@ -23,7 +23,7 @@ If you want to contribute something not in the issues, please create an issue yo
 
 ## Installing
 
-How to run the project locally
+Before you can contribute, make sure you can run the project locally.
 
 ### Requirements:
 
@@ -45,7 +45,8 @@ How to run the project locally
 -   If a [GitHub issue](https://github.com/therungg/therun-frontend/issues) does not exist for what you want to
     contribute, [create it first](https://github.com/therungg/therun-frontend/issues/new).
 -   Change the code to make the change you want
--   Run `npm run lint` to format your code
+-   Run `npm run lint-fix` to format your code
+-   Create a new Pull Request
 
 ### License
 
