@@ -6,11 +6,8 @@ import "../styles/globals.css";
 import "../styles/calendar-heatmap.min.css";
 import Router from "next/router";
 import NProgress from "nprogress"; //nprogress module
-import { Analytics } from "@vercel/analytics/react";
 import "nprogress/nprogress.css";
 import { GoogleAnalytics } from "nextjs-google-analytics";
-
-export { reportWebVitals } from "next-axiom";
 
 interface AppPropsHome extends AppProps {
     initprops: InitProps;
@@ -40,7 +37,6 @@ function MyApp({ Component, pageProps = {}, initprops }: AppPropsHome) {
                 username={initprops.session.username}
                 picture={initprops.session.picture}
             >
-                <Analytics />
                 <GoogleAnalytics
                     trackPageViews={true}
                     gaMeasurementId={process.env.ANALYTICS_MEASUREMENT_ID}
