@@ -334,7 +334,7 @@ const LoginWithPatreonSection = ({ session }) => {
                 Patreon account here!
             </div>
             <div className={styles.linkPatreonButtonContainer}>
-                <Link passHref href={url}>
+                <Link passHref href={url} legacyBehavior>
                     <Button>Link with Patreon</Button>
                 </Link>
             </div>
