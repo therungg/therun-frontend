@@ -24,7 +24,6 @@
     "luxon": "^3.0.4",
     "moment": "^2.29.1",
     "next": "12.1.4",
-    "next-axiom": "^0.7.0",
     "next-transpile-modules": "^10.0.0",
     "nextjs-google-analytics": "^2.1.0",
     "nextjs-redirect": "^6.0.1",

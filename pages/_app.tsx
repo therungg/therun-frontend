@@ -9,8 +9,6 @@ import NProgress from "nprogress"; //nprogress module
 import "nprogress/nprogress.css";
 import { GoogleAnalytics } from "nextjs-google-analytics";
 
-export { reportWebVitals } from "next-axiom";
-
 interface AppPropsHome extends AppProps {
     initprops: InitProps;
 }
