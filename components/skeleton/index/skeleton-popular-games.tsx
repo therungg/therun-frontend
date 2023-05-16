@@ -5,16 +5,13 @@ export const SkeletonPopularGames = (props) => (
     <ContentLoader
         width={100}
         height={100}
-        style={{ width: "100%", height: "657" }}
+        style={{ width: "100%", height: "657px" }}
         speed={2}
         backgroundColor="var(--color-secondary)"
         foregroundColor="var(--color-bg)"
         {...props}
     >
-        <rect x="0" y="0" width="1" height="641" />
-        <rect x="calc(100% - 1px)" y="0" width="1" height="641" />
-        <rect x="0" y="0" width="100%" height="1" />
-        <rect x="0" y="calc(100% - 18px)" width="100%" height="1" />
+        <rect x="100%" y="0" width="1" height="641" />
         <rect x="0" y="64" rx="0" ry="0" width="48" height="63" />
         <rect x="0" y="192" rx="0" ry="0" width="48" height="63" />
         <rect x="0" y="320" rx="0" ry="0" width="48" height="63" />
