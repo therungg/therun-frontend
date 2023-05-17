@@ -3,7 +3,8 @@
     "next",
     "prettier",
     "next/core-web-vitals",
-    "plugin:github/recommended"
+    "plugin:github/recommended",
+    "plugin:prettier/recommended"
   ],
   "plugins": [
     "react",
@@ -28,3 +29,5 @@
     ]
   }
 }
+
+
