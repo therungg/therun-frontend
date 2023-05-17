@@ -1,6 +1,7 @@
 import { createClient } from "@vercel/edge-config";
 
-export type FeatureFlags = "Maintenance_Mode";
+const prefixKey = (key: string) => `FEATURE_FLAGS_${key.toUpperCase()}`;
+export type FeatureFlags = "MAINTENANCE_MODE";
 
 /** Feature Flags
   - Support for Vercel Edge Config can be enabled if Environment Variable `EDGE_CONFIG` is present
@@ -9,12 +10,12 @@ export type FeatureFlags = "Maintenance_Mode";
 
   Note: Variables are prefixed by `FEATURE_FLAGS_` (ex: `FEATURE_FLAGS_MAINTENANCE_MODE`)
 */
-export async function getFeatureFlag(
+export const getFeatureFlag = async (
     key: FeatureFlags,
     defaultValue = false
-): Promise<boolean> {
-    const prefixedKey = `FEATURE_FLAGS_${key.toUpperCase()}`;
-    if (process.env.EDGE_CONFIG !== undefined) {
+): Promise<boolean> => {
+    const prefixedKey = prefixKey(key);
+    if ((process.env.EDGE_CONFIG ?? "").trim().length !== 0) {
         const edgeConfig = createClient(process.env.EDGE_CONFIG);
 
         const featureFlag = await edgeConfig.get<boolean>(prefixedKey);
@@ -24,9 +25,9 @@ export async function getFeatureFlag(
         }
     }
     return parseBoolean(process.env[prefixedKey], defaultValue);
-}
+};
 
-function parseBoolean(val: any, defVal: boolean) {
+const parseBoolean = (val: any, defVal: boolean) => {
     if (val == undefined) {
         return defVal;
     }
@@ -36,4 +37,4 @@ function parseBoolean(val: any, defVal: boolean) {
     if (["false", "no", "0", "off"].includes(value)) return false;
 
     return defVal;
-}
+};
