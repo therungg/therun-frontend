@@ -171,7 +171,11 @@ export const UserOverview = ({
                             </small>
                         )}
                         <Table key={game} bordered hover responsive>
-                            <thead style={{ display: sameGame ? "none" : "" }}>
+                            <thead
+                                className={
+                                    sameGame ? styles.sameGameRunHeader : ""
+                                }
+                            >
                                 <tr>
                                     <th style={{ width: "40%" }}>Run</th>
                                     <th style={{ width: "13%" }}>PB</th>

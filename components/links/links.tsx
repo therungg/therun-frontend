@@ -33,7 +33,7 @@ export const UserLink = ({
     icon = true,
     url = "",
 }: UserLinkProps) => {
-    const patreons = usePatreons();
+    const { data: patreons, isLoading } = usePatreons();
 
     if (!username.startsWith("/")) username = `/${username}`;
 
@@ -41,7 +41,7 @@ export const UserLink = ({
 
     if (url === "") url = username;
 
-    if (patreons && patreons[withoutSlash]) {
+    if (!isLoading && patreons && patreons[withoutSlash]) {
         let color = 0;
         let showIcon = icon;
         if (patreons[withoutSlash].preferences) {
@@ -89,7 +89,8 @@ export const UserGameCategoryLink = ({
                           game
                       )}/${encodeURIComponent(category)}`
             }
-            legacyBehavior>
+            legacyBehavior
+        >
             {children ? (
                 children
             ) : (

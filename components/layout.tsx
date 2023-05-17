@@ -28,15 +28,15 @@ export const Layout = ({
 }: LayoutInput) => {
     const [light, setLight] = useState(false);
     const prefix = light ? "/lightmode" : "";
-    const patreonData = usePatreons();
+    const { data: patreonData, isLoading } = usePatreons();
     const [animationDuration, setAnimationDuration] = useState(30);
 
     useEffect(() => {
-        if (patreonData) {
+        if (patreonData && !isLoading) {
             // Calculate the animation duration based on the text length
             setAnimationDuration(Object.keys(patreonData).length * 0.5 + 30);
         }
-    }, [patreonData]);
+    }, [patreonData, isLoading]);
 
     useEffect(() => {
         if (

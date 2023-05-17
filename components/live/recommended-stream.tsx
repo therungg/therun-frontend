@@ -20,6 +20,7 @@ export const RecommendedStream = ({
     const [selectedSplit, setSelectedSplit] = useState(
         liveRun.currentSplitIndex
     );
+    const [recommendedStyles, setRecommendedStyles] = useState({});
     const [manuallyChangedSplit, setManuallyChangedSplit] = useState(false);
 
     // Not sure how else to do this, but this works
@@ -64,32 +65,38 @@ export const RecommendedStream = ({
         setActiveLiveRun(liveRun);
     }, [liveRun]);
 
-    let borderColor = "";
-    let gradient = "";
+    const { data: patreons, isLoading } = usePatreons();
 
-    const patreons = usePatreons();
+    useEffect(() => {
+        if (!isLoading && patreons && patreons[liveRun.user]) {
+            const { preferences } = patreons[liveRun.user];
+            let borderColor = "";
+            let gradient = "";
 
-    if (patreons && patreons[liveRun.user]) {
-        const { preferences } = patreons[liveRun.user];
+            if (preferences && !preferences.hide) {
+                const colors = patreonStyles();
+                const { colorPreference = 0 } = preferences;
+                let style =
+                    colors.find((val) => val.id == colorPreference) ||
+                    colors[0];
+                style = dark ? style.style[0] : style.style[1];
 
-        if (preferences && !preferences.hide) {
-            const colors = patreonStyles();
-            const { colorPreference = 0 } = preferences;
-            let style =
-                colors.find((val) => val.id == colorPreference) || colors[0];
-            style = dark ? style.style[0] : style.style[1];
-
-            if (style.color != "transparent") {
-                borderColor = style.color;
-            } else {
-                gradient = style.background;
+                if (style.color != "transparent") {
+                    borderColor = style.color;
+                } else {
+                    gradient = style.background;
+                }
+            } else if (!preferences) {
+                borderColor = "var(--color-link)";
             }
-        } else if (!preferences) {
-            borderColor = "var(--color-link)";
+            setRecommendedStyles({
+                borderColor,
+                gradient,
+            });
         }
-    }
+    }, [patreons, isLoading, liveRun.user]);
 
-    if (!activeLiveRun || !activeLiveRun.splits || !liveRun) {
+    if (!activeLiveRun || !activeLiveRun.splits || !liveRun || isLoading) {
         return <></>;
     }
 
@@ -128,16 +135,19 @@ export const RecommendedStream = ({
                     xl={4}
                     className={styles.splitsStatsContainer}
                     style={
-                        gradient
+                        recommendedStyles.gradient
                             ? {
-                                  borderImageSource: gradient,
+                                  borderImageSource: recommendedStyles.gradient,
                                   borderImageSlice: 1,
                                   borderWidth: "2px",
                               }
                             : {
-                                  borderColor,
+                                  borderColor: recommendedStyles.borderColor,
                                   borderWidth:
-                                      gradient || borderColor ? "2px" : "1px",
+                                      recommendedStyles.gradient ||
+                                      recommendedStyles.borderColor
+                                          ? "2px"
+                                          : "1px",
                               }
                     }
                 >
@@ -156,7 +166,7 @@ export const RecommendedStream = ({
 type Status = "future" | "current" | "skipped" | "completed";
 
 export const getSplitStatus = (liveRun: LiveRun, k: number) => {
-    if (k < 0 || !liveRun.splits || !liveRun.splits[k]) return null;
+    if (k < 0 || !liveRun.splits || !liveRun.splits[k]) return {};
 
     const split = liveRun.splits[k];
     const time = split.splitTime;

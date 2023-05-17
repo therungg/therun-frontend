@@ -4,9 +4,9 @@ import { PatreonBunnySvgWithoutLink } from "../../pages/patron";
 import { usePatreons } from "./use-patreons";
 
 export const NameAsPatreon = ({ name }) => {
-    const patreons = usePatreons();
+    const { data: patreons, isLoading } = usePatreons();
 
-    if (patreons && patreons[name]) {
+    if (!isLoading && patreons && patreons[name]) {
         if (!patreons[name].preferences || !patreons[name].preferences.hide) {
             let color = 0;
             let showIcon = true;

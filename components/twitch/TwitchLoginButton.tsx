@@ -1,7 +1,8 @@
+import React from "react";
 import { Button, Nav } from "react-bootstrap";
 import Image from "next/image";
-import { baseUrl } from "../../pages/_app";
 import styles from "../css/TwitchLoginButton.module.scss";
+import { AppContext } from "../../common/app.context";
 
 export const clientId = process.env.TWITCH_OAUTH_CLIENT_ID;
 
@@ -14,6 +15,7 @@ export const TwitchLoginButton = ({
     picture?: string;
     redirect: string;
 }) => {
+    const { baseUrl = "https://therun.gg" } = React.useContext(AppContext);
     if (username)
         return (
             <div className={styles.userMenu}>
@@ -29,8 +31,9 @@ export const TwitchLoginButton = ({
                                     layout={"responsive"}
                                     style={{
                                         maxWidth: "100%",
-                                        height: "auto"
-                                    }} />
+                                        height: "auto",
+                                    }}
+                                />
                             </div>
                             <div className={styles.name}>{username}</div>
                         </div>
@@ -39,16 +42,20 @@ export const TwitchLoginButton = ({
             </div>
         );
 
-    let base = baseUrl;
-
-    if (!base) base = "https://therun.gg";
-
-    const url =
-        `https://id.twitch.tv/oauth2/authorize?client_id=${clientId}&redirect_uri=${base}${redirect}&response_type=code` +
-        `&scope=user:read:email+openid` +
-        `&claims={"id_token":{"picture":null},"userinfo":{"preferred_username":null, "picture":null}}`;
+    const twitchAuthURL = "https://id.twitch.tv/oauth2/authorize";
+    const params = new URLSearchParams({
+        client_id: clientId || "",
+        redirect_uri: baseUrl + redirect,
+        response_type: "code",
+        scope: "user:read:email+openid",
+        claims: {
+            id_token: { picture: null },
+            userinfo: { preferred_username: null, picture: null },
+        },
+    });
+    const url = new URL(`${twitchAuthURL}?${params}`);
     return (
-        <Nav.Link href={url}>
+        <Nav.Link href={url.href}>
             <Button
                 variant={"secondary"}
                 style={{

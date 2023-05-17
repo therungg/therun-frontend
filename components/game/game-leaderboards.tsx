@@ -52,13 +52,13 @@ export const getLeaderboard = (
                                             leaderboard.stat +
                                             leaderboard.meta
                                         }
-                                        style={{
-                                            display: leaderboard.username
+                                        className={
+                                            leaderboard.username
                                                 .toLowerCase()
                                                 .includes(search.toLowerCase())
-                                                ? ""
-                                                : "none",
-                                        }}
+                                                ? styles.hiddenLeaderboardRow
+                                                : ""
+                                        }
                                     >
                                         <td style={{ textAlign: "center" }}>
                                             {key + 1}{" "}

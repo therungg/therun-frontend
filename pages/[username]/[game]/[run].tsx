@@ -1,4 +1,8 @@
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import useWebSocket from "react-use-websocket";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
+import { AppContext } from "../../../common/app.context";
 import { getRun } from "../../../lib/get-run";
 import {
     Run,
@@ -19,22 +23,18 @@ import { GameSessions } from "../../../components/run/run-sessions/game-sessions
 import { SplitStats } from "../../../components/run/splits/split-stats";
 import { UserGameLink, UserLink } from "../../../components/links/links";
 import { GametimeForm } from "../../../components/gametime/gametime-form";
-import React, { useEffect, useState } from "react";
 import { CompareSplits } from "../../../components/run/compare/compare-splits";
-import { baseUrl } from "../../_app";
 import { StatsData } from "../../game/[game]";
 import styles from "../../../components/css/User.module.scss";
 import { getGameGlobal } from "../../../components/game/get-game";
 import { Vod } from "../../../components/run/dashboard/vod";
 import { Golds } from "../../../components/run/dashboard/golds";
 import Timesaves from "../../../components/run/dashboard/timesaves";
-import { useRouter } from "next/router";
 import {
     LiveIcon,
     LiveRun,
     LiveUserRun,
 } from "../../../components/live/live-user-run";
-import useWebSocket from "react-use-websocket";
 import { getLiveRunForUser } from "../../../lib/live-runs";
 
 interface RunPageProps extends AppProps {
@@ -69,6 +69,7 @@ const RunPage = ({
     globalGameData,
     liveData,
 }: RunPageProps) => {
+    const { baseUrl } = React.useContext(AppContext);
     const forceRealTime = !!globalGameData.forceRealTime;
 
     const [useGameTime, setUseGameTime] = useState(
