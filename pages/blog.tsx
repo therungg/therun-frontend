@@ -346,8 +346,9 @@ export const getBlogs = (): BlogInterface[] => {
                                     alt={"component"}
                                     style={{
                                         maxWidth: "100%",
-                                        height: "auto"
-                                    }} />
+                                        height: "auto",
+                                    }}
+                                />
                             </a>
                         </span>
                     </p>
