@@ -49,7 +49,7 @@
     "react-timezone-select": "^1.4.0",
     "react-use-websocket": "^3.0.0",
     "styled-components": "^5.3.5",
-    "swr": "^1.0.1",
+    "swr": "^2.1.5",
     "victory": "^36.6.8",
     "websocket": "^1.0.34"
   },
