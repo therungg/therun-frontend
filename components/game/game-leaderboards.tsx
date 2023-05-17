@@ -56,8 +56,8 @@ export const getLeaderboard = (
                                             leaderboard.username
                                                 .toLowerCase()
                                                 .includes(search.toLowerCase())
-                                                ? styles.hiddenLeaderboardRow
-                                                : ""
+                                                ? ""
+                                                : styles.hiddenLeaderboardRow
                                         }
                                     >
                                         <td style={{ textAlign: "center" }}>

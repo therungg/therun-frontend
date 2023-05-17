@@ -166,7 +166,7 @@ export const RecommendedStream = ({
 type Status = "future" | "current" | "skipped" | "completed";
 
 export const getSplitStatus = (liveRun: LiveRun, k: number) => {
-    if (k < 0 || !liveRun.splits || !liveRun.splits[k]) return {};
+    if (k < 0 || !liveRun.splits || !liveRun.splits[k]) return null;
 
     const split = liveRun.splits[k];
     const time = split.splitTime;

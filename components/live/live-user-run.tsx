@@ -97,6 +97,7 @@ export const LiveUserRun = ({
             let borderColor = "";
             let gradient = "";
 
+            // TODO: https://github.com/therungg/therun-frontend/issues/35
             if (!patreonData.preferences || !patreonData.preferences.hide) {
                 const colors = patreonStyles();
                 const color = patreonData.preferences?.colorPreference ?? 0;

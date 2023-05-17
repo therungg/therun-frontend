@@ -138,6 +138,7 @@ MyApp.getInitialProps = async ({ Component, ctx }) => {
     let pageProps = {};
     let baseUrl = "";
 
+    // TODO: https://github.com/therungg/therun-frontend/issues/37
     if (ctx.req) {
         // This probably shouldn't be a global variable lol
         const host = ctx.req.headers.host;
