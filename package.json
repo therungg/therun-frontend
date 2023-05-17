@@ -10,6 +10,11 @@
     "prepare": "husky install",
     "prepush": "next lint --fix"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
   "dependencies": {
     "@uiw/react-heat-map": "^2.0.5",
     "@ungap/structured-clone": "^1.0.1",
