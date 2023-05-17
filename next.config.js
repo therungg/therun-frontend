@@ -1,7 +1,6 @@
-const { withAxiom } = require("next-axiom");
-
 /** @type {import('next').NextConfig} */
-module.exports = withAxiom({
+// eslint-disable-next-line import/no-commonjs
+module.exports = {
     typescript: {
         ignoreBuildErrors: true,
     },
@@ -10,4 +9,4 @@ module.exports = withAxiom({
     images: {
         domains: ["static-cdn.jtvnw.net", "raw.githubusercontent.com"],
     },
-});
+};
