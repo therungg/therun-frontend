@@ -51,12 +51,12 @@ export const TwitchLoginButton = ({
         // eslint-disable-next-line camelcase
         response_type: "code",
         scope: "user:read:email+openid",
-        claims: {
+        claims: JSON.stringify({
             // eslint-disable-next-line camelcase
             id_token: { picture: null },
             // eslint-disable-next-line camelcase
             userinfo: { preferred_username: null, picture: null },
-        },
+        }),
     });
     const url = new URL(`${twitchAuthURL}?${params}`);
     return (
