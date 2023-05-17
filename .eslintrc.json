@@ -1,6 +1,7 @@
 {
   "extends": [
     "next",
+    "prettier",
     "next/core-web-vitals",
     "plugin:github/recommended",
     "plugin:prettier/recommended"
