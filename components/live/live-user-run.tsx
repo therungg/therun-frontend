@@ -106,7 +106,9 @@ export const LiveUserRun = ({
                     colors.find((val) => val.id === color) ?? colors[0];
                 const [darkStyle, lightStyle] = style.style;
                 borderColor = dark ? darkStyle.color : lightStyle.color;
-                gradient = dark ? darkStyle.background : lightStyle.background;
+                gradient = dark
+                    ? darkStyle.backgroundImage
+                    : lightStyle.backgroundImage;
             } else {
                 borderColor = "var(--color-link)";
             }
