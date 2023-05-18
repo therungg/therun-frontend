@@ -127,11 +127,11 @@ export const GenericTournament = ({
         }
 
         return (
-            <h2>
+            <div>
                 {!!parseInt(days) && `${days} days, `}{" "}
                 {!!parseInt(hours) && `${hours} hours and `}{" "}
                 {`${minutes} minute${minutes === 1 ? "" : "s"} to go!`}
-            </h2>
+            </div>
         );
     };
 
@@ -141,11 +141,11 @@ export const GenericTournament = ({
         }
 
         return (
-            <h2>
+            <div>
                 Event starts in {!!days && `${days} days, `}{" "}
                 {hours && `${hours} hours and `}{" "}
                 {`${minutes} minute${minutes === 1 ? "" : "s"}!`}
-            </h2>
+            </div>
         );
     };
 

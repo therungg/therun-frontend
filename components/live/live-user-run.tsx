@@ -85,31 +85,34 @@ export const LiveUserRun = ({
     leaderboardGameTime?: any;
 }) => {
     const [dark, setDark] = useState(true);
-
+    const [liveUserStyles, setLiveUserStyles] = useState({});
+    const { data: patreons, isLoading } = usePatreons();
     useEffect(function () {
         setDark(document.body.dataset.theme !== "light");
     }, []);
 
-    const patreons = usePatreons();
+    useEffect(() => {
+        if (!isLoading && patreons && patreons[liveRun.user]) {
+            const patreonData = patreons[liveRun.user];
+            let borderColor = "";
+            let gradient = "";
 
-    let borderColor = "";
-    let gradient = "";
+            // TODO: https://github.com/therungg/therun-frontend/issues/35
+            if (!patreonData.preferences || !patreonData.preferences.hide) {
+                const colors = patreonStyles();
+                const color = patreonData.preferences?.colorPreference ?? 0;
 
-    if (patreons && patreons[liveRun.user]) {
-        const patreonData = patreons[liveRun.user];
-
-        if (!patreonData.preferences || !patreonData.preferences.hide) {
-            const colors = patreonStyles();
-            const color = patreonData.preferences?.colorPreference ?? 0;
-
-            const style = colors.find((val) => val.id === color) ?? colors[0];
-            const [darkStyle, lightStyle] = style.style;
-            borderColor = dark ? darkStyle.color : lightStyle.color;
-            gradient = dark ? darkStyle.background : lightStyle.background;
-        } else {
-            borderColor = "var(--color-link)";
+                const style =
+                    colors.find((val) => val.id === color) ?? colors[0];
+                const [darkStyle, lightStyle] = style.style;
+                borderColor = dark ? darkStyle.color : lightStyle.color;
+                gradient = dark ? darkStyle.background : lightStyle.background;
+            } else {
+                borderColor = "var(--color-link)";
+            }
+            setLiveUserStyles({ borderColor, gradient });
         }
-    }
+    }, [patreons, isLoading, liveRun.user]);
 
     let tournamentPb = null;
     let tournamentPbGameTime = null;
@@ -146,15 +149,19 @@ export const LiveUserRun = ({
                     : "")
             }
             style={
-                gradient
+                liveUserStyles.gradient
                     ? {
-                          borderImageSource: gradient,
+                          borderImageSource: liveUserStyles.gradient,
                           borderImageSlice: 1,
                           borderWidth: "2px",
                       }
                     : {
-                          borderColor,
-                          borderWidth: gradient || borderColor ? "2px" : "1px",
+                          borderColor: liveUserStyles.borderColor,
+                          borderWidth:
+                              liveUserStyles.gradient ||
+                              liveUserStyles.borderColor
+                                  ? "2px"
+                                  : "1px",
                       }
             }
         >
@@ -168,9 +175,10 @@ export const LiveUserRun = ({
                                 src={liveRun.gameImage}
                                 className={styles.gameImage}
                                 style={
-                                    gradient || borderColor
+                                    liveUserStyles.gradient ||
+                                    liveUserStyles.borderColor
                                         ? {
-                                              height: gradient
+                                              height: liveUserStyles.gradient
                                                   ? "106px"
                                                   : "106px",
                                           }

@@ -1,5 +1,5 @@
 import styles from "../css/LiveRun.module.scss";
-import { Col, Row } from "react-bootstrap";
+import { Col, Container, Row } from "react-bootstrap";
 import SplitName from "../transformers/split-name";
 import { Difference, DurationToFormatted } from "../util/datetime";
 import { LivesplitTimer } from "../../pages/live";
@@ -41,7 +41,7 @@ export const SplitsViewer = ({
     return (
         <div className={styles.splitsContainerContainer}>
             <div className={styles.splitsHeader}>
-                <div className={styles.maxHeight}>
+                <Container className={styles.maxHeight}>
                     <Row className={styles.maxHeight}>
                         <Col
                             className={styles.splitsHeaderGameContainer}
@@ -92,7 +92,7 @@ export const SplitsViewer = ({
                             </div>
                         </Col>
                     </Row>
-                </div>
+                </Container>
             </div>
             <hr className={styles.seperator} />
             <div className={styles.splitsBox} id={"scrollBox"}>
@@ -113,13 +113,11 @@ export const SplitsViewer = ({
                                         key={
                                             split.name + k + activeLiveRun.user
                                         }
-                                        className={styles.splitRow}
-                                        style={{
-                                            backgroundColor:
-                                                splitStatus.isActive
-                                                    ? "var(--color-split-active)"
-                                                    : "",
-                                        }}
+                                        className={`${styles.splitRow} ${
+                                            splitStatus.isActive
+                                                ? styles.splitRowActive
+                                                : ""
+                                        }`}
                                         onClick={() => {
                                             setSelectedSplit(k);
                                         }}
@@ -241,18 +239,16 @@ export const SplitsViewer = ({
                     <table className={styles.splitsTable}>
                         <tbody>
                             <tr
-                                className={styles.finalSplitRow}
+                                className={
+                                    activeLiveRun.currentSplitIndex + 1 ==
+                                    activeLiveRun.splits.length
+                                        ? styles.finalSplitRow
+                                        : ""
+                                }
                                 onClick={() => {
                                     setSelectedSplit(
                                         activeLiveRun.splits.length - 1
                                     );
-                                }}
-                                style={{
-                                    backgroundColor:
-                                        activeLiveRun.currentSplitIndex + 1 ==
-                                        activeLiveRun.splits.length
-                                            ? "blue"
-                                            : "",
                                 }}
                             >
                                 <td className={styles.splitNameContainer}>

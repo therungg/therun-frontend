@@ -50,6 +50,10 @@
     width: 100%;
 }
 
+.hiddenLeaderboardRow {
+    display: none;
+}
+
 @media screen and (min-width: 0px) {
     .timeUser {
         padding-right: 0.5rem;

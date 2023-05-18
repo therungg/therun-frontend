@@ -200,7 +200,9 @@ export const TournamentStats = ({ data, tournament, gameTime = true }) => {
                                     {data.wrHistoryStats.map(
                                         (stat: WrHistoryStat) => {
                                             return (
-                                                <tr key={stat.user}>
+                                                <tr
+                                                    key={`${stat.user}-${stat.timeHeldWr}-${stat.improvedWr}`}
+                                                >
                                                     <td>
                                                         <UserLink
                                                             username={stat.user}

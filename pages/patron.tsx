@@ -7,7 +7,7 @@ import { usePatreons } from "../components/patreon/use-patreons";
 const stripePaymentButton = "https://donate.stripe.com/8wMg2RgR3gNfblu7ss";
 
 export const Patron = ({ session }) => {
-    const patreonData = usePatreons();
+    const { data: patreonData, isLoading } = usePatreons();
 
     return (
         <div>
@@ -96,6 +96,7 @@ export const Patron = ({ session }) => {
 
                     <Row>
                         {patreonData &&
+                            !isLoading &&
                             Object.keys(patreonData)
                                 .filter((key) => {
                                     const pref = patreonData[key];

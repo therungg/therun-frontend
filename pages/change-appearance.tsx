@@ -1,7 +1,6 @@
-import { baseUrl } from "./_app";
 import { PatreonBunnySvg } from "./patron";
 import { Button, Col, Row } from "react-bootstrap";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { TwitchLoginButton } from "../components/twitch/TwitchLoginButton";
 import Link from "next/link";
 import Switch from "react-switch";
@@ -10,6 +9,7 @@ import axios from "axios";
 import Router from "next/router";
 import patreonStyles from "../components/patreon/patreon-styles";
 import PatreonName from "../components/patreon/patreon-name";
+import { AppContext } from "../common/app.context";
 
 const patreonApiBaseUrl = process.env.NEXT_PUBLIC_PATREON_API_URL;
 
@@ -297,6 +297,7 @@ const PatreonSettings = ({ userPatreonData, session }) => {
 };
 
 const LoginWithPatreonSection = ({ session }) => {
+    const { baseUrl } = React.useContext(AppContext);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -334,7 +335,7 @@ const LoginWithPatreonSection = ({ session }) => {
                 Patreon account here!
             </div>
             <div className={styles.linkPatreonButtonContainer}>
-                <Link passHref href={url}>
+                <Link passHref href={url} legacyBehavior>
                     <Button>Link with Patreon</Button>
                 </Link>
             </div>
@@ -343,9 +344,16 @@ const LoginWithPatreonSection = ({ session }) => {
 };
 
 ChangeAppearance.getInitialProps = async (ctx) => {
+    let baseUrl = "";
+
+    if (ctx.req) {
+        const host = ctx.req.headers.host;
+        const protocol = host === "localhost:3000" ? "http://" : "https://";
+        baseUrl = protocol + baseUrl;
+    }
+
     if (ctx.query.code && ctx.session && ctx.session.id && !ctx.query.scope) {
-        let base = baseUrl;
-        base = encodeURIComponent(`${base}/change-appearance`);
+        const base = encodeURIComponent(`${baseUrl}/change-appearance`);
 
         const loginUrl = `${process.env.NEXT_PUBLIC_PATREON_LOGIN_URL}?code=${ctx.query.code}&redirect_uri=${base}&session_id=${ctx.session.id}`;
         const patreonLinkData = await fetch(loginUrl);
