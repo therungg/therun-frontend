@@ -6,7 +6,8 @@ import { SkeletonPersonalBests } from "../components/skeleton/index/skeleton-per
 import { SkeletonPopularGames } from "../components/skeleton/index/skeleton-popular-games";
 import useSWR from "swr";
 import React from "react";
-import { PatreonBunnySvg } from "./patron";
+import { PatreonBunnySvgWithoutLink } from "./patron";
+import Link from "next/link";
 
 export const fetcher = (...args: string[]) =>
     // eslint-disable-next-line github/no-then
@@ -21,23 +22,22 @@ const Home = () => {
                     Statistics for speedrunners
                 </div>
                 <div className={styles.learnMoreButtonContainer}>
-                    {/*<a href={'/patron'}>*/}
-                    <Button
-                        variant={"primary"}
-                        className={styles.supportMeButton}
-                    >
-                        Support <PatreonBunnySvg />
-                    </Button>
-                    {/*</a>*/}
-
-                    {/*<a href={'/about'}>*/}
-                    <Button
-                        variant={"primary"}
-                        className={styles.learnMoreButton}
-                    >
-                        Learn more
-                    </Button>
-                    {/*</a>*/}
+                    <Link href={"/patron"}>
+                        <Button
+                            variant={"primary"}
+                            className={styles.supportMeButton}
+                        >
+                            Support <PatreonBunnySvgWithoutLink />
+                        </Button>
+                    </Link>
+                    <Link href={"/about"}>
+                        <Button
+                            variant={"primary"}
+                            className={styles.learnMoreButton}
+                        >
+                            Learn more
+                        </Button>
+                    </Link>
                 </div>
             </div>
 
