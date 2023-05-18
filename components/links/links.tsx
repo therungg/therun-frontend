@@ -93,9 +93,7 @@ export const UserGameCategoryLink = ({
             {children ? (
                 children
             ) : (
-                <>
-                    {display(game)} - {display(category)}
-                </>
+                {display(game)} - {display(category)}
             )}
         </Link>
     );
@@ -119,9 +117,7 @@ export const GameCategoryLink = ({
             {children ? (
                 children
             ) : (
-                <>
-                    {display(game)} - {display(category)}
-                </>
+                {display(game)} - {display(category)}
             )}
         </>
     );
