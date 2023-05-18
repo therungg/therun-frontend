@@ -11,33 +11,40 @@ export const TournamentStandings = ({
 }: {
     tournament: Tournament;
 }) => {
-    const { data }: { data: Tournament } = useSWR(
+    const { data: tournament1Data }: { data: Tournament } = useSWR(
         "/api/tournaments/GSA PACE Qualifiers 1",
         fetcher
     );
 
-    if (!data) {
+    const { data: tournament2Data }: { data: Tournament } = useSWR(
+        "/api/tournaments/GSA PACE Qualifiers 2",
+        fetcher
+    );
+
+    if (!tournament1Data || !tournament2Data) {
         return <div>Loading data...</div>;
     }
 
     const points = {};
 
     tournament.pointDistribution?.forEach((point, index) => {
-        if (data.leaderboards?.pbLeaderboard[index]) {
-            const standing = data.leaderboards?.pbLeaderboard[index];
+        [tournament1Data, tournament2Data].forEach((data) => {
+            if (data.leaderboards?.pbLeaderboard[index]) {
+                const standing = data.leaderboards?.pbLeaderboard[index];
 
-            const user = standing.username;
+                const user = standing.username;
 
-            if (!points[user]) {
-                points[user] = {
-                    stat: 0,
-                    username: user,
-                    url: standing.url,
-                };
+                if (!points[user]) {
+                    points[user] = {
+                        stat: 0,
+                        username: user,
+                        url: standing.url,
+                    };
+                }
+
+                points[user].stat += point;
             }
-
-            points[user].stat += point;
-        }
+        });
 
         if (
             tournament.leaderboards &&
@@ -88,7 +95,7 @@ export const TournamentStandings = ({
 
                     {getLeaderboard(
                         "Points Heat 1",
-                        data.leaderboards?.pbLeaderboard,
+                        tournament1Data.leaderboards?.pbLeaderboard,
                         "",
                         (stat, key) => {
                             return (
@@ -108,6 +115,26 @@ export const TournamentStandings = ({
 
                     {getLeaderboard(
                         "Points Heat 2",
+                        tournament2Data.leaderboards?.pbLeaderboard,
+                        "",
+                        (stat, key) => {
+                            return (
+                                <div>
+                                    {tournament.pointDistribution[key] || 0} (
+                                    <DurationToFormatted
+                                        duration={stat.toString()}
+                                    />
+                                    )
+                                </div>
+                            );
+                        }
+                    )}
+                </Col>
+                <Col>
+                    <h2>Standings Heat 3</h2>
+
+                    {getLeaderboard(
+                        "Points Heat 3",
                         tournament.leaderboards?.pbLeaderboard,
                         "",
                         (stat, key) => {

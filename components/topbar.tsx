@@ -95,9 +95,6 @@ const Topbar = ({
                         <Nav.Link className={styles.navLink} href="/games/">
                             Games
                         </Nav.Link>
-                        <Nav.Link className={styles.navLink} href="/moist/">
-                            MoistCr1tikal Challenge
-                        </Nav.Link>
                         <Nav.Link className={styles.navLink} href="/patron">
                             Support <PatreonBunnySvgWithoutLink />
                         </Nav.Link>
