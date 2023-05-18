@@ -102,7 +102,7 @@ export const UserGameCategoryLink = ({
 export const GameLink = ({ game, children }: GameLinkProps) => {
     return (
         <Link href={`/game/${encodeURIComponent(game)}`}>
-            {children ? children : <>{display(game)}</>}
+            {children ? children : {display(game)}}
         </Link>
     );
 };
