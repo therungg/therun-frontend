@@ -23,6 +23,7 @@ const Home = () => {
                 <div className={styles.learnMoreButtonContainer}>
                     {/*<a href={'/patron'}>*/}
                     <Button
+                        data-testid="support-me-button"
                         variant={"primary"}
                         className={styles.supportMeButton}
                     >
@@ -32,6 +33,7 @@ const Home = () => {
 
                     {/*<a href={'/about'}>*/}
                     <Button
+                        data-testid="learn-more-button"
                         variant={"primary"}
                         className={styles.learnMoreButton}
                     >
