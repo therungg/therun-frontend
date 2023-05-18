@@ -94,9 +94,9 @@ export const UserGameCategoryLink = ({
             {children ? (
                 children
             ) : (
-                <a>
+                <>
                     {display(game)} - {display(category)}
-                </a>
+                </>
             )}
         </Link>
     );
@@ -105,7 +105,7 @@ export const UserGameCategoryLink = ({
 export const GameLink = ({ game, children }: GameLinkProps) => {
     return (
         <Link href={`/game/${encodeURIComponent(game)}`} legacyBehavior>
-            {children ? children : <a>{display(game)}</a>}
+            {children ? children : <>{display(game)}</>}
         </Link>
     );
 };
@@ -120,9 +120,9 @@ export const GameCategoryLink = ({
             {children ? (
                 children
             ) : (
-                <a>
+                <>
                     {display(game)} - {display(category)}
-                </a>
+                </>
             )}
         </>
     );
