@@ -163,7 +163,12 @@
     cursor: pointer;
 }
 
+.splitRowActive {
+    background-color: var(--color-split-active);
+}
+
 .finalSplitRow {
+    background-color: blue;
 }
 
 .finalSplitRow:hover {

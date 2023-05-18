@@ -1,8 +1,12 @@
 import { createNewSession, getSession } from "../util/session";
 import { loginWithTwitch } from "./login-with-twitch";
 import { setCookies } from "cookies-next";
+import { NextPageContext } from "next";
 
-export const getSessionData = async (context) => {
+export const getSessionData = async (
+    context: NextPageContext,
+    baseUrl: string
+) => {
     const { req, res } = context;
     const { cookies } = req ? req : { cookies: undefined };
     const { code } = context.query;
@@ -10,7 +14,7 @@ export const getSessionData = async (context) => {
     let data = {};
 
     if (code) {
-        const { loginData, userInfo } = await loginWithTwitch(code);
+        const { loginData, userInfo } = await loginWithTwitch(baseUrl, code);
         const sessionId = await createNewSession(
             loginData.access_token,
             loginData.refresh_token,

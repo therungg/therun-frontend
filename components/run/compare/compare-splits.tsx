@@ -1,12 +1,12 @@
 import { StatsData } from "../../../pages/game/[game]";
 import { getFormattedString } from "../../util/datetime";
-import { useState } from "react";
-import { baseUrl } from "../../../pages/_app";
+import React, { useState } from "react";
 import { ShowComparison } from "./show-comparison";
 import { Run, RunHistory, SplitsHistory } from "../../../common/types";
 import { Col, Row } from "react-bootstrap";
 import { UserLink } from "../../links/links";
 import { getSplitsHistoryUrl } from "../../../lib/get-splits-history";
+import { AppContext } from "../../../common/app.context";
 
 // eslint-disable-next-line import/no-commonjs
 const levenshtein = require("js-levenshtein");
@@ -33,6 +33,7 @@ export const CompareSplits = ({
     runs: RunHistory[];
     gameTime: boolean;
 }) => {
+    const { baseUrl = "https://therun.gg" } = React.useContext(AppContext);
     const [currentUser, setCurrentUser] = useState("no-selection");
     const [userData, setUserData] = useState(new Map());
     const [loaded, setLoaded] = useState(true);

@@ -2,6 +2,7 @@ import type { AppProps } from "next/app";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { getSessionData } from "../components/twitch/get-session-data";
 import { Layout } from "../components/layout";
+import { AppContext } from "../common/app.context";
 import "../styles/globals.css";
 import "../styles/calendar-heatmap.min.css";
 import Router from "next/router";
@@ -10,38 +11,38 @@ import "nprogress/nprogress.css";
 import { GoogleAnalytics } from "nextjs-google-analytics";
 
 interface AppPropsHome extends AppProps {
-    initprops: InitProps;
+    customProps: CustomProps;
 }
 
-interface InitProps {
+interface CustomProps {
     session: any;
+    baseUrl: string;
     title: string;
     description: string;
 }
-
-// eslint-disable-next-line import/no-mutable-exports
-export let baseUrl: string = "";
 
 Router.events.on("routeChangeStart", () => NProgress.start());
 Router.events.on("routeChangeComplete", () => NProgress.done());
 Router.events.on("routeChangeError", () => NProgress.done());
 
-function MyApp({ Component, pageProps = {}, initprops }: AppPropsHome) {
-    pageProps.session = initprops.session;
+function MyApp({ Component, pageProps = {}, customProps }: AppPropsHome) {
+    pageProps.session = customProps.session;
 
     return (
         <>
             <Layout
-                title={initprops.title}
-                description={initprops.description}
-                username={initprops.session.username}
-                picture={initprops.session.picture}
+                title={customProps.title}
+                description={customProps.description}
+                username={customProps.session.username}
+                picture={customProps.session.picture}
             >
                 <GoogleAnalytics
                     trackPageViews={true}
                     gaMeasurementId={process.env.ANALYTICS_MEASUREMENT_ID}
                 />
-                <Component {...pageProps} {...initprops} />
+                <AppContext.Provider value={{ baseUrl: customProps.baseUrl }}>
+                    <Component {...pageProps} {...customProps} />
+                </AppContext.Provider>
             </Layout>
         </>
     );
@@ -135,13 +136,13 @@ const getTitleAndDescription = (
 MyApp.getInitialProps = async ({ Component, ctx }) => {
     const { pathname, query } = ctx;
     let pageProps = {};
-    const session = await getSessionData(ctx);
-    ctx.session = session;
+    let baseUrl = "";
 
+    // TODO: https://github.com/therungg/therun-frontend/issues/37
     if (ctx.req) {
         // This probably shouldn't be a global variable lol
-        baseUrl = ctx.req.headers.host;
-        const protocol = baseUrl === "localhost:3000" ? "http://" : "https://";
+        const host = ctx.req.headers.host;
+        const protocol = host === "localhost:3000" ? "http://" : "https://";
         baseUrl = protocol + baseUrl;
     }
 
@@ -149,13 +150,16 @@ MyApp.getInitialProps = async ({ Component, ctx }) => {
         pageProps = await Component.getInitialProps(ctx);
     }
 
-    const initprops = {
+    const session = await getSessionData(ctx, baseUrl);
+    ctx.session = session;
+    const customProps = {
         session,
+        baseUrl,
         ...getTitleAndDescription(pathname, query),
         ...pageProps,
     };
 
-    return { initprops };
+    return { customProps };
 };
 
 export default MyApp;

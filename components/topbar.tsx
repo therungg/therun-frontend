@@ -55,6 +55,8 @@ const Topbar = ({
                             style={{
                                 alignSelf: "flex-start",
                                 marginRight: "0.5rem",
+                                maxWidth: "100%",
+                                height: "auto",
                             }}
                         />
                         <div style={{ alignSelf: "center" }}>
@@ -92,9 +94,6 @@ const Topbar = ({
                         </Nav.Link>
                         <Nav.Link className={styles.navLink} href="/games/">
                             Games
-                        </Nav.Link>
-                        <Nav.Link className={styles.navLink} href="/moist/">
-                            MoistCr1tikal Challenge
                         </Nav.Link>
                         <Nav.Link className={styles.navLink} href="/patron">
                             Support <PatreonBunnySvgWithoutLink />

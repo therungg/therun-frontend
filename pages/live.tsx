@@ -1,3 +1,4 @@
+"use client";
 import { GetServerSideProps } from "next";
 import { getAllLiveRuns } from "../lib/live-runs";
 import {
@@ -203,12 +204,12 @@ export const LivesplitTimer = ({
     timerClassName = null,
     splitTime = false,
 }) => {
-    let timerStart =
-        new Date().getTime() - new Date(liveRun.insertedAt).getTime() + 400;
-
-    if (!splitTime) {
-        timerStart += liveRun.currentTime;
-    }
+    const [timerStart, setTimerStart] = useState(0);
+    React.useEffect(() => {
+        const time =
+            new Date().getTime() - new Date(liveRun.insertedAt).getTime() + 400;
+        setTimerStart(time + (splitTime ? liveRun.currentTime : 0));
+    }, [liveRun.insertedAt, splitTime]);
 
     const [id, setId] = useState(0);
 

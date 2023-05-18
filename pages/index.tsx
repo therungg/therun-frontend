@@ -6,7 +6,8 @@ import { SkeletonPersonalBests } from "../components/skeleton/index/skeleton-per
 import { SkeletonPopularGames } from "../components/skeleton/index/skeleton-popular-games";
 import useSWR from "swr";
 import React from "react";
-import { PatreonBunnySvg } from "./patron";
+import { PatreonBunnySvgWithoutLink } from "./patron";
+import Link from "next/link";
 
 export const fetcher = (...args: string[]) =>
     // eslint-disable-next-line github/no-then
@@ -21,23 +22,22 @@ const Home = () => {
                     Statistics for speedrunners
                 </div>
                 <div className={styles.learnMoreButtonContainer}>
-                    {/*<a href={'/patron'}>*/}
-                    <Button
-                        variant={"primary"}
-                        className={styles.supportMeButton}
-                    >
-                        Support <PatreonBunnySvg />
-                    </Button>
-                    {/*</a>*/}
-
-                    {/*<a href={'/about'}>*/}
-                    <Button
-                        variant={"primary"}
-                        className={styles.learnMoreButton}
-                    >
-                        Learn more
-                    </Button>
-                    {/*</a>*/}
+                    <Link href={"/patron"}>
+                        <Button
+                            variant={"primary"}
+                            className={styles.supportMeButton}
+                        >
+                            Support <PatreonBunnySvgWithoutLink />
+                        </Button>
+                    </Link>
+                    <Link href={"/about"}>
+                        <Button
+                            variant={"primary"}
+                            className={styles.learnMoreButton}
+                        >
+                            Learn more
+                        </Button>
+                    </Link>
                 </div>
             </div>
 
@@ -47,7 +47,7 @@ const Home = () => {
 };
 
 const DataSection = () => {
-    const { data, error } = useSWR("/api/frontpagedata", fetcher);
+    const { data, error, isLoading } = useSWR("/api/frontpagedata", fetcher);
 
     if (error) return <div>Whoops, something went wrong...</div>;
 
@@ -65,7 +65,7 @@ const DataSection = () => {
                 <Col xl={6} lg={12} className={styles.dataContainer}>
                     <h2>Recent Personal Bests</h2>
                     {data && <DataHolder runs={runs} />}
-                    {!data && <SkeletonPersonalBests />}
+                    {!data && isLoading && <SkeletonPersonalBests />}
                 </Col>
                 <Col
                     xl={6}
@@ -74,7 +74,7 @@ const DataSection = () => {
                 >
                     <h2>Popular Games</h2>
                     {data && <PopularGames gamestats={gamestats} />}
-                    {!data && <SkeletonPopularGames />}
+                    {!data && isLoading && <SkeletonPopularGames />}
                 </Col>
             </Row>
         </div>

@@ -387,6 +387,10 @@ export const CountryIcon = ({ countryCode }) => {
             height={16}
             alt={countries()[countryCode] as string}
             src={`https://raw.githubusercontent.com/hampusborgos/country-flags/main/svg/${countryCode.toLowerCase()}.svg`}
+            style={{
+                maxWidth: "100%",
+                height: "auto",
+            }}
         />
     );
 };
