@@ -58,6 +58,7 @@
     "websocket": "^1.0.34"
   },
   "devDependencies": {
+    "@playwright/test": "^1.33.0",
     "@types/bootstrap": "^5.1.6",
     "@types/d3": "^7.4.0",
     "@types/gtag.js": "^0.0.10",

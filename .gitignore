@@ -42,3 +42,6 @@ yarn-error.log*
 /.husky
 
 *:Zone.Identifier
+/test-results/
+/playwright-report/
+/playwright/.cache/
