@@ -91,13 +91,7 @@ export const UserGameCategoryLink = ({
             }
             legacyBehavior
         >
-            {children ? (
-                children
-            ) : (
-                <>
-                    {display(game)} - {display(category)}
-                </>
-            )}
+            {children ? children : `${display(game)} - ${display(category)}`}
         </Link>
     );
 };
@@ -105,7 +99,7 @@ export const UserGameCategoryLink = ({
 export const GameLink = ({ game, children }: GameLinkProps) => {
     return (
         <Link href={`/game/${encodeURIComponent(game)}`} legacyBehavior>
-            {children ? children : <>{display(game)}</>}
+            {children ? children : display(game)}
         </Link>
     );
 };
@@ -116,15 +110,7 @@ export const GameCategoryLink = ({
     children,
 }: GameCategoryLinkProps) => {
     return (
-        <>
-            {children ? (
-                children
-            ) : (
-                <>
-                    {display(game)} - {display(category)}
-                </>
-            )}
-        </>
+        <>{children ? children : `${display(game)} - ${display(category)}`}</>
     );
 };
 
