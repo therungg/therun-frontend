@@ -7,7 +7,6 @@ import {
     LiveRun,
     LiveUserRun,
 } from "../components/live/live-user-run";
-import useWebSocket from "react-use-websocket";
 import React, { useEffect, useState } from "react";
 import searchStyles from "../components/css/Search.module.scss";
 import styles from "../components/css/Games.module.scss";
@@ -23,6 +22,7 @@ import {
     DurationAsTimer,
 } from "../components/util/datetime";
 import Timer from "../vendor/timer/src/index";
+import { useReconnectWebsocket } from "../components/websocket/use-reconnect-websocket";
 
 export type LiveDataMap = {
     [user: string]: LiveRun;
@@ -48,7 +48,7 @@ export const Live = ({
     const [currentlyViewing, setCurrentlyViewing] = useState(
         getRecommendedStream(liveDataMap, username)
     );
-    const { lastMessage } = useWebSocket(process.env.NEXT_PUBLIC_WEBSOCKET_URL);
+    const lastMessage = useReconnectWebsocket();
 
     useEffect(() => {
         if (lastMessage !== null) {
