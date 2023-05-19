@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import useWebSocket from "react-use-websocket";
 import { Button, Col, Image, Row, Tab, Tabs } from "react-bootstrap";
 import { LiveRun, LiveUserRun } from "../../components/live/live-user-run";
 import { RecommendedStream } from "../../components/live/recommended-stream";
@@ -22,6 +21,7 @@ import {
 } from "../../components/tournament/tournament-info";
 import { TournamentRuns } from "../../components/tournament/tournament-runs";
 import { TournamentStandings } from "../../components/tournament/tournament-standings";
+import { useReconnectWebsocket } from "../../components/websocket/use-reconnect-websocket";
 
 export const GenericTournament = ({
     liveDataMap,
@@ -65,7 +65,7 @@ export const GenericTournament = ({
     );
 
     const eventStarted = new Date() > new Date(tournament.startDate);
-    const { lastMessage } = useWebSocket(process.env.NEXT_PUBLIC_WEBSOCKET_URL);
+    const lastMessage = useReconnectWebsocket();
 
     useEffect(() => {
         if (lastMessage !== null) {

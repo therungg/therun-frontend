@@ -20,9 +20,9 @@ import {
     LiveRun,
     LiveUserRun,
 } from "../components/live/live-user-run";
-import useWebSocket from "react-use-websocket";
 import Stats from "../components/user/stats";
 import { TwitchEmbed } from "../vendor/react-twitch-embed/dist/index";
+import { useReconnectWebsocket } from "../components/websocket/use-reconnect-websocket";
 
 export interface UserPageProps {
     runs: Run[];
@@ -54,9 +54,7 @@ const User = ({
     const [, forceUpdate] = useReducer((x) => x + 1, 0);
     const [liveRun, setLiveRun] = useState(liveData);
 
-    const { lastMessage } = useWebSocket(
-        `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}?username=${username}`
-    );
+    const lastMessage = useReconnectWebsocket(username);
 
     useEffect(() => {
         if (lastMessage !== null) {

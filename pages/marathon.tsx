@@ -3,10 +3,10 @@ import { LiveDataMap, liveRunArrayToMap } from "./live";
 import { GetServerSideProps } from "next";
 import { LiveRun } from "../components/live/live-user-run";
 import { getAllLiveRuns } from "../lib/live-runs";
-import useWebSocket from "react-use-websocket";
 import styles from "../components/css/Search.module.scss";
 import MarathonRun from "../components/marathon/marathon-run";
 import { Col, Row } from "react-bootstrap";
+import { useReconnectWebsocket } from "../components/websocket/use-reconnect-websocket";
 
 export const Marathon = ({
     liveDataMap,
@@ -19,7 +19,7 @@ export const Marathon = ({
     const [selectedUser, setSelectedUser] = useState("");
     const [currentUserData, setCurrentUserData] = useState();
 
-    const { lastMessage } = useWebSocket(process.env.NEXT_PUBLIC_WEBSOCKET_URL);
+    const lastMessage = useReconnectWebsocket();
 
     useEffect(() => {
         if (lastMessage !== null) {

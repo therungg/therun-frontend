@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import useWebSocket from "react-use-websocket";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import { AppContext } from "../../../common/app.context";
 import { getRun } from "../../../lib/get-run";
@@ -36,6 +35,7 @@ import {
     LiveUserRun,
 } from "../../../components/live/live-user-run";
 import { getLiveRunForUser } from "../../../lib/live-runs";
+import { useReconnectWebsocket } from "../../../components/websocket/use-reconnect-websocket";
 
 interface RunPageProps extends AppProps {
     run: Run;
@@ -86,9 +86,7 @@ const RunPage = ({
     const [gameTimeRuns, setGameTimeRuns] = useState(null);
     const [liveRun, setLiveRun] = useState(liveData);
 
-    const { lastMessage } = useWebSocket(
-        `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}?username=${username}`
-    );
+    const lastMessage = useReconnectWebsocket(username);
 
     useEffect(() => {
         if (lastMessage !== null) {
