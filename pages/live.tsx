@@ -208,7 +208,7 @@ export const LivesplitTimer = ({
     React.useEffect(() => {
         const time =
             new Date().getTime() - new Date(liveRun.insertedAt).getTime() + 400;
-        setTimerStart(time + (splitTime ? liveRun.currentTime : 0));
+        setTimerStart(time + (!splitTime ? liveRun.currentTime : 0));
     }, [liveRun.insertedAt, splitTime]);
 
     const [id, setId] = useState(0);
