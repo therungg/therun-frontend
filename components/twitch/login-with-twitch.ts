@@ -1,7 +1,4 @@
-import { clientId } from "./TwitchLoginButton";
 import { getUserInfo } from "./get-user-info";
-
-export const clientSecret = process.env.TWITCH_OAUTH_SECRET;
 
 export interface LoginWithTwitchResult {
     loginData: LoginData;
@@ -23,6 +20,8 @@ export const loginWithTwitch = async (
     baseUrl: string,
     code: string
 ): Promise<LoginWithTwitchResult> => {
+    const clientId = process.env.TWITCH_OAUTH_CLIENT_ID;
+    const clientSecret = process.env.TWITCH_OAUTH_SECRET;
     const uri =
         `https://id.twitch.tv/oauth2/token` +
         `?client_id=${clientId}&client_secret=${clientSecret}&code=${code}&grant_type=authorization_code` +
