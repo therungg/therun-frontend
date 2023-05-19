@@ -9,7 +9,7 @@ export const getSessionData = async (
 ) => {
     const { req, res } = context;
     const { cookies } = req ? req : { cookies: undefined };
-    const { code } = context.query;
+    const code = context.query ? (context.query["code"] as string) : null;
 
     let data = {};
 

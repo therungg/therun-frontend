@@ -4,8 +4,6 @@ import Image from "next/image";
 import styles from "../css/TwitchLoginButton.module.scss";
 import { AppContext } from "../../common/app.context";
 
-export const clientId = process.env.TWITCH_OAUTH_CLIENT_ID;
-
 export const TwitchLoginButton = ({
     username,
     picture,
@@ -15,6 +13,7 @@ export const TwitchLoginButton = ({
     picture?: string;
     redirect: string;
 }) => {
+    const clientId = process.env.TWITCH_OAUTH_CLIENT_ID;
     const { baseUrl = "https://therun.gg" } = React.useContext(AppContext);
     if (username)
         return (
@@ -58,7 +57,10 @@ export const TwitchLoginButton = ({
             userinfo: { preferred_username: null, picture: null },
         }),
     });
-    const url = new URL(`${twitchAuthURL}?${params}`);
+    const url = new URL(
+        `${twitchAuthURL}?${decodeURIComponent(params.toString())}`
+    );
+
     return (
         <Nav.Link href={url.href}>
             <Button

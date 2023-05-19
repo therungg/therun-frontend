@@ -1,6 +1,6 @@
 import type { AppProps } from "next/app";
+import App from "next/app";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { getSessionData } from "../components/twitch/get-session-data";
 import { Layout } from "../components/layout";
 import { AppContext } from "../common/app.context";
 import "../styles/globals.css";
@@ -9,6 +9,8 @@ import Router from "next/router";
 import NProgress from "nprogress"; //nprogress module
 import "nprogress/nprogress.css";
 import { GoogleAnalytics } from "nextjs-google-analytics";
+import { IncomingMessage } from "http";
+import { getSessionData } from "../components/twitch/get-session-data";
 
 interface AppPropsHome extends AppProps {
     customProps: CustomProps;
@@ -25,25 +27,29 @@ Router.events.on("routeChangeStart", () => NProgress.start());
 Router.events.on("routeChangeComplete", () => NProgress.done());
 Router.events.on("routeChangeError", () => NProgress.done());
 
-function MyApp({ Component, pageProps = {}, customProps }: AppPropsHome) {
+export default function MyApp({
+    Component,
+    pageProps = {},
+    customProps,
+}: AppPropsHome) {
     pageProps.session = customProps.session;
 
     return (
         <>
-            <Layout
-                title={customProps.title}
-                description={customProps.description}
-                username={customProps.session.username}
-                picture={customProps.session.picture}
-            >
-                <GoogleAnalytics
-                    trackPageViews={true}
-                    gaMeasurementId={process.env.ANALYTICS_MEASUREMENT_ID}
-                />
-                <AppContext.Provider value={{ baseUrl: customProps.baseUrl }}>
+            <AppContext.Provider value={{ baseUrl: customProps.baseUrl }}>
+                <Layout
+                    title={customProps.title}
+                    description={customProps.description}
+                    username={customProps.session.username}
+                    picture={customProps.session.picture}
+                >
+                    <GoogleAnalytics
+                        trackPageViews={true}
+                        gaMeasurementId={process.env.ANALYTICS_MEASUREMENT_ID}
+                    />
                     <Component {...pageProps} {...customProps} />
-                </AppContext.Provider>
-            </Layout>
+                </Layout>
+            </AppContext.Provider>
         </>
     );
 }
@@ -133,33 +139,30 @@ const getTitleAndDescription = (
     return result;
 };
 
-MyApp.getInitialProps = async ({ Component, ctx }) => {
+const getBaseUrl = (req: IncomingMessage) => {
+    if (process.env.NEXT_PUBLIC_BASE_URL)
+        return process.env.NEXT_PUBLIC_BASE_URL;
+    if (process.env.NEXT_PUBLIC_VERCEL_URL)
+        return process.env.NEXT_PUBLIC_VERCEL_URL;
+
+    const host = req.headers.host;
+    const protocol = host === "localhost:3000" ? "http://" : "https://";
+    return protocol + host;
+};
+
+MyApp.getInitialProps = async ({ ctx, Component }: AppProps) => {
+    const appInitialProps = App.getInitialProps({ Component, ctx });
+
     const { pathname, query } = ctx;
-    let pageProps = {};
-    let baseUrl = "";
-
-    // TODO: https://github.com/therungg/therun-frontend/issues/37
-    if (ctx.req) {
-        // This probably shouldn't be a global variable lol
-        const host = ctx.req.headers.host;
-        const protocol = host === "localhost:3000" ? "http://" : "https://";
-        baseUrl = protocol + baseUrl;
-    }
-
-    if (Component.getInitialProps) {
-        pageProps = await Component.getInitialProps(ctx);
-    }
+    const baseUrl = getBaseUrl(ctx.req as IncomingMessage);
 
     const session = await getSessionData(ctx, baseUrl);
-    ctx.session = session;
+
     const customProps = {
         session,
         baseUrl,
         ...getTitleAndDescription(pathname, query),
-        ...pageProps,
     };
 
-    return { customProps };
+    return { customProps, ...appInitialProps };
 };
-
-export default MyApp;
