@@ -1,5 +1,3 @@
-import getConfig from "next/config";
-
 export const upload = async (
     file: File,
     contents: string,
@@ -11,9 +9,7 @@ export const upload = async (
         };
     }
 
-    const { publicRuntimeConfig } = getConfig();
-
-    const baseUrl = publicRuntimeConfig.urls.upload;
+    const baseUrl = process.env.NEXT_PUBLIC_UPLOAD_URL;
 
     const url = `${baseUrl}?filename=${encodeURIComponent(
         file.name
