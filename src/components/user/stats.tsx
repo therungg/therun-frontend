@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { VictoryAxis, VictoryBar, VictoryChart, VictoryTooltip } from "victory";
 import { getFormattedString } from "../util/datetime";
 import { Col, Row } from "react-bootstrap";
-import CalendarHeatmap from "../../public/js/calendar-heatmap.component";
+import CalendarHeatmap from "../../../public/js/calendar-heatmap.component";
 import { scaleLinear } from "d3";
 
 interface PlaytimeStats {

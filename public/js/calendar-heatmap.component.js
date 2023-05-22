@@ -3,7 +3,7 @@ import * as React from "react";
 import moment from "moment";
 import * as d3 from "d3";
 
-import styles from "../../components/css/Calendar.module.scss";
+import styles from "../../src/components/css/Calendar.module.scss";
 
 class CalendarHeatmap extends React.Component {
     constructor(props) {
