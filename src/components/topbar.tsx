@@ -1,14 +1,14 @@
 "use client";
 import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
-import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
 import { Search } from "./search";
 import dynamic from "next/dynamic";
 import styles from "./css/Topbar.module.scss";
 import { useEffect, useState } from "react";
-import Router from "next/router";
-import { removeCookies } from "cookies-next";
+import { useRouter } from "next/navigation";
 import { PatreonBunnySvgWithoutLink } from "../pages/patron";
 import Image from "next/image";
+import { TwitchUser } from "./twitch/TwitchUser";
+import { TwitchLoginServer } from "./twitch/TwitchLoginButton.server";
 
 const DarkModeSlider = dynamic(() => import("./dark-mode-slider"), {
     ssr: false,
@@ -21,6 +21,7 @@ const Topbar = ({
     username?: string;
     picture?: string;
 }) => {
+    const router = useRouter();
     const [show, setShow] = useState(false);
     const [dark, setDark] = useState(true);
 
@@ -34,6 +35,14 @@ const Topbar = ({
     const hideDropdown = () => {
         setShow(false);
     };
+
+    async function logout() {
+        await fetch("/api/logout", {
+            method: "POST",
+        });
+        router.push("/");
+        router.refresh();
+    }
 
     return (
         <Navbar
@@ -123,10 +132,9 @@ const Topbar = ({
                             <NavDropdown
                                 show={show}
                                 title={
-                                    <TwitchLoginButton
+                                    <TwitchUser
                                         username={username}
-                                        picture={picture}
-                                        redirect=""
+                                        picture={picture || ""}
                                     />
                                 }
                                 id="basic-nav-dropdown"
@@ -140,23 +148,12 @@ const Topbar = ({
                                 <NavDropdown.Item href={"/change-appearance"}>
                                     Name Appearance
                                 </NavDropdown.Item>
-                                <NavDropdown.Item
-                                    onClick={() => {
-                                        removeCookies("session_id");
-                                        Router.reload();
-                                    }}
-                                >
+                                <NavDropdown.Item onClick={() => logout()}>
                                     Logout
                                 </NavDropdown.Item>
                             </NavDropdown>
                         )}
-                        {!username && (
-                            <TwitchLoginButton
-                                username={username}
-                                picture={picture}
-                                redirect=""
-                            />
-                        )}
+                        {!username && <TwitchLoginServer redirect="/api" />}
                     </Nav>
                 </Navbar.Collapse>
             </Container>

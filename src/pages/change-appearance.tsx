@@ -1,7 +1,6 @@
 import { PatreonBunnySvg } from "./patron";
 import { Button, Col, Row } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
-import { TwitchLoginButton } from "../components/twitch/TwitchLoginButton";
 import Link from "next/link";
 import Switch from "react-switch";
 import styles from "../components/css/Appearance.module.scss";
@@ -10,6 +9,7 @@ import Router from "next/router";
 import patreonStyles from "../components/patreon/patreon-styles";
 import PatreonName from "../components/patreon/patreon-name";
 import { AppContext } from "../common/app.context";
+import { TwitchLoginServer } from "../components/twitch/TwitchLoginButton.server";
 
 const patreonApiBaseUrl = process.env.NEXT_PUBLIC_PATREON_API_URL;
 
@@ -313,7 +313,7 @@ const LoginWithPatreonSection = ({ session }) => {
             <div>
                 To connect your Patreon account, login with Twitch first.
                 <div style={{ display: "flex", justifyContent: "center" }}>
-                    <TwitchLoginButton redirect={"/change-appearance"} />
+                    <TwitchLoginServer redirect={"/change-appearance"} />
                 </div>
             </div>
         );

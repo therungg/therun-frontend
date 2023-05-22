@@ -1,14 +1,13 @@
 import React from "react";
 import { Metadata } from "next";
 import Topbar from "../src/components/topbar";
-import { getCookieKey } from "../src/utils/cookies";
-import { getSessionData } from "../src/lib/get-session-data";
 import { Footer } from "./footer";
 import { Content } from "./content";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../src/styles/globals.css";
 import "../src/styles/calendar-heatmap.min.css";
 import { Scripts } from "./scripts";
+import { getSession } from "../src/actions/session.action";
 
 export const metadata: Metadata = {
     title: "The Run - Speedrun Statistics",
@@ -79,9 +78,7 @@ export default async function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const sessionId = (await getCookieKey("session_id")) as string;
-    const session = await getSessionData(sessionId);
-
+    const session = await getSession();
     return (
         <html lang="en">
             <body>
