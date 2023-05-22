@@ -4,6 +4,7 @@ import Topbar from "../src/components/topbar";
 import { Footer } from "./footer";
 import { Content } from "./content";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./material-symbols-outline.css";
 import "../src/styles/globals.css";
 import "../src/styles/calendar-heatmap.min.css";
 import { Scripts } from "./scripts";
