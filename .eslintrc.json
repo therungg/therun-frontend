@@ -11,6 +11,7 @@
     "github",
     "prettier"
   ],
+  "ignorePatterns": ["vendor/"],
   "rules": {
     "@next/next/no-page-custom-font": "off",
     "react-hooks/exhaustive-deps": "off",
