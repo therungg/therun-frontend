@@ -9,7 +9,7 @@ import { cookies } from "next/headers";
 export const createSession = async (code: string) => {
     const baseUrl = getBaseUrl();
     let sessionId = cookies().get("session_id")?.value ?? undefined;
-    if (sessionId === 'undefined') sessionId = undefined;
+    if (sessionId === "undefined") sessionId = undefined;
 
     if (!code || sessionId) return;
 
