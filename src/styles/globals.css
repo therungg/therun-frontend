@@ -1,4 +1,4 @@
-body {
+:root {
     --color-bg: #fbfbfb;
     --color-secondary: #eee;
     --color-tertiary: #ddd;
@@ -224,6 +224,18 @@ select {
     color: var(--color-text);
 }
 
+.form-control {
+    background-color: var(--color-tertiary);
+    border-color: var(--color-secondary);
+    color: var(--color-text);
+}
+
+.form-control:focus {
+    background-color: var(--color-tertiary);
+    border-color: var(--color-secondary);
+    color: var(--color-text);
+}
+
 .page-item .page-link {
     color: var(--color-link) !important;
     background-color: var(--color-tertiary);
@@ -319,7 +331,7 @@ select {
     background-color: var(--color-secondary);
     border: none;
     max-height: 100%;
-    position: center;
+    vertical-align: middle;
     padding: 0;
     text-decoration: none;
 }
