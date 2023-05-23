@@ -97,10 +97,10 @@ export const Media = () => {
                                     <div className={mediaStyles.options}>
                                         <Switch
                                             onColor={getComputedStyle(
-                                                document.body
+                                                document.documentElement
                                             ).getPropertyValue("--color-link")}
                                             offColor={getComputedStyle(
-                                                document.body
+                                                document.documentElement
                                             ).getPropertyValue(
                                                 "--color-tertiary"
                                             )}
@@ -121,10 +121,10 @@ export const Media = () => {
                                     <div className={mediaStyles.options}>
                                         <Switch
                                             onColor={getComputedStyle(
-                                                document.body
+                                                document.documentElement
                                             ).getPropertyValue("--color-link")}
                                             offColor={getComputedStyle(
-                                                document.body
+                                                document.documentElement
                                             ).getPropertyValue(
                                                 "--color-tertiary"
                                             )}
@@ -145,10 +145,10 @@ export const Media = () => {
                                     <div className={mediaStyles.options}>
                                         <Switch
                                             onColor={getComputedStyle(
-                                                document.body
+                                                document.documentElement
                                             ).getPropertyValue("--color-link")}
                                             offColor={getComputedStyle(
-                                                document.body
+                                                document.documentElement
                                             ).getPropertyValue(
                                                 "--color-tertiary"
                                             )}
@@ -169,10 +169,10 @@ export const Media = () => {
                                     <div className={mediaStyles.options}>
                                         <Switch
                                             onColor={getComputedStyle(
-                                                document.body
+                                                document.documentElement
                                             ).getPropertyValue("--color-link")}
                                             offColor={getComputedStyle(
-                                                document.body
+                                                document.documentElement
                                             ).getPropertyValue(
                                                 "--color-tertiary"
                                             )}
@@ -235,10 +235,10 @@ export const Media = () => {
                                     <div className={mediaStyles.options}>
                                         <Switch
                                             onColor={getComputedStyle(
-                                                document.body
+                                                document.documentElement
                                             ).getPropertyValue("--color-link")}
                                             offColor={getComputedStyle(
-                                                document.body
+                                                document.documentElement
                                             ).getPropertyValue(
                                                 "--color-tertiary"
                                             )}
@@ -259,10 +259,10 @@ export const Media = () => {
                                     <div className={mediaStyles.options}>
                                         <Switch
                                             onColor={getComputedStyle(
-                                                document.body
+                                                document.documentElement
                                             ).getPropertyValue("--color-link")}
                                             offColor={getComputedStyle(
-                                                document.body
+                                                document.documentElement
                                             ).getPropertyValue(
                                                 "--color-tertiary"
                                             )}
@@ -283,10 +283,10 @@ export const Media = () => {
                                     <div className={mediaStyles.options}>
                                         <Switch
                                             onColor={getComputedStyle(
-                                                document.body
+                                                document.documentElement
                                             ).getPropertyValue("--color-link")}
                                             offColor={getComputedStyle(
-                                                document.body
+                                                document.documentElement
                                             ).getPropertyValue(
                                                 "--color-tertiary"
                                             )}

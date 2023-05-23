@@ -4,6 +4,7 @@ import { Metadata } from "next";
 import Topbar from "../src/components/topbar";
 import { Footer } from "./footer";
 import { Content } from "./content";
+import { Providers } from "./providers";
 import "./material-symbols-outline.css";
 import "../src/styles/globals.css";
 import "../src/styles/calendar-heatmap.min.css";
@@ -83,13 +84,15 @@ export default async function RootLayout({
     return (
         <html lang="en">
             <body>
-                <Topbar
-                    username={session?.username}
-                    picture={session?.picture}
-                />
-                <Scripts />
-                <Content>{children}</Content>
-                <Footer />
+                <Providers>
+                    <Topbar
+                        username={session?.username}
+                        picture={session?.picture}
+                    />
+                    <Scripts />
+                    <Content>{children}</Content>
+                    <Footer />
+                </Providers>
             </body>
         </html>
     );

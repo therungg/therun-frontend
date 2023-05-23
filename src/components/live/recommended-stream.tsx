@@ -37,7 +37,7 @@ export const RecommendedStream = ({
     const previous = usePrevious({ activeLiveRun });
 
     useEffect(function () {
-        setDark(document.body.dataset.theme !== "light");
+        setDark(document.documentElement.dataset.theme !== "light");
     }, []);
 
     useEffect(() => {

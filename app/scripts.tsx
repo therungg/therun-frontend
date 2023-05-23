@@ -11,7 +11,7 @@ export const Scripts = () => {
                 gaMeasurementId={process.env.ANALYTICS_MEASUREMENT_ID}
             />
             <Script id="initialize=colorscheme">
-                {`document.body.dataset.theme = window.localStorage.getItem("theme") || "light";`}
+                {`document.documentElement.dataset.theme = window.localStorage.getItem("theme") || "light";`}
             </Script>
         </>
     );

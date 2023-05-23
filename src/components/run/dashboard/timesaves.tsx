@@ -124,10 +124,10 @@ export const Timesaves = ({
                     <div style={{ marginRight: "0.5rem" }}>Table mode</div>
                     <Switch
                         onColor={getComputedStyle(
-                            document.body
+                            document.documentElement
                         ).getPropertyValue("--color-link")}
                         offColor={getComputedStyle(
-                            document.body
+                            document.documentElement
                         ).getPropertyValue("--color-tertiary")}
                         name={"switch"}
                         onChange={(checked) => {

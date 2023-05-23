@@ -42,7 +42,7 @@ export const Games = ({ initGames }: { initGames: Game[] }) => {
     if (data) games = data;
 
     useEffect(function () {
-        setDark(document.body.dataset.theme !== "light");
+        setDark(document.documentElement.dataset.theme !== "light");
     }, []);
 
     games.sort((a, b) => {
