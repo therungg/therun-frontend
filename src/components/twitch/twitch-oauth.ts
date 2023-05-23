@@ -1,5 +1,5 @@
 export const getTwitchOAuthURL = ({ redirect = "" }) => {
-    const clientId = process.env.TWITCH_OAUTH_CLIENT_ID;
+    const clientId = process.env.NEXT_PUBLIC_TWITCH_OAUTH_CLIENT_ID;
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
     const twitchAuthURL = "https://id.twitch.tv/oauth2/authorize";
