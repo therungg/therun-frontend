@@ -26,7 +26,7 @@ const Topbar = ({
     const [dark, setDark] = useState(true);
 
     useEffect(function () {
-        setDark(document.body.dataset.theme !== "light");
+        setDark(document.documentElement.dataset.theme !== "light");
     }, []);
 
     const showDropdown = () => {

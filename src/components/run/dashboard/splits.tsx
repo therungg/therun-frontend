@@ -84,10 +84,10 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                         </label>
                         <Switch
                             onColor={getComputedStyle(
-                                document.body
+                                document.documentElement
                             ).getPropertyValue("--color-link")}
                             offColor={getComputedStyle(
-                                document.body
+                                document.documentElement
                             ).getPropertyValue("--color-tertiary")}
                             name={"switch"}
                             onChange={(checked) => {

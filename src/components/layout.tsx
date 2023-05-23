@@ -15,7 +15,7 @@ interface LayoutInput {
 
 const themeInitializerScript = `
        (function () {
-         document.body.dataset.theme = window.localStorage.getItem("theme") || "light";
+         document.documentElement.dataset.theme = window.localStorage.getItem("theme") || "light";
        })();
    `;
 

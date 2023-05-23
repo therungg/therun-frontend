@@ -30,7 +30,7 @@ export const UserOverview = ({
     const [dark, setDark] = useState(true);
 
     useEffect(function () {
-        setDark(document.body.dataset.theme !== "light");
+        setDark(document.documentElement.dataset.theme !== "light");
     }, []);
 
     const images = Array.from(runs).filter(([game]) => {

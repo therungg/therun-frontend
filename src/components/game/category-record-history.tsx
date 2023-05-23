@@ -52,10 +52,10 @@ export const CategoryRecordHistory = ({
                     <span style={{ marginRight: "0.5rem" }}>Data Mode</span>
                     <Switch
                         onColor={getComputedStyle(
-                            document.body
+                            document.documentElement
                         ).getPropertyValue("--color-tertiary")}
                         offColor={getComputedStyle(
-                            document.body
+                            document.documentElement
                         ).getPropertyValue("--color-tertiary")}
                         checkedIcon={false}
                         uncheckedIcon={false}

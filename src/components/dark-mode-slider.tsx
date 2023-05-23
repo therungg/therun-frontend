@@ -5,14 +5,14 @@ import styles from "./css/DarkModeSlider.module.scss";
 export const DarkModeSlider = () => {
     // I read the theme from local storage and set it onto body data attribute earlier in my code, so
     const [theme, setTheme] = React.useState(
-        document.body.dataset.theme || "light"
+        document.documentElement.dataset.theme || "light"
     );
 
     // sync the changed theme value to local storage and body data attribute
     React.useEffect(() => {
-        if (theme && theme !== document.body.dataset.theme) {
+        if (theme && theme !== document.documentElement.dataset.theme) {
             window.localStorage.setItem("theme", theme);
-            document.body.dataset.theme = theme;
+            document.documentElement.dataset.theme = theme;
         }
     }, [theme]);
 

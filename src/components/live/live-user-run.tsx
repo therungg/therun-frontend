@@ -88,7 +88,7 @@ export const LiveUserRun = ({
     const [liveUserStyles, setLiveUserStyles] = useState({});
     const { data: patreons, isLoading } = usePatreons();
     useEffect(function () {
-        setDark(document.body.dataset.theme !== "light");
+        setDark(document.documentElement.dataset.theme !== "light");
     }, []);
 
     useEffect(() => {
@@ -97,7 +97,6 @@ export const LiveUserRun = ({
             let borderColor = "";
             let gradient = "";
 
-            // TODO: https://github.com/therungg/therun-frontend/issues/35
             if (!patreonData.preferences || !patreonData.preferences.hide) {
                 const colors = patreonStyles();
                 const color = patreonData.preferences?.colorPreference ?? 0;

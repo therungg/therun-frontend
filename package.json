@@ -31,6 +31,7 @@
     "moment": "^2.29.1",
     "next": "^13.4.2",
     "next-axiom": "^0.17.0",
+    "next-themes": "^0.2.1",
     "next-transpile-modules": "^10.0.0",
     "nextjs-google-analytics": "^2.1.0",
     "nextjs-redirect": "^6.0.1",
