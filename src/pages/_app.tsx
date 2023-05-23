@@ -1,6 +1,6 @@
 import type { AppProps } from "next/app";
 import App from "next/app";
-import "bootstrap/dist/css/bootstrap.min.css";
+//import "bootstrap/dist/css/bootstrap.min.css";
 import { Layout } from "../components/layout";
 import { AppContext } from "../common/app.context";
 import "../styles/globals.css";
