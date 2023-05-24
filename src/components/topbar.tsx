@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import { PatreonBunnySvgWithoutLink } from "../pages/patron";
 import Image from "next/image";
 import { TwitchUser } from "./twitch/TwitchUser";
-import { TwitchLoginServer } from "./twitch/TwitchLoginButton.server";
+import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
 
 const DarkModeSlider = dynamic(() => import("./dark-mode-slider"), {
     ssr: false,
@@ -153,7 +153,7 @@ const Topbar = ({
                                 </NavDropdown.Item>
                             </NavDropdown>
                         )}
-                        {!username && <TwitchLoginServer redirect="/api" />}
+                        {!username && <TwitchLoginButton url="/api" />}
                     </Nav>
                 </Navbar.Collapse>
             </Container>

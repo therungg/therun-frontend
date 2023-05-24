@@ -20,7 +20,7 @@ export const loginWithTwitch = async (
     baseUrl: string,
     code: string
 ): Promise<LoginWithTwitchResult> => {
-    const clientId = process.env.TWITCH_OAUTH_CLIENT_ID;
+    const clientId = process.env.NEXT_PUBLIC_TWITCH_OAUTH_CLIENT_ID;
     const clientSecret = process.env.TWITCH_OAUTH_SECRET;
     const uri =
         `https://id.twitch.tv/oauth2/token` +

@@ -23,7 +23,6 @@ export const TwitchUser: React.FunctionComponent<TwitchUserProps> = ({
                                 alt={username}
                                 width={30}
                                 height={30}
-                                layout={"responsive"}
                                 style={{
                                     maxWidth: "100%",
                                     height: "auto",

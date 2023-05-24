@@ -9,7 +9,7 @@ import Router from "next/router";
 import patreonStyles from "../components/patreon/patreon-styles";
 import PatreonName from "../components/patreon/patreon-name";
 import { AppContext } from "../common/app.context";
-import { TwitchLoginServer } from "../components/twitch/TwitchLoginButton.server";
+import { TwitchLoginButton } from "../components/twitch/TwitchLoginButton";
 
 const patreonApiBaseUrl = process.env.NEXT_PUBLIC_PATREON_API_URL;
 
@@ -313,7 +313,7 @@ const LoginWithPatreonSection = ({ session }) => {
             <div>
                 To connect your Patreon account, login with Twitch first.
                 <div style={{ display: "flex", justifyContent: "center" }}>
-                    <TwitchLoginServer redirect={"/change-appearance"} />
+                    <TwitchLoginButton url={"/change-appearance"} />
                 </div>
             </div>
         );

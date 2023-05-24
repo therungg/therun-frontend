@@ -1,4 +1,4 @@
-import { TwitchLoginServer } from "../components/twitch/TwitchLoginButton.server";
+import { TwitchLoginButton } from "../components/twitch/TwitchLoginButton";
 
 export const HowItWorks = ({ session }) => {
     return (
@@ -24,7 +24,7 @@ export const HowItWorks = ({ session }) => {
                             <strong>{session.username}</strong>!
                         </p>
                     ) : (
-                        <TwitchLoginServer redirect={"/how-it-works"} />
+                        <TwitchLoginButton url={"/how-it-works"} />
                     )}
                 </li>
                 <li>
