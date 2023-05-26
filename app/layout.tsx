@@ -15,58 +15,6 @@ export const metadata: Metadata = {
     title: "The Run - Speedrun Statistics",
     description: "The Run - a free tool for speedrun statistics",
     themeColor: "#ffffff",
-    icons: [
-        {
-            rel: "icon",
-            media: "(prefers-color-scheme: dark)",
-            url: "/favicon.ico",
-        },
-        {
-            rel: "icon",
-            media: "(prefers-color-scheme: light)",
-            url: "/lightmode/favicon.ico",
-        },
-        {
-            rel: "apple-touch-icon",
-            media: "(prefers-color-scheme: dark)",
-            sizes: "180x180",
-            url: "/apple-touch-icon.png",
-        },
-        {
-            rel: "apple-touch-icon",
-            media: "(prefers-color-scheme: light)",
-            sizes: "180x180",
-            url: "/lightmode/apple-touch-icon.png",
-        },
-        {
-            rel: "icon",
-            media: "(prefers-color-scheme: dark)",
-            type: "image/png",
-            sizes: "32x32",
-            url: "/favicon-32x32.png",
-        },
-        {
-            rel: "icon",
-            media: "(prefers-color-scheme: light)",
-            type: "image/png",
-            sizes: "32x32",
-            url: "/lightmode/favicon-32x32.png",
-        },
-        {
-            rel: "icon",
-            media: "(prefers-color-scheme: dark)",
-            type: "image/png",
-            sizes: "16x16",
-            url: "/favicon-16x16.png",
-        },
-        {
-            rel: "icon",
-            media: "(prefers-color-scheme: light)",
-            type: "image/png",
-            sizes: "16x16",
-            url: "/lightmode/favicon-16x16.png",
-        },
-    ],
     manifest: "/site.webmanifest",
     other: {
         "msapplication-TileColor": "#ffffff",

@@ -1,9 +1,45 @@
 "use client";
 import React from "react";
 import { Container } from "react-bootstrap";
+import { Helmet, HelmetProvider } from "react-helmet-async";
+import { useTheme } from "next-themes";
 
 export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
     children,
 }) => {
-    return <Container className={"mt-4 main-container"}>{children}</Container>;
+    const { systemTheme } = useTheme();
+    const prefix = systemTheme === "dark" ? "" : "/lightmode";
+
+    return (
+        <Container className={"mt-4 main-container"}>
+            <HelmetProvider>
+                <Helmet>
+                    <link rel="icon" href={`${prefix}/favicon.ico`} />
+                    <link
+                        rel="apple-touch-icon"
+                        sizes="180x180"
+                        href={`${prefix}/apple-touch-icon.png`}
+                    />
+                    <link
+                        rel="icon"
+                        type="image/png"
+                        sizes="32x32"
+                        href={`${prefix}/favicon-32x32.png`}
+                    />
+                    <link
+                        rel="icon"
+                        type="image/png"
+                        sizes="16x16"
+                        href={`${prefix}/favicon-16x16.png`}
+                    />
+                    <link
+                        rel="mask-icon"
+                        href="/safari-pinned-tab.svg"
+                        color="#5bbad5"
+                    />
+                </Helmet>
+            </HelmetProvider>
+            {children}
+        </Container>
+    );
 };
