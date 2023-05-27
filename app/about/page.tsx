@@ -1,6 +1,12 @@
-import { Title } from "../components/title";
+import { Metadata } from "next";
+import { Title } from "../../src/components/title";
 
-export const About = () => {
+export const metadata: Metadata = {
+    title: "About",
+    description: "About The Run",
+};
+
+export default function About() {
     return (
         <div>
             <Title>About The Run</Title>
@@ -158,6 +164,4 @@ export const About = () => {
             see added!
         </div>
     );
-};
-
-export default About;
+}
