@@ -39,6 +39,5 @@ yarn-error.log*
 .*cache
 
 /.idea
-/.husky
 
 *:Zone.Identifier
