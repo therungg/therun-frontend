@@ -46,7 +46,7 @@ export default function Page() {
 
 const DataSection = () => {
     const {
-        data = {},
+        data = { runs: null, gamestats: null },
         error,
         isLoading,
     } = useSWR("/api/frontpagedata", fetcher);
@@ -61,7 +61,7 @@ const DataSection = () => {
                 <Col xl={6} lg={12} className={styles.dataContainer}>
                     <h2>Recent Personal Bests</h2>
                     {data && <DataHolder runs={runs} />}
-                    {!data && isLoading && <SkeletonPersonalBests />}
+                    {!data.runs && isLoading && <SkeletonPersonalBests />}
                 </Col>
                 <Col
                     xl={6}
@@ -70,7 +70,7 @@ const DataSection = () => {
                 >
                     <h2>Popular Games</h2>
                     {data && <PopularGames gamestats={gamestats} />}
-                    {!data && isLoading && <SkeletonPopularGames />}
+                    {!data.gamestats && isLoading && <SkeletonPopularGames />}
                 </Col>
             </Row>
         </div>
