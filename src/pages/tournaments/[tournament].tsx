@@ -69,38 +69,40 @@ export const GenericTournament = ({
 
     useEffect(() => {
         if (lastMessage !== null) {
-            const newData = JSON.parse(lastMessage.data);
-            const user = newData.user;
+            const allNewData: any[] = JSON.parse(lastMessage.data);
+            allNewData.forEach((newData) => {
+                const user = newData.user;
 
-            if (isLiveDataEligibleForTournament(newData.run, tournament)) {
-                let newMap: LiveDataMap = JSON.parse(
-                    JSON.stringify(updatedLiveDataMap)
-                );
+                if (isLiveDataEligibleForTournament(newData.run, tournament)) {
+                    let newMap: LiveDataMap = JSON.parse(
+                        JSON.stringify(updatedLiveDataMap)
+                    );
 
-                if (newData.type == "UPDATE") {
-                    newMap[user] = newData.run;
-                }
-
-                if (newData.type == "DELETE") {
-                    delete newMap[user];
-
-                    if (recommendedStream == user) {
-                        const newRecommendedStream = getRecommendedStream(
-                            newMap,
-                            username
-                        );
-                        setCurrentlyViewing(newRecommendedStream);
+                    if (newData.type == "UPDATE") {
+                        newMap[user] = newData.run;
                     }
+
+                    if (newData.type == "DELETE") {
+                        delete newMap[user];
+
+                        if (recommendedStream == user) {
+                            const newRecommendedStream = getRecommendedStream(
+                                newMap,
+                                username
+                            );
+                            setCurrentlyViewing(newRecommendedStream);
+                        }
+                    }
+
+                    newMap = liveRunArrayToMap(
+                        Object.values(newMap),
+                        sort,
+                        tournamentLeaderboards
+                    );
+
+                    setUpdatedLiveDataMap(newMap);
                 }
-
-                newMap = liveRunArrayToMap(
-                    Object.values(newMap),
-                    sort,
-                    tournamentLeaderboards
-                );
-
-                setUpdatedLiveDataMap(newMap);
-            }
+            });
         }
     }, [lastMessage]);
 

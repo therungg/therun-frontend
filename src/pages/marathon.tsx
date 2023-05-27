@@ -23,23 +23,25 @@ export const Marathon = ({
 
     useEffect(() => {
         if (lastMessage !== null) {
-            const data = JSON.parse(lastMessage.data);
-            const user = data.user;
-            let newMap: LiveDataMap = JSON.parse(
-                JSON.stringify(updatedLiveDataMap)
-            );
+            const allData: any[] = JSON.parse(lastMessage.data);
+            allData.forEach((data) => {
+                const user = data.user;
+                let newMap: LiveDataMap = JSON.parse(
+                    JSON.stringify(updatedLiveDataMap)
+                );
 
-            if (data.type == "UPDATE") {
-                newMap[user] = data.run;
-            }
+                if (data.type == "UPDATE") {
+                    newMap[user] = data.run;
+                }
 
-            if (data.type == "DELETE") {
-                delete newMap[user];
-            }
+                if (data.type == "DELETE") {
+                    delete newMap[user];
+                }
 
-            newMap = liveRunArrayToMap(Object.values(newMap));
+                newMap = liveRunArrayToMap(Object.values(newMap));
 
-            setUpdatedLiveDataMap(newMap);
+                setUpdatedLiveDataMap(newMap);
+            });
         }
     }, [lastMessage]);
 

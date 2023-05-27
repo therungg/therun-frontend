@@ -52,36 +52,41 @@ export const Live = ({
 
     useEffect(() => {
         if (lastMessage !== null) {
-            const data = JSON.parse(lastMessage.data);
+            const allData = JSON.parse(lastMessage.data);
 
-            if (
-                !forceGame ||
-                data.type == "DELETE" ||
-                (!forceCategory &&
-                    forceGame.toLowerCase() == data.run.game.toLowerCase()) ||
-                (forceGame.toLowerCase() == data.run.game.toLowerCase() &&
-                    forceCategory.toLowerCase() ==
-                        data.run.category.toLowerCase())
-            ) {
-                const user = data.user;
-                const newMap: LiveDataMap = JSON.parse(
-                    JSON.stringify(updatedLiveDataMap)
-                );
+            allData.forEach((data) => {
+                if (
+                    !forceGame ||
+                    data.type == "DELETE" ||
+                    (!forceCategory &&
+                        forceGame.toLowerCase() ==
+                            data.run.game.toLowerCase()) ||
+                    (forceGame.toLowerCase() == data.run.game.toLowerCase() &&
+                        forceCategory.toLowerCase() ==
+                            data.run.category.toLowerCase())
+                ) {
+                    const user = data.user;
+                    const newMap: LiveDataMap = JSON.parse(
+                        JSON.stringify(updatedLiveDataMap)
+                    );
 
-                if (data.type == "UPDATE") {
-                    newMap[user] = data.run;
-                }
-
-                if (data.type == "DELETE") {
-                    delete newMap[user];
-
-                    if (currentlyViewing == user) {
-                        setCurrentlyViewing(getRecommendedStream(newMap));
+                    if (data.type == "UPDATE") {
+                        newMap[user] = data.run;
                     }
-                }
 
-                setUpdatedLiveDataMap(liveRunArrayToMap(Object.values(newMap)));
-            }
+                    if (data.type == "DELETE") {
+                        delete newMap[user];
+
+                        if (currentlyViewing == user) {
+                            setCurrentlyViewing(getRecommendedStream(newMap));
+                        }
+                    }
+
+                    setUpdatedLiveDataMap(
+                        liveRunArrayToMap(Object.values(newMap))
+                    );
+                }
+            });
         }
     }, [lastMessage]);
 

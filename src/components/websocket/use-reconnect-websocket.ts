@@ -13,6 +13,8 @@ export const useReconnectWebsocket = (username?: string) => {
 
     if (username) {
         websocketUrl += `?username=${username}`;
+    } else {
+        websocketUrl += "?grouped=true";
     }
 
     const { lastMessage, sendMessage, readyState } = useWebSocket(
