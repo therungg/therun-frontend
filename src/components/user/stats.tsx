@@ -163,7 +163,6 @@ export const PlayTimePerDayOfWeekGraph = ({
     playtimePerDayOfWeekMap,
 }: {
     playtimePerDayOfWeekMap: StatMap;
-    total: number;
 }) => {
     let max = 0;
 
@@ -231,7 +230,12 @@ export const PlayTimePerDayOfWeekGraph = ({
                     style={{
                         data: {
                             fill: (d) => {
-                                return color(d.data ? d.data : [d.index]._y);
+                                const res = color(
+                                    d.data
+                                        ? d.data[d.index]._y
+                                        : "var(--color-link)"
+                                );
+                                return res;
                             },
                         },
                     }}
