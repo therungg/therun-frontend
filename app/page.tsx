@@ -60,7 +60,7 @@ const DataSection = () => {
             <Row className={styles.dataTitle}>
                 <Col xl={6} lg={12} className={styles.dataContainer}>
                     <h2>Recent Personal Bests</h2>
-                    {data && <DataHolder runs={runs} />}
+                    {data.runs && <DataHolder runs={runs} />}
                     {!data.runs && isLoading && <SkeletonPersonalBests />}
                 </Col>
                 <Col
@@ -69,7 +69,7 @@ const DataSection = () => {
                     className={`${styles.dataContainer} ${styles.dataContainerBottom}`}
                 >
                     <h2>Popular Games</h2>
-                    {data && <PopularGames gamestats={gamestats} />}
+                    {data.gamestats && <PopularGames gamestats={gamestats} />}
                     {!data.gamestats && isLoading && <SkeletonPopularGames />}
                 </Col>
             </Row>
