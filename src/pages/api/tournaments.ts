@@ -1,7 +1,15 @@
 import { getTournaments } from "../../components/tournament/getTournaments";
+import { NextResponse } from "next/server";
 
 export const handler = async (req, res) => {
-    if (req.method !== "GET" || !req.query.q) res.status(500);
+    if (req.method !== "GET" || !req.query.q) {
+        return NextResponse.json(
+            {
+                error: "Must be GET request and supply `q` parameter",
+            },
+            { status: 400 }
+        );
+    }
 
     const result = await getTournaments();
 
