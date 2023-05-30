@@ -2,7 +2,7 @@ import { getAllLiveRuns } from "../../lib/live-runs";
 import { NextResponse } from "next/server";
 
 export const handler = async (req, res) => {
-    if (req.method !== "GET" || !req.query.q) {
+    if (req.method !== "GET") {
         return NextResponse.json(
             {
                 error: "Must be GET request and supply `q` parameter",
