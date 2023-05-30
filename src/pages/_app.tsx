@@ -104,12 +104,6 @@ const getTitleAndDescription = (
                 description: "All games overview",
             };
             break;
-        case "/about":
-            result = {
-                title: "About",
-                description: "About The Run",
-            };
-            break;
         case "/roadmap":
             result = {
                 title: "Roadmap",
