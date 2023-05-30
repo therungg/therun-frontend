@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getTabulatedGameStats } from "../../components/game/get-tabulated-game-stats";
 
 export const handler = async (req, res) => {
-    if (req.method !== "GET" || !req.query.q) {
+    if (req.method !== "GET") {
         return NextResponse.json(
             {
                 error: "Must be GET request and supply `q` parameter",

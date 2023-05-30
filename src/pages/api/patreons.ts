@@ -1,7 +1,7 @@
 import { fetcher } from "../../utils/fetcher";
 
 export const handler = async (req, res) => {
-    if (req.method !== "GET") res.status(500);
+    if (req.method !== "GET") return res.status(500);
 
     const patreonApiUrl = process.env.NEXT_PUBLIC_PATREON_API_URL;
 
