@@ -12,7 +12,10 @@ import { Scripts } from "./scripts";
 import { getSession } from "../src/actions/session.action";
 
 export const metadata: Metadata = {
-    title: "The Run - Speedrun Statistics",
+    title: {
+        default: "The Run - Speedrun Statistics",
+        template: "The Run - %s",
+    },
     description: "The Run - a free tool for speedrun statistics",
     themeColor: "#ffffff",
     manifest: "/site.webmanifest",

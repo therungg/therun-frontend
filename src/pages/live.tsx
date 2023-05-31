@@ -231,7 +231,7 @@ export const LivesplitTimer = ({
 
     useEffect(() => {
         setId(id + 1);
-    }, [liveRun]);
+    }, [liveRun.currentSplitIndex]);
 
     if (!className) className = runStyles.timerBody;
     if (!timerClassName) timerClassName = runStyles.timer;
