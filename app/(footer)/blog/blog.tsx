@@ -349,6 +349,8 @@ export const getBlogs = (): BlogInterface[] => {
                                         maxWidth: "100%",
                                         height: "auto",
                                     }}
+                                    width="200"
+                                    height="250"
                                 />
                             </a>
                         </span>

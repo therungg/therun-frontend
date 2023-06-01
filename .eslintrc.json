@@ -21,6 +21,7 @@
         "no-irregular-whitespace": "off",
         "import/no-named-as-default": "off",
         "github/array-foreach": "off",
+        "import/no-named-as-default-member": "off",
         "eqeqeq": "off",
         "i18n-text/no-en": "off",
         "prettier/prettier": [

@@ -1,3 +1,4 @@
+"use client";
 import { Col, Row } from "react-bootstrap";
 import { FromNow } from "./util/datetime";
 
