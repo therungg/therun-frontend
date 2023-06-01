@@ -1,6 +1,7 @@
+"use client";
+import { FromNow } from "~src/components/util/datetime";
 import { ReactElement } from "react";
 import { Col, Row } from "react-bootstrap";
-import { FromNow } from "../components/util/datetime";
 import Image from "next/image";
 
 export interface BlogInterface {

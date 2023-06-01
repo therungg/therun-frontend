@@ -1,9 +1,10 @@
+"use client";
 import { Alert, Button, Col, Form, Image, Row } from "react-bootstrap";
 import { useState } from "react";
 import axios from "axios";
-import styles from "../components/css/ContactForm.module.scss";
+import styles from "~src/components/css/ContactForm.module.scss";
 
-//TODO:: This should just be some form library, not this custom stuff
+// TODO:: This should just be some form library, not this custom stuff
 export const Contact = () => {
     const [validated, setValidated] = useState(false);
     const [show, setShow] = useState(false);

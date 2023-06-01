@@ -1,7 +1,7 @@
-import { Title } from "../components/title";
+import { Title } from "~src/components/title";
 import { Button, Col, Image, Row } from "react-bootstrap";
-import styles from "../components/css/Home.module.scss";
-import mediaStyles from "../components/css/Media.module.scss";
+import styles from "~src/components/css/Home.module.scss";
+import mediaStyles from "~src/components/css/Media.module.scss";
 import Switch from "react-switch";
 import { useEffect, useState } from "react";
 
