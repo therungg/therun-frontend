@@ -1,3 +1,4 @@
+"use client";
 import { Title } from "~src/components/title";
 import { Button, Col, Image, Row } from "react-bootstrap";
 import styles from "~src/components/css/Home.module.scss";
