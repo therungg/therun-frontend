@@ -23,7 +23,7 @@ import { SplitStats } from "../../../components/run/splits/split-stats";
 import { UserGameLink, UserLink } from "../../../components/links/links";
 import { GametimeForm } from "../../../components/gametime/gametime-form";
 import { CompareSplits } from "../../../components/run/compare/compare-splits";
-import { StatsData } from "../../game/[game]";
+import { StatsData } from "~app/games/[game]/game.types";
 import styles from "../../../components/css/User.module.scss";
 import { getGameGlobal } from "../../../components/game/get-game";
 import { Vod } from "../../../components/run/dashboard/vod";
@@ -36,6 +36,7 @@ import {
 } from "../../../components/live/live-user-run";
 import { getLiveRunForUser } from "../../../lib/live-runs";
 import { useReconnectWebsocket } from "../../../components/websocket/use-reconnect-websocket";
+import { encodeURI } from "~src/utils/uri";
 
 interface RunPageProps extends AppProps {
     run: Run;
@@ -107,7 +108,7 @@ const RunPage = ({
     runName = run.run;
 
     const loadCompare = async () => {
-        const gameName = encodeURIComponent(run.game);
+        const gameName = encodeURI(run.game);
 
         const url = `${baseUrl}/api/games/${gameName}`;
         const gamesData: StatsData = await (

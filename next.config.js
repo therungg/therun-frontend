@@ -10,6 +10,12 @@ module.exports = {
     productionBrowserSourceMaps: true,
     reactStrictMode: true,
     images: {
+        remotePatterns: [
+            {
+                protocol: "https",
+                hostname: "images.igdb.com",
+            },
+        ],
         domains: ["static-cdn.jtvnw.net", "raw.githubusercontent.com"],
     },
 };

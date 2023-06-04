@@ -1,3 +1,4 @@
+import { encodeURI } from "~src/utils/uri";
 import { getRun } from "../../../../../lib/get-run";
 
 export const handler = async (req: any, res: any) => {
@@ -43,11 +44,9 @@ export const handler = async (req: any, res: any) => {
 };
 
 const remove = async (user: string, game: string, category: string) => {
-    const url = `${
-        process.env.NEXT_PUBLIC_DATA_URL
-    }/users/${user}/${encodeURIComponent(game)}/${encodeURIComponent(
-        category
-    )}`;
+    const url = `${process.env.NEXT_PUBLIC_DATA_URL}/users/${user}/${encodeURI(
+        game
+    )}/${encodeURI(category)}`;
 
     const res = await fetch(url, {
         method: "DELETE",
@@ -57,11 +56,9 @@ const remove = async (user: string, game: string, category: string) => {
 };
 
 const edit = async (user, game, category, body) => {
-    const url = `${
-        process.env.NEXT_PUBLIC_DATA_URL
-    }/users/${user}/${encodeURIComponent(game)}/${encodeURIComponent(
-        category
-    )}`;
+    const url = `${process.env.NEXT_PUBLIC_DATA_URL}/users/${user}/${encodeURI(
+        game
+    )}/${encodeURI(category)}`;
     const res = await fetch(url, {
         method: "PUT",
         body,

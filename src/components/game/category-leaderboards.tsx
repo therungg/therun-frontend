@@ -1,4 +1,4 @@
-import { CategoryLeaderboard } from "../../pages/game/[game]";
+import { CategoryLeaderboard } from "~app/games/[game]/game.types";
 import { DurationToFormatted, getFormattedString } from "../util/datetime";
 import {
     getAverageFromLeaderboard,

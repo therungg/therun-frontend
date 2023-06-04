@@ -1,4 +1,4 @@
-import { CategoryLeaderboard } from "../../pages/game/[game]";
+import { CategoryLeaderboard } from "~app/games/[game]/game.types";
 import { Table } from "react-bootstrap";
 import { DurationToFormatted, FromNow } from "../util/datetime";
 import { UserLink } from "../links/links";

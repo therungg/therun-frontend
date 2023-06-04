@@ -104,7 +104,7 @@ export const UserOverview = ({
                                 style={{ cursor: "pointer" }}
                             >
                                 {!sameGame && (
-                                    <a href={`/game/${game}`}>
+                                    <a href={`/games/${game}`}>
                                         {globalData.image &&
                                             globalData.image != "noimage" && (
                                                 <Image

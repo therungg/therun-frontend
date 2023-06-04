@@ -1,3 +1,5 @@
+import { encodeURI } from "~src/utils/uri";
+
 const fetchData = async (url: string) => {
     const res = await fetch(url);
     const json = await res.json();
@@ -7,7 +9,7 @@ const fetchData = async (url: string) => {
 
 export const getGame = async (game: string) => {
     game = game.replace("   ", " + ");
-    game = encodeURIComponent(game);
+    game = encodeURI(game);
 
     const promises = [
         fetchData(`${process.env.NEXT_PUBLIC_DATA_URL}/games/${game}`),
@@ -25,7 +27,7 @@ export const getGame = async (game: string) => {
 
 export const getGameGlobal = async (game: string) => {
     game = game.replace("   ", " + ");
-    game = encodeURIComponent(game);
+    game = encodeURI(game);
 
     const globalGameData = await fetchData(
         `${process.env.NEXT_PUBLIC_DATA_URL}/games/global/${game}`
@@ -39,8 +41,8 @@ export const getGameGlobal = async (game: string) => {
 };
 
 export const getCategory = async (game: string, category: string) => {
-    game = encodeURIComponent(game);
-    category = encodeURIComponent(category);
+    game = encodeURI(game);
+    category = encodeURI(category);
 
     const url = `${process.env.NEXT_PUBLIC_DATA_URL}/games/global/${game}/${category}`;
 

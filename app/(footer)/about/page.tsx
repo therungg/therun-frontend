@@ -70,7 +70,7 @@ export default function About() {
                 <li>
                     A detailed{" "}
                     <a
-                        href={"/game/Super Mario 64"}
+                        href={"/games/Super Mario 64"}
                         target={"_blank"}
                         rel={"noreferrer"}
                     >

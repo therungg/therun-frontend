@@ -22,6 +22,7 @@ import {
 import { TournamentRuns } from "../../components/tournament/tournament-runs";
 import { TournamentStandings } from "../../components/tournament/tournament-standings";
 import { useReconnectWebsocket } from "../../components/websocket/use-reconnect-websocket";
+import { encodeURI } from "~src/utils/uri";
 
 export const GenericTournament = ({
     liveDataMap,
@@ -833,7 +834,7 @@ export const getServerSidePropsGeneric: GetServerSideProps = async (
     }
 
     const tournament: Tournament = await getTournamentByName(
-        encodeURIComponent(tournamentName)
+        encodeURI(tournamentName)
     );
 
     tournament.game = tournament.eligibleRuns[0].game;
