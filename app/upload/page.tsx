@@ -1,6 +1,14 @@
-import { Dragdrop } from "../components/dragdrop";
+import { Metadata } from "next";
+import { getSession } from "../../src/actions/session.action";
+import { Dragdrop } from "../../src/components/dragdrop";
 
-export const Upload = ({ session }) => {
+export const metadata: Metadata = {
+    title: "Upload",
+    description: "Upload your splits",
+};
+
+export default async function Upload() {
+    const session = await getSession();
     if (!session.id) {
         return (
             <div>
@@ -11,6 +19,4 @@ export const Upload = ({ session }) => {
         );
     }
     return <Dragdrop sessionId={session.id} username={session.username} />;
-};
-
-export default Upload;
+}
