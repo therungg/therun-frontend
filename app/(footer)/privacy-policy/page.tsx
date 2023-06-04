@@ -1,4 +1,11 @@
-export const PrivacyPolicy = () => {
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Privacy Policy",
+    description: "Here's how we handle data",
+};
+
+export default function PrivacyPolicy() {
     return (
         <div>
             <p>The Run Privacy Policy</p>
@@ -211,6 +218,4 @@ export const PrivacyPolicy = () => {
             Email: info@therun.gg
         </div>
     );
-};
-
-export default PrivacyPolicy;
+}

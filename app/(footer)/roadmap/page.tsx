@@ -1,7 +1,15 @@
-export const Roadmap = () => {
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Roadmap",
+    description: "What's coming up",
+};
+
+// TODO: Link to the Github Issues or other project planning in the future
+export default function Roadmap() {
     return (
         <div>
-            <h1>Toadmap</h1>
+            <h1>Roadmap</h1>
 
             <p>
                 These are the things I am working on or want to be working on.
@@ -157,6 +165,4 @@ export const Roadmap = () => {
             </ul>
         </div>
     );
-};
-
-export default Roadmap;
+}

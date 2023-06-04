@@ -1,4 +1,10 @@
-export const Terms = () => {
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Terms & Conditions",
+    description: "Terms & Conditions for using and accessing The Run",
+};
+export default function Terms() {
     return (
         <div>
             Hi there. <br />
@@ -99,6 +105,4 @@ export const Terms = () => {
             </div>
         </div>
     );
-};
-
-export default Terms;
+}

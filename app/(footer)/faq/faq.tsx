@@ -1,7 +1,9 @@
+"use client";
 import { Accordion } from "react-bootstrap";
 import AccordionHeader from "react-bootstrap/AccordionHeader";
 import AccordionBody from "react-bootstrap/AccordionBody";
 import AccordionItem from "react-bootstrap/AccordionItem";
+
 export const Faq = () => {
     return (
         <div>

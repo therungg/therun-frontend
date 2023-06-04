@@ -1,6 +1,7 @@
+"use client";
+import { FromNow } from "~src/components/util/datetime";
 import { ReactElement } from "react";
 import { Col, Row } from "react-bootstrap";
-import { FromNow } from "../components/util/datetime";
 import Image from "next/image";
 
 export interface BlogInterface {
@@ -348,6 +349,8 @@ export const getBlogs = (): BlogInterface[] => {
                                         maxWidth: "100%",
                                         height: "auto",
                                     }}
+                                    width="200"
+                                    height="250"
                                 />
                             </a>
                         </span>
