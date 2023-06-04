@@ -1,3 +1,4 @@
+"use client";
 import Dropzone, { useDropzone } from "react-dropzone";
 import { upload } from "./fileupload/upload";
 import React, { CSSProperties, useMemo, useState } from "react";

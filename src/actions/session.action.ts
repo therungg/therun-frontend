@@ -5,6 +5,7 @@ import {
 import { getBaseUrl } from "./base-url.action";
 import { loginWithTwitch } from "../components/twitch/login-with-twitch";
 import { cookies } from "next/headers";
+import { User } from "../../types/session.types";
 
 export const createSession = async (code: string) => {
     const baseUrl = getBaseUrl();
@@ -37,7 +38,7 @@ export const createSession = async (code: string) => {
     }
 };
 
-export const getSession = async () => {
+export const getSession = async (): Promise<User> => {
     const sessionId = cookies().get("session_id")?.value ?? "";
     const session = await getExistingSession(sessionId);
 
@@ -45,5 +46,5 @@ export const getSession = async () => {
         return { id: sessionId, ...session };
     }
 
-    return {};
+    return { id: "", username: "", picture: "" };
 };

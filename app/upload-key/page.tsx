@@ -1,83 +1,36 @@
-import styles from "../components/css/Home.module.scss";
-import uploadKeyStyles from "../components/css/UploadKey.module.scss";
-import React, { useState } from "react";
-import useSWR from "swr";
-import { fetcher } from "../utils/fetcher";
+import styles from "../../src/components/css/Home.module.scss";
+import uploadKeyStyles from "../../src/components/css/UploadKey.module.scss";
+import { getSession } from "../../src/actions/session.action";
+import { CopyUploadKey } from "./copy-upload-key.component";
+import { getBaseUrl } from "../../src/actions/base-url.action";
 
-export const UploadKey = ({ session }) => {
-    const [showUploadKey, setShowUploadKey] = useState(false);
-    const [copySuccess, setCopySuccess] = useState(false);
-
-    const { data, error } = useSWR(
-        `/api/users/${session.id}-${session.username}/upload-key`,
-        fetcher
+export default async function UploadKey() {
+    const session = await getSession();
+    const baseUrl = getBaseUrl();
+    const data = await fetch(
+        `${baseUrl}/api/users/${session.id}-${session.username}/upload-key`
+    );
+    const { result } = (await data.json()) as { result: string };
+    let content = (
+        <div style={{ fontSize: "130%" }}>
+            Please log in first to access your Upload Key.
+        </div>
     );
 
-    if (error) return <div>Whoops, something went wrong...</div>;
-
+    if (session.username) {
+        content = (
+            <div className={styles.subtitle}>
+                <div className={uploadKeyStyles.uploadKeyContainer}>
+                    <CopyUploadKey uploadKey={result} />
+                </div>
+            </div>
+        );
+    }
     return (
         <div>
             <div className={styles.homeContainer}>
                 <h1 className={styles.title}>Upload Key</h1>
-                {session.username && (
-                    <div className={styles.subtitle}>
-                        {!data && <div>Loading upload key...</div>}
-                        {data && (
-                            <div className={uploadKeyStyles.uploadKeyContainer}>
-                                {showUploadKey && (
-                                    <div
-                                        className={uploadKeyStyles.uploadKeyBox}
-                                    >
-                                        {data.result}
-                                        <div
-                                            className={
-                                                uploadKeyStyles.uploadKey
-                                            }
-                                            onClick={() => {
-                                                navigator.clipboard.writeText(
-                                                    data.result
-                                                );
-                                                setCopySuccess(true);
-                                                setTimeout(() => {
-                                                    setCopySuccess(false);
-                                                }, 1500);
-                                            }}
-                                        >
-                                            <Copy />
-                                        </div>
-                                        {copySuccess && (
-                                            <div
-                                                className={
-                                                    uploadKeyStyles.copied
-                                                }
-                                            >
-                                                Copied to Clipboard!
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                                {!showUploadKey && (
-                                    <div
-                                        style={{ cursor: "pointer" }}
-                                        onClick={() => {
-                                            setShowUploadKey(!showUploadKey);
-                                            setTimeout(() => {
-                                                setShowUploadKey(false);
-                                            }, 10000);
-                                        }}
-                                    >
-                                        Click to show Upload Key
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                )}
-                {!session.username && (
-                    <div style={{ fontSize: "130%" }}>
-                        Please log in first to access your Upload Key.
-                    </div>
-                )}
+                {content}
                 <div style={{ marginTop: "4rem" }}>
                     <h2>What can I do with this?</h2>
                     <div style={{ fontSize: "130%" }}>
@@ -184,22 +137,4 @@ export const UploadKey = ({ session }) => {
             </div>
         </div>
     );
-};
-
-export const Copy = () => {
-    return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="36"
-            height="36"
-            fill="currentColor"
-            className="bi bi-clipboard"
-            viewBox="0 0 16 16"
-        >
-            <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z" />
-            <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z" />
-        </svg>
-    );
-};
-
-export default UploadKey;
+}
