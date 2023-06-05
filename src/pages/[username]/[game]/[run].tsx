@@ -36,7 +36,7 @@ import {
 } from "../../../components/live/live-user-run";
 import { getLiveRunForUser } from "../../../lib/live-runs";
 import { useReconnectWebsocket } from "../../../components/websocket/use-reconnect-websocket";
-import { encodeURI } from "~src/utils/uri";
+import { safeEncodeURI } from "~src/utils/uri";
 
 interface RunPageProps extends AppProps {
     run: Run;
@@ -108,7 +108,7 @@ const RunPage = ({
     runName = run.run;
 
     const loadCompare = async () => {
-        const gameName = encodeURI(run.game);
+        const gameName = safeEncodeURI(run.game);
 
         const url = `${baseUrl}/api/games/${gameName}`;
         const gamesData: StatsData = await (

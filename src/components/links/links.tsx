@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ReactNode } from "react";
 import { usePatreons } from "../patreon/use-patreons";
 import PatreonName from "../patreon/patreon-name";
-import { encodeURI } from "~src/utils/uri";
+import { safeEncodeURI } from "~src/utils/uri";
 
 interface ChildrenType {
     children?: ReactNode;
@@ -86,7 +86,9 @@ export const UserGameCategoryLink = ({
             href={
                 url
                     ? url
-                    : `/${username}/${encodeURI(game)}/${encodeURI(category)}`
+                    : `/${username}/${safeEncodeURI(game)}/${safeEncodeURI(
+                          category
+                      )}`
             }
             legacyBehavior
         >
@@ -97,7 +99,7 @@ export const UserGameCategoryLink = ({
 
 export const GameLink = ({ game, children }: GameLinkProps) => {
     return (
-        <Link href={`/games/${encodeURI(game)}`} legacyBehavior>
+        <Link href={`/games/${safeEncodeURI(game)}`} legacyBehavior>
             {children ? children : display(game)}
         </Link>
     );

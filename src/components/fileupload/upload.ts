@@ -1,4 +1,4 @@
-import { encodeURI } from "~src/utils/uri";
+import { safeEncodeURI } from "~src/utils/uri";
 
 export const upload = async (
     file: File,
@@ -13,7 +13,7 @@ export const upload = async (
 
     const baseUrl = process.env.NEXT_PUBLIC_UPLOAD_URL;
 
-    const url = `${baseUrl}?filename=${encodeURI(
+    const url = `${baseUrl}?filename=${safeEncodeURI(
         file.name
     )}&sessionId=${sessionId}`;
 

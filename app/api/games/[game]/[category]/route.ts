@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCategory } from "~src/components/game/get-game";
-import { encodeURI } from "~src/utils/uri";
+import { safeEncodeURI } from "~src/utils/uri";
 
 export async function GET(
     _request: NextRequest,
@@ -16,7 +16,10 @@ export async function GET(
         return NextResponse.json({});
     }
 
-    const gameData = await getCategory(encodeURI(game), encodeURI(category));
+    const gameData = await getCategory(
+        safeEncodeURI(game),
+        safeEncodeURI(category)
+    );
 
     return NextResponse.json(gameData, {
         status: 200,

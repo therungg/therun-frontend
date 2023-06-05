@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { getBaseUrl } from "~src/actions/base-url.action";
-import { encodeURI } from "~src/utils/uri";
+import { safeEncodeURI } from "~src/utils/uri";
 import { Game } from "./game";
 
 interface PageProps {
@@ -23,7 +23,9 @@ export default async function GamePage({ params }: PageProps) {
     if (!gameName) {
         throw new Error("Params not found");
     }
-    const response = await fetch(`${baseUrl}/api/games/${encodeURI(gameName)}`);
+    const response = await fetch(
+        `${baseUrl}/api/games/${safeEncodeURI(gameName)}`
+    );
     const data = await response.json();
 
     if (!data?.global || !data?.data?.game) {

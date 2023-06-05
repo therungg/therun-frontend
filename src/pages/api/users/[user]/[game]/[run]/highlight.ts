@@ -1,11 +1,11 @@
-import { encodeURI } from "~src/utils/uri";
+import { safeEncodeURI } from "~src/utils/uri";
 
 export const handler = async (req: any, res: any) => {
     const data = req.url.replace("/api/users/", "");
     const [user, game, category] = data.split("/");
     // Encoding like this to make sure that the decodeURIComponent doesn't throw
-    const encodedGame = encodeURI(game);
-    const encodedCategory = encodeURI(category);
+    const encodedGame = safeEncodeURI(game);
+    const encodedCategory = safeEncodeURI(category);
     const decodedGame = decodeURIComponent(encodedGame);
     const decodedCategory = decodeURIComponent(encodedCategory);
 
@@ -16,9 +16,11 @@ export const handler = async (req: any, res: any) => {
 };
 
 const highlight = async (user, game, category) => {
-    const url = `${process.env.NEXT_PUBLIC_DATA_URL}/users/${user}/${encodeURI(
-        game
-    )}/${encodeURI(category)}/highlight`;
+    const url = `${
+        process.env.NEXT_PUBLIC_DATA_URL
+    }/users/${user}/${safeEncodeURI(game)}/${safeEncodeURI(
+        category
+    )}/highlight`;
     const res = await fetch(url, {
         method: "PUT",
     });

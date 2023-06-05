@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Col, Row } from "react-bootstrap";
 import { getFormattedString } from "../util/datetime";
 import styles from "../css/Search.module.scss";
-import { encodeURI } from "~src/utils/uri";
+import { safeEncodeURI } from "~src/utils/uri";
 
 // This page was one of the first I ever wrote for the site and is fully outdated and terrible.
 // The entire search view needs to be refactored
@@ -97,7 +97,7 @@ export const AutoCompletion = () => {
                 pb
             )}`;
             if (results.pbgt) value += " (IGT)";
-            const url = `/${username}/${encodeURI(game)}/${encodeURI(
+            const url = `/${username}/${safeEncodeURI(game)}/${safeEncodeURI(
                 category
             )}`;
             return (

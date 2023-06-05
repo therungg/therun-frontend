@@ -10,7 +10,7 @@ import patreonStyles from "../components/patreon/patreon-styles";
 import PatreonName from "../components/patreon/patreon-name";
 import { AppContext } from "../common/app.context";
 import { TwitchLoginButton } from "../components/twitch/TwitchLoginButton";
-import { encodeURI } from "~src/utils/uri";
+import { safeEncodeURI } from "~src/utils/uri";
 
 const patreonApiBaseUrl = process.env.NEXT_PUBLIC_PATREON_API_URL;
 
@@ -354,7 +354,7 @@ ChangeAppearance.getInitialProps = async (ctx) => {
     }
 
     if (ctx.query.code && ctx.session && ctx.session.id && !ctx.query.scope) {
-        const base = encodeURI(`${baseUrl}/change-appearance`);
+        const base = safeEncodeURI(`${baseUrl}/change-appearance`);
 
         const loginUrl = `${process.env.NEXT_PUBLIC_PATREON_LOGIN_URL}?code=${ctx.query.code}&redirect_uri=${base}&session_id=${ctx.session.id}`;
         const patreonLinkData = await fetch(loginUrl);

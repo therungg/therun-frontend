@@ -1,4 +1,4 @@
-import { encodeURI } from "~src/utils/uri";
+import { safeEncodeURI } from "~src/utils/uri";
 import { History } from "../common/types";
 
 export const getSplitsHistory = async (
@@ -20,7 +20,7 @@ export const getSplitsHistoryUrl = (
         .split("/")
         .map((name, key) => {
             if (key > 2) return name;
-            return encodeURI(name);
+            return safeEncodeURI(name);
         })
         .join("/");
 
