@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default async function AllGamesPage() {
     const allGames =
-        (await getTabulatedGameStatsPopular()) ?? (await getAllGames());
+        (await getAllGames()) ?? (await getTabulatedGameStatsPopular());
     return <AllGames games={allGames} />;
 }
 async function getAllGames() {
