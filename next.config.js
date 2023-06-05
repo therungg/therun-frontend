@@ -18,4 +18,13 @@ module.exports = {
         ],
         domains: ["static-cdn.jtvnw.net", "raw.githubusercontent.com"],
     },
+    async redirects() {
+        return [
+            {
+                source: "/game/:path*",
+                destination: "/games/:path*",
+                permanent: true,
+            },
+        ];
+    },
 };
