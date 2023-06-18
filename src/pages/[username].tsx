@@ -252,6 +252,7 @@ const User = ({
                             height={"800px"}
                             muted
                             withChat={true}
+                            autoplay={false}
                         />
                     </Tab>
                 </Tabs>

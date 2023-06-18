@@ -129,6 +129,7 @@ export const RecommendedStream = ({
                         height={"100%"}
                         muted
                         withChat={false}
+                        autoplay={false}
                     />
                 </Col>
                 <Col
