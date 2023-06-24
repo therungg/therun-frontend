@@ -786,6 +786,7 @@ const isLiveDataEligibleForTournament = (
     let eligible = true;
 
     if (
+        !data ||
         !data.game ||
         !data.category ||
         data.game.toLowerCase().trim() !==
