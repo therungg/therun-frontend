@@ -7,7 +7,7 @@ export const getServerSideProps: GetServerSideProps = async (
     context: GetServerSidePropsContext
 ) => {
     context.params = {
-        tournament: "Defeat Ganon No SRM Community Clash",
+        tournament: "Defeat Ganon No SRM Community Clash Main Event",
     };
 
     return getServerSidePropsGeneric(context);
