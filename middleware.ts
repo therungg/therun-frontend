@@ -7,6 +7,7 @@ export function middleware(request: NextRequest) {
         "/dirtythirty",
         "/saesr",
         "/saesr_events",
+        "/DefeatGanonCC"
     ];
 
     function shouldReroute(reroute: string, pathname: string): boolean {
