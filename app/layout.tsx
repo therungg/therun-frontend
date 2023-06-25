@@ -9,7 +9,7 @@ import "./material-symbols-outline.css";
 import "../src/styles/globals.css";
 import "../src/styles/calendar-heatmap.min.css";
 import { Scripts } from "./scripts";
-import { getSession } from "../src/actions/session.action";
+import { getSession } from "~src/actions/session.action";
 
 export const metadata: Metadata = {
     title: {

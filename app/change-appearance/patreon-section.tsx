@@ -1,17 +1,15 @@
-import { PatreonBunnySvg } from "./patron";
+"use client";
+
+import { PatreonBunnySvg } from "~src/pages/patron";
 import { Button, Col, Row } from "react-bootstrap";
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
+import React, { useState } from "react";
 import Switch from "react-switch";
-import styles from "../components/css/Appearance.module.scss";
+import styles from "~src/components/css/Appearance.module.scss";
 import axios from "axios";
 import Router from "next/router";
-import patreonStyles from "../components/patreon/patreon-styles";
-import PatreonName from "../components/patreon/patreon-name";
-import { AppContext } from "../common/app.context";
-import { TwitchLoginButton } from "../components/twitch/TwitchLoginButton";
-
-const patreonApiBaseUrl = process.env.NEXT_PUBLIC_PATREON_API_URL;
+import patreonStyles from "~src/components/patreon/patreon-styles";
+import PatreonName from "~src/components/patreon/patreon-name";
+import { User } from "../../types/session.types";
 
 interface PatreonPreferences {
     hide: boolean;
@@ -21,31 +19,15 @@ interface PatreonPreferences {
     colorPreference: number;
 }
 
-export const ChangeAppearance = ({ session, userPatreonData }) => {
-    return (
-        <div>
-            {!userPatreonData && (
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        marginBottom: "2rem",
-                    }}
-                >
-                    <LoginWithPatreonSection session={session} />
-                </div>
-            )}
-            {userPatreonData && (
-                <CustomPatreonSection
-                    session={session}
-                    userPatreonData={userPatreonData}
-                />
-            )}
-        </div>
-    );
-};
+interface PatreonSectionProps {
+    userPatreonData: any;
+    session: User;
+}
 
-const CustomPatreonSection = ({ userPatreonData, session }) => {
+export default function PatreonSection({
+    userPatreonData,
+    session,
+}: PatreonSectionProps) {
     return (
         <div>
             {userPatreonData.tier && (
@@ -57,9 +39,9 @@ const CustomPatreonSection = ({ userPatreonData, session }) => {
             {!userPatreonData.tier && "You are not a patreon!"}
         </div>
     );
-};
+}
 
-const YouAreAPatreon = ({ userPatreonData, session }) => {
+const YouAreAPatreon = ({ userPatreonData, session }: PatreonSectionProps) => {
     return (
         <div>
             <div>
@@ -72,7 +54,7 @@ const YouAreAPatreon = ({ userPatreonData, session }) => {
     );
 };
 
-const PatreonSettings = ({ userPatreonData, session }) => {
+const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
     const preferences: PatreonPreferences = userPatreonData.preferences
         ? userPatreonData.preferences
         : {
@@ -136,7 +118,9 @@ const PatreonSettings = ({ userPatreonData, session }) => {
                                                         "joeys64"
                                                 ) {
                                                     setColorPreference(
-                                                        style.id
+                                                        parseInt(
+                                                            style.id as string
+                                                        )
                                                     );
                                                 } else {
                                                     alert(
@@ -295,84 +279,3 @@ const PatreonSettings = ({ userPatreonData, session }) => {
         </Row>
     );
 };
-
-const LoginWithPatreonSection = ({ session }) => {
-    const { baseUrl } = React.useContext(AppContext);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        setLoading(false);
-    }, []);
-
-    if (loading) {
-        return <div>Loading...</div>;
-    }
-
-    if (!session.username) {
-        return (
-            <div>
-                To connect your Patreon account, login with Twitch first.
-                <div style={{ display: "flex", justifyContent: "center" }}>
-                    <TwitchLoginButton url={"/change-appearance"} />
-                </div>
-            </div>
-        );
-    }
-
-    let base = baseUrl;
-    if (!base) {
-        base = "https://therun.gg%2Fchange-appearance";
-    } else {
-        base += "%2fchange-appearance";
-    }
-
-    const url = `https://patreon.com/oauth2/authorize?response_type=code&client_id=QLyBxIC3dSTxWEVqx_YJZCJSHHWxyt3LhE8Nue4_aOXmYlMsq9whaL2-VcqyCf1n&scope=identity&redirect_uri=${base}`;
-
-    return (
-        <div>
-            <div className={styles.matchText}>
-                To match your Patreon with your therun.gg account, link your
-                Patreon account here!
-            </div>
-            <div className={styles.linkPatreonButtonContainer}>
-                <Link passHref href={url} legacyBehavior>
-                    <Button>Link with Patreon</Button>
-                </Link>
-            </div>
-        </div>
-    );
-};
-
-ChangeAppearance.getInitialProps = async (ctx) => {
-    let baseUrl = "";
-
-    if (ctx.req) {
-        const host = ctx.req.headers.host;
-        const protocol = host === "localhost:3000" ? "http://" : "https://";
-        baseUrl = protocol + baseUrl;
-    }
-
-    if (ctx.query.code && ctx.session && ctx.session.id && !ctx.query.scope) {
-        const base = encodeURIComponent(`${baseUrl}/change-appearance`);
-
-        const loginUrl = `${process.env.NEXT_PUBLIC_PATREON_LOGIN_URL}?code=${ctx.query.code}&redirect_uri=${base}&session_id=${ctx.session.id}`;
-        const patreonLinkData = await fetch(loginUrl);
-        const result = await patreonLinkData.json();
-
-        return {
-            userPatreonData: result,
-        };
-    } else if (ctx.session && ctx.session.username) {
-        const patreonDataUrl = `${patreonApiBaseUrl}/patreon/${ctx.session.username}`;
-        const patreonLinkData = await fetch(patreonDataUrl);
-        const result = await patreonLinkData.json();
-
-        return {
-            userPatreonData: result,
-        };
-    }
-
-    return {};
-};
-
-export default ChangeAppearance;

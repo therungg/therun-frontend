@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSession } from "../../src/actions/session.action";
-import { getBaseUrl } from "../../src/actions/base-url.action";
+import { createSession } from "~src/actions/session.action";
+import { getBaseUrl } from "~src/actions/base-url.action";
 import { revalidatePath } from "next/cache";
 
 const MAX_AGE = 30 * 60 * 60 * 24;
 
-export async function GET(request: NextRequest) {
-    const baseUrl = getBaseUrl();
+export async function GET(request: NextRequest, postfix = "") {
+    const baseUrl = `${getBaseUrl()}/${postfix}`;
     const code = request.nextUrl.searchParams.get("code");
     if (code) {
         const { id } = (await createSession(code)) || {};
