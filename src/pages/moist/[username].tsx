@@ -1,9 +1,9 @@
 import Moist from "../moist";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
-import { LiveRun } from "../../components/live/live-user-run";
 import { getLiveRunsForGameCategory } from "../../lib/live-runs";
 import { getTournamentByName } from "../../components/tournament/getTournaments";
-import { liveRunArrayToMap } from "../live";
+import { LiveRun } from "~app/live/live.types";
+import { liveRunArrayToMap } from "~app/live/utilities";
 
 export const getServerSideProps: GetServerSideProps = async (
     context: GetServerSidePropsContext
