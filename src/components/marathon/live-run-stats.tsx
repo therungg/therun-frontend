@@ -1,4 +1,3 @@
-import { LiveRun } from "../live/live-user-run";
 import { Table } from "react-bootstrap";
 import { useEffect, useState } from "react";
 import {
@@ -11,6 +10,7 @@ import {
     SendMarathonDataButton,
 } from "./send-marathon-data-button";
 import moment from "moment/moment";
+import { LiveRun } from "~app/live/live.types";
 
 interface LiveRunEvent extends MarathonEvent {
     data: LiveRunEventData;

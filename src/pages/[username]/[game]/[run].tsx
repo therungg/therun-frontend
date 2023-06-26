@@ -29,13 +29,10 @@ import { getGameGlobal } from "../../../components/game/get-game";
 import { Vod } from "../../../components/run/dashboard/vod";
 import { Golds } from "../../../components/run/dashboard/golds";
 import Timesaves from "../../../components/run/dashboard/timesaves";
-import {
-    LiveIcon,
-    LiveRun,
-    LiveUserRun,
-} from "../../../components/live/live-user-run";
+import { LiveIcon, LiveUserRun } from "../../../components/live/live-user-run";
 import { getLiveRunForUser } from "../../../lib/live-runs";
 import { useReconnectWebsocket } from "../../../components/websocket/use-reconnect-websocket";
+import { LiveRun } from "~app/live/live.types";
 
 interface RunPageProps extends AppProps {
     run: Run;

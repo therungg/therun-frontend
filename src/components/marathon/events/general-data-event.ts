@@ -1,7 +1,7 @@
 import { MarathonEvent } from "../send-marathon-data-button";
-import { LiveRun } from "../../live/live-user-run";
 import { Run } from "../../../common/types";
 import { getFormattedString } from "../../util/datetime";
+import { LiveRun } from "~app/live/live.types";
 
 interface GeneralDataEvent extends MarathonEvent {
     type: "general_data_event";

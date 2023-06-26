@@ -15,14 +15,11 @@ import { getGlobalUser } from "../lib/get-global-user";
 import { HighlightedRun } from "../components/run/dashboard/highlighted-run";
 import { GlobalGameData } from "./[username]/[game]/[run]";
 import { getLiveRunForUser } from "../lib/live-runs";
-import {
-    LiveIcon,
-    LiveRun,
-    LiveUserRun,
-} from "../components/live/live-user-run";
+import { LiveIcon, LiveUserRun } from "../components/live/live-user-run";
 import Stats from "../components/user/stats";
 import { TwitchEmbed } from "../vendor/react-twitch-embed/dist/index";
 import { useReconnectWebsocket } from "../components/websocket/use-reconnect-websocket";
+import { LiveRun } from "~app/live/live.types";
 
 export interface UserPageProps {
     runs: Run[];
