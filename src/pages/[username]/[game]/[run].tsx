@@ -257,7 +257,7 @@ const RunPage = ({
                             href={`/live/${username}`}
                             className={"link-without-style"}
                         >
-                            <LiveUserRun liveRun={liveRun} />
+                            <LiveUserRun liveRun={liveRun} isUrl={true} />
                         </a>
                     </div>
                 </div>

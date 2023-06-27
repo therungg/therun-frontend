@@ -198,6 +198,7 @@ const User = ({
                                                 className={"link-without-style"}
                                             >
                                                 <LiveUserRun
+                                                    isUrl={true}
                                                     liveRun={liveRun}
                                                 />
                                             </a>

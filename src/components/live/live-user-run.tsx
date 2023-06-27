@@ -15,12 +15,14 @@ export const LiveUserRun = ({
     showGameCategory = true,
     leaderboard = null,
     leaderboardGameTime = null,
+    isUrl = false,
 }: {
     liveRun: LiveRun;
     currentlyActive?: string;
     showGameCategory?: boolean;
     leaderboard?: any;
     leaderboardGameTime?: any;
+    isUrl?: boolean;
 }) => {
     const [dark, setDark] = useState(true);
     const [liveUserStyles, setLiveUserStyles] = useState({});
@@ -164,7 +166,10 @@ export const LiveUserRun = ({
                                                 overflow: "hidden",
                                             }}
                                         >
-                                            <UserLink username={liveRun.user} />
+                                            <UserLink
+                                                username={liveRun.user}
+                                                parentIsUrl={isUrl}
+                                            />
                                         </div>
                                         {liveRun.currentlyStreaming && (
                                             <div
