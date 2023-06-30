@@ -1,4 +1,3 @@
-import { LiveRun } from "./live-user-run";
 import { Col, Row } from "react-bootstrap";
 import React from "react";
 import {
@@ -6,6 +5,7 @@ import {
     DifferenceFromOne,
     DurationToFormatted,
 } from "../util/datetime";
+import { LiveRun } from "~app/live/live.types";
 
 type CurrentRunDetailsProps = {
     liveRun: LiveRun;

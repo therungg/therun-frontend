@@ -1,5 +1,5 @@
-import { LiveRun } from "../live/live-user-run";
 import { SendMarathonDataButton } from "./send-marathon-data-button";
+import { LiveRun } from "~app/live/live.types";
 
 export const SuggestedEvents = ({
     liveRun,

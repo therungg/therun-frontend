@@ -1,4 +1,4 @@
-import { LiveRun } from "./live-user-run";
+import { LiveRun } from "~app/live/live.types";
 import React, { useEffect, useState } from "react";
 import { getSplitsHistoryUrl } from "../../lib/get-splits-history";
 import { Runs } from "../../pages/[username]/[game]/[run]";

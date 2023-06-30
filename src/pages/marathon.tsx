@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { LiveDataMap, liveRunArrayToMap } from "./live";
 import { GetServerSideProps } from "next";
-import { LiveRun } from "../components/live/live-user-run";
 import { getAllLiveRuns } from "../lib/live-runs";
 import styles from "../components/css/Search.module.scss";
 import MarathonRun from "../components/marathon/marathon-run";
 import { Col, Row } from "react-bootstrap";
 import { useReconnectWebsocket } from "../components/websocket/use-reconnect-websocket";
+import { LiveDataMap, LiveRun } from "~app/live/live.types";
+import { liveRunArrayToMap } from "~app/live/utilities";
 
 export const Marathon = ({
     liveDataMap,

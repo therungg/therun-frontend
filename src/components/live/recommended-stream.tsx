@@ -1,4 +1,4 @@
-import { LiveRun } from "./live-user-run";
+import { LiveRun } from "~app/live/live.types";
 import { Col, Row } from "react-bootstrap";
 import styles from "../../components/css/LiveRun.module.scss";
 import { useEffect, useRef, useState } from "react";
