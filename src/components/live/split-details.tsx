@@ -1,4 +1,4 @@
-import { LiveRun } from "./live-user-run";
+import { LiveRun } from "~app/live/live.types";
 import { RunHistory, SplitsHistory } from "../../common/types";
 import SplitName from "../transformers/split-name";
 import { getSplitStatus } from "./recommended-stream";

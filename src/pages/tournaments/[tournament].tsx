@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, Col, Image, Row, Tab, Tabs } from "react-bootstrap";
-import { LiveRun, LiveUserRun } from "../../components/live/live-user-run";
+import { LiveUserRun } from "../../components/live/live-user-run";
 import { RecommendedStream } from "../../components/live/recommended-stream";
-import { getRecommendedStream, LiveDataMap } from "../live";
 import { GetServerSideProps, GetServerSidePropsContext } from "next";
 import runStyles from "../../components/css/LiveRun.module.scss";
 import { getTournamentByName } from "../../components/tournament/getTournaments";
@@ -22,6 +21,8 @@ import {
 import { TournamentRuns } from "../../components/tournament/tournament-runs";
 import { TournamentStandings } from "../../components/tournament/tournament-standings";
 import { useReconnectWebsocket } from "../../components/websocket/use-reconnect-websocket";
+import { LiveDataMap, LiveRun } from "~app/live/live.types";
+import { getRecommendedStream } from "~app/live/utilities";
 
 export const GenericTournament = ({
     liveDataMap,

@@ -2,10 +2,10 @@ import styles from "../css/LiveRun.module.scss";
 import { Col, Container, Row } from "react-bootstrap";
 import SplitName from "../transformers/split-name";
 import { Difference, DurationToFormatted } from "../util/datetime";
-import { LivesplitTimer } from "../../pages/live";
 import { getSplitStatus } from "./recommended-stream";
-import { LiveRun } from "./live-user-run";
 import React, { useEffect, useState } from "react";
+import { LiveRun } from "~app/live/live.types";
+import { LiveSplitTimerComponent } from "~app/live/live-split-timer.component";
 
 export const SplitsViewer = ({
     activeLiveRun,
@@ -385,7 +385,7 @@ export const SplitsViewer = ({
                                         styles.splitsFooterTimerMainContainer
                                     }
                                 >
-                                    <LivesplitTimer
+                                    <LiveSplitTimerComponent
                                         liveRun={activeLiveRun}
                                         dark={dark}
                                         className={styles.splitsTimerContainer}
@@ -394,7 +394,7 @@ export const SplitsViewer = ({
                                     />
                                 </Row>
                                 <Row>
-                                    <LivesplitTimer
+                                    <LiveSplitTimerComponent
                                         liveRun={activeLiveRun}
                                         dark={dark}
                                         className={
