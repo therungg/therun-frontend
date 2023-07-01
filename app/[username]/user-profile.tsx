@@ -1,32 +1,29 @@
-import type { GetServerSideProps, GetServerSidePropsContext } from "next";
-import { Run, RunSession } from "../common/types";
-import { getUserRuns } from "../lib/get-user-runs";
-import { UserOverview } from "../components/run/user-detail/user-overview";
+"use client";
+
+import { Run, RunSession } from "~src/common/types";
+import { UserOverview } from "~src/components/run/user-detail/user-overview";
 import { Col, Row, Tab, Tabs } from "react-bootstrap";
-import { SessionOverview } from "../components/run/user-detail/session-overview";
-import { UserStats } from "../components/run/user-detail/user-stats";
+import { SessionOverview } from "~src/components/run/user-detail/session-overview";
+import { UserStats } from "~src/components/run/user-detail/user-stats";
 import React, { useEffect, useReducer, useState } from "react";
-import { GametimeForm } from "../components/gametime/gametime-form";
+import { GametimeForm } from "~src/components/gametime/gametime-form";
 import Link from "next/link";
-import styles from "../components/css/User.module.scss";
-import { getGameGlobal } from "../components/game/get-game";
-import { Userform } from "../components/user/userform";
-import { getGlobalUser } from "../lib/get-global-user";
-import { HighlightedRun } from "../components/run/dashboard/highlighted-run";
-import { GlobalGameData } from "./[username]/[game]/[run]";
-import { getLiveRunForUser } from "../lib/live-runs";
-import { LiveIcon, LiveUserRun } from "../components/live/live-user-run";
-import Stats from "../components/user/stats";
-import { TwitchEmbed } from "../vendor/react-twitch-embed/dist/index";
-import { useReconnectWebsocket } from "../components/websocket/use-reconnect-websocket";
+import styles from "~src/components/css/User.module.scss";
+import { Userform } from "~src/components/user/userform";
+import { HighlightedRun } from "~src/components/run/dashboard/highlighted-run";
+import { LiveIcon, LiveUserRun } from "~src/components/live/live-user-run";
+import Stats from "~src/components/user/stats";
+import { TwitchEmbed } from "~src/vendor/react-twitch-embed/dist/index";
+import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
 import { LiveRun } from "~app/live/live.types";
+import { getRunmap } from "~app/[username]/runmap.component";
+import { prepareSessions } from "~app/[username]/prepare-sessions.component";
+import { GlobalGameData } from "~src/pages/[username]/[game]/[run]";
 
 export interface UserPageProps {
     runs: Run[];
     username: string;
-    sessions: RunSession[];
     hasGameTime: boolean;
-    gameTimeSessions?: RunSession[] | null;
     defaultGameTime: boolean;
     session: any;
     userData: any;
@@ -277,187 +274,8 @@ const NoRuns = (username: string, session: any, userData: any) => {
     );
 };
 
-export const getServerSideProps: GetServerSideProps = async (
-    context: GetServerSidePropsContext
-) => {
-    if (!context.params || !context.params.username)
-        throw new Error("Username not found");
-
-    const username: string = context.params.username as string;
-    const runs = await getUserRuns(username);
-
-    const allRunsRunMap = getRunmap(runs);
-
-    const promises = Array.from(allRunsRunMap.keys()).map((game) => {
-        game = game.split("#")[0];
-        return getGameGlobal(game);
-    });
-
-    const allGlobalGameData = await Promise.all(promises);
-    const userData = await getGlobalUser(username);
-
-    const hasGameTime = !!runs.find((run) => run.hasGameTime);
-
-    let defaultGameTime = hasGameTime;
-
-    if (defaultGameTime) {
-        defaultGameTime = !!runs.find((run) => {
-            const thisGlobalGameData = allGlobalGameData.find(
-                (value: GlobalGameData) => {
-                    return value.display === run.game;
-                }
-            );
-
-            return (
-                run.hasGameTime &&
-                !!thisGlobalGameData &&
-                !thisGlobalGameData.forceRealTime
-            );
-        });
-    }
-
-    const liveData = await getLiveRunForUser(username);
-
-    return {
-        props: {
-            runs,
-            username,
-            userData,
-            hasGameTime,
-            defaultGameTime,
-            allGlobalGameData,
-            liveData,
-        },
-    };
-};
-
 const filterRunsByGame = (runs: Run[], game: string): Run[] => {
     return runs.filter((run) => run.game === game);
 };
 
-const getRunmap = (runs: Run[]) => {
-    const runMap: Map<string, Run[]> = new Map();
-    const uniqueVariantCount: Map<string, string[]> = new Map();
-
-    if (!runs) return runMap;
-
-    runs.filter((run) => !!run.game).forEach((run: Run) => {
-        const variants: string[] = [];
-
-        if (run.platform) {
-            variants.push(`Platform:${run.platform}`);
-        }
-
-        if (run.emulator) {
-            variants.push("Uses Emulator: Yes");
-        }
-
-        if (run.gameregion) {
-            variants.push(`Region:${run.gameregion}`);
-        }
-
-        if (run.variables) {
-            Object.entries(run.variables).forEach(([k, v]) => {
-                variants.push(`${k}:${v}`);
-            });
-        }
-
-        let runName = run.game;
-
-        if (variants.length > 0) {
-            runName += `#${variants.join("#")}`;
-
-            if (!uniqueVariantCount.has(run.game)) {
-                uniqueVariantCount.set(run.game, []);
-            }
-
-            const count = uniqueVariantCount.get(run.game);
-            count.push(runName);
-            uniqueVariantCount.set(run.game, count);
-        }
-
-        if (!runMap.has(runName)) {
-            runMap.set(runName, []);
-        }
-
-        const map = runMap.get(runName) as Run[];
-        map.push(run);
-        runMap.set(runName, map);
-    });
-
-    uniqueVariantCount.forEach((variants, game) => {
-        if (variants.length !== 1) return;
-
-        if (!runMap.has(game)) return;
-
-        const variantName = variants[0];
-
-        const currentVariantRuns = runMap.get(variantName);
-
-        runMap.get(game).forEach((run) => {
-            currentVariantRuns.push(run);
-        });
-
-        runMap.set(variantName, currentVariantRuns);
-        runMap.delete(game);
-    });
-
-    const sortedRunMap = new Map(
-        [...runMap].sort((a, b) => {
-            const aHasHighlighted = a[1].find((run) => run.highlighted);
-            const bHasHighlighted = b[1].find((run) => run.highlighted);
-
-            if (aHasHighlighted && bHasHighlighted) {
-                if (a[0] == b[0]) return 0;
-                return a[0] > b[0] ? 1 : -1;
-            }
-            if (aHasHighlighted) {
-                return -1;
-            }
-            if (bHasHighlighted) {
-                return 1;
-            }
-            return 0;
-        })
-    );
-
-    sortedRunMap.forEach((values, key) => {
-        values.sort((a, b) => {
-            if (a.highlighted && b.highlighted) {
-                return a.run > b.run ? 1 : -1;
-            }
-            if (a.highlighted) {
-                return -1;
-            }
-            if (b.highlighted) {
-                return 1;
-            }
-            return 0;
-        });
-
-        sortedRunMap.set(key, values);
-    });
-
-    return sortedRunMap;
-};
-
-const prepareSessions = (runs: Run[], gametime: boolean): RunSession[] => {
-    const sessions: RunSession[] = [];
-
-    runs.forEach((run) => {
-        const currentSessions =
-            gametime && run.gameTimeData?.sessions
-                ? run.gameTimeData.sessions
-                : run.sessions;
-        currentSessions.forEach((session) => {
-            session.gameTime = gametime && !!run.gameTimeData?.sessions;
-            session.game = `${run.game} - ${run.run}`;
-            sessions.push(session);
-        });
-    });
-
-    sessions.sort((a, b) => (a.endedAt > b.endedAt ? -1 : 1));
-
-    return sessions.slice(0, 10);
-};
 export default User;
