@@ -49,14 +49,17 @@ export interface WrHistoryInterface {
 
 export const WrHistory = ({
     historyData,
+    maxEnd,
 }: {
     historyData: WrHistoryInterface[];
+    maxEnd?: Date;
 }) => {
     const maxLength = historyData.worldRecords.length;
 
     const [lastN, setLastN] = useState(maxLength);
 
     historyData = historyData.worldRecords.slice(-lastN);
+    if (!maxEnd) maxEnd = new Date();
 
     const availableShapes = [
         "circle",
@@ -200,7 +203,7 @@ export const WrHistory = ({
                                 victoryDataPoint.push(object[n + 1]);
                             } else {
                                 victoryDataPoint.push({
-                                    x: new Date(),
+                                    x: maxEnd,
                                     y: data.y,
                                     symbol: "",
                                 });
