@@ -1,6 +1,6 @@
-import { GET as baseGet } from "../route";
 import { NextRequest } from "next/server";
+import { afterLoginRedirect } from "~app/api/after-login-redirect";
 
 export async function GET(request: NextRequest) {
-    return baseGet(request, "change-appearance");
+    return afterLoginRedirect(request, "change-appearance");
 }
