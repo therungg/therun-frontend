@@ -6,7 +6,10 @@ import { GlobalGameData } from "~src/pages/[username]/[game]/[run]";
 import { getLiveRunForUser } from "~src/lib/live-runs";
 import UserProfile from "~app/[username]/user-profile";
 import { getSession } from "~src/actions/session.action";
-import { getTournamentNameFromSlug } from "~app/tournaments/tournament-list";
+import {
+    getAllTournamentSlugs,
+    getTournamentNameFromSlug,
+} from "~app/tournaments/tournament-list";
 import { TournamentPage } from "~app/tournaments/[tournament]/page";
 
 export default async function Page({
@@ -76,4 +79,10 @@ export default async function Page({
             allGlobalGameData={allGlobalGameData}
         />
     );
+}
+
+export async function generateStaticParams() {
+    return getAllTournamentSlugs().map((tournament) => {
+        return { username: tournament };
+    });
 }

@@ -11,6 +11,10 @@ const tournamentMap: Map<string, string> = new Map([
     ["WaifuRuns", "WaifuRuns RE4 Tournament"],
 ]);
 
+export const getAllTournamentSlugs = (): string[] => {
+    return Array.from(tournamentMap.keys());
+};
+
 export const getTournamentNameFromSlug = (slug: string): string | undefined => {
     return tournamentMap.get(slug);
 };
