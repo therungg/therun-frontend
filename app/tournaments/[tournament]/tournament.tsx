@@ -1,28 +1,29 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { Button, Col, Image, Row, Tab, Tabs } from "react-bootstrap";
-import { LiveUserRun } from "../../components/live/live-user-run";
-import { RecommendedStream } from "../../components/live/recommended-stream";
-import { GetServerSideProps, GetServerSidePropsContext } from "next";
-import runStyles from "../../components/css/LiveRun.module.scss";
-import { getTournamentByName } from "../../components/tournament/getTournaments";
-import { getLeaderboard } from "../../components/game/game-leaderboards";
-import { DurationToFormatted } from "../../components/util/datetime";
-import { getLiveRunsForGameCategory } from "../../lib/live-runs";
-import homeStyles from "../../components/css/Home.module.scss";
+import { LiveUserRun } from "~src/components/live/live-user-run";
+import { RecommendedStream } from "~src/components/live/recommended-stream";
+import runStyles from "~src/components/css/LiveRun.module.scss";
+import { getLeaderboard } from "~src/components/game/game-leaderboards";
+import { DurationToFormatted } from "~src/components/util/datetime";
+import homeStyles from "~src/components/css/Home.module.scss";
 import Countdown from "react-countdown";
 import useSWR from "swr";
-import { fetcher } from "../../utils/fetcher";
-import TournamentStats from "../../components/tournament/tournament-stats";
-import BanUser from "../../components/tournament/ban-user";
+import { fetcher } from "~src/utils/fetcher";
+import TournamentStats from "~src/components/tournament/tournament-stats";
+import BanUser from "~src/components/tournament/ban-user";
 import {
     Tournament,
     TournamentInfo,
-} from "../../components/tournament/tournament-info";
-import { TournamentRuns } from "../../components/tournament/tournament-runs";
-import { TournamentStandings } from "../../components/tournament/tournament-standings";
-import { useReconnectWebsocket } from "../../components/websocket/use-reconnect-websocket";
-import { LiveDataMap, LiveRun } from "~app/live/live.types";
+} from "~src/components/tournament/tournament-info";
+import { TournamentRuns } from "~src/components/tournament/tournament-runs";
+import { TournamentStandings } from "~src/components/tournament/tournament-standings";
+import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
+import { LiveDataMap } from "~app/live/live.types";
 import { getRecommendedStream } from "~app/live/utilities";
+import { isLiveDataEligibleForTournament } from "~app/tournaments/[tournament]/is-live-data-eligible-for-tournament.component";
+import { liveRunArrayToMap } from "~app/tournaments/[tournament]/live-run-array-to-map.component";
 
 export const GenericTournament = ({
     liveDataMap,
@@ -662,214 +663,3 @@ export const GenericTournament = ({
         </div>
     );
 };
-
-const liveRunArrayToMap = (
-    liveData: LiveRun[],
-    sort = "pb",
-    leaderboards = null,
-    leaderboardsRta = null
-) => {
-    liveData.sort((a, b) => {
-        if (sort === "time") {
-            if (a.currentSplitIndex < 0) return 1;
-            if (b.currentSplitIndex < 0) return -1;
-
-            const aTime = a.startedAt;
-            const bTime = b.startedAt;
-
-            if (!bTime) return 1;
-            if (!aTime) return -1;
-
-            if (aTime > bTime) return 1;
-            return -1;
-        }
-        if (sort === "name") {
-            if (a.user.toLowerCase() < b.user.toLowerCase()) return -1;
-            if (a.user.toLowerCase() == b.user.toLowerCase()) return 0;
-            return 1;
-        }
-        if (sort === "prediction") {
-            if (
-                !b.currentPrediction ||
-                !b.currentTime ||
-                parseInt(b.currentPrediction) < 1000 ||
-                b.gameData?.finishedAttemptCount < 10
-            ) {
-                return -1;
-            }
-            if (
-                !a.currentPrediction ||
-                !a.currentTime ||
-                parseInt(a.currentPrediction) < 1000 ||
-                a.gameData?.finishedAttemptCount < 10
-            ) {
-                return 1;
-            }
-            if (parseInt(a.currentPrediction) < parseInt(b.currentPrediction))
-                return -1;
-            return 1;
-        }
-        if (sort === "personalBest") {
-            if (!a.pb) return 1;
-            if (!b.pb) return -1;
-            if (a.pb < b.pb) return -1;
-            if (a.pb == b.pb) return 0;
-            return 1;
-        }
-        if (sort === "tournamentPb" || sort === "pb") {
-            if (!leaderboards || !leaderboards.pbLeaderboard) {
-                if (a.pb < b.pb) return -1;
-                if (a.pb == b.pb) return 0;
-                return 1;
-            }
-
-            const aUser = a.user;
-            const bUser = b.user;
-
-            const aLeaderboardRanking = leaderboards.pbLeaderboard.findIndex(
-                (count) => {
-                    return count.username == aUser;
-                }
-            );
-            const bLeaderboardRanking = leaderboards.pbLeaderboard.findIndex(
-                (count) => {
-                    return count.username == bUser;
-                }
-            );
-
-            if (aLeaderboardRanking < 0 && bLeaderboardRanking < 0) {
-                if (!leaderboardsRta || !leaderboardsRta.pbLeaderboard)
-                    return 1;
-
-                const newALeaderboardRanking =
-                    leaderboardsRta.pbLeaderboard.findIndex((count) => {
-                        return count.username == aUser;
-                    });
-                const newBLeaderboardRanking =
-                    leaderboardsRta.pbLeaderboard.findIndex((count) => {
-                        return count.username == bUser;
-                    });
-
-                if (newBLeaderboardRanking < 0) return -1;
-                if (newALeaderboardRanking < 0) return 1;
-
-                if (newALeaderboardRanking < newBLeaderboardRanking) return -1;
-                return 1;
-            }
-
-            if (bLeaderboardRanking < 0) return -1;
-            if (aLeaderboardRanking < 0) return 1;
-
-            if (aLeaderboardRanking < bLeaderboardRanking) return -1;
-            return 1;
-        }
-    });
-
-    const map = {};
-
-    liveData.forEach((l) => {
-        const user = l.user.toString();
-
-        map[user] = l;
-    });
-
-    return map;
-};
-
-export const getServerSideProps = async (context) => {
-    return getServerSidePropsGeneric(context);
-};
-
-const isLiveDataEligibleForTournament = (
-    data: LiveRun,
-    tournament: Tournament
-): boolean => {
-    let eligible = true;
-
-    if (
-        !data ||
-        !data.game ||
-        !data.category ||
-        data.game.toLowerCase().trim() !==
-            tournament.game?.toLowerCase().trim() ||
-        data.category.toLowerCase().trim() !==
-            tournament.category?.toLowerCase().trim()
-    ) {
-        eligible = false;
-    }
-
-    if (data.user) {
-        const isUserIneligible = tournament.ineligibleUsers?.includes(
-            data.user.toLowerCase()
-        );
-        const isUserEligible = tournament.eligibleUsers?.includes(
-            data.user.toLowerCase()
-        );
-
-        if (isUserIneligible) {
-            eligible = false;
-        } else if (
-            tournament.eligibleUsers &&
-            tournament.eligibleUsers.length > 0 &&
-            !isUserEligible
-        ) {
-            eligible = false;
-        }
-    }
-
-    return eligible;
-};
-
-export const getServerSidePropsGeneric: GetServerSideProps = async (
-    context: GetServerSidePropsContext
-) => {
-    if (!context.params || !context.params.tournament)
-        throw new Error("Tournament not found");
-
-    const tournamentName: string = context.params.tournament as string;
-
-    let tab = "live";
-
-    if (context.query && context.query.tab) {
-        tab = context.query.tab;
-    }
-
-    const tournament: Tournament = await getTournamentByName(
-        encodeURIComponent(tournamentName)
-    );
-
-    tournament.game = tournament.eligibleRuns[0].game;
-    tournament.category = tournament.eligibleRuns[0].category;
-
-    let liveData: LiveRun[] = await getLiveRunsForGameCategory(
-        tournament.game,
-        tournament.category
-    );
-
-    liveData = liveData.filter((data) =>
-        isLiveDataEligibleForTournament(data, tournament)
-    );
-
-    let tournamentLeaderboards = null;
-
-    if (tournament.leaderboards) {
-        tournamentLeaderboards =
-            tournament.gameTime && tournament.leaderboards.gameTime
-                ? tournament.leaderboards.gameTime
-                : tournament.leaderboards;
-    }
-
-    return {
-        props: {
-            liveDataMap: liveRunArrayToMap(
-                liveData,
-                "pb",
-                tournamentLeaderboards
-            ),
-            tournament,
-            tab,
-        },
-    };
-};
-
-export default GenericTournament;
