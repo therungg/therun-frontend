@@ -1,21 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getAllTournamentSlugs } from "~app/tournaments/tournament-list";
 
 export function middleware(request: NextRequest) {
-    const reroutes = [
-        "/WaifuRuns",
-        "/gsa",
-        "/dirtythirty",
-        "/saesr",
-        "/saesr_events",
-        "/DefeatGanonCC"
-    ];
+    const reroutes = getAllTournamentSlugs();
 
-    function shouldReroute(reroute: string, pathname: string): boolean {
+    const shouldReroute = (reroute: string, pathname: string): boolean => {
         return (
             reroute.toLowerCase() === pathname.toLowerCase() &&
             reroute !== pathname
         );
-    }
+    };
 
     const redirect = reroutes.find((reroute) =>
         shouldReroute(reroute, request.nextUrl.pathname)
