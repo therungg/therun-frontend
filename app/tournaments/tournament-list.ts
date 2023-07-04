@@ -9,7 +9,7 @@ const tournamentMap: Map<string, string> = new Map([
     ["moist", "The Elder Scrolls Adventures: Redguard Speedrun Challenge"],
     ["saesr", "NCW Seeding"],
     ["WaifuRuns", "WaifuRuns RE4 Tournament"],
-    ["SMOAnyPercentCC", "Super Mario Odyssey Any% Community Clash"],
+    ["SMOAnyPercentCC", "Super Mario Odyssey Community Clash Qualifier"],
 ]);
 
 export const getAllTournamentSlugs = (): string[] => {
