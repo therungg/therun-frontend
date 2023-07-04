@@ -1,5 +1,5 @@
 const fetchData = async (url: string) => {
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    const res = await fetch(url, { next: { revalidate: 0 } });
     const json = await res.json();
 
     return json.result;
