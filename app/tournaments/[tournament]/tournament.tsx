@@ -265,7 +265,7 @@ export const GenericTournament = ({
                         date={
                             new Date(
                                 tournament.eligiblePeriods &&
-                                tournament.eligiblePeriods.length > 0
+                                tournament.eligiblePeriods.length > 1
                                     ? tournament.eligiblePeriods[1].endDate
                                     : tournament.endDate
                             )
