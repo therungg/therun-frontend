@@ -102,6 +102,9 @@ const Topbar = ({
                         <Nav.Link className={styles.navLink} href="/live">
                             <b>Live</b>
                         </Nav.Link>
+                        <Nav.Link className={styles.navLink} href="/gsa">
+                            <b>PACE 2023</b>
+                        </Nav.Link>
                         <Nav.Link className={styles.navLink} href="/games/">
                             Games
                         </Nav.Link>

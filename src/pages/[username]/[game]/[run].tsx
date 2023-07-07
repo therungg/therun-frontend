@@ -29,14 +29,10 @@ import { getGameGlobal } from "../../../components/game/get-game";
 import { Vod } from "../../../components/run/dashboard/vod";
 import { Golds } from "../../../components/run/dashboard/golds";
 import Timesaves from "../../../components/run/dashboard/timesaves";
-import {
-    LiveIcon,
-    LiveRun,
-    LiveUserRun,
-} from "../../../components/live/live-user-run";
+import { LiveIcon, LiveUserRun } from "../../../components/live/live-user-run";
 import { getLiveRunForUser } from "../../../lib/live-runs";
 import { useReconnectWebsocket } from "../../../components/websocket/use-reconnect-websocket";
-import { safeEncodeURI } from "~src/utils/uri";
+import { LiveRun } from "~app/live/live.types";
 
 interface RunPageProps extends AppProps {
     run: Run;
@@ -108,7 +104,7 @@ const RunPage = ({
     runName = run.run;
 
     const loadCompare = async () => {
-        const gameName = safeEncodeURI(run.game);
+        const gameName = encodeURIComponent(run.game);
 
         const url = `${baseUrl}/api/games/${gameName}`;
         const gamesData: StatsData = await (
@@ -261,7 +257,7 @@ const RunPage = ({
                             href={`/live/${username}`}
                             className={"link-without-style"}
                         >
-                            <LiveUserRun liveRun={liveRun} />
+                            <LiveUserRun liveRun={liveRun} isUrl={true} />
                         </a>
                     </div>
                 </div>

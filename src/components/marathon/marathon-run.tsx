@@ -1,4 +1,4 @@
-import { LiveRun, LiveUserRun } from "../live/live-user-run";
+import { LiveUserRun } from "../live/live-user-run";
 import { SendMarathonDataButton } from "./send-marathon-data-button";
 import { Stats } from "../run/dashboard/stats";
 import { Col, Row } from "react-bootstrap";
@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import styles from "../css/LiveRun.module.scss";
 import SuggestedEvents from "./suggested-events";
 import { FreeInput } from "./free-input";
+import { LiveRun } from "~app/live/live.types";
 
 export const MarathonRun = ({
     runData,

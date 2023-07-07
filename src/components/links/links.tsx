@@ -12,6 +12,7 @@ interface ChildrenType {
 interface UserLinkProps extends ChildrenType {
     username: string;
     icon?: boolean;
+    parentIsUrl?: boolean;
 }
 
 interface UserGameLinkProps extends UserLinkProps, GameLinkProps {}
@@ -33,6 +34,7 @@ export const UserLink = ({
     children,
     icon = true,
     url = "",
+    parentIsUrl = false,
 }: UserLinkProps) => {
     const { data: patreons, isLoading } = usePatreons();
 
@@ -55,11 +57,9 @@ export const UserLink = ({
         );
     }
 
-    return (
-        <>
-            <a href={url}>{children ? children : withoutSlash}</a>
-        </>
-    );
+    const element = children ? children : withoutSlash;
+
+    return <>{!parentIsUrl ? <a href={url}>{element}</a> : element}</>;
 };
 
 export const UserGameLink = ({ game, children }: UserGameLinkProps) => {

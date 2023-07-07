@@ -8,7 +8,8 @@ export default async function UploadKey() {
     const session = await getSession();
     const baseUrl = getBaseUrl();
     const data = await fetch(
-        `${baseUrl}/api/users/${session.id}-${session.username}/upload-key`
+        `${baseUrl}/api/users/${session.id}-${session.username}/upload-key`,
+        { next: { revalidate: 0 } }
     );
     const { result } = (await data.json()) as { result: string };
     let content = (

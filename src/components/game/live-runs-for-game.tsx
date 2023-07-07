@@ -1,7 +1,8 @@
 import useSWR from "swr";
-import { fetcher } from "../../utils/fetcher";
-import { Live, liveRunArrayToMap } from "../../pages/live";
+import { fetcher } from "~src/utils/fetcher";
 import React from "react";
+import { liveRunArrayToMap } from "~app/live/utilities";
+import { Live } from "~app/live/live";
 
 export const LiveRunsForGame = ({ game, category }) => {
     const { data } = useSWR(`/api/live?game=${game}`, fetcher);

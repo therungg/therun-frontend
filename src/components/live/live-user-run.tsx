@@ -3,73 +3,11 @@ import styles from "../css/LiveRun.module.scss";
 import { useEffect, useState } from "react";
 import { UserLink } from "../links/links";
 import { TwitchIcon } from "../user/userform";
-import { LivesplitTimer } from "../../pages/live";
-import { Run } from "../../common/types";
-import { MarathonEvent } from "../marathon/send-marathon-data-button";
 import { usePatreons } from "../patreon/use-patreons";
 import patreonStyles from "../patreon/patreon-styles";
 import { DurationToFormatted } from "../util/datetime";
-
-export interface LiveRun {
-    user: string;
-    currentSplitIndex: number;
-    currentSplitName: string;
-    currentTime: number;
-    currentComparison?: string;
-    game: string;
-    category: string;
-    startedAt?: string;
-    endedAt?: string;
-    insertedAt: number;
-    emulator: boolean;
-    gameTime: boolean;
-    hasReset: boolean;
-    region: string;
-    platform: string;
-    variables: Variables;
-    splits: Split[];
-    importance: number;
-    pb: number;
-    bestPossible: number;
-    sob: number;
-    delta: number;
-    picture?: string;
-    gameImage?: string;
-    currentlyStreaming?: boolean;
-    url: string;
-    gameData?: Run;
-    currentPrediction?: string;
-    events: MarathonEvent[];
-}
-
-interface Variables {
-    [key: string]: string;
-}
-
-interface Comparisons {
-    [key: string]: number;
-}
-
-interface SplitDefault {
-    attemptsFinished: number;
-    attemptsStarted: number;
-    average: number;
-    consistency: number;
-    deltaToPredicted?: number | null;
-    predictedSingleTime: number | null;
-    predictedTotalTime: number | null;
-    recentCompletionsSingle: number[];
-    recentCompletionsTotal: number[];
-    single: any;
-    total: any;
-    name: string;
-    pbSplitTime?: number;
-    bestPossible?: number;
-    splitTime?: number;
-    comparisons: Comparisons;
-}
-
-type Split = Comparisons & SplitDefault;
+import { LiveRun } from "~app/live/live.types";
+import { LiveSplitTimerComponent } from "~app/live/live-split-timer.component";
 
 export const LiveUserRun = ({
     liveRun,
@@ -77,12 +15,14 @@ export const LiveUserRun = ({
     showGameCategory = true,
     leaderboard = null,
     leaderboardGameTime = null,
+    isUrl = false,
 }: {
     liveRun: LiveRun;
     currentlyActive?: string;
     showGameCategory?: boolean;
     leaderboard?: any;
     leaderboardGameTime?: any;
+    isUrl?: boolean;
 }) => {
     const [dark, setDark] = useState(true);
     const [liveUserStyles, setLiveUserStyles] = useState({});
@@ -226,7 +166,10 @@ export const LiveUserRun = ({
                                                 overflow: "hidden",
                                             }}
                                         >
-                                            <UserLink username={liveRun.user} />
+                                            <UserLink
+                                                username={liveRun.user}
+                                                parentIsUrl={isUrl}
+                                            />
                                         </div>
                                         {liveRun.currentlyStreaming && (
                                             <div
@@ -294,7 +237,10 @@ export const LiveUserRun = ({
                             </div>
                         </Col>
                         <Col xs={5} style={{ paddingLeft: "0" }}>
-                            <LivesplitTimer liveRun={liveRun} dark={dark} />
+                            <LiveSplitTimerComponent
+                                liveRun={liveRun}
+                                dark={dark}
+                            />
                         </Col>
                     </Row>
                 </div>

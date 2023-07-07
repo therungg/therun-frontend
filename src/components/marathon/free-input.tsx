@@ -3,7 +3,7 @@ import {
     MarathonEvent,
     SendMarathonDataButton,
 } from "./send-marathon-data-button";
-import { LiveRun } from "../live/live-user-run";
+import { LiveRun } from "~app/live/live.types";
 
 export const FreeInput = ({
     liveRun,
