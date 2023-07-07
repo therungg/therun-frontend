@@ -10,6 +10,10 @@ const tournamentMap: Map<string, string> = new Map([
     ["saesr", "NCW Seeding"],
     ["WaifuRuns", "WaifuRuns RE4 Tournament"],
     ["SMOAnyPercentCC", "Super Mario Odyssey Community Clash Qualifier"],
+    [
+        "hazebladeinvitational",
+        "Hazeblade Invitational Qualifiers ft. Resident Evil 4",
+    ],
 ]);
 
 export const getAllTournamentSlugs = (): string[] => {
