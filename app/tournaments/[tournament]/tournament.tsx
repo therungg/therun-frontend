@@ -21,9 +21,11 @@ import { TournamentRuns } from "~src/components/tournament/tournament-runs";
 import { TournamentStandings } from "~src/components/tournament/tournament-standings";
 import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
 import { LiveDataMap } from "~app/live/live.types";
-import { getRecommendedStream } from "~app/live/utilities";
+import { getRecommendedStream, liveRunIsInSearch } from "~app/live/utilities";
 import { isLiveDataEligibleForTournament } from "~app/tournaments/[tournament]/is-live-data-eligible-for-tournament.component";
 import { liveRunArrayToMap } from "~app/tournaments/[tournament]/live-run-array-to-map.component";
+import searchStyles from "~src/components/css/Search.module.scss";
+import styles from "~src/components/css/Games.module.scss";
 
 export const GenericTournament = ({
     liveDataMap,
@@ -43,6 +45,7 @@ export const GenericTournament = ({
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
     const [leaderboard, setLeaderboard] = useState(gameTime ? "pbIGT" : "pb");
     const [sort, setSort] = useState("personalBest");
+    const [search, setSearch] = useState("");
 
     const recommendedStream = getRecommendedStream(liveDataMap, username);
     const [currentlyViewing, setCurrentlyViewing] = useState(recommendedStream);
@@ -589,6 +592,46 @@ export const GenericTournament = ({
                                     </Button>
                                 </Col>
                             </Row>
+
+                            <div>
+                                <div className={runStyles.searchContainer}>
+                                    <div
+                                        className={`${searchStyles.searchContainer} ${styles.filter}`}
+                                        style={{ marginLeft: "0" }}
+                                    >
+                                        <span
+                                            className={
+                                                "material-symbols-outlined"
+                                            }
+                                            onClick={() => {
+                                                const searchElement =
+                                                    document.getElementById(
+                                                        "gameSearch"
+                                                    );
+                                                if (
+                                                    document.activeElement !==
+                                                    searchElement
+                                                ) {
+                                                    searchElement.focus();
+                                                }
+                                            }}
+                                        >
+                                            search
+                                        </span>
+                                        <input
+                                            type="search"
+                                            className={`form-control ${searchStyles.search}`}
+                                            placeholder="Filter by game/category/user"
+                                            style={{ marginBottom: "0" }}
+                                            onChange={(e) => {
+                                                setSearch(e.target.value);
+                                            }}
+                                            value={search}
+                                            id="gameSearch"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                             <Row>
                                 {Object.values(updatedLiveDataMap).length ==
                                     0 && (
@@ -598,8 +641,11 @@ export const GenericTournament = ({
                                     </div>
                                 )}
 
-                                {Object.values(updatedLiveDataMap).map(
-                                    (liveRun) => {
+                                {Object.values(updatedLiveDataMap)
+                                    .filter((run) =>
+                                        liveRunIsInSearch(run, search)
+                                    )
+                                    .map((liveRun) => {
                                         return (
                                             <Col
                                                 xl={6}
@@ -626,8 +672,7 @@ export const GenericTournament = ({
                                                 />
                                             </Col>
                                         );
-                                    }
-                                )}
+                                    })}
                             </Row>
                         </Col>
                     </Row>
