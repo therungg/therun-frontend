@@ -1,13 +1,11 @@
 .card {
-  min-width: 32rem;
-  margin: 0.5rem;
   white-space: nowrap;
   color: var(--color-text);
   background-color: var(--color-secondary);
   border-radius: 10px;
   border-width: 2px;
   border-color: var(--color-secondary);
-  height: 9.5rem;
+  min-height: 9.5rem;
 }
 
 .cardHeader {
@@ -16,7 +14,8 @@
 
 .cardBody {
   background-color: var(--color-bg);
-  padding: 0.6rem;
+  --bs-card-spacer-x: clamp(.2rem, 2%, .6rem);
+  --bs-card-spacer-y: clamp(.2rem, 2%, .6rem);
 }
 
 .timeUser {
@@ -24,7 +23,7 @@
 }
 
 .filter {
-  display: flex;
+  display: flex !important;
   margin-bottom: 1rem;
   width: 40%;
 }
@@ -34,8 +33,11 @@
   min-width: 100px;
   display: flex;
   align-items: center;
-  margin-top: 0.5rem;
   margin-right: 0.5rem;
+
+  img {
+    min-height: 9.5rem;
+  }
 }
 
 .backupImage {
@@ -59,20 +61,9 @@
   .timeUser {
     padding-right: 0.5rem;
   }
-
-  .cardBody {
-    padding: 0.2rem;
-  }
-
-  .card {
-    min-width: 20rem;
-  }
 }
 
 @media screen and (min-width: 576px) {
-  .cardBody {
-    padding: 0.5rem;
-  }
 
   .timeUser {
     padding-right: 0.5rem;
@@ -80,9 +71,6 @@
 }
 
 @media screen and (min-width: 768px) {
-  .cardBody {
-    padding: 0.5rem;
-  }
 
   .timeUser {
     padding-right: 1rem;
@@ -90,9 +78,6 @@
 }
 
 @media screen and (min-width: 992px) {
-  .cardBody {
-    padding: 0.5rem 1rem;
-  }
 
   .timeUser {
     padding-right: 1rem;
