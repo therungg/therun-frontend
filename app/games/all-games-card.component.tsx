@@ -5,7 +5,7 @@ import styles from "~src/components/css/Games.module.scss";
 import { AllGamesCardBody } from "./all-games-card-body.component";
 import { AllGamesCardHeader } from "./all-games-card-header.component";
 import { AllGamesImage } from "./all-games-image.component";
-import { Game } from "./all-games";
+import { Game } from "~app/games/games.types";
 
 interface AllGamesCardProps {
     game: Game;

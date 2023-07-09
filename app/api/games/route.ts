@@ -1,8 +1,10 @@
 import { NextResponse } from "next/server";
-import { getTabulatedGameStats } from "~src/components/game/get-tabulated-game-stats";
+import { getGamesPagesFromSearchParams } from "~src/components/game/get-tabulated-game-stats";
 
-export async function GET() {
-    const result = await getTabulatedGameStats();
+export async function GET(request: Request) {
+    const { searchParams } = new URL(request.url);
+    const result = await getGamesPagesFromSearchParams(searchParams);
+
     return NextResponse.json(result, {
         status: 200,
         headers: {

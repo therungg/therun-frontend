@@ -3,8 +3,8 @@ import React from "react";
 import { Card } from "react-bootstrap";
 import styles from "~src/components/css/Games.module.scss";
 import { DurationToFormatted } from "~src/components/util/datetime";
-import { Game } from "./all-games";
 import { getGameUrl } from "./utilities";
+import { Game } from "~app/games/games.types";
 
 interface AllGamesCardHeaderProps {
     game: Game;

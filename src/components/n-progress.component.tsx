@@ -13,8 +13,11 @@ export function useProgressBar() {
         NProgress.configure({ showSpinner: false });
 
         const handleAnchorClick = (event: MouseEvent) => {
-            const targetUrl = (event.currentTarget as HTMLAnchorElement).href;
-            const currentUrl = location.href;
+            const targetUrl = (
+                event.currentTarget as HTMLAnchorElement
+            ).href.replace("#", "");
+            const currentUrl = location.href.replace("#", "");
+
             if (targetUrl !== currentUrl) {
                 NProgress.start();
             }

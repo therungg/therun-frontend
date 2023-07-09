@@ -2,7 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import styles from "~src/components/css/Games.module.scss";
-import { Game } from "./all-games";
+import { Game } from "~app/games/games.types";
 import { useTheme } from "next-themes";
 import { getGameUrl } from "./utilities";
 

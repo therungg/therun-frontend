@@ -1,4 +1,4 @@
-import { Game } from "~app/games/all-games";
+import { Game } from "~app/games/games.types";
 import { Image, Table } from "react-bootstrap";
 import styles from "../css/GamesTable.module.scss";
 import { GameLink, UserLink } from "../links/links";

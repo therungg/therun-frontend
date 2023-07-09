@@ -4,7 +4,7 @@ import { Card, Col, Row } from "react-bootstrap";
 import { UserLink } from "~src/components/links/links";
 import { DurationToFormatted } from "~src/components/util/datetime";
 import styles from "~src/components/css/Games.module.scss";
-import { Game } from "./all-games";
+import { Game } from "~app/games/games.types";
 
 interface AllGamesBodyProps {
     game: Game;
