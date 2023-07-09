@@ -1,4 +1,4 @@
-import { CumulativeGameStat } from "../../pages/game/[game]";
+import { CumulativeGameStat } from "~app/games/[game]/game.types";
 import { Table } from "react-bootstrap";
 import { DurationToFormatted } from "../util/datetime";
 import styles from "../css/Game.module.scss";

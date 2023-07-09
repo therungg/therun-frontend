@@ -1,4 +1,4 @@
-import { StatsData } from "../../../pages/game/[game]";
+import { StatsData } from "~app/games/[game]/game.types";
 import { getFormattedString } from "../../util/datetime";
 import React, { useState } from "react";
 import { ShowComparison } from "./show-comparison";

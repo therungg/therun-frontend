@@ -1,4 +1,4 @@
-import { Game } from "../../pages/games";
+import { Game } from "~app/games/games.types";
 import { Image, Table } from "react-bootstrap";
 import styles from "../css/GamesTable.module.scss";
 import { GameLink, UserLink } from "../links/links";
@@ -22,7 +22,7 @@ export const PopularGames: React.FC<PopularGamesProps> = ({ gamestats }) => {
                                     className={styles.popularGameImage}
                                 >
                                     {game.image && game.image !== "noimage" && (
-                                        <a href={`/game/${game.display}`}>
+                                        <a href={`/games/${game.display}`}>
                                             <Image
                                                 alt={"Game Image"}
                                                 src={game.image}

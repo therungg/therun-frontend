@@ -1,3 +1,4 @@
+import { safeEncodeURI } from "~src/utils/uri";
 import { Run } from "../common/types";
 
 export const getRun = async (
@@ -7,7 +8,7 @@ export const getRun = async (
 ): Promise<Run> => {
     const url = `${
         process.env.NEXT_PUBLIC_DATA_URL
-    }/users/${username}/${encodeURIComponent(game)}/${encodeURIComponent(run)}`;
+    }/users/${username}/${safeEncodeURI(game)}/${safeEncodeURI(run)}`;
 
     const res = await fetch(url);
     const json = await res.json();
@@ -21,7 +22,7 @@ export const getRunByCustomUrl = async (
 ): Promise<Run> => {
     const url = `${
         process.env.NEXT_PUBLIC_DATA_URL
-    }/users/${username}/${encodeURIComponent(customUrl)}`;
+    }/users/${username}/${safeEncodeURI(customUrl)}`;
 
     const res = await fetch(url);
     const json = await res.json();

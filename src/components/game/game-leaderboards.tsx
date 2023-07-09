@@ -1,4 +1,4 @@
-import { Count, GameLeaderboard } from "../../pages/game/[game]";
+import { Count, GameLeaderboard } from "~app/games/[game]/game.types";
 import { Col, Nav, Row, Tab, Table } from "react-bootstrap";
 import { DurationToFormatted, getFormattedString } from "../util/datetime";
 import { ReactElement, useState } from "react";

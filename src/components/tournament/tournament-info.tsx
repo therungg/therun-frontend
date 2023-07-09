@@ -1,5 +1,5 @@
 import moment from "moment";
-import { CategoryLeaderboard } from "../../pages/game/[game]";
+import { CategoryLeaderboard } from "~app/games/[game]/game.types";
 import React from "react";
 import { Col, Row, Table } from "react-bootstrap";
 import styles from "../css/Game.module.scss";

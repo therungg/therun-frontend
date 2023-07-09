@@ -6,6 +6,7 @@ import { useState } from "react";
 import Switch from "react-switch";
 import WrHistoryTableMode from "./wr-history-table-mode";
 import styles from "../../components/css/WrHistory.module.scss";
+import { safeEncodeURI } from "~src/utils/uri";
 
 export const CategoryRecordHistory = ({
     game,
@@ -17,9 +18,7 @@ export const CategoryRecordHistory = ({
     gameTime: boolean;
 }) => {
     const { data } = useSWR(
-        `/api/games/${encodeURIComponent(game)}/${encodeURIComponent(
-            category
-        )}`,
+        `/api/games/${safeEncodeURI(game)}/${safeEncodeURI(category)}`,
         fetcher,
         {
             revalidateOnReconnect: false,

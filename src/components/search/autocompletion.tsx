@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Col, Row } from "react-bootstrap";
 import { getFormattedString } from "../util/datetime";
 import styles from "../css/Search.module.scss";
+import { safeEncodeURI } from "~src/utils/uri";
 
 // This page was one of the first I ever wrote for the site and is fully outdated and terrible.
 // The entire search view needs to be refactored
@@ -96,9 +97,9 @@ export const AutoCompletion = () => {
                 pb
             )}`;
             if (results.pbgt) value += " (IGT)";
-            const url = `/${username}/${encodeURIComponent(
-                game
-            )}/${encodeURIComponent(category)}`;
+            const url = `/${username}/${safeEncodeURI(game)}/${safeEncodeURI(
+                category
+            )}`;
             return (
                 <a key={value} href={url} className={styles.suggestionLink}>
                     <li key={value}>{value}</li>
@@ -106,7 +107,7 @@ export const AutoCompletion = () => {
             );
         }
 
-        const url = type == "users" ? `/${result}` : `/game/${result}`;
+        const url = type == "users" ? `/${result}` : `/games/${result}`;
         return (
             <a key={result} href={url} className={styles.suggestionLink}>
                 <li key={result}>{result}</li>

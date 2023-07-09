@@ -1,6 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
-//import "bootstrap/dist/css/bootstrap.min.css";
+import "nprogress/nprogress.css";
 import Topbar from "../src/components/topbar";
 import { Footer } from "./footer";
 import { Content } from "./content";
