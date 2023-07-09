@@ -27,7 +27,7 @@ export const AllGamesPaginated: React.FunctionComponent<GamesProps> = ({
 
             {isLoading && <SkeletonGamesList />}
             {!isLoading && data && (
-                <Row>
+                <Row className="gy-3">
                     {data.map((game) => (
                         <AllGamesCard key={game.game} game={game} />
                     ))}
