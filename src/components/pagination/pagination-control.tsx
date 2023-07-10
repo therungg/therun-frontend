@@ -8,7 +8,9 @@ export default function PaginationControl<T>({
     totalItems,
     totalPages,
     page,
-}: PaginationHook<T>) {
+    pageSize,
+    minimalLayout = false,
+}: PaginationHook<T> & { minimalLayout?: boolean }) {
     const { setCurrentPage } = useContext(PaginationContext);
 
     const onPaginationClick = (event): void => {
@@ -39,30 +41,42 @@ export default function PaginationControl<T>({
         <div>
             <div className={paginationStyles.paginationWrapper}>
                 <Pagination onClick={onPaginationClick} size="lg">
-                    {buildItems(page, totalPages)}
+                    {buildItems(page, totalPages, minimalLayout)}
                 </Pagination>
             </div>
             <div style={{ display: "flex", justifyContent: "center" }}>
-                Showing {(page - 1) * 10 + 1} -{" "}
-                {page * 10 < totalPages ? page * 10 : totalPages} out of{" "}
-                {totalItems}
+                Showing {(page - 1) * pageSize + 1} -{" "}
+                {page * pageSize > totalItems ? totalItems : page * pageSize}{" "}
+                out of {totalItems}
             </div>
         </div>
     );
 }
 
-export const buildItems = (active: number, last: number) => {
+export const buildItems = (
+    active: number,
+    last: number,
+    minimalLayout: boolean = false
+) => {
+    const maxItems = minimalLayout ? 3 : 5;
+    const middle = minimalLayout ? 2 : 3;
+
     const items = [
         <Pagination.First key="first" />,
         <Pagination.Prev key="prev" />,
     ];
 
-    if (active > 3) {
+    if (active > middle) {
         items.push(<Pagination.Ellipsis />);
     }
 
-    const begin = active < 4 ? 1 : active > last - 2 ? last - 4 : active - 2;
-    const end = active > last - 2 ? last + 1 : begin + 5;
+    const begin =
+        active < maxItems - 1
+            ? 1
+            : active > last - (middle - 1)
+            ? last - middle
+            : active - (middle - 1);
+    const end = active > last - (middle - 1) ? last + 1 : begin + maxItems;
 
     for (let number = begin; number < end; number++) {
         items.push(

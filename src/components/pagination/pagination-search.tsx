@@ -1,16 +1,15 @@
 import React, { useContext } from "react";
 import { PaginationContext } from "~src/components/pagination/pagination.context";
 import searchStyles from "~src/components/css/Search.module.scss";
-import styles from "~src/components/css/Games.module.scss";
 
-export const PaginationSearch = () => {
+export const PaginationSearch = ({ text }: { text: string }) => {
     const { search, setSearch } = useContext(PaginationContext);
 
     const searchInputRef = React.useRef<HTMLInputElement>(null);
 
     return (
         <div>
-            <div className={`${searchStyles.searchContainer} ${styles.filter}`}>
+            <div className={`${searchStyles.searchContainer}`}>
                 <span
                     className={"material-symbols-outlined"}
                     onClick={() => {
@@ -25,7 +24,7 @@ export const PaginationSearch = () => {
                 <input
                     type="search"
                     className={`form-control ${searchStyles.search}`}
-                    placeholder="Filter by game/category/user"
+                    placeholder={text}
                     style={{ marginBottom: "0" }}
                     onChange={(e) => {
                         setSearch(e.target.value);

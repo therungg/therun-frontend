@@ -61,9 +61,7 @@ export const getLeaderboard = (
                                         }
                                     >
                                         <td style={{ textAlign: "center" }}>
-                                            {key + 1}{" "}
-                                            {search.length > 0 &&
-                                                `/ ${leaderboards.length}`}
+                                            {leaderboard.placing}
                                         </td>
                                         <td style={{ textAlign: "center" }}>
                                             <UserLink

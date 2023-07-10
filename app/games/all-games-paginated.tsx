@@ -23,11 +23,11 @@ export const AllGamesPaginated: React.FunctionComponent<GamesProps> = ({
     return (
         <div>
             <Title>Games</Title>
-            <PaginationSearch />
+            <PaginationSearch text={"Filter by game/category/user"} />
 
             {isLoading && <SkeletonGamesList />}
             {!isLoading && data && (
-                <Row className="gy-3">
+                <Row className="gy-3 mb-3">
                     {data.map((game) => (
                         <AllGamesCard key={game.game} game={game} />
                     ))}
