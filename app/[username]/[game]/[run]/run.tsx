@@ -1,48 +1,39 @@
-import React, { useEffect, useState } from "react";
-import { useRouter } from "next/router";
-import { GetServerSideProps, GetServerSidePropsContext } from "next";
-import { AppContext } from "../../../common/app.context";
-import { getRun } from "../../../lib/get-run";
-import {
-    Run,
-    RunHistory,
-    RunSession,
-    SplitsHistory,
-} from "../../../common/types";
-import { Title } from "../../../components/title";
-import { getSplitsHistoryUrl } from "../../../lib/get-splits-history";
-import { Col, Row, Tab, Tabs } from "react-bootstrap";
-import { RecentRuns } from "../../../components/run/dashboard/recent-runs";
-import { Splits } from "../../../components/run/dashboard/splits";
-import { Stats } from "../../../components/run/dashboard/stats";
-import { History } from "../../../components/run/history/history";
+"use client";
+
 import { AppProps } from "next/app";
-import { Activity } from "../../../components/run/dashboard/activity";
-import { GameSessions } from "../../../components/run/run-sessions/game-sessions";
-import { SplitStats } from "../../../components/run/splits/split-stats";
-import { UserGameLink, UserLink } from "../../../components/links/links";
-import { GametimeForm } from "../../../components/gametime/gametime-form";
-import { CompareSplits } from "../../../components/run/compare/compare-splits";
-import { StatsData } from "~app/games/[game]/game.types";
-import styles from "../../../components/css/User.module.scss";
-import { getGameGlobal } from "../../../components/game/get-game";
-import { Vod } from "../../../components/run/dashboard/vod";
-import { Golds } from "../../../components/run/dashboard/golds";
-import Timesaves from "../../../components/run/dashboard/timesaves";
-import { LiveIcon, LiveUserRun } from "../../../components/live/live-user-run";
-import { getLiveRunForUser } from "../../../lib/live-runs";
-import { useReconnectWebsocket } from "../../../components/websocket/use-reconnect-websocket";
+import { Run, RunHistory, RunSession, SplitsHistory } from "~src/common/types";
 import { LiveRun } from "~app/live/live.types";
+import React, { useEffect, useState } from "react";
+import { AppContext } from "~src/common/app.context";
+import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
+import { StatsData } from "~app/games/[game]/game.types";
+import { getSplitsHistoryUrl } from "~src/lib/get-splits-history";
+import { Col, Row, Tab, Tabs } from "react-bootstrap";
+import styles from "~src/components/css/User.module.scss";
+import { Title } from "~src/components/title";
+import { UserGameLink, UserLink } from "~src/components/links/links";
+import { GametimeForm } from "~src/components/gametime/gametime-form";
+import { LiveIcon, LiveUserRun } from "~src/components/live/live-user-run";
+import { Splits } from "~src/components/run/dashboard/splits";
+import { Stats } from "~src/components/run/dashboard/stats";
+import { RecentRuns } from "~src/components/run/dashboard/recent-runs";
+import { Activity } from "~src/components/run/dashboard/activity";
+import { SplitStats } from "~src/components/run/splits/split-stats";
+import { GameSessions } from "~src/components/run/run-sessions/game-sessions";
+import { History } from "~src/components/run/history/history";
+import Timesaves from "~src/components/run/dashboard/timesaves";
+import { CompareSplits } from "~src/components/run/compare/compare-splits";
+import { Vod } from "~src/components/run/dashboard/vod";
+import Golds from "~src/components/run/dashboard/golds";
 
 interface RunPageProps extends AppProps {
     run: Run;
     username: string;
     game: string;
     runName: string;
-    realTimeRuns: Runs;
     globalGameData: GlobalGameData;
-    gameTimeRuns?: Runs;
     liveData: LiveRun;
+    tab?: string;
 }
 
 export interface Runs {
@@ -58,14 +49,14 @@ export interface GlobalGameData {
     display: string;
 }
 
-const RunPage = ({
+export default function RunDetail({
     run,
     username,
-    game,
     runName,
     globalGameData,
     liveData,
-}: RunPageProps) => {
+    tab = "dashboard",
+}: RunPageProps) {
     const { baseUrl } = React.useContext(AppContext);
     const forceRealTime = !!globalGameData.forceRealTime;
 
@@ -97,9 +88,6 @@ const RunPage = ({
             }
         }
     }, [lastMessage]);
-
-    const router = useRouter();
-    const tab = router.query.tab || "dashboard";
 
     runName = run.run;
 
@@ -153,7 +141,7 @@ const RunPage = ({
     ]);
 
     if (!dataLoading && !realTimeRuns) {
-        return <>You should not see this</>;
+        return <>Loading data, should not take long...</>;
     }
 
     if (dataLoading) {
@@ -186,7 +174,7 @@ const RunPage = ({
             <Row>
                 <Col xl={9} className={styles.title}>
                     <Title>
-                        <UserGameLink game={game} username={username} /> -{" "}
+                        <UserGameLink game={run.game} username={username} /> -{" "}
                         {runName} by <UserLink username={username} />
                     </Title>
                     <i>{run.description}</i>
@@ -358,34 +346,4 @@ const RunPage = ({
             </Tabs>
         </>
     );
-};
-
-export const getServerSideProps: GetServerSideProps = async (
-    context: GetServerSidePropsContext
-) => {
-    if (
-        !context.params ||
-        !context.params.username ||
-        !context.params.game ||
-        !context.params.run
-    )
-        throw new Error("Params not found");
-
-    const username: string = context.params.username as string;
-    const game: string = context.params.game as string;
-    const runName: string = context.params.run as string;
-
-    const promises = [getRun(username, game, runName), getGameGlobal(game)];
-
-    const [run, globalGameData] = await Promise.all(promises);
-
-    if (!run) throw new Error("Could not find run");
-
-    const liveData = await getLiveRunForUser(username);
-
-    return {
-        props: { run, username, game, runName, globalGameData, liveData },
-    };
-};
-
-export default RunPage;
+}

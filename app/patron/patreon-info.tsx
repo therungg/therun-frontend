@@ -1,12 +1,14 @@
+"use client";
+
+import { usePatreons } from "~src/components/patreon/use-patreons";
+import styles from "~src/components/css/Support.module.scss";
 import { Button, Col, Row, Table } from "react-bootstrap";
-import { UserLink } from "../components/links/links";
+import { UserLink } from "~src/components/links/links";
 import React from "react";
-import styles from "../components/css/Support.module.scss";
-import { usePatreons } from "../components/patreon/use-patreons";
 
 const stripePaymentButton = "https://donate.stripe.com/8wMg2RgR3gNfblu7ss";
 
-export const Patron = ({ session }) => {
+export function PatreonInfo({ session }: { session: { username: string } }) {
     const { data: patreonData, isLoading } = usePatreons();
 
     return (
@@ -358,7 +360,7 @@ export const Patron = ({ session }) => {
             </Row>
         </div>
     );
-};
+}
 
 const Checkmark = () => {
     return (
@@ -545,5 +547,3 @@ export const PatreonBunnySvgChristmas = ({ size = 30, url = "/patron" }) => {
         </a>
     );
 };
-
-export default Patron;

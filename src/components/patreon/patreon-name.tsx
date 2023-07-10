@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import patreonStyles from "./patreon-styles";
-import { PatreonBunnySvgWithoutLink } from "../../pages/patron";
+import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import { usePatreons } from "./use-patreons";
 
 export const NameAsPatreon = ({ name }) => {

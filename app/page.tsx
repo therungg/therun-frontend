@@ -8,7 +8,7 @@ import { PopularGames } from "../src/components/game/popular-games";
 import { DataHolder } from "../src/components/frontpage/data-holder";
 import { SkeletonPersonalBests } from "../src/components/skeleton/index/skeleton-personal-bests";
 import { SkeletonPopularGames } from "../src/components/skeleton/index/skeleton-popular-games";
-import { PatreonBunnySvgWithoutLink } from "../src/pages/patron";
+import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import { fetcher } from "../src/utils/fetcher";
 
 export default function Page() {

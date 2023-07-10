@@ -1,6 +1,6 @@
 "use client";
 
-import { PatreonBunnySvg } from "~src/pages/patron";
+import { PatreonBunnySvg } from "~app/patron/patreon-info";
 import { Button, Col, Row } from "react-bootstrap";
 import React, { useState } from "react";
 import Switch from "react-switch";

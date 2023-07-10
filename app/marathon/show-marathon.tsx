@@ -1,20 +1,20 @@
-import { useEffect, useState } from "react";
-import { GetServerSideProps } from "next";
-import { getAllLiveRuns } from "../lib/live-runs";
-import styles from "../components/css/Search.module.scss";
-import MarathonRun from "../components/marathon/marathon-run";
-import { Col, Row } from "react-bootstrap";
-import { useReconnectWebsocket } from "../components/websocket/use-reconnect-websocket";
-import { LiveDataMap, LiveRun } from "~app/live/live.types";
-import { liveRunArrayToMap } from "~app/live/utilities";
+"use client";
 
-export const Marathon = ({
+import { LiveDataMap } from "~app/live/live.types";
+import { useEffect, useState } from "react";
+import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
+import { liveRunArrayToMap } from "~app/live/utilities";
+import MarathonRun from "~src/components/marathon/marathon-run";
+import { Col, Row } from "react-bootstrap";
+import styles from "~src/components/css/Search.module.scss";
+
+export default function ShowMarathon({
     liveDataMap,
     session,
 }: {
     liveDataMap: LiveDataMap;
     session: any;
-}) => {
+}) {
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
     const [selectedUser, setSelectedUser] = useState("");
     const [currentUserData, setCurrentUserData] = useState();
@@ -117,7 +117,7 @@ export const Marathon = ({
             </div>
         </div>
     );
-};
+}
 
 const BasePage = ({ selectedUser, setSelectedUser, updatedLiveDataMap }) => {
     return (
@@ -170,12 +170,3 @@ const BasePage = ({ selectedUser, setSelectedUser, updatedLiveDataMap }) => {
         </div>
     );
 };
-
-export const getServerSideProps: GetServerSideProps = async () => {
-    const liveData: LiveRun[] = await getAllLiveRuns();
-    return {
-        props: { liveDataMap: liveRunArrayToMap(liveData) },
-    };
-};
-
-export default Marathon;

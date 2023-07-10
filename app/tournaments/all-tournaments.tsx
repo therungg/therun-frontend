@@ -1,19 +1,16 @@
-import { GetServerSideProps } from "next";
-import { getTournaments } from "../components/tournament/getTournaments";
-import { Tournament } from "../components/tournament/tournament-info";
-import { Card, Col, Image, Row } from "react-bootstrap";
-import styles from "../components/css/Games.module.scss";
-import { FromNow } from "../components/util/datetime";
+"use client";
 
-export const Tournaments = ({
+import { Tournament } from "~src/components/tournament/tournament-info";
+import { Card, Col, Image, Row } from "react-bootstrap";
+import styles from "~src/components/css/Games.module.scss";
+import { FromNow } from "~src/components/util/datetime";
+import { AllTournamentsProps } from "~app/tournaments/all-tournaments.types";
+
+export function AllTournaments({
     finishedTournaments,
     ongoingTournaments,
     upcomingTournaments,
-}: {
-    finishedTournaments: Tournament[];
-    ongoingTournaments: Tournament[];
-    upcomingTournaments: Tournament[];
-}) => {
+}: AllTournamentsProps) {
     return (
         <div>
             <h1>Ongoing tournaments</h1>
@@ -29,7 +26,7 @@ export const Tournaments = ({
             <ListTournaments tournaments={finishedTournaments} />
         </div>
     );
-};
+}
 
 export const ListTournaments = ({
     tournaments,
@@ -118,24 +115,3 @@ export const ListTournaments = ({
         </Row>
     );
 };
-export const getServerSideProps: GetServerSideProps = async () => {
-    const tournaments: Tournament[] = await getTournaments();
-
-    const now = new Date().toISOString();
-
-    const finishedTournaments = tournaments.filter(
-        (tournament) => tournament.endDate < now
-    );
-    const ongoingTournaments = tournaments.filter(
-        (tournament) => tournament.startDate < now && tournament.endDate > now
-    );
-    const upcomingTournaments = tournaments.filter(
-        (tournament) => tournament.startDate > now
-    );
-
-    return {
-        props: { finishedTournaments, ongoingTournaments, upcomingTournaments },
-    };
-};
-
-export default Tournaments;

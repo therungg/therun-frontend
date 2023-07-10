@@ -62,7 +62,9 @@ export const CompareSplits = ({
 
     const currentUserData =
         currentUser != "no-selection" && loaded
-            ? userData.get(currentUser)[!gameTime ? "runs" : "runsGameTime"]
+            ? userData.get(currentUser)[
+                  !gameTime ? "currentRuns" : "runsGameTime"
+              ]
             : null;
 
     // This is really old, should be improved
@@ -144,8 +146,8 @@ export const CompareSplits = ({
                             runsGameTime,
                         });
                         setUserData(prevMap);
-                        setLoaded(true);
                     }
+                    setLoaded(true);
                 }}
             >
                 {(currentUser == "no-selection" || !currentUserData) && (
