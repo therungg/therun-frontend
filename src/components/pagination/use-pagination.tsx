@@ -6,12 +6,25 @@ import {
 } from "~src/components/pagination/pagination.types";
 import { PaginationContext } from "~src/components/pagination/pagination.context";
 import { useDebounce } from "usehooks-ts";
+import { paginateArray } from "~src/components/pagination/paginate-array";
+import { genericFetcher } from "~src/components/pagination/fetchers/generic-fetcher";
 
 function usePagination<T>(
-    initialData: PaginatedData<T>,
-    fetchPage: PaginationFetcher<T>,
-    pageSize: number = 10
+    initialData: PaginatedData<T> | T[],
+    fetchPage?: PaginationFetcher<T>,
+    pageSize: number = 10,
+    debounce: number = 400
 ): PaginationHook<T> {
+    let fullData = initialData;
+
+    if (Array.isArray(initialData)) {
+        initialData = paginateArray(initialData, pageSize, 1);
+    } else {
+        fullData = fullData.items;
+    }
+
+    if (fetchPage === undefined) fetchPage = genericFetcher;
+
     const [data, setData] = useState<{ [key: string]: PaginatedData<T> }>({
         "1-": initialData,
     });
@@ -19,7 +32,7 @@ function usePagination<T>(
     const [isLoading, setIsLoading] = useState(false);
 
     const { search, currentPage } = useContext(PaginationContext);
-    const debouncedSearch = useDebounce(search, 400);
+    const debouncedSearch = useDebounce(search, debounce);
 
     useEffect(() => {
         fetchData(1, debouncedSearch);
@@ -43,7 +56,7 @@ function usePagination<T>(
         if (data[`${currentPage}-${query}`]) {
             setCurrentData(data[`${currentPage}-${query}`]);
         } else {
-            const result = await fetchPage(page, pageSize, query, initialData);
+            const result = await fetchPage(page, pageSize, query, fullData);
             setCurrentData(result);
 
             setData((prevData) => ({

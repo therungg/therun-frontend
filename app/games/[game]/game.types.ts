@@ -58,6 +58,7 @@ export interface CumulativeGameStat {
 export interface Count {
     username: string;
     stat: number | string;
+    placing: number;
     meta?: any;
     game?: string;
     category?: string;

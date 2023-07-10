@@ -1,219 +1,222 @@
 @media screen and (max-width: 992px) {
-    .searchContainer {
-        padding-top: 0;
-    }
+  .searchContainer {
+    padding-top: 0;
+  }
 }
 
 .searchContainer {
-    display: flex;
+  display: flex;
+  width: 100%;
+  max-width: 40rem;
+  margin-bottom: 1rem;
 }
 
 .search {
-    background-color: var(--color-tertiary);
-    border-color: var(--color-secondary);
-    transition: none;
-    color: var(--color-text);
-    float: left;
+  background-color: var(--color-tertiary);
+  border-color: var(--color-secondary);
+  transition: none;
+  color: var(--color-text);
+  float: left;
 }
 
 .search:focus {
-    background-color: var(--color-bg);
-    border-color: var(--color-link);
-    box-shadow: 1px 1px var(--color-link);
-    color: var(--color-text);
+  background-color: var(--color-bg);
+  border-color: var(--color-link);
+  box-shadow: 1px 1px var(--color-link);
+  color: var(--color-text);
 }
 
 .select {
-    background-color: var(--color-tertiary);
-    border-color: var(--color-secondary);
-    transition: none;
-    color: var(--color-text);
-    float: left;
-    cursor: pointer;
+  background-color: var(--color-tertiary);
+  border-color: var(--color-secondary);
+  transition: none;
+  color: var(--color-text);
+  float: left;
+  cursor: pointer;
 }
 
 .select:focus {
-    background-color: var(--color-bg);
-    border-color: var(--color-link);
-    box-shadow: 1px 1px var(--color-link);
-    color: var(--color-text);
+  background-color: var(--color-bg);
+  border-color: var(--color-link);
+  box-shadow: 1px 1px var(--color-link);
+  color: var(--color-text);
 }
 
 @media screen and (min-width: 992px) {
-    .wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        margin-top: 1rem;
-    }
+  .wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-top: 1rem;
+  }
 
-    .wrapper h2 {
-        font-size: 1.1rem;
-        margin-bottom: 1.2rem;
-    }
+  .wrapper h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1.2rem;
+  }
 
-    .suggestionLink {
-        padding: 0;
-        margin-top: 2px;
-    }
+  .suggestionLink {
+    padding: 0;
+    margin-top: 2px;
+  }
 
-    .input {
-        border: 1px solid green;
-        outline: none;
-        padding: 0 0.5rem;
-        width: 300px;
-        height: 40px;
-        border-radius: 5px;
-    }
+  .input {
+    border: 1px solid green;
+    outline: none;
+    padding: 0 0.5rem;
+    width: 300px;
+    height: 40px;
+    border-radius: 5px;
+  }
 
-    .noSuggestions {
-        color: var(--color-text);
-        padding: 0.5rem 1rem;
-        font-size: 0.9rem;
-    }
+  .noSuggestions {
+    color: var(--color-text);
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+  }
 
-    .suggestions {
-        border: 1px solid rgba(0, 128, 0, 0.5);
-        border-radius: 5px;
-        list-style: none;
-        margin-top: 2.5rem;
-        max-height: 800px;
-        padding: 1rem;
-        width: 900px;
-        position: absolute;
-        z-index: 999;
-        background-color: var(--color-secondary);
-        margin-left: -585px;
-    }
+  .suggestions {
+    border: 1px solid rgba(0, 128, 0, 0.5);
+    border-radius: 5px;
+    list-style: none;
+    margin-top: 2.5rem;
+    max-height: 800px;
+    padding: 1rem;
+    width: 900px;
+    position: absolute;
+    z-index: 999;
+    background-color: var(--color-secondary);
+    margin-left: -585px;
+  }
 
-    .suggestionsPane {
-        height: 100%;
-    }
+  .suggestionsPane {
+    height: 100%;
+  }
 
-    .borderPane {
-        list-style: none;
-        padding: 0 10px;
-        display: inline-block;
-        border-right: 1px solid green;
-        border-radius: 10px;
-        margin: 20px 0;
-    }
+  .borderPane {
+    list-style: none;
+    padding: 0 10px;
+    display: inline-block;
+    border-right: 1px solid green;
+    border-radius: 10px;
+    margin: 20px 0;
+  }
 
-    .pane {
-        padding: 0 10px;
-        margin: 20px 0;
-        width: 33.33%;
-        float: left;
-        height: 200px;
-    }
+  .pane {
+    padding: 0 10px;
+    margin: 20px 0;
+    width: 33.33%;
+    float: left;
+    height: 200px;
+  }
 
-    ul.resultsList {
-        list-style-type: none;
-        text-align: center;
-        padding: 0;
-    }
+  ul.resultsList {
+    list-style-type: none;
+    text-align: center;
+    padding: 0;
+  }
 
-    .suggestionLeft {
-        border-left: thin solid rgba(0, 128, 0, 0.3);
-    }
+  .suggestionLeft {
+    border-left: thin solid rgba(0, 128, 0, 0.3);
+  }
 
-    .suggestions::-webkit-scrollbar-thumb {
-        background-color: green;
-    }
+  .suggestions::-webkit-scrollbar-thumb {
+    background-color: green;
+  }
 
-    .suggestions li {
-        padding: 0.05rem;
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
+  .suggestions li {
+    padding: 0.05rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
 
-    .suggestionsTitle {
-        text-align: center;
-        font-size: x-large;
-    }
+  .suggestionsTitle {
+    text-align: center;
+    font-size: x-large;
+  }
 
-    .suggestionActive,
-    .suggestions li:hover {
-        background: linear-gradient(90deg, green 0%, hsla(0, 0%, 98%, 1) 200%);
-        color: #fff;
-        cursor: pointer;
-        font-weight: 700;
-    }
+  .suggestionActive,
+  .suggestions li:hover {
+    background: linear-gradient(90deg, green 0%, hsla(0, 0%, 98%, 1) 200%);
+    color: #fff;
+    cursor: pointer;
+    font-weight: 700;
+  }
 }
 
 @media screen and (max-width: 1200px) {
-    .suggestions {
-        width: 600px;
-        margin-left: -380px;
-    }
+  .suggestions {
+    width: 600px;
+    margin-left: -380px;
+  }
 }
 
 @media screen and (max-width: 991px) {
-    .searchContainer {
-        display: revert;
-    }
+  .searchContainer {
+    display: revert;
+  }
 
-    .search {
-        float: revert;
-        margin-bottom: 1rem;
-    }
+  .search {
+    float: revert;
+    margin-bottom: 1rem;
+  }
 
-    .pane {
-        padding: 0 10px;
-        margin: 20px 0;
-        width: 100%;
-        float: left;
-        height: 200px;
-    }
+  .pane {
+    padding: 0 10px;
+    margin: 20px 0;
+    width: 100%;
+    float: left;
+    height: 200px;
+  }
 
-    .suggestions {
-        width: revert;
-        margin: 1rem 0;
-        padding: 1rem;
-        border: 1px solid var(--color-link);
-        border-radius: 5px;
-        background-color: var(--color-tertiary);
-    }
+  .suggestions {
+    width: revert;
+    margin: 1rem 0;
+    padding: 1rem;
+    border: 1px solid var(--color-link);
+    border-radius: 5px;
+    background-color: var(--color-tertiary);
+  }
 
-    .wrapper {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        margin-top: 1rem;
-    }
+  .wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-top: 1rem;
+  }
 
-    .wrapper h2 {
-        font-size: 1.1rem;
-        margin-bottom: 1.2rem;
-    }
+  .wrapper h2 {
+    font-size: 1.1rem;
+    margin-bottom: 1.2rem;
+  }
 
-    .suggestionLink {
-        padding: 0;
-        margin-top: 2px;
-    }
+  .suggestionLink {
+    padding: 0;
+    margin-top: 2px;
+  }
 
-    .suggestionsTitle {
-        text-align: center;
-        font-size: x-large;
-    }
+  .suggestionsTitle {
+    text-align: center;
+    font-size: x-large;
+  }
 
-    .suggestionActive,
-    .suggestions li:hover {
-        background: linear-gradient(90deg, green 0%, hsla(0, 0%, 98%, 1) 200%);
-        color: #fff;
-        cursor: pointer;
-        font-weight: 700;
-    }
+  .suggestionActive,
+  .suggestions li:hover {
+    background: linear-gradient(90deg, green 0%, hsla(0, 0%, 98%, 1) 200%);
+    color: #fff;
+    cursor: pointer;
+    font-weight: 700;
+  }
 
-    ul.resultsList {
-        list-style-type: none;
-        text-align: center;
-        padding: 0;
-    }
+  ul.resultsList {
+    list-style-type: none;
+    text-align: center;
+    padding: 0;
+  }
 
-    .searchIcon {
-        display: none;
-    }
+  .searchIcon {
+    display: none;
+  }
 }
