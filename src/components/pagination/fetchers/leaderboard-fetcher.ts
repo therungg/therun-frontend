@@ -18,7 +18,5 @@ export const leaderboardFetcher: PaginationFetcher<Count> = async (
         return includesCaseInsensitive(query, item.username);
     });
 
-    //TODO:: Remember original leaderboard position
-
     return paginateArray(newItems, pageSize, page);
 };
