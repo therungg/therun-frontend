@@ -4,7 +4,7 @@ import React, { useEffect, useReducer, useState } from "react";
 import { DurationToFormatted, IsoToFormatted } from "../../util/datetime";
 import { GameLink, UserGameCategoryLink } from "../../links/links";
 import { EditRun } from "../dashboard/edit-run";
-import { GlobalGameData } from "../../../pages/[username]/[game]/[run]";
+import { GlobalGameData } from "~app/[username]/[game]/[run]/run";
 import styles from "../../css/User.module.scss";
 
 export const UserOverview = ({

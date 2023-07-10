@@ -18,7 +18,7 @@ import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-w
 import { LiveRun } from "~app/live/live.types";
 import { getRunmap } from "~app/[username]/runmap.component";
 import { prepareSessions } from "~app/[username]/prepare-sessions.component";
-import { GlobalGameData } from "~src/pages/[username]/[game]/[run]";
+import { GlobalGameData } from "~app/[username]/[game]/[run]/run";
 
 export interface UserPageProps {
     runs: Run[];
