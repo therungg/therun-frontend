@@ -47,6 +47,23 @@
 .optionalColumn {
 }
 
+.tableVertical {
+
+    tr {
+        border-bottom: 1px var(--bs-table-border-color) solid;
+        > *:first-child { padding-left: 0 }
+        > *:last-child { padding-right: 0 }
+        &:last-child { border-bottom: none}
+        &:not(:first-child) .tableVerticalHeader { margin-top: 2rem}
+    }
+}
+
+.tableVerticalHeader {
+    --bs-table-accent-bg: var(--bs-table-striped-bg);
+    text-align: center;
+    border-top: 2rem solid transparent;
+}
+
 @media screen and (max-width: 766px) {
     .statsHorizontal {
         display: none;
@@ -65,6 +82,15 @@
     .form {
         margin: 0;
         padding: 0;
+    }
+
+    .tableVertical {
+
+        tr {
+            > *:last-child:not(:only-child) {
+                text-align: right
+            }
+        }
     }
 }
 

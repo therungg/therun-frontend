@@ -3,7 +3,7 @@ import { CategoryLeaderboard } from "~app/games/[game]/game.types";
 import React from "react";
 import { Col, Row, Table } from "react-bootstrap";
 import styles from "../css/Game.module.scss";
-import { PatreonBunnySvg } from "../../pages/patron";
+import { PatreonBunnySvg } from "~src/pages/patron";
 
 export interface Tournament {
     name: string;
@@ -81,42 +81,47 @@ export const TournamentInfo = ({ tournament }: { tournament: Tournament }) => {
             <Table
                 responsive
                 borderless
-                className={styles.statsHorizontal}
+                className={styles.tableVertical}
                 style={{ marginBottom: "2rem" }}
             >
-                <thead>
-                    <tr>
-                        <th>Startdate</th>
-                        <th>Enddate</th>
-                        {tournament.socials &&
-                            Object.values(tournament.socials).map((social) => {
-                                return (
-                                    <th key={social.display}>
-                                        {social.display}
-                                    </th>
-                                );
-                            })}
-                    </tr>
-                </thead>
                 <tbody>
-                    <tr>
-                        <td>{moment(tournament.startDate).format("LLL")}</td>
-                        <td>{moment(tournament.endDate).format("LLL")}</td>
-                        {tournament.socials &&
-                            Object.values(tournament.socials).map((social) => {
-                                return (
-                                    <td key={social.display}>
-                                        <a
-                                            target={"_blank"}
-                                            rel={"noreferrer"}
-                                            href={social.url}
-                                        >
-                                            {social.urlDisplay}
-                                        </a>
-                                    </td>
-                                );
-                            })}
+                    <tr className={styles.tableVerticalHeader}>
+                        <th colSpan={2}>Tournament</th>
                     </tr>
+                    <tr>
+                        <th>Starting at</th>
+                        <td>{moment(tournament.startDate).format("LLL")}</td>
+                    </tr>
+                    <tr>
+                        <th>Ending at</th>
+                        <td>{moment(tournament.endDate).format("LLL")}</td>
+                    </tr>
+                    {tournament.socials && (
+                        <tr className={styles.tableVerticalHeader}>
+                            <th colSpan={2}>Tournament socials</th>
+                        </tr>
+                    )}
+                    {tournament.socials &&
+                        Object.values(tournament.socials).map((social) => {
+                            return (
+                                <>
+                                    <tr>
+                                        <th key={social.display}>
+                                            {social.display}
+                                        </th>
+                                        <td key={social.display}>
+                                            <a
+                                                target={"_blank"}
+                                                rel={"noreferrer"}
+                                                href={social.url}
+                                            >
+                                                {social.urlDisplay}
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </>
+                            );
+                        })}
                 </tbody>
             </Table>
             <Row>
