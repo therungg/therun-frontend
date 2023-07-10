@@ -163,7 +163,7 @@ export const TournamentRuns = ({ data }) => {
                                 setSearch(e.target.value);
                             }}
                             value={search}
-                            id="gameSearch"
+                            id="tournamentRunSearch"
                         />
                     </div>
                 </div>
