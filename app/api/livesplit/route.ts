@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
 
     const response = await fetch(setCurrentRunApi, {
         method: "post",
-        body: request.body,
+        body: await request.json(),
     });
 
     if (response.status < 300) {

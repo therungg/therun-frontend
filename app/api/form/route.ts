@@ -2,6 +2,8 @@ import nodemailer from "nodemailer";
 import { apiResponse } from "~app/api/response";
 
 export async function POST(request: Request) {
+    const body = await request.json();
+
     const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: 587,
@@ -16,8 +18,8 @@ export async function POST(request: Request) {
             {
                 from: "info@therun.gg",
                 to: "info@therun.gg",
-                subject: `${request.body.category}: ${request.body.subject} (${request.body.email})`,
-                text: request.body.text,
+                subject: `${body.category}: ${body.subject} (${body.email})`,
+                text: body.text,
             },
             (error, info) => {
                 if (error) return reject(error);

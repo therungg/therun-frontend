@@ -11,7 +11,7 @@ export async function POST(
     }
 ) {
     const { user } = params;
-    const userData = await savePatreonSettings(user, request.body);
+    const userData = await savePatreonSettings(user, await request.json());
 
     return apiResponse({
         body: userData,

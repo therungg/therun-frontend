@@ -17,7 +17,7 @@ export async function PUT(
     const game = safeDecodeURI(params.game);
     const category = safeDecodeURI(params.run);
 
-    const body = JSON.parse(request.body);
+    const body = await request.json();
 
     if (body.description) {
         if (body.description.length > 250) {

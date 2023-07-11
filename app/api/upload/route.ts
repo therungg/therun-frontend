@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
 
     await fetch(postUrl, {
         method: "PUT",
-        body: await request.text(),
+        body,
     });
 
     return apiResponse({ body: { ok: "ok" } });
