@@ -1,13 +1,13 @@
-import { NextResponse } from "next/server";
 import { getTournaments } from "~src/components/tournament/getTournaments";
+import { apiResponse } from "~app/api/response";
+
+export const revalidate = 300;
 
 export async function GET() {
     const result = await getTournaments();
 
-    return NextResponse.json(result, {
-        headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Cache-Control": `s-maxage=300, stale-while-revalidate=12000`,
-        },
+    return apiResponse({
+        body: result,
+        cache: { maxAge: revalidate, swr: 12000 },
     });
 }

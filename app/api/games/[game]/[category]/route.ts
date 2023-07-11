@@ -3,6 +3,8 @@ import { getCategory } from "~src/components/game/get-game";
 import { safeEncodeURI } from "~src/utils/uri";
 import { apiResponse } from "~app/api/response";
 
+export const revalidate = 600;
+
 export async function GET(
     _request: NextRequest,
     {
@@ -22,5 +24,8 @@ export async function GET(
         safeEncodeURI(category)
     );
 
-    return apiResponse({ body: gameData, cache: { maxAge: 600, swr: 15000 } });
+    return apiResponse({
+        body: gameData,
+        cache: { maxAge: revalidate, swr: 15000 },
+    });
 }

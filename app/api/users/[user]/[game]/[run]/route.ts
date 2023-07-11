@@ -3,6 +3,8 @@ import { apiResponse } from "~app/api/response";
 import { safeDecodeURI, safeEncodeURI } from "~src/utils/uri";
 import { getRun } from "~src/lib/get-run";
 
+export const revalidate = 60;
+
 export async function PUT(
     request: NextRequest,
     {
@@ -65,7 +67,10 @@ export async function GET(
 
     const gameData = await getRun(user, game, category);
 
-    return apiResponse({ body: { meta: gameData } });
+    return apiResponse({
+        body: { meta: gameData },
+        cache: { maxAge: revalidate, swr: revalidate },
+    });
 }
 
 export async function DELETE(

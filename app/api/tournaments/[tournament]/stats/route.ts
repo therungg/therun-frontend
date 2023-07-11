@@ -2,6 +2,8 @@ import { getTournamentStatsByName } from "~src/components/tournament/getTourname
 import { NextRequest } from "next/server";
 import { apiResponse } from "~app/api/response";
 
+export const revalidate = 30;
+
 export async function GET(
     _: NextRequest,
     { params }: { params: { tournament: string } }
@@ -11,7 +13,7 @@ export async function GET(
     return apiResponse({
         body: result,
         cache: {
-            maxAge: 30,
+            maxAge: revalidate,
             swr: 1500,
         },
     });

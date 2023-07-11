@@ -3,6 +3,8 @@ import { getUserRuns } from "~src/lib/get-user-runs";
 import { apiResponse } from "~app/api/response";
 import { editUser } from "~src/lib/edit-user";
 
+export const revalidate = 60;
+
 export async function GET(
     _: NextRequest,
     {
@@ -18,7 +20,7 @@ export async function GET(
     return apiResponse({
         body: result,
         cache: {
-            maxAge: 60,
+            maxAge: revalidate,
             swr: 1500,
         },
     });

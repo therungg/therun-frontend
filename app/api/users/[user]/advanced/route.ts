@@ -2,6 +2,8 @@ import { NextRequest } from "next/server";
 import { apiResponse } from "~app/api/response";
 import advancedUserStats from "~src/lib/advanced-user-stats";
 
+export const revalidate = 60;
+
 export async function GET(
     _request: NextRequest,
     {
@@ -16,7 +18,7 @@ export async function GET(
     return apiResponse({
         body: userData,
         cache: {
-            maxAge: 60,
+            maxAge: revalidate,
             swr: 15000,
         },
     });

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { findUserOrRun } from "~src/components/search/find-user-or-run";
 import { apiResponse } from "~app/api/response";
 
+export const revalidate = 600;
+
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
 
@@ -43,5 +45,8 @@ export async function GET(request: NextRequest) {
         });
     }
 
-    return apiResponse({ body: result });
+    return apiResponse({
+        body: result,
+        cache: { maxAge: revalidate, swr: revalidate },
+    });
 }
