@@ -2,7 +2,7 @@ import { Tournament } from "~src/components/tournament/tournament-info";
 import { getTournaments } from "~src/components/tournament/getTournaments";
 import { AllTournaments } from "~app/tournaments/all-tournaments";
 
-export async function TournamentsPage() {
+export default async function TournamentsPage() {
     const tournaments: Tournament[] = await getTournaments();
 
     const now = new Date().toISOString();
