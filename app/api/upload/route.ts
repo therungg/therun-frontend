@@ -2,12 +2,6 @@ import { safeEncodeURI } from "~src/utils/uri";
 import { NextRequest } from "next/server";
 import { apiResponse } from "~app/api/response";
 
-export const config = {
-    api: {
-        bodyParser: { sizeLimit: "50mb" },
-    },
-};
-
 export async function POST(request: NextRequest) {
     const urlBase = process.env.NEXT_PUBLIC_UPLOAD_URL;
     const url = `${urlBase}?filename=${safeEncodeURI(
@@ -22,9 +16,15 @@ export async function POST(request: NextRequest) {
 
     const postUrl = result.url;
 
+    const body = await request.text();
+
+    if (Buffer.byteLength(body, "utf-8") > 50 * 1000) {
+        return apiResponse({ status: 400, body: { result: "body too large" } });
+    }
+
     await fetch(postUrl, {
         method: "PUT",
-        body: request.body,
+        body: await request.text(),
     });
 
     return apiResponse({ body: { ok: "ok" } });
