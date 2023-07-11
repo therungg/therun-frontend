@@ -24,16 +24,12 @@ export const getUserPatreonData = async (query: {
         const base = encodeURIComponent(`${baseUrl}/change-appearance`);
         const loginUrl = `${process.env.NEXT_PUBLIC_PATREON_LOGIN_URL}?code=${code}&redirect_uri=${base}&session_id=${sessionId}`;
 
-        const patreonLinkData = await fetch(loginUrl, {
-            next: { revalidate: 0 },
-        });
+        const patreonLinkData = await fetch(loginUrl);
 
         return patreonLinkData.json();
     } else if (session.username) {
         const patreonDataUrl = `${patreonApiBaseUrl}/patreon/${session.username}`;
-        const patreonLinkData = await fetch(patreonDataUrl, {
-            next: { revalidate: 0 },
-        });
+        const patreonLinkData = await fetch(patreonDataUrl);
 
         return patreonLinkData.json();
     }

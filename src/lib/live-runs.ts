@@ -11,7 +11,7 @@ export const getAllLiveRuns = async (game = null, category = null) => {
         }
     }
 
-    const result = await fetch(url, { next: { revalidate: 0 } });
+    const result = await fetch(url);
 
     return result.json();
 };
@@ -23,17 +23,14 @@ export const getLiveRunsForGameCategory = async (
     const result = await fetch(
         `${liveRunUrl}?game=${encodeURIComponent(
             game
-        )}&category=${encodeURIComponent(category)}`,
-        { next: { revalidate: 0 } }
+        )}&category=${encodeURIComponent(category)}`
     );
 
     return result.json();
 };
 
 export const getLiveRunForUser = async (username: string) => {
-    const result = await fetch(`${liveRunUrl}?username=${username}`, {
-        next: { revalidate: 0 },
-    });
+    const result = await fetch(`${liveRunUrl}?username=${username}`);
 
     return result.json();
 };

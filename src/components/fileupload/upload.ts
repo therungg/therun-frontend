@@ -18,7 +18,6 @@ export const upload = async (
     )}&sessionId=${sessionId}`;
 
     const presignedUrl = await fetch(url, {
-        next: { revalidate: 0 },
         method: "GET",
         headers: {
             "Content-Disposition": "attachment",
