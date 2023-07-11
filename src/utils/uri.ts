@@ -12,5 +12,10 @@ function isEncoded(uri: string): boolean {
         return false;
     }
 }
+
 export const safeEncodeURI = (str: string) =>
     isEncoded(str) ? str : encodeURIComponent(str);
+
+export const safeDecodeURI = (str: string) => {
+    return decodeURIComponent(safeEncodeURI(str));
+};

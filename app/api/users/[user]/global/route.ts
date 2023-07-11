@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import getUploadKey from "../../../../../src/lib/get-upload-key";
+import getGlobalUser from "~src/lib/get-global-user";
 import { apiResponse } from "~app/api/response";
 
 export async function GET(
@@ -11,9 +11,13 @@ export async function GET(
     }
 ) {
     const { user } = params;
-    const userData = await getUploadKey(user);
+    const userData = await getGlobalUser(user);
 
     return apiResponse({
         body: userData,
+        cache: {
+            maxAge: 60,
+            swr: 15000,
+        },
     });
 }

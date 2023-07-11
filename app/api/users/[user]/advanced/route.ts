@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
-import getUploadKey from "../../../../../src/lib/get-upload-key";
 import { apiResponse } from "~app/api/response";
+import advancedUserStats from "~src/lib/advanced-user-stats";
 
 export async function GET(
     _request: NextRequest,
@@ -11,9 +11,13 @@ export async function GET(
     }
 ) {
     const { user } = params;
-    const userData = await getUploadKey(user);
+    const userData = await advancedUserStats(user, "0");
 
     return apiResponse({
         body: userData,
+        cache: {
+            maxAge: 60,
+            swr: 15000,
+        },
     });
 }

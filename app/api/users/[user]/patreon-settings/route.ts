@@ -1,9 +1,9 @@
 import { NextRequest } from "next/server";
-import getUploadKey from "../../../../../src/lib/get-upload-key";
 import { apiResponse } from "~app/api/response";
+import savePatreonSettings from "~src/lib/save-patreon-settings";
 
-export async function GET(
-    _request: NextRequest,
+export async function POST(
+    request: NextRequest,
     {
         params,
     }: {
@@ -11,7 +11,7 @@ export async function GET(
     }
 ) {
     const { user } = params;
-    const userData = await getUploadKey(user);
+    const userData = await savePatreonSettings(user, request.body);
 
     return apiResponse({
         body: userData,
