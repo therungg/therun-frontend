@@ -1,10 +1,9 @@
 import { Game } from "~app/games/games.types";
-import { Table } from "react-bootstrap";
+import { Image, Table } from "react-bootstrap";
 import styles from "../css/GamesTable.module.scss";
 import { GameLink, UserLink } from "../links/links";
 import { DurationToFormatted } from "../util/datetime";
 import React from "react";
-import { LazyLoadImage } from "react-lazy-load-image-component";
 
 interface PopularGamesProps {
     gamestats: Game[];
@@ -24,7 +23,7 @@ export const PopularGames: React.FC<PopularGamesProps> = ({ gamestats }) => {
                                 >
                                     {game.image && game.image !== "noimage" && (
                                         <a href={`/games/${game.display}`}>
-                                            <LazyLoadImage
+                                            <Image
                                                 alt={game.display}
                                                 src={game.image}
                                                 loading={"lazy"}
