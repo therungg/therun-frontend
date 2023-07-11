@@ -3,6 +3,7 @@ import { getAllLiveRuns } from "~src/lib/live-runs";
 import { getSession } from "~src/actions/session.action";
 import ShowMarathon from "~app/marathon/show-marathon";
 
+export const revalidate = 0;
 export default async function MarathonPage() {
     const liveData: LiveRun[] = await getAllLiveRuns();
     const session = await getSession();

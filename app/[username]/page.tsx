@@ -12,6 +12,8 @@ import {
 } from "~app/tournaments/tournament-list";
 import { TournamentPage } from "~app/tournaments/[tournament]/page";
 
+export const revalidate = 60;
+
 export default async function Page({
     params,
     searchParams,

@@ -2,6 +2,7 @@ import { Tournament } from "~src/components/tournament/tournament-info";
 import { getTournaments } from "~src/components/tournament/getTournaments";
 import { AllTournaments } from "~app/tournaments/all-tournaments";
 
+export const revalidate = 0;
 export default async function TournamentsPage() {
     const tournaments: Tournament[] = await getTournaments();
 

@@ -5,6 +5,8 @@ import { LoginWithPatreon } from "~app/change-appearance/login-with-patreon";
 import { getBaseUrl } from "~src/actions/base-url.action";
 import PatreonSection from "~app/change-appearance/patreon-section";
 
+export const revalidate = 0;
+
 export default async function ChangeAppearance({
     searchParams = {},
 }: {

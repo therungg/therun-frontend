@@ -3,6 +3,8 @@ import { getGameGlobal } from "~src/components/game/get-game";
 import { getLiveRunForUser } from "~src/lib/live-runs";
 import RunDetail from "~app/[username]/[game]/[run]/run";
 
+export const revalidate = 60;
+
 export default async function CustomRunPage({
     params,
 }: {

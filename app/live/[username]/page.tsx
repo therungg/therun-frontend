@@ -3,6 +3,8 @@ import { LiveRun } from "~app/live/live.types";
 import { liveRunArrayToMap } from "~app/live/utilities";
 import { Live } from "~app/live/live";
 
+export const revalidate = 0;
+
 interface PageProps {
     params: { username: string };
 }

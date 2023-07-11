@@ -1,7 +1,6 @@
 import { PaginatedGameResult } from "~app/games/games.types";
 
 const fetchData = async (url: string, revalidate: number = 0) => {
-    // const res = await fetch(url, { next: { revalidate: 60 * 30 } });
     const res = await fetch(url, { next: { revalidate } });
 
     const json = await res.json();

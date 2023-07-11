@@ -1,8 +1,10 @@
 import styles from "../../src/components/css/Home.module.scss";
 import uploadKeyStyles from "../../src/components/css/UploadKey.module.scss";
-import { getSession } from "../../src/actions/session.action";
+import { getSession } from "~src/actions/session.action";
 import { CopyUploadKey } from "./copy-upload-key.component";
-import { getBaseUrl } from "../../src/actions/base-url.action";
+import { getBaseUrl } from "~src/actions/base-url.action";
+
+export const revalidate = 0;
 
 export default async function UploadKey() {
     const session = await getSession();
