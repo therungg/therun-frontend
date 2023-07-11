@@ -8,6 +8,7 @@ import patreonStyles from "../patreon/patreon-styles";
 import { DurationToFormatted } from "../util/datetime";
 import { LiveRun } from "~app/live/live.types";
 import { LiveSplitTimerComponent } from "~app/live/live-split-timer.component";
+import { LazyLoadImage } from "react-lazy-load-image-component";
 
 export const LiveUserRun = ({
     liveRun,
@@ -111,9 +112,10 @@ export const LiveUserRun = ({
                     liveRun.gameImage.length > 0 &&
                     liveRun.gameImage != "noimage" && (
                         <div>
-                            <Image
-                                alt={"Game Image"}
+                            <LazyLoadImage
+                                alt={liveRun.game}
                                 src={liveRun.gameImage}
+                                loading={"lazy"}
                                 className={styles.gameImage}
                                 style={
                                     liveUserStyles.gradient ||

@@ -6,6 +6,7 @@ import { GameLink, UserGameCategoryLink } from "../../links/links";
 import { EditRun } from "../dashboard/edit-run";
 import { GlobalGameData } from "~app/[username]/[game]/[run]/run";
 import styles from "../../css/User.module.scss";
+import { LazyLoadImage } from "react-lazy-load-image-component";
 
 export const UserOverview = ({
     runs,
@@ -107,9 +108,10 @@ export const UserOverview = ({
                                     <a href={`/games/${game}`}>
                                         {globalData.image &&
                                             globalData.image != "noimage" && (
-                                                <Image
-                                                    alt={"Game Image"}
+                                                <LazyLoadImage
+                                                    alt={globalData.display}
                                                     src={globalData.image}
+                                                    loading={"lazy"}
                                                     height={132}
                                                     width={99}
                                                 />

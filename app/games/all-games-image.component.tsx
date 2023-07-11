@@ -5,6 +5,7 @@ import styles from "~src/components/css/Games.module.scss";
 import { Game } from "~app/games/games.types";
 import { useTheme } from "next-themes";
 import { getGameUrl } from "./utilities";
+import { LazyLoadImage } from "react-lazy-load-image-component";
 
 interface AllGamesImageProps {
     game: Game;
@@ -19,9 +20,10 @@ export const AllGamesImage: React.FunctionComponent<AllGamesImageProps> = ({
         <div className={styles.image}>
             <a href={`/games/${gameUrl}`}>
                 {game.image && game.image != "noimage" && (
-                    <Image
-                        alt={"Game Image"}
+                    <LazyLoadImage
+                        alt={game.display}
                         src={game.image}
+                        loading={"lazy"}
                         height={142}
                         width={106}
                     />

@@ -1,10 +1,10 @@
 "use client";
-import Image from "next/image";
 import React from "react";
 import styles from "~src/components/css/Game.module.scss";
 import { Title } from "~src/components/title";
 import { GameContext } from "./game.context";
 import { StatsData } from "./game.types";
+import { LazyLoadImage } from "react-lazy-load-image-component";
 
 interface GameHeaderProps {
     data: Required<StatsData>;
@@ -19,9 +19,10 @@ export const GameHeader: React.FunctionComponent<GameHeaderProps> = ({
         <>
             <div className={styles.gameImage}>
                 {global.image && global.image != "noimage" && (
-                    <Image
-                        alt={"game-image"}
+                    <LazyLoadImage
+                        alt={global.display}
                         src={global.image}
+                        loading={"lazy"}
                         height={80}
                         width={60}
                     />
