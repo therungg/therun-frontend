@@ -1,15 +1,16 @@
 import styles from "../../src/components/css/Home.module.scss";
 import uploadKeyStyles from "../../src/components/css/UploadKey.module.scss";
-import { getSession } from "../../src/actions/session.action";
+import { getSession } from "~src/actions/session.action";
 import { CopyUploadKey } from "./copy-upload-key.component";
-import { getBaseUrl } from "../../src/actions/base-url.action";
+import { getBaseUrl } from "~src/actions/base-url.action";
+
+export const revalidate = 0;
 
 export default async function UploadKey() {
     const session = await getSession();
     const baseUrl = getBaseUrl();
     const data = await fetch(
-        `${baseUrl}/api/users/${session.id}-${session.username}/upload-key`,
-        { next: { revalidate: 0 } }
+        `${baseUrl}/api/users/${session.id}-${session.username}/upload-key`
     );
     const { result } = (await data.json()) as { result: string };
     let content = (

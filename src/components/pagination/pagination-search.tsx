@@ -9,7 +9,10 @@ export const PaginationSearch = ({ text }: { text: string }) => {
 
     return (
         <div>
-            <div className={`${searchStyles.searchContainer}`}>
+            <div
+                className={`${searchStyles.searchContainer}`}
+                style={{ marginBottom: "1rem" }}
+            >
                 <span
                     className={"material-symbols-outlined"}
                     onClick={() => {

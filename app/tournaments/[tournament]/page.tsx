@@ -7,6 +7,7 @@ import { GenericTournament } from "~app/tournaments/[tournament]/tournament";
 import { getSession } from "~src/actions/session.action";
 import { liveRunArrayToMap } from "~app/tournaments/[tournament]/live-run-array-to-map.component";
 
+export const revalidate = 30;
 export default async function Page({
     params,
     searchParams,

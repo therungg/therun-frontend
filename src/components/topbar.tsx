@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import styles from "./css/Topbar.module.scss";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { PatreonBunnySvgWithoutLink } from "../pages/patron";
+import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import Image from "next/image";
 import { TwitchUser } from "./twitch/TwitchUser";
 import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
@@ -102,9 +102,6 @@ const Topbar = ({
                         <Nav.Link className={styles.navLink} href="/live">
                             <b>Live</b>
                         </Nav.Link>
-                        <Nav.Link className={styles.navLink} href="/gsa">
-                            <b>PACE 2023</b>
-                        </Nav.Link>
                         <Nav.Link className={styles.navLink} href="/games/">
                             Games
                         </Nav.Link>
@@ -112,7 +109,7 @@ const Topbar = ({
                             Support <PatreonBunnySvgWithoutLink />
                         </Nav.Link>
                     </Nav>
-                    <Nav className="ml-auto">
+                    <Nav className="ml-auto mr-5">
                         <Search />
                     </Nav>
                     <Nav

@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import { AllGames } from "./all-games";
 import { getGamesPage } from "~src/components/game/get-tabulated-game-stats";
 
+export const revalidate = 60 * 60 * 6;
+
 export const metadata: Metadata = {
     title: "Game overview",
     description: "All games overview",

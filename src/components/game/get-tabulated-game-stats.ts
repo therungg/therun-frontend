@@ -1,8 +1,7 @@
 import { PaginatedGameResult } from "~app/games/games.types";
 
-const fetchData = async (url: string, revalidate: number = 0) => {
-    // const res = await fetch(url, { next: { revalidate: 60 * 30 } });
-    const res = await fetch(url, { next: { revalidate } });
+const fetchData = async (url: string) => {
+    const res = await fetch(url);
 
     const json = await res.json();
 
@@ -30,7 +29,7 @@ export const getGamesPage = async (
 ): Promise<PaginatedGameResult> => {
     const url = `${process.env.NEXT_PUBLIC_DATA_URL}/games?query=${query}&page=${page}&pageSize=${pageSize}`;
 
-    return fetchData(url, 60 * 60);
+    return fetchData(url);
 };
 
 export const getTabulatedGameStats = async () => {
@@ -42,5 +41,5 @@ export const getTabulatedGameStats = async () => {
 export const getTabulatedGameStatsPopular = async () => {
     const url = `${process.env.NEXT_PUBLIC_DATA_URL}/games/stats/`;
 
-    return fetchData(url, 60 * 60 * 2);
+    return fetchData(url);
 };

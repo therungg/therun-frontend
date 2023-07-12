@@ -4,12 +4,14 @@ import useSWR from "swr";
 import React from "react";
 import Link from "next/link";
 import styles from "../src/components/css/Home.module.scss";
-import { PopularGames } from "../src/components/game/popular-games";
-import { DataHolder } from "../src/components/frontpage/data-holder";
-import { SkeletonPersonalBests } from "../src/components/skeleton/index/skeleton-personal-bests";
-import { SkeletonPopularGames } from "../src/components/skeleton/index/skeleton-popular-games";
-import { PatreonBunnySvgWithoutLink } from "../src/pages/patron";
-import { fetcher } from "../src/utils/fetcher";
+import { PopularGames } from "~src/components/game/popular-games";
+import { DataHolder } from "~src/components/frontpage/data-holder";
+import { SkeletonPersonalBests } from "~src/components/skeleton/index/skeleton-personal-bests";
+import { SkeletonPopularGames } from "~src/components/skeleton/index/skeleton-popular-games";
+import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
+import { fetcher } from "~src/utils/fetcher";
+
+export const revalidate = 60;
 
 export default function Page() {
     return (

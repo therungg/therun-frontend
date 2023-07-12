@@ -2,11 +2,11 @@ import { StatsData } from "~app/games/[game]/game.types";
 import { getFormattedString } from "../../util/datetime";
 import React, { useState } from "react";
 import { ShowComparison } from "./show-comparison";
-import { Run, RunHistory, SplitsHistory } from "../../../common/types";
+import { Run, RunHistory, SplitsHistory } from "~src/common/types";
 import { Col, Row } from "react-bootstrap";
 import { UserLink } from "../../links/links";
-import { getSplitsHistoryUrl } from "../../../lib/get-splits-history";
-import { AppContext } from "../../../common/app.context";
+import { getSplitsHistoryUrl } from "~src/lib/get-splits-history";
+import { AppContext } from "~src/common/app.context";
 
 // eslint-disable-next-line import/no-commonjs
 const levenshtein = require("js-levenshtein");
@@ -62,7 +62,9 @@ export const CompareSplits = ({
 
     const currentUserData =
         currentUser != "no-selection" && loaded
-            ? userData.get(currentUser)[!gameTime ? "runs" : "runsGameTime"]
+            ? userData.get(currentUser)[
+                  !gameTime ? "currentRuns" : "runsGameTime"
+              ]
             : null;
 
     // This is really old, should be improved
@@ -96,54 +98,57 @@ export const CompareSplits = ({
                     const correctUrl = fullUser.url;
                     setCurrentUser(selectedUser);
 
-                    if (!userData.has(selectedUser)) {
-                        setLoaded(false);
-                        const url = `${baseUrl}/api/users${correctUrl}`;
+                    try {
+                        if (!userData.has(selectedUser)) {
+                            setLoaded(false);
+                            const url = `${baseUrl}/api/users${correctUrl}`;
 
-                        const gamesData: UserData = await (
-                            await fetch(url, {
-                                method: "GET",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                },
-                            })
-                        ).json();
+                            const gamesData: UserData = await (
+                                await fetch(url, {
+                                    method: "GET",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                    },
+                                })
+                            ).json();
 
-                        const currentRuns = await (
-                            await fetch(
-                                getSplitsHistoryUrl(
-                                    gamesData.meta.historyFilename,
-                                    false
-                                ),
-                                {
-                                    mode: "cors",
-                                }
-                            )
-                        ).json();
-
-                        let runsGameTime = null;
-
-                        if (gamesData.meta.hasGameTime) {
-                            runsGameTime = await (
+                            const currentRuns = await (
                                 await fetch(
                                     getSplitsHistoryUrl(
                                         gamesData.meta.historyFilename,
-                                        true
+                                        false
                                     ),
                                     {
                                         mode: "cors",
                                     }
                                 )
                             ).json();
-                        }
 
-                        const prevMap = userData;
-                        prevMap.set(selectedUser, {
-                            meta: gamesData.meta,
-                            currentRuns,
-                            runsGameTime,
-                        });
-                        setUserData(prevMap);
+                            let runsGameTime = null;
+
+                            if (gamesData.meta.hasGameTime) {
+                                runsGameTime = await (
+                                    await fetch(
+                                        getSplitsHistoryUrl(
+                                            gamesData.meta.historyFilename,
+                                            true
+                                        ),
+                                        {
+                                            mode: "cors",
+                                        }
+                                    )
+                                ).json();
+                            }
+
+                            const prevMap = userData;
+                            prevMap.set(selectedUser, {
+                                meta: gamesData.meta,
+                                currentRuns,
+                                runsGameTime,
+                            });
+                            setUserData(prevMap);
+                        }
+                    } finally {
                         setLoaded(true);
                     }
                 }}

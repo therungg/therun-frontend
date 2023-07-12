@@ -3,7 +3,7 @@ import { CategoryLeaderboard } from "~app/games/[game]/game.types";
 import React from "react";
 import { Col, Row, Table } from "react-bootstrap";
 import styles from "../css/Game.module.scss";
-import { PatreonBunnySvg } from "~src/pages/patron";
+import { PatreonBunnySvg } from "~app/patron/patreon-info";
 
 export interface Tournament {
     name: string;

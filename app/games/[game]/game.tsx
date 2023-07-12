@@ -16,6 +16,8 @@ import { GameHeader } from "./game-header.component";
 import { GameContext } from "./game.context";
 import { GameFilter } from "./game-filter.component";
 
+export const revalidate = 60;
+
 interface GameProps {
     // Did server-side validation
     data: Required<StatsData>;
