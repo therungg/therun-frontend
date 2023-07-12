@@ -2,6 +2,7 @@ import React from "react";
 import { Metadata } from "next";
 import "nprogress/nprogress.css";
 import "./material-symbols-outline.css";
+import "../src/styles/bootstrap/bootstrap.min.css";
 import "../src/styles/globals.css";
 import "../src/styles/calendar-heatmap.min.css";
 import Topbar from "../src/components/topbar";
