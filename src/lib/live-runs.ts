@@ -1,3 +1,5 @@
+import { safeEncodeURI } from "~src/utils/uri";
+
 export const liveRunUrl =
     "https://pokzhwoycl3uo7n5lzh6iltyoq0iaibq.lambda-url.eu-west-1.on.aws/";
 
@@ -5,9 +7,9 @@ export const getAllLiveRuns = async (game = null, category = null) => {
     let url = liveRunUrl;
 
     if (game) {
-        url += `?game=${encodeURIComponent(game)}`;
+        url += `?game=${safeEncodeURI(game)}`;
         if (category) {
-            url += `&category=${encodeURIComponent(category)}`;
+            url += `&category=${safeEncodeURI(category)}`;
         }
     }
 
@@ -21,9 +23,9 @@ export const getLiveRunsForGameCategory = async (
     category: string
 ) => {
     const result = await fetch(
-        `${liveRunUrl}?game=${encodeURIComponent(
-            game
-        )}&category=${encodeURIComponent(category)}`
+        `${liveRunUrl}?game=${safeEncodeURI(game)}&category=${safeEncodeURI(
+            category
+        )}`
     );
 
     return result.json();

@@ -25,6 +25,7 @@ import Timesaves from "~src/components/run/dashboard/timesaves";
 import { CompareSplits } from "~src/components/run/compare/compare-splits";
 import { Vod } from "~src/components/run/dashboard/vod";
 import Golds from "~src/components/run/dashboard/golds";
+import { safeEncodeURI } from "~src/utils/uri";
 
 interface RunPageProps extends AppProps {
     run: Run;
@@ -92,7 +93,7 @@ export default function RunDetail({
     runName = run.run;
 
     const loadCompare = async () => {
-        const gameName = encodeURIComponent(run.game);
+        const gameName = safeEncodeURI(run.game);
 
         const url = `${baseUrl}/api/games/${gameName}`;
         const gamesData: StatsData = await (
