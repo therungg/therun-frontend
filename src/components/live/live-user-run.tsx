@@ -1,6 +1,6 @@
 import { Col, Image, Row } from "react-bootstrap";
 import styles from "../css/LiveRun.module.scss";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { UserLink } from "../links/links";
 import { TwitchIcon } from "../user/userform";
 import { usePatreons } from "../patreon/use-patreons";
@@ -8,7 +8,7 @@ import patreonStyles from "../patreon/patreon-styles";
 import { DurationToFormatted } from "../util/datetime";
 import { LiveRun } from "~app/live/live.types";
 import { LiveSplitTimerComponent } from "~app/live/live-split-timer.component";
-import { GetGameImageSrc } from "~src/lib/get-game-image-src";
+import { GameImage, QUALITIES } from "~src/components/image/gameimage";
 
 export const LiveUserRun = ({
     liveRun,
@@ -107,18 +107,18 @@ export const LiveUserRun = ({
                       }
             }
         >
-            <div>
+            {/*ToDo: nooooo*/}
+            <div className={"holyshit"}>
                 {liveRun.gameImage &&
                     liveRun.gameImage.length > 0 &&
                     liveRun.gameImage != "noimage" && (
                         <div>
-                            <Image
+                            <GameImage
                                 alt={liveRun.game}
-                                src={GetGameImageSrc({
-                                    imageSrc: liveRun.gameImage,
-                                })}
-                                loading={"lazy"}
-                                className={styles.gameImage}
+                                src={liveRun.gameImage}
+                                quality={QUALITIES.small}
+                                height={108}
+                                width={81}
                                 style={
                                     liveUserStyles.gradient ||
                                     liveUserStyles.borderColor

@@ -1,3 +1,4 @@
+import React from "react";
 import Image from "next/image";
 import { ValuesOf } from "types/utility.types";
 
@@ -15,6 +16,7 @@ export const QUALITIES = {
 } as const;
 
 type Quality = ValuesOf<typeof QUALITIES>;
+
 interface GameImageProps {
     src: string;
     alt: string;
@@ -23,6 +25,7 @@ interface GameImageProps {
     quality?: Quality;
     loading?: LoadingValue;
     placeholder?: PlaceholderValue;
+    style?: React.CSSProperties;
 }
 
 export const GameImage = (Props: GameImageProps) => {
@@ -32,6 +35,7 @@ export const GameImage = (Props: GameImageProps) => {
         quality = "logo_med",
         width,
         height,
+        style,
     } = Props;
 
     const file = src.slice(src.lastIndexOf("/"));
@@ -43,6 +47,7 @@ export const GameImage = (Props: GameImageProps) => {
             loading={"lazy"}
             width={width}
             height={height}
+            style={style}
         />
     );
 };

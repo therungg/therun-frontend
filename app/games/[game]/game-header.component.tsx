@@ -1,11 +1,10 @@
 "use client";
-import Image from "next/image";
 import React from "react";
 import styles from "~src/components/css/Game.module.scss";
 import { Title } from "~src/components/title";
 import { GameContext } from "./game.context";
 import { StatsData } from "./game.types";
-import { GetGameImageSrc } from "~src/lib/get-game-image-src";
+import { GameImage, QUALITIES } from "~src/components/image/gameimage";
 
 interface GameHeaderProps {
     data: Required<StatsData>;
@@ -20,10 +19,10 @@ export const GameHeader: React.FunctionComponent<GameHeaderProps> = ({
         <>
             <div className={styles.gameImage}>
                 {global.image && global.image != "noimage" && (
-                    <Image
+                    <GameImage
                         alt={global.display}
-                        src={GetGameImageSrc({ imageSrc: global.image })}
-                        loading={"lazy"}
+                        src={global.image}
+                        quality={QUALITIES.small}
                         height={80}
                         width={60}
                     />

@@ -5,7 +5,7 @@ import styles from "~src/components/css/Games.module.scss";
 import { Game } from "~app/games/games.types";
 import { useTheme } from "next-themes";
 import { getGameUrl } from "./utilities";
-import { GetGameImageSrc } from "~src/lib/get-game-image-src";
+import { GameImage, QUALITIES } from "~src/components/image/gameimage";
 
 interface AllGamesImageProps {
     game: Game;
@@ -20,12 +20,12 @@ export const AllGamesImage: React.FunctionComponent<AllGamesImageProps> = ({
         <div className={styles.image}>
             <a href={`/games/${gameUrl}`}>
                 {game.image && game.image != "noimage" && (
-                    <Image
+                    <GameImage
                         alt={game.display}
-                        src={GetGameImageSrc({ imageSrc: game.image })}
-                        loading={"lazy"}
-                        height={142}
+                        src={game.image}
+                        quality={QUALITIES.medium}
                         width={106}
+                        height={142}
                     />
                 )}
                 {(!game.image || game.image == "noimage") && (
