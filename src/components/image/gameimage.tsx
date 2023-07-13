@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { ValuesOf } from "types/utility.types";
 
 declare const VALID_LOADING_VALUES: readonly ["lazy", "eager", undefined];
 declare type LoadingValue = (typeof VALID_LOADING_VALUES)[number];
@@ -13,7 +14,7 @@ export const QUALITIES = {
     hd: "1080p",
 } as const;
 
-type Quality = (typeof QUALITIES)[keyof typeof QUALITIES];
+type Quality = ValuesOf<typeof QUALITIES>;
 interface GameImageProps {
     src: string;
     alt: string;
