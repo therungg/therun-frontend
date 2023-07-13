@@ -1,9 +1,3 @@
-@media screen and (max-width: 992px) {
-  .searchContainer {
-    padding-top: 0;
-  }
-}
-
 .searchContainer {
   display: flex;
   width: 100%;
@@ -151,7 +145,12 @@
   }
 }
 
-@media screen and (max-width: 991px) {
+@media screen and (max-width: 992px) {
+
+  .searchContainer {
+    padding-top: 0;
+    display: revert;
+  }
 
   .search {
     float: revert;
