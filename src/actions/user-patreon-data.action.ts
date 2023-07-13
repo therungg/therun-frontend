@@ -2,6 +2,7 @@
 
 import { getSession } from "~src/actions/session.action";
 import { getBaseUrl } from "~src/actions/base-url.action";
+import { safeEncodeURI } from "~src/utils/uri";
 
 const patreonApiBaseUrl = process.env.NEXT_PUBLIC_PATREON_API_URL;
 
@@ -21,7 +22,7 @@ export const getUserPatreonData = async (query: {
         const { code } = query;
         const sessionId = session.id;
 
-        const base = encodeURIComponent(`${baseUrl}/change-appearance`);
+        const base = safeEncodeURI(`${baseUrl}/change-appearance`);
         const loginUrl = `${process.env.NEXT_PUBLIC_PATREON_LOGIN_URL}?code=${code}&redirect_uri=${base}&session_id=${sessionId}`;
 
         const patreonLinkData = await fetch(loginUrl);
