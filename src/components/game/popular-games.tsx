@@ -4,7 +4,7 @@ import styles from "../css/GamesTable.module.scss";
 import { GameLink, UserLink } from "../links/links";
 import { DurationToFormatted } from "../util/datetime";
 import React from "react";
-import { GameImage, QUALITIES } from "~src/components/image/gameimage";
+import { GameImage } from "~src/components/image/gameimage";
 
 interface PopularGamesProps {
     gamestats: Game[];
@@ -27,7 +27,7 @@ export const PopularGames: React.FC<PopularGamesProps> = ({ gamestats }) => {
                                             <GameImage
                                                 alt={game.display}
                                                 src={game.image}
-                                                quality={QUALITIES.small}
+                                                quality={"small"}
                                                 height={61}
                                                 width={46}
                                             />

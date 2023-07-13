@@ -6,7 +6,7 @@ import { GameLink, UserGameCategoryLink } from "../../links/links";
 import { EditRun } from "../dashboard/edit-run";
 import { GlobalGameData } from "~app/[username]/[game]/[run]/run";
 import styles from "../../css/User.module.scss";
-import { GameImage, QUALITIES } from "~src/components/image/gameimage";
+import { GameImage } from "~src/components/image/gameimage";
 
 export const UserOverview = ({
     runs,
@@ -111,7 +111,7 @@ export const UserOverview = ({
                                                 <GameImage
                                                     alt={globalData.display}
                                                     src={globalData.image}
-                                                    quality={QUALITIES.medium}
+                                                    quality={"medium"}
                                                     height={132}
                                                     width={99}
                                                 />

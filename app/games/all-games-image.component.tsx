@@ -5,7 +5,7 @@ import styles from "~src/components/css/Games.module.scss";
 import { Game } from "~app/games/games.types";
 import { useTheme } from "next-themes";
 import { getGameUrl } from "./utilities";
-import { GameImage, QUALITIES } from "~src/components/image/gameimage";
+import { GameImage } from "~src/components/image/gameimage";
 
 interface AllGamesImageProps {
     game: Game;
@@ -23,7 +23,7 @@ export const AllGamesImage: React.FunctionComponent<AllGamesImageProps> = ({
                     <GameImage
                         alt={game.display}
                         src={game.image}
-                        quality={QUALITIES.medium}
+                        quality={"medium"}
                         width={106}
                         height={142}
                     />

@@ -1,21 +1,27 @@
 import React from "react";
 import Image from "next/image";
-import { ValuesOf } from "types/utility.types";
 
 declare const VALID_LOADING_VALUES: readonly ["lazy", "eager", undefined];
 declare type LoadingValue = (typeof VALID_LOADING_VALUES)[number];
 declare type PlaceholderValue = "blur" | "empty";
 declare type SafeNumber = number | `${number}`;
 
-export const QUALITIES = {
+type Quality = "small" | "medium" | "large" | "sd" | "hd";
+
+type IgdbQualityString =
+    | "cover_small"
+    | "logo_med"
+    | "cover_big"
+    | "720p"
+    | "1080p";
+
+const qualityMap: Record<Quality, IgdbQualityString> = {
     small: "cover_small",
     medium: "logo_med",
     large: "cover_big",
     sd: "720p",
     hd: "1080p",
-} as const;
-
-type Quality = ValuesOf<typeof QUALITIES>;
+};
 
 interface GameImageProps {
     src: string;
@@ -32,7 +38,7 @@ export const GameImage = (Props: GameImageProps) => {
     const {
         src,
         alt = "Game Image",
-        quality = "logo_med",
+        quality = "medium",
         width,
         height,
         style,
@@ -42,7 +48,7 @@ export const GameImage = (Props: GameImageProps) => {
 
     return (
         <Image
-            src={`https://images.igdb.com/igdb/image/upload/t_${quality}${file}`}
+            src={`https://images.igdb.com/igdb/image/upload/t_${qualityMap[quality]}${file}`}
             alt={alt}
             loading={"lazy"}
             width={width}

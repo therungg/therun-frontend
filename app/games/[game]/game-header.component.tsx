@@ -4,7 +4,7 @@ import styles from "~src/components/css/Game.module.scss";
 import { Title } from "~src/components/title";
 import { GameContext } from "./game.context";
 import { StatsData } from "./game.types";
-import { GameImage, QUALITIES } from "~src/components/image/gameimage";
+import { GameImage } from "~src/components/image/gameimage";
 
 interface GameHeaderProps {
     data: Required<StatsData>;
@@ -22,7 +22,7 @@ export const GameHeader: React.FunctionComponent<GameHeaderProps> = ({
                     <GameImage
                         alt={global.display}
                         src={global.image}
-                        quality={QUALITIES.small}
+                        quality={"small"}
                         height={80}
                         width={60}
                     />
