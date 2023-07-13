@@ -8,6 +8,7 @@ import patreonStyles from "../patreon/patreon-styles";
 import { DurationToFormatted } from "../util/datetime";
 import { LiveRun } from "~app/live/live.types";
 import { LiveSplitTimerComponent } from "~app/live/live-split-timer.component";
+import { GetGameImageSrc } from "~src/lib/get-game-image-src";
 
 export const LiveUserRun = ({
     liveRun,
@@ -113,7 +114,9 @@ export const LiveUserRun = ({
                         <div>
                             <Image
                                 alt={liveRun.game}
-                                src={liveRun.gameImage}
+                                src={GetGameImageSrc({
+                                    imageSrc: liveRun.gameImage,
+                                })}
                                 loading={"lazy"}
                                 className={styles.gameImage}
                                 style={

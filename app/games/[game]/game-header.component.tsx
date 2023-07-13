@@ -5,6 +5,7 @@ import styles from "~src/components/css/Game.module.scss";
 import { Title } from "~src/components/title";
 import { GameContext } from "./game.context";
 import { StatsData } from "./game.types";
+import { GetGameImageSrc } from "~src/lib/get-game-image-src";
 
 interface GameHeaderProps {
     data: Required<StatsData>;
@@ -21,7 +22,7 @@ export const GameHeader: React.FunctionComponent<GameHeaderProps> = ({
                 {global.image && global.image != "noimage" && (
                     <Image
                         alt={global.display}
-                        src={global.image}
+                        src={GetGameImageSrc({ imageSrc: global.image })}
                         loading={"lazy"}
                         height={80}
                         width={60}

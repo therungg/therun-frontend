@@ -5,6 +5,7 @@ import styles from "~src/components/css/Games.module.scss";
 import { Game } from "~app/games/games.types";
 import { useTheme } from "next-themes";
 import { getGameUrl } from "./utilities";
+import { GetGameImageSrc } from "~src/lib/get-game-image-src";
 
 interface AllGamesImageProps {
     game: Game;
@@ -21,7 +22,7 @@ export const AllGamesImage: React.FunctionComponent<AllGamesImageProps> = ({
                 {game.image && game.image != "noimage" && (
                     <Image
                         alt={game.display}
-                        src={game.image}
+                        src={GetGameImageSrc({ imageSrc: game.image })}
                         loading={"lazy"}
                         height={142}
                         width={106}
