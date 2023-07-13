@@ -6,6 +6,7 @@ import { GameLink, UserGameCategoryLink } from "../../links/links";
 import { EditRun } from "../dashboard/edit-run";
 import { GlobalGameData } from "~app/[username]/[game]/[run]/run";
 import styles from "../../css/User.module.scss";
+import { GameImage } from "~src/components/image/gameimage";
 
 export const UserOverview = ({
     runs,
@@ -107,9 +108,10 @@ export const UserOverview = ({
                                     <a href={`/games/${game}`}>
                                         {globalData.image &&
                                             globalData.image != "noimage" && (
-                                                <Image
-                                                    alt={"Game Image"}
+                                                <GameImage
+                                                    alt={globalData.display}
                                                     src={globalData.image}
+                                                    quality={"medium"}
                                                     height={132}
                                                     width={99}
                                                 />
