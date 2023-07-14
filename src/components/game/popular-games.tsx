@@ -1,9 +1,10 @@
 import { Game } from "~app/games/games.types";
-import { Image, Table } from "react-bootstrap";
+import { Table } from "react-bootstrap";
 import styles from "../css/GamesTable.module.scss";
 import { GameLink, UserLink } from "../links/links";
 import { DurationToFormatted } from "../util/datetime";
 import React from "react";
+import { GameImage } from "~src/components/image/gameimage";
 
 interface PopularGamesProps {
     gamestats: Game[];
@@ -23,10 +24,12 @@ export const PopularGames: React.FC<PopularGamesProps> = ({ gamestats }) => {
                                 >
                                     {game.image && game.image !== "noimage" && (
                                         <a href={`/games/${game.display}`}>
-                                            <Image
-                                                alt={"Game Image"}
+                                            <GameImage
+                                                alt={game.display}
                                                 src={game.image}
+                                                quality={"small"}
                                                 height={61}
+                                                width={46}
                                             />
                                         </a>
                                     )}
