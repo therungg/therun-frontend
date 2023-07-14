@@ -30,7 +30,7 @@ export const PaginatedGameLeaderboard = (
 
 const PaginatedGameLeaderboardComponent = ({
     name,
-    leaderboard,
+    leaderboard = [],
     transform,
 }: PaginatedGameLeaderboardProps) => {
     const pagination = usePagination<Count>(
