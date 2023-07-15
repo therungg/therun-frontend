@@ -1,10 +1,18 @@
-$color-mode-type: data;
+// Bootstrap functions and mixins
+@import "bootstrap/scss/functions";
 @import "bootstrap/scss/mixins";
 
+// Progress loader
 @import "nprogress/nprogress.css";
 
+// Global styles
 @import "globals";
-@import "variables";
-@import "variables-dark";
+
+// Theme configuration (overrides bootstrap)
+@import "config";
+
+// Bootstrap framework
 @import "bootstrap/scss/bootstrap";
+
+// Miscellaneous
 @import "calendar-heatmap.min.css";
