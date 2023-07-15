@@ -16,28 +16,31 @@ export const revalidate = 60;
 export default function Page() {
     return (
         <div>
-            <div className={styles.homeContainer}>
-                <h1 className={styles.title}>The Run</h1>
-                <div className={styles.subtitle}>
-                    Statistics for speedrunners
-                </div>
-                <div className={styles.learnMoreButtonContainer}>
-                    <Link href={"/patron"}>
-                        <Button
-                            variant={"outline-secondary"}
-                            className={styles.supportMeButton}
-                        >
-                            Support <PatreonBunnySvgWithoutLink />
-                        </Button>
-                    </Link>
-                    <Link href={"/about"}>
-                        <Button
-                            variant={"outline-primary"}
-                            className={styles.learnMoreButton}
-                        >
-                            Learn more
-                        </Button>
-                    </Link>
+            <div className="px-4 pt-5 my-5 text-center">
+                <h1 className="display-1 fw-medium text-body-emphasis">
+                    The Run
+                </h1>
+                <h2 className="display-6 mb-5">Statistics for speedrunners</h2>
+                <div className="col-lg-6 mx-auto">
+                    <p className="lead mb-4"></p>
+                    <div className="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
+                        <Link href={"/patron"}>
+                            <Button
+                                variant={"outline-secondary"}
+                                className="btn-lg px-4 px-4 me-sm-3"
+                            >
+                                Support <PatreonBunnySvgWithoutLink />
+                            </Button>
+                        </Link>
+                        <Link href={"/about"}>
+                            <Button
+                                variant={"outline-primary"}
+                                className="btn-lg px-4"
+                            >
+                                Learn more
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
             </div>
 
