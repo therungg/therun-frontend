@@ -3,7 +3,6 @@ import { Button, Col, Row } from "react-bootstrap";
 import useSWR from "swr";
 import React from "react";
 import Link from "next/link";
-import styles from "../src/components/css/Home.module.scss";
 import { PopularGames } from "~src/components/game/popular-games";
 import { DataHolder } from "~src/components/frontpage/data-holder";
 import { SkeletonPersonalBests } from "~src/components/skeleton/index/skeleton-personal-bests";
@@ -16,7 +15,7 @@ export const revalidate = 60;
 export default function Page() {
     return (
         <div>
-            <div className="px-4 pt-5 my-5 text-center">
+            <div className="px-4 pt-5 mt-3 mb-5 text-center">
                 <h1 className="display-1 fw-medium text-body-emphasis">
                     The Run
                 </h1>
@@ -63,16 +62,12 @@ const DataSection = () => {
     return (
         <div>
             <Row className="text-center">
-                <Col xl={6} lg={12} className={styles.dataContainer}>
+                <Col xl={6} lg={12} className="mt-4">
                     <h2>Recent Personal Bests</h2>
                     {data.runs && <DataHolder runs={runs} />}
                     {!data.runs && isLoading && <SkeletonPersonalBests />}
                 </Col>
-                <Col
-                    xl={6}
-                    lg={12}
-                    className={`${styles.dataContainer} ${styles.dataContainerBottom}`}
-                >
+                <Col xl={6} lg={12} className="mt-4">
                     <h2>Popular Games</h2>
                     {data.gamestats && <PopularGames gamestats={gamestats} />}
                     {!data.gamestats && isLoading && <SkeletonPopularGames />}
