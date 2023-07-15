@@ -15,7 +15,7 @@
     "@ungap/structured-clone": "^1.0.1",
     "@vercel/edge-config": "^0.1.10",
     "axios": "^0.24.0",
-    "bootstrap": "^5.2",
+    "bootstrap": "^5.3",
     "chart.js": "^3.6.2",
     "cookies-next": "^2.0.3",
     "country-flag-icons": "^1.5.5",
