@@ -1,6 +1,5 @@
 import React from "react";
 import { Metadata } from "next";
-import "./material-symbols-outline.css";
 import "../src/styles/_import.scss";
 import { Header } from "./header";
 import { Footer } from "./footer";
