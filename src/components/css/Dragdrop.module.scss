@@ -1,3 +1,4 @@
+/*
 .dragbox {
     background-color: var(--color-secondary);
     border-color: var(--color-text);
@@ -43,7 +44,7 @@
     cursor: revert;
     padding: 0;
     margin-right: 0.5rem;
-    /*padding-left: -2rem;*/
+    !*padding-left: -2rem;*!
 }
 
 @media screen and (max-width: 992px) {
@@ -57,3 +58,4 @@
         font-size: 1.4rem;
     }
 }
+*/
