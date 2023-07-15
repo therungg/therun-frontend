@@ -85,7 +85,7 @@ export const Live = ({
                             >
                                 <a href={"/upload-key"}>
                                     <Button
-                                        variant={"primary"}
+                                        variant={"outline-primary"}
                                         className={homeStyles.learnMoreButton}
                                         style={{ width: "15rem" }}
                                     >

@@ -237,7 +237,7 @@ export const GenericTournament = ({
                                     target={"_blank"}
                                 >
                                     <Button
-                                        variant={"primary"}
+                                        variant={"outline-primary"}
                                         className={homeStyles.learnMoreButton}
                                         style={{ width: "15rem" }}
                                     >

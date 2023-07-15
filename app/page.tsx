@@ -24,7 +24,7 @@ export default function Page() {
                 <div className={styles.learnMoreButtonContainer}>
                     <Link href={"/patron"}>
                         <Button
-                            variant={"primary"}
+                            variant={"outline-secondary"}
                             className={styles.supportMeButton}
                         >
                             Support <PatreonBunnySvgWithoutLink />
@@ -32,7 +32,7 @@ export default function Page() {
                     </Link>
                     <Link href={"/about"}>
                         <Button
-                            variant={"primary"}
+                            variant={"outline-primary"}
                             className={styles.learnMoreButton}
                         >
                             Learn more

@@ -12,8 +12,8 @@ export const Footer = () => {
     const animationDuration =
         Math.floor(patronCount * 0.5) + DEFAULT_ANIMATION_DURATION;
     return (
-        <footer className={"footer"}>
-            <div className="scroll-bar">
+        <footer className="bg-body-secondary">
+            <div className="scroll-bar bg-body-tertiary">
                 <div
                     style={{
                         animationDuration: `${animationDuration}s`,
