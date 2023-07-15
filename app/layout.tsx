@@ -1,9 +1,8 @@
 import React from "react";
 import { Metadata } from "next";
-import "nprogress/nprogress.css";
 import "./material-symbols-outline.css";
 import "../src/styles/_import.scss";
-import Topbar from "../src/components/topbar";
+import { Header } from "./header";
 import { Footer } from "./footer";
 import { Content } from "./content";
 import { Providers } from "./providers";
@@ -35,11 +34,11 @@ export default async function RootLayout({
         <html lang="en" suppressHydrationWarning>
             <body>
                 <Providers>
-                    <Topbar
+                    <Scripts />
+                    <Header
                         username={session?.username}
                         picture={session?.picture}
                     />
-                    <Scripts />
                     <Content>{children}</Content>
                     <Footer />
                 </Providers>
