@@ -26,7 +26,7 @@ const Topbar = ({
     const [dark, setDark] = useState(true);
 
     useEffect(function () {
-        setDark(document.documentElement.dataset.theme !== "light");
+        setDark(document.documentElement.dataset.bsTheme !== "light");
     }, []);
 
     const showDropdown = () => {
@@ -45,11 +45,7 @@ const Topbar = ({
     }
 
     return (
-        <Navbar
-            expand="lg"
-            className={styles.navbar}
-            onMouseLeave={hideDropdown}
-        >
+        <Navbar expand="lg" onMouseLeave={hideDropdown}>
             <Container>
                 <Navbar.Brand href="/" className={styles.navbarLogo}>
                     <div style={{ display: "flex" }}>

@@ -43,7 +43,7 @@ export const PatreonName = ({
 }) => {
     const [dark, setDark] = useState(true);
     useEffect(function () {
-        setDark(document.documentElement.dataset.theme !== "light");
+        setDark(document.documentElement.dataset.bsTheme !== "light");
     }, []);
 
     const colors = patreonStyles();

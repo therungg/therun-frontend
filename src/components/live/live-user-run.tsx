@@ -29,7 +29,7 @@ export const LiveUserRun = ({
     const [liveUserStyles, setLiveUserStyles] = useState({});
     const { data: patreons, isLoading } = usePatreons();
     useEffect(function () {
-        setDark(document.documentElement.dataset.theme !== "light");
+        setDark(document.documentElement.dataset.bsTheme !== "light");
     }, []);
 
     useEffect(() => {
