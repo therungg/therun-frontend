@@ -2,6 +2,8 @@ $color-mode-type: data;
 @import "bootstrap/scss/mixins";
 
 @import "nprogress/nprogress.css";
+
+@import "globals";
 @import "variables";
 @import "variables-dark";
 @import "bootstrap/scss/bootstrap";

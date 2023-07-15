@@ -1,0 +1,107 @@
+// Always stick footer to the bottom in case content is not high enough
+body {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-container {
+  flex-grow: 1;
+}
+
+// Add custom container max-width
+@media (min-width: 1600px) {
+  .container {
+    max-width: 1510px !important;
+  }
+}
+
+@media (min-width: 1900px) {
+  .container {
+    max-width: 1640px !important;
+  }
+}
+
+.scroll-bar {
+  width: 100%;
+  height: 3rem;
+  overflow: hidden;
+  white-space: nowrap;
+  border-top: solid 1px var(--color-gold);
+  border-bottom: solid 1px var(--color-gold);
+  background: var(--color-tertiary);
+}
+
+.scroll-bar div {
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  line-height: 3rem;
+  font-size: 1.2rem;
+  animation: scroll linear infinite;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+a {
+  outline: none;
+  text-decoration: none !important;
+  padding: 2px 1px 0;
+}
+
+// Resets
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+abbr {
+  text-decoration: none !important;
+}
+
+
+
+// Custom scrollbar styles
+
+body * {
+  -ms-overflow-style: auto;
+  scrollbar-color: var(--bs-tertiary-bg) var(--bs-secondary-bg);
+  scrollbar-width: thin;
+}
+
+body *::-webkit-scrollbar-track {
+  background-color: var(--bs-secondary-bg);
+  border: 0 solid var(--bs-secondary-bg);
+}
+
+body *::-webkit-scrollbar-thumb {
+  background-color: var(--bs-tertiary-bg);
+  border: 0 solid var(--bs-secondary-bg);
+  min-height: 2rem;
+  border-radius: 0.625rem;
+}
+
+body *::-webkit-scrollbar-corner {
+  background-color: var(--bs-secondary-bg);
+}
+
+body *::-webkit-scrollbar {
+  width: 0.625rem;
+  height: 0.625rem;
+}

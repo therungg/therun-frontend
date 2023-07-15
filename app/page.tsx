@@ -62,7 +62,7 @@ const DataSection = () => {
 
     return (
         <div>
-            <Row className={styles.dataTitle}>
+            <Row className="text-center">
                 <Col xl={6} lg={12} className={styles.dataContainer}>
                     <h2>Recent Personal Bests</h2>
                     {data.runs && <DataHolder runs={runs} />}
