@@ -105,7 +105,7 @@ const Topbar = ({
                             Support <PatreonBunnySvgWithoutLink />
                         </Nav.Link>
                     </Nav>
-                    <Nav className="ml-auto mr-5">
+                    <Nav className="ml-auto mx-2">
                         <Search />
                     </Nav>
                     <Nav

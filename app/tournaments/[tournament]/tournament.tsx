@@ -24,7 +24,6 @@ import { getRecommendedStream, liveRunIsInSearch } from "~app/live/utilities";
 import { isLiveDataEligibleForTournament } from "~app/tournaments/[tournament]/is-live-data-eligible-for-tournament.component";
 import { liveRunArrayToMap } from "~app/tournaments/[tournament]/live-run-array-to-map.component";
 import searchStyles from "~src/components/css/Search.module.scss";
-import styles from "~src/components/css/Games.module.scss";
 import { EventLeaderboards } from "~app/tournaments/[tournament]/event-leaderboards.component";
 
 export const GenericTournament = ({
@@ -383,54 +382,51 @@ export const GenericTournament = ({
                                 </Col>
                             </Row>
 
-                            <div>
+                            <div
+                                className={runStyles.searchContainer}
+                                style={{
+                                    marginLeft: "0",
+                                    justifyContent: "center",
+                                }}
+                            >
                                 <div
-                                    className={runStyles.searchContainer}
+                                    className="input-group"
                                     style={{
                                         marginLeft: "0",
                                         justifyContent: "center",
                                     }}
                                 >
-                                    <div
-                                        className={`${searchStyles.searchContainer} ${styles.filter}`}
-                                        style={{
-                                            marginLeft: "0",
-                                            justifyContent: "center",
+                                    <span
+                                        className="material-symbols-outlined input-group-text"
+                                        onClick={() => {
+                                            const searchElement =
+                                                document.getElementById(
+                                                    "gameSearch"
+                                                );
+                                            if (
+                                                document.activeElement !==
+                                                searchElement
+                                            ) {
+                                                searchElement.focus();
+                                            }
                                         }}
                                     >
-                                        <span
-                                            className={
-                                                "material-symbols-outlined"
-                                            }
-                                            onClick={() => {
-                                                const searchElement =
-                                                    document.getElementById(
-                                                        "gameSearch"
-                                                    );
-                                                if (
-                                                    document.activeElement !==
-                                                    searchElement
-                                                ) {
-                                                    searchElement.focus();
-                                                }
-                                            }}
-                                        >
-                                            search
-                                        </span>
-                                        <input
-                                            type="search"
-                                            className={`form-control ${searchStyles.search}`}
-                                            placeholder="Filter by game/category/user"
-                                            style={{ marginBottom: "0" }}
-                                            onChange={(e) => {
-                                                setSearch(e.target.value);
-                                            }}
-                                            value={search}
-                                            id="gameSearch"
-                                        />
-                                    </div>
+                                        search
+                                    </span>
+                                    <input
+                                        type="search"
+                                        className={`form-control ${searchStyles.search}`}
+                                        placeholder="Filter by game/category/user"
+                                        style={{ marginBottom: "0" }}
+                                        onChange={(e) => {
+                                            setSearch(e.target.value);
+                                        }}
+                                        value={search}
+                                        id="gameSearch"
+                                    />
                                 </div>
                             </div>
+
                             <Row>
                                 {Object.values(updatedLiveDataMap).length ==
                                     0 && (

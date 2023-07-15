@@ -188,7 +188,7 @@ export const AutoCompletion = () => {
 
     return (
         <div
-            className={styles.searchContainer}
+            className="input-group"
             tabIndex={-1}
             onKeyDown={(e) => {
                 if (e.code === "Escape") {
@@ -197,7 +197,7 @@ export const AutoCompletion = () => {
             }}
         >
             <span
-                className={`material-symbols-outlined ${styles.searchIcon}`}
+                className="material-symbols-outlined input-group-text"
                 onClick={() => {
                     const search = document.getElementById("searchBox");
                     if (document.activeElement !== search) {

@@ -23,8 +23,12 @@ $lead-font-size:                    $font-size-base * 1.2;
 // Buttons
 $btn-border-width:                  2px;
 
+// Forms
+$input-bg:                          var(--bs-tertiary-bg);
+$input-border-color:                var(--bs-secondary-bg);
+
 // Border
-$border-color:                      rgba(0, 0, 0, 0.25);
+$border-color:                      #b2b2b2;
 
 // Table
 $table-striped-bg:                  var(--bs-secondary-bg);
@@ -45,4 +49,4 @@ $body-tertiary-bg-dark:             #343434;
 $link-color-dark:                   #27a11b;
 
 // Border
-$border-color-dark:                 rgba(204, 204, 204, 0.25);
+$border-color-dark:                 #4d4d4d;

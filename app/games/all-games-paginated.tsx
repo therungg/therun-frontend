@@ -23,15 +23,19 @@ export const AllGamesPaginated: React.FunctionComponent<GamesProps> = ({
     return (
         <div>
             <Title>Games</Title>
-            <PaginationSearch text={"Filter by game/category/user"} />
 
             {isLoading && <SkeletonGamesList />}
             {!isLoading && data && (
-                <Row className="gy-3 mb-3">
-                    {data.map((game) => (
-                        <AllGamesCard key={game.game} game={game} />
-                    ))}
-                </Row>
+                <>
+                    <Row className="gy-3 mb-3">
+                        <PaginationSearch
+                            text={"Filter by game/category/user"}
+                        />
+                        {data.map((game) => (
+                            <AllGamesCard key={game.game} game={game} />
+                        ))}
+                    </Row>
+                </>
             )}
             <PaginationControl {...pagination} />
         </div>

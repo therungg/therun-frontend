@@ -3,7 +3,6 @@
 import { LiveIcon, LiveUserRun } from "~src/components/live/live-user-run";
 import React, { useEffect, useState } from "react";
 import searchStyles from "~src/components/css/Search.module.scss";
-import styles from "~src/components/css/Games.module.scss";
 import runStyles from "~src/components/css/LiveRun.module.scss";
 import homeStyles from "~src/components/css/Home.module.scss";
 import { Button, Col, Row } from "react-bootstrap";
@@ -108,11 +107,11 @@ export const Live = ({
             <div>
                 <div className={runStyles.searchContainer}>
                     <div
-                        className={`${searchStyles.searchContainer} ${styles.filter}`}
-                        style={{ marginLeft: "0" }}
+                        className="input-group"
+                        style={{ marginLeft: "0" }} /*ToDo:*/
                     >
                         <span
-                            className={"material-symbols-outlined"}
+                            className="material-symbols-outlined input-group-text"
                             onClick={() => {
                                 const searchElement =
                                     document.getElementById("gameSearch");
