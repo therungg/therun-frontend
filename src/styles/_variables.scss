@@ -1,0 +1,19 @@
+// Theme colors "light"
+$primary: #007c00;
+$secondary: #a3850e;
+
+$theme-colors: (
+  "primary": #007c00,
+  "secondary": #a3850e, // Todo -> Check light color gold #a3850e
+);
+
+// Settings for the `<body>` element.
+$body-color:                        #000;
+$body-bg:                           #fbfbfb;
+$body-secondary-bg:                 #eee;
+$body-tertiary-bg:                  #ddd;
+
+// Links
+
+// Buttons
+$btn-color:                         var(--bs-body-color) !important;

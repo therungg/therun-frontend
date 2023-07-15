@@ -1,4 +1,8 @@
+$color-mode-type: data;
+@import "bootstrap/scss/mixins";
+
 @import "nprogress/nprogress.css";
-@import "bootstrap/bootstrap.min.css";
+@import "variables";
+@import "variables-dark";
+@import "bootstrap/scss/bootstrap";
 @import "calendar-heatmap.min.css";
-@import "globals.css";
