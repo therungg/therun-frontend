@@ -313,12 +313,10 @@ export const GameLeaderboards = ({
                     </Nav>
                 </Col>
                 <Col lg={9} md={8}>
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                        <div
-                            className={`${searchStyles.searchContainer} ${styles.filter}`}
-                        >
+                    <div className="d-flex justify-content-center">
+                        <div className="mb-3 input-group">
                             <span
-                                className={"material-symbols-outlined"}
+                                className="material-symbols-outlined input-group-text"
                                 onClick={() => {
                                     const searchElement =
                                         document.getElementById("gameSearch");
