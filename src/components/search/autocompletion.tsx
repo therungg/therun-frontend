@@ -67,7 +67,7 @@ export const AutoCompletion = () => {
 
     const Results = ({ results, type }) => {
         return (
-            <div>
+            <>
                 {Object.keys(results)
                     .slice(0, 5)
                     .map((result) => {
@@ -78,7 +78,7 @@ export const AutoCompletion = () => {
                         );
                     })
                     .filter((result) => !!result)}
-            </div>
+            </>
         );
     };
 
@@ -101,27 +101,31 @@ export const AutoCompletion = () => {
                 category
             )}`;
             return (
-                <a key={value} href={url} className={styles.suggestionLink}>
-                    <li key={value}>{value}</li>
-                </a>
+                <li key={value}>
+                    <a key={value} href={url} title={value}>
+                        {value}
+                    </a>
+                </li>
             );
         }
 
         const url = type == "users" ? `/${result}` : `/games/${result}`;
         return (
-            <a key={result} href={url} className={styles.suggestionLink}>
-                <li key={result}>{result}</li>
-            </a>
+            <li key={result}>
+                <a key={result} href={url} title={result}>
+                    {result}
+                </a>
+            </li>
         );
     };
 
     const Suggestions = () => {
         return (
-            <div className={styles.suggestionsPane}>
+            <>
                 <Row>
                     <Col className={"col-sm-12 col-12 col-md-6"}>
                         <div className={styles.suggestionsTitle}>Users</div>
-                        <ul className={styles.resultsList}>
+                        <ul className="m-0 list-unstyled">
                             <Results
                                 results={filteredSuggestions.users}
                                 type={"users"}
@@ -132,7 +136,7 @@ export const AutoCompletion = () => {
                         className={`col-sm-12 col-12 col-md-6 ${styles.suggestionLeft}`}
                     >
                         <div className={styles.suggestionsTitle}>Games</div>
-                        <ul className={styles.resultsList}>
+                        <ul className="m-0 list-unstyled">
                             <Results
                                 results={filteredSuggestions.games}
                                 type={"games"}
@@ -140,11 +144,11 @@ export const AutoCompletion = () => {
                         </ul>
                     </Col>
                 </Row>
-                <hr style={{ color: "green" }} />
+                <hr style={{ color: "var(--bs-link-color)" }} />
                 <Row>
                     <Col>
                         <div className={styles.suggestionsTitle}>Runs</div>
-                        <ul className={styles.resultsList}>
+                        <ul className="m-0 list-unstyled">
                             <Results
                                 results={filteredSuggestions.categories}
                                 type={"runs"}
@@ -152,7 +156,7 @@ export const AutoCompletion = () => {
                         </ul>
                     </Col>
                 </Row>
-            </div>
+            </>
         );
     };
 
@@ -170,17 +174,22 @@ export const AutoCompletion = () => {
         }
 
         return (
-            <div className={styles.suggestions} id="suggestions">
+            <div
+                className={`dropdown-menu d-block text-center p-3 ${styles.suggestions}`}
+                id="suggestions"
+            >
                 {hasSuggestions ? (
                     Suggestions()
                 ) : (
-                    <div className={styles.noSuggestions}>
-                        {input.length < 2
-                            ? "Please input at least 2 characters"
-                            : !loading
-                            ? `No results for ${input}`
-                            : "Loading..."}
-                    </div>
+                    <ul className="m-0 list-unstyled">
+                        <li>
+                            {input.length < 2
+                                ? "Please input at least 2 characters"
+                                : !loading
+                                ? `No results for ${input}`
+                                : "Loading..."}
+                        </li>
+                    </ul>
                 )}
             </div>
         );
@@ -188,7 +197,7 @@ export const AutoCompletion = () => {
 
     return (
         <div
-            className="input-group"
+            className="dropdown"
             tabIndex={-1}
             onKeyDown={(e) => {
                 if (e.code === "Escape") {
@@ -196,28 +205,29 @@ export const AutoCompletion = () => {
                 }
             }}
         >
-            <span
-                className="material-symbols-outlined input-group-text"
-                onClick={() => {
-                    const search = document.getElementById("searchBox");
-                    if (document.activeElement !== search) {
-                        search.focus();
-                    }
-                }}
-            >
-                {" "}
-                search{" "}
-            </span>
-
-            <input
-                type="search"
-                className={`form-control ${styles.search}`}
-                placeholder="Find a User or Game"
-                onChange={async (e) => await onChange(e)}
-                onKeyDown={onKeyDown}
-                value={input}
-                id="searchBox"
-            />
+            <div className="input-group">
+                <span
+                    className="material-symbols-outlined input-group-text"
+                    onClick={() => {
+                        const search = document.getElementById("searchBox");
+                        if (document.activeElement !== search) {
+                            search.focus();
+                        }
+                    }}
+                >
+                    {" "}
+                    search{" "}
+                </span>
+                <input
+                    type="search"
+                    className="form-control"
+                    placeholder="Find a User or Game"
+                    onChange={async (e) => await onChange(e)}
+                    onKeyDown={onKeyDown}
+                    value={input}
+                    id="searchBox"
+                />
+            </div>
             {showSuggestions && input && filteredSuggestions && (
                 <SuggestionsListComponent />
             )}
