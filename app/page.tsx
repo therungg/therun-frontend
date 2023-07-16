@@ -16,9 +16,7 @@ export default function Page() {
     return (
         <div>
             <div className="px-4 pt-5 mt-3 mb-5 text-center">
-                <h1 className="display-1 fw-medium text-body-emphasis">
-                    The Run
-                </h1>
+                <h1 className="display-1 fw-medium">The Run</h1>
                 <h2 className="display-6 mb-5">Statistics for speedrunners</h2>
                 <div className="col-lg-6 mx-auto">
                     <p className="lead mb-4"></p>

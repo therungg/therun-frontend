@@ -2,7 +2,6 @@
 import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { Search } from "./search";
 import dynamic from "next/dynamic";
-import styles from "./css/Topbar.module.scss";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
@@ -45,44 +44,43 @@ const Topbar = ({
     }
 
     return (
-        <Navbar expand="lg" onMouseLeave={hideDropdown}>
+        <Navbar
+            expand="lg"
+            onMouseLeave={hideDropdown}
+            data-bs-theme={dark ? "dark" : "light"}
+        >
             <Container>
-                <Navbar.Brand href="/" className={styles.navbarLogo}>
-                    <div style={{ display: "flex" }}>
-                        <Image
-                            alt={"Logo"}
-                            src={
-                                dark
-                                    ? "/logo_dark_theme_no_text_transparent.png"
-                                    : "/logo_light_theme_no_text_transparent.png"
-                            }
-                            height={"44"}
-                            width={"44"}
-                            style={{
-                                alignSelf: "flex-start",
-                                marginRight: "0.5rem",
-                                maxWidth: "100%",
-                                height: "auto",
-                            }}
-                        />
-                        <div style={{ alignSelf: "center" }}>
-                            The Run{" "}
-                            <i>
-                                <sup>beta</sup>
-                            </i>
-                        </div>
-                    </div>
+                <Navbar.Brand href="/" className="d-flex text-decoration-none">
+                    <Image
+                        alt={"TheRun"}
+                        src={
+                            dark
+                                ? "/logo_dark_theme_no_text_transparent.png"
+                                : "/logo_light_theme_no_text_transparent.png"
+                        }
+                        height={"44"}
+                        width={"44"}
+                        className="img-fluid align-self-start me-2"
+                    />
+                    <span
+                        className="align-self-center"
+                        style={{ color: "var(--bs-link-color)" }}
+                    >
+                        The Run{" "}
+                        <i>
+                            <sup>beta</sup>
+                        </i>
+                    </span>
                 </Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
-                    <Nav className={`me-auto ${styles.nav}`}>
+                    <Nav className="me-auto">
                         {username && (
                             <Nav.Link
-                                className={styles.navLink}
                                 href="/upload"
                                 style={{ maxHeight: "2rem" }}
                             >
-                                <div style={{ display: "flex" }}>
+                                <div className="d-flex">
                                     <b>Upload</b>
                                     <span
                                         className={
@@ -95,17 +93,15 @@ const Topbar = ({
                                 </div>
                             </Nav.Link>
                         )}
-                        <Nav.Link className={styles.navLink} href="/live">
+                        <Nav.Link href="/live">
                             <b>Live</b>
                         </Nav.Link>
-                        <Nav.Link className={styles.navLink} href="/games/">
-                            Games
-                        </Nav.Link>
-                        <Nav.Link className={styles.navLink} href="/patron">
+                        <Nav.Link href="/games/">Games</Nav.Link>
+                        <Nav.Link href="/patron">
                             Support <PatreonBunnySvgWithoutLink />
                         </Nav.Link>
                     </Nav>
-                    <Nav className="ml-auto mx-2">
+                    <Nav className="ml-auto mb-2 mb-lg-0 me-lg-2">
                         <Search />
                     </Nav>
                     <Nav
