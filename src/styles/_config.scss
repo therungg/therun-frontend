@@ -10,11 +10,23 @@ $theme-colors: (
 // Body
 $body-color:                        #000;
 $body-bg:                           #fbfbfb;
+$body-secondary-color:              rgba($body-color, .6);
 $body-secondary-bg:                 #eee;
 $body-tertiary-bg:                  #ddd;
 
+// Body Dark
+$body-color-dark:                   #ccc;
+$body-bg-dark:                      #131313;
+$body-secondary-color-dark:         rgba($body-color-dark, .6);
+$body-secondary-bg-dark:            #232323;
+$body-tertiary-bg-dark:             #343434;
+
 // Links
 $link-decoration:                   none;
+$link-hover-decoration:             revert;
+
+// Links Dark
+$link-color-dark:                   #27a11b;
 
 // Typography
 $font-size-base:                    1rem;
@@ -26,27 +38,34 @@ $btn-border-width:                  2px;
 // Forms
 $input-bg:                          var(--bs-tertiary-bg);
 $input-border-color:                var(--bs-secondary-bg);
+$input-focus-border-color:          var(--bs-secondary-bg);
+$input-focus-bg:                    var(--bs-secondary-bg);
+$input-focus-width:                 0;
+$input-transition:                  0 none;
+
+// Focus
+$focus-ring-width:                  1px;
+$focus-ring-opacity:                0;
+$focus-ring-color:                  var(--bs-link-color);
+$focus-ring-blur:                   0;
+$focus-ring-box-shadow:             inset 0 0 $focus-ring-blur $focus-ring-width $focus-ring-color;
 
 // Border
 $border-color:                      #b2b2b2;
+
+// Border Dark
+$border-color-dark:                 #4d4d4d;
 
 // Table
 $table-striped-bg:                  var(--bs-secondary-bg);
 $table-border-color:                var(--bs-tertiary-bg);
 
+// Navbar
+$navbar-light-color:                $body-color;
+$navbar-light-hover-color:          $navbar-light-color;
+$navbar-light-active-color:         $navbar-light-color;
 
-
-
-/** Theme colors dark */
-
-// Body
-$body-color-dark:                   #ccc;
-$body-bg-dark:                      #131313;
-$body-secondary-bg-dark:            #232323;
-$body-tertiary-bg-dark:             #343434;
-
-// Links
-$link-color-dark:                   #27a11b;
-
-// Border
-$border-color-dark:                 #4d4d4d;
+// Navbar Dark
+$navbar-dark-color:                 #fff;
+$navbar-dark-hover-color:           $navbar-dark-color;
+$navbar-dark-active-color:          $navbar-dark-color;
