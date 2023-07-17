@@ -3,7 +3,7 @@ import { Live } from "~app/live/live";
 import { liveRunArrayToMap } from "~app/live/utilities";
 import { LiveRun } from "~app/live/live.types";
 
-export const revalidate = 0;
+export const revalidate = 30;
 
 export default async function LivePage() {
     const liveData: LiveRun[] = await getAllLiveRuns();
