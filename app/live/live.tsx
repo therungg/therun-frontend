@@ -10,6 +10,7 @@ import { RecommendedStream } from "~src/components/live/recommended-stream";
 import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
 import {
     getRecommendedStream,
+    isWebsocketDataProcessable,
     liveRunArrayToMap,
     liveRunIsInSearch,
 } from "~app/live/utilities";
@@ -33,15 +34,7 @@ export const Live = ({
         if (lastMessage !== null) {
             const data = JSON.parse(lastMessage.data);
 
-            if (
-                !forceGame ||
-                data.type == "DELETE" ||
-                (!forceCategory &&
-                    forceGame.toLowerCase() == data.run.game.toLowerCase()) ||
-                (forceGame.toLowerCase() == data.run.game.toLowerCase() &&
-                    forceCategory.toLowerCase() ==
-                        data.run.category.toLowerCase())
-            ) {
+            if (isWebsocketDataProcessable(data, forceGame, forceCategory)) {
                 const user = data.user;
                 const newMap: LiveDataMap = JSON.parse(
                     JSON.stringify(updatedLiveDataMap)

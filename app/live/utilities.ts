@@ -76,3 +76,25 @@ export const getRecommendedStream = (
 
     return recommendedStream;
 };
+
+export const isWebsocketDataProcessable = (
+    data: any,
+    forceGame?: string | null,
+    forceCategory?: string | null
+): boolean => {
+    if (!data) return false;
+
+    if (data.type === "DELETE") return true;
+
+    if (!data.run) return false;
+
+    if (!forceGame) return true;
+
+    const gameIsValid = forceGame.toLowerCase() == data.run.game.toLowerCase();
+
+    if (!gameIsValid) return false;
+
+    if (!forceCategory) return true;
+
+    return forceCategory.toLowerCase() == data.run.category.toLowerCase();
+};
