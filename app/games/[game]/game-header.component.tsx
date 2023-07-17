@@ -1,10 +1,10 @@
 "use client";
 import React from "react";
-import styles from "~src/components/css/Game.module.scss";
 import { Title } from "~src/components/title";
 import { GameContext } from "./game.context";
 import { StatsData } from "./game.types";
 import { GameImage } from "~src/components/image/gameimage";
+import { Row } from "react-bootstrap";
 
 interface GameHeaderProps {
     data: Required<StatsData>;
@@ -16,8 +16,8 @@ export const GameHeader: React.FunctionComponent<GameHeaderProps> = ({
     const { global } = data;
     const { category, categories, setCategory } = React.useContext(GameContext);
     return (
-        <>
-            <div className={styles.gameImage}>
+        <Row>
+            <div className="col-auto">
                 {global.image && global.image != "noimage" && (
                     <GameImage
                         alt={global.display}
@@ -28,7 +28,7 @@ export const GameHeader: React.FunctionComponent<GameHeaderProps> = ({
                     />
                 )}
             </div>
-            <div className={styles.gameTitleContainer}>
+            <div className="col-auto align-self-center">
                 <Title>
                     {category === "*" ? (
                         data.data.game.display
@@ -50,6 +50,6 @@ export const GameHeader: React.FunctionComponent<GameHeaderProps> = ({
                         }`}
                 </Title>
             </div>
-        </>
+        </Row>
     );
 };

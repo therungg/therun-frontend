@@ -9,12 +9,7 @@
   min-height: 9.5rem;
 }
 
-.cardHeader {
-  background-color: var(--color-secondary);
-}
-
-.cardBody {
-  background-color: var(--color-bg);
+.cardBody { // ToDo: Use bootstrap defaults
   --bs-card-spacer-x: clamp(.2rem, 2%, .6rem);
   --bs-card-spacer-y: clamp(.2rem, 2%, .6rem);
 }

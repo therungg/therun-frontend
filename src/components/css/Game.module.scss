@@ -1,8 +1,21 @@
-/*
-.gameHeader {
-    margin-bottom: 1rem;
+.gamesNavigationContainer {
+  position: relative;
 }
 
+.navigation {
+  margin-bottom: 1rem;
+  position: absolute;
+  width: 101.6%;
+  padding-top: 1rem;
+}
+
+.tabsContainer {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 1rem;
+}
+
+/*
 .gameImage {
     float: left;
     margin-right: 1rem;
@@ -18,28 +31,11 @@
     align-self: flex-end;
 }
 
-.gamesNavigationContainer {
-    position: relative;
-}
-
-.tabsContainer {
-    position: relative;
-    z-index: 1;
-    margin-bottom: 1rem;
-}
-
 .statsHorizontal {
 }
 
 .statsVertical {
     display: none;
-}
-
-.navigation {
-    margin-bottom: 1rem;
-    position: absolute;
-    width: 101.6%;
-    padding-top: 1rem;
 }
 
 .form {
