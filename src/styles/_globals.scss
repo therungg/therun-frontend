@@ -10,16 +10,55 @@ body {
   flex-grow: 1;
 }
 
-// Add custom container max-width
-@media (min-width: 1600px) {
-  .container {
-    max-width: 1510px !important;
+.nav-tabs {
+  padding-top: 1rem;
+  border-color: var(--color-secondary);
+  border-width: 1px;
+
+  .nav-link {
+    color: var(--color-text) !important;
+    transition: none;
+    background-color: var(--color-secondary);
+    margin-left: 0.25rem;
+  }
+
+  .nav-link:hover {
+    border-color: var(--color-tertiary);
+    isolation: auto;
+    color: yellow;
+  }
+
+  .nav-item.show .nav-link,
+  .nav-link.active {
+    background-color: var(--color-bg);
+    border: 2px solid var(--color-tertiary);
+    border-bottom: transparent;
+    color: black;
   }
 }
 
-@media (min-width: 1900px) {
-  .container {
-    max-width: 1640px !important;
+.with-filter {
+  width: 66.6666%;
+}
+
+// ToDo: drop if not needed
+legend {
+  float: none;
+  padding: 1rem;
+}
+
+.form-select {
+  cursor: pointer;
+}
+
+.navbar-toggler {
+
+  &:hover {
+    background-color: var(--bs-link-color);
+
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'><path stroke='white' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/></svg>");
+    }
   }
 }
 
@@ -41,15 +80,6 @@ body {
     line-height: 3rem;
     font-size: 1.2rem;
     animation: patreon-scroll linear infinite;
-  }
-}
-
-@keyframes patreon-scroll {
-  0% {
-    transform: translateX(100%);
-  }
-  100% {
-    transform: translateX(-100%);
   }
 }
 
@@ -114,4 +144,26 @@ body {
 
 .form-control {
 
+}
+
+// Add custom container max-width
+@media (min-width: 1600px) {
+  .container {
+    max-width: 1510px !important;
+  }
+}
+
+@media (min-width: 1900px) {
+  .container {
+    max-width: 1640px !important;
+  }
+}
+
+@keyframes patreon-scroll {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
 }
