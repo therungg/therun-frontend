@@ -63,7 +63,7 @@ export const ListTournaments = ({
                                 </a>
                             </div>
                         )}
-                        <Card className={`card-columns ${styles.card}`}>
+                        <Card className="card-columns">
                             <Card.Header className={styles.cardHeader}>
                                 <div style={{ overflow: "hidden" }}>
                                     <a

@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import { Card, Col } from "react-bootstrap";
-import styles from "~src/components/css/Games.module.scss";
 import { AllGamesCardBody } from "./all-games-card-body.component";
 import { AllGamesCardHeader } from "./all-games-card-header.component";
 import { AllGamesImage } from "./all-games-image.component";
@@ -17,7 +16,7 @@ export const AllGamesCard: React.FunctionComponent<AllGamesCardProps> = ({
     return (
         <Col xl={6} lg={12} key={game.game}>
             <AllGamesImage game={game} />
-            <Card className={`card-columns ${styles.card}`}>
+            <Card className="card-columns">
                 <AllGamesCardHeader game={game} />
                 <AllGamesCardBody game={game} />
             </Card>
