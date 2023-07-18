@@ -68,7 +68,7 @@ export const Difference = ({
                         ? "var(--bs-secondary)"
                         : diff <= 0
                         ? "var(--bs-link-color)"
-                        : "var(--color-negative)",
+                        : "var(--bs-red)",
                 }}
             >
                 {formatted}
@@ -102,10 +102,7 @@ export const DifferenceFromOne = ({
         >
             <div
                 style={{
-                    color:
-                        diff <= 0
-                            ? "var(--bs-link-color)"
-                            : "var(--color-negative)",
+                    color: diff <= 0 ? "var(--bs-link-color)" : "var(--bs-red)",
                 }}
             >
                 {formatted}

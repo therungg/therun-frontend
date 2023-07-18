@@ -398,7 +398,7 @@ export const Timesaves = ({
                                                 color:
                                                     split.bestDiff >= 0
                                                         ? "var(--bs-link-color)"
-                                                        : "var(--color-negative)",
+                                                        : "var(--bs-red)",
                                                 marginRight: "1rem",
                                             }}
                                         >
@@ -439,7 +439,7 @@ export const Timesaves = ({
                                                     color:
                                                         val >= 0
                                                             ? "var(--bs-link-color)"
-                                                            : "var(--color-negative)",
+                                                            : "var(--bs-red)",
                                                 }}
                                             >
                                                 {val >= 0 ? "-" : "+"}
