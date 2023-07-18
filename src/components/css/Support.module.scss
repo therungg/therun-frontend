@@ -33,7 +33,7 @@
 }
 
 .supportOption {
-    background-color: var(--color-secondary);
+    background-color: var(--bs-secondary-bg);
     margin: 1rem 5rem;
     padding: 2.5rem;
     border-radius: 15px;
@@ -41,42 +41,42 @@
 }
 
 .supportOptionStripe {
-    background-color: var(--color-secondary);
+    background-color: var(--bs-secondary-bg);
     margin: 1rem 5rem;
     padding: 2.5rem;
     border-radius: 15px;
-    border: solid 1px var(--color-link);
+    border: solid 1px var(--bs-link-color);
 }
 
 .learnMoreButton {
     width: 15rem;
     height: 4rem;
-    background-color: var(--color-tertiary);
+    background-color: var(--bs-tertiary-bg);
     border-color: var(--color-gold);
     font-weight: 500;
-    color: var(--color-text);
+    color: var(--bs-body-color);
     font-size: 1.4rem;
 }
 
 .learnMoreButton:hover {
     background-color: var(--color-gold);
     border-color: var(--color-gold);
-    color: var(--color-bg);
+    color: var(--bs-body-bg);
 }
 
 .learnMoreButtonStripe {
     width: 15rem;
     height: 4rem;
-    background-color: var(--color-tertiary);
-    border-color: var(--color-link);
+    background-color: var(--bs-tertiary-bg);
+    border-color: var(--bs-link-color);
     font-weight: 500;
-    color: var(--color-text);
+    color: var(--bs-body-color);
     font-size: 1.4rem;
 }
 
 .learnMoreButtonStripe:hover {
-    background-color: var(--color-link);
-    border-color: var(--color-link);
+    background-color: var(--bs-link-color);
+    border-color: var(--bs-link-color);
 }
 
 .patron {

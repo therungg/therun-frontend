@@ -158,11 +158,11 @@ export const WrHistory = ({
                             style={{
                                 tickLabels: {
                                     fontSize: 10,
-                                    color: "var(--color-text)",
-                                    fill: "var(--color-text)",
+                                    color: "var(--bs-body-color)",
+                                    fill: "var(--bs-body-color)",
                                 },
                                 axis: {
-                                    stroke: "var(--color-text)",
+                                    stroke: "var(--bs-body-color)",
                                 },
                             }}
                             data={victoryData}
@@ -181,16 +181,16 @@ export const WrHistory = ({
                             style={{
                                 tickLabels: {
                                     fontSize: 10,
-                                    color: "var(--color-text)",
-                                    fill: "var(--color-text)",
+                                    color: "var(--bs-body-color)",
+                                    fill: "var(--bs-body-color)",
                                     angle: 75,
                                     padding: 26,
                                 },
                                 axis: {
-                                    color: "var(--color-text)",
-                                    borderColor: "var(--color-text)",
-                                    fill: "var(--color-text)",
-                                    stroke: "var(--color-text)",
+                                    color: "var(--bs-body-color)",
+                                    borderColor: "var(--bs-body-color)",
+                                    fill: "var(--bs-body-color)",
+                                    stroke: "var(--bs-body-color)",
                                 },
                             }}
                             data={victoryData}

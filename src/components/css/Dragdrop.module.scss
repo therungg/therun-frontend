@@ -1,8 +1,8 @@
 /*
 .dragbox {
-    background-color: var(--color-secondary);
-    border-color: var(--color-text);
-    color: var(--color-text);
+    background-color: var(--bs-secondary-bg);
+    border-color: var(--bs-body-color);
+    color: var(--bs-body-color);
     cursor: pointer;
 }
 
@@ -13,7 +13,7 @@
 }
 
 .uploadIcon {
-    background-color: var(--color-secondary);
+    background-color: var(--bs-secondary-bg);
     border: none;
     max-height: 100%;
     position: center;
@@ -34,7 +34,7 @@
     align-items: center !important;
     font-variation-settings: "FILL" 1, "wght" 700, "GRAD" 200, "opsz" 48 !important;
     font-size: 14rem !important;
-    color: var(--color-tertiary) !important;
+    color: var(--bs-tertiary-bg) !important;
     padding-bottom: 5rem !important;
 }
 

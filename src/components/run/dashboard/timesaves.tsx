@@ -125,10 +125,10 @@ export const Timesaves = ({
                     <Switch
                         onColor={getComputedStyle(
                             document.documentElement
-                        ).getPropertyValue("--color-link")}
+                        ).getPropertyValue("--bs-link-color")}
                         offColor={getComputedStyle(
                             document.documentElement
-                        ).getPropertyValue("--color-tertiary")}
+                        ).getPropertyValue("--bs-tertiary-bg")}
                         name={"switch"}
                         onChange={(checked) => {
                             setVisual(checked);
@@ -184,7 +184,7 @@ export const Timesaves = ({
                                     key={`splitvisual${split.name}`}
                                     className={styles.visualTimesave}
                                     style={{
-                                        backgroundImage: `linear-gradient(to right, var(--color-positive-${key}), var(--color-bg))`,
+                                        backgroundImage: `linear-gradient(to right, var(--color-positive-${key}), var(--bs-body-bg))`,
                                     }}
                                 >
                                     <Row
@@ -397,7 +397,7 @@ export const Timesaves = ({
                                             style={{
                                                 color:
                                                     split.bestDiff >= 0
-                                                        ? "var(--color-link)"
+                                                        ? "var(--bs-link-color)"
                                                         : "var(--color-negative)",
                                                 marginRight: "1rem",
                                             }}
@@ -438,7 +438,7 @@ export const Timesaves = ({
                                                 style={{
                                                     color:
                                                         val >= 0
-                                                            ? "var(--color-link)"
+                                                            ? "var(--bs-link-color)"
                                                             : "var(--color-negative)",
                                                 }}
                                             >

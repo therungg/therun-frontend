@@ -1,7 +1,7 @@
 /*
 .numberInput {
-    background-color: var(--color-secondary);
-    color: var(--color-text);
+    background-color: var(--bs-secondary-bg);
+    color: var(--bs-body-color);
     border: none;
     background-image: none;
     width: 8rem;
@@ -9,14 +9,14 @@
 }
 
 .numberInput:active {
-    color: var(--color-text);
+    color: var(--bs-body-color);
 }
 
 .numberInput:focus {
-    background-color: var(--color-tertiary);
-    border-color: var(--color-link);
-    box-shadow: 1px var(--color-link);
-    color: var(--color-text);
+    background-color: var(--bs-tertiary-bg);
+    border-color: var(--bs-link-color);
+    box-shadow: 1px var(--bs-link-color);
+    color: var(--bs-body-color);
 }
 
 .numberInput:after {
@@ -42,7 +42,7 @@
 
 .visualTimesave {
     height: 5rem;
-    color: var(--color-text);
+    color: var(--bs-body-color);
     margin-bottom: 4px;
     border-radius: 20px;
     padding-left: 2rem;

@@ -85,10 +85,10 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                         <Switch
                             onColor={getComputedStyle(
                                 document.documentElement
-                            ).getPropertyValue("--color-link")}
+                            ).getPropertyValue("--bs-link-color")}
                             offColor={getComputedStyle(
                                 document.documentElement
-                            ).getPropertyValue("--color-tertiary")}
+                            ).getPropertyValue("--bs-tertiary-bg")}
                             name={"switch"}
                             onChange={(checked) => {
                                 setTotalTime(checked);

@@ -10,35 +10,35 @@ fieldset.fieldset {
 .editInfoButton {
     width: 15rem;
     height: 2.5rem;
-    background-color: var(--color-secondary);
-    border-color: var(--color-link);
+    background-color: var(--bs-secondary-bg);
+    border-color: var(--bs-link-color);
     font-weight: 0;
-    color: var(--color-text);
+    color: var(--bs-body-color);
 }
 
 .editInfoButton:hover {
-    background-color: var(--color-link);
-    border-color: var(--color-link);
+    background-color: var(--bs-link-color);
+    border-color: var(--bs-link-color);
 }
 
 .editInfoButton:active {
-    background-color: var(--color-link);
-    border-color: var(--color-link);
+    background-color: var(--bs-link-color);
+    border-color: var(--bs-link-color);
 }
 
 .editInfoButton:focus {
-    background-color: var(--color-link);
-    border-color: var(--color-link);
+    background-color: var(--bs-link-color);
+    border-color: var(--bs-link-color);
 }
 
 .cancelButton {
     margin-left: 1rem;
     width: 5rem;
     height: 2.5rem;
-    background-color: var(--color-secondary);
+    background-color: var(--bs-secondary-bg);
     border-color: darkred;
     font-weight: 0;
-    color: var(--color-text);
+    color: var(--bs-body-color);
 }
 
 .cancelButton:hover {

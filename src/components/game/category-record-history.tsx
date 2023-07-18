@@ -52,10 +52,10 @@ export const CategoryRecordHistory = ({
                     <Switch
                         onColor={getComputedStyle(
                             document.documentElement
-                        ).getPropertyValue("--color-tertiary")}
+                        ).getPropertyValue("--bs-tertiary-bg")}
                         offColor={getComputedStyle(
                             document.documentElement
-                        ).getPropertyValue("--color-tertiary")}
+                        ).getPropertyValue("--bs-tertiary-bg")}
                         checkedIcon={false}
                         uncheckedIcon={false}
                         name={"switch"}

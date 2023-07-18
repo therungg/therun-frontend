@@ -1,19 +1,19 @@
 /*
 .datePicker {
-    background-color: var(--color-secondary);
-    color: var(--color-text);
+    background-color: var(--bs-secondary-bg);
+    color: var(--bs-body-color);
     width: 7rem;
     border-radius: 0.25rem;
     font-size: 1rem;
     height: 38px;
     cursor: pointer;
-    border-color: var(--color-text);
+    border-color: var(--bs-body-color);
     border: 1px solid;
     padding: 0.5rem 0.5rem 0.5rem 0.8rem;
 }
 
 .datePicker:hover {
-    background-color: var(--color-tertiary);
+    background-color: var(--bs-tertiary-bg);
 }
 
 .datePicker:active {

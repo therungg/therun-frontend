@@ -67,7 +67,7 @@ export const Difference = ({
                     color: isGold
                         ? "var(--color-gold)"
                         : diff <= 0
-                        ? "var(--color-link)"
+                        ? "var(--bs-link-color)"
                         : "var(--color-negative)",
                 }}
             >
@@ -104,7 +104,7 @@ export const DifferenceFromOne = ({
                 style={{
                     color:
                         diff <= 0
-                            ? "var(--color-link)"
+                            ? "var(--bs-link-color)"
                             : "var(--color-negative)",
                 }}
             >

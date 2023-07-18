@@ -381,7 +381,7 @@ export const Golds = ({
                                     display: "flex",
                                     justifyContent: "flex-end",
                                     alignItems: "center",
-                                    color: "var(--color-link)",
+                                    color: "var(--bs-link-color)",
                                     cursor: "pointer",
                                 }}
                                 onClick={() => {
@@ -411,7 +411,7 @@ export const Golds = ({
                                         display: "flex",
                                         justifyContent: "flex-end",
                                         alignItems: "center",
-                                        color: "var(--color-link)",
+                                        color: "var(--bs-link-color)",
                                         cursor: "pointer",
                                     }}
                                     onClick={async () => {
@@ -560,7 +560,7 @@ export const Golds = ({
                                                         style={{
                                                             display: "flex",
                                                             cursor: "pointer",
-                                                            color: "var(--color-link)",
+                                                            color: "var(--bs-link-color)",
                                                             justifyContent:
                                                                 "center",
                                                         }}
@@ -678,7 +678,7 @@ export const Golds = ({
                                                 ) : (
                                                     <div
                                                         style={{
-                                                            color: "var(--color-link)",
+                                                            color: "var(--bs-link-color)",
                                                         }}
                                                     >
                                                         {"-"}

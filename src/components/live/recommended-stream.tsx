@@ -87,7 +87,7 @@ export const RecommendedStream = ({
                     gradient = style.background;
                 }
             } else if (!preferences) {
-                borderColor = "var(--color-link)";
+                borderColor = "var(--bs-link-color)";
             }
             setRecommendedStyles({
                 borderColor,

@@ -1,12 +1,4 @@
 :root {
-    --color-bg: #fbfbfb;
-    /*--color-secondary: #eee;*/
-    --color-tertiary: #ddd;
-    /*--color-fg: #3d3d3d;*/
-    --color-text: #000;
-    /*--color-accent: #346751;*/
-    --color-link: #007c00;
-    /*--color-link-hover: #040;*/
     --color-negative: #ca0000;
 
     --color-positive-0: #65af65;
@@ -36,13 +28,6 @@
 }
 
 [data-theme="dark"] {
-    /*--color-bg: #131313;*/
-    /*--color-secondary: #232323;*/
-    /*--color-tertiary: #343434;*/
-    /*--color-text: #ccc;*/
-    /*--color-fg: #fafafa;*/
-    /*--color-link: #27a11b;*/
-    /*--color-link-hover: #339900;*/
     --color-negative: #ff4242;
 
     --color-positive-0: #217719;
@@ -79,7 +64,7 @@
     white-space: nowrap;
     border-top: solid 1px var(--color-gold);
     border-bottom: solid 1px var(--color-gold);
-    background: var(--color-tertiary);
+    background: var(--bs-tertiary-bg);
 }
 
 .scroll-bar div {
@@ -109,28 +94,28 @@
 }*/
 
 /*a:link {
-    color: var(--color-link);
+    color: var(--bs-link-color);
     text-decoration: none !important;
     outline: none;
 }*/
 
 /*a:visited {
-    color: var(--color-link);
+    color: var(--bs-link-color);
     text-decoration: none !important;
 }*/
 
 /*a:active { //ToDo: Dropped active state -> not needed
-    color: var(--color-link-hover);
+    color: var(--bs-link-hover-color);
     text-decoration: #fafafa;
 }*/
 
 /*a:focus { //ToDo: Dropped focus state -> not needed
-    color: var(--color-link-hover) !important;
+    color: var(--bs-link-hover-color) !important;
     text-decoration: revert !important;
 }*/
 
 /*a:hover {
-    color: var(--color-link-hover) !important;
+    color: var(--bs-link-hover-color) !important;
     text-decoration: revert !important;
 }*/
 
@@ -138,26 +123,26 @@
 // Nav-Tabs
 /*.nav-tabs {
     padding-top: 1rem;
-    border-color: var(--color-secondary);
+    border-color: var(--bs-secondary-bg);
     border-width: 1px;
 
     .nav-link {
-        color: var(--color-text) !important;
+        color: var(--bs-body-color) !important;
         transition: none;
-        background-color: var(--color-secondary);
+        background-color: var(--bs-secondary-bg);
         margin-left: 0.25rem;
     }
 
     .nav-link:hover {
-        border-color: var(--color-tertiary);
+        border-color: var(--bs-tertiary-bg);
         isolation: auto;
         color: yellow;
     }
 
     .nav-item.show .nav-link,
     .nav-link.active {
-        background-color: var(--color-bg);
-        border: 2px solid var(--color-tertiary);
+        background-color: var(--bs-body-bg);
+        border: 2px solid var(--bs-tertiary-bg);
         border-bottom: transparent;
         color: black;
     }
@@ -175,29 +160,29 @@
 }*/
 
 /*.form-select { // ToDo: Focus background has been dropped
-    background-color: var(--color-secondary);
-    color: var(--color-text);
+    background-color: var(--bs-secondary-bg);
+    color: var(--bs-body-color);
 
     &:active {
-        background-color: var(--color-secondary);
-        color: var(--color-text);
+        background-color: var(--bs-secondary-bg);
+        color: var(--bs-body-color);
     }
 
     &:focus {
-        background-color: var(--color-secondary);
-        color: var(--color-text);
+        background-color: var(--bs-secondary-bg);
+        color: var(--bs-body-color);
     }
 }*/
 
 /*.form-control {
-    background-color: var(--color-tertiary);
-    border-color: var(--color-secondary);
-    color: var(--color-text);
+    background-color: var(--bs-tertiary-bg);
+    border-color: var(--bs-secondary-bg);
+    color: var(--bs-body-color);
 
     &:focus {
-        background-color: var(--color-tertiary);
-        border-color: var(--color-secondary);
-        color: var(--color-text);
+        background-color: var(--bs-tertiary-bg);
+        border-color: var(--bs-secondary-bg);
+        color: var(--bs-body-color);
     }
 }*/
 
@@ -211,16 +196,16 @@
     /*  color: green !important;*/
 
     .page-link {
-        color: var(--color-link) !important;
-        background-color: var(--color-tertiary);
-        border-color: var(--color-secondary);
+        color: var(--bs-link-color) !important;
+        background-color: var(--bs-tertiary-bg);
+        border-color: var(--bs-secondary-bg);
     }
 
     &.active {
 
         .page-link {
             background-color: green !important;
-            border-color: var(--color-secondary) !important;
+            border-color: var(--bs-secondary-bg) !important;
             color: white !important;
         }
     }
@@ -228,40 +213,40 @@
 
 // Tables
 .table {
-    --bs-table-striped-color: var(--color-text);
-    --bs-table-striped-bg: var(--color-secondary);
-    --bs-table-accent-bg: var(--color-bg);
-    --bs-table-hover-color: var(--color-text);
-    color: var(--color-text);
-    border-color: var(--color-tertiary);
+    --bs-table-striped-color: var(--bs-body-color);
+    --bs-table-striped-bg: var(--bs-secondary-bg);
+    --bs-table-accent-bg: var(--bs-body-bg);
+    --bs-table-hover-color: var(--bs-body-color);
+    color: var(--bs-body-color);
+    border-color: var(--bs-tertiary-bg);
 
     > :not(:first-child) {
-        border-top: 2px solid var(--color-tertiary);
+        border-top: 2px solid var(--bs-tertiary-bg);
     }
 }
 
 // Cards
 /*.card {
-    background-color: var(--color-secondary);
+    background-color: var(--bs-secondary-bg);
 }*/
 
 // Accordion
 .accordion-item {
-    background-color: var(--color-secondary);
-    color: var(--color-text);
+    background-color: var(--bs-secondary-bg);
+    color: var(--bs-body-color);
 }
 
 .accordion-button {
-    background-color: var(--color-tertiary);
-    color: var(--color-text);
+    background-color: var(--bs-tertiary-bg);
+    color: var(--bs-body-color);
 
     &:after {
         background-image: var(--image-accordion-button);
     }
 
     &:not(.collapsed) {
-        background-color: var(--color-tertiary);
-        color: var(--color-text);
+        background-color: var(--bs-tertiary-bg);
+        color: var(--bs-body-color);
 
         &:after {
             background-image: var(--image-accordion-button-collapse);
@@ -269,8 +254,8 @@
     }
 
     &:focus {
-        border-color: var(--color-link);
-        box-shadow: 0 0 0.25rem var(--color-link);
+        border-color: var(--bs-link-color);
+        box-shadow: 0 0 0.25rem var(--bs-link-color);
     }
 }
 
@@ -282,11 +267,11 @@
     }
 
     .navbar-toggler {
-        border-color: var(--color-link);
+        border-color: var(--bs-link-color);
         border-width: 1px;
 
         &:hover {
-            background-color: var(--color-link);
+            background-color: var(--bs-link-color);
 
             .navbar-toggler-icon {
                 background-image: var(--image-nav-toggler-hover);
@@ -302,9 +287,9 @@
     justify-content: center;
     align-self: center;
     height: 100%;
-    background-color: var(--color-tertiary);
+    background-color: var(--bs-tertiary-bg);
     border: solid 3px;
-    border-color: var(--color-tertiary);
+    border-color: var(--bs-tertiary-bg);
     border-radius: 3px;
     padding: 3px;
     cursor: pointer;
@@ -312,7 +297,7 @@
 
 // Uploads
 .upload-icon {
-    background-color: var(--color-secondary);
+    background-color: var(--bs-secondary-bg);
     border: none;
     max-height: 100%;
     vertical-align: middle;
@@ -333,7 +318,7 @@
     align-items: center;
     font-variation-settings: "FILL" 1, "wght" 700, "GRAD" 200, "opsz" 48;
     font-size: 14rem;
-    color: var(--color-tertiary);
+    color: var(--bs-tertiary-bg);
     padding-bottom: 5rem;
 }
 
@@ -348,26 +333,26 @@
 
 // Dropdown
 .dropdown-menu {
-    background-color: var(--color-tertiary);
-    color: var(--color-link);
+    background-color: var(--bs-tertiary-bg);
+    color: var(--bs-link-color);
 }
 
 .dropdown-item {
-    color: var(--color-link);
+    color: var(--bs-link-color);
 
     &:hover {
-        color: var(--color-link-hover);
-        background-color: var(--color-secondary);
+        color: var(--bs-link-hover-color);
+        background-color: var(--bs-secondary-bg);
     }
 
     &:focus {
-        color: var(--color-link-hover);
-        background-color: var(--color-secondary);
+        color: var(--bs-link-hover-color);
+        background-color: var(--bs-secondary-bg);
     }
 
     &:active {
-        color: var(--color-link-hover);
-        background-color: var(--color-secondary);
+        color: var(--bs-link-hover-color);
+        background-color: var(--bs-secondary-bg);
     }
 }
 
@@ -403,45 +388,45 @@
 
     .nav-link {
         margin-bottom: 0.2rem;
-        color: var(--color-text);
+        color: var(--bs-body-color);
         text-decoration: none !important;
         transition: none !important;
     }
 
     a.nav-link:hover {
-        color: var(--color-text) !important;
+        color: var(--bs-body-color) !important;
     }
 
     a.nav-link:focus {
-        color: var(--color-text) !important;
+        color: var(--bs-body-color) !important;
     }
 
     a.nav-link:hover:not(.active) {
         border: 1px solid;
-        border-color: var(--color-tertiary);
+        border-color: var(--bs-tertiary-bg);
     }
 
     a.nav-link:focus:not(.active) {
         border: 1px solid;
-        border-color: var(--color-tertiary);
+        border-color: var(--bs-tertiary-bg);
     }
 
     .nav-link:hover {
-        color: var(--color-text);
+        color: var(--bs-body-color);
     }
 
     .nav-link:not(.active) {
-        background-color: var(--color-secondary);
+        background-color: var(--bs-secondary-bg);
         border: 1px solid;
-        color: var(--color-text);
-        border-color: var(--color-secondary);
+        color: var(--bs-body-color);
+        border-color: var(--bs-secondary-bg);
     }
 
     .nav-link.active {
-        background-color: var(--color-bg);
+        background-color: var(--bs-body-bg);
         border: 2px solid;
-        color: var(--color-text);
-        border-color: var(--color-tertiary);
+        color: var(--bs-body-color);
+        border-color: var(--bs-tertiary-bg);
     }
 }
 
@@ -451,25 +436,25 @@
 
 // Popover
 .popover {
-    color: var(--color-text);
+    color: var(--bs-body-color);
     margin-bottom: 0.35rem;
-    border-color: var(--color-tertiary);
+    border-color: var(--bs-tertiary-bg);
 }
 
 .popover-header {
-    background-color: var(--color-secondary);
-    color: var(--color-text);
-    border-color: var(--color-tertiary);
+    background-color: var(--bs-secondary-bg);
+    color: var(--bs-body-color);
+    border-color: var(--bs-tertiary-bg);
 }
 
 .popover-body {
-    background-color: var(--color-bg);
-    color: var(--color-text);
-    border-color: var(--color-tertiary);
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    border-color: var(--bs-tertiary-bg);
 }
 
 .popover-arrow::after {
-    border-top-color: var(--color-tertiary) !important;
+    border-top-color: var(--bs-tertiary-bg) !important;
 }
 
 .question-tooltip {
@@ -550,7 +535,7 @@ abbr {
 }
 
 /*.form-select:hover { // ToDo: Dropped bg
-    background-color: var(--color-tertiary);
+    background-color: var(--bs-tertiary-bg);
 }*/
 
 /*.form-select:active {
@@ -564,11 +549,11 @@ abbr {
 }*/
 
 .normal-switch .react-switch-bg {
-    background-color: var(--color-tertiary) !important;
+    background-color: var(--bs-tertiary-bg) !important;
 }
 
 .normal-switch .react-switch-bg:hover {
-    background-color: var(--color-link-hover) !important;
+    background-color: var(--bs-link-hover-color) !important;
 }
 
 .link-without-style {
@@ -583,24 +568,24 @@ abbr {
 /*
 body * {
     -ms-overflow-style: auto;
-    scrollbar-color: var(--scrollbar-thumb-bg) var(--color-tertiary);
+    scrollbar-color: var(--scrollbar-thumb-bg) var(--bs-tertiary-bg);
     scrollbar-width: thin;
 }
 
 body *::-webkit-scrollbar-track {
-    background-color: var(--color-tertiary);
-    border: 0 solid var(--color-tertiary);
+    background-color: var(--bs-tertiary-bg);
+    border: 0 solid var(--bs-tertiary-bg);
 }
 
 body *::-webkit-scrollbar-thumb {
     background-color: var(--scrollbar-thumb-bg);
-    border: 0 solid var(--color-tertiary);
+    border: 0 solid var(--bs-tertiary-bg);
     min-height: 2rem;
     border-radius: 0.625rem;
 }
 
 body *::-webkit-scrollbar-corner {
-    background-color: var(--color-tertiary);
+    background-color: var(--bs-tertiary-bg);
 }
 
 body *::-webkit-scrollbar {

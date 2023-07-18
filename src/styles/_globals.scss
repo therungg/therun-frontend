@@ -12,26 +12,26 @@ body {
 
 .nav-tabs {
   padding-top: 1rem;
-  border-color: var(--color-secondary);
+  border-color: var(--bs-secondary-bg);
   border-width: 1px;
 
   .nav-link {
-    color: var(--color-text) !important;
+    color: var(--bs-body-color) !important;
     transition: none;
-    background-color: var(--color-secondary);
+    background-color: var(--bs-secondary-bg);
     margin-left: 0.25rem;
   }
 
   .nav-link:hover {
-    border-color: var(--color-tertiary);
+    border-color: var(--bs-tertiary-bg);
     isolation: auto;
     color: yellow;
   }
 
   .nav-item.show .nav-link,
   .nav-link.active {
-    background-color: var(--color-bg);
-    border: 2px solid var(--color-tertiary);
+    background-color: var(--bs-body-bg);
+    border: 2px solid var(--bs-tertiary-bg);
     border-bottom: transparent;
     color: black;
   }

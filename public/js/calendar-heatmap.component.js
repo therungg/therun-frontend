@@ -425,7 +425,7 @@ class CalendarHeatmap extends React.Component {
             .append("text")
             .attr("class", "label label-year")
             .style("cursor", "pointer")
-            .style("fill", "var(--color-text)")
+            .style("fill", "var(--bs-body-color)")
             .attr("font-size", () => {
                 return Math.floor(this.settings.label_padding / 2) + "px";
             })
@@ -763,7 +763,7 @@ class CalendarHeatmap extends React.Component {
             .append("text")
             .attr("class", "label label-month")
             .style("cursor", "pointer")
-            .style("fill", "var(--color-text)")
+            .style("fill", "var(--bs-body-color)")
             .attr("font-size", () => {
                 return Math.floor(this.settings.label_padding / 2) + "px";
             })
@@ -858,7 +858,7 @@ class CalendarHeatmap extends React.Component {
             .append("text")
             .attr("class", "label label-day")
             .style("cursor", "pointer")
-            .style("fill", "var(--color-text)")
+            .style("fill", "var(--bs-body-color)")
             .attr("x", this.settings.label_padding / 3)
             .attr("y", (d, i) => {
                 return dayScale(i) + dayScale.bandwidth() / 1.5;

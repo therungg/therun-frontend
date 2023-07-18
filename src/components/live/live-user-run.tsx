@@ -50,7 +50,7 @@ export const LiveUserRun = ({
                     ? darkStyle.backgroundImage
                     : lightStyle.backgroundImage;
             } else {
-                borderColor = "var(--color-link)";
+                borderColor = "var(--bs-link-color)";
             }
             setLiveUserStyles({ borderColor, gradient });
         }

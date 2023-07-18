@@ -400,7 +400,7 @@ export const History = ({
                             alignSelf: "center",
                             fontSize: "1.5rem",
                             textDecoration:
-                                "underline var(--color-text) dotted",
+                                "underline var(--bs-body-color) dotted",
                             cursor: "pointer",
                         }}
                         onClick={() => {
@@ -476,7 +476,7 @@ export const History = ({
             {showFilters && (
                 <div
                     style={{
-                        border: "1px var(--color-secondary) solid",
+                        border: "1px var(--bs-secondary-bg) solid",
                         marginBottom: "1rem",
                         paddingTop: "1rem",
                     }}
@@ -1246,7 +1246,7 @@ export const History = ({
                                                             <td
                                                                 style={{
                                                                     borderRight:
-                                                                        "3px solid var(--color-tertiary)",
+                                                                        "3px solid var(--bs-tertiary-bg)",
                                                                 }}
                                                             >
                                                                 <div
@@ -1329,7 +1329,7 @@ export const History = ({
                                                             <td
                                                                 style={{
                                                                     borderRight:
-                                                                        "1px solid var(--color-tertiary)",
+                                                                        "1px solid var(--bs-tertiary-bg)",
                                                                 }}
                                                             >
                                                                 <div

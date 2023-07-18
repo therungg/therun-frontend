@@ -99,11 +99,13 @@ export const Media = () => {
                                         <Switch
                                             onColor={getComputedStyle(
                                                 document.documentElement
-                                            ).getPropertyValue("--color-link")}
+                                            ).getPropertyValue(
+                                                "--bs-link-color"
+                                            )}
                                             offColor={getComputedStyle(
                                                 document.documentElement
                                             ).getPropertyValue(
-                                                "--color-tertiary"
+                                                "--bs-tertiary-bg"
                                             )}
                                             name={"switch"}
                                             onChange={(checked) => {
@@ -123,11 +125,13 @@ export const Media = () => {
                                         <Switch
                                             onColor={getComputedStyle(
                                                 document.documentElement
-                                            ).getPropertyValue("--color-link")}
+                                            ).getPropertyValue(
+                                                "--bs-link-color"
+                                            )}
                                             offColor={getComputedStyle(
                                                 document.documentElement
                                             ).getPropertyValue(
-                                                "--color-tertiary"
+                                                "--bs-tertiary-bg"
                                             )}
                                             name={"switch"}
                                             onChange={(checked) => {
@@ -147,11 +151,13 @@ export const Media = () => {
                                         <Switch
                                             onColor={getComputedStyle(
                                                 document.documentElement
-                                            ).getPropertyValue("--color-link")}
+                                            ).getPropertyValue(
+                                                "--bs-link-color"
+                                            )}
                                             offColor={getComputedStyle(
                                                 document.documentElement
                                             ).getPropertyValue(
-                                                "--color-tertiary"
+                                                "--bs-tertiary-bg"
                                             )}
                                             name={"switch"}
                                             onChange={(checked) => {
@@ -171,11 +177,13 @@ export const Media = () => {
                                         <Switch
                                             onColor={getComputedStyle(
                                                 document.documentElement
-                                            ).getPropertyValue("--color-link")}
+                                            ).getPropertyValue(
+                                                "--bs-link-color"
+                                            )}
                                             offColor={getComputedStyle(
                                                 document.documentElement
                                             ).getPropertyValue(
-                                                "--color-tertiary"
+                                                "--bs-tertiary-bg"
                                             )}
                                             name={"switch"}
                                             onChange={(checked) => {
@@ -237,11 +245,13 @@ export const Media = () => {
                                         <Switch
                                             onColor={getComputedStyle(
                                                 document.documentElement
-                                            ).getPropertyValue("--color-link")}
+                                            ).getPropertyValue(
+                                                "--bs-link-color"
+                                            )}
                                             offColor={getComputedStyle(
                                                 document.documentElement
                                             ).getPropertyValue(
-                                                "--color-tertiary"
+                                                "--bs-tertiary-bg"
                                             )}
                                             name={"switch"}
                                             onChange={(checked) => {
@@ -261,11 +271,13 @@ export const Media = () => {
                                         <Switch
                                             onColor={getComputedStyle(
                                                 document.documentElement
-                                            ).getPropertyValue("--color-link")}
+                                            ).getPropertyValue(
+                                                "--bs-link-color"
+                                            )}
                                             offColor={getComputedStyle(
                                                 document.documentElement
                                             ).getPropertyValue(
-                                                "--color-tertiary"
+                                                "--bs-tertiary-bg"
                                             )}
                                             name={"switch"}
                                             onChange={(checked) => {
@@ -285,11 +297,13 @@ export const Media = () => {
                                         <Switch
                                             onColor={getComputedStyle(
                                                 document.documentElement
-                                            ).getPropertyValue("--color-link")}
+                                            ).getPropertyValue(
+                                                "--bs-link-color"
+                                            )}
                                             offColor={getComputedStyle(
                                                 document.documentElement
                                             ).getPropertyValue(
-                                                "--color-tertiary"
+                                                "--bs-tertiary-bg"
                                             )}
                                             name={"switch"}
                                             onChange={(checked) => {

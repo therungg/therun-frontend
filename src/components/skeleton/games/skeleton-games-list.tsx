@@ -17,8 +17,8 @@ export const SkeletonGamesList = (props: PropsFrom<typeof ContentLoader>) => {
             className={styles.personalBests}
             speed={2}
             title="Loading games list"
-            backgroundColor="var(--color-secondary)"
-            foregroundColor="var(--color-bg)"
+            backgroundColor="var(--bs-secondary-bg)"
+            foregroundColor="var(--bs-body-bg)"
             {...props}
         >
             <rect x="0" y={totalHeight * 0} width={width} height={itemHeight} />
