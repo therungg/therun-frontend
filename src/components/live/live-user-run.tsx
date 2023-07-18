@@ -84,12 +84,11 @@ export const LiveUserRun = ({
 
     return (
         <div
-            className={
-                styles.liveRunContainer +
-                (liveRun.user == currentlyActive
-                    ? ` ${styles.activeRunContainer}`
-                    : "")
-            }
+            className={`card d-flex flex-row rounded-0  h-100 ${
+                liveRun.user == currentlyActive
+                    ? "bg-body-tertiary"
+                    : "bg-body-secondary"
+            }`}
             style={
                 liveUserStyles.gradient
                     ? {
@@ -107,148 +106,136 @@ export const LiveUserRun = ({
                       }
             }
         >
-            {/*ToDo: nooooo*/}
-            <div className={"holyshit"}>
-                {liveRun.gameImage &&
-                    liveRun.gameImage.length > 0 &&
-                    liveRun.gameImage != "noimage" && (
-                        <div>
-                            <GameImage
-                                alt={liveRun.game}
-                                src={liveRun.gameImage}
-                                quality={"small"}
-                                height={108}
-                                width={81}
-                                style={
-                                    liveUserStyles.gradient ||
-                                    liveUserStyles.borderColor
-                                        ? {
-                                              height: liveUserStyles.gradient
-                                                  ? "106px"
-                                                  : "106px",
-                                          }
-                                        : {}
-                                }
-                            />
-                        </div>
-                    )}
-                {(!liveRun.gameImage ||
-                    liveRun.gameImage.length < 1 ||
-                    liveRun.gameImage == "noimage") && (
-                    <div style={{ marginTop: "17.5px" }}>
-                        <Image
-                            alt={"Logo"}
-                            src={
-                                dark
-                                    ? "/logo_dark_theme_no_text_transparent.png"
-                                    : "/logo_light_theme_no_text_transparent.png"
+            {liveRun.gameImage &&
+                liveRun.gameImage.length > 0 &&
+                liveRun.gameImage != "noimage" && (
+                    <div style={{ width: "81px" }}>
+                        <GameImage
+                            alt={liveRun.game}
+                            src={liveRun.gameImage}
+                            quality={"small"}
+                            height={108}
+                            width={81}
+                            style={
+                                liveUserStyles.gradient ||
+                                liveUserStyles.borderColor
+                                    ? {
+                                          height: liveUserStyles.gradient
+                                              ? "106px"
+                                              : "106px",
+                                      }
+                                    : {}
                             }
-                            width={"75px"}
-                            height={"75px"}
                         />
                     </div>
                 )}
-            </div>
-            <div className={styles.infoBody}>
-                <div className={styles.maxHeight}>
-                    <Row className={styles.maxHeight}>
-                        <Col xs={7} style={{ paddingRight: "0" }}>
-                            <div className={styles.metadataBody}>
-                                <div style={{ width: "calc(100%)" }}>
-                                    <div className={styles.username}>
+            {(!liveRun.gameImage ||
+                liveRun.gameImage.length < 1 ||
+                liveRun.gameImage == "noimage") && (
+                <div style={{ marginTop: "17.5px" }}>
+                    <Image
+                        alt={"Logo"}
+                        src={
+                            dark
+                                ? "/logo_dark_theme_no_text_transparent.png"
+                                : "/logo_light_theme_no_text_transparent.png"
+                        }
+                        width={"75px"}
+                        height={"75px"}
+                    />
+                </div>
+            )}
+
+            <Row className="flex-grow-1 h-100 p-2">
+                <Col xs={7}>
+                    <div className={styles.metadataBody}>
+                        <div style={{ width: "calc(100%)" }}>
+                            <div className={styles.username}>
+                                <div>
+                                    {ranking && (
                                         <div>
-                                            {ranking && (
-                                                <div>
-                                                    &nbsp;#{ranking}
-                                                    &nbsp;-&nbsp;
-                                                </div>
-                                            )}
+                                            &nbsp;#{ranking}
+                                            &nbsp;-&nbsp;
                                         </div>
-                                        <div
-                                            style={{
-                                                whiteSpace: "nowrap",
-                                                overflow: "hidden",
-                                            }}
-                                        >
-                                            <UserLink
-                                                username={liveRun.user}
-                                                parentIsUrl={isUrl}
+                                    )}
+                                </div>
+                                <div
+                                    style={{
+                                        whiteSpace: "nowrap",
+                                        overflow: "hidden",
+                                    }}
+                                >
+                                    <UserLink
+                                        username={liveRun.user}
+                                        parentIsUrl={isUrl}
+                                    />
+                                </div>
+                                {liveRun.currentlyStreaming && (
+                                    <div
+                                        style={{
+                                            marginLeft: "0.6rem",
+                                            alignItems: "flex-start",
+                                        }}
+                                    >
+                                        <TwitchIcon height={22} />
+                                    </div>
+                                )}
+                            </div>
+                            {showGameCategory && (
+                                <div className={styles.game}>
+                                    {liveRun.game}
+                                </div>
+                            )}
+                            {showGameCategory && (
+                                <div className={styles.category}>
+                                    {liveRun.category}
+                                </div>
+                            )}
+
+                            {!showGameCategory && tournamentPbGameTime && (
+                                <div className={styles.game}>
+                                    Tournament PB -{" "}
+                                    {!!tournamentPbGameTime && (
+                                        <DurationToFormatted
+                                            duration={tournamentPbGameTime}
+                                        />
+                                    )}
+                                </div>
+                            )}
+
+                            {!showGameCategory &&
+                                tournamentPb &&
+                                !tournamentPbGameTime && (
+                                    <div className={styles.game}>
+                                        Tournament PB -{" "}
+                                        {!!tournamentPb && (
+                                            <DurationToFormatted
+                                                duration={tournamentPb}
                                             />
-                                        </div>
-                                        {liveRun.currentlyStreaming && (
-                                            <div
-                                                style={{
-                                                    marginLeft: "0.6rem",
-                                                    alignItems: "flex-start",
-                                                }}
-                                            >
-                                                <TwitchIcon height={22} />
-                                            </div>
                                         )}
                                     </div>
-                                    {showGameCategory && (
-                                        <div className={styles.game}>
-                                            {liveRun.game}
-                                        </div>
-                                    )}
-                                    {showGameCategory && (
-                                        <div className={styles.category}>
-                                            {liveRun.category}
-                                        </div>
-                                    )}
+                                )}
 
-                                    {!showGameCategory &&
-                                        tournamentPbGameTime && (
-                                            <div className={styles.game}>
-                                                Tournament PB -{" "}
-                                                {!!tournamentPbGameTime && (
-                                                    <DurationToFormatted
-                                                        duration={
-                                                            tournamentPbGameTime
-                                                        }
-                                                    />
-                                                )}
-                                            </div>
-                                        )}
-
-                                    {!showGameCategory &&
-                                        tournamentPb &&
-                                        !tournamentPbGameTime && (
-                                            <div className={styles.game}>
-                                                Tournament PB -{" "}
-                                                {!!tournamentPb && (
-                                                    <DurationToFormatted
-                                                        duration={tournamentPb}
-                                                    />
-                                                )}
-                                            </div>
-                                        )}
-
-                                    {!showGameCategory &&
-                                        liveRun.pb &&
-                                        liveRun.pb != tournamentPbGameTime &&
-                                        liveRun.pb != tournamentPb && (
-                                            <div className={styles.game}>
-                                                Personal Best -{" "}
-                                                {
-                                                    <DurationToFormatted
-                                                        duration={liveRun.pb}
-                                                    />
-                                                }
-                                            </div>
-                                        )}
-                                </div>
-                            </div>
-                        </Col>
-                        <Col xs={5} style={{ paddingLeft: "0" }}>
-                            <LiveSplitTimerComponent
-                                liveRun={liveRun}
-                                dark={dark}
-                            />
-                        </Col>
-                    </Row>
-                </div>
-            </div>
+                            {!showGameCategory &&
+                                liveRun.pb &&
+                                liveRun.pb != tournamentPbGameTime &&
+                                liveRun.pb != tournamentPb && (
+                                    <div className={styles.game}>
+                                        Personal Best -{" "}
+                                        {
+                                            <DurationToFormatted
+                                                duration={liveRun.pb}
+                                            />
+                                        }
+                                    </div>
+                                )}
+                        </div>
+                    </div>
+                </Col>
+                <Col xs={5}>
+                    <LiveSplitTimerComponent liveRun={liveRun} dark={dark} />
+                </Col>
+            </Row>
         </div>
     );
 };

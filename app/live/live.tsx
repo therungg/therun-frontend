@@ -129,7 +129,7 @@ export const Live = ({
                     </div>
                 </div>
             </div>
-            <Row>
+            <Row xs={1} lg={2} xl={3} className="g-3">
                 {Object.values(updatedLiveDataMap).length == 0 && (
                     <div>Unfortunately, nobody is running live now...</div>
                 )}
@@ -144,11 +144,7 @@ export const Live = ({
                     .map((liveRun) => {
                         return (
                             <Col
-                                xl={4}
-                                lg={6}
-                                md={12}
                                 key={liveRun.user}
-                                style={{ marginBottom: "1rem" }}
                                 onClick={() => {
                                     setCurrentlyViewing(liveRun.user);
 
