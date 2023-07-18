@@ -156,13 +156,13 @@ body {
 }
 
 // Add custom container max-width
-@media (min-width: 1600px) {
+@media (min-width: 1599.98px) {
   .container {
     max-width: 1510px !important;
   }
 }
 
-@media (min-width: 1900px) {
+@media (min-width: 1899.98px) {
   .container {
     max-width: 1640px !important;
   }
