@@ -1,3 +1,12 @@
+// Custom variables
+:root {
+  --split-active-color: lightblue;
+}
+
+[data-bs-theme="dark"] {
+  --split-active-color: darkblue;
+}
+
 // Always stick footer to the bottom in case content is not high enough
 body {
   min-height: 100vh;

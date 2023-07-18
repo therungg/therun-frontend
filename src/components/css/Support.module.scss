@@ -37,7 +37,7 @@
     margin: 1rem 5rem;
     padding: 2.5rem;
     border-radius: 15px;
-    border: solid 1px var(--color-gold);
+    border: solid 1px var(--bs-secondary);
 }
 
 .supportOptionStripe {
@@ -52,15 +52,15 @@
     width: 15rem;
     height: 4rem;
     background-color: var(--bs-tertiary-bg);
-    border-color: var(--color-gold);
+    border-color: var(--bs-secondary);
     font-weight: 500;
     color: var(--bs-body-color);
     font-size: 1.4rem;
 }
 
 .learnMoreButton:hover {
-    background-color: var(--color-gold);
-    border-color: var(--color-gold);
+    background-color: var(--bs-secondary);
+    border-color: var(--bs-secondary);
     color: var(--bs-body-bg);
 }
 

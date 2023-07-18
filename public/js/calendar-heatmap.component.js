@@ -580,7 +580,7 @@ class CalendarHeatmap extends React.Component {
             .attr("fill", (d) => {
                 return d.total > 0
                     ? d.total == max_value
-                        ? "var(--color-gold)"
+                        ? "var(--bs-secondary)"
                         : color(d.total)
                     : "transparent";
             })

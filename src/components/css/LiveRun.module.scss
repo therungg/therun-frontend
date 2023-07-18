@@ -1,3 +1,7 @@
+.splitRowActive {
+  background-color: var(--split-active-color);
+}
+
 /*
 .liveRunContainer {
   border: 1px solid var(--bs-tertiary-bg);
@@ -163,10 +167,9 @@
   cursor: pointer;
 }
 
-.splitRowActive {
-  background-color: var(--color-split-active);
-}
+*/
 
+/*
 .finalSplitRow {
   background-color: blue;
 }

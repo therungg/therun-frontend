@@ -44,15 +44,15 @@
     width: 10rem;
     height: 3rem;
     background-color: rgba(100, 100, 100, 0.2);
-    border-color: var(--color-gold);
+    border-color: var(--bs-secondary);
     font-weight: 500;
     color: var(--bs-body-color);
     margin-right: 1rem;
 }
 
 .supportMeButton:hover {
-    background-color: var(--color-gold);
-    border-color: var(--color-gold);
+    background-color: var(--bs-secondary);
+    border-color: var(--bs-secondary);
     color: var(--bs-body-bg);
 }
 

@@ -65,7 +65,7 @@ export const Difference = ({
             <div
                 style={{
                     color: isGold
-                        ? "var(--color-gold)"
+                        ? "var(--bs-secondary)"
                         : diff <= 0
                         ? "var(--bs-link-color)"
                         : "var(--color-negative)",

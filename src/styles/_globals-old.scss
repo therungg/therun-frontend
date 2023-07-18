@@ -1,23 +1,7 @@
 :root {
     --color-negative: #ca0000;
 
-    --color-positive-0: #65af65;
-    --color-positive-1: #73b673;
-    --color-positive-2: #81bd81;
-    --color-positive-3: #8fc48f;
-    --color-positive-4: #9dcb9d;
-    --color-positive-5: #acd3ac;
-    --color-positive-6: #badaba;
-    --color-positive-7: #c8e1c8;
-    --color-positive-8: #d6e8d6;
-    --color-positive-9: #e4efe4;
-
-    --color-split-active: lightblue;
-    --color-gold: #a3850e;
-
     --color-border: rgba(0, 0, 0, 0.25);
-
-    /*--color-contrast: #000;*/
 
     /*--image-nav-toggler: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='black' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 8h24M4 16h24M4 24h24'/%3E%3C/svg%3E");
     --image-nav-toggler-hover: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='white' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 8h24M4 16h24M4 24h24'/%3E%3C/svg%3E");*/
@@ -29,21 +13,6 @@
 
 [data-theme="dark"] {
     --color-negative: #ff4242;
-
-    --color-positive-0: #217719;
-    --color-positive-1: #207119;
-    --color-positive-2: #1f6b18;
-    --color-positive-3: #1f6518;
-    --color-positive-4: #1e5f18;
-    --color-positive-5: #1d5a17;
-    --color-positive-6: #1c5417;
-    --color-positive-7: #1c4e17;
-    --color-positive-8: #1b4d17;
-    --color-positive-9: #1b4816;
-    --color-contrast: #fff;
-    --color-gold: #fdc544;
-
-    --color-split-active: darkblue;
 
     --color-border: rgba(204, 204, 204, 0.25);
 
@@ -62,8 +31,8 @@
     height: 3rem;
     overflow: hidden;
     white-space: nowrap;
-    border-top: solid 1px var(--color-gold);
-    border-bottom: solid 1px var(--color-gold);
+    border-top: solid 1px var(--bs-secondary);
+    border-bottom: solid 1px var(--bs-secondary);
     background: var(--bs-tertiary-bg);
 }
 
