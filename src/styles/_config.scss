@@ -65,7 +65,9 @@ $table-striped-bg:                  var(--bs-secondary-bg);
 $table-border-color:                var(--bs-tertiary-bg);
 
 // Buttons
-$btn-border-width:                  2px;
+$btn-padding-y:                     .3125rem;
+$btn-padding-x:                     .6875rem;
+$btn-border-width:                  .125rem;
 
 // Forms
 $input-bg:                          var(--bs-tertiary-bg);
