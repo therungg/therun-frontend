@@ -1,6 +1,7 @@
 import React from "react";
 import { Button, Nav } from "react-bootstrap";
 import { getTwitchOAuthURL } from "./twitch-oauth";
+import styles from "~src/components/css/TwitchLoginButton.module.scss";
 
 interface TwitchLoginButtonProps {
     url?: string;
@@ -12,16 +13,7 @@ export const TwitchLoginButton: React.FunctionComponent<
     const loginUrl = getTwitchOAuthURL({ redirect: url });
     return (
         <Nav.Link href={loginUrl.href}>
-            <Button
-                variant={"secondary"}
-                style={{
-                    backgroundColor: "#9146FF",
-                    borderColor: "#9146FF",
-                    whiteSpace: "nowrap",
-                }}
-            >
-                Login with Twitch
-            </Button>
+            <Button className={styles.twitch}>Login with Twitch</Button>
         </Nav.Link>
     );
 };

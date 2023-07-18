@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { Nav } from "react-bootstrap";
-import styles from "../css/TwitchLoginButton.module.scss";
+import styles from "~src/components/css/TwitchLoginButton.module.scss";
 
 interface TwitchUserProps {
     username: string;
