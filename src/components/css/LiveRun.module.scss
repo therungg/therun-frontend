@@ -19,25 +19,12 @@
   background-color: var(--bs-tertiary-bg);
 }
 
-.splitsContainer {
-  background-color: var(--bs-secondary-bg);
-  display: flex;
-  height: 100%;
-  padding: 0;
-  border: 1px solid var(--bs-tertiary-bg);
-}
-
 .uploadKeyButton {
   font-size: 1.5rem;
   height: 100%;
   display: flex;
   justify-content: flex-end;
   align-self: flex-end;
-}
-
-.recommendedStreamContainer {
-  margin-bottom: 2rem;
-  margin-top: 1rem;
 }
 
 .searchContainer {
@@ -288,10 +275,6 @@
   margin-bottom: 0.13rem;
 }
 
-.twitchStream {
-  height: 340px;
-}
-
 .splitsStatsContainer {
   border: 1px solid var(--bs-tertiary-bg);
   background-color: var(--bs-secondary-bg);
@@ -348,9 +331,6 @@
 }
 
 @media screen and (max-width: 1199.98px) {
-  .splitsContainer {
-    margin-bottom: 1rem;
-  }
 
   .metadataBody {
     max-width: 320px;
@@ -378,25 +358,9 @@
   .metadataBody {
     max-width: 210px;
   }
-
-  .twitchStream {
-    height: 100%;
-  }
-}
-
-@media screen and (max-width: 991.98px) {
-  .twitchStream {
-    height: 400px;
-    padding: 0;
-    margin-bottom: 1rem;
-  }
 }
 
 @media screen and (max-width: 767.98px) {
-  .twitchStream {
-    height: 295px;
-    padding: 0;
-  }
 
   .username {
     font-size: large;

@@ -1,6 +1,5 @@
 import { LiveRun } from "~app/live/live.types";
-import { Col, Row } from "react-bootstrap";
-import styles from "../../components/css/LiveRun.module.scss";
+import { Col } from "react-bootstrap";
 import { useEffect, useRef, useState } from "react";
 import { TwitchEmbed } from "../../vendor/react-twitch-embed/dist/index";
 import { LiverunStatsPanel } from "./liverun-stats-panel";
@@ -106,60 +105,58 @@ export const RecommendedStream = ({
     );
 
     return (
-        <div className={styles.recommendedRunContainer}>
-            <Row className={styles.recommendedRunRow}>
-                <Col xl={3} lg={5} md={12} className={styles.splitsContainer}>
-                    <SplitsViewer
-                        activeLiveRun={activeLiveRun}
-                        currentSplitSplitStatus={currentSplitSplitStatus}
-                        dark={dark}
-                        setSelectedSplit={(e) => {
-                            setSelectedSplit(e);
+        <>
+            <Col xl={3} lg={5} md={12} className="overflow-hidden">
+                <SplitsViewer
+                    activeLiveRun={activeLiveRun}
+                    currentSplitSplitStatus={currentSplitSplitStatus}
+                    dark={dark}
+                    setSelectedSplit={(e) => {
+                        setSelectedSplit(e);
 
-                            setManuallyChangedSplit(
-                                e !== activeLiveRun.currentSplitIndex
-                            );
-                        }}
+                        setManuallyChangedSplit(
+                            e !== activeLiveRun.currentSplitIndex
+                        );
+                    }}
+                />
+            </Col>
+            <Col xl={5} lg={7} md={12} className="h-340p">
+                <TwitchEmbed
+                    channel={stream ? stream : activeLiveRun.user}
+                    width={"100%"}
+                    height={"100%"}
+                    muted
+                    withChat={false}
+                />
+            </Col>
+            <Col
+                xl={4}
+                className="h-340p"
+                style={
+                    recommendedStyles.gradient
+                        ? {
+                              borderImageSource: recommendedStyles.gradient,
+                              borderImageSlice: 1,
+                              borderWidth: "2px",
+                          }
+                        : {
+                              borderColor: recommendedStyles.borderColor,
+                              borderWidth:
+                                  recommendedStyles.gradient ||
+                                  recommendedStyles.borderColor
+                                      ? "2px"
+                                      : "1px",
+                          }
+                }
+            >
+                <div className="bg-body-secondary h-100 border">
+                    <LiverunStatsPanel
+                        liveRun={liveRun}
+                        selectedSplit={selectedSplit}
                     />
-                </Col>
-                <Col xl={5} lg={7} md={12} className={styles.twitchStream}>
-                    <TwitchEmbed
-                        channel={stream ? stream : activeLiveRun.user}
-                        width={"100%"}
-                        height={"100%"}
-                        muted
-                        withChat={false}
-                    />
-                </Col>
-                <Col
-                    xl={4}
-                    className={styles.splitsStatsContainer}
-                    style={
-                        recommendedStyles.gradient
-                            ? {
-                                  borderImageSource: recommendedStyles.gradient,
-                                  borderImageSlice: 1,
-                                  borderWidth: "2px",
-                              }
-                            : {
-                                  borderColor: recommendedStyles.borderColor,
-                                  borderWidth:
-                                      recommendedStyles.gradient ||
-                                      recommendedStyles.borderColor
-                                          ? "2px"
-                                          : "1px",
-                              }
-                    }
-                >
-                    <div style={{ width: "100%" }}>
-                        <LiverunStatsPanel
-                            liveRun={liveRun}
-                            selectedSplit={selectedSplit}
-                        />
-                    </div>
-                </Col>
-            </Row>
-        </div>
+                </div>
+            </Col>
+        </>
     );
 };
 

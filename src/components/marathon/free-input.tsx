@@ -16,7 +16,7 @@ export const FreeInput = ({
 
     return (
         <div style={{ marginBottom: "1rem" }}>
-            <h2>Free Input</h2>
+            <h2>Free Input</h2> {/* ToDo: work on height */}
             <textarea
                 style={{
                     background: "var(--bs-tertiary-bg)",
@@ -30,7 +30,6 @@ export const FreeInput = ({
                     setInput(e.target.value);
                 }}
             />
-
             <SendMarathonDataButton
                 description={"Send Free Input to ESA"}
                 sessionId={sessionId}

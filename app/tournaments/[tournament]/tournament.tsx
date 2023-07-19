@@ -207,7 +207,7 @@ export const GenericTournament = ({
                                     display: "flex",
                                     justifyContent: "flex-end",
                                 }}
-                                className={homeStyles.learnMoreButtonContainer}
+                                className={homeStyles.learnMoreButtonContainer} // ToDo: Removal happened
                             >
                                 <Image
                                     src={tournament.logoUrl}
@@ -237,7 +237,7 @@ export const GenericTournament = ({
                                 >
                                     <Button
                                         variant={"outline-primary"}
-                                        className={homeStyles.learnMoreButton}
+                                        className={homeStyles.learnMoreButton} // ToDo: Removal happened
                                         style={{ width: "15rem" }}
                                     >
                                         How does this work?

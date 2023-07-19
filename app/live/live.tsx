@@ -3,8 +3,6 @@
 import { LiveIcon, LiveUserRun } from "~src/components/live/live-user-run";
 import React, { useEffect, useState } from "react";
 import searchStyles from "~src/components/css/Search.module.scss";
-import runStyles from "~src/components/css/LiveRun.module.scss";
-import homeStyles from "~src/components/css/Home.module.scss";
 import { Button, Col, Row } from "react-bootstrap";
 import { RecommendedStream } from "~src/components/live/recommended-stream";
 import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
@@ -62,73 +60,60 @@ export const Live = ({
     }, [forceCategory]);
 
     return (
-        <div>
+        <>
             {showTitle && (
-                <Row>
-                    <Col sm={7} xs={12}>
+                <Row className="g-3 mb-4">
+                    <Col className="col-auto flex-grow-1">
                         <h1>
                             Live Runs <LiveIcon height={18} />
                         </h1>
                     </Col>
-                    <Col sm={5} xs={12}>
-                        <div className={runStyles.uploadKeyButton}>
-                            <div
-                                className={homeStyles.learnMoreButtonContainer}
+                    <Col className="col-auto text-end">
+                        <a href={"/upload-key"}>
+                            <Button
+                                variant={"outline-primary"}
+                                className="fs-larger h-100 px-3 mw-250p"
                             >
-                                <a href={"/upload-key"}>
-                                    <Button
-                                        variant={"outline-primary"}
-                                        className={homeStyles.learnMoreButton}
-                                        style={{ width: "15rem" }}
-                                    >
-                                        How does this work?
-                                    </Button>
-                                </a>
-                            </div>
-                        </div>
+                                How does this work?
+                            </Button>
+                        </a>
                     </Col>
                 </Row>
             )}
-
-            <div className={runStyles.recommendedStreamContainer}>
-                {currentlyViewing && updatedLiveDataMap[currentlyViewing] && (
+            {currentlyViewing && updatedLiveDataMap[currentlyViewing] && (
+                <Row className="g-3 mb-4">
                     <RecommendedStream
                         liveRun={updatedLiveDataMap[currentlyViewing]}
                     />
-                )}
-            </div>
-            <div>
-                <div className={runStyles.searchContainer}>
-                    <div
-                        className="input-group"
-                        style={{ marginLeft: "0" }} /*ToDo:*/
+                </Row>
+            )}
+            <Row className="g-3 mb-3">
+                <div className="input-group">
+                    <span
+                        className="material-symbols-outlined input-group-text"
+                        onClick={() => {
+                            const searchElement =
+                                document.getElementById("gameSearch");
+                            if (document.activeElement !== searchElement) {
+                                searchElement.focus();
+                            }
+                        }}
                     >
-                        <span
-                            className="material-symbols-outlined input-group-text"
-                            onClick={() => {
-                                const searchElement =
-                                    document.getElementById("gameSearch");
-                                if (document.activeElement !== searchElement) {
-                                    searchElement.focus();
-                                }
-                            }}
-                        >
-                            search
-                        </span>
-                        <input
-                            type="search"
-                            className={`form-control ${searchStyles.search}`}
-                            placeholder="Filter by game/category/user"
-                            style={{ marginBottom: "0" }}
-                            onChange={(e) => {
-                                setSearch(e.target.value);
-                            }}
-                            value={search}
-                            id="gameSearch"
-                        />
-                    </div>
+                        search
+                    </span>
+                    <input
+                        type="search"
+                        className={`form-control ${searchStyles.search}`}
+                        placeholder="Filter by game/category/user"
+                        style={{ marginBottom: "0" }}
+                        onChange={(e) => {
+                            setSearch(e.target.value);
+                        }}
+                        value={search}
+                        id="gameSearch"
+                    />
                 </div>
-            </div>
+            </Row>
             <Row xs={1} lg={2} xl={3} className="g-3">
                 {Object.values(updatedLiveDataMap).length == 0 && (
                     <div>Unfortunately, nobody is running live now...</div>
@@ -160,6 +145,6 @@ export const Live = ({
                         );
                     })}
             </Row>
-        </div>
+        </>
     );
 };

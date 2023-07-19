@@ -5,14 +5,14 @@
 // Progress loader
 @import "nprogress/nprogress.css";
 
-// Utilities
-@import "utilities";
-
 // Global styles
 @import "globals";
 
 // Theme configuration (overrides bootstrap)
 @import "config";
+
+// Utilities (Bootstrap API - after overriding config)
+@import "utilities";
 
 // Bootstrap framework
 @import "bootstrap/scss/bootstrap";

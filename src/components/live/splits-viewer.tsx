@@ -1,5 +1,5 @@
 import styles from "../css/LiveRun.module.scss";
-import { Col, Container, Row } from "react-bootstrap";
+import { Col, Row } from "react-bootstrap";
 import SplitName from "../transformers/split-name";
 import { Difference, DurationToFormatted } from "../util/datetime";
 import { getSplitStatus } from "./recommended-stream";
@@ -36,290 +36,252 @@ export const SplitsViewer = ({
 
     if (!activeLiveRun.splits) return <></>;
 
-    // This isn't pretty, but does the job. Maybe refactor in the future.
-    // TODO:: Fix
     return (
-        <div className={styles.splitsContainerContainer}>
-            <div className={styles.splitsHeader}>
-                <Container className={styles.maxHeight}>
-                    <Row className={styles.maxHeight}>
-                        <Col
-                            className={styles.splitsHeaderGameContainer}
-                            xs={6}
+        <div className="bg-body-tertiary h-340p">
+            <Row className="overflow-hidden h-15 px-3 py-1">
+                <Col xs={6}>
+                    <div
+                        className={styles.splitsHeaderGame}
+                        title={activeLiveRun.game}
+                    >
+                        {activeLiveRun.game}
+                    </div>
+                    <div
+                        className={styles.splitsHeaderGame}
+                        title={activeLiveRun.category}
+                    >
+                        {activeLiveRun.category}
+                    </div>
+                </Col>
+                <Col>
+                    <div className={styles.splitsHeaderComparison}>
+                        <select
+                            className={"form-select"}
+                            value={comparison}
+                            onChange={(e) => {
+                                setComparison(e.target.value);
+                                setManuallyChangedComparison(true);
+                            }}
                         >
-                            <div
-                                className={styles.splitsHeaderGame}
-                                title={activeLiveRun.game}
-                            >
-                                {activeLiveRun.game}
-                            </div>
-                            <div
-                                className={styles.splitsHeaderGame}
-                                title={activeLiveRun.category}
-                            >
-                                {activeLiveRun.category}
-                            </div>
-                        </Col>
-                        <Col className={styles.splitsHeaderComparisonContainer}>
-                            <div className={styles.splitsHeaderComparison}>
-                                <select
-                                    className={"form-select"}
-                                    value={comparison}
-                                    onChange={(e) => {
-                                        setComparison(e.target.value);
-                                        setManuallyChangedComparison(true);
-                                    }}
-                                >
-                                    {(
-                                        Array.from(
-                                            Object.keys(
-                                                activeLiveRun.splits[0]
-                                                    .comparisons
-                                            )
-                                        ) || ["Personal Best"]
-                                    ).map((comp) => {
-                                        return (
-                                            <option
-                                                key={comp}
-                                                title={comp}
-                                                value={comp}
-                                            >
-                                                {comp}
-                                            </option>
-                                        );
-                                    })}
-                                </select>
-                            </div>
-                        </Col>
-                    </Row>
-                </Container>
-            </div>
-            <hr className={styles.seperator} />
-            <div className={styles.splitsBox} id={"scrollBox"}>
-                <div>
-                    <table className={styles.splitsTable}>
-                        <tbody>
-                            {activeLiveRun.splits.map((split, k) => {
-                                if (k >= activeLiveRun.splits.length - 1)
-                                    return;
-
-                                const splitStatus = getSplitStatus(
-                                    activeLiveRun,
-                                    k
-                                );
-
+                            {(
+                                Array.from(
+                                    Object.keys(
+                                        activeLiveRun.splits[0].comparisons
+                                    )
+                                ) || ["Personal Best"]
+                            ).map((comp) => {
                                 return (
-                                    <tr
-                                        key={
-                                            split.name + k + activeLiveRun.user
-                                        }
-                                        className={`${styles.splitRow} ${
-                                            splitStatus.isActive
-                                                ? styles.splitRowActive
-                                                : ""
-                                        }`}
-                                        onClick={() => {
-                                            setSelectedSplit(k);
-                                        }}
+                                    <option
+                                        key={comp}
+                                        title={comp}
+                                        value={comp}
                                     >
-                                        <td
-                                            className={
-                                                styles.splitNameContainer
-                                            }
-                                        >
-                                            <div className={styles.splitName}>
-                                                <SplitName
-                                                    splitName={split.name}
-                                                />
-                                            </div>
-                                        </td>
-                                        <td
-                                            className={
-                                                styles.splitTimeContainer
-                                            }
-                                        >
-                                            <div className={styles.splitTime}>
-                                                {splitStatus.status ==
-                                                "completed" ? (
-                                                    <Difference
-                                                        one={split.splitTime}
-                                                        two={
-                                                            split.comparisons[
-                                                                comparison
-                                                            ]
-                                                        }
-                                                        withMillis={false}
-                                                        isGold={
-                                                            splitStatus.isGold
-                                                        }
-                                                        human={false}
-                                                    />
-                                                ) : splitStatus.status ==
-                                                      "skipped" ||
-                                                  !activeLiveRun.splits[k]
-                                                      .comparisons[
-                                                      comparison
-                                                  ] ||
-                                                  (k > 0 &&
-                                                      !activeLiveRun.splits[
-                                                          k - 1
-                                                      ].comparisons[
-                                                          comparison
-                                                      ]) ? (
-                                                    "-"
-                                                ) : (
-                                                    <DurationToFormatted
-                                                        withMillis={false}
-                                                        duration={
-                                                            k == 0
-                                                                ? activeLiveRun
-                                                                      .splits[0]
-                                                                      .comparisons[
-                                                                      comparison
-                                                                  ]
-                                                                : activeLiveRun
-                                                                      .splits[k]
-                                                                      .comparisons[
-                                                                      comparison
-                                                                  ] -
-                                                                  activeLiveRun
-                                                                      .splits[
-                                                                      k - 1
-                                                                  ].comparisons[
-                                                                      comparison
-                                                                  ]
-                                                        }
-                                                    />
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td
-                                            className={
-                                                styles.splitTimeContainer
-                                            }
-                                        >
-                                            <div className={styles.splitTime}>
-                                                {splitStatus.status ==
-                                                "skipped" ? (
-                                                    "-"
-                                                ) : splitStatus.status ==
-                                                  "completed" ? (
-                                                    <b>
-                                                        <DurationToFormatted
-                                                            human={false}
-                                                            duration={
-                                                                split.splitTime
-                                                            }
-                                                            withMillis={false}
-                                                        />
-                                                    </b>
-                                                ) : (
-                                                    <DurationToFormatted
-                                                        human={false}
-                                                        duration={
-                                                            split.comparisons[
-                                                                comparison
-                                                            ]
-                                                        }
-                                                        withMillis={false}
-                                                    />
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
+                                        {comp}
+                                    </option>
                                 );
                             })}
-                        </tbody>
-                    </table>
-                </div>
+                        </select>
+                    </div>
+                </Col>
+            </Row>
+            <div
+                id={"scrollBox"}
+                className="bg-body-secondary overflow-y-auto h-55 w-100 px-2 py-1"
+            >
+                <table className="w-100">
+                    <tbody>
+                        {activeLiveRun.splits.map((split, k) => {
+                            if (k >= activeLiveRun.splits.length - 1) return;
+
+                            const splitStatus = getSplitStatus(
+                                activeLiveRun,
+                                k
+                            );
+
+                            return (
+                                <tr
+                                    key={split.name + k + activeLiveRun.user}
+                                    className={`${styles.splitRow} ${
+                                        splitStatus.isActive
+                                            ? styles.splitRowActive
+                                            : ""
+                                    }`}
+                                    onClick={() => {
+                                        setSelectedSplit(k);
+                                    }}
+                                >
+                                    <td className={styles.splitNameContainer}>
+                                        <div className={styles.splitName}>
+                                            <SplitName splitName={split.name} />
+                                        </div>
+                                    </td>
+                                    <td className={styles.splitTimeContainer}>
+                                        <div className={styles.splitTime}>
+                                            {splitStatus.status ==
+                                            "completed" ? (
+                                                <Difference
+                                                    one={split.splitTime}
+                                                    two={
+                                                        split.comparisons[
+                                                            comparison
+                                                        ]
+                                                    }
+                                                    withMillis={false}
+                                                    isGold={splitStatus.isGold}
+                                                    human={false}
+                                                />
+                                            ) : splitStatus.status ==
+                                                  "skipped" ||
+                                              !activeLiveRun.splits[k]
+                                                  .comparisons[comparison] ||
+                                              (k > 0 &&
+                                                  !activeLiveRun.splits[k - 1]
+                                                      .comparisons[
+                                                      comparison
+                                                  ]) ? (
+                                                "-"
+                                            ) : (
+                                                <DurationToFormatted
+                                                    withMillis={false}
+                                                    duration={
+                                                        k == 0
+                                                            ? activeLiveRun
+                                                                  .splits[0]
+                                                                  .comparisons[
+                                                                  comparison
+                                                              ]
+                                                            : activeLiveRun
+                                                                  .splits[k]
+                                                                  .comparisons[
+                                                                  comparison
+                                                              ] -
+                                                              activeLiveRun
+                                                                  .splits[k - 1]
+                                                                  .comparisons[
+                                                                  comparison
+                                                              ]
+                                                    }
+                                                />
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className={styles.splitTimeContainer}>
+                                        <div className={styles.splitTime}>
+                                            {splitStatus.status == "skipped" ? (
+                                                "-"
+                                            ) : splitStatus.status ==
+                                              "completed" ? (
+                                                <b>
+                                                    <DurationToFormatted
+                                                        human={false}
+                                                        duration={
+                                                            split.splitTime
+                                                        }
+                                                        withMillis={false}
+                                                    />
+                                                </b>
+                                            ) : (
+                                                <DurationToFormatted
+                                                    human={false}
+                                                    duration={
+                                                        split.comparisons[
+                                                            comparison
+                                                        ]
+                                                    }
+                                                    withMillis={false}
+                                                />
+                                            )}
+                                        </div>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
             </div>
-            <hr className={styles.seperator} />
-            <div className={styles.splitTimerContainer}>
-                <div>
-                    <table className={styles.splitsTable}>
-                        <tbody>
-                            <tr
-                                className={
-                                    activeLiveRun.currentSplitIndex + 1 ==
-                                    activeLiveRun.splits.length
-                                        ? styles.finalSplitRow
-                                        : ""
-                                }
-                                onClick={() => {
-                                    setSelectedSplit(
-                                        activeLiveRun.splits.length - 1
-                                    );
-                                }}
-                            >
-                                <td className={styles.splitNameContainer}>
-                                    <div className={styles.splitName}>
-                                        {
-                                            activeLiveRun.splits[
-                                                activeLiveRun.splits.length - 1
-                                            ].name
-                                        }
-                                    </div>
-                                </td>
-                                <td className={styles.splitTimeContainer}>
-                                    <div className={styles.splitTime}>
-                                        {activeLiveRun.splits[
+            <div className="overflow-hidden h-30 px-2 py-1">
+                <table className={styles.splitsTable}>
+                    <tbody>
+                        <tr
+                            className={
+                                activeLiveRun.currentSplitIndex + 1 ==
+                                activeLiveRun.splits.length
+                                    ? styles.finalSplitRow
+                                    : ""
+                            }
+                            onClick={() => {
+                                setSelectedSplit(
+                                    activeLiveRun.splits.length - 1
+                                );
+                            }}
+                        >
+                            <td className={styles.splitNameContainer}>
+                                <div className={styles.splitName}>
+                                    {
+                                        activeLiveRun.splits[
                                             activeLiveRun.splits.length - 1
-                                        ].splitTime ? (
-                                            <Difference
-                                                one={
-                                                    activeLiveRun.splits[
-                                                        activeLiveRun.splits
-                                                            .length - 1
-                                                    ].splitTime
-                                                }
-                                                two={
-                                                    activeLiveRun.splits[
-                                                        activeLiveRun.splits
-                                                            .length - 1
-                                                    ].comparisons[comparison]
-                                                }
-                                            />
-                                        ) : activeLiveRun.splits.length < 2 ? (
-                                            "-"
-                                        ) : (
-                                            <DurationToFormatted
-                                                duration={
-                                                    activeLiveRun.splits[
-                                                        activeLiveRun.splits
-                                                            .length - 1
-                                                    ].comparisons[comparison] -
-                                                    activeLiveRun.splits[
-                                                        activeLiveRun.splits
-                                                            .length - 2
-                                                    ].comparisons[comparison]
-                                                }
-                                            />
-                                        )}
-                                    </div>
-                                </td>
-                                <td className={styles.splitTimeContainer}>
-                                    <div className={styles.splitTime}>
-                                        <b>
-                                            <DurationToFormatted
-                                                duration={
-                                                    activeLiveRun.splits[
-                                                        activeLiveRun.splits
-                                                            .length - 1
-                                                    ].splitTime ||
-                                                    activeLiveRun.splits[
-                                                        activeLiveRun.splits
-                                                            .length - 1
-                                                    ].comparisons[comparison]
-                                                }
-                                            />
-                                        </b>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <hr className={styles.seperator} />
+                                        ].name
+                                    }
+                                </div>
+                            </td>
+                            <td className={styles.splitTimeContainer}>
+                                <div className={styles.splitTime}>
+                                    {activeLiveRun.splits[
+                                        activeLiveRun.splits.length - 1
+                                    ].splitTime ? (
+                                        <Difference
+                                            one={
+                                                activeLiveRun.splits[
+                                                    activeLiveRun.splits
+                                                        .length - 1
+                                                ].splitTime
+                                            }
+                                            two={
+                                                activeLiveRun.splits[
+                                                    activeLiveRun.splits
+                                                        .length - 1
+                                                ].comparisons[comparison]
+                                            }
+                                        />
+                                    ) : activeLiveRun.splits.length < 2 ? (
+                                        "-"
+                                    ) : (
+                                        <DurationToFormatted
+                                            duration={
+                                                activeLiveRun.splits[
+                                                    activeLiveRun.splits
+                                                        .length - 1
+                                                ].comparisons[comparison] -
+                                                activeLiveRun.splits[
+                                                    activeLiveRun.splits
+                                                        .length - 2
+                                                ].comparisons[comparison]
+                                            }
+                                        />
+                                    )}
+                                </div>
+                            </td>
+                            <td className={styles.splitTimeContainer}>
+                                <div className={styles.splitTime}>
+                                    <b>
+                                        <DurationToFormatted
+                                            duration={
+                                                activeLiveRun.splits[
+                                                    activeLiveRun.splits
+                                                        .length - 1
+                                                ].splitTime ||
+                                                activeLiveRun.splits[
+                                                    activeLiveRun.splits
+                                                        .length - 1
+                                                ].comparisons[comparison]
+                                            }
+                                        />
+                                    </b>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
                 <div className={styles.splitsFooterContainer}>
                     <Row className={styles.maxHeight}>
                         <Col
