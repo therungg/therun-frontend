@@ -95,8 +95,14 @@ export const RecommendedStream = ({
         }
     }, [patreons, isLoading, liveRun.user]);
 
-    if (!activeLiveRun || !activeLiveRun.splits || !liveRun || isLoading) {
-        return <></>;
+    if (
+        !activeLiveRun ||
+        !activeLiveRun.splits ||
+        activeLiveRun.isMinified ||
+        !liveRun ||
+        isLoading
+    ) {
+        return <>Loading live data...</>;
     }
 
     const currentSplitSplitStatus = getSplitStatus(

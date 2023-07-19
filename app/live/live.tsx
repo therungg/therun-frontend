@@ -13,6 +13,8 @@ import {
     liveRunIsInSearch,
 } from "~app/live/utilities";
 import { LiveDataMap, LiveProps } from "~app/live/live.types";
+import { getLiveRunForUser } from "~src/lib/live-runs";
+import { SkeletonLiveRun } from "~src/components/skeleton/live/skeleton-live-run";
 
 export const Live = ({
     liveDataMap,
@@ -26,6 +28,8 @@ export const Live = ({
     const [currentlyViewing, setCurrentlyViewing] = useState(
         getRecommendedStream(liveDataMap, username)
     );
+
+    const [loadingUserData, setLoadingUserData] = useState(true);
     const lastMessage = useReconnectWebsocket();
 
     useEffect(() => {
@@ -59,6 +63,28 @@ export const Live = ({
         setSearch(forceCategory || "");
     }, [forceCategory]);
 
+    useEffect(() => {
+        if (
+            !updatedLiveDataMap[currentlyViewing] ||
+            updatedLiveDataMap[currentlyViewing].isMinified
+        ) {
+            const liveRunFromUser = async (user: string) => {
+                setLoadingUserData(true);
+
+                const newMap: LiveDataMap = JSON.parse(
+                    JSON.stringify(updatedLiveDataMap)
+                );
+
+                newMap[currentlyViewing] = await getLiveRunForUser(user);
+
+                setUpdatedLiveDataMap(liveRunArrayToMap(Object.values(newMap)));
+                setLoadingUserData(false);
+            };
+
+            liveRunFromUser(currentlyViewing);
+        }
+    }, [currentlyViewing]);
+
     return (
         <>
             {showTitle && (
@@ -80,12 +106,15 @@ export const Live = ({
                     </Col>
                 </Row>
             )}
-            {currentlyViewing && updatedLiveDataMap[currentlyViewing] && (
-                <Row className="g-3 mb-4">
-                    <RecommendedStream
-                        liveRun={updatedLiveDataMap[currentlyViewing]}
-                    />
-                </Row>
+            {loadingUserData && <SkeletonLiveRun />}
+            {!loadingUserData &&
+                currentlyViewing &&
+                updatedLiveDataMap[currentlyViewing] && (
+                    <Row className="g-3 mb-4">
+                        <RecommendedStream
+                            liveRun={updatedLiveDataMap[currentlyViewing]}
+                        />
+                    </Row>
             )}
             <Row className="g-3 mb-3">
                 <div className="input-group">
