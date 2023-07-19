@@ -1,5 +1,6 @@
 import { getSession } from "~src/actions/session.action";
 import HowItWorksPanels from "~app/how-it-works/how-it-works-panels";
+import buildMetadata from "~src/utils/metadata";
 
 export const revalidate = 0;
 
@@ -17,3 +18,9 @@ export default async function howItWorks() {
         </>
     );
 }
+
+export const metadata = buildMetadata({
+    title: "How It Works",
+    description:
+        "Learn how The Run works and how it can be useful to you, whether you are a runner yourself or just a fan of speedrunning!",
+});

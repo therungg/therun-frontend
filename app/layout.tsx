@@ -10,16 +10,51 @@ import { Providers } from "./providers";
 import { Scripts } from "./scripts";
 import { getSession } from "~src/actions/session.action";
 
+const metaTitle = "The Run - Speedrun Statistics";
+const metaDescription =
+    "The Run - a free tool for speedrun statistics. Explore leaderboards, check out live runs, and easily manage your own speedrun data!";
+const metaImageUrl = "/therun-no-url-with-black-background.png";
+
 export const metadata: Metadata = {
+    metadataBase: new URL("https://therun.gg"),
     title: {
-        default: "The Run - Speedrun Statistics",
+        default: metaTitle,
         template: "The Run - %s",
     },
-    description: "The Run - a free tool for speedrun statistics",
-    themeColor: "#ffffff",
+    description: metaDescription,
+    keywords: ["TheRun", "Speedrun", "Statistics"],
+    themeColor: "#007c00",
     manifest: "/site.webmanifest",
+    referrer: "strict-origin-when-cross-origin",
     other: {
-        "msapplication-TileColor": "#ffffff",
+        "msapplication-TileColor": "#007c00",
+    },
+    openGraph: {
+        title: metaTitle,
+        description: metaDescription,
+        url: "/",
+        siteName: "The Run",
+        locale: "en_US",
+        type: "website",
+        images: [
+            {
+                url: metaImageUrl,
+                secureUrl: metaImageUrl,
+                alt: "The Run logo",
+                type: "image/png",
+                width: 800,
+                height: 600,
+            },
+        ],
+    },
+    twitter: {
+        title: metaTitle,
+        description: metaDescription,
+        siteId: "1482414005138477061",
+        creator: "@therungg",
+        creatorId: "1482414005138477061",
+        card: "summary_large_image",
+        images: [metaImageUrl],
     },
 };
 

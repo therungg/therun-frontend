@@ -6,15 +6,17 @@ import { isLiveDataEligibleForTournament } from "./is-live-data-eligible-for-tou
 import { GenericTournament } from "~app/tournaments/[tournament]/tournament";
 import { getSession } from "~src/actions/session.action";
 import { liveRunArrayToMap } from "~app/tournaments/[tournament]/live-run-array-to-map.component";
+import buildMetadata from "~src/utils/metadata";
+import { safeDecodeURI } from "~src/utils/uri";
 
 export const revalidate = 30;
-export default async function Page({
-    params,
-    searchParams,
-}: {
+
+interface PageProps {
     params: { tournament: string };
     searchParams: { [_: string]: string };
-}) {
+}
+
+export default async function Page({ params, searchParams }: PageProps) {
     return TournamentPage({ params, searchParams });
 }
 
@@ -69,3 +71,15 @@ export const TournamentPage = async ({
         />
     );
 };
+
+export async function generateMetadata({ params }: PageProps) {
+    const name = safeDecodeURI(params.tournament);
+    const endString = name.toLowerCase().includes("tournament")
+        ? `the ${name}`
+        : `the ${name} tournament`;
+
+    return buildMetadata({
+        title: name,
+        description: `See leaderboards and other statistics for ${endString}!`,
+    });
+}

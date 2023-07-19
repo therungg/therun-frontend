@@ -11,16 +11,18 @@ import {
     getTournamentNameFromSlug,
 } from "~app/tournaments/tournament-list";
 import { TournamentPage } from "~app/tournaments/[tournament]/page";
+import { Metadata } from "next";
+import buildMetadata from "~src/utils/metadata";
+import { getBaseUrl } from "~src/actions/base-url.action";
 
 export const revalidate = 60;
 
-export default async function Page({
-    params,
-    searchParams,
-}: {
+interface PageProps {
     params: { username: string };
     searchParams: { [_: string]: string };
-}) {
+}
+
+export default async function Page({ params, searchParams }: PageProps) {
     if (!params || !params.username) throw new Error("Username not found");
 
     const username: string = params.username as string;
@@ -86,5 +88,34 @@ export default async function Page({
 export async function generateStaticParams() {
     return getAllTournamentSlugs().map((tournament) => {
         return { username: tournament };
+    });
+}
+
+export async function generateMetadata({
+    params,
+}: PageProps): Promise<Metadata> {
+    let imageUrl = "";
+    const baseUrl = getBaseUrl();
+    const username = params.username;
+    const response = await fetch(`${baseUrl}/api/users/${username}/global`);
+    const data = await response.json();
+
+    if (data) {
+        imageUrl = data.picture;
+    }
+
+    return buildMetadata({
+        title: username,
+        description: `${username} is on The Run! View their games, runs, personal bests, and more.`,
+        images: [
+            {
+                url: imageUrl,
+                secureUrl: imageUrl,
+                alt: `Profile photo of ${username}`,
+                type: "image/png",
+                width: 300,
+                height: 300,
+            },
+        ],
     });
 }

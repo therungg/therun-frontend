@@ -3,6 +3,7 @@ import uploadKeyStyles from "../../src/components/css/UploadKey.module.scss";
 import { getSession } from "~src/actions/session.action";
 import { CopyUploadKey } from "./copy-upload-key.component";
 import { getBaseUrl } from "~src/actions/base-url.action";
+import buildMetadata from "~src/utils/metadata";
 
 export const revalidate = 0;
 
@@ -140,3 +141,11 @@ export default async function UploadKey() {
         </div>
     );
 }
+
+export const metadata = buildMetadata({
+    title: "Your Upload Key",
+    description:
+        "Get your upload key to use in The Run's LiveSplit component from here.",
+    index: false,
+    follow: false,
+});

@@ -2,16 +2,19 @@ import { getRun } from "~src/lib/get-run";
 import { getGameGlobal } from "~src/components/game/get-game";
 import { getLiveRunForUser } from "~src/lib/live-runs";
 import RunDetail from "~app/[username]/[game]/[run]/run";
+import { Metadata } from "next";
+import { getBaseUrl } from "~src/actions/base-url.action";
+import buildMetadata from "~src/utils/metadata";
+import { safeDecodeURI } from "~src/utils/uri";
 
 export const revalidate = 60;
 
-export default async function RunPage({
-    params,
-    searchParams,
-}: {
+interface PageProps {
     params: { username: string; game: string; run: string };
     searchParams: { [_: string]: string };
-}) {
+}
+
+export default async function RunPage({ params, searchParams }: PageProps) {
     if (!params || !params.username || !params.game || !params.run)
         throw new Error("Params not found");
 
@@ -38,4 +41,37 @@ export default async function RunPage({
             tab={searchParams.tab}
         />
     );
+}
+
+export async function generateMetadata({
+    params,
+}: PageProps): Promise<Metadata> {
+    let imageUrl = "";
+    const baseUrl = getBaseUrl();
+    const username = params.username;
+    const response = await fetch(`${baseUrl}/api/users/${username}/global`);
+    const data = await response.json();
+
+    if (data) {
+        imageUrl = data.picture;
+    }
+
+    const gameAndCategory = `${safeDecodeURI(params.game)} - ${safeDecodeURI(
+        params.run
+    )}`;
+
+    return buildMetadata({
+        title: `${username}: ${gameAndCategory}`,
+        description: `${username} runs ${gameAndCategory}. Check out all their attempts, personal best, and more on The Run!`,
+        images: [
+            {
+                url: imageUrl,
+                secureUrl: imageUrl,
+                alt: `Profile photo of ${username}`,
+                type: "image/png",
+                width: 300,
+                height: 300,
+            },
+        ],
+    });
 }
