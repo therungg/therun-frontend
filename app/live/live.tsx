@@ -115,7 +115,7 @@ export const Live = ({
                             liveRun={updatedLiveDataMap[currentlyViewing]}
                         />
                     </Row>
-            )}
+                )}
             <Row className="g-3 mb-3">
                 <div className="input-group">
                     <span
