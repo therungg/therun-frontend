@@ -13,7 +13,7 @@ export const getAllLiveRuns = async (game = null, category = null) => {
         }
     }
 
-    const result = await fetch(url);
+    const result = await fetch(url, { next: { revalidate: 30 } });
 
     return result.json();
 };
