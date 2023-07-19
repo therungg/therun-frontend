@@ -31,6 +31,7 @@ export interface LiveRun {
     gameData?: Run;
     currentPrediction?: string;
     events: MarathonEvent[];
+    isMinified?: boolean;
 }
 
 interface Variables {

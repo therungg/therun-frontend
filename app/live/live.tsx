@@ -16,6 +16,8 @@ import {
     liveRunIsInSearch,
 } from "~app/live/utilities";
 import { LiveDataMap, LiveProps } from "~app/live/live.types";
+import { getLiveRunForUser } from "~src/lib/live-runs";
+import { SkeletonLiveRun } from "~src/components/skeleton/live/skeleton-live-run";
 
 export const Live = ({
     liveDataMap,
@@ -29,6 +31,8 @@ export const Live = ({
     const [currentlyViewing, setCurrentlyViewing] = useState(
         getRecommendedStream(liveDataMap, username)
     );
+
+    const [loadingUserData, setLoadingUserData] = useState(true);
     const lastMessage = useReconnectWebsocket();
 
     useEffect(() => {
@@ -62,6 +66,28 @@ export const Live = ({
         setSearch(forceCategory || "");
     }, [forceCategory]);
 
+    useEffect(() => {
+        if (
+            !updatedLiveDataMap[currentlyViewing] ||
+            updatedLiveDataMap[currentlyViewing].isMinified
+        ) {
+            const liveRunFromUser = async (user: string) => {
+                setLoadingUserData(true);
+
+                const newMap: LiveDataMap = JSON.parse(
+                    JSON.stringify(updatedLiveDataMap)
+                );
+
+                newMap[currentlyViewing] = await getLiveRunForUser(user);
+
+                setUpdatedLiveDataMap(liveRunArrayToMap(Object.values(newMap)));
+                setLoadingUserData(false);
+            };
+
+            liveRunFromUser(currentlyViewing);
+        }
+    }, [currentlyViewing]);
+
     return (
         <div>
             {showTitle && (
@@ -92,11 +118,14 @@ export const Live = ({
             )}
 
             <div className={runStyles.recommendedStreamContainer}>
-                {currentlyViewing && updatedLiveDataMap[currentlyViewing] && (
-                    <RecommendedStream
-                        liveRun={updatedLiveDataMap[currentlyViewing]}
-                    />
-                )}
+                {loadingUserData && <SkeletonLiveRun />}
+                {!loadingUserData &&
+                    currentlyViewing &&
+                    updatedLiveDataMap[currentlyViewing] && (
+                        <RecommendedStream
+                            liveRun={updatedLiveDataMap[currentlyViewing]}
+                        />
+                    )}
             </div>
             <div>
                 <div className={runStyles.searchContainer}>

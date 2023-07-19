@@ -4,7 +4,7 @@ export const liveRunUrl =
     "https://pokzhwoycl3uo7n5lzh6iltyoq0iaibq.lambda-url.eu-west-1.on.aws/";
 
 export const getAllLiveRuns = async (game = null, category = null) => {
-    let url = liveRunUrl;
+    let url = `${liveRunUrl}?minify=true`;
 
     if (game) {
         url += `?game=${safeEncodeURI(game)}`;
