@@ -4,16 +4,16 @@ export const liveRunUrl =
     "https://pokzhwoycl3uo7n5lzh6iltyoq0iaibq.lambda-url.eu-west-1.on.aws/";
 
 export const getAllLiveRuns = async (game = null, category = null) => {
-    let url = liveRunUrl;
+    let url = `${liveRunUrl}?minify=true`;
 
     if (game) {
-        url += `?game=${safeEncodeURI(game)}`;
+        url += `&game=${safeEncodeURI(game)}`;
         if (category) {
             url += `&category=${safeEncodeURI(category)}`;
         }
     }
 
-    const result = await fetch(url);
+    const result = await fetch(url, { next: { revalidate: 30 } });
 
     return result.json();
 };

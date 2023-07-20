@@ -29,6 +29,7 @@ export const Game: React.FunctionComponent<GameProps> = ({ data }) => {
     const [useGameTime, setUseGameTime] = React.useState(() => {
         return (
             !data.global?.forceRealTime &&
+            data.statsGameTime &&
             data.statsGameTime.categoryLeaderboards.length >
                 data.stats.categoryLeaderboards.length * 0.9
         );
