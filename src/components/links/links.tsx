@@ -75,7 +75,7 @@ export const UserGameCategoryLink = ({
 }: UserGameCategoryLinkProps) => {
     if (!game || !category) {
         return (
-            <div>
+            <div className="text-line">
                 {display(game)} {display(category)}
             </div>
         );
@@ -83,6 +83,7 @@ export const UserGameCategoryLink = ({
 
     return (
         <Link
+            className="text-line"
             href={
                 url
                     ? url
@@ -90,7 +91,6 @@ export const UserGameCategoryLink = ({
                           category
                       )}`
             }
-            legacyBehavior
         >
             {children ? children : `${display(game)} - ${display(category)}`}
         </Link>
@@ -99,7 +99,7 @@ export const UserGameCategoryLink = ({
 
 export const GameLink = ({ game, children }: GameLinkProps) => {
     return (
-        <Link href={`/games/${safeEncodeURI(game)}`} legacyBehavior>
+        <Link href={`/games/${safeEncodeURI(game)}`} className="text-line">
             {children ? children : display(game)}
         </Link>
     );

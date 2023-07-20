@@ -84,7 +84,7 @@ export const LiveUserRun = ({
 
     return (
         <div
-            className={`card d-flex flex-row rounded-0  h-100 ${
+            className={`card d-flex flex-row rounded-0 h-110p overflow-hidden ${
                 liveRun.user == currentlyActive
                     ? "bg-body-tertiary"
                     : "bg-body-secondary"
@@ -102,14 +102,19 @@ export const LiveUserRun = ({
                               liveUserStyles.gradient ||
                               liveUserStyles.borderColor
                                   ? "2px"
-                                  : "1px",
+                                  : "",
                       }
             }
         >
             {liveRun.gameImage &&
                 liveRun.gameImage.length > 0 &&
                 liveRun.gameImage != "noimage" && (
-                    <div style={{ width: "81px" }}>
+                    <div
+                        style={{
+                            minWidth: "81px",
+                            maxWidth: "81px",
+                        }}
+                    >
                         <GameImage
                             alt={liveRun.game}
                             src={liveRun.gameImage}
@@ -150,26 +155,17 @@ export const LiveUserRun = ({
                 <Col xs={7}>
                     <div className={styles.metadataBody}>
                         <div style={{ width: "calc(100%)" }}>
-                            <div className={styles.username}>
-                                <div>
-                                    {ranking && (
-                                        <div>
-                                            &nbsp;#{ranking}
-                                            &nbsp;-&nbsp;
-                                        </div>
-                                    )}
-                                </div>
-                                <div
-                                    style={{
-                                        whiteSpace: "nowrap",
-                                        overflow: "hidden",
-                                    }}
-                                >
-                                    <UserLink
-                                        username={liveRun.user}
-                                        parentIsUrl={isUrl}
-                                    />
-                                </div>
+                            <div className="fs-responsive-large d-flex">
+                                {ranking && (
+                                    <>
+                                        &nbsp;#{ranking}
+                                        &nbsp;-&nbsp;
+                                    </>
+                                )}
+                                <UserLink
+                                    username={liveRun.user}
+                                    parentIsUrl={isUrl}
+                                />
                                 {liveRun.currentlyStreaming && (
                                     <div
                                         style={{
@@ -182,18 +178,16 @@ export const LiveUserRun = ({
                                 )}
                             </div>
                             {showGameCategory && (
-                                <div className={styles.game}>
-                                    {liveRun.game}
-                                </div>
+                                <div className="text-line">{liveRun.game}</div>
                             )}
                             {showGameCategory && (
-                                <div className={styles.category}>
+                                <div className="text-line">
                                     {liveRun.category}
                                 </div>
                             )}
 
                             {!showGameCategory && tournamentPbGameTime && (
-                                <div className={styles.game}>
+                                <div className="text-line">
                                     Tournament PB -{" "}
                                     {!!tournamentPbGameTime && (
                                         <DurationToFormatted
@@ -206,7 +200,7 @@ export const LiveUserRun = ({
                             {!showGameCategory &&
                                 tournamentPb &&
                                 !tournamentPbGameTime && (
-                                    <div className={styles.game}>
+                                    <div className="text-line">
                                         Tournament PB -{" "}
                                         {!!tournamentPb && (
                                             <DurationToFormatted
@@ -220,7 +214,7 @@ export const LiveUserRun = ({
                                 liveRun.pb &&
                                 liveRun.pb != tournamentPbGameTime &&
                                 liveRun.pb != tournamentPb && (
-                                    <div className={styles.game}>
+                                    <div className="text-line">
                                         Personal Best -{" "}
                                         {
                                             <DurationToFormatted

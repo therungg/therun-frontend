@@ -2,13 +2,12 @@
   background-color: var(--split-active-color);
 }
 
-/*
+
 .liveRunContainer {
-  border: 1px solid var(--bs-tertiary-bg);
-  background-color: var(--bs-secondary-bg);
-  display: flex;
   height: 110px;
 }
+
+/*
 
 .activeRunContainer {
   background-color: var(--bs-tertiary-bg);
@@ -62,22 +61,7 @@
 }
 
 .username {
-  font-size: x-large;
   display: flex;
-}
-
-.game {
-  font-size: large;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.category {
-  font-size: large;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .gameSmall {

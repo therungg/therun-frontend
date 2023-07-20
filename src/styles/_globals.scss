@@ -151,6 +151,16 @@ body {
   font-size: larger !important;
 }
 
+.fs-responsive-large {
+  font-size: clamp(18px, 2vw, 24px);
+}
+
+.text-line {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
 .form-control {
 
 }
