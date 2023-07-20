@@ -85,6 +85,8 @@ export const Live = ({
             };
 
             liveRunFromUser(currentlyViewing);
+        } else {
+            setLoadingUserData(false);
         }
     }, [currentlyViewing]);
 
