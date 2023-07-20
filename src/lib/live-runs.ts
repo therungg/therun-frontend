@@ -7,7 +7,7 @@ export const getAllLiveRuns = async (game = null, category = null) => {
     let url = `${liveRunUrl}?minify=true`;
 
     if (game) {
-        url += `?game=${safeEncodeURI(game)}`;
+        url += `&game=${safeEncodeURI(game)}`;
         if (category) {
             url += `&category=${safeEncodeURI(category)}`;
         }
