@@ -1,5 +1,4 @@
 import { Col, Image, Row } from "react-bootstrap";
-import styles from "../css/LiveRun.module.scss";
 import React, { useEffect, useState } from "react";
 import { UserLink } from "../links/links";
 import { TwitchIcon } from "../user/userform";
@@ -84,7 +83,7 @@ export const LiveUserRun = ({
 
     return (
         <div
-            className={`card d-flex flex-row rounded-0 h-110p overflow-hidden ${
+            className={`card d-flex flex-row rounded-0 h-110p overflow-hidden w-100 ${
                 liveRun.user == currentlyActive
                     ? "bg-body-tertiary"
                     : "bg-body-secondary"
@@ -137,7 +136,12 @@ export const LiveUserRun = ({
             {(!liveRun.gameImage ||
                 liveRun.gameImage.length < 1 ||
                 liveRun.gameImage == "noimage") && (
-                <div style={{ marginTop: "17.5px" }}>
+                <div
+                    style={{
+                        minWidth: "81px",
+                        maxWidth: "81px",
+                    }}
+                >
                     <Image
                         alt={"Logo"}
                         src={
@@ -151,82 +155,73 @@ export const LiveUserRun = ({
                 </div>
             )}
 
-            <Row className="flex-grow-1 h-100 p-2">
-                <Col xs={7}>
-                    <div className={styles.metadataBody}>
-                        <div style={{ width: "calc(100%)" }}>
-                            <div className="fs-responsive-large d-flex">
-                                {ranking && (
-                                    <>
-                                        &nbsp;#{ranking}
-                                        &nbsp;-&nbsp;
-                                    </>
-                                )}
-                                <UserLink
-                                    username={liveRun.user}
-                                    parentIsUrl={isUrl}
+            <Row
+                className="h-100 py-2 px-3 flex-1 w-100 justify-content-between"
+                style={{
+                    minWidth: "calc(100% - 81px + var(--bs-gutter-x))",
+                    maxWidth: "calc(100% - 81px + var(--bs-gutter-x))",
+                }}
+            >
+                <Col xs={7} className="mw-350p">
+                    <div className="fs-responsive-large d-flex">
+                        {ranking && (
+                            <div className="me-auto">
+                                &nbsp;#{ranking}
+                                &nbsp;-&nbsp;
+                            </div>
+                        )}
+                        <UserLink username={liveRun.user} parentIsUrl={isUrl} />
+                        {liveRun.currentlyStreaming && (
+                            <div className="ms-2">
+                                <TwitchIcon height={22} />
+                            </div>
+                        )}
+                    </div>
+                    {showGameCategory && (
+                        <div className="text-line">{liveRun.game}</div>
+                    )}
+                    {showGameCategory && (
+                        <div className="text-line">{liveRun.category}</div>
+                    )}
+
+                    {!showGameCategory && tournamentPbGameTime && (
+                        <div className="text-line">
+                            Tournament PB -{" "}
+                            {!!tournamentPbGameTime && (
+                                <DurationToFormatted
+                                    duration={tournamentPbGameTime}
                                 />
-                                {liveRun.currentlyStreaming && (
-                                    <div
-                                        style={{
-                                            marginLeft: "0.6rem",
-                                            alignItems: "flex-start",
-                                        }}
-                                    >
-                                        <TwitchIcon height={22} />
-                                    </div>
+                            )}
+                        </div>
+                    )}
+
+                    {!showGameCategory &&
+                        tournamentPb &&
+                        !tournamentPbGameTime && (
+                            <div className="text-line">
+                                Tournament PB -{" "}
+                                {!!tournamentPb && (
+                                    <DurationToFormatted
+                                        duration={tournamentPb}
+                                    />
                                 )}
                             </div>
-                            {showGameCategory && (
-                                <div className="text-line">{liveRun.game}</div>
-                            )}
-                            {showGameCategory && (
-                                <div className="text-line">
-                                    {liveRun.category}
-                                </div>
-                            )}
+                        )}
 
-                            {!showGameCategory && tournamentPbGameTime && (
-                                <div className="text-line">
-                                    Tournament PB -{" "}
-                                    {!!tournamentPbGameTime && (
-                                        <DurationToFormatted
-                                            duration={tournamentPbGameTime}
-                                        />
-                                    )}
-                                </div>
-                            )}
-
-                            {!showGameCategory &&
-                                tournamentPb &&
-                                !tournamentPbGameTime && (
-                                    <div className="text-line">
-                                        Tournament PB -{" "}
-                                        {!!tournamentPb && (
-                                            <DurationToFormatted
-                                                duration={tournamentPb}
-                                            />
-                                        )}
-                                    </div>
-                                )}
-
-                            {!showGameCategory &&
-                                liveRun.pb &&
-                                liveRun.pb != tournamentPbGameTime &&
-                                liveRun.pb != tournamentPb && (
-                                    <div className="text-line">
-                                        Personal Best -{" "}
-                                        {
-                                            <DurationToFormatted
-                                                duration={liveRun.pb}
-                                            />
-                                        }
-                                    </div>
-                                )}
-                        </div>
-                    </div>
+                    {!showGameCategory &&
+                        liveRun.pb &&
+                        liveRun.pb != tournamentPbGameTime &&
+                        liveRun.pb != tournamentPb && (
+                            <div className="text-line">
+                                Personal Best -{" "}
+                                {<DurationToFormatted duration={liveRun.pb} />}
+                            </div>
+                        )}
                 </Col>
-                <Col xs={5}>
+                <Col
+                    xs={5}
+                    className="d-flex justify-content-end align-items-center ps-0 pe-1"
+                >
                     <LiveSplitTimerComponent liveRun={liveRun} dark={dark} />
                 </Col>
             </Row>
@@ -254,7 +249,7 @@ export const Flag = ({ height = 16, dark = false }) => {
                     : "/Flag finish greenTR-lighttransparant(1).png"
             }
             height={height}
-            style={{ marginTop: "0.5rem" }}
+            className="mt-2"
         />
     );
 };

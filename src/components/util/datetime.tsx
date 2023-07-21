@@ -5,7 +5,7 @@ interface IsoToFormattedProps {
 }
 
 interface DurationToFormattedProps {
-    duration: string;
+    duration: string | number;
     withMillis?: boolean;
     withDays?: boolean;
     padded?: boolean;

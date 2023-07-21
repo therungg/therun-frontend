@@ -13,6 +13,7 @@ interface UserLinkProps extends ChildrenType {
     username: string;
     icon?: boolean;
     parentIsUrl?: boolean;
+    className?: string;
 }
 
 interface UserGameLinkProps extends UserLinkProps, GameLinkProps {}
@@ -83,7 +84,6 @@ export const UserGameCategoryLink = ({
 
     return (
         <Link
-            className="text-line"
             href={
                 url
                     ? url
@@ -99,7 +99,7 @@ export const UserGameCategoryLink = ({
 
 export const GameLink = ({ game, children }: GameLinkProps) => {
     return (
-        <Link href={`/games/${safeEncodeURI(game)}`} className="text-line">
+        <Link href={`/games/${safeEncodeURI(game)}`}>
             {children ? children : display(game)}
         </Link>
     );

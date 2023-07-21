@@ -48,7 +48,7 @@ export const LiveSplitTimerComponent = ({
     }, [liveRun.currentSplitIndex]);
 
     if (!className) className = runStyles.timerBody;
-    if (!timerClassName) timerClassName = runStyles.timer;
+    if (!timerClassName) timerClassName = "fs-x-large";
 
     const lastSplitStatus = getSplitStatus(
         liveRun,
@@ -56,103 +56,93 @@ export const LiveSplitTimerComponent = ({
     );
 
     return (
-        <div className={className}>
-            <div>
-                {liveRun.currentSplitIndex == liveRun.splits.length &&
-                    liveRun.splits[liveRun.splits.length - 1].splitTime && (
-                        <div>
-                            {splitTime && (
-                                <div style={{ display: "flex" }}>
+        <>
+            {liveRun.currentSplitIndex == liveRun.splits.length &&
+                liveRun.splits[liveRun.splits.length - 1].splitTime && (
+                    <>
+                        {splitTime && (
+                            <div className="d-flex">
+                                <div
+                                    className={timerClassName}
+                                    style={{ display: "flex" }}
+                                >
                                     <div>
-                                        <div
-                                            className={timerClassName}
-                                            style={{ display: "flex" }}
-                                        >
-                                            <div>
-                                                <b>
-                                                    <i>
-                                                        <DurationAsTimer
-                                                            duration={
-                                                                lastSplitStatus?.singleTime
-                                                            }
-                                                        />
-                                                    </i>
-                                                </b>
-                                            </div>
-                                        </div>
-                                        {withDiff && (
-                                            <DifferenceFromOne
-                                                diff={liveRun.delta}
-                                            />
-                                        )}
+                                        <b>
+                                            <i>
+                                                <DurationAsTimer
+                                                    duration={
+                                                        lastSplitStatus?.singleTime
+                                                    }
+                                                />
+                                            </i>
+                                        </b>
                                     </div>
                                 </div>
-                            )}
-
-                            {!splitTime && (
-                                <div style={{ display: "flex" }}>
-                                    <div style={{ marginRight: "0.5rem" }}>
-                                        <Flag height={30} dark={dark} />
-                                    </div>
-                                    <div>
-                                        <div
-                                            className={timerClassName}
-                                            style={{ display: "flex" }}
-                                        >
-                                            <div>
-                                                <b>
-                                                    <i>
-                                                        <DurationAsTimer
-                                                            duration={
-                                                                lastSplitStatus?.time
-                                                            }
-                                                        />
-                                                    </i>
-                                                </b>
-                                            </div>
-                                        </div>
-                                        {withDiff && (
-                                            <DifferenceFromOne
-                                                diff={liveRun.delta}
-                                            />
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                {liveRun.currentSplitIndex < liveRun.splits.length &&
-                    !liveRun.hasReset && (
-                        <div key={liveRun.user + id}>
-                            <div className={timerClassName}>
-                                <Timer initialTime={timerStart}>
-                                    <Timer.Hours formatValue={formatHours} />:
-                                    <Timer.Minutes
-                                        formatValue={formatMinutes}
-                                    />
-                                    :
-                                    <Timer.Seconds
-                                        formatValue={formatSeconds}
-                                    />
-                                </Timer>
+                                {withDiff && (
+                                    <DifferenceFromOne diff={liveRun.delta} />
+                                )}
                             </div>
-                            {withDiff && (
-                                <DifferenceFromOne
-                                    diff={liveRun.delta}
-                                    withMillis={true}
-                                />
-                            )}
-                        </div>
-                    )}
+                        )}
 
-                {liveRun.hasReset && (
-                    <div>
+                        {!splitTime && (
+                            <div style={{ display: "flex" }}>
+                                <div style={{ marginRight: "0.5rem" }}>
+                                    <Flag height={30} dark={dark} />
+                                </div>
+                                <div>
+                                    <div
+                                        className={timerClassName}
+                                        style={{ display: "flex" }}
+                                    >
+                                        <div>
+                                            <b>
+                                                <i>
+                                                    <DurationAsTimer
+                                                        duration={
+                                                            lastSplitStatus?.time
+                                                        }
+                                                    />
+                                                </i>
+                                            </b>
+                                        </div>
+                                    </div>
+                                    {withDiff && (
+                                        <DifferenceFromOne
+                                            diff={liveRun.delta}
+                                        />
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
+            {liveRun.currentSplitIndex < liveRun.splits.length &&
+                !liveRun.hasReset && (
+                    <div key={liveRun.user + id}>
                         <div className={timerClassName}>
-                            {splitTime ? "-" : "Reset"}
+                            <Timer initialTime={timerStart}>
+                                <Timer.Hours formatValue={formatHours} />:
+                                <Timer.Minutes formatValue={formatMinutes} />
+                                :
+                                <Timer.Seconds formatValue={formatSeconds} />
+                            </Timer>
                         </div>
+                        {withDiff && (
+                            <DifferenceFromOne
+                                diff={liveRun.delta}
+                                withMillis={true}
+                            />
+                        )}
                     </div>
                 )}
-            </div>
-        </div>
+
+            {liveRun.hasReset && (
+                <>
+                    <div className={timerClassName}>
+                        {splitTime ? "-" : "Reset"}
+                    </div>
+                </>
+            )}
+        </>
     );
 };
