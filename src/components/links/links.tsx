@@ -60,7 +60,17 @@ export const UserLink = ({
 
     const element = children ? children : withoutSlash;
 
-    return <>{!parentIsUrl ? <a href={url}>{element}</a> : element}</>;
+    return (
+        <>
+            {!parentIsUrl ? (
+                <a className="overflow-hidden text-line" href={url}>
+                    {element}
+                </a>
+            ) : (
+                element
+            )}
+        </>
+    );
 };
 
 export const UserGameLink = ({ game, children }: UserGameLinkProps) => {

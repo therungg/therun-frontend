@@ -55,10 +55,10 @@ export const PatreonName = ({
     style = dark ? style.style[0] : style.style[1];
 
     return (
-        <span>
+        <>
             <span style={style}>{name}</span>{" "}
             {icon && <PatreonBunnySvgWithoutLink size={size} />}
-        </span>
+        </>
     );
 };
 

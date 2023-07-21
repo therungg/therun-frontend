@@ -151,6 +151,7 @@ export const LiveUserRun = ({
                         }
                         width={"75px"}
                         height={"75px"}
+                        className="mt-3"
                     />
                 </div>
             )}
@@ -170,7 +171,11 @@ export const LiveUserRun = ({
                                 &nbsp;-&nbsp;
                             </div>
                         )}
-                        <UserLink username={liveRun.user} parentIsUrl={isUrl} />
+                        <UserLink
+                            username={liveRun.user}
+                            parentIsUrl={isUrl}
+                            icon={false}
+                        />
                         {liveRun.currentlyStreaming && (
                             <div className="ms-2">
                                 <TwitchIcon height={22} />
