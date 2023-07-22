@@ -236,8 +236,8 @@ export const GenericTournament = ({
                                     target={"_blank"}
                                 >
                                     <Button
-                                        variant={"outline-primary"}
-                                        className={homeStyles.learnMoreButton} // ToDo: Removal happened
+                                        variant={"primary"}
+                                        className={homeStyles.learnMoreButton}
                                         style={{ width: "15rem" }}
                                     >
                                         How does this work?

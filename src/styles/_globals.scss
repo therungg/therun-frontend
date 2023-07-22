@@ -1,10 +1,11 @@
 // Custom variables
 :root {
-  --split-active-color: lightblue;
+  --split-active-color:lightblue;
 }
 
 [data-bs-theme="dark"] {
-  --split-active-color: darkblue;
+  --split-active-color:darkblue;
+  --bs-secondary:#fdc544;
 }
 
 // Always stick footer to the bottom in case content is not high enough
@@ -17,6 +18,18 @@ body {
 
 .main-container {
   flex-grow: 1;
+}
+
+.btn {
+  &-primary,
+  &-secondary {
+    --bs-btn-color: var(--bs-body-color);
+    --bs-btn-bg:    hsla(0,0%,39%,.2);
+  }
+
+  &-secondary {
+    --bs-btn-hover-bg: var(--bs-secondary);
+  }
 }
 
 .nav-tabs {
@@ -44,6 +57,10 @@ body {
     border-bottom: transparent;
     color: black;
   }
+}
+
+.input-group {
+  cursor: pointer;
 }
 
 .with-filter {

@@ -99,7 +99,7 @@ export const Live = ({
                     <Col className="col-auto text-end">
                         <a href={"/upload-key"}>
                             <Button
-                                variant={"outline-primary"}
+                                variant={"primary"}
                                 className="fs-larger h-100 px-3 mw-250p"
                             >
                                 How does this work?

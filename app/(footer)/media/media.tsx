@@ -73,7 +73,7 @@ export const Media = () => {
             <div className={mediaStyles.downloadButton}>
                 <a href={`${cfBaseUrl}therun-media.zip`}>
                     <Button
-                        variant={"outline-primary"}
+                        variant={"primary"}
                         className={styles.learnMoreButton}
                     >
                         Download full kit
@@ -224,7 +224,7 @@ export const Media = () => {
                                         }
                                     >
                                         <Button
-                                            variant={"outline-primary"}
+                                            variant={"primary"}
                                             className={styles.learnMoreButton}
                                         >
                                             Download logo
@@ -344,7 +344,7 @@ export const Media = () => {
                                         }
                                     >
                                         <Button
-                                            variant={"outline-primary"}
+                                            variant={"primary"}
                                             className={styles.learnMoreButton}
                                         >
                                             Download banner

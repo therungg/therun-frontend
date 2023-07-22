@@ -23,17 +23,14 @@ export default function Page() {
                     <div className="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
                         <Link href={"/patron"}>
                             <Button
-                                variant={"outline-secondary"}
+                                variant={"secondary"}
                                 className="btn-lg px-4 px-4 me-sm-3"
                             >
                                 Support <PatreonBunnySvgWithoutLink />
                             </Button>
                         </Link>
                         <Link href={"/about"}>
-                            <Button
-                                variant={"outline-primary"}
-                                className="btn-lg px-4"
-                            >
+                            <Button variant={"primary"} className="btn-lg px-4">
                                 Learn more
                             </Button>
                         </Link>

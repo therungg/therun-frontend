@@ -40,7 +40,7 @@ export const PopularGames: React.FC<PopularGamesProps> = ({ gamestats }) => {
                                     <div
                                         className="p-2"
                                         style={{
-                                            flex: "0 0 calc(100% - 48px)",
+                                            flex: "0 0 calc(100% - 96px)",
                                         }}
                                     >
                                         <div className="fs-larger">
