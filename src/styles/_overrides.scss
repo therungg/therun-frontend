@@ -1,0 +1,66 @@
+// Custom variables
+:root {
+  --split-active-color:lightblue;
+}
+
+[data-bs-theme="dark"] {
+  --split-active-color:darkblue;
+  --bs-secondary:#fdc544;
+}
+
+.btn {
+
+  &-primary,
+  &-secondary {
+    --bs-btn-color: var(--bs-body-color);
+    --bs-btn-bg:    hsla(0,0%,39%,.2);
+  }
+
+  &-secondary {
+    --bs-btn-hover-bg: var(--bs-secondary);
+  }
+}
+
+.nav-tabs {
+  padding-top: 1rem;
+  border-color: var(--bs-secondary-bg);
+  border-width: 1px;
+
+  .nav-link {
+    color: var(--bs-body-color) !important;
+    transition: none;
+    background-color: var(--bs-secondary-bg);
+    margin-left: 0.25rem;
+  }
+
+  .nav-link:hover {
+    border-color: var(--bs-tertiary-bg);
+    isolation: auto;
+    color: yellow;
+  }
+
+  .nav-item.show .nav-link,
+  .nav-link.active {
+    background-color: var(--bs-body-bg);
+    border: 2px solid var(--bs-tertiary-bg);
+    border-bottom: transparent;
+    color: black;
+  }
+}
+
+// ToDo: drop if not needed
+legend {
+  float: none;
+  padding: 1rem;
+}
+
+.navbar-toggler {
+
+  &:hover {
+    background-color: var(--bs-link-color);
+
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'><path stroke='white' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/></svg>");
+    }
+  }
+}

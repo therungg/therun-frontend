@@ -50,7 +50,7 @@ const Topbar = ({
             data-bs-theme={dark ? "dark" : "light"}
         >
             <Container>
-                <Navbar.Brand href="/" className="d-flex text-decoration-none">
+                <Navbar.Brand href="/" className="d-flex">
                     <Image
                         alt={"TheRun"}
                         src={
@@ -62,10 +62,7 @@ const Topbar = ({
                         width={"44"}
                         className="img-fluid align-self-start me-2"
                     />
-                    <span
-                        className="align-self-center"
-                        style={{ color: "var(--bs-link-color)" }}
-                    >
+                    <span className="align-self-center">
                         The Run{" "}
                         <i>
                             <sup>beta</sup>
