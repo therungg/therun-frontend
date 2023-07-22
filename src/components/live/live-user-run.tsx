@@ -163,7 +163,7 @@ export const LiveUserRun = ({
                     maxWidth: "calc(100% - 81px + var(--bs-gutter-x))",
                 }}
             >
-                <Col xs={7} className="mw-350p">
+                <Col xs={7} className="mw-350p ps-3">
                     <div className="fs-responsive-large d-flex">
                         {ranking && (
                             <div className="me-auto">
@@ -183,14 +183,16 @@ export const LiveUserRun = ({
                         )}
                     </div>
                     {showGameCategory && (
-                        <div className="text-line">{liveRun.game}</div>
+                        <div className="text-line fs-large">{liveRun.game}</div>
                     )}
                     {showGameCategory && (
-                        <div className="text-line">{liveRun.category}</div>
+                        <div className="text-line fs-large">
+                            {liveRun.category}
+                        </div>
                     )}
 
                     {!showGameCategory && tournamentPbGameTime && (
-                        <div className="text-line">
+                        <div className="text-line fs-large">
                             Tournament PB -{" "}
                             {!!tournamentPbGameTime && (
                                 <DurationToFormatted
@@ -225,7 +227,7 @@ export const LiveUserRun = ({
                 </Col>
                 <Col
                     xs={5}
-                    className="d-flex justify-content-end align-items-center ps-0 pe-1"
+                    className="d-flex justify-content-end align-items-center"
                 >
                     <LiveSplitTimerComponent liveRun={liveRun} dark={dark} />
                 </Col>

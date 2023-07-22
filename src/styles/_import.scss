@@ -11,8 +11,8 @@
 // Theme configuration (overrides bootstrap)
 @import "config";
 
-// Utilities (Bootstrap API - after overriding config)
-@import "utilities";
+// Utilities
+@import "utils";
 
 // Bootstrap framework
 @import "bootstrap/scss/bootstrap";

@@ -90,7 +90,7 @@ export const Live = ({
     return (
         <>
             {showTitle && (
-                <Row className="g-3 mb-4">
+                <Row className="g-3 mb-3">
                     <Col className="col-auto flex-grow-1">
                         <h1>
                             Live Runs <LiveIcon height={18} />
@@ -112,14 +112,14 @@ export const Live = ({
             {!loadingUserData &&
                 currentlyViewing &&
                 updatedLiveDataMap[currentlyViewing] && (
-                    <Row className="g-3 mb-4">
+                    <Row className="g-3">
                         <RecommendedStream
                             liveRun={updatedLiveDataMap[currentlyViewing]}
                         />
                     </Row>
                 )}
-            <Row className="g-3 mb-3">
-                <div className="input-group">
+            <Row className="g-3 my-3">
+                <div className="input-group mw-80">
                     <span
                         className="material-symbols-outlined input-group-text"
                         onClick={() => {
