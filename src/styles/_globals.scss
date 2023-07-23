@@ -91,8 +91,20 @@ body {
   }
 }
 
+.fs-small {
+  font-size: 0.8rem;
+}
+
+.fs-big {
+  font-size: 1.5rem;
+}
+
 .fs-smaller {
   font-size: smaller !important;
+}
+
+.fs-medium {
+  font-size: medium;
 }
 
 .fs-large {
@@ -108,7 +120,7 @@ body {
 }
 
 .fs-responsive-large {
-  font-size: clamp(18px, 2vw, 24px);
+  font-size: clamp(18px, 1.5vw, 24px);
 }
 
 .text-line {

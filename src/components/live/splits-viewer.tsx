@@ -38,23 +38,17 @@ export const SplitsViewer = ({
 
     return (
         <div className="bg-body-tertiary h-340p">
-            <Row className="overflow-hidden h-15 px-3 py-1">
+            <Row className="overflow-hidden h-15 px-4 py-0">
                 <Col xs={6}>
-                    <div
-                        className={styles.splitsHeaderGame}
-                        title={activeLiveRun.game}
-                    >
+                    <div className="text-line" title={activeLiveRun.game}>
                         {activeLiveRun.game}
                     </div>
-                    <div
-                        className={styles.splitsHeaderGame}
-                        title={activeLiveRun.category}
-                    >
+                    <div className="text-line" title={activeLiveRun.category}>
                         {activeLiveRun.category}
                     </div>
                 </Col>
                 <Col>
-                    <div className={styles.splitsHeaderComparison}>
+                    <div className="d-flex justify-content-center align-items-center h-100">
                         <select
                             className={"form-select"}
                             value={comparison}
@@ -84,6 +78,7 @@ export const SplitsViewer = ({
                     </div>
                 </Col>
             </Row>
+            <hr className="border-bottom m-0" />
             <div
                 id={"scrollBox"}
                 className="bg-body-secondary overflow-y-auto h-55 w-100 px-2 py-1"
@@ -101,7 +96,7 @@ export const SplitsViewer = ({
                             return (
                                 <tr
                                     key={split.name + k + activeLiveRun.user}
-                                    className={`${styles.splitRow} ${
+                                    className={`w-100 ${styles.splitRow} ${
                                         splitStatus.isActive
                                             ? styles.splitRowActive
                                             : ""
@@ -110,13 +105,15 @@ export const SplitsViewer = ({
                                         setSelectedSplit(k);
                                     }}
                                 >
-                                    <td className={styles.splitNameContainer}>
-                                        <div className={styles.splitName}>
+                                    <td className="d-flex align-items-center">
+                                        <div
+                                            className={`text-line ${styles.splitName}`}
+                                        >
                                             <SplitName splitName={split.name} />
                                         </div>
                                     </td>
-                                    <td className={styles.splitTimeContainer}>
-                                        <div className={styles.splitTime}>
+                                    <td className="w-18">
+                                        <div className="text-end pe-2">
                                             {splitStatus.status ==
                                             "completed" ? (
                                                 <Difference
@@ -165,8 +162,8 @@ export const SplitsViewer = ({
                                             )}
                                         </div>
                                     </td>
-                                    <td className={styles.splitTimeContainer}>
-                                        <div className={styles.splitTime}>
+                                    <td className="w-18">
+                                        <div className="text-end">
                                             {splitStatus.status == "skipped" ? (
                                                 "-"
                                             ) : splitStatus.status ==
@@ -199,8 +196,9 @@ export const SplitsViewer = ({
                     </tbody>
                 </table>
             </div>
+            <hr className="border-bottom m-0" />
             <div className="overflow-hidden h-30 px-2 py-1">
-                <table className={styles.splitsTable}>
+                <table className="w-100">
                     <tbody>
                         <tr
                             className={
@@ -215,7 +213,7 @@ export const SplitsViewer = ({
                                 );
                             }}
                         >
-                            <td className={styles.splitNameContainer}>
+                            <td>
                                 <div className={styles.splitName}>
                                     {
                                         activeLiveRun.splits[
@@ -224,8 +222,8 @@ export const SplitsViewer = ({
                                     }
                                 </div>
                             </td>
-                            <td className={styles.splitTimeContainer}>
-                                <div className={styles.splitTime}>
+                            <td className="w-18">
+                                <div className="text-end">
                                     {activeLiveRun.splits[
                                         activeLiveRun.splits.length - 1
                                     ].splitTime ? (
@@ -261,8 +259,8 @@ export const SplitsViewer = ({
                                     )}
                                 </div>
                             </td>
-                            <td className={styles.splitTimeContainer}>
-                                <div className={styles.splitTime}>
+                            <td className="w-18">
+                                <div className="text-end">
                                     <b>
                                         <DurationToFormatted
                                             duration={
@@ -282,97 +280,59 @@ export const SplitsViewer = ({
                         </tr>
                     </tbody>
                 </table>
-                <div className={styles.splitsFooterContainer}>
-                    <Row className={styles.maxHeight}>
-                        <Col
-                            xs={8}
-                            className={styles.splitsFooterStatsContainer}
-                        >
-                            <div className={styles.splitsFooterStats}>
-                                <div
-                                    className={
-                                        styles.splitsFooterPossibleContainer
-                                    }
-                                >
-                                    <div
-                                        className={styles.splitsFooterPossible}
-                                    >
-                                        Possible:&nbsp;
-                                    </div>
-
-                                    <div
-                                        className={styles.splitsFooterStatsTime}
-                                    >
+                <hr className="border-bottom m-0" />
+                <Row className="mh-100 h-55p my-1">
+                    <Col xs={8} className="d-flex h-100 align-items-center">
+                        <div>
+                            <div className="d-flex align-items-end">
+                                <div className="fs-small">Possible:&nbsp;</div>
+                                <div className="d-flex align-items-end justify-content-end w-100">
+                                    <DurationToFormatted
+                                        duration={activeLiveRun.bestPossible}
+                                        withMillis={false}
+                                        human={false}
+                                    />
+                                </div>
+                            </div>
+                            <div className="d-flex align-items-end">
+                                <div className="fs-small">Timesave:&nbsp;</div>
+                                <div className="d-flex align-items-end justify-content-end w-100">
+                                    {activeLiveRun.currentSplitIndex < 0 ? (
+                                        "-"
+                                    ) : (
                                         <DurationToFormatted
                                             duration={
-                                                activeLiveRun.bestPossible
+                                                currentSplitSplitStatus?.possibleTimeSave
                                             }
-                                            withMillis={false}
-                                            human={false}
+                                            withMillis={true}
                                         />
-                                    </div>
-                                </div>
-                                <div
-                                    className={
-                                        styles.splitsFooterPossibleContainer
-                                    }
-                                >
-                                    <div
-                                        className={styles.splitsFooterTimeSave}
-                                    >
-                                        Timesave:
-                                    </div>
-
-                                    <div
-                                        className={styles.splitsFooterStatsTime}
-                                    >
-                                        {activeLiveRun.currentSplitIndex < 0 ? (
-                                            "-"
-                                        ) : (
-                                            <DurationToFormatted
-                                                duration={
-                                                    currentSplitSplitStatus?.possibleTimeSave
-                                                }
-                                                withMillis={true}
-                                            />
-                                        )}
-                                    </div>
+                                    )}
                                 </div>
                             </div>
-                        </Col>
-                        <Col xs={4}>
-                            <div className={styles.splitsFooterTimerContainer}>
-                                <Row
-                                    className={
-                                        styles.splitsFooterTimerMainContainer
-                                    }
-                                >
-                                    <LiveSplitTimerComponent
-                                        liveRun={activeLiveRun}
-                                        dark={dark}
-                                        className={styles.splitsTimerContainer}
-                                        timerClassName={styles.splitsTimer}
-                                        withDiff={false}
-                                    />
-                                </Row>
-                                <Row>
-                                    <LiveSplitTimerComponent
-                                        liveRun={activeLiveRun}
-                                        dark={dark}
-                                        className={
-                                            styles.splitIndividualContainer
-                                        }
-                                        timerClassName={
-                                            styles.splitIndividualTimer
-                                        }
-                                        withDiff={false}
-                                        splitTime={true}
-                                    />
-                                </Row>
-                            </div>
-                        </Col>
-                    </Row>
-                </div>
+                        </div>
+                    </Col>
+                    <Col xs={4}>
+                        <Row>
+                            <LiveSplitTimerComponent
+                                liveRun={activeLiveRun}
+                                dark={dark}
+                                className={`d-flex justify-content-end align-items-center h-90`}
+                                timerClassName="text-end fs-big"
+                                withDiff={false}
+                            />
+                        </Row>
+                        <Row>
+                            <LiveSplitTimerComponent
+                                liveRun={activeLiveRun}
+                                dark={dark}
+                                className={`d-flex justify-content-end align-items-center h-100`}
+                                timerClassName="text-end fs-medium lh-1"
+                                withDiff={false}
+                                splitTime={true}
+                            />
+                        </Row>
+                    </Col>
+                </Row>
             </div>
         </div>
     );

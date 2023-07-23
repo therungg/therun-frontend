@@ -6,7 +6,6 @@ import EventDisplay from "./event-display";
 import { generalDataEvent } from "./events/general-data-event";
 import LiveRunStats, { liveRunEvent } from "./live-run-stats";
 import { useEffect, useState } from "react";
-import styles from "../css/LiveRun.module.scss";
 import SuggestedEvents from "./suggested-events";
 import { FreeInput } from "./free-input";
 import { LiveRun } from "~app/live/live.types";
@@ -51,10 +50,9 @@ export const MarathonRun = ({
                         <div
                             style={{
                                 width: "600px",
-                                padding: "0.5rem",
                                 overflow: "scroll",
                             }}
-                            className={styles.liveRunContainer}
+                            className="h-110p p-2"
                         >
                             <EventDisplay session={session} />
                         </div>

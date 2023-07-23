@@ -200,15 +200,7 @@ export const GenericTournament = ({
                 <Col xl={2}>
                     <div>
                         {tournament.logoUrl && (
-                            <div
-                                style={{
-                                    fontSize: "1.5rem",
-                                    height: "100%",
-                                    display: "flex",
-                                    justifyContent: "flex-end",
-                                }}
-                                className={homeStyles.learnMoreButtonContainer} // ToDo: Removal happened
-                            >
+                            <div className="d-flex pt-3 justify-content-end h-100">
                                 <Image
                                     src={tournament.logoUrl}
                                     alt={"Tournament Logo"}

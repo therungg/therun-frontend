@@ -155,7 +155,7 @@ export const RecommendedStream = ({
                           }
                 }
             >
-                <div className="bg-body-secondary h-100 border">
+                <div className="bg-body-secondary h-100 p-2 border">
                     <LiverunStatsPanel
                         liveRun={liveRun}
                         selectedSplit={selectedSplit}

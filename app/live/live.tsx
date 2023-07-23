@@ -96,11 +96,11 @@ export const Live = ({
                             Live Runs <LiveIcon height={18} />
                         </h1>
                     </Col>
-                    <Col className="col-auto text-end">
+                    <Col className="col-auto flex-grow-1 text-end pt-3">
                         <a href={"/upload-key"}>
                             <Button
                                 variant={"primary"}
-                                className="fs-larger h-100 px-3 mw-250p"
+                                className="btn-lg px-3 w-240p h-3rem fw-medium"
                             >
                                 How does this work?
                             </Button>

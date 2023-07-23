@@ -24,13 +24,16 @@ export default function Page() {
                         <Link href={"/patron"}>
                             <Button
                                 variant={"secondary"}
-                                className="btn-lg px-4 px-4 me-sm-3"
+                                className="btn-lg me-sm-3 px-3 w-160p h-3rem fw-medium"
                             >
                                 Support <PatreonBunnySvgWithoutLink />
                             </Button>
                         </Link>
                         <Link href={"/about"}>
-                            <Button variant={"primary"} className="btn-lg px-4">
+                            <Button
+                                variant={"primary"}
+                                className="btn-lg px-3 w-160p h-3rem fw-medium"
+                            >
                                 Learn more
                             </Button>
                         </Link>

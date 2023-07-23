@@ -62,9 +62,11 @@ export const LiveSplitTimerComponent = ({
                     <>
                         {splitTime && (
                             <div className="d-flex">
+                                {" "}
+                                {/* ToDo: Rework classname and nesting*/}
                                 <div
-                                    className={timerClassName}
-                                    style={{ display: "flex" }}
+                                    className={`d-flex
+                                    ${timerClassName}`}
                                 >
                                     <div>
                                         <b>
@@ -84,15 +86,15 @@ export const LiveSplitTimerComponent = ({
                             </div>
                         )}
 
-                        {!splitTime && (
+                        {splitTime && (
                             <div style={{ display: "flex" }}>
                                 <div style={{ marginRight: "0.5rem" }}>
                                     <Flag height={30} dark={dark} />
                                 </div>
                                 <div>
                                     <div
-                                        className={timerClassName}
-                                        style={{ display: "flex" }}
+                                        className={`d-flex
+                                       ${timerClassName}`}
                                     >
                                         <div>
                                             <b>

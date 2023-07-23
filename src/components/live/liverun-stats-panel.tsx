@@ -72,32 +72,22 @@ export const LiverunStatsPanel = ({
         sessions.length > 0 && moment(sessions[sessions.length - 1].startedAt);
 
     return (
-        <div style={{ padding: "0.5rem" }}>
-            <div style={{ width: "100%" }}>
-                <div
-                    style={{
-                        fontSize: "1.5rem",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                    }}
-                >
-                    <UserLink username={liveRun.user} /> - {liveRun.game}
-                </div>
-                <div>
-                    <a
-                        href={`/${liveRun.gameData.url}`}
-                        target={"_blank"}
-                        rel={"noreferrer"}
-                    >
-                        View full stats
-                    </a>
-                </div>
+        <>
+            <div className="text-line fs-big">
+                <UserLink username={liveRun.user} /> - {liveRun.game}
             </div>
-
-            <div style={{ marginTop: "0.5rem", marginBottom: "0.5rem" }}>
+            <div>
+                <a
+                    href={`/${liveRun.gameData.url}`}
+                    target={"_blank"}
+                    rel={"noreferrer"}
+                >
+                    View full stats
+                </a>
+            </div>
+            <div className="my-2">
                 <select
-                    className={"form-select"}
+                    className="form-select"
                     value={selectedStats}
                     onChange={(e) => {
                         setSelectedStats(e.target.value);
@@ -126,7 +116,7 @@ export const LiverunStatsPanel = ({
                     </option>
                 </select>
             </div>
-            <hr style={{ marginBottom: "0.5rem" }} />
+            <hr className="mb-2" />
 
             {selectedStats == "general" && (
                 <GeneralStats
@@ -151,6 +141,6 @@ export const LiverunStatsPanel = ({
                     history={runs}
                 />
             )}
-        </div>
+        </>
     );
 };

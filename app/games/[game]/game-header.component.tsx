@@ -28,7 +28,7 @@ export const GameHeader: React.FunctionComponent<GameHeaderProps> = ({
                     />
                 )}
             </div>
-            <div className="col-auto align-self-center">
+            <div className="col-auto align-self-center ps-1">
                 <Title>
                     {category === "*" ? (
                         data.data.game.display
