@@ -63,7 +63,7 @@ export const UserLink = ({
     return (
         <>
             {!parentIsUrl ? (
-                <a className="overflow-hidden text-line" href={url}>
+                <a className="overflow-hidden text-truncate" href={url}>
                     {element}
                 </a>
             ) : (
@@ -86,7 +86,7 @@ export const UserGameCategoryLink = ({
 }: UserGameCategoryLinkProps) => {
     if (!game || !category) {
         return (
-            <div className="text-line">
+            <div className="text-truncate">
                 {display(game)} {display(category)}
             </div>
         );

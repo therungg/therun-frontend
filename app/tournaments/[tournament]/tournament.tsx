@@ -6,7 +6,6 @@ import { LiveUserRun } from "~src/components/live/live-user-run";
 import { RecommendedStream } from "~src/components/live/recommended-stream";
 import runStyles from "~src/components/css/LiveRun.module.scss";
 import { DurationToFormatted } from "~src/components/util/datetime";
-import homeStyles from "~src/components/css/Home.module.scss";
 import Countdown from "react-countdown";
 import useSWR from "swr";
 import { fetcher } from "~src/utils/fetcher";
@@ -229,7 +228,7 @@ export const GenericTournament = ({
                                 >
                                     <Button
                                         variant={"primary"}
-                                        className={homeStyles.learnMoreButton}
+                                        className="btn-lg px-3 h-3rem fw-medium"
                                         style={{ width: "15rem" }}
                                     >
                                         How does this work?

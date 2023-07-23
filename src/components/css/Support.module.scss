@@ -48,22 +48,6 @@
     border: solid 1px var(--bs-link-color);
 }
 
-.learnMoreButton {
-    width: 15rem;
-    height: 4rem;
-    background-color: var(--bs-tertiary-bg);
-    border-color: var(--bs-secondary);
-    font-weight: 500;
-    color: var(--bs-body-color);
-    font-size: 1.4rem;
-}
-
-.learnMoreButton:hover {
-    background-color: var(--bs-secondary);
-    border-color: var(--bs-secondary);
-    color: var(--bs-body-bg);
-}
-
 .learnMoreButtonStripe {
     width: 15rem;
     height: 4rem;

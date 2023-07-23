@@ -1,8 +1,6 @@
 "use client";
 import { Title } from "~src/components/title";
 import { Button, Col, Image, Row } from "react-bootstrap";
-import styles from "~src/components/css/Home.module.scss";
-import mediaStyles from "~src/components/css/Media.module.scss";
 import Switch from "react-switch";
 import { useEffect, useState } from "react";
 
@@ -70,11 +68,11 @@ export const Media = () => {
             <hr />
 
             <div>Download full media kit (925kb zipped):</div>
-            <div className={mediaStyles.downloadButton}>
+            <div className="my-3">
                 <a href={`${cfBaseUrl}therun-media.zip`}>
                     <Button
                         variant={"primary"}
-                        className={styles.learnMoreButton}
+                        className="btn-lg px-3 h-3rem fw-medium"
                     >
                         Download full kit
                     </Button>
@@ -89,13 +87,12 @@ export const Media = () => {
             </p>
             {loaded && (
                 <div>
-                    <Row>
-                        <Col>
-                            <h2 className={mediaStyles.logo}>Logo</h2>
-
-                            <div className={styles.flexLarge}>
-                                <div className={mediaStyles.logoContainer}>
-                                    <div className={mediaStyles.options}>
+                    <Row className="g-4">
+                        <Col xs={12} xl={6}>
+                            <h2 className="mb-3">Logo</h2>
+                            <Row className="mb-3">
+                                <Col xs={12} md={6}>
+                                    <div className="d-flex justify-content-start align-self-center mb-2">
                                         <Switch
                                             onColor={getComputedStyle(
                                                 document.documentElement
@@ -115,13 +112,13 @@ export const Media = () => {
                                         />
                                         <label
                                             htmlFor={"switch"}
-                                            className={mediaStyles.optionLabel}
+                                            className="ms-2 align-self-center whitespace-nowrap"
                                         >
                                             {" "}
                                             Transparent background{" "}
                                         </label>
                                     </div>
-                                    <div className={mediaStyles.options}>
+                                    <div className="d-flex justify-content-start align-self-center mb-2">
                                         <Switch
                                             onColor={getComputedStyle(
                                                 document.documentElement
@@ -141,13 +138,13 @@ export const Media = () => {
                                         />
                                         <label
                                             htmlFor={"switch"}
-                                            className={mediaStyles.optionLabel}
+                                            className="ms-2 align-self-center whitespace-nowrap"
                                         >
                                             {" "}
                                             Dark theme{" "}
                                         </label>
                                     </div>
-                                    <div className={mediaStyles.options}>
+                                    <div className="d-flex justify-content-start align-self-center mb-2">
                                         <Switch
                                             onColor={getComputedStyle(
                                                 document.documentElement
@@ -167,13 +164,13 @@ export const Media = () => {
                                         />
                                         <label
                                             htmlFor={"switch"}
-                                            className={mediaStyles.optionLabel}
+                                            className="ms-2 align-self-center whitespace-nowrap"
                                         >
                                             {" "}
                                             Cropped{" "}
                                         </label>
                                     </div>
-                                    <div className={mediaStyles.options}>
+                                    <div className="d-flex justify-content-start align-self-center mb-2">
                                         <Switch
                                             onColor={getComputedStyle(
                                                 document.documentElement
@@ -193,55 +190,38 @@ export const Media = () => {
                                         />
                                         <label
                                             htmlFor={"switch"}
-                                            className={mediaStyles.optionLabel}
+                                            className="ms-2 align-self-center whitespace-nowrap"
                                         >
                                             {" "}
                                             With URL text in logo{" "}
                                         </label>
                                     </div>
-                                </div>
-                                <div>
-                                    <div className={styles.logoMedia}>
-                                        <Image
-                                            src={`/${logoPath}`}
-                                            height={130}
-                                            alt={"The Run Logo"}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
+                                </Col>
+                                <Col xs={12} md={6} className="ps-md-5">
+                                    <Image
+                                        src={`/${logoPath}`}
+                                        height={130}
+                                        alt={"The Run Logo"}
+                                    />
+                                </Col>
+                            </Row>
                             <div>
-                                <div
-                                    className={
-                                        mediaStyles.downloadButtonContainer
-                                    }
-                                >
-                                    <a
-                                        href={logoCfUrl}
-                                        className={
-                                            mediaStyles.downloadButtonSingle
-                                        }
+                                <a href={logoCfUrl}>
+                                    <Button
+                                        variant={"primary"}
+                                        className="btn-lg px-3 h-3rem fw-medium"
                                     >
-                                        <Button
-                                            variant={"primary"}
-                                            className={styles.learnMoreButton}
-                                        >
-                                            Download logo
-                                        </Button>
-                                    </a>
-                                </div>
+                                        Download logo
+                                    </Button>
+                                </a>
                             </div>
                         </Col>
 
-                        <Col lg={12} xl={6}>
-                            <h2 className={mediaStyles.logoContainer}>
-                                Banner
-                            </h2>
-
-                            <div className={styles.flexLarge}>
-                                <div className={mediaStyles.logoContainer}>
-                                    <div className={mediaStyles.options}>
+                        <Col xs={12} xl={6}>
+                            <h2 className="mb-3">Banner</h2>
+                            <Row className="mb-3">
+                                <Col xs={12} md={6}>
+                                    <div className="d-flex justify-content-start align-self-center mb-2">
                                         <Switch
                                             onColor={getComputedStyle(
                                                 document.documentElement
@@ -261,13 +241,13 @@ export const Media = () => {
                                         />
                                         <label
                                             htmlFor={"switch"}
-                                            className={mediaStyles.optionLabel}
+                                            className="ms-2 align-self-center whitespace-nowrap"
                                         >
                                             {" "}
                                             Transparent background{" "}
                                         </label>
                                     </div>
-                                    <div className={mediaStyles.options}>
+                                    <div className="d-flex justify-content-start align-self-center mb-2">
                                         <Switch
                                             onColor={getComputedStyle(
                                                 document.documentElement
@@ -287,13 +267,13 @@ export const Media = () => {
                                         />
                                         <label
                                             htmlFor={"switch"}
-                                            className={mediaStyles.optionLabel}
+                                            className="ms-2 align-self-center whitespace-nowrap"
                                         >
                                             {" "}
                                             Dark theme{" "}
                                         </label>
                                     </div>
-                                    <div className={mediaStyles.options}>
+                                    <div className="d-flex justify-content-start align-self-center mb-2">
                                         <Switch
                                             onColor={getComputedStyle(
                                                 document.documentElement
@@ -313,44 +293,31 @@ export const Media = () => {
                                         />
                                         <label
                                             htmlFor={"switch"}
-                                            className={mediaStyles.optionLabel}
+                                            className="ms-2 align-self-center whitespace-nowrap"
                                         >
                                             {" "}
                                             With logo{" "}
                                         </label>
                                     </div>
-                                </div>
-                                <div>
-                                    <div className={styles.logoMedia}>
-                                        <Image
-                                            src={`/${bannerPath}`}
-                                            height={130}
-                                            alt={"The Run Logo"}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
+                                </Col>
+                                <Col xs={12} md={6}>
+                                    <Image
+                                        src={`/${bannerPath}`}
+                                        height={130}
+                                        alt={"The Run Logo"}
+                                    />
+                                </Col>
+                            </Row>
 
-                            <div>
-                                <div
-                                    className={
-                                        mediaStyles.downloadButtonContainer
-                                    }
-                                >
-                                    <a
-                                        href={bannerCfUrl}
-                                        className={
-                                            mediaStyles.downloadButtonSingle
-                                        }
+                            <div className="align-self-end">
+                                <a href={bannerCfUrl}>
+                                    <Button
+                                        variant={"primary"}
+                                        className="btn-lg px-3 h-3rem fw-medium"
                                     >
-                                        <Button
-                                            variant={"primary"}
-                                            className={styles.learnMoreButton}
-                                        >
-                                            Download banner
-                                        </Button>
-                                    </a>
-                                </div>
+                                        Download banner
+                                    </Button>
+                                </a>
                             </div>
                         </Col>
                     </Row>

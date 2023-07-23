@@ -8,19 +8,6 @@
     }
 }
 
-.learnMoreButton {
-    width: 10rem;
-    background-color: rgba(100, 100, 100, 0.2);
-    border-color: var(--bs-link-color);
-    font-weight: 500;
-    color: var(--bs-body-color);
-}
-
-.learnMoreButton:hover {
-    background-color: var(--bs-link-color);
-    border-color: var(--bs-link-color);
-}
-
 .filter {
     margin-right: 1rem;
     text-decoration: underline;

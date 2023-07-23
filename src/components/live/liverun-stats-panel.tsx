@@ -73,7 +73,7 @@ export const LiverunStatsPanel = ({
 
     return (
         <>
-            <div className="text-line fs-big">
+            <div className="text-truncate fs-big">
                 <UserLink username={liveRun.user} /> - {liveRun.game}
             </div>
             <div>

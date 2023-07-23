@@ -123,14 +123,12 @@ body {
   font-size: clamp(18px, 1.5vw, 24px);
 }
 
-.text-line {
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
 .form-control {
 
+}
+
+.whitespace-nowrap {
+  white-space: nowrap;
 }
 
 // Add custom container max-width

@@ -26,7 +26,7 @@ export function PatreonInfo({ session }: { session: { username: string } }) {
                             rel={"noreferrer"}
                             href={"https://patreon.com/therungg"}
                         >
-                            <Button className={styles.learnMoreButton}>
+                            <Button className="btn-lg px-3 h-3rem fw-medium">
                                 Go to Patreon
                             </Button>
                         </a>

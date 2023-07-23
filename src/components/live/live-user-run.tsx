@@ -186,16 +186,18 @@ export const LiveUserRun = ({
                         )}
                     </div>
                     {showGameCategory && (
-                        <div className="text-line fs-large">{liveRun.game}</div>
+                        <div className="text-truncate fs-large">
+                            {liveRun.game}
+                        </div>
                     )}
                     {showGameCategory && (
-                        <div className="text-line fs-large">
+                        <div className="text-truncate fs-large">
                             {liveRun.category}
                         </div>
                     )}
 
                     {!showGameCategory && tournamentPbGameTime && (
-                        <div className="text-line fs-large">
+                        <div className="text-truncate fs-large">
                             Tournament PB -{" "}
                             {!!tournamentPbGameTime && (
                                 <DurationToFormatted
@@ -208,7 +210,7 @@ export const LiveUserRun = ({
                     {!showGameCategory &&
                         tournamentPb &&
                         !tournamentPbGameTime && (
-                            <div className="text-line">
+                            <div className="text-truncate">
                                 Tournament PB -{" "}
                                 {!!tournamentPb && (
                                     <DurationToFormatted
@@ -222,7 +224,7 @@ export const LiveUserRun = ({
                         liveRun.pb &&
                         liveRun.pb != tournamentPbGameTime &&
                         liveRun.pb != tournamentPb && (
-                            <div className="text-line">
+                            <div className="text-truncate">
                                 Personal Best -{" "}
                                 {<DurationToFormatted duration={liveRun.pb} />}
                             </div>

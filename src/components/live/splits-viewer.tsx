@@ -40,10 +40,13 @@ export const SplitsViewer = ({
         <div className="bg-body-tertiary h-340p">
             <Row className="overflow-hidden h-15 px-4 py-0">
                 <Col xs={6}>
-                    <div className="text-line" title={activeLiveRun.game}>
+                    <div className="text-truncate" title={activeLiveRun.game}>
                         {activeLiveRun.game}
                     </div>
-                    <div className="text-line" title={activeLiveRun.category}>
+                    <div
+                        className="text-truncate"
+                        title={activeLiveRun.category}
+                    >
                         {activeLiveRun.category}
                     </div>
                 </Col>
@@ -107,7 +110,7 @@ export const SplitsViewer = ({
                                 >
                                     <td className="d-flex align-items-center">
                                         <div
-                                            className={`text-line ${styles.splitName}`}
+                                            className={`text-truncate ${styles.splitName}`}
                                         >
                                             <SplitName splitName={split.name} />
                                         </div>
