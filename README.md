@@ -32,4 +32,3 @@ Love what we do? You can support the project on [Patreon](patreon.com/therungg)!
 ## Contribute
 
 Check out our [Contribution guide](https://github.com/therungg/therun-frontend/blob/main/CONTRIBUTING.md).
-
