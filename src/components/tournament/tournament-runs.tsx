@@ -3,7 +3,6 @@ import { Pagination, Table } from "react-bootstrap";
 import { DurationToFormatted, IsoToFormatted } from "../util/datetime";
 import moment from "moment";
 import { buildItems } from "../run/run-sessions/game-sessions";
-import paginationStyles from "../css/Pagination.module.scss";
 import { Search as SearchIcon } from "react-bootstrap-icons";
 
 export const TournamentRuns = ({ data }) => {
@@ -197,11 +196,15 @@ export const TournamentRuns = ({ data }) => {
                         })}
                 </tbody>
             </Table>
-            <div className={paginationStyles.paginationWrapper}>
-                <Pagination onClick={onPaginationClick} size="lg">
-                    {items}
-                </Pagination>
-            </div>
+
+            <Pagination
+                className="justify-content-center"
+                onClick={onPaginationClick}
+                size="lg"
+            >
+                {items}
+            </Pagination>
+
             <div style={{ display: "flex", justifyContent: "center" }}>
                 Showing {(active - 1) * 10 + 1} -{" "}
                 {active * 10 < data.runList.length

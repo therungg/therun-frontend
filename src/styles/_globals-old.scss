@@ -132,26 +132,6 @@
     padding: 1rem;
 }*/
 
-// Page-item
-.page-item {
-    /*  color: green !important;*/
-
-    .page-link {
-        color: var(--bs-link-color) !important;
-        background-color: var(--bs-tertiary-bg);
-        border-color: var(--bs-secondary-bg);
-    }
-
-    &.active {
-
-        .page-link {
-            background-color: green !important;
-            border-color: var(--bs-secondary-bg) !important;
-            color: white !important;
-        }
-    }
-}
-
 // Tables
 .table {
     --bs-table-striped-color: var(--bs-body-color);

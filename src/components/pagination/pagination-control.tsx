@@ -1,6 +1,5 @@
 import React, { useContext } from "react";
 import { PaginationContext } from "~src/components/pagination/pagination.context";
-import paginationStyles from "~src/components/css/Pagination.module.scss";
 import { Pagination } from "react-bootstrap";
 import { PaginationHook } from "~src/components/pagination/pagination.types";
 
@@ -39,11 +38,13 @@ export default function PaginationControl<T>({
 
     return (
         <div>
-            <div className={paginationStyles.paginationWrapper}>
-                <Pagination onClick={onPaginationClick} size="lg">
-                    {buildItems(page, totalPages, minimalLayout)}
-                </Pagination>
-            </div>
+            <Pagination
+                className="justify-content-center"
+                onClick={onPaginationClick}
+                size="lg"
+            >
+                {buildItems(page, totalPages, minimalLayout)}
+            </Pagination>
             <div style={{ display: "flex", justifyContent: "center" }}>
                 Showing {(page - 1) * pageSize + 1} -{" "}
                 {page * pageSize > totalItems ? totalItems : page * pageSize}{" "}
@@ -81,7 +82,7 @@ export const buildItems = (
     for (let number = begin; number < end; number++) {
         items.push(
             <Pagination.Item
-                className={paginationStyles.optional}
+                className="d-none d-md-block"
                 key={number}
                 active={number == active}
             >

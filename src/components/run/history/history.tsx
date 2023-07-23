@@ -1,4 +1,4 @@
-import { Attempt, RunHistory, SplitsHistory } from "../../../common/types";
+import { Attempt, RunHistory, SplitsHistory } from "~src/common/types";
 import {
     Difference,
     DurationToFormatted,
@@ -10,7 +10,6 @@ import { Accordion, Card, Col, Pagination, Row, Table } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import styles from "../../css/Session.module.scss";
 import runStyles from "../../css/Runs.module.scss";
-import paginationStyles from "../../css/Pagination.module.scss";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Switch from "react-switch";
@@ -1432,11 +1431,13 @@ export const History = ({
                     })}
             </Accordion>
 
-            <div className={paginationStyles.paginationWrapper}>
-                <Pagination onClick={onPaginationClick} size="lg">
-                    {items}
-                </Pagination>
-            </div>
+            <Pagination
+                className="justify-content-center"
+                onClick={onPaginationClick}
+                size="lg"
+            >
+                {items}
+            </Pagination>
             <div style={{ display: "flex", justifyContent: "center" }}>
                 Showing {(active - 1) * 10 + 1} -{" "}
                 {active * 10 < history.length ? active * 10 : history.length}{" "}
@@ -1464,7 +1465,7 @@ const buildItems = (active: number, last: number) => {
     for (let number = begin; number < end; number++) {
         items.push(
             <Pagination.Item
-                className={paginationStyles.optional}
+                className="d-none d-md-block"
                 key={number}
                 active={number == active}
             >

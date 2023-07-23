@@ -1,11 +1,10 @@
 import useSWR from "swr";
-import { fetcher } from "../../utils/fetcher";
+import { fetcher } from "~src/utils/fetcher";
 import WrHistory from "../tournament/wr-history";
 import { Col, Row } from "react-bootstrap";
 import { useState } from "react";
 import Switch from "react-switch";
 import WrHistoryTableMode from "./wr-history-table-mode";
-import styles from "../../components/css/WrHistory.module.scss";
 import { safeEncodeURI } from "~src/utils/uri";
 
 export const CategoryRecordHistory = ({
@@ -47,8 +46,8 @@ export const CategoryRecordHistory = ({
                 <Col xl={3}>
                     <h2>Record History</h2>
                 </Col>
-                <Col xl={6} className={`${styles.visualMode} flex-center`}>
-                    <span style={{ marginRight: "0.5rem" }}>Data Mode</span>
+                <Col xl={6} className="flex-center">
+                    <span className="me-2">Data Mode</span>
                     <Switch
                         onColor={getComputedStyle(
                             document.documentElement
@@ -65,18 +64,18 @@ export const CategoryRecordHistory = ({
                         checked={visualMode}
                     />
 
-                    <span style={{ marginLeft: "0.5rem" }}>Visual Mode</span>
+                    <span className="me-2">Visual Mode</span>
                 </Col>
                 <Col xl={3}></Col>
             </Row>
             <Row>
                 {visualMode && (
-                    <div className={styles.visualMode}>
+                    <div>
                         <WrHistory historyData={history} />
                     </div>
                 )}
                 {!visualMode && (
-                    <div className={styles.dataMode}>
+                    <div>
                         <WrHistoryTableMode historyData={history} />
                     </div>
                 )}
