@@ -97,7 +97,16 @@ export async function generateMetadata({
     let imageUrl = "";
     const baseUrl = getBaseUrl();
     const username = params.username;
-    const response = await fetch(`${baseUrl}/api/users/${username}/global`);
+
+    if (!username) return buildMetadata();
+
+    let response: Response;
+    try {
+        response = await fetch(`${baseUrl}/api/users/${username}/global`);
+    } catch (e) {
+        return buildMetadata();
+    }
+
     const data = await response.json();
 
     if (data) {

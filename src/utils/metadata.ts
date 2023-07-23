@@ -10,7 +10,8 @@ declare type OpenGraphImage = {
 };
 
 export interface MetadataProps {
-    title: string;
+    title?: string;
+    absoluteTitle?: string;
     description: string;
     keywords?: string[];
     type?: OpenGraphType;
@@ -20,41 +21,58 @@ export interface MetadataProps {
 }
 
 /**
- * Builds a Metadata object for child pages. This method is not suitable for the parent layout.tsx file.
+ * Builds a Metadata object for pages.
  * @param props
  * @returns
  */
-export default function buildMetadata(props: MetadataProps): Metadata {
+export default function buildMetadata(props?: MetadataProps): Metadata {
     const defaultImageUrl = "/therun-no-url-with-black-background.png";
+    const title =
+        props?.absoluteTitle ||
+        `The Run - ${props?.title || "Speedrun Statistics"}`;
+    const description =
+        props?.description ||
+        "The Run - a free tool for speedrun statistics. Explore leaderboards, check out live runs, and easily manage your own speedrun data!";
 
     // Resolving Twitter images
     let twitterImages: string[] = [];
 
-    props.images?.map((image: OpenGraphImage) => {
+    props?.images?.map((image: OpenGraphImage) => {
         if (image.url) twitterImages.push(image.url.toString());
     });
 
     if (twitterImages.length === 0) twitterImages = [defaultImageUrl];
 
     return {
-        title: props.title,
-        description: props.description,
-        keywords: props.keywords || ["TheRun", "Speedrun", "Statistics"],
+        metadataBase: new URL("https://therun.gg"),
+        title,
+        description,
+        keywords: props?.keywords || ["TheRun", "Speedrun", "Statistics"],
+        themeColor: "#007c00",
+        manifest: "/site.webmanifest",
+        referrer: "strict-origin-when-cross-origin",
+        other: {
+            "msapplication-TileColor": "#007c00",
+        },
         openGraph: {
-            title: `The Run - ${props.title}`,
-            description: props.description,
-            type: props.type || "website",
-            images: props.images || {
+            title,
+            description,
+            url: "/",
+            siteName: "The Run",
+            locale: "en_US",
+            type: props?.type || "website",
+            images: props?.images || {
                 url: defaultImageUrl,
                 secureUrl: defaultImageUrl,
+                alt: "The Run logo",
                 type: "image/png",
                 width: 800,
                 height: 600,
             },
         },
         twitter: {
-            title: `The Run - ${props.title}`,
-            description: props.description,
+            title,
+            description,
             siteId: "1482414005138477061",
             creator: "@therungg",
             creatorId: "1482414005138477061",
@@ -62,11 +80,11 @@ export default function buildMetadata(props: MetadataProps): Metadata {
             images: twitterImages,
         },
         robots: {
-            index: props.index || true,
-            follow: props.index || true,
+            index: props?.index || true,
+            follow: props?.index || true,
             googleBot: {
-                index: props.index || true,
-                follow: props.index || true,
+                index: props?.index || true,
+                follow: props?.index || true,
             },
         },
     };

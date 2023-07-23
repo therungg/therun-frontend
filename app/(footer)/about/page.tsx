@@ -1,10 +1,11 @@
-import { Metadata } from "next";
 import { Title } from "~src/components/title";
+import buildMetadata from "~src/utils/metadata";
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
     title: "About",
-    description: "About The Run",
-};
+    description:
+        "Learn more about The Run, including what it can do and its purpose.",
+});
 
 export default function About() {
     return (
