@@ -5,11 +5,11 @@ speedrunners.
 
 ## Features
 
--   Live Runs tracking
--   Advanced statistics
--   Games overview
--   Splits backup
--   Twitch Extension
+- Live Runs tracking
+- Advanced statistics
+- Games overview
+- Splits backup
+- Twitch Extension
 
 and many, many more.
 
@@ -32,3 +32,4 @@ Love what we do? You can support the project on [Patreon](patreon.com/therungg)!
 ## Contribute
 
 Check out our [Contribution guide](https://github.com/therungg/therun-frontend/blob/main/CONTRIBUTING.md).
+
