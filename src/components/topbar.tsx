@@ -55,11 +55,9 @@ const Topbar = ({
                 <Navbar.Brand href="/" className="d-flex">
                     <Image
                         alt={"TheRun"}
-                        src={
-                            dark
-                                ? "/logo_dark_theme_no_text_transparent.png"
-                                : "/logo_light_theme_no_text_transparent.png"
-                        }
+                        src={`/logo_${
+                            dark ? "dark" : "light"
+                        }_theme_no_text_transparent.png`}
                         height={"44"}
                         width={"44"}
                         className="img-fluid align-self-start me-2"
@@ -75,10 +73,7 @@ const Topbar = ({
                 <Navbar.Collapse id="basic-navbar-nav">
                     <Nav className="me-auto">
                         {username && (
-                            <Nav.Link
-                                href="/upload"
-                                style={{ maxHeight: "2rem" }}
-                            >
+                            <Nav.Link className="mh-2r" href="/upload">
                                 <div className="d-flex">
                                     <b>Upload</b>
 

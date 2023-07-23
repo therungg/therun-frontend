@@ -1,8 +1,8 @@
 "use client";
 import React from "react";
 import { Col, Row } from "react-bootstrap";
-import { usePatreons } from "../src/components/patreon/use-patreons";
-import { UserLink } from "../src/components/links/links";
+import { usePatreons } from "~src/components/patreon/use-patreons";
+import { UserLink } from "~src/components/links/links";
 
 const DEFAULT_ANIMATION_DURATION = 30;
 
@@ -19,8 +19,8 @@ export const Footer = () => {
                         animationDuration: `${animationDuration}s`,
                     }}
                 >
-                    <div style={{ display: "flex" }}>
-                        <span style={{ marginRight: "2rem" }}>
+                    <div className="d-flex">
+                        <span className="me-4">
                             A special thanks to our Tier 3 Patrons:
                         </span>
 
@@ -31,17 +31,12 @@ export const Footer = () => {
 
                                 return (
                                     !v.preferences ||
-                                    !!v.preferences.featureInScrollbar
+                                    v.preferences.featureInScrollbar
                                 );
                             })
                             .map(([k]) => {
                                 return (
-                                    <div
-                                        key={`${k}patron`}
-                                        style={{
-                                            marginRight: "2rem",
-                                        }}
-                                    >
+                                    <div className="me-4" key={`${k}patron`}>
                                         <UserLink
                                             key={`${k}patron`}
                                             username={k}

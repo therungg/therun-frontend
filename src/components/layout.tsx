@@ -103,8 +103,8 @@ export const Layout = ({
                                 animationDuration: `${animationDuration}s`,
                             }}
                         >
-                            <div style={{ display: "flex" }}>
-                                <span style={{ marginRight: "2rem" }}>
+                            <div className="d-flex">
+                                <span className="me-4">
                                     A special thanks to our Tier 3 Patrons:
                                 </span>
 
@@ -115,14 +115,14 @@ export const Layout = ({
 
                                         return (
                                             !v.preferences ||
-                                            !!v.preferences.featureInScrollbar
+                                            v.preferences.featureInScrollbar
                                         );
                                     })
                                     .map(([k]) => {
                                         return (
                                             <div
+                                                className="me-4"
                                                 key={`${k}patron`}
-                                                style={{ marginRight: "2rem" }}
                                             >
                                                 <UserLink
                                                     key={`${k}patron`}
@@ -135,8 +135,8 @@ export const Layout = ({
                         </div>
                     </div>
 
-                    <div style={{ paddingTop: "1rem" }}>
-                        <div className={"container"}>
+                    <div className="pb-3">
+                        <div className="container">
                             <Row>
                                 <Col>
                                     <h3>General</h3>
