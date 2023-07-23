@@ -3,6 +3,7 @@ import { Col, Row } from "react-bootstrap";
 import { getFormattedString } from "../util/datetime";
 import styles from "../css/Search.module.scss";
 import { safeEncodeURI } from "~src/utils/uri";
+import { Search as SearchIcon } from "react-bootstrap-icons";
 
 // This page was one of the first I ever wrote for the site and is fully outdated and terrible.
 // The entire search view needs to be refactored
@@ -207,7 +208,7 @@ export const AutoCompletion = () => {
         >
             <div className="input-group">
                 <span
-                    className="material-symbols-outlined input-group-text"
+                    className="input-group-text"
                     onClick={() => {
                         const search = document.getElementById("searchBox");
                         if (document.activeElement !== search) {
@@ -215,8 +216,7 @@ export const AutoCompletion = () => {
                         }
                     }}
                 >
-                    {" "}
-                    search{" "}
+                    <SearchIcon size={18} />
                 </span>
                 <input
                     type="search"

@@ -4,8 +4,7 @@ import { DurationToFormatted, IsoToFormatted } from "../util/datetime";
 import moment from "moment";
 import { buildItems } from "../run/run-sessions/game-sessions";
 import paginationStyles from "../css/Pagination.module.scss";
-import searchStyles from "../css/Search.module.scss";
-import styles from "../css/Games.module.scss";
+import { Search as SearchIcon } from "react-bootstrap-icons";
 
 export const TournamentRuns = ({ data }) => {
     const [sortColumn, setSortColumn] = useState("date");
@@ -129,43 +128,30 @@ export const TournamentRuns = ({ data }) => {
     return (
         <div>
             <h2>Tournament runs</h2>
-            <div>
-                <div
-                    style={{
-                        justifyContent: "flex-start",
-                        display: "flex",
-                        marginBottom: "0.3rem",
-                    }}
-                >
-                    <div
-                        className={`${searchStyles.searchContainer} ${styles.filter}`}
-                        style={{ marginLeft: "0" }}
+            <div className="d-flex justify-content-start mb-1">
+                <div className="mb-3 input-group">
+                    <span
+                        className="input-group-text"
+                        onClick={() => {
+                            const searchElement =
+                                document.getElementById("gameSearch");
+                            if (document.activeElement !== search) {
+                                searchElement.focus();
+                            }
+                        }}
                     >
-                        <span
-                            className={"material-symbols-outlined"}
-                            onClick={() => {
-                                const searchElement =
-                                    document.getElementById("gameSearch");
-                                if (document.activeElement !== search) {
-                                    searchElement.focus();
-                                }
-                            }}
-                        >
-                            {" "}
-                            search{" "}
-                        </span>
-                        <input
-                            type="search"
-                            className={`form-control ${searchStyles.search}`}
-                            placeholder="Filter by user"
-                            style={{ marginBottom: "0" }}
-                            onChange={(e) => {
-                                setSearch(e.target.value);
-                            }}
-                            value={search}
-                            id="tournamentRunSearch"
-                        />
-                    </div>
+                        <SearchIcon size={18} />
+                    </span>
+                    <input
+                        type="search"
+                        className="form-control"
+                        placeholder="Filter by user"
+                        onChange={(e) => {
+                            setSearch(e.target.value);
+                        }}
+                        value={search}
+                        id="tournamentRunSearch"
+                    />
                 </div>
             </div>
             <Table responsive striped bordered hover>

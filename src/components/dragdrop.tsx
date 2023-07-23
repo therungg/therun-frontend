@@ -6,6 +6,7 @@ import { Alert } from "react-bootstrap";
 import { UserLink } from "./links/links";
 import Link from "next/link";
 import styles from "./css/Dragdrop.module.scss";
+import { CheckCircle, CloudUpload } from "react-bootstrap-icons";
 
 export const Dragdrop = ({
     sessionId,
@@ -91,10 +92,8 @@ export const Dragdrop = ({
                 >
                     <Alert.Heading>
                         <div style={{ display: "flex" }}>
-                            <span
-                                className={`material-symbols-outlined ${styles.uploadSucceeded}`}
-                            >
-                                check_circle
+                            <span className={`${styles.uploadSucceeded}`}>
+                                <CheckCircle size={18} />
                             </span>
                             Upload succeeded!
                         </div>
@@ -124,10 +123,8 @@ export const Dragdrop = ({
                                     Drag .lss file here or click to select one.
                                 </p>
                                 <div>
-                                    <span
-                                        className={`material-symbols-outlined ${styles.uploadFile}`}
-                                    >
-                                        cloud_upload
+                                    <span className={`${styles.uploadFile}`}>
+                                        <CloudUpload size={18} />
                                     </span>
                                 </div>
                             </div>

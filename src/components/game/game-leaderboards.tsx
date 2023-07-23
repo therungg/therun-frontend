@@ -3,8 +3,8 @@ import { Col, Nav, Row, Tab, Table } from "react-bootstrap";
 import { DurationToFormatted, getFormattedString } from "../util/datetime";
 import { ReactElement, useState } from "react";
 import { UserLink } from "../links/links";
-import searchStyles from "../css/Search.module.scss";
 import styles from "../css/Games.module.scss";
+import { Search as SearchIcon } from "react-bootstrap-icons";
 
 export const getLeaderboard = (
     name: string,
@@ -316,7 +316,7 @@ export const GameLeaderboards = ({
                     <div className="d-flex justify-content-center">
                         <div className="mb-3 input-group">
                             <span
-                                className="material-symbols-outlined input-group-text"
+                                className="input-group-text"
                                 onClick={() => {
                                     const searchElement =
                                         document.getElementById("gameSearch");
@@ -327,14 +327,12 @@ export const GameLeaderboards = ({
                                     }
                                 }}
                             >
-                                {" "}
-                                search{" "}
+                                <SearchIcon size={18} />
                             </span>
                             <input
                                 type="search"
-                                className={`form-control ${searchStyles.search}`}
+                                className="form-control"
                                 placeholder="Filter by name"
-                                style={{ marginBottom: "0" }}
                                 onChange={(e) => {
                                     setSearch(e.target.value);
                                 }}

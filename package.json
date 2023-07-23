@@ -37,6 +37,7 @@
     "react-async": "^10.0.1",
     "react-autosuggest": "^10.1.0",
     "react-bootstrap": "^2.7.4",
+    "react-bootstrap-icons": "^1.10.3",
     "react-calendar-heatmap": "^1.9.0",
     "react-chartjs-2": "^4.0.0",
     "react-content-loader": "^6.2.1",

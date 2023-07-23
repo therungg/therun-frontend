@@ -9,6 +9,7 @@ import Image from "next/image";
 import { TwitchUser } from "./twitch/TwitchUser";
 import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
 import { getColorMode } from "~src/utils/colormode";
+import { Upload } from "react-bootstrap-icons";
 
 const DarkModeSlider = dynamic(() => import("./dark-mode-slider"), {
     ssr: false,
@@ -80,13 +81,9 @@ const Topbar = ({
                             >
                                 <div className="d-flex">
                                     <b>Upload</b>
-                                    <span
-                                        className={
-                                            "material-symbols-outlined upload-icon"
-                                        }
-                                    >
-                                        {" "}
-                                        file_upload{" "}
+
+                                    <span className="ms-2">
+                                        <Upload size={18} />
                                     </span>
                                 </div>
                             </Nav.Link>

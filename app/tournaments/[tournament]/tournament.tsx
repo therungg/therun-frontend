@@ -23,8 +23,8 @@ import { LiveDataMap } from "~app/live/live.types";
 import { getRecommendedStream, liveRunIsInSearch } from "~app/live/utilities";
 import { isLiveDataEligibleForTournament } from "~app/tournaments/[tournament]/is-live-data-eligible-for-tournament.component";
 import { liveRunArrayToMap } from "~app/tournaments/[tournament]/live-run-array-to-map.component";
-import searchStyles from "~src/components/css/Search.module.scss";
 import { EventLeaderboards } from "~app/tournaments/[tournament]/event-leaderboards.component";
+import { Search as SearchIcon } from "react-bootstrap-icons";
 
 export const GenericTournament = ({
     liveDataMap,
@@ -382,22 +382,10 @@ export const GenericTournament = ({
                                 </Col>
                             </Row>
 
-                            <div
-                                className={runStyles.searchContainer}
-                                style={{
-                                    marginLeft: "0",
-                                    justifyContent: "center",
-                                }}
-                            >
-                                <div
-                                    className="input-group"
-                                    style={{
-                                        marginLeft: "0",
-                                        justifyContent: "center",
-                                    }}
-                                >
+                            <div className="d-flex justify-content-center">
+                                <div className="mb-3 input-group">
                                     <span
-                                        className="material-symbols-outlined input-group-text"
+                                        className="input-group-text"
                                         onClick={() => {
                                             const searchElement =
                                                 document.getElementById(
@@ -411,13 +399,12 @@ export const GenericTournament = ({
                                             }
                                         }}
                                     >
-                                        search
+                                        <SearchIcon size={18} />
                                     </span>
                                     <input
                                         type="search"
-                                        className={`form-control ${searchStyles.search}`}
+                                        className="form-control"
                                         placeholder="Filter by game/category/user"
-                                        style={{ marginBottom: "0" }}
                                         onChange={(e) => {
                                             setSearch(e.target.value);
                                         }}

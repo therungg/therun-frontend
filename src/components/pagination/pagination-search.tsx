@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import { PaginationContext } from "~src/components/pagination/pagination.context";
-import searchStyles from "~src/components/css/Search.module.scss";
+import { Search as SearchIcon } from "react-bootstrap-icons";
 
 export const PaginationSearch = ({ text }: { text: string }) => {
     const { search, setSearch } = useContext(PaginationContext);
@@ -10,21 +10,19 @@ export const PaginationSearch = ({ text }: { text: string }) => {
     return (
         <div className="input-group mb-3">
             <span
-                className="material-symbols-outlined input-group-text"
+                className="input-group-text"
                 onClick={() => {
                     if (document.activeElement !== searchInputRef.current) {
                         searchInputRef.current?.focus();
                     }
                 }}
             >
-                {" "}
-                search{" "}
+                <SearchIcon size={18} />
             </span>
             <input
                 type="search"
-                className={`form-control ${searchStyles.search}`}
+                className="form-control"
                 placeholder={text}
-                style={{ marginBottom: "0" }}
                 onChange={(e) => {
                     setSearch(e.target.value);
                 }}

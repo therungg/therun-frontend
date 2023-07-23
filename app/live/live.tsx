@@ -2,7 +2,6 @@
 
 import { LiveIcon, LiveUserRun } from "~src/components/live/live-user-run";
 import React, { useEffect, useState } from "react";
-import searchStyles from "~src/components/css/Search.module.scss";
 import { Button, Col, Row } from "react-bootstrap";
 import { RecommendedStream } from "~src/components/live/recommended-stream";
 import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
@@ -15,6 +14,7 @@ import {
 import { LiveDataMap, LiveProps } from "~app/live/live.types";
 import { getLiveRunForUser } from "~src/lib/live-runs";
 import { SkeletonLiveRun } from "~src/components/skeleton/live/skeleton-live-run";
+import { Search as SearchIcon } from "react-bootstrap-icons";
 
 export const Live = ({
     liveDataMap,
@@ -121,7 +121,7 @@ export const Live = ({
             <Row className="g-3 my-3">
                 <div className="input-group mw-80">
                     <span
-                        className="material-symbols-outlined input-group-text"
+                        className="input-group-text"
                         onClick={() => {
                             const searchElement =
                                 document.getElementById("gameSearch");
@@ -130,13 +130,12 @@ export const Live = ({
                             }
                         }}
                     >
-                        search
+                        <SearchIcon size={18} />
                     </span>
                     <input
                         type="search"
-                        className={`form-control ${searchStyles.search}`}
+                        className="form-control"
                         placeholder="Filter by game/category/user"
-                        style={{ marginBottom: "0" }}
                         onChange={(e) => {
                             setSearch(e.target.value);
                         }}
