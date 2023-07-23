@@ -8,6 +8,7 @@ import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import Image from "next/image";
 import { TwitchUser } from "./twitch/TwitchUser";
 import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
+import { getColorMode } from "~src/utils/colormode";
 
 const DarkModeSlider = dynamic(() => import("./dark-mode-slider"), {
     ssr: false,
@@ -25,7 +26,7 @@ const Topbar = ({
     const [dark, setDark] = useState(true);
 
     useEffect(function () {
-        setDark(document.documentElement.dataset.bsTheme !== "light");
+        setDark(getColorMode() !== "light");
     }, []);
 
     const showDropdown = () => {
