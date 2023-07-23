@@ -8,35 +8,6 @@ interface PageProps {
     params: { game: string };
 }
 
-export async function generateMetadata({
-    params,
-}: PageProps): Promise<Metadata> {
-    const game = safeDecodeURI(params.game);
-    let imageUrl = "";
-    const baseUrl = getBaseUrl();
-    const response = await fetch(`${baseUrl}/api/games/${params.game}/global`);
-    const data = await response.json();
-
-    if (data) {
-        imageUrl = data.image;
-    }
-
-    return buildMetadata({
-        title: game,
-        description: `View statistics for ${game}, including categories, top runners, total run time, and more!`,
-        images: [
-            {
-                url: imageUrl,
-                secureUrl: imageUrl,
-                alt: `${game} cover`,
-                type: "image/png",
-                width: 800,
-                height: 600,
-            },
-        ],
-    });
-}
-
 export default async function GamePage({ params }: PageProps) {
     const { game: gameName } = params;
     const baseUrl = getBaseUrl();
@@ -72,4 +43,44 @@ export default async function GamePage({ params }: PageProps) {
         );
     }
     return <Game data={data} />;
+}
+
+export async function generateMetadata({
+    params,
+}: PageProps): Promise<Metadata> {
+    if (!params.game) return buildMetadata();
+
+    const game = safeDecodeURI(params.game);
+    let imageUrl = undefined;
+    const baseUrl = getBaseUrl();
+
+    let response: Response;
+    try {
+        response = await fetch(`${baseUrl}/api/games/${params.game}/global`);
+    } catch (e) {
+        return buildMetadata();
+    }
+
+    const data = await response.json();
+
+    if (data?.image) {
+        imageUrl = data.image;
+    }
+
+    return buildMetadata({
+        title: game,
+        description: `View statistics for ${game}, including categories, top runners, total run time, and more!`,
+        images: imageUrl
+            ? [
+                  {
+                      url: imageUrl,
+                      secureUrl: imageUrl,
+                      alt: `${game} cover`,
+                      type: "image/png",
+                      width: 800,
+                      height: 600,
+                  },
+              ]
+            : undefined,
+    });
 }

@@ -94,7 +94,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({
     params,
 }: PageProps): Promise<Metadata> {
-    let imageUrl = "";
+    let imageUrl = undefined;
     const baseUrl = getBaseUrl();
     const username = params.username;
 
@@ -109,22 +109,24 @@ export async function generateMetadata({
 
     const data = await response.json();
 
-    if (data) {
+    if (data?.picture) {
         imageUrl = data.picture;
     }
 
     return buildMetadata({
         title: username,
         description: `${username} is on The Run! View their games, runs, personal bests, and more.`,
-        images: [
-            {
-                url: imageUrl,
-                secureUrl: imageUrl,
-                alt: `Profile photo of ${username}`,
-                type: "image/png",
-                width: 300,
-                height: 300,
-            },
-        ],
+        images: imageUrl
+            ? [
+                  {
+                      url: imageUrl,
+                      secureUrl: imageUrl,
+                      alt: `Profile photo of ${username}`,
+                      type: "image/png",
+                      width: 300,
+                      height: 300,
+                  },
+              ]
+            : undefined,
     });
 }

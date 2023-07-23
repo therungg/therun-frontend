@@ -22,29 +22,40 @@ export default async function LiveUser({ params }: PageProps) {
 export async function generateMetadata({
     params,
 }: PageProps): Promise<Metadata> {
-    let imageUrl = "";
+    let imageUrl = undefined;
     const baseUrl = getBaseUrl();
     const username = params.username;
-    const response = await fetch(`${baseUrl}/api/users/${username}/global`);
+
+    if (!username) return buildMetadata();
+
+    let response: Response;
+    try {
+        response = await fetch(`${baseUrl}/api/users/${username}/global`);
+    } catch (e) {
+        return buildMetadata();
+    }
+
     const data = await response.json();
 
-    if (data) {
+    if (data?.picture) {
         imageUrl = data.picture;
     }
 
     return buildMetadata({
         title: `Watch ${username} Live`,
         description: `${username} is live on The Run! Watch their run in real time and see data about their run, including current pace.`,
-        images: [
-            {
-                url: imageUrl,
-                secureUrl: imageUrl,
-                alt: `Profile photo of ${username}`,
-                type: "image/png",
-                width: 300,
-                height: 300,
-            },
-        ],
+        images: imageUrl
+            ? [
+                  {
+                      url: imageUrl,
+                      secureUrl: imageUrl,
+                      alt: `Profile photo of ${username}`,
+                      type: "image/png",
+                      width: 300,
+                      height: 300,
+                  },
+              ]
+            : undefined,
         index: false,
     });
 }

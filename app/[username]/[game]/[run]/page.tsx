@@ -46,13 +46,22 @@ export default async function RunPage({ params, searchParams }: PageProps) {
 export async function generateMetadata({
     params,
 }: PageProps): Promise<Metadata> {
-    let imageUrl = "";
+    let imageUrl = undefined;
     const baseUrl = getBaseUrl();
     const username = params.username;
-    const response = await fetch(`${baseUrl}/api/users/${username}/global`);
+
+    if (!username) return buildMetadata();
+
+    let response: Response;
+    try {
+        response = await fetch(`${baseUrl}/api/users/${username}/global`);
+    } catch (e) {
+        return buildMetadata();
+    }
+
     const data = await response.json();
 
-    if (data) {
+    if (data?.picture) {
         imageUrl = data.picture;
     }
 
@@ -63,15 +72,17 @@ export async function generateMetadata({
     return buildMetadata({
         title: `${username}: ${gameAndCategory}`,
         description: `${username} runs ${gameAndCategory}. Check out all their attempts, personal best, and more on The Run!`,
-        images: [
-            {
-                url: imageUrl,
-                secureUrl: imageUrl,
-                alt: `Profile photo of ${username}`,
-                type: "image/png",
-                width: 300,
-                height: 300,
-            },
-        ],
+        images: imageUrl
+            ? [
+                  {
+                      url: imageUrl,
+                      secureUrl: imageUrl,
+                      alt: `Profile photo of ${username}`,
+                      type: "image/png",
+                      width: 300,
+                      height: 300,
+                  },
+              ]
+            : undefined,
     });
 }
