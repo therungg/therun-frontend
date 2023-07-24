@@ -11,12 +11,30 @@ body {
 }
 
 .input-group,
-.form-select {
+.form-select,
+.cursor-pointer {
   cursor: pointer;
 }
 
 .with-filter {
   width: 66.6666%;
+}
+
+// Twitch button
+button.twitch {
+  --bs-btn-color:#fff;
+  --bs-btn-bg:#9147ff;
+  --bs-btn-border-color:#9147ff;
+  --bs-btn-hover-bg:#772ce8;
+  --bs-btn-active-bg: #772ce8;
+  --bs-btn-hover-border-color:#772ce8;
+  --bs-btn-active-border-color:#772ce8;
+}
+
+// User login dropdown
+#basic-nav-dropdown {
+  text-decoration: none;
+  color: var(--bs-link-color);
 }
 
 .patreon-scroll-bar {
@@ -129,6 +147,13 @@ body {
 
 .whitespace-nowrap {
   white-space: nowrap;
+}
+
+.dropdown-toggle {
+
+  &:after {
+    content: none !important;
+  }
 }
 
 // Add custom container max-width
