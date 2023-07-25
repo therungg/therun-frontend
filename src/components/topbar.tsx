@@ -102,6 +102,9 @@ const Topbar = ({
                         <Nav.Link className={styles.navLink} href="/live">
                             <b>Live</b>
                         </Nav.Link>
+                        <Nav.Link className={styles.navLink} href="/races/">
+                            Races
+                        </Nav.Link>
                         <Nav.Link className={styles.navLink} href="/games/">
                             Games
                         </Nav.Link>
