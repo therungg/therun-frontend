@@ -4,7 +4,6 @@ import { getLiveRunForUser } from "~src/lib/live-runs";
 import RunDetail from "~app/[username]/[game]/[run]/run";
 import { Metadata } from "next";
 import buildMetadata, { getUserProfilePhoto } from "~src/utils/metadata";
-import { safeDecodeURI } from "~src/utils/uri";
 
 export const revalidate = 60;
 
@@ -41,15 +40,20 @@ export default async function CustomRunPage({ params }: PageProps) {
 export async function generateMetadata({
     params,
 }: PageProps): Promise<Metadata> {
-    const username = params.username;
+    const username: string = params.username as string;
+    const customUrl: string = params.game as string;
 
-    if (!username) return buildMetadata();
+    if (!username || !customUrl) return buildMetadata();
+
+    const run = await getRunByCustomUrl(username, customUrl);
+    const game = run.game;
+    const runName = run.run;
+
+    const gameAndCategory = `${game} - ${runName}`;
 
     return buildMetadata({
         title: username,
-        description: `${username} runs ${safeDecodeURI(
-            params.game
-        )}. Check out all their attempts, personal best, and more on The Run!`,
+        description: `${username} runs ${gameAndCategory}. Check out all their attempts, personal best, and more on The Run!`,
         images: await getUserProfilePhoto(username),
     });
 }
