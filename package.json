@@ -20,6 +20,7 @@
     "cookies-next": "^2.0.3",
     "country-flag-icons": "^1.5.5",
     "d3": "^7.8.4",
+    "globby": "^13.2.2",
     "jquery": "^3.6.0",
     "js-levenshtein": "^1.1.6",
     "luxon": "^3.0.4",
