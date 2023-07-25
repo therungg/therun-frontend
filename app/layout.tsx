@@ -1,5 +1,4 @@
 import React from "react";
-import { Metadata } from "next";
 import "nprogress/nprogress.css";
 import "./material-symbols-outline.css";
 import "../src/styles/_import.scss";
@@ -9,19 +8,9 @@ import { Content } from "./content";
 import { Providers } from "./providers";
 import { Scripts } from "./scripts";
 import { getSession } from "~src/actions/session.action";
+import buildMetadata from "~src/utils/metadata";
 
-export const metadata: Metadata = {
-    title: {
-        default: "The Run - Speedrun Statistics",
-        template: "The Run - %s",
-    },
-    description: "The Run - a free tool for speedrun statistics",
-    themeColor: "#ffffff",
-    manifest: "/site.webmanifest",
-    other: {
-        "msapplication-TileColor": "#ffffff",
-    },
-};
+export const metadata = buildMetadata();
 
 export default async function RootLayout({
     // Layouts must accept a children prop.

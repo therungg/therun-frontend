@@ -1,9 +1,10 @@
-import { Metadata } from "next";
+import buildMetadata from "~src/utils/metadata";
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
     title: "Terms & Conditions",
-    description: "Terms & Conditions for using and accessing The Run",
-};
+    description: "Terms & Conditions for using and accessing The Run.",
+});
+
 export default function Terms() {
     return (
         <div>

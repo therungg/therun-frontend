@@ -1,10 +1,10 @@
-import { Metadata } from "next";
 import { Blog } from "./blog";
+import buildMetadata from "~src/utils/metadata";
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
     title: "Blog",
-    description: "Blog for The Run",
-};
+    description: "See updates The Run posts about new and upcoming features.",
+});
 
 export default function BlogPage() {
     return <Blog />;

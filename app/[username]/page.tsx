@@ -11,16 +11,17 @@ import {
     getTournamentNameFromSlug,
 } from "~app/tournaments/tournament-list";
 import { TournamentPage } from "~app/tournaments/[tournament]/page";
+import { Metadata } from "next";
+import buildMetadata, { getUserProfilePhoto } from "~src/utils/metadata";
 
 export const revalidate = 60;
 
-export default async function Page({
-    params,
-    searchParams,
-}: {
+interface PageProps {
     params: { username: string };
     searchParams: { [_: string]: string };
-}) {
+}
+
+export default async function Page({ params, searchParams }: PageProps) {
     if (!params || !params.username) throw new Error("Username not found");
 
     const username: string = params.username as string;
@@ -86,5 +87,19 @@ export default async function Page({
 export async function generateStaticParams() {
     return getAllTournamentSlugs().map((tournament) => {
         return { username: tournament };
+    });
+}
+
+export async function generateMetadata({
+    params,
+}: PageProps): Promise<Metadata> {
+    const username = params.username;
+
+    if (!username) return buildMetadata();
+
+    return buildMetadata({
+        title: username,
+        description: `${username} is on The Run! View their games, runs, personal bests, and more.`,
+        images: await getUserProfilePhoto(username),
     });
 }

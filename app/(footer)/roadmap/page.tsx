@@ -1,9 +1,10 @@
-import { Metadata } from "next";
+import buildMetadata from "~src/utils/metadata";
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
     title: "Roadmap",
-    description: "What's coming up",
-};
+    description:
+        "See a list of planned features for The Run that could be coming soon!",
+});
 
 // TODO: Link to the Github Issues or other project planning in the future
 export default function Roadmap() {

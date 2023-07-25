@@ -1,19 +1,11 @@
 import { Metadata } from "next";
 import { getBaseUrl } from "~src/actions/base-url.action";
-import { safeEncodeURI } from "~src/utils/uri";
+import { safeDecodeURI, safeEncodeURI } from "~src/utils/uri";
 import { Game } from "./game";
+import buildMetadata, { getGameImage } from "~src/utils/metadata";
 
 interface PageProps {
     params: { game: string };
-}
-
-export async function generateMetadata({
-    params,
-}: PageProps): Promise<Metadata> {
-    return {
-        title: params.game,
-        description: `The Run game overview for ${params.game}`,
-    };
 }
 
 export default async function GamePage({ params }: PageProps) {
@@ -51,4 +43,18 @@ export default async function GamePage({ params }: PageProps) {
         );
     }
     return <Game data={data} />;
+}
+
+export async function generateMetadata({
+    params,
+}: PageProps): Promise<Metadata> {
+    if (!params.game) return buildMetadata();
+
+    const game = safeDecodeURI(params.game);
+
+    return buildMetadata({
+        title: `Statistics for ${game}`,
+        description: `View statistics for ${game}, including categories, top runners, total run time, and more!`,
+        images: await getGameImage(game),
+    });
 }
