@@ -16,5 +16,5 @@ export default async function LivePage() {
 export const metadata = buildMetadata({
     title: "Watch Live Runs",
     description:
-        "Watch streams of runners who are currently live and attempting a run, and discover new runners for your favourite games!",
+        "Watch streams of runners who are currently live and attempting a run, and discover new runners for your favorite games!",
 });

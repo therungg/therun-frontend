@@ -12,8 +12,7 @@ import {
 } from "~app/tournaments/tournament-list";
 import { TournamentPage } from "~app/tournaments/[tournament]/page";
 import { Metadata } from "next";
-import buildMetadata from "~src/utils/metadata";
-import { getBaseUrl } from "~src/actions/base-url.action";
+import buildMetadata, { getUserProfilePhoto } from "~src/utils/metadata";
 
 export const revalidate = 60;
 
@@ -94,39 +93,13 @@ export async function generateStaticParams() {
 export async function generateMetadata({
     params,
 }: PageProps): Promise<Metadata> {
-    let imageUrl = undefined;
-    const baseUrl = getBaseUrl();
     const username = params.username;
 
     if (!username) return buildMetadata();
 
-    let response: Response;
-    try {
-        response = await fetch(`${baseUrl}/api/users/${username}/global`);
-    } catch (e) {
-        return buildMetadata();
-    }
-
-    const data = await response.json();
-
-    if (data?.picture) {
-        imageUrl = data.picture;
-    }
-
     return buildMetadata({
         title: username,
         description: `${username} is on The Run! View their games, runs, personal bests, and more.`,
-        images: imageUrl
-            ? [
-                  {
-                      url: imageUrl,
-                      secureUrl: imageUrl,
-                      alt: `Profile photo of ${username}`,
-                      type: "image/png",
-                      width: 300,
-                      height: 300,
-                  },
-              ]
-            : undefined,
+        images: await getUserProfilePhoto(username),
     });
 }

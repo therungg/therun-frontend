@@ -3,7 +3,7 @@ import buildMetadata from "~src/utils/metadata";
 export const metadata = buildMetadata({
     title: "Privacy Policy",
     description:
-        "We want you to worry about your favourite games, not your data. Here's steps we take to protect your data and privacy.",
+        "We want you to worry about your favorite games, not your data. Here's steps we take to protect your data and privacy.",
 });
 
 export default function PrivacyPolicy() {

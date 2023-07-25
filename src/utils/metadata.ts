@@ -1,5 +1,7 @@
 import { Metadata } from "next";
 import { OpenGraphType } from "next/dist/lib/metadata/types/opengraph-types";
+import { getBaseUrl } from "~src/actions/base-url.action";
+
 declare type OpenGraphImage = {
     url: string | URL;
     secureUrl?: string | URL;
@@ -88,4 +90,52 @@ export default function buildMetadata(props?: MetadataProps): Metadata {
             },
         },
     };
+}
+
+export async function getUserProfilePhoto(
+    username: string
+): Promise<OpenGraphImage[] | undefined> {
+    let response: Response;
+    try {
+        response = await fetch(`${getBaseUrl()}/api/users/${username}/global`);
+    } catch (e) {
+        return undefined;
+    }
+
+    const data = await response.json();
+
+    if (!data?.picture) return undefined;
+
+    return [
+        {
+            url: data.picture,
+            secureUrl: data.picture,
+            alt: `Profile photo of ${username}`,
+            type: "image/png",
+        },
+    ];
+}
+
+export async function getGameImage(
+    game: string
+): Promise<OpenGraphImage[] | undefined> {
+    let response: Response;
+    try {
+        response = await fetch(`${getBaseUrl()}/api/games/${game}/global`);
+    } catch (e) {
+        return undefined;
+    }
+
+    const data = await response.json();
+
+    if (!data?.image) return undefined;
+
+    return [
+        {
+            url: data.image,
+            secureUrl: data.image,
+            alt: `${game} cover`,
+            type: "image/png",
+        },
+    ];
 }

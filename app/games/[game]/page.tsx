@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { getBaseUrl } from "~src/actions/base-url.action";
 import { safeDecodeURI, safeEncodeURI } from "~src/utils/uri";
 import { Game } from "./game";
-import buildMetadata from "~src/utils/metadata";
+import buildMetadata, { getGameImage } from "~src/utils/metadata";
 
 interface PageProps {
     params: { game: string };
@@ -51,36 +51,10 @@ export async function generateMetadata({
     if (!params.game) return buildMetadata();
 
     const game = safeDecodeURI(params.game);
-    let imageUrl = undefined;
-    const baseUrl = getBaseUrl();
-
-    let response: Response;
-    try {
-        response = await fetch(`${baseUrl}/api/games/${params.game}/global`);
-    } catch (e) {
-        return buildMetadata();
-    }
-
-    const data = await response.json();
-
-    if (data?.image) {
-        imageUrl = data.image;
-    }
 
     return buildMetadata({
-        title: game,
+        title: `Statistics for ${game}`,
         description: `View statistics for ${game}, including categories, top runners, total run time, and more!`,
-        images: imageUrl
-            ? [
-                  {
-                      url: imageUrl,
-                      secureUrl: imageUrl,
-                      alt: `${game} cover`,
-                      type: "image/png",
-                      width: 800,
-                      height: 600,
-                  },
-              ]
-            : undefined,
+        images: await getGameImage(game),
     });
 }

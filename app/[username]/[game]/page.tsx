@@ -3,8 +3,7 @@ import { getGameGlobal } from "~src/components/game/get-game";
 import { getLiveRunForUser } from "~src/lib/live-runs";
 import RunDetail from "~app/[username]/[game]/[run]/run";
 import { Metadata } from "next";
-import { getBaseUrl } from "~src/actions/base-url.action";
-import buildMetadata from "~src/utils/metadata";
+import buildMetadata, { getUserProfilePhoto } from "~src/utils/metadata";
 import { safeDecodeURI } from "~src/utils/uri";
 
 export const revalidate = 60;
@@ -42,41 +41,15 @@ export default async function CustomRunPage({ params }: PageProps) {
 export async function generateMetadata({
     params,
 }: PageProps): Promise<Metadata> {
-    let imageUrl = undefined;
-    const baseUrl = getBaseUrl();
     const username = params.username;
 
     if (!username) return buildMetadata();
-
-    let response: Response;
-    try {
-        response = await fetch(`${baseUrl}/api/users/${username}/global`);
-    } catch (e) {
-        return buildMetadata();
-    }
-
-    const data = await response.json();
-
-    if (data?.picture) {
-        imageUrl = data.picture;
-    }
 
     return buildMetadata({
         title: username,
         description: `${username} runs ${safeDecodeURI(
             params.game
         )}. Check out all their attempts, personal best, and more on The Run!`,
-        images: imageUrl
-            ? [
-                  {
-                      url: imageUrl,
-                      secureUrl: imageUrl,
-                      alt: `Profile photo of ${username}`,
-                      type: "image/png",
-                      width: 300,
-                      height: 300,
-                  },
-              ]
-            : undefined,
+        images: await getUserProfilePhoto(username),
     });
 }
