@@ -1,9 +1,10 @@
-import { Metadata } from "next";
+import buildMetadata from "~src/utils/metadata";
 
-export const metadata: Metadata = {
+export const metadata = buildMetadata({
     title: "Privacy Policy",
-    description: "Here's how we handle data",
-};
+    description:
+        "We want you to worry about your favorite games, not your data. Here's steps we take to protect your data and privacy.",
+});
 
 export default function PrivacyPolicy() {
     return (

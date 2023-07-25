@@ -1,2 +1,10 @@
+# *
 User-agent: *
 Allow: /
+Disallow: /api/*
+
+# Host
+Host: https://therun.gg
+
+# Sitemaps
+Sitemap: https://therun.gg/sitemap.xml
