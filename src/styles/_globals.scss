@@ -6,6 +6,11 @@ body {
   flex-direction: column;
 }
 
+.bg {
+  &-light { background-color: #eee; }
+  &-dark  { background-color: #232323; }
+}
+
 .main-container {
   flex-grow: 1;
 }
@@ -16,19 +21,36 @@ body {
   cursor: pointer;
 }
 
+.border-hover:hover {
+  --bs-border-color:var(--bs-secondary);
+}
+
 .with-filter {
   width: 66.6666%;
 }
 
-// Twitch button
-button.twitch {
-  --bs-btn-color:#fff;
-  --bs-btn-bg:#9147ff;
-  --bs-btn-border-color:#9147ff;
-  --bs-btn-hover-bg:#772ce8;
-  --bs-btn-active-bg: #772ce8;
-  --bs-btn-hover-border-color:#772ce8;
-  --bs-btn-active-border-color:#772ce8;
+// Custom button styles
+button {
+
+  &.twitch {
+    --bs-btn-color:#fff;
+    --bs-btn-bg:#9147ff;
+    --bs-btn-border-color:#9147ff;
+    --bs-btn-hover-bg:#772ce8;
+    --bs-btn-active-bg:#772ce8;
+    --bs-btn-hover-border-color:#772ce8;
+    --bs-btn-active-border-color:#772ce8;
+  }
+
+  &.patreon {
+    --bs-btn-color:#fff;
+    --bs-btn-bg:#F96854;
+    --bs-btn-border-color:#F96854;
+    --bs-btn-hover-bg:#953e32;
+    --bs-btn-active-bg:#953e32;
+    --bs-btn-hover-border-color:#953e32;
+    --bs-btn-active-border-color:#953e32;
+  }
 }
 
 // User login dropdown
@@ -109,36 +131,17 @@ body {
   }
 }
 
-.fs-small {
-  font-size: 0.8rem;
-}
-
-.fs-big {
-  font-size: 1.5rem;
-}
-
-.fs-smaller {
-  font-size: smaller !important;
-}
-
-.fs-medium {
-  font-size: medium;
-}
-
-.fs-large {
-  font-size: large;
-}
-
-.fs-larger {
-  font-size: larger !important;
-}
-
-.fs-x-large {
-  font-size: x-large;
-}
-
-.fs-responsive-large {
-  font-size: clamp(18px, 1.5vw, 24px);
+.fs {
+  &-smaller           { font-size: smaller !important; }
+  &-small             { font-size: 0.8rem; }
+  &-medium            { font-size: medium; }
+  &-big               { font-size: 1.5rem; }
+  &-large             { font-size: large; }
+  &-larger            { font-size: larger !important; }
+  &-x-large           { font-size: x-large; }
+  &-xx-large          { font-size: xx-large; }
+  &-xxx-large         { font-size: xxx-large; }
+  &-responsive-large  { font-size: clamp(18px, 1.5vw, 24px); }
 }
 
 .form-control {
