@@ -4,7 +4,6 @@ import { PatreonBunnySvg } from "~app/patron/patreon-info";
 import { Button, Col, Row } from "react-bootstrap";
 import React, { useState } from "react";
 import Switch from "react-switch";
-import styles from "~src/components/css/Appearance.module.scss";
 import axios from "axios";
 import Router from "next/router";
 import patreonStyles from "~src/components/patreon/patreon-styles";
@@ -93,11 +92,11 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                     />
                 </div>
             </div>
-            <Col>
-                <h3 className="mb-3">Color customization</h3>
+            <Col lg={6} className="pe-lg-4">
+                <h3 className="mb-4">Color customization</h3>
                 {[1, 2, 3].map((n) => {
                     return (
-                        <Row key={n} className="w-100 text-center">
+                        <Row key={n} className="w-100 text-center g-3">
                             {patreonStyles()
                                 .filter((style) => style.tier == n)
                                 .map((style, key) => {
@@ -106,9 +105,7 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                                             xs={6}
                                             sm={4}
                                             key={key}
-                                            className={
-                                                styles.patreonColorContainer
-                                            }
+                                            className="fs-large"
                                             onClick={() => {
                                                 if (
                                                     userPatreonData.tier >= n ||
@@ -128,7 +125,7 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                                             }}
                                         >
                                             <div
-                                                className={`mx-2 ${
+                                                className={`${
                                                     userPatreonData.tier >= n
                                                         ? "border border-hover cursor-pointer"
                                                         : " "
@@ -160,13 +157,15 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                                         </Col>
                                     );
                                 })}
-                            <hr />
+                            <div className="mt-0">
+                                <hr />
+                            </div>
                         </Row>
                     );
                 })}
             </Col>
-            <Col className="ms-5">
-                <h3 className="mb-3">Display preferences</h3>
+            <Col lg={6} className="ps-lg-4">
+                <h3 className="mb-4">Display preferences</h3>
                 <div className="d-flex justify-content-start align-items-center mb-3">
                     <Switch
                         name={"switch"}
@@ -175,7 +174,7 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                         }}
                         checked={!hide}
                     />
-                    <label htmlFor={"switch"} className="ms-2 text-nowrap">
+                    <label htmlFor={"switch"} className="ms-2">
                         Display me as Patreon{" "}
                         <span className="d-none d-lg-inline">
                             (overrides all other settings when switched off)
@@ -223,7 +222,7 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                 )}
                 <div className="d-flex justify-content-end">
                     <Button
-                        className={styles.saveButton}
+                        className="btn-lg px-3 ml-3 mt-3 mt-lg-0 w-192p h-3rem fw-medium btn btn-primary fs-large"
                         onClick={async () => {
                             await axios.post(
                                 `/api/users/${session.id}-${session.username}/patreon-settings`,

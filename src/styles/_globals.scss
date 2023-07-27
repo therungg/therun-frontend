@@ -133,15 +133,15 @@ body {
 
 .fs {
   &-smaller           { font-size: smaller !important; }
-  &-small             { font-size: 0.8rem; }
-  &-medium            { font-size: medium; }
-  &-big               { font-size: 1.5rem; }
-  &-large             { font-size: large; }
-  &-larger            { font-size: larger !important; }
-  &-x-large           { font-size: x-large; }
-  &-xx-large          { font-size: xx-large; }
-  &-xxx-large         { font-size: xxx-large; }
-  &-responsive-large  { font-size: clamp(18px, 1.5vw, 24px); }
+  &-small             { font-size: 0.8rem!important; }
+  &-medium            { font-size: medium!important; }
+  &-big               { font-size: 1.5rem!important; }
+  &-large             { font-size: large!important; }
+  &-larger            { font-size: larger!important; }
+  &-x-large           { font-size: x-large!important; }
+  &-xx-large          { font-size: xx-large!important; }
+  &-xxx-large         { font-size: xxx-large!important; }
+  &-responsive-large  { font-size: clamp(18px, 1.5vw, 24px)!important; }
 }
 
 .form-control {
