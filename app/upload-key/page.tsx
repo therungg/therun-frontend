@@ -33,28 +33,28 @@ export default async function UploadKey() {
             {content}
             <div className="my-5 pt-5">
                 <h2>What can I do with this?</h2>
-                <div className="mb-4">
+                <p className="mb-4">
                     Your upload key allows you to automatically upload your
                     splits right from LiveSplit. Also, your runs-in-progress
                     will be automatically tracked. This means your current run
-                    run can be shown on your The Run profile, and compared in
-                    real time to your history.
-                </div>
-                <div className="mb-4">
+                    can be shown on your The Run profile, and compared in real
+                    time to your history.
+                </p>
+                <p className="mb-4">
                     Check out the <a href={"/live"}>Live page</a> to see runs in
                     progress!
-                </div>
-                <div>
+                </p>
+                <p>
                     Treat this key like a password. Anyone who has this key can
                     upload runs to your profile.
-                </div>
+                </p>
             </div>
             <div className="mb-5">
                 <h2>How does it work?</h2>
-                <div className="mb-4">
+                <p className="mb-4">
                     You can install the LiveSplit component in these 4 easy
                     steps.
-                </div>
+                </p>
                 <ol className="mb-4">
                     <li>
                         Download{" "}
@@ -81,14 +81,14 @@ export default async function UploadKey() {
                     </li>
                 </ol>
 
-                <div className="mb-4">
+                <p className="mb-4">
                     Now, you will never have to upload your runs again! In
                     addition, your live runs will show up in real time on your
                     profile, and on the dedicated{" "}
                     <a href={"/live"}>Live page</a>!
-                </div>
+                </p>
 
-                <div>
+                <p>
                     The code for the component is freely available on{" "}
                     <a
                         target={"_blank"}
@@ -98,14 +98,14 @@ export default async function UploadKey() {
                         GitHub
                     </a>
                     .
-                </div>
+                </p>
             </div>
             <div>
                 <h2>Troubleshooting</h2>
-                <div>
+                <p>
                     If your splits do not get uploaded or your runs do not show
                     on the live page, here is what you can try:
-                </div>
+                </p>
                 <ul>
                     <li>
                         Verify that the Game and Category fields have been set
@@ -121,10 +121,10 @@ export default async function UploadKey() {
                         maybe the copy-pasting went wrong.
                     </li>
                 </ul>
-                <div>
+                <p>
                     If after all this, it still does not work, please contact
                     me!
-                </div>
+                </p>
             </div>
         </div>
     );
