@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
-import uploadKeyStyles from "../../src/components/css/UploadKey.module.scss";
-import { Copy } from "./copy.component";
+import { Clipboard } from "react-bootstrap-icons";
 
 interface CopyUploadKeyProps {
     uploadKey: string;
@@ -34,10 +33,9 @@ const CopyUploadKeyButton: React.FunctionComponent<
     CopyUploadKeyButtonProps
 > = ({ uploadKey, isCopied, setIsCopied }) => {
     return (
-        <div className={uploadKeyStyles.uploadKeyBox}>
+        <div className="d-flex align-items-center justify-content-center column-gap-3">
             {uploadKey}
             <div
-                className={uploadKeyStyles.uploadKey}
                 onClick={async () => {
                     await navigator.clipboard.writeText(uploadKey);
                     setIsCopied(true);
@@ -46,13 +44,9 @@ const CopyUploadKeyButton: React.FunctionComponent<
                     }, 1500);
                 }}
             >
-                <Copy />
+                <Clipboard className="cursor-pointer" size={36} />
             </div>
-            {isCopied && (
-                <div className={uploadKeyStyles.copied}>
-                    Copied to Clipboard!
-                </div>
-            )}
+            {isCopied && <div className="fs-large">Copied to Clipboard!</div>}
         </div>
     );
 };
@@ -66,7 +60,7 @@ const DisplayUploadKeyButton: React.FunctionComponent<
 > = ({ setIsUploadKeyVisible }) => {
     return (
         <div
-            style={{ cursor: "pointer" }}
+            className="cursor-pointer"
             onClick={() => setIsUploadKeyVisible(true)}
         >
             Click to show Upload Key
