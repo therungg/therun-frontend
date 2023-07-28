@@ -83,7 +83,7 @@ export const Dragdrop = ({
                 <a href={"/upload-key"}>Check out how to here. </a>
             </p>
 
-            {!show ? (
+            {show ? (
                 <Alert
                     variant="success"
                     onClose={() => setShow(false)}
