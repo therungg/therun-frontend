@@ -1,11 +1,23 @@
 // theme-color-variables
-$primary: #007c00;
+$primary:   #007c00;
 $secondary: #a3850e;
+$success:   #198754;
+$info:      #0dcaf0;
+$warning:   #ffc107;
+$danger:    #dc3545;
+$light:     #f8f9fa;
+$dark:      #212529;
 
 // theme-colors-map
 $theme-colors: (
-  "primary": $primary,
+  "primary":   $primary,
   "secondary": $secondary,
+  "success":   $success,
+  "info":      $info,
+  "warning":   $warning,
+  "danger":    $danger,
+  "light":     $light,
+  "dark":      $dark
 );
 
 // Body

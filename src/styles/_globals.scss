@@ -142,6 +142,7 @@ body {
   &-xx-large          { font-size: xx-large!important; }
   &-xxx-large         { font-size: xxx-large!important; }
   &-responsive-large  { font-size: clamp(18px, 1.5vw, 24px)!important; }
+  &-responsive-larger { font-size: clamp(1.4rem, 3vw, 2rem)!important; }
 }
 
 .form-control {

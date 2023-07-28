@@ -5,7 +5,6 @@ import React, { CSSProperties, useMemo, useState } from "react";
 import { Alert } from "react-bootstrap";
 import { UserLink } from "./links/links";
 import Link from "next/link";
-import styles from "./css/Dragdrop.module.scss";
 import { CheckCircle, CloudUpload } from "react-bootstrap-icons";
 
 export const Dragdrop = ({
@@ -84,19 +83,15 @@ export const Dragdrop = ({
                 <a href={"/upload-key"}>Check out how to here. </a>
             </p>
 
-            {show ? (
+            {!show ? (
                 <Alert
                     variant="success"
                     onClose={() => setShow(false)}
                     dismissible
                 >
-                    <Alert.Heading>
-                        <div style={{ display: "flex" }}>
-                            <span className={`${styles.uploadSucceeded}`}>
-                                <CheckCircle size={18} />
-                            </span>
-                            Upload succeeded!
-                        </div>
+                    <Alert.Heading className="d-flex align-items-center flex-nowrap column-gap-2">
+                        <CheckCircle size={18} />
+                        Upload succeeded!
                     </Alert.Heading>
                     <p>
                         Check back on{" "}
@@ -114,17 +109,17 @@ export const Dragdrop = ({
                 {({ getRootProps, getInputProps }) => (
                     <section>
                         <div
-                            className={styles.dragbox}
+                            className="cursor-pointer bg-body-secondary "
                             {...getRootProps({ style })}
                         >
                             <input {...getInputProps()} />
-                            <div style={{ height: "20rem" }}>
-                                <p className={styles.title}>
+                            <div className="h-320p">
+                                <p className="fs-responsive-larger fw-bolder text-center">
                                     Drag .lss file here or click to select one.
                                 </p>
                                 <div>
-                                    <span className={`${styles.uploadFile}`}>
-                                        <CloudUpload size={18} />
+                                    <span className="d-flex align-items-center justify-content-center text-body-tertiary text-center p-3">
+                                        <CloudUpload size={220} />
                                     </span>
                                 </div>
                             </div>
