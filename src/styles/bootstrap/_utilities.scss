@@ -72,7 +72,7 @@ $utilities: map-merge(
           map-get($utilities, "max-height"),
           (
             values: map-merge(
-                map-get(map-get($utilities, "max-width"), "values"),
+                map-get(map-get($utilities, "max-height"), "values"),
                 (
                   1r: 1rem,
                   2r: 2rem,
