@@ -100,7 +100,7 @@ export const Live = ({
                         <a href={"/upload-key"}>
                             <Button
                                 variant={"primary"}
-                                className="btn-lg px-3 w-240p h-3rem fw-medium"
+                                className="btn-lg px-3 w-240p h-3r fw-medium"
                             >
                                 How does this work?
                             </Button>

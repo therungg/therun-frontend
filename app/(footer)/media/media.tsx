@@ -72,7 +72,7 @@ export const Media = () => {
                 <a href={`${cfBaseUrl}therun-media.zip`}>
                     <Button
                         variant={"primary"}
-                        className="btn-lg px-3 h-3rem fw-medium"
+                        className="btn-lg px-3 h-3r fw-medium"
                     >
                         Download full kit
                     </Button>
@@ -209,7 +209,7 @@ export const Media = () => {
                                 <a href={logoCfUrl}>
                                     <Button
                                         variant={"primary"}
-                                        className="btn-lg px-3 h-3rem fw-medium"
+                                        className="btn-lg px-3 h-3r fw-medium"
                                     >
                                         Download logo
                                     </Button>
@@ -313,7 +313,7 @@ export const Media = () => {
                                 <a href={bannerCfUrl}>
                                     <Button
                                         variant={"primary"}
-                                        className="btn-lg px-3 h-3rem fw-medium"
+                                        className="btn-lg px-3 h-3r fw-medium"
                                     >
                                         Download banner
                                     </Button>

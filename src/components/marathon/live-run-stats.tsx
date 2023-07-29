@@ -185,7 +185,7 @@ export const LiveRunStats = ({
                                 withMillis={true}
                             />
                         </td>
-                        <td style={{ maxHeight: "1rem" }}>-</td>
+                        <td className="mh-1r">-</td>
                     </tr>
                 </tbody>
             </Table>

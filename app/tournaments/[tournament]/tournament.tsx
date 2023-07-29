@@ -228,7 +228,7 @@ export const GenericTournament = ({
                                 >
                                     <Button
                                         variant={"primary"}
-                                        className="btn-lg px-3 h-3rem fw-medium"
+                                        className="btn-lg px-3 h-3r fw-medium"
                                         style={{ width: "15rem" }}
                                     >
                                         How does this work?

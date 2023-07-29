@@ -24,43 +24,19 @@ export const MarathonRun = ({
     }, [runData]);
 
     return (
-        <div style={{ marginTop: "1rem" }}>
+        <div className="mt-3">
             <Row>
-                <Col>
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            width: "100%",
-                        }}
-                    >
-                        <div style={{ width: "600px" }}>
-                            <LiveUserRun liveRun={runData} />
-                        </div>
-                    </div>
+                <Col md={6}>
+                    <LiveUserRun liveRun={runData} />
                 </Col>
-                <Col>
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            width: "100%",
-                        }}
-                    >
-                        <div
-                            style={{
-                                width: "600px",
-                                overflow: "scroll",
-                            }}
-                            className="h-110p p-2"
-                        >
-                            <EventDisplay session={session} />
-                        </div>
+                <Col md={6}>
+                    <div className="h-110p p-2 overflow-auto bg-body-secondary">
+                        <EventDisplay session={session} />
                     </div>
                 </Col>
             </Row>
             <hr />
-            <div style={{ marginTop: "1rem" }}>
+            <div className="mt-3">
                 <Row>
                     <Col xl={5} lg={12} md={12}>
                         <FreeInput

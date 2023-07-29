@@ -222,7 +222,7 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                 )}
                 <div className="d-flex justify-content-end">
                     <Button
-                        className="btn-lg px-3 ml-3 mt-3 mt-lg-0 w-192p h-3rem fw-medium btn btn-primary fs-large"
+                        className="btn-lg px-3 ml-3 mt-3 mt-lg-0 w-192p h-3r fw-medium btn btn-primary fs-large"
                         onClick={async () => {
                             await axios.post(
                                 `/api/users/${session.id}-${session.username}/patreon-settings`,

@@ -62,7 +62,8 @@ $utilities: map-merge(
                   320p: 320px,
                   340p: 340px,
                   400p: 400px,
-                  3rem: 3rem,
+                  3r:   3rem,
+                  2r:   2rem,
                 )
             )
           )
@@ -73,6 +74,7 @@ $utilities: map-merge(
             values: map-merge(
                 map-get(map-get($utilities, "max-width"), "values"),
                 (
+                  1r: 1rem,
                   2r: 2rem,
                 )
             )
