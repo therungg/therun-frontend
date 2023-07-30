@@ -106,8 +106,12 @@ const User = ({
                         userData={userData}
                     />
                 </Col>
-                {!hasGameTime && (
-                    <Col md={12} lg={3} className={styles.gameTimeForm}>
+                {hasGameTime && (
+                    <Col
+                        md={12}
+                        lg={3}
+                        className="d-flex mt-4 mt-md-0 justify-content-md-end"
+                    >
                         <GametimeForm
                             useGameTime={useGameTime}
                             setUseGameTime={setUseGameTime}
@@ -115,143 +119,136 @@ const User = ({
                     </Col>
                 )}
             </Row>
-            <div style={{ position: "relative" }}>
-                {/*{allRunsRunMap.size > 1 && (*/}
-                {true && (
-                    <Row className={styles.filterRow}>
-                        <Col className={`col-md-8 ${styles.filterMargin}`} />
-                        <Col className={"col-md-4"}>
-                            <select
-                                className={"form-select"}
-                                onChange={(e) => {
-                                    setCurrentGame(
-                                        e.target.value.split("#")[0]
-                                    );
-                                }}
+            {allRunsRunMap.size > 1 && (
+                <Row className={styles.filterRow}>
+                    <Col className={`col-md-8 ${styles.filterMargin}`} />
+                    <Col className={"col-md-4"}>
+                        <select
+                            className={"form-select"}
+                            onChange={(e) => {
+                                setCurrentGame(e.target.value.split("#")[0]);
+                            }}
+                        >
+                            <option
+                                key={"all-games"}
+                                title={"All Games"}
+                                value={"all-games"}
                             >
-                                <option
-                                    key={"all-games"}
-                                    title={"All Games"}
-                                    value={"all-games"}
-                                >
-                                    No Game Filter
-                                </option>
-                                {Array.from(allRunsRunMap.keys())
-                                    .filter(
-                                        (game: string, i, arr: string[]) => {
-                                            if (i === 0) return true;
+                                No Game Filter
+                            </option>
+                            {Array.from(allRunsRunMap.keys())
+                                .filter((game: string, i, arr: string[]) => {
+                                    if (i === 0) return true;
 
-                                            const previous = arr[i - 1];
+                                    const previous = arr[i - 1];
 
-                                            return (
-                                                game.split("#")[0] !==
-                                                previous.split("#")[0]
-                                            );
-                                        }
-                                    )
-                                    .map((game: string) => {
-                                        return (
-                                            <option key={game} value={game}>
-                                                {game.split("#")[0]}
-                                            </option>
-                                        );
-                                    })}
-                            </select>
+                                    return (
+                                        game.split("#")[0] !==
+                                        previous.split("#")[0]
+                                    );
+                                })
+                                .map((game: string) => {
+                                    return (
+                                        <option key={game} value={game}>
+                                            {game.split("#")[0]}
+                                        </option>
+                                    );
+                                })}
+                        </select>
+                    </Col>
+                </Row>
+            )}
+            {/*</div>*/}
+            <Tabs
+                defaultActiveKey="overview"
+                className={`mb-3${
+                    allRunsRunMap.size > 1 ? " with-filter" : ""
+                }`}
+                style={{ position: "relative", zIndex: 1 }}
+            >
+                <Tab eventKey="overview" title="Overview">
+                    <Row>
+                        <Col xl={8} lg={12}>
+                            <UserOverview
+                                runs={runMap}
+                                username={username}
+                                gameTime={useGameTime}
+                                session={session}
+                                allGlobalGameData={allGlobalGameData}
+                                parentForceUpdate={forceUpdate}
+                            />
+                        </Col>
+                        <Col xl={4} lg={12}>
+                            {!!liveRun && !Array.isArray(liveRun) && (
+                                <div style={{ marginBottom: "1rem" }}>
+                                    <h2>
+                                        Currently Live!&nbsp;
+                                        <a href={"/live"}>
+                                            <LiveIcon />
+                                        </a>
+                                    </h2>
+
+                                    <div>
+                                        <a
+                                            href={`/live/${username}`}
+                                            className={"link-without-style"}
+                                        >
+                                            <LiveUserRun
+                                                isUrl={true}
+                                                liveRun={liveRun}
+                                            />
+                                        </a>
+                                    </div>
+                                </div>
+                            )}
+
+                            <UserStats runs={currentRuns} />
+                            {highlightedRun && (
+                                <HighlightedRun run={highlightedRun} />
+                            )}
                         </Col>
                     </Row>
-                )}
-                {/*</div>*/}
-                <Tabs
-                    defaultActiveKey="overview"
-                    className={`mb-3${
-                        allRunsRunMap.size > 1 ? " with-filter" : ""
-                    }`}
-                    style={{ position: "relative", zIndex: 1 }}
+                </Tab>
+
+                <Tab title={"Activity"} eventKey={"stats"}>
+                    <Row>
+                        <Col>
+                            <Stats username={username} />
+                        </Col>
+                    </Row>
+                </Tab>
+                <Tab title={"Sessions"} eventKey={"sessions"}>
+                    <Row>
+                        <Col>
+                            <h2>Speedrun Sessions</h2>
+                            <SessionOverview
+                                sessions={
+                                    hasGameTime &&
+                                    useGameTime &&
+                                    gameTimeSessions
+                                        ? gameTimeSessions
+                                        : sessions
+                                }
+                            />
+                        </Col>
+                    </Row>
+                </Tab>
+                <Tab
+                    title={"Twitch stream"}
+                    eventKey={"stream"}
+                    style={{ minHeight: "800px" }}
                 >
-                    <Tab eventKey="overview" title="Overview">
-                        <Row>
-                            <Col xl={8} lg={12}>
-                                <UserOverview
-                                    runs={runMap}
-                                    username={username}
-                                    gameTime={useGameTime}
-                                    session={session}
-                                    allGlobalGameData={allGlobalGameData}
-                                    parentForceUpdate={forceUpdate}
-                                />
-                            </Col>
-                            <Col xl={4} lg={12}>
-                                {!!liveRun && !Array.isArray(liveRun) && (
-                                    <div style={{ marginBottom: "1rem" }}>
-                                        <h2>
-                                            Currently Live!&nbsp;
-                                            <a href={"/live"}>
-                                                <LiveIcon />
-                                            </a>
-                                        </h2>
+                    <h2>Twitch stream</h2>
 
-                                        <div>
-                                            <a
-                                                href={`/live/${username}`}
-                                                className={"link-without-style"}
-                                            >
-                                                <LiveUserRun
-                                                    isUrl={true}
-                                                    liveRun={liveRun}
-                                                />
-                                            </a>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <UserStats runs={currentRuns} />
-                                {highlightedRun && (
-                                    <HighlightedRun run={highlightedRun} />
-                                )}
-                            </Col>
-                        </Row>
-                    </Tab>
-
-                    <Tab title={"Activity"} eventKey={"stats"}>
-                        <Row>
-                            <Col>
-                                <Stats username={username} />
-                            </Col>
-                        </Row>
-                    </Tab>
-                    <Tab title={"Sessions"} eventKey={"sessions"}>
-                        <Row>
-                            <Col>
-                                <h2>Speedrun Sessions</h2>
-                                <SessionOverview
-                                    sessions={
-                                        hasGameTime &&
-                                        useGameTime &&
-                                        gameTimeSessions
-                                            ? gameTimeSessions
-                                            : sessions
-                                    }
-                                />
-                            </Col>
-                        </Row>
-                    </Tab>
-                    <Tab
-                        title={"Twitch stream"}
-                        eventKey={"stream"}
-                        style={{ minHeight: "800px" }}
-                    >
-                        <h2>Twitch stream</h2>
-
-                        <TwitchEmbed
-                            channel={username}
-                            width={"100%"}
-                            height={"800px"}
-                            muted
-                            withChat={true}
-                        />
-                    </Tab>
-                </Tabs>
-            </div>
+                    <TwitchEmbed
+                        channel={username}
+                        width={"100%"}
+                        height={"800px"}
+                        muted
+                        withChat={true}
+                    />
+                </Tab>
+            </Tabs>
         </>
     );
 };

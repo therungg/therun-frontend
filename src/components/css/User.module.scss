@@ -40,10 +40,6 @@
     white-space: nowrap;
 }
 
-.gameTimeForm {
-    align-self: flex-end;
-}
-
 .image {
     float: left;
     min-width: 100px;
@@ -69,11 +65,6 @@
 @media screen and (max-width: 767.98px) {
     .video {
         height: 20rem;
-    }
-    .gameTimeForm {
-        justify-content: flex-start;
-        display: flex;
-        margin-top: 2rem;
     }
     .filterRow {
         position: relative;
