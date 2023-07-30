@@ -98,7 +98,7 @@ const User = ({
 
     return (
         <>
-            <Row style={{ marginBottom: "1rem" }}>
+            <Row className="mb-3">
                 <Col md={12} lg={9}>
                     <Userform
                         username={username}
@@ -106,7 +106,7 @@ const User = ({
                         userData={userData}
                     />
                 </Col>
-                {hasGameTime && (
+                {!hasGameTime && (
                     <Col md={12} lg={3} className={styles.gameTimeForm}>
                         <GametimeForm
                             useGameTime={useGameTime}
@@ -116,7 +116,8 @@ const User = ({
                 )}
             </Row>
             <div style={{ position: "relative" }}>
-                {allRunsRunMap.size > 1 && (
+                {/*{allRunsRunMap.size > 1 && (*/}
+                {true && (
                     <Row className={styles.filterRow}>
                         <Col className={`col-md-8 ${styles.filterMargin}`} />
                         <Col className={"col-md-4"}>

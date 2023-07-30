@@ -29,6 +29,17 @@ body {
   width: 66.6666%;
 }
 
+.timeZoneSelect {
+
+  > div {
+    background-color: var(--bs-secondary-bg)!important;
+  }
+
+  * {
+    color: var(--bs-body-color)!important;
+  }
+}
+
 // Custom button styles
 button {
 
@@ -148,6 +159,10 @@ body {
 
 .form-control {
 
+}
+
+.form-floating > label:after {
+  background:none!important;
 }
 
 .whitespace-nowrap {
