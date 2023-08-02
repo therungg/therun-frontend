@@ -38,6 +38,7 @@ $utilities: map-merge(
                 map-get(map-get($utilities, "max-width"), "values"),
                 (
                   350p: 350px,
+                  550p: 550px
                 )
             )
           )

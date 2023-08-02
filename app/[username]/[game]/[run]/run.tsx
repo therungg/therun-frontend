@@ -20,7 +20,7 @@ import { Activity } from "~src/components/run/dashboard/activity";
 import { SplitStats } from "~src/components/run/splits/split-stats";
 import { GameSessions } from "~src/components/run/run-sessions/game-sessions";
 import { History } from "~src/components/run/history/history";
-import Timesaves from "~src/components/run/dashboard/timesaves";
+import TimeSaves from "~src/components/run/dashboard/timesaves";
 import { CompareSplits } from "~src/components/run/compare/compare-splits";
 import { Vod } from "~src/components/run/dashboard/vod";
 import Golds from "~src/components/run/dashboard/golds";
@@ -206,9 +206,7 @@ export default function RunDetail({
                                     return (
                                         <Col xl={xl} key={k}>
                                             <i>{k}</i>:{" "}
-                                            <b style={{ fontSize: "0.95rem" }}>
-                                                {v}
-                                            </b>
+                                            <b className="fs-15p">{v}</b>
                                         </Col>
                                     );
                                 })}
@@ -227,7 +225,7 @@ export default function RunDetail({
             </Row>
 
             {!!liveRun && !Array.isArray(liveRun) && (
-                <div style={{ marginBottom: "1rem", maxWidth: "550px" }}>
+                <div className="mb-3 mw-550p">
                     <h2>
                         Currently Live!&nbsp;
                         <a href={"/live"}>
@@ -238,7 +236,7 @@ export default function RunDetail({
                     <div>
                         <a
                             href={`/live/${username}`}
-                            className={"link-without-style"}
+                            className="link-without-style"
                         >
                             <LiveUserRun liveRun={liveRun} isUrl={true} />
                         </a>
@@ -257,14 +255,14 @@ export default function RunDetail({
             >
                 <Tab eventKey="dashboard" title="Dashboard">
                     <Row>
-                        <Col className={"col-xl-8"}>
+                        <Col xl={8}>
                             <Splits
                                 splits={splits}
                                 gameTime={useGameTime}
                                 run={run}
                             />
                         </Col>
-                        <Col className={"col-xl-4"}>
+                        <Col xl={4}>
                             <Stats run={run} gameTime={useGameTime} />
                             <hr />
                             <RecentRuns
@@ -310,7 +308,7 @@ export default function RunDetail({
                     <Golds history={runs} splits={splits} />
                 </Tab>
                 <Tab eventKey="timesaves" title="Timesaves">
-                    <Timesaves history={runs} splits={splits} />
+                    <TimeSaves history={runs} splits={splits} />
                 </Tab>
                 <Tab eventKey="compare" title={"Compare splits"}>
                     {gameData ? (
@@ -333,9 +331,7 @@ export default function RunDetail({
                         title={"Video"}
                         className="ratio ratio-16x9"
                     >
-                        {run.vod && (
-                            <Vod vod={run.vod} width={"100%"} height={"100%"} />
-                        )}
+                        {run.vod && <Vod vod={run.vod} />}
                     </Tab>
                 )}
             </Tabs>

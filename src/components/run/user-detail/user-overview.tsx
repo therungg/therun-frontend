@@ -159,13 +159,7 @@ export const UserOverview = ({
                                                 style={{ whiteSpace: "nowrap" }}
                                             >
                                                 <i>{k}</i>:{" "}
-                                                <b
-                                                    style={{
-                                                        fontSize: "0.95rem",
-                                                    }}
-                                                >
-                                                    {v}
-                                                </b>
+                                                <b className="fs-15p">{v}</b>
                                             </Col>
                                         );
                                     })}
