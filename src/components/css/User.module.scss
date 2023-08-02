@@ -33,10 +33,6 @@
     appearance: none !important;
 }
 
-.title {
-    white-space: nowrap; // ToDo:
-}
-
 .image {
     float: left;
     min-width: 100px;
@@ -70,10 +66,6 @@
 
     .splitComparisonOption {
         display: revert;
-    }
-
-    .title {
-        white-space: revert;
     }
 
     .image {
