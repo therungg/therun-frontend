@@ -112,7 +112,7 @@ export const Media = () => {
                                         />
                                         <label
                                             htmlFor={"switch"}
-                                            className="ms-2 align-self-center whitespace-nowrap"
+                                            className="ms-2 align-self-center text-nowrap"
                                         >
                                             {" "}
                                             Transparent background{" "}
@@ -138,7 +138,7 @@ export const Media = () => {
                                         />
                                         <label
                                             htmlFor={"switch"}
-                                            className="ms-2 align-self-center whitespace-nowrap"
+                                            className="ms-2 align-self-center text-nowrap"
                                         >
                                             {" "}
                                             Dark theme{" "}
@@ -164,7 +164,7 @@ export const Media = () => {
                                         />
                                         <label
                                             htmlFor={"switch"}
-                                            className="ms-2 align-self-center whitespace-nowrap"
+                                            className="ms-2 align-self-center text-nowrap"
                                         >
                                             {" "}
                                             Cropped{" "}
@@ -190,7 +190,7 @@ export const Media = () => {
                                         />
                                         <label
                                             htmlFor={"switch"}
-                                            className="ms-2 align-self-center whitespace-nowrap"
+                                            className="ms-2 align-self-center text-nowrap"
                                         >
                                             {" "}
                                             With URL text in logo{" "}
@@ -241,7 +241,7 @@ export const Media = () => {
                                         />
                                         <label
                                             htmlFor={"switch"}
-                                            className="ms-2 align-self-center whitespace-nowrap"
+                                            className="ms-2 align-self-center text-nowrap"
                                         >
                                             {" "}
                                             Transparent background{" "}
@@ -267,7 +267,7 @@ export const Media = () => {
                                         />
                                         <label
                                             htmlFor={"switch"}
-                                            className="ms-2 align-self-center whitespace-nowrap"
+                                            className="ms-2 align-self-center text-nowrap"
                                         >
                                             {" "}
                                             Dark theme{" "}
@@ -293,7 +293,7 @@ export const Media = () => {
                                         />
                                         <label
                                             htmlFor={"switch"}
-                                            className="ms-2 align-self-center whitespace-nowrap"
+                                            className="ms-2 align-self-center text-nowrap"
                                         >
                                             {" "}
                                             With logo{" "}

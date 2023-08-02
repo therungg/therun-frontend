@@ -9,7 +9,6 @@ import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-w
 import { StatsData } from "~app/games/[game]/game.types";
 import { getSplitsHistoryUrl } from "~src/lib/get-splits-history";
 import { Col, Row, Tab, Tabs } from "react-bootstrap";
-import styles from "~src/components/css/User.module.scss";
 import { Title } from "~src/components/title";
 import { UserGameLink, UserLink } from "~src/components/links/links";
 import { GametimeForm } from "~src/components/gametime/gametime-form";
@@ -173,7 +172,7 @@ export default function RunDetail({
     return (
         <>
             <Row>
-                <Col xl={9} className={styles.title}>
+                <Col xl={9}>
                     <Title>
                         <UserGameLink game={run.game} username={username} /> -{" "}
                         {runName} by <UserLink username={username} />
@@ -181,10 +180,8 @@ export default function RunDetail({
                     <i>{run.description}</i>
 
                     {vars.length > 0 && (
-                        <small
-                            style={{ display: "flex", marginBottom: "0.3rem" }}
-                        >
-                            <Row style={{ width: "100%" }}>
+                        <small className="d-flex mb-1">
+                            <Row className="w-100">
                                 {vars.map(([k, v]) => {
                                     let xl = 12;
 
@@ -220,10 +217,7 @@ export default function RunDetail({
                     )}
                 </Col>
                 {run.hasGameTime && (
-                    <Col
-                        className={"col-xl-3"}
-                        style={{ alignSelf: "flex-end", whiteSpace: "nowrap" }}
-                    >
+                    <Col className="col-xl-3 align-self-end text-nowrap">
                         <GametimeForm
                             useGameTime={useGameTime}
                             setUseGameTime={setUseGameTime}
@@ -337,7 +331,7 @@ export default function RunDetail({
                     <Tab
                         eventKey="vod"
                         title={"Video"}
-                        className={styles.video}
+                        className="ratio ratio-16x9"
                     >
                         {run.vod && (
                             <Vod vod={run.vod} width={"100%"} height={"100%"} />
