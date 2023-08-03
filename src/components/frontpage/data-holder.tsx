@@ -1,3 +1,5 @@
+"use client";
+
 import { Col, Row, Table } from "react-bootstrap";
 import { RunPreview } from "./run-preview";
 import React from "react";

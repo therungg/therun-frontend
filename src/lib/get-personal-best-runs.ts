@@ -1,5 +1,7 @@
 import { Run } from "../common/types";
 
+export const revalidate = 100;
+
 export const getPersonalBestRuns = async (): Promise<Run[]> => {
     const url = `${process.env.NEXT_PUBLIC_DATA_URL}/runs`;
 
