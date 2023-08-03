@@ -1,3 +1,5 @@
+"use client";
+
 import { Game } from "~app/games/games.types";
 import { Row, Table } from "react-bootstrap";
 import { GameLink, UserLink } from "../links/links";
