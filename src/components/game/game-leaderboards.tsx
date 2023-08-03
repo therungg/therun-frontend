@@ -3,7 +3,6 @@ import { Col, Nav, Row, Tab, Table } from "react-bootstrap";
 import { DurationToFormatted, getFormattedString } from "../util/datetime";
 import { ReactElement, useState } from "react";
 import { UserLink } from "../links/links";
-import styles from "../css/Games.module.scss";
 import { Search as SearchIcon } from "react-bootstrap-icons";
 
 export const getLeaderboard = (
@@ -22,16 +21,10 @@ export const getLeaderboard = (
             <Col>
                 <Table bordered striped={search.length == 0} hover responsive>
                     <thead>
-                        <tr>
-                            <th style={{ width: "14%", textAlign: "center" }}>
-                                #
-                            </th>
-                            <th style={{ width: "38%", textAlign: "center" }}>
-                                User
-                            </th>
-                            <th style={{ width: "38%", textAlign: "center" }}>
-                                {name}
-                            </th>
+                        <tr className="text-center">
+                            <th style={{ width: "14%" }}>#</th>
+                            <th style={{ width: "38%" }}>User</th>
+                            <th style={{ width: "38%" }}>{name}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -56,20 +49,18 @@ export const getLeaderboard = (
                                             leaderboard.username
                                                 .toLowerCase()
                                                 .includes(search.toLowerCase())
-                                                ? ""
-                                                : styles.hiddenLeaderboardRow
+                                                ? "text-center"
+                                                : "d-none"
                                         }
                                     >
-                                        <td style={{ textAlign: "center" }}>
-                                            {leaderboard.placing}
-                                        </td>
-                                        <td style={{ textAlign: "center" }}>
+                                        <td>{leaderboard.placing}</td>
+                                        <td>
                                             <UserLink
                                                 url={url}
                                                 username={leaderboard.username}
                                             />
                                         </td>
-                                        <td style={{ textAlign: "center" }}>
+                                        <td>
                                             {transform
                                                 ? transform(
                                                       leaderboard.stat,

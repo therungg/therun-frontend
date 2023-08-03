@@ -2,7 +2,6 @@
 
 import { Tournament } from "~src/components/tournament/tournament-info";
 import { Card, Col, Image, Row } from "react-bootstrap";
-import styles from "~src/components/css/Games.module.scss";
 import { FromNow } from "~src/components/util/datetime";
 import { AllTournamentsProps } from "~app/tournaments/all-tournaments.types";
 
@@ -49,12 +48,10 @@ export const ListTournaments = ({
                         key={tournament.name}
                     >
                         {tournament.logoUrl && (
-                            <div
-                                className={styles.image}
-                                style={{ marginLeft: "0.5rem" }}
-                            >
+                            <div className="float-start d-flex d-none d-sm-block align-items-center min-h-152p me-2 ms-2">
                                 <a href={`/tournaments/${tournament.name}`}>
                                     <Image
+                                        className="min-h-152p"
                                         alt={"Tournament Logo"}
                                         src={tournament.logoUrl}
                                         height={135}
@@ -64,17 +61,17 @@ export const ListTournaments = ({
                             </div>
                         )}
                         <Card className="card-columns">
-                            <Card.Header className={styles.cardHeader}>
-                                <div style={{ overflow: "hidden" }}>
+                            <Card.Header>
+                                <div className="overflow-hidden">
                                     <a
                                         href={`/tournaments/${tournament.name}`}
-                                        style={{ fontSize: "large" }}
+                                        className="fs-large"
                                     >
                                         {tournament.shortName ||
                                             tournament.name}
                                     </a>
-                                    <div style={{ float: "right" }}>
-                                        <i style={{ alignSelf: "center" }}>
+                                    <div className="float-end">
+                                        <i className="align-self-center">
                                             <FromNow
                                                 time={tournament.startDate}
                                             />
@@ -82,7 +79,7 @@ export const ListTournaments = ({
                                     </div>
                                 </div>
                             </Card.Header>
-                            <Card.Body className={styles.cardBody}>
+                            <Card.Body>
                                 <Row>
                                     <Col className={"col-md-6 col-5"}>
                                         <b>Start Date:</b>
