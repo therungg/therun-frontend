@@ -1,21 +1,33 @@
 "use client";
 
-import { Race } from "~app/races/races.types";
+import { Race, RaceParticipant } from "~app/races/races.types";
 import { Button, Table } from "react-bootstrap";
 import Link from "next/link";
-import { joinRace } from "~src/lib/races";
+import { joinRace, unjoinRace } from "~src/lib/races";
 import { User } from "../../types/session.types";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { arrayToMap } from "~src/utils/array";
 
 interface RaceOverviewProps {
     races: Race[];
     user?: User;
+    raceParticipations: RaceParticipant[];
 }
 
-export const RaceOverview = ({ races, user }: RaceOverviewProps) => {
+//TODO: Very basic first page that just shows some functionality. Proof of concept only.
+export const RaceOverview = ({
+    races,
+    user,
+    raceParticipations,
+}: RaceOverviewProps) => {
     const router = useRouter();
     const [registeringForRace, setRegisteringForRace] = useState(false);
+
+    const raceParticipationMap = arrayToMap<RaceParticipant, "raceId">(
+        raceParticipations,
+        "raceId"
+    );
 
     return (
         <div>
@@ -31,6 +43,14 @@ export const RaceOverview = ({ races, user }: RaceOverviewProps) => {
                 </thead>
                 <tbody>
                     {races.map((race) => {
+                        const userIsInRace = raceParticipationMap.has(
+                            race.raceId
+                        );
+
+                        const userParticipation = userIsInRace
+                            ? raceParticipationMap.get(race.raceId)
+                            : undefined;
+
                         return (
                             <tr key={race.raceId}>
                                 <td>{race.customName}</td>
@@ -41,25 +61,66 @@ export const RaceOverview = ({ races, user }: RaceOverviewProps) => {
                                 </td>
                                 {user?.id && (
                                     <td>
-                                        <Button
-                                            onClick={async () => {
-                                                setRegisteringForRace(true);
-                                                const result = await joinRace(
-                                                    race.raceId
-                                                );
-                                                setRegisteringForRace(false);
-                                                if (result.raceId) {
-                                                    const redirectUrl = `/races/${race.raceId}`;
+                                        {userIsInRace && (
+                                            <div>
+                                                <Button
+                                                    onClick={async () => {
+                                                        // TODO: This should not be inline (seperate component) and obviously should not refresh the page but update the state
+                                                        setRegisteringForRace(
+                                                            true
+                                                        );
+                                                        const result =
+                                                            await unjoinRace(
+                                                                race.raceId
+                                                            );
+                                                        setRegisteringForRace(
+                                                            false
+                                                        );
+                                                        if (result.raceId) {
+                                                            router.refresh();
+                                                        } else {
+                                                            // eslint-disable-next-line no-console
+                                                            console.error(
+                                                                result
+                                                            );
+                                                        }
+                                                    }}
+                                                >
+                                                    Leave Race
+                                                </Button>
+                                                <div>
+                                                    Status:{" "}
+                                                    {userParticipation?.status}
+                                                </div>
+                                            </div>
+                                        )}
+                                        {!userIsInRace && (
+                                            <Button
+                                                onClick={async () => {
+                                                    // TODO: This should not be inline (seperate component)
+                                                    setRegisteringForRace(true);
+                                                    const result =
+                                                        await joinRace(
+                                                            race.raceId
+                                                        );
+                                                    setRegisteringForRace(
+                                                        false
+                                                    );
+                                                    if (result.raceId) {
+                                                        const redirectUrl = `/races/${race.raceId}`;
 
-                                                    router.push(redirectUrl);
-                                                } else {
-                                                    // eslint-disable-next-line no-console
-                                                    console.error(result);
-                                                }
-                                            }}
-                                        >
-                                            Join race
-                                        </Button>
+                                                        router.push(
+                                                            redirectUrl
+                                                        );
+                                                    } else {
+                                                        // eslint-disable-next-line no-console
+                                                        console.error(result);
+                                                    }
+                                                }}
+                                            >
+                                                Join race
+                                            </Button>
+                                        )}
                                     </td>
                                 )}
                             </tr>

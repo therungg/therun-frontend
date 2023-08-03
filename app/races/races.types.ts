@@ -1,6 +1,7 @@
 export type RaceStatus = "pending" | "progress" | "finished" | "aborted";
 export type RaceParticipantStatus =
     | "joined"
+    | "ready"
     | "started"
     | "finished"
     | "abandoned"
@@ -19,12 +20,14 @@ export interface Race {
     customRules: RaceRule[];
     customName: string;
     visible: boolean;
+    participants?: RaceParticipant[];
 }
 
 export type RaceParticipant = {
     raceId: string;
     user: string;
     status: RaceParticipantStatus;
+    pb: string;
 };
 
 // TODO:: determine which rules are possible
