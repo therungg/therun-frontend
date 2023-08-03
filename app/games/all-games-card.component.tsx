@@ -17,7 +17,7 @@ export const AllGamesCard: React.FunctionComponent<AllGamesCardProps> = ({
         <Col xl={6} lg={12} key={game.game}>
             <AllGamesImage game={game} />
             <Card
-                className="card-columns whitespace-nowrap"
+                className="card-columns text-nowrap"
                 style={{
                     border: "2px var(--bs-secondary-bg) solid",
                     borderRadius: "10px",
