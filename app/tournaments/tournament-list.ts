@@ -10,7 +10,7 @@ const tournamentMap: Map<string, string> = new Map([
     ["saesr", "NCW Seeding"],
     ["WaifuRuns", "WaifuRuns RE4 Tournament"],
     ["SMOAnyPercentCC", "Super Mario Odyssey Community Clash Qualifier"],
-    ["ccg", "Super Mario Odyssey Community Clash"],
+    ["ccg", "CCG Community Clash: New Super Luigi U"],
     [
         "hazebladeinvitational",
         "Hazeblade Invitational Qualifiers ft. Resident Evil 4",
