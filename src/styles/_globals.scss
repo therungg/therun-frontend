@@ -170,6 +170,12 @@ body {
   list-style-position: inside;
 }
 
+.game-card {
+  border: 2px solid;
+  border-color: var(--bs-card-cap-bg) !important;
+  border-radius: 10px;
+}
+
 .dropdown-toggle {
 
   &:after {
