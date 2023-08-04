@@ -1,0 +1,101 @@
+.card {
+  white-space: nowrap;
+  color: var(--bs-body-color);
+  background-color: var(--bs-secondary-bg);
+  border-radius: 10px;
+  border-width: 2px;
+  border-color: var(--bs-secondary-bg);
+  min-height: 9.5rem;
+}
+
+.cardBody { // ToDo: Use bootstrap defaults
+  --bs-card-spacer-x: clamp(.2rem, 2%, .6rem);
+  --bs-card-spacer-y: clamp(.2rem, 2%, .6rem);
+}
+
+.timeUser {
+  display: flex;
+}
+
+.filter {
+  display: flex !important;
+  margin-bottom: 1rem;
+  width: 40%;
+}
+
+.image {
+  float: left;
+  min-width: 100px;
+  display: flex;
+  align-items: center;
+  margin-right: 0.5rem;
+
+  img {
+    min-height: 9.5rem;
+  }
+}
+
+.backupImage {
+  display: flex;
+  align-items: center;
+  min-height: 142px;
+}
+
+.userLink {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+
+.hiddenLeaderboardRow {
+  display: none;
+}
+
+@media screen and (min-width: 0px) {
+  .timeUser {
+    padding-right: 0.5rem;
+  }
+}
+
+@media screen and (min-width: 576px) {
+
+  .timeUser {
+    padding-right: 0.5rem;
+  }
+}
+
+@media screen and (min-width: 768px) {
+
+  .timeUser {
+    padding-right: 1rem;
+  }
+}
+
+@media screen and (min-width: 992px) {
+
+  .timeUser {
+    padding-right: 1rem;
+  }
+}
+
+@media screen and (max-width: 991.98px) {
+  .filter {
+    width: 60%;
+  }
+}
+
+@media screen and (max-width: 767.98px) {
+  .filter {
+    width: 80%;
+  }
+}
+
+@media screen and (max-width: 575.98px) {
+  .filter {
+    width: 100%;
+  }
+  .image {
+    display: none;
+  }
+}

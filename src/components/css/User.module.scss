@@ -1,4 +1,3 @@
-/*
 .filterRow {
     margin-bottom: 1rem;
     position: absolute;
@@ -24,9 +23,6 @@
     display: none;
 }
 
-.video {
-    height: 50rem; -> // ToDo: aspect ratio
-}
 
 .hideSelectArrow {
     -webkit-appearance: none !important;
@@ -34,14 +30,6 @@
     text-indent: 0.01px;
     text-overflow: "";
     appearance: none !important;
-}
-
-.title {
-    white-space: nowrap;
-}
-
-.gameTimeForm {
-    align-self: flex-end;
 }
 
 .image {
@@ -54,27 +42,8 @@
     justify-self: center;
 }
 
-@media screen and (max-width: 1199.98px) {
-    .video {
-        height: 40rem;
-    }
-}
-
-@media screen and (max-width: 991.98px) {
-    .video {
-        height: 30rem;
-    }
-}
-
 @media screen and (max-width: 767.98px) {
-    .video {
-        height: 20rem;
-    }
-    .gameTimeForm {
-        justify-content: flex-start;
-        display: flex;
-        margin-top: 2rem;
-    }
+
     .filterRow {
         position: relative;
         float: left;
@@ -98,12 +67,7 @@
         display: revert;
     }
 
-    .title {
-        white-space: revert;
-    }
-
     .image {
         display: none;
     }
 }
-*/

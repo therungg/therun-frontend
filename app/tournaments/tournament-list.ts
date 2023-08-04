@@ -3,7 +3,7 @@
 const tournamentMap: Map<string, string> = new Map([
     ["DefeatGanonCC", "Defeat Ganon No SRM Community Clash Main Event"],
     ["dirtythirty", "Dirty Thirty Sapphire Tourney 2"],
-    ["gsa", "PACE Summer 2023"],
+    ["gsa", "SWRC Season 3: Super Mario 64"],
     ["hgss", "HGSS Blitz"],
     ["lego", "Lego Challenge 3"],
     ["moist", "The Elder Scrolls Adventures: Redguard Speedrun Challenge"],
@@ -15,6 +15,7 @@ const tournamentMap: Map<string, string> = new Map([
         "hazebladeinvitational",
         "Hazeblade Invitational Qualifiers ft. Resident Evil 4",
     ],
+    ["basementcup", "Ultimate Basement Cup 2023"],
 ]);
 
 export const getAllTournamentSlugs = (): string[] => {

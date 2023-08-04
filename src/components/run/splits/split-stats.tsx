@@ -1,4 +1,4 @@
-import { RunHistory, SplitsHistory } from "../../../common/types";
+import { RunHistory, SplitsHistory } from "~src/common/types";
 import { Accordion, Card, Col, Row } from "react-bootstrap";
 import { Difference, DurationToFormatted } from "../../util/datetime";
 import { GoldProgressionGraph } from "./gold-progression-graph";

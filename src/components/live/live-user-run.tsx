@@ -2,13 +2,13 @@ import { Col, Image, Row } from "react-bootstrap";
 import styles from "../css/LiveRun.module.scss";
 import React, { useEffect, useState } from "react";
 import { UserLink } from "../links/links";
-import { TwitchIcon } from "../user/userform";
 import { usePatreons } from "../patreon/use-patreons";
 import patreonStyles from "../patreon/patreon-styles";
 import { DurationToFormatted } from "../util/datetime";
 import { LiveRun } from "~app/live/live.types";
 import { LiveSplitTimerComponent } from "~app/live/live-split-timer.component";
 import { GameImage } from "~src/components/image/gameimage";
+import { Twitch as TwitchIcon } from "react-bootstrap-icons";
 
 export const LiveUserRun = ({
     liveRun,
@@ -181,7 +181,7 @@ export const LiveUserRun = ({
                         />
                         {liveRun.currentlyStreaming && (
                             <div className="ms-2">
-                                <TwitchIcon height={22} />
+                                <TwitchIcon height={22} color={"#6441a5"} />
                             </div>
                         )}
                     </div>

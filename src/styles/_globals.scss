@@ -29,6 +29,17 @@ body {
   width: 66.6666%;
 }
 
+.timeZoneSelect {
+
+  > div {
+    background-color: var(--bs-secondary-bg)!important;
+  }
+
+  * {
+    color: var(--bs-body-color)!important;
+  }
+}
+
 // Custom button styles
 button {
 
@@ -144,14 +155,15 @@ body {
   &-responsive-large     { font-size: clamp(18px, 1.5vw, 24px)!important; }
   &-responsive-larger    { font-size: clamp(1.4rem, 3vw, 2rem)!important; }
   &-responsive-xxx-large { font-size: clamp(3rem, 5vw, 5rem)!important; }
+  &-15p                  { font-size: 15px; }
 }
 
 .form-control {
 
 }
 
-.whitespace-nowrap {
-  white-space: nowrap;
+.form-floating > label:after {
+  background:none!important;
 }
 
 .list-style-inside {
