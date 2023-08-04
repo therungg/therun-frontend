@@ -48,10 +48,10 @@ export const ListTournaments = ({
                         key={tournament.name}
                     >
                         {tournament.logoUrl && (
-                            <div className="float-start d-flex d-none d-sm-block align-items-center min-h-152p me-2 ms-2">
+                            <div className="float-start d-flex d-none d-sm-block align-items-center me-2 ms-2">
                                 <a href={`/tournaments/${tournament.name}`}>
                                     <Image
-                                        className="min-h-152p"
+                                        className="w-auto"
                                         alt={"Tournament Logo"}
                                         src={tournament.logoUrl}
                                         height={135}

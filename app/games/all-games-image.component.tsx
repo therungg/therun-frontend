@@ -16,14 +16,11 @@ export const AllGamesImage: React.FunctionComponent<AllGamesImageProps> = ({
     const { theme } = useTheme();
     const gameUrl = getGameUrl(game);
     return (
-        <div
-            className="float-start d-flex d-none d-sm-block align-items-center min-h-152p me-2"
-            style={{ minWidth: "100px" }}
-        >
+        <div className="float-start d-flex d-none d-sm-block align-items-center me-2">
             <a href={`/games/${gameUrl}`}>
                 {game.image && game.image != "noimage" && (
                     <GameImage
-                        className="min-h-152p"
+                        className="w-auto"
                         alt={game.display}
                         src={game.image}
                         quality={"medium"}
@@ -32,9 +29,8 @@ export const AllGamesImage: React.FunctionComponent<AllGamesImageProps> = ({
                     />
                 )}
                 {(!game.image || game.image == "noimage") && (
-                    <div className="d-flex align-items-center min-h-152p">
+                    <div className="d-flex align-items-center">
                         <Image
-                            className="min-h-152p"
                             alt={"Game Image"}
                             src={`/logo_${theme}_theme_no_text_transparent.png`}
                             width={106}
