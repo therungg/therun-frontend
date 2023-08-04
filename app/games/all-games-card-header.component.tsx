@@ -14,7 +14,7 @@ export const AllGamesCardHeader: React.FunctionComponent<
 > = ({ game }) => {
     const gameUrl = getGameUrl(game);
     return (
-        <Card.Header>
+        <Card.Header className="border-0">
             <div className="overflow-hidden">
                 <a href={`/games/${gameUrl}`} className="fs-large">
                     {game.display}

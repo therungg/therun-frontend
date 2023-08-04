@@ -61,7 +61,7 @@ export const ListTournaments = ({
                             </div>
                         )}
                         <Card className="card-columns">
-                            <Card.Header>
+                            <Card.Header className="border-0">
                                 <div className="overflow-hidden">
                                     <a
                                         href={`/tournaments/${tournament.name}`}
