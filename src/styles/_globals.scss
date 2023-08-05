@@ -193,7 +193,7 @@ body {
 }
 
 .game-border {
-  border-color: var(--bs-tertiary-bg-rgb);
+  --bs-card-border-color: var(--bs-tertiary-bg)!important;
 }
 
 // Widths
