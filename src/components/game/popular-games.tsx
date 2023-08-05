@@ -1,3 +1,5 @@
+"use client";
+
 import { Game } from "~app/games/games.types";
 import { Table } from "react-bootstrap";
 import styles from "../css/GamesTable.module.scss";
