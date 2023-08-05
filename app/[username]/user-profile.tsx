@@ -8,7 +8,6 @@ import { UserStats } from "~src/components/run/user-detail/user-stats";
 import React, { useEffect, useReducer, useState } from "react";
 import { GametimeForm } from "~src/components/gametime/gametime-form";
 import Link from "next/link";
-import styles from "~src/components/css/User.module.scss";
 import { Userform } from "~src/components/user/userform";
 import { HighlightedRun } from "~src/components/run/dashboard/highlighted-run";
 import { LiveIcon, LiveUserRun } from "~src/components/live/live-user-run";
@@ -120,9 +119,9 @@ const User = ({
                 )}
             </Row>
             {allRunsRunMap.size > 1 && (
-                <Row className={styles.filterRow}>
-                    <Col className={`col-md-8 ${styles.filterMargin}`} />
-                    <Col className={"col-md-4"}>
+                <Row className="">
+                    <Col className="col-md-8" />
+                    <Col className="col-12 my-3 my-md-0 col-md-4 game-filter-mb game-filter-mw">
                         <select
                             className={"form-select"}
                             onChange={(e) => {
@@ -161,7 +160,7 @@ const User = ({
             {/*</div>*/}
             <Tabs
                 defaultActiveKey="overview"
-                className={`mb-3${
+                className={`mb-3 pt-0 w-100 mw-md-66${
                     allRunsRunMap.size > 1 ? " with-filter" : ""
                 }`}
                 style={{ position: "relative", zIndex: 1 }}
