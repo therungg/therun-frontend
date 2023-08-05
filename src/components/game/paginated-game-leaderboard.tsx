@@ -42,7 +42,9 @@ const PaginatedGameLeaderboardComponent = ({
 
     return (
         <div>
-            <PaginationSearch text={"Search user"} />
+            <div>
+                <PaginationSearch text={"Search user"} />
+            </div>
             {getLeaderboard(name, pagination.data, "", transform)}
             <PaginationControl {...pagination} minimalLayout={true} />
         </div>
