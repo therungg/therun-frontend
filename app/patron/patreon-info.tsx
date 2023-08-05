@@ -1,7 +1,6 @@
 "use client";
 
 import { usePatreons } from "~src/components/patreon/use-patreons";
-import styles from "~src/components/css/Support.module.scss";
 import { Button, Col, Row, Table } from "react-bootstrap";
 import { UserLink } from "~src/components/links/links";
 import React from "react";
@@ -12,42 +11,40 @@ export function PatreonInfo({ session }: { session: { username: string } }) {
     const { data: patreonData, isLoading } = usePatreons();
 
     return (
-        <div>
-            <h1 className={styles.supportTitle}>Support therun.gg</h1>
-            <Row>
-                <Col className={styles.supportOption}>
-                    <h3 className={styles.becomeAPatreon}>Become a Patron</h3>
-                    <div className={styles.unlockText}>
-                        Read the section below to discover what you can unlock!
-                    </div>
-                    <div className={styles.goToPatreonButton}>
+        <>
+            <Row className="g-4 mb-4 text-center">
+                <h1 className="text-center">Support therun.gg</h1>
+                <Col className="col-10 col-xl-5 mx-auto">
+                    <div className="h-100 p-4 p-md-5 bg-body-secondary border rounded-3 border-secondary border-2">
+                        <h3>Become a Patron</h3>
+                        <p className="mb-4">
+                            Read the section below to discover what you can
+                            unlock!
+                        </p>
                         <a
                             target={"_blank"}
                             rel={"noreferrer"}
                             href={"https://patreon.com/therungg"}
                         >
-                            <Button className="btn-lg px-3 h-3r fw-medium">
+                            <Button className="btn btn-secondary btn-lg border-2 px-3 h-3r fw-medium w-240p h-4r fs-large mw-100">
                                 Go to Patreon
                             </Button>
                         </a>
                     </div>
                 </Col>
-                <Col className={styles.supportOptionStripe}>
-                    <h3 className={styles.becomeAPatreon}>
-                        Donate with Stripe
-                    </h3>
-                    <div className={styles.unlockText}>
-                        To support me on a one-time basis, you can donate with
-                        Stripe
-                    </div>
-
-                    <div className={styles.goToPatreonButton}>
+                <Col className="col-10 col-xl-5 mx-auto">
+                    <div className="h-100 p-4 p-md-5 bg-body-secondary border rounded-3 border-primary border-2">
+                        <h3>Donate with Stripe</h3>
+                        <p className="mb-4">
+                            To support me on a one-time basis, you can donate
+                            with Stripe
+                        </p>
                         <a
                             target={"_blank"}
                             rel={"noreferrer"}
                             href={stripePaymentButton}
                         >
-                            <Button className={styles.learnMoreButtonStripe}>
+                            <Button className="btn btn-primary btn-lg border-2 px-3 h-3r fw-medium w-240p h-4r fs-large mw-100">
                                 Donate with Stripe
                             </Button>
                         </a>
@@ -56,47 +53,38 @@ export function PatreonInfo({ session }: { session: { username: string } }) {
             </Row>
             <hr />
             <Row>
-                <Col lg={6} md={12}>
-                    <div className={styles.explainTextMargin}>
+                <Col lg={6} md={12} className="text-center">
+                    <div className="d-flex justify-content-center mb-3">
                         <PatreonBunnySvg size={95} />
                     </div>
-
-                    <div className={styles.explainTextMargin}>
-                        The Run will always be{" "}
-                        <span>&nbsp;without ads&nbsp;</span> and{" "}
-                        <span>&nbsp;without paywalls</span>.
-                    </div>
-
-                    <div className={styles.explainText}>
+                    <p>
+                        The Run will always be without ads and without paywalls.
+                    </p>
+                    <p>
                         If you like what I do, please consider joining the
                         Patreon program.
-                    </div>
-
-                    <div className={styles.explainTextMargin}>
+                        <br />
                         This allows me to keep the site running and build more
                         cool stuff in the future!
-                    </div>
+                    </p>
 
-                    <div className={styles.explainText}>
+                    <p>
                         In return for your unending generosity, I will give you
                         some cool little visual perks.
-                    </div>
-
-                    <div className={styles.explainTextMargin}>
+                        <br />
                         See the table with benefits for what I can give you!
-                    </div>
+                    </p>
                     {session.username && (
-                        <div className={styles.explainText}>
+                        <p>
                             To claim your benefits,&nbsp;
                             <a href={"/change-appearance"}>click here!</a>
-                        </div>
+                        </p>
                     )}
 
                     <hr />
 
-                    <h2 className={styles.explainText}>Patrons</h2>
-
-                    <Row>
+                    <h2 className="mb-3">Patrons</h2>
+                    <Row xs={1} sm={2} md={3} lg={2} xl={3} className="g-3">
                         {patreonData &&
                             !isLoading &&
                             Object.keys(patreonData)
@@ -108,257 +96,197 @@ export function PatreonInfo({ session }: { session: { username: string } }) {
                                 })
                                 .map((key, n) => {
                                     return (
-                                        <Col
-                                            xl={4}
-                                            key={n}
-                                            className={styles.patron}
-                                        >
+                                        <Col key={n} className="fs-x-large">
                                             <UserLink username={key} />
                                         </Col>
                                     );
                                 })}
                     </Row>
                 </Col>
-                <Col>
+                <Col className="text-center">
                     <Table responsive>
                         <thead>
                             <tr>
-                                <th style={{ width: "60%" }}></th>
-                                <th style={{ width: "20%" }}>
-                                    <div className={styles.explainText}>
-                                        For free
-                                    </div>
-                                </th>
-                                <th style={{ width: "20%" }}>
-                                    <div className={styles.explainText}>
-                                        For Patreons
-                                    </div>
-                                </th>
+                                <th className="w-60"></th>
+                                <th className="w-20">For free</th>
+                                <th className="w-20">For Patreons</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>
+                                <td className="text-start">
                                     Unlimited access to data from all your
                                     favorite runners
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>Profile with overview of all your runs</td>
-                                <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                <td className="text-start">
+                                    Profile with overview of all your runs
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
+                                </td>
+                                <td>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>Advanced stats about all your runs</td>
-                                <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                <td className="text-start">
+                                    Advanced stats about all your runs
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
+                                </td>
+                                <td>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>Compare your stats to others</td>
-                                <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                <td className="text-start">
+                                    Compare your stats to others
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
+                                </td>
+                                <td>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>Access to The Run Live</td>
-                                <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                <td className="text-start">
+                                    Access to The Run Live
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
+                                </td>
+                                <td>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>
+                                <td className="text-start">
                                     Automatic real-time syncing of your splits
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>Twitch extension</td>
+                                <td className="text-start">Twitch extension</td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>
+                                <td className="text-start">
                                     Any other feature available now or in the
                                     future
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>Neat game overview</td>
-                                <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                <td className="text-start">
+                                    Neat game overview
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
+                                </td>
+                                <td>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>
+                                <td className="text-start">
                                     Game + category leaderboards for a bunch of
                                     stats
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>
+                                <td className="text-start">
                                     This amazing golden rabbit next to your name{" "}
                                     <PatreonBunnySvg size={20} />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Cross />
-                                    </div>
+                                    <Cross />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>
+                                <td className="text-start">
                                     Customize how your name shows up on the site
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Cross />
-                                    </div>
+                                    <Cross />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>
+                                <td className="text-start">
                                     Exclusive access to a Patreon Discord-role +
                                     channel
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Cross />
-                                    </div>
+                                    <Cross />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>
+                                <td className="text-start">
                                     Special shoutouts on the site (like on this
                                     page!)
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Cross />
-                                    </div>
+                                    <Cross />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>My eternal thanks and gratitude</td>
-                                <td>
-                                    <div className={styles.explainText}>
-                                        <Cross />
-                                    </div>
+                                <td className="text-start">
+                                    My eternal thanks and gratitude
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Cross />
+                                </td>
+                                <td>
+                                    <Checkmark />
                                 </td>
                             </tr>
                         </tbody>
                     </Table>
                 </Col>
             </Row>
-        </div>
+        </>
     );
 }
 
