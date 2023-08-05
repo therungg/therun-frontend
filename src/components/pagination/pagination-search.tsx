@@ -8,7 +8,7 @@ export const PaginationSearch = ({ text }: { text: string }) => {
     const searchInputRef = React.useRef<HTMLInputElement>(null);
 
     return (
-        <div className="input-group">
+        <div className="input-group game-filter-mw">
             <span
                 className="input-group-text"
                 onClick={() => {
