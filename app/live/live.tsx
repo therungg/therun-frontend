@@ -119,7 +119,7 @@ export const Live = ({
                     </Row>
                 )}
             <Row className="g-3 my-3">
-                <div className="input-group mw-80">
+                <div className="input-group mw-search">
                     <span
                         className="input-group-text"
                         onClick={() => {

@@ -305,7 +305,7 @@ export const GameLeaderboards = ({
                 </Col>
                 <Col lg={9} md={8}>
                     <div className="d-flex justify-content-center">
-                        <div className="mb-3 input-group">
+                        <div className="mb-3 input-group game-filter-mw">
                             <span
                                 className="input-group-text"
                                 onClick={() => {

@@ -1,7 +1,6 @@
 import { CumulativeGameStat } from "~app/games/[game]/game.types";
 import { Table } from "react-bootstrap";
 import { DurationToFormatted } from "../util/datetime";
-import styles from "../css/Game.module.scss";
 
 export const GameStats = ({
     stats,
@@ -15,7 +14,7 @@ export const GameStats = ({
     return (
         <div>
             {showTitle && <h2>General stats</h2>}
-            <Table responsive borderless className={styles.statsHorizontal}>
+            <Table responsive borderless className="d-none d-md-table">
                 <thead>
                     <tr>
                         {players && <th># Players</th>}
@@ -43,7 +42,7 @@ export const GameStats = ({
                     </tr>
                 </tbody>
             </Table>
-            <Table responsive className={styles.statsVertical}>
+            <Table responsive className="d-md-none">
                 <tbody>
                     {players && (
                         <tr>

@@ -128,7 +128,7 @@ export const TournamentRuns = ({ data }) => {
         <div>
             <h2>Tournament runs</h2>
             <div className="d-flex justify-content-start mb-1">
-                <div className="mb-3 input-group">
+                <div className="mb-3 input-group game-filter-mw">
                     <span
                         className="input-group-text"
                         onClick={() => {

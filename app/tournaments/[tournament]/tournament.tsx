@@ -374,7 +374,7 @@ export const GenericTournament = ({
                             </Row>
 
                             <div className="d-flex justify-content-center">
-                                <div className="mb-3 input-group">
+                                <div className="mb-3 input-group game-filter-mw">
                                     <span
                                         className="input-group-text"
                                         onClick={() => {

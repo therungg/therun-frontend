@@ -183,6 +183,42 @@ body {
   }
 }
 
+// Custom border
+.border.border {
+
+  &-tertiary {
+    --bs-border-opacity: 1;
+    border-color: rgba(var(--bs-tertiary-bg-rgb), var(--bs-border-opacity))!important;
+  }
+}
+
+// Widths
+.mw-search {
+  @media (min-width: 576px) { width: 80%!important }
+  @media (min-width: 768px) { width: 60%!important }
+  @media (min-width: 992px) { width: 40%!important }
+}
+
+.mw-md-66 {
+  @media (min-width: 768px) { max-width: 66.6666%!important }
+}
+
+// Filters
+div.game-filter {
+
+  &-mb {
+    @media (min-width: 768px) { margin-bottom: -100%!important }
+  }
+
+  &-mw { max-width: 40rem!important }
+}
+
+// Tables
+.table>:not(:first-child) {
+  border-top-width: 2px !important;
+}
+
+
 // Add custom container max-width
 @media (min-width: 1599.98px) {
   .container {

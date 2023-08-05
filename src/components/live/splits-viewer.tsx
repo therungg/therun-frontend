@@ -37,7 +37,7 @@ export const SplitsViewer = ({
     if (!activeLiveRun.splits) return <></>;
 
     return (
-        <div className="bg-body-tertiary h-340p">
+        <div className="bg-body-tertiary h-340p border border-tertiary">
             <Row className="overflow-hidden h-15 px-4 py-0">
                 <Col xs={6}>
                     <div className="text-truncate" title={activeLiveRun.game}>

@@ -15,10 +15,6 @@
   margin-bottom: 1rem;
 }
 
-
-.statsHorizontal {
-}
-
 .statsVertical {
     display: none;
 }
@@ -47,10 +43,6 @@
 }
 
 @media screen and (max-width: 767.98px) {
-    .statsHorizontal {
-        display: none;
-    }
-
     .statsVertical {
         display: revert;
     }
