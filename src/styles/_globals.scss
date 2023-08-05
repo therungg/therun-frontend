@@ -192,6 +192,10 @@ body {
   }
 }
 
+.game-border {
+  border-color: var(--bs-tertiary-bg-rgb);
+}
+
 // Widths
 .mw-search {
   @media (min-width: 576px) { width: 80%!important }
