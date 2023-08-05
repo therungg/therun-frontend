@@ -1,7 +1,12 @@
 import { PaginatedGameResult } from "~app/games/games.types";
+import { getApiKey } from "~src/actions/api-key.action";
 
 const fetchData = async (url: string) => {
-    const res = await fetch(url);
+    const res = await fetch(url, {
+        headers: {
+            "x-api-key": getApiKey(),
+        },
+    });
 
     const json = await res.json();
 
