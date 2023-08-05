@@ -1,7 +1,37 @@
 import useWebSocket, { Options, ReadyState } from "react-use-websocket";
 import { useEffect } from "react";
+import { WebsocketLiveRunMessage } from "~app/live/live.types";
+import {
+    Race,
+    RaceParticipant,
+    WebsocketRaceMessage,
+} from "~app/races/races.types";
+import { User } from "../../../types/session.types";
 
-export const useReconnectWebsocket = (username?: string) => {
+type WebsocketType = "liveRun" | "race";
+
+export const useLiveRunsWebsocket = (username?: string) =>
+    useReconnectWebsocket<WebsocketLiveRunMessage>("liveRun", username);
+
+export const useAllRacesWebsocket = () =>
+    useReconnectWebsocket<WebsocketRaceMessage<Race>>("race", "all-races");
+
+export const useRaceWebsocket = (raceId: string) =>
+    useReconnectWebsocket<WebsocketRaceMessage<Race | RaceParticipant>>(
+        "race",
+        raceId
+    );
+
+export const useUserRaceParticipationsWebsocket = (user: User | undefined) =>
+    useReconnectWebsocket<WebsocketRaceMessage<RaceParticipant>>(
+        "race",
+        user ? `${user.username}-races` : null
+    );
+
+export const useReconnectWebsocket = <T>(
+    type: WebsocketType,
+    value?: string | null
+): T => {
     const options: Options = {
         shouldReconnect: () => true,
         retryOnError: true,
@@ -11,12 +41,13 @@ export const useReconnectWebsocket = (username?: string) => {
     const pingIntervalMinutes = 9;
     let websocketUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL as string;
 
-    if (username) {
-        websocketUrl += `?username=${username}`;
+    if (value) {
+        const queryType = type === "liveRun" ? "username" : "race";
+        websocketUrl += `?${queryType}=${value}`;
     }
 
-    const { lastMessage, sendMessage, readyState } = useWebSocket(
-        websocketUrl,
+    const { lastJsonMessage, sendMessage, readyState } = useWebSocket<T>(
+        value !== null ? websocketUrl : null,
         options
     );
 
@@ -31,5 +62,5 @@ export const useReconnectWebsocket = (username?: string) => {
         }
     }, [readyState]);
 
-    return lastMessage;
+    return lastJsonMessage;
 };

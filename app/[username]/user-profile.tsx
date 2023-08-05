@@ -14,7 +14,7 @@ import { HighlightedRun } from "~src/components/run/dashboard/highlighted-run";
 import { LiveIcon, LiveUserRun } from "~src/components/live/live-user-run";
 import Stats from "~src/components/user/stats";
 import { TwitchEmbed } from "~src/vendor/react-twitch-embed/dist/index";
-import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
+import { useLiveRunsWebsocket } from "~src/components/websocket/use-reconnect-websocket";
 import { LiveRun } from "~app/live/live.types";
 import { getRunmap } from "~app/[username]/runmap.component";
 import { prepareSessions } from "~app/[username]/prepare-sessions.component";
@@ -48,16 +48,15 @@ const User = ({
     const [, forceUpdate] = useReducer((x) => x + 1, 0);
     const [liveRun, setLiveRun] = useState(liveData);
 
-    const lastMessage = useReconnectWebsocket(username);
+    const lastMessage = useLiveRunsWebsocket(username);
 
     useEffect(() => {
         if (lastMessage !== null) {
-            const data = JSON.parse(lastMessage.data);
-            if (data.type === "UPDATE") {
-                setLiveRun(JSON.parse(lastMessage.data).run);
+            if (lastMessage.type === "UPDATE") {
+                setLiveRun(lastMessage.run);
             }
 
-            if (data.type === "DELETE") {
+            if (lastMessage.type === "DELETE") {
                 setLiveRun([]);
             }
         }

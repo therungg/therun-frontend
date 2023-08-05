@@ -6,8 +6,12 @@ import Link from "next/link";
 import { joinRace, unjoinRace } from "~src/lib/races";
 import { User } from "../../types/session.types";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { arrayToMap } from "~src/utils/array";
+import {
+    useAllRacesWebsocket,
+    useUserRaceParticipationsWebsocket,
+} from "~src/components/websocket/use-reconnect-websocket";
 
 interface RaceOverviewProps {
     races: Race[];
@@ -23,11 +27,59 @@ export const RaceOverview = ({
 }: RaceOverviewProps) => {
     const router = useRouter();
     const [registeringForRace, setRegisteringForRace] = useState(false);
-
-    const raceParticipationMap = arrayToMap<RaceParticipant, "raceId">(
-        raceParticipations,
-        "raceId"
+    const [stateRaces, setStateRaces] = useState(races);
+    const [raceParticipationMap, setRaceParticipationMap] = useState(
+        arrayToMap<RaceParticipant, "raceId">(raceParticipations, "raceId")
     );
+
+    const lastMessage = useAllRacesWebsocket();
+    const userParticipationMessage = useUserRaceParticipationsWebsocket(user);
+
+    useEffect(() => {
+        if (lastMessage !== null && lastMessage.data.raceId) {
+            const newRaces = JSON.parse(JSON.stringify(stateRaces));
+
+            const index = stateRaces.findIndex(
+                (race) => race.raceId === lastMessage.data.raceId
+            );
+
+            if (index !== -1) {
+                newRaces[index] = lastMessage.data;
+                setStateRaces(newRaces);
+            }
+        }
+    }, [lastMessage]);
+
+    useEffect(() => {
+        if (
+            userParticipationMessage !== null &&
+            userParticipationMessage.data.raceId &&
+            userParticipationMessage.data.user === user?.username
+        ) {
+            const newRaceParticipationMap = arrayToMap<
+                RaceParticipant,
+                "raceId"
+            >(Array.from(raceParticipationMap.values()), "raceId");
+
+            if (
+                userParticipationMessage.data.status === "unjoined" &&
+                newRaceParticipationMap.has(
+                    userParticipationMessage.data.raceId
+                )
+            ) {
+                newRaceParticipationMap.delete(
+                    userParticipationMessage.data.raceId
+                );
+            } else {
+                newRaceParticipationMap.set(
+                    userParticipationMessage.data.raceId,
+                    userParticipationMessage.data
+                );
+            }
+
+            setRaceParticipationMap(newRaceParticipationMap);
+        }
+    }, [userParticipationMessage]);
 
     return (
         <div>
@@ -38,11 +90,12 @@ export const RaceOverview = ({
                     <tr>
                         <th>name</th>
                         <th>url</th>
-                        {user?.id && <th>join</th>}
+                        <th>ready/joined</th>
+                        {user?.id && <th>join/leave</th>}
                     </tr>
                 </thead>
                 <tbody>
-                    {races.map((race) => {
+                    {stateRaces.map((race) => {
                         const userIsInRace = raceParticipationMap.has(
                             race.raceId
                         );
@@ -58,6 +111,11 @@ export const RaceOverview = ({
                                     <Link href={`/races/${race.raceId}`}>
                                         Link
                                     </Link>
+                                </td>
+
+                                <td>
+                                    {race.readyParticipantCount}/
+                                    {race.participantCount}
                                 </td>
                                 {user?.id && (
                                     <td>

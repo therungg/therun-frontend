@@ -20,6 +20,13 @@ export interface Race {
     customRules: RaceRule[];
     customName: string;
     visible: boolean;
+    participantCount: number;
+    readyParticipantCount: number;
+
+    // Only best 3 participants by pb
+    topParticipants: RaceParticipant[];
+
+    // Only available in race detail, gives full list
     participants?: RaceParticipant[];
 }
 
@@ -38,4 +45,11 @@ export interface CreateRaceInput {
     category: string;
     canStartEarly?: boolean;
     customName?: string;
+}
+
+export type WebsocketRaceMessageType = "raceUpdate" | "participantUpdate";
+
+export interface WebsocketRaceMessage<T extends Race | RaceParticipant> {
+    type: WebsocketRaceMessageType;
+    data: T;
 }

@@ -5,8 +5,9 @@ import { arrayToMap } from "~src/utils/array";
 import { User } from "../../../types/session.types";
 import { Button, Table } from "react-bootstrap";
 import { readyRace, unreadyRace } from "~src/lib/races";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useRaceWebsocket } from "~src/components/websocket/use-reconnect-websocket";
 
 interface RaceDetailProps {
     race: Race;
@@ -39,6 +40,15 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
             console.error(result);
         }
     };
+
+    const lastMessage = useRaceWebsocket(race.raceId);
+
+    useEffect(() => {
+        if (lastMessage !== null && lastMessage.data.raceId) {
+            // eslint-disable-next-line no-console
+            console.log("New race event", lastMessage.data);
+        }
+    }, [lastMessage]);
 
     return (
         <div>

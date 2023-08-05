@@ -8,7 +8,7 @@ import runStyles from "~src/components/css/LiveRun.module.scss";
 import homeStyles from "~src/components/css/Home.module.scss";
 import { Button, Col, Row } from "react-bootstrap";
 import { RecommendedStream } from "~src/components/live/recommended-stream";
-import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
+import { useLiveRunsWebsocket } from "~src/components/websocket/use-reconnect-websocket";
 import {
     getRecommendedStream,
     isWebsocketDataProcessable,
@@ -33,23 +33,27 @@ export const Live = ({
     );
 
     const [loadingUserData, setLoadingUserData] = useState(true);
-    const lastMessage = useReconnectWebsocket();
+    const lastMessage = useLiveRunsWebsocket();
 
     useEffect(() => {
         if (lastMessage !== null) {
-            const data = JSON.parse(lastMessage.data);
-
-            if (isWebsocketDataProcessable(data, forceGame, forceCategory)) {
-                const user = data.user;
+            if (
+                isWebsocketDataProcessable(
+                    lastMessage,
+                    forceGame,
+                    forceCategory
+                )
+            ) {
+                const user = lastMessage.user;
                 const newMap: LiveDataMap = JSON.parse(
                     JSON.stringify(updatedLiveDataMap)
                 );
 
-                if (data.type == "UPDATE") {
-                    newMap[user] = data.run;
+                if (lastMessage.type == "UPDATE") {
+                    newMap[user] = lastMessage.run;
                 }
 
-                if (data.type == "DELETE") {
+                if (lastMessage.type == "DELETE") {
                     delete newMap[user];
 
                     if (currentlyViewing == user) {

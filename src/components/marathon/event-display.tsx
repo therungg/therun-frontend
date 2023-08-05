@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { MarathonEvent } from "./send-marathon-data-button";
-import { useReconnectWebsocket } from "../websocket/use-reconnect-websocket";
+import { useLiveRunsWebsocket } from "../websocket/use-reconnect-websocket";
 
 interface ReceivedEvent {
     time: string;
@@ -15,16 +15,14 @@ export const EventDisplay = ({
     const [messages, setMessages] = useState([]);
     const [currentMessage, setCurrentMessage] = useState("");
 
-    const lastMessage = useReconnectWebsocket(`marathon-${session.username}`);
+    const lastMessage = useLiveRunsWebsocket(`marathon-${session.username}`);
 
     useEffect(() => {
         if (lastMessage !== null) {
-            const data = JSON.parse(lastMessage.data);
-
-            if (data.time != currentMessage.time) {
-                messages.push(data);
+            if (lastMessage.time != currentMessage.time) {
+                messages.push(lastMessage);
                 setMessages(messages);
-                setCurrentMessage(data);
+                setCurrentMessage(lastMessage);
             }
         }
     }, [lastMessage]);

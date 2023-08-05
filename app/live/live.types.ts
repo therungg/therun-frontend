@@ -73,3 +73,10 @@ export interface LiveProps {
     forceGame?: any;
     forceCategory?: any;
 }
+
+export interface WebsocketLiveRunMessage {
+    type: "UPDATE" | "DELETE";
+    user: string;
+    run: LiveRun;
+    time?: string;
+}

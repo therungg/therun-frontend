@@ -18,7 +18,7 @@ import {
 } from "~src/components/tournament/tournament-info";
 import { TournamentRuns } from "~src/components/tournament/tournament-runs";
 import { TournamentStandings } from "~src/components/tournament/tournament-standings";
-import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
+import { useLiveRunsWebsocket } from "~src/components/websocket/use-reconnect-websocket";
 import { LiveDataMap } from "~app/live/live.types";
 import { getRecommendedStream, liveRunIsInSearch } from "~app/live/utilities";
 import { isLiveDataEligibleForTournament } from "~app/tournaments/[tournament]/is-live-data-eligible-for-tournament.component";
@@ -69,23 +69,22 @@ export const GenericTournament = ({
     );
 
     const eventStarted = new Date() > new Date(tournament.startDate);
-    const lastMessage = useReconnectWebsocket();
+    const lastMessage = useLiveRunsWebsocket();
 
     useEffect(() => {
         if (lastMessage !== null) {
-            const newData = JSON.parse(lastMessage.data);
-            const user = newData.user;
+            const user = lastMessage.user;
 
-            if (isLiveDataEligibleForTournament(newData.run, tournament)) {
+            if (isLiveDataEligibleForTournament(lastMessage.run, tournament)) {
                 let newMap: LiveDataMap = JSON.parse(
                     JSON.stringify(updatedLiveDataMap)
                 );
 
-                if (newData.type == "UPDATE") {
-                    newMap[user] = newData.run;
+                if (lastMessage.type == "UPDATE") {
+                    newMap[user] = lastMessage.run;
                 }
 
-                if (newData.type == "DELETE") {
+                if (lastMessage.type == "DELETE") {
                     delete newMap[user];
 
                     if (recommendedStream == user) {
