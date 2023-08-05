@@ -61,9 +61,7 @@ export const LiveSplitTimerComponent = ({
                 liveRun.splits[liveRun.splits.length - 1].splitTime && (
                     <>
                         {splitTime && (
-                            <div className="d-flex">
-                                {" "}
-                                {/* ToDo: Rework classname and nesting*/}
+                            <>
                                 <div
                                     className={`d-flex
                                     ${timerClassName}`}
@@ -83,37 +81,31 @@ export const LiveSplitTimerComponent = ({
                                 {withDiff && (
                                     <DifferenceFromOne diff={liveRun.delta} />
                                 )}
-                            </div>
+                            </>
                         )}
 
                         {splitTime && (
-                            <div style={{ display: "flex" }}>
-                                <div style={{ marginRight: "0.5rem" }}>
-                                    <Flag height={30} dark={dark} />
+                            <div className="d-flex me-2 fs-big">
+                                <Flag
+                                    className="me-2"
+                                    height={30}
+                                    dark={dark}
+                                />
+                                <div
+                                    className={`d-flex
+                                   ${timerClassName}`}
+                                >
+                                    <b>
+                                        <i className="fs-big">
+                                            <DurationAsTimer
+                                                duration={lastSplitStatus?.time}
+                                            />
+                                        </i>
+                                    </b>
                                 </div>
-                                <div>
-                                    <div
-                                        className={`d-flex
-                                       ${timerClassName}`}
-                                    >
-                                        <div>
-                                            <b>
-                                                <i>
-                                                    <DurationAsTimer
-                                                        duration={
-                                                            lastSplitStatus?.time
-                                                        }
-                                                    />
-                                                </i>
-                                            </b>
-                                        </div>
-                                    </div>
-                                    {withDiff && (
-                                        <DifferenceFromOne
-                                            diff={liveRun.delta}
-                                        />
-                                    )}
-                                </div>
+                                {withDiff && (
+                                    <DifferenceFromOne diff={liveRun.delta} />
+                                )}
                             </div>
                         )}
                     </>

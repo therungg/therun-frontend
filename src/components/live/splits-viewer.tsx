@@ -84,7 +84,7 @@ export const SplitsViewer = ({
             <hr className="border-bottom m-0" />
             <div
                 id={"scrollBox"}
-                className="bg-body-secondary overflow-y-auto h-55 w-100 px-2 py-1"
+                className="bg-body-secondary overflow-y-auto h-55 w-100"
             >
                 <table className="w-100">
                     <tbody>
@@ -108,14 +108,14 @@ export const SplitsViewer = ({
                                         setSelectedSplit(k);
                                     }}
                                 >
-                                    <td className="d-flex align-items-center">
+                                    <td className="d-flex ps-2 pe-1 align-items-center">
                                         <div
                                             className={`text-truncate ${styles.splitName}`}
                                         >
                                             <SplitName splitName={split.name} />
                                         </div>
                                     </td>
-                                    <td className="w-18">
+                                    <td className="w-18 px-1">
                                         <div className="text-end pe-2">
                                             {splitStatus.status ==
                                             "completed" ? (
@@ -165,7 +165,7 @@ export const SplitsViewer = ({
                                             )}
                                         </div>
                                     </td>
-                                    <td className="w-18">
+                                    <td className="w-18 ps-1 pe-2">
                                         <div className="text-end">
                                             {splitStatus.status == "skipped" ? (
                                                 "-"
@@ -200,7 +200,7 @@ export const SplitsViewer = ({
                 </table>
             </div>
             <hr className="border-bottom m-0" />
-            <div className="overflow-hidden h-30 px-2 py-1">
+            <div className="overflow-hidden overflow-y-auto h-30">
                 <table className="w-100">
                     <tbody>
                         <tr
@@ -216,7 +216,7 @@ export const SplitsViewer = ({
                                 );
                             }}
                         >
-                            <td>
+                            <td className="ps-2 pe-1">
                                 <div className={styles.splitName}>
                                     {
                                         activeLiveRun.splits[
@@ -225,7 +225,7 @@ export const SplitsViewer = ({
                                     }
                                 </div>
                             </td>
-                            <td className="w-18">
+                            <td className="w-18 px-1">
                                 <div className="text-end">
                                     {activeLiveRun.splits[
                                         activeLiveRun.splits.length - 1
@@ -262,7 +262,7 @@ export const SplitsViewer = ({
                                     )}
                                 </div>
                             </td>
-                            <td className="w-18">
+                            <td className="w-18 ps-1 pe-2">
                                 <div className="text-end">
                                     <b>
                                         <DurationToFormatted
@@ -284,7 +284,7 @@ export const SplitsViewer = ({
                     </tbody>
                 </table>
                 <hr className="border-bottom m-0" />
-                <Row className="mh-100 h-55p my-1">
+                <Row className="mh-100 h-55p my-1 px-2">
                     <Col xs={8} className="d-flex h-100 align-items-center">
                         <div>
                             <div className="d-flex align-items-end">
@@ -314,7 +314,7 @@ export const SplitsViewer = ({
                             </div>
                         </div>
                     </Col>
-                    <Col xs={4}>
+                    <Col xs={4} className="">
                         <Row>
                             <LiveSplitTimerComponent
                                 liveRun={activeLiveRun}

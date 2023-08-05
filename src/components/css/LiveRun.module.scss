@@ -1,5 +1,17 @@
-.splitRowActive {
-  background-color: var(--split-active-color);
+.splitRow {
+
+  &Active {
+    background-color: var(--split-active-color);
+  }
+
+  :hover {
+    background-color: var(--bs-tertiary-bg);
+    cursor: pointer;
+  }
+
+  &:not(:last-child) {
+    border-bottom: var(--bs-border-width) var(--bs-border-style) var(--bs-tertiary-bg);
+  }
 }
 
 .liveRunContainer:hover {
@@ -13,11 +25,6 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-}
-
-.splitRow:hover {
-  background-color: var(--bs-tertiary-bg);
-  cursor: pointer;
 }
 
 .splitName {
@@ -36,43 +43,37 @@
   }
 }
 
-
 .finalSplitRow {
   background-color: blue;
-}
 
-.finalSplitRow:hover {
-  background-color: var(--bs-border-color);
-  cursor: pointer;
+  &:hover {
+    background-color: var(--bs-border-color);
+    cursor: pointer;
+  }
 }
-
-.splitRow:not(:last-child) {
-  border-bottom: var(--bs-border-width) var(--bs-border-style) var(--bs-border-color);
-}
-
 
 .sortButton {
   background-color: var(--bs-secondary-bg);
   width: 100%;
   height: 100%;
   border-color: var(--bs-tertiary-bg);
-}
 
-.sortButtonActive {
-  background-color: var(--bs-tertiary-bg);
-}
+  &Active {
+    background-color: var(--bs-tertiary-bg);
+  }
 
-.sortButton:hover {
-  background-color: var(--bs-tertiary-bg);
-  border-color: var(--bs-tertiary-bg);
+  &:hover {
+    background-color: var(--bs-tertiary-bg);
+    border-color: var(--bs-tertiary-bg);
+  }
 }
 
 .tournamentInfo {
   width: 100%;
-}
 
-.tournamentInfoLogo {
-  margin-bottom: 0;
+  &Logo {
+    margin-bottom: 0;
+  }
 }
 
 .tournamentHowDoesThisWorkButton {

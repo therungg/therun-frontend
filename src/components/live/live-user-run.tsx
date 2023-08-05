@@ -251,7 +251,7 @@ export const LiveIcon = ({ height = 16, dark = false }) => {
     );
 };
 
-export const Flag = ({ height = 16, dark = false }) => {
+export const Flag = ({ className = "", height = 16, dark = false }) => {
     return (
         <Image
             alt={"Flag"}
@@ -261,7 +261,7 @@ export const Flag = ({ height = 16, dark = false }) => {
                     : "/Flag finish greenTR-lighttransparant(1).png"
             }
             height={height}
-            className="mt-2"
+            className={`mt-2 ${className}`}
         />
     );
 };
