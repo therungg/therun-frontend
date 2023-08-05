@@ -135,27 +135,26 @@ export const RecommendedStream = ({
                     withChat={false}
                 />
             </Col>
-            <Col
-                xl={4}
-                className="h-340p"
-                style={
-                    recommendedStyles.gradient
-                        ? {
-                              borderImageSource: recommendedStyles.gradient,
-                              borderImageSlice: 1,
-                              borderWidth: "2px",
-                          }
-                        : {
-                              borderColor: recommendedStyles.borderColor,
-                              borderWidth:
-                                  recommendedStyles.gradient ||
-                                  recommendedStyles.borderColor
-                                      ? "2px"
-                                      : "1px",
-                          }
-                }
-            >
-                <div className="bg-body-secondary h-100 px-3 py-2 border border-tertiary">
+            <Col xl={4} className="h-340p">
+                <div
+                    className="bg-body-secondary h-100 px-3 py-2 game-border"
+                    style={
+                        recommendedStyles.gradient
+                            ? {
+                                  borderImageSource: recommendedStyles.gradient,
+                                  borderImageSlice: 1,
+                                  borderWidth: "2px",
+                              }
+                            : {
+                                  borderColor: recommendedStyles.borderColor,
+                                  borderWidth:
+                                      recommendedStyles.gradient ||
+                                      recommendedStyles.borderColor
+                                          ? "2px"
+                                          : "1px",
+                              }
+                    }
+                >
                     <LiverunStatsPanel
                         liveRun={liveRun}
                         selectedSplit={selectedSplit}
