@@ -108,15 +108,15 @@ export const SplitsViewer = ({
                                         setSelectedSplit(k);
                                     }}
                                 >
-                                    <td className="d-flex ps-2 pe-1 align-items-center">
+                                    <td className="d-flex align-items-center">
                                         <div
-                                            className={`text-truncate ${styles.splitName}`}
+                                            className={`text-truncate px-2 ${styles.splitName}`}
                                         >
                                             <SplitName splitName={split.name} />
                                         </div>
                                     </td>
-                                    <td className="w-18 px-1">
-                                        <div className="text-end pe-2">
+                                    <td className="w-18">
+                                        <div className="text-end pe-1">
                                             {splitStatus.status ==
                                             "completed" ? (
                                                 <Difference
@@ -165,8 +165,8 @@ export const SplitsViewer = ({
                                             )}
                                         </div>
                                     </td>
-                                    <td className="w-18 ps-1 pe-2">
-                                        <div className="text-end">
+                                    <td className="w-18">
+                                        <div className="text-end pe-1">
                                             {splitStatus.status == "skipped" ? (
                                                 "-"
                                             ) : splitStatus.status ==
