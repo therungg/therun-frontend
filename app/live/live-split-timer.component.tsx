@@ -48,7 +48,7 @@ export const LiveSplitTimerComponent = ({
     }, [liveRun.currentSplitIndex]);
 
     if (!className) className = runStyles.timerBody;
-    if (!timerClassName) timerClassName = "fs-x-large";
+    if (!timerClassName) timerClassName = runStyles.timer;
 
     const lastSplitStatus = getSplitStatus(
         liveRun,
@@ -63,7 +63,7 @@ export const LiveSplitTimerComponent = ({
                         {splitTime && (
                             <>
                                 <div
-                                    className={`d-flex
+                                    className={`d-flex justify-content-end
                                     ${timerClassName}`}
                                 >
                                     <div>
@@ -85,27 +85,35 @@ export const LiveSplitTimerComponent = ({
                         )}
 
                         {splitTime && (
-                            <div className="d-flex me-2 fs-big">
-                                <Flag
-                                    className="me-2"
-                                    height={30}
-                                    dark={dark}
-                                />
-                                <div
-                                    className={`d-flex
-                                   ${timerClassName}`}
-                                >
-                                    <b>
-                                        <i className="fs-big">
-                                            <DurationAsTimer
-                                                duration={lastSplitStatus?.time}
-                                            />
-                                        </i>
-                                    </b>
+                            <div className="d-flex">
+                                <div className="d-flex">
+                                    <Flag
+                                        className="me-2"
+                                        height={30}
+                                        dark={dark}
+                                    />
                                 </div>
-                                {withDiff && (
-                                    <DifferenceFromOne diff={liveRun.delta} />
-                                )}
+                                <div>
+                                    <div
+                                        className={`d-flex
+                                       ${timerClassName}`}
+                                    >
+                                        <b>
+                                            <i className="fs-big">
+                                                <DurationAsTimer
+                                                    duration={
+                                                        lastSplitStatus?.time
+                                                    }
+                                                />
+                                            </i>
+                                        </b>
+                                    </div>
+                                    {withDiff && (
+                                        <DifferenceFromOne
+                                            diff={liveRun.delta}
+                                        />
+                                    )}
+                                </div>
                             </div>
                         )}
                     </>

@@ -101,6 +101,7 @@ export const DifferenceFromOne = ({
             )}`}
         >
             <div
+                className="text-end"
                 style={{
                     color: diff <= 0 ? "var(--bs-link-color)" : "var(--bs-red)",
                 }}

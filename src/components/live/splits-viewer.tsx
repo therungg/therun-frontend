@@ -285,7 +285,7 @@ export const SplitsViewer = ({
                 </table>
                 <hr className="border-bottom m-0" />
                 <Row className="mh-100 h-55p my-1 px-2">
-                    <Col xs={8} className="d-flex h-100 align-items-center">
+                    <Col className="col-auto d-flex h-100 align-items-center">
                         <div>
                             <div className="d-flex align-items-end">
                                 <div className="fs-small">Possible:&nbsp;</div>
@@ -314,7 +314,7 @@ export const SplitsViewer = ({
                             </div>
                         </div>
                     </Col>
-                    <Col xs={4} className="">
+                    <Col className="col-auto ms-auto">
                         <Row>
                             <LiveSplitTimerComponent
                                 liveRun={activeLiveRun}
@@ -328,7 +328,7 @@ export const SplitsViewer = ({
                             <LiveSplitTimerComponent
                                 liveRun={activeLiveRun}
                                 dark={dark}
-                                className={`d-flex justify-content-end align-items-center h-100`}
+                                className={`d-flex align-items-center h-100`}
                                 timerClassName="text-end fs-medium lh-1"
                                 withDiff={false}
                                 splitTime={true}
