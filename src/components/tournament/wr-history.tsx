@@ -22,7 +22,6 @@ import { Col, Row } from "react-bootstrap";
 import { getFormattedString } from "../util/datetime";
 import moment from "moment";
 import { UnderlineTooltip } from "../tooltip";
-import styles from "../css/Timesaves.module.scss";
 import { useState } from "react";
 
 ChartJS.register(
@@ -281,7 +280,7 @@ export const WrHistory = ({
                         />
                         <input
                             type={"number"}
-                            className={`${styles.numberInput} form-select`}
+                            className="form-control w-8r ms-2 bg-body-secondary"
                             onChange={(e) => {
                                 let val =
                                     e.target.value > maxLength
