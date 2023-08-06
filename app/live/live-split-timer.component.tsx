@@ -84,8 +84,8 @@ export const LiveSplitTimerComponent = ({
                             </>
                         )}
 
-                        {splitTime && (
-                            <div className="d-flex">
+                        {!splitTime && (
+                            <div className="d-flex justify-content-end">
                                 <div className="d-flex">
                                     <Flag
                                         className="me-2"
