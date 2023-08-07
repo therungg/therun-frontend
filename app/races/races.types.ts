@@ -1,4 +1,9 @@
-export type RaceStatus = "pending" | "progress" | "finished" | "aborted";
+export type RaceStatus =
+    | "pending"
+    | "starting"
+    | "progress"
+    | "finished"
+    | "aborted";
 export type RaceParticipantStatus =
     | "joined"
     | "ready"
@@ -22,6 +27,7 @@ export interface Race {
     visible: boolean;
     participantCount: number;
     readyParticipantCount: number;
+    startTime?: string;
 
     // Only best 3 participants by pb
     topParticipants: RaceParticipant[];

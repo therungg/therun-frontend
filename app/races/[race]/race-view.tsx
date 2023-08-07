@@ -44,7 +44,11 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
     const lastMessage = useRaceWebsocket(race.raceId);
 
     useEffect(() => {
-        if (lastMessage !== null && lastMessage.data.raceId) {
+        if (
+            lastMessage !== null &&
+            lastMessage.data &&
+            lastMessage.data.raceId
+        ) {
             // eslint-disable-next-line no-console
             console.log("New race event", lastMessage.data);
         }

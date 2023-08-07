@@ -12,6 +12,7 @@ import {
     useAllRacesWebsocket,
     useUserRaceParticipationsWebsocket,
 } from "~src/components/websocket/use-reconnect-websocket";
+import Countdown from "react-countdown";
 
 interface RaceOverviewProps {
     races: Race[];
@@ -36,7 +37,11 @@ export const RaceOverview = ({
     const userParticipationMessage = useUserRaceParticipationsWebsocket(user);
 
     useEffect(() => {
-        if (lastMessage !== null && lastMessage.data.raceId) {
+        if (
+            lastMessage !== null &&
+            lastMessage.data &&
+            lastMessage.data.raceId
+        ) {
             const newRaces = JSON.parse(JSON.stringify(stateRaces));
 
             const index = stateRaces.findIndex(
@@ -45,14 +50,17 @@ export const RaceOverview = ({
 
             if (index !== -1) {
                 newRaces[index] = lastMessage.data;
-                setStateRaces(newRaces);
+            } else {
+                newRaces.unshift(lastMessage.data);
             }
+            setStateRaces(newRaces);
         }
     }, [lastMessage]);
 
     useEffect(() => {
         if (
             userParticipationMessage !== null &&
+            userParticipationMessage.data &&
             userParticipationMessage.data.raceId &&
             userParticipationMessage.data.user === user?.username
         ) {
@@ -91,6 +99,7 @@ export const RaceOverview = ({
                         <th>name</th>
                         <th>url</th>
                         <th>ready/joined</th>
+                        <th>status</th>
                         {user?.id && <th>join/leave</th>}
                     </tr>
                 </thead>
@@ -116,6 +125,35 @@ export const RaceOverview = ({
                                 <td>
                                     {race.readyParticipantCount}/
                                     {race.participantCount}
+                                </td>
+
+                                <td>
+                                    <div>{race.status}</div>
+                                    {race.startTime &&
+                                        race.status === "starting" && (
+                                            <div>
+                                                Starts in{" "}
+                                                <Countdown
+                                                    date={race.startTime}
+                                                    renderer={({
+                                                        seconds,
+                                                        completed,
+                                                    }) => {
+                                                        if (completed) {
+                                                            // Render a completed state
+                                                            return <span />;
+                                                        } else {
+                                                            // Render a countdown
+                                                            return (
+                                                                <span>
+                                                                    {seconds}
+                                                                </span>
+                                                            );
+                                                        }
+                                                    }}
+                                                />
+                                            </div>
+                                        )}
                                 </td>
                                 {user?.id && (
                                     <td>
