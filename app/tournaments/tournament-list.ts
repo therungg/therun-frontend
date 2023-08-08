@@ -16,6 +16,7 @@ const tournamentMap: Map<string, string> = new Map([
         "Hazeblade Invitational Qualifiers ft. Resident Evil 4",
     ],
     ["basementcup", "Ultimate Basement Cup 2023"],
+    ["tcs", "TCS Community BTR"],
 ]);
 
 export const getAllTournamentSlugs = (): string[] => {
