@@ -67,7 +67,6 @@
     "@types/bootstrap": "^5.2",
     "@types/d3": "^7.4.0",
     "@types/gtag.js": "^0.0.10",
-    "@types/joi": "^17.2.3",
     "@types/js-levenshtein": "^1.1.1",
     "@types/node": "16.11.9",
     "@types/nodemailer": "^6.4.4",
