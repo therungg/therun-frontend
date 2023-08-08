@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { OpenGraphType } from "next/dist/lib/metadata/types/opengraph-types";
 import { getBaseUrl } from "~src/actions/base-url.action";
+import { safeEncodeURI } from "./uri";
 
 declare type OpenGraphImage = {
     url: string | URL;
@@ -121,8 +122,13 @@ export async function getGameImage(
 ): Promise<OpenGraphImage[] | undefined> {
     let response: Response;
     try {
-        response = await fetch(`${getBaseUrl()}/api/games/${game}/global`);
+        response = await fetch(
+            `${getBaseUrl()}/api/games/${safeEncodeURI(game)}/global`
+        );
     } catch (e) {
+        // Allow this one since it's server-side
+        // eslint-disable-next-line no-console
+        console.error(e);
         return undefined;
     }
 
