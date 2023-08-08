@@ -93,6 +93,12 @@ export const RaceOverview = ({
     return (
         <div>
             <h1>Races</h1>
+            {user?.id && (
+                <a href={"/races/create"}>
+                    <Button>Create race</Button>
+                </a>
+            )}
+
             {registeringForRace && <div>Registering for race...</div>}
             <Table responsive bordered striped>
                 <thead>
