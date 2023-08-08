@@ -13,6 +13,7 @@ import {
     useUserRaceParticipationsWebsocket,
 } from "~src/components/websocket/use-reconnect-websocket";
 import Countdown from "react-countdown";
+import { DurationToFormatted } from "~src/components/util/datetime";
 
 interface RaceOverviewProps {
     races: Race[];
@@ -99,6 +100,7 @@ export const RaceOverview = ({
                         <th>name</th>
                         <th>url</th>
                         <th>ready/joined</th>
+                        <th>Top participants</th>
                         <th>status</th>
                         {user?.id && <th>join/leave</th>}
                     </tr>
@@ -125,6 +127,29 @@ export const RaceOverview = ({
                                 <td>
                                     {race.readyParticipantCount}/
                                     {race.participantCount}
+                                </td>
+                                <td>
+                                    {race.topParticipants
+                                        .slice(0, 3)
+                                        .map((participant) => {
+                                            return (
+                                                <div
+                                                    key={
+                                                        race.raceId +
+                                                        participant.user
+                                                    }
+                                                >
+                                                    {participant.user}{" "}
+                                                    {participant.pb && (
+                                                        <DurationToFormatted
+                                                            duration={
+                                                                participant.pb
+                                                            }
+                                                        />
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
                                 </td>
 
                                 <td>

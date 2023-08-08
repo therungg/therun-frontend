@@ -49,6 +49,7 @@ export interface RaceRule {}
 export interface CreateRaceInput {
     game: string;
     category: string;
+    selfJoin?: boolean;
     canStartEarly?: boolean;
     customName?: string;
 }
