@@ -188,23 +188,63 @@ export const RaceOverview = ({
                                 </td>
                                 {user?.id && (
                                     <td>
-                                        {userIsInRace && (
-                                            <div>
+                                        {userIsInRace &&
+                                            race.status === "pending" && (
+                                                <div>
+                                                    <Button
+                                                        onClick={async () => {
+                                                            // TODO: This should not be inline (seperate component) and obviously should not refresh the page but update the state
+                                                            setRegisteringForRace(
+                                                                true
+                                                            );
+                                                            const result =
+                                                                await unjoinRace(
+                                                                    race.raceId
+                                                                );
+                                                            setRegisteringForRace(
+                                                                false
+                                                            );
+                                                            if (result.raceId) {
+                                                                router.refresh();
+                                                            } else {
+                                                                // eslint-disable-next-line no-console
+                                                                console.error(
+                                                                    result
+                                                                );
+                                                            }
+                                                        }}
+                                                    >
+                                                        Leave Race
+                                                    </Button>
+                                                    <div>
+                                                        Status:{" "}
+                                                        {
+                                                            userParticipation?.status
+                                                        }
+                                                    </div>
+                                                </div>
+                                            )}
+                                        {!userIsInRace &&
+                                            race.status === "pending" && (
                                                 <Button
                                                     onClick={async () => {
-                                                        // TODO: This should not be inline (seperate component) and obviously should not refresh the page but update the state
+                                                        // TODO: This should not be inline (seperate component)
                                                         setRegisteringForRace(
                                                             true
                                                         );
                                                         const result =
-                                                            await unjoinRace(
+                                                            await joinRace(
                                                                 race.raceId
                                                             );
                                                         setRegisteringForRace(
                                                             false
                                                         );
                                                         if (result.raceId) {
-                                                            router.refresh();
+                                                            const redirectUrl = `/races/${race.raceId}`;
+
+                                                            router.push(
+                                                                redirectUrl
+                                                            );
                                                         } else {
                                                             // eslint-disable-next-line no-console
                                                             console.error(
@@ -213,41 +253,9 @@ export const RaceOverview = ({
                                                         }
                                                     }}
                                                 >
-                                                    Leave Race
+                                                    Join race
                                                 </Button>
-                                                <div>
-                                                    Status:{" "}
-                                                    {userParticipation?.status}
-                                                </div>
-                                            </div>
-                                        )}
-                                        {!userIsInRace && (
-                                            <Button
-                                                onClick={async () => {
-                                                    // TODO: This should not be inline (seperate component)
-                                                    setRegisteringForRace(true);
-                                                    const result =
-                                                        await joinRace(
-                                                            race.raceId
-                                                        );
-                                                    setRegisteringForRace(
-                                                        false
-                                                    );
-                                                    if (result.raceId) {
-                                                        const redirectUrl = `/races/${race.raceId}`;
-
-                                                        router.push(
-                                                            redirectUrl
-                                                        );
-                                                    } else {
-                                                        // eslint-disable-next-line no-console
-                                                        console.error(result);
-                                                    }
-                                                }}
-                                            >
-                                                Join race
-                                            </Button>
-                                        )}
+                                            )}
                                     </td>
                                 )}
                             </tr>
