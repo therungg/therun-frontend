@@ -47,7 +47,7 @@ interface Social {
     url: string;
 }
 
-interface DateRange {
+export interface DateRange {
     startDate: string;
     endDate: string;
 }

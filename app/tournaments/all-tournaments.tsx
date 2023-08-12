@@ -5,6 +5,7 @@ import { Card, Col, Image, Row } from "react-bootstrap";
 import styles from "~src/components/css/Games.module.scss";
 import { FromNow } from "~src/components/util/datetime";
 import { AllTournamentsProps } from "~app/tournaments/all-tournaments.types";
+import { safeEncodeURI } from "~src/utils/uri";
 
 export function AllTournaments({
     finishedTournaments,
@@ -67,7 +68,9 @@ export const ListTournaments = ({
                             <Card.Header className={styles.cardHeader}>
                                 <div style={{ overflow: "hidden" }}>
                                     <a
-                                        href={`/tournaments/${tournament.name}`}
+                                        href={`/tournaments/${safeEncodeURI(
+                                            tournament.name
+                                        )}`}
                                         style={{ fontSize: "large" }}
                                     >
                                         {tournament.shortName ||
