@@ -20,6 +20,8 @@ import searchStyles from "~src/components/css/Search.module.scss";
 import styles from "~src/components/css/Games.module.scss";
 import { LiveUserRun } from "~src/components/live/live-user-run";
 import { CombinedEventLeaderboards } from "~app/tournaments/[tournament]/combined-event-leaderboards.component";
+import { getCombinedTournamentLeaderboardComponent } from "~app/tournaments/[tournament]/get-combined-tournament-leaderboard.component";
+import { CombinedTournamentSeedingTable } from "~app/tournaments/[tournament]/combined-tournament-seeding-table";
 
 export const CombinedTournament = ({
     liveDataMap,
@@ -135,6 +137,8 @@ export const CombinedTournament = ({
             </div>
         );
     };
+
+    const standingsMap = getCombinedTournamentLeaderboardComponent(tournaments);
 
     return (
         <div>
@@ -456,6 +460,13 @@ export const CombinedTournament = ({
                             </Row>
                         </Col>
                     </Row>
+                </Tab>
+                <Tab title={"Seeding"} eventKey={"seeding"}>
+                    <CombinedTournamentSeedingTable
+                        guidingTournament={guidingTournament}
+                        tournaments={tournaments}
+                        leaderboards={standingsMap}
+                    />
                 </Tab>
                 <Tab title={"Info"} eventKey={"info"}>
                     <TournamentInfo tournament={guidingTournament} />
