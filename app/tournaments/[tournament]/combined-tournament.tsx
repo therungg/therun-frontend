@@ -463,7 +463,6 @@ export const CombinedTournament = ({
                 </Tab>
                 <Tab title={"Seeding"} eventKey={"seeding"}>
                     <CombinedTournamentSeedingTable
-                        guidingTournament={guidingTournament}
                         tournaments={tournaments}
                         leaderboards={standingsMap}
                     />

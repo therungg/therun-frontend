@@ -43,7 +43,7 @@ const tournamentEntries: Array<[string, TournamentEntryValue]> = [
     [
         "3dmmi",
         {
-            guidingTournament: "3DMMI",
+            guidingTournament: "3D Mario Madness Season 3",
             tournaments: [
                 "3DMMI SM64 70 Star",
                 "3DMMI SMS Any%",

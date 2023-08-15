@@ -56,7 +56,8 @@ export const getCombinedTournamentLeaderboardComponent = (
         );
 
         const sum = runDifferences.reduce((a, c) => a + c, 0);
-        const seedPercentage = sum / runDifferences.length;
+        const penalty = 1 + (tournaments.length - count) / 10;
+        const seedPercentage = (sum / runDifferences.length) * penalty;
 
         const stat: CombinedLeaderboardStat = {
             gameCount: count,
