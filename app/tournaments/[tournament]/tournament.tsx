@@ -6,7 +6,6 @@ import { LiveUserRun } from "~src/components/live/live-user-run";
 import { RecommendedStream } from "~src/components/live/recommended-stream";
 import runStyles from "~src/components/css/LiveRun.module.scss";
 import { DurationToFormatted } from "~src/components/util/datetime";
-import Countdown from "react-countdown";
 import useSWR from "swr";
 import { fetcher } from "~src/utils/fetcher";
 import TournamentStats from "~src/components/tournament/tournament-stats";
@@ -24,6 +23,7 @@ import { isLiveDataEligibleForTournament } from "~app/tournaments/[tournament]/i
 import { liveRunArrayToMap } from "~app/tournaments/[tournament]/live-run-array-to-map.component";
 import { EventLeaderboards } from "~app/tournaments/[tournament]/event-leaderboards.component";
 import { Search as SearchIcon } from "react-bootstrap-icons";
+import { TournamentTimer } from "~app/tournaments/[tournament]/tournament-timer";
 
 export const GenericTournament = ({
     liveDataMap,
@@ -66,7 +66,6 @@ export const GenericTournament = ({
         fetcher
     );
 
-    const eventStarted = new Date() > new Date(tournament.startDate);
     const lastMessage = useReconnectWebsocket();
 
     useEffect(() => {
@@ -118,38 +117,6 @@ export const GenericTournament = ({
 
         setUpdatedLiveDataMap(newMap);
     }, [sort]);
-
-    const renderCountdown = ({ days, hours, minutes, completed }) => {
-        if (completed) {
-            return <div>Event ended!</div>;
-        }
-
-        if (!eventStarted) {
-            return <></>;
-        }
-
-        return (
-            <div>
-                {!!parseInt(days) && `${days} days, `}{" "}
-                {!!parseInt(hours) && `${hours} hours and `}{" "}
-                {`${minutes} minute${minutes === 1 ? "" : "s"} to go!`}
-            </div>
-        );
-    };
-
-    const renderCountdownToStart = ({ days, hours, minutes, completed }) => {
-        if (completed) {
-            return <></>;
-        }
-
-        return (
-            <div>
-                Event starts in {!!days && `${days} days, `}{" "}
-                {hours && `${hours} hours and `}{" "}
-                {`${minutes} minute${minutes === 1 ? "" : "s"}!`}
-            </div>
-        );
-    };
 
     return (
         <div>
@@ -242,30 +209,7 @@ export const GenericTournament = ({
 
             <div style={{ display: "flex", justifyContent: "center" }}>
                 <h2 className={runStyles.tournamentTimer}>
-                    <Countdown
-                        date={
-                            new Date(
-                                tournament.eligiblePeriods &&
-                                tournament.eligiblePeriods.length > 0
-                                    ? tournament.eligiblePeriods[0].startDate
-                                    : tournament.startDate
-                            )
-                        }
-                        renderer={renderCountdownToStart}
-                    ></Countdown>
-                    <Countdown
-                        date={
-                            new Date(
-                                tournament.eligiblePeriods &&
-                                tournament.eligiblePeriods.length > 1
-                                    ? tournament.eligiblePeriods[1].endDate
-                                    : tournament.endDate
-                            )
-                        }
-                        renderer={renderCountdown}
-                    >
-                        <div>Tournament ended!</div>
-                    </Countdown>
+                    <TournamentTimer tournament={tournament} />
                 </h2>
             </div>
             <Row>
