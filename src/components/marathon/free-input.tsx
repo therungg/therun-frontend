@@ -15,8 +15,8 @@ export const FreeInput = ({
     const [input, setInput] = useState("");
 
     return (
-        <div style={{ marginBottom: "1rem" }}>
-            <h2>Free Input</h2> {/* ToDo: work on height */}
+        <div className="mb-3">
+            <h2>Free Input</h2>
             <textarea
                 style={{
                     background: "var(--bs-tertiary-bg)",

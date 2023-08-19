@@ -6,6 +6,7 @@ import { LiverunStatsPanel } from "./liverun-stats-panel";
 import { SplitsViewer } from "./splits-viewer";
 import patreonStyles from "../patreon/patreon-styles";
 import { usePatreons } from "../patreon/use-patreons";
+import { getColorMode } from "~src/utils/colormode";
 
 export const RecommendedStream = ({
     liveRun,
@@ -36,7 +37,7 @@ export const RecommendedStream = ({
     const previous = usePrevious({ activeLiveRun });
 
     useEffect(function () {
-        setDark(document.documentElement.dataset.bsTheme !== "light");
+        setDark(getColorMode() !== "light");
     }, []);
 
     useEffect(() => {

@@ -1,8 +1,8 @@
-fieldset.fieldset { // ToDo: EditRun
+fieldset.fieldset {
     padding: 0.5rem 2rem;
 }
 
-.editInfoButton { // ToDo: EditRun
+.editInfoButton {
     width: 15rem;
     height: 2.5rem;
     background-color: var(--bs-secondary-bg);
@@ -11,22 +11,22 @@ fieldset.fieldset { // ToDo: EditRun
     color: var(--bs-body-color);
 }
 
-.editInfoButton:hover { // ToDo: EditRun
+.editInfoButton:hover {
     background-color: var(--bs-link-color);
     border-color: var(--bs-link-color);
 }
 
-.editInfoButton:active { // ToDo: EditRun
+.editInfoButton:active {
     background-color: var(--bs-link-color);
     border-color: var(--bs-link-color);
 }
 
-.editInfoButton:focus { // ToDo: EditRun
+.editInfoButton:focus {
     background-color: var(--bs-link-color);
     border-color: var(--bs-link-color);
 }
 
-.cancelButton { // ToDo: EditRun
+.cancelButton {
     margin-left: 1rem;
     width: 5rem;
     height: 2.5rem;
@@ -36,17 +36,17 @@ fieldset.fieldset { // ToDo: EditRun
     color: var(--bs-body-color);
 }
 
-.cancelButton:hover { // ToDo: EditRun
+.cancelButton:hover {
     background-color: darkred;
     border-color: darkred;
 }
 
-.cancelButton:active { // ToDo: EditRun
+.cancelButton:active {
     background-color: darkred;
     border-color: darkred;
 }
 
-.cancelButton:focus { // ToDo: EditRun
+.cancelButton:focus {
     background-color: darkred;
     border-color: darkred;
 }

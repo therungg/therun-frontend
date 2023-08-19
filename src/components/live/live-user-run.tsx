@@ -9,6 +9,7 @@ import { LiveRun } from "~app/live/live.types";
 import { LiveSplitTimerComponent } from "~app/live/live-split-timer.component";
 import { GameImage } from "~src/components/image/gameimage";
 import { Twitch as TwitchIcon } from "react-bootstrap-icons";
+import { getColorMode } from "~src/utils/colormode";
 
 export const LiveUserRun = ({
     liveRun,
@@ -29,7 +30,7 @@ export const LiveUserRun = ({
     const [liveUserStyles, setLiveUserStyles] = useState({});
     const { data: patreons, isLoading } = usePatreons();
     useEffect(function () {
-        setDark(document.documentElement.dataset.bsTheme !== "light");
+        setDark(getColorMode() !== "light");
     }, []);
 
     useEffect(() => {

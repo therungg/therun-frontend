@@ -7,6 +7,7 @@ import { EditRun } from "../dashboard/edit-run";
 import { GlobalGameData } from "~app/[username]/[game]/[run]/run";
 import styles from "../../css/User.module.scss";
 import { GameImage } from "~src/components/image/gameimage";
+import { getColorMode } from "~src/utils/colormode";
 
 export const UserOverview = ({
     runs,
@@ -31,7 +32,7 @@ export const UserOverview = ({
     const [dark, setDark] = useState(true);
 
     useEffect(function () {
-        setDark(document.documentElement.dataset.bsTheme !== "light");
+        setDark(getColorMode() !== "light");
     }, []);
 
     const images = Array.from(runs).filter(([game]) => {
