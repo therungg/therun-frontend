@@ -139,11 +139,9 @@ export const LiveSplitTimerComponent = ({
                 )}
 
             {liveRun.hasReset && (
-                <>
-                    <div className={timerClassName}>
-                        {splitTime ? "-" : "Reset"}
-                    </div>
-                </>
+                <div className={timerClassName}>
+                    {splitTime ? "-" : "Reset"}
+                </div>
             )}
         </>
     );

@@ -119,7 +119,7 @@ const User = ({
                 )}
             </Row>
             {allRunsRunMap.size > 1 && (
-                <Row className="">
+                <Row>
                     <Col md={8} />
                     <Col
                         xs={12}
@@ -161,13 +161,11 @@ const User = ({
                     </Col>
                 </Row>
             )}
-            {/*</div>*/}
             <Tabs
                 defaultActiveKey="overview"
-                className={`mb-3 pt-0 w-100 mw-md-66${
+                className={`position-relative z-1 mb-3 pt-0 w-100 mw-md-66${
                     allRunsRunMap.size > 1 ? " with-filter" : ""
                 }`}
-                style={{ position: "relative", zIndex: 1 }}
             >
                 <Tab eventKey="overview" title="Overview">
                     <Row>
@@ -183,7 +181,7 @@ const User = ({
                         </Col>
                         <Col xl={4} lg={12}>
                             {!!liveRun && !Array.isArray(liveRun) && (
-                                <div style={{ marginBottom: "1rem" }}>
+                                <div className="mb-3">
                                     <h2>
                                         Currently Live!&nbsp;
                                         <a href={"/live"}>
@@ -236,11 +234,7 @@ const User = ({
                         </Col>
                     </Row>
                 </Tab>
-                <Tab
-                    title={"Twitch stream"}
-                    eventKey={"stream"}
-                    style={{ minHeight: "800px" }}
-                >
+                <Tab title={"Twitch stream"} eventKey={"stream"}>
                     <h2>Twitch stream</h2>
 
                     <TwitchEmbed

@@ -1,6 +1,5 @@
 "use client";
 import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
-import { Search } from "./search";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -10,6 +9,7 @@ import { TwitchUser } from "./twitch/TwitchUser";
 import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
 import { getColorMode } from "~src/utils/colormode";
 import { Upload } from "react-bootstrap-icons";
+import { AutoCompletion } from "~src/components/search/autocompletion";
 
 const DarkModeSlider = dynamic(() => import("./dark-mode-slider"), {
     ssr: false,
@@ -92,7 +92,7 @@ const Topbar = ({
                         </Nav.Link>
                     </Nav>
                     <Nav className="ml-auto mb-2 mb-lg-0 me-lg-2">
-                        <Search />
+                        <AutoCompletion />
                     </Nav>
                     <Nav
                         className="ml-auto"
