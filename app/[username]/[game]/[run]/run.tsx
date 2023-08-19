@@ -215,7 +215,7 @@ export default function RunDetail({
                     )}
                 </Col>
                 {run.hasGameTime && (
-                    <Col className="col-xl-3 align-self-end text-nowrap">
+                    <Col xl={3} className="align-self-end text-nowrap">
                         <GametimeForm
                             useGameTime={useGameTime}
                             setUseGameTime={setUseGameTime}
@@ -280,7 +280,7 @@ export default function RunDetail({
                 </Tab>
                 <Tab eventKey="splits_stats" title="Splits Stats">
                     <Row>
-                        <Col className={"col-12"}>
+                        <Col xs={12}>
                             <SplitStats
                                 history={runs}
                                 splits={splits}
@@ -291,7 +291,7 @@ export default function RunDetail({
                 </Tab>
                 <Tab eventKey="sessions" title="Sessions">
                     <Row>
-                        <Col className={"col-12"}>
+                        <Col xs={12}>
                             <GameSessions
                                 sessions={sessions}
                                 runs={runs}

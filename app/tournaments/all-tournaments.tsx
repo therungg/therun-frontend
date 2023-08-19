@@ -43,10 +43,7 @@ export const ListTournaments = ({
                 );
 
                 return (
-                    <Col
-                        className={"col-xl-6 col-lg-6 col-md-12 col-sm-12"}
-                        key={tournament.name}
-                    >
+                    <Col sm={12} lg={6} key={tournament.name}>
                         {tournament.logoUrl && (
                             <div className="float-start d-flex d-none d-sm-block align-items-center me-2 ms-2">
                                 <a href={`/tournaments/${tournament.name}`}>
@@ -81,26 +78,26 @@ export const ListTournaments = ({
                             </Card.Header>
                             <Card.Body>
                                 <Row>
-                                    <Col className={"col-md-6 col-5"}>
+                                    <Col xs={5} md={6}>
                                         <b>Start Date:</b>
                                     </Col>
-                                    <Col className={"col-md-6 col-7"}>
+                                    <Col xs={7} md={6}>
                                         {startDate.toDateString()}
                                     </Col>
                                 </Row>
                                 <Row>
-                                    <Col className={"col-md-6 col-5"}>
+                                    <Col xs={5} md={6}>
                                         <b>End Date:</b>
                                     </Col>
-                                    <Col className={"col-md-6 col-7"}>
+                                    <Col xs={7} md={6}>
                                         {endDate.toDateString()}
                                     </Col>
                                 </Row>
                                 <Row>
-                                    <Col className={"col-md-6 col-5"}>
+                                    <Col xs={5} md={6}>
                                         <b>Duration:</b>
                                     </Col>
-                                    <Col className={"col-md-6 col-7"}>
+                                    <Col xs={7} md={6}>
                                         {durationInDays} days
                                     </Col>
                                 </Row>

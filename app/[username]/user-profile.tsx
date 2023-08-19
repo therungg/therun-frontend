@@ -120,8 +120,12 @@ const User = ({
             </Row>
             {allRunsRunMap.size > 1 && (
                 <Row className="">
-                    <Col className="col-md-8" />
-                    <Col className="col-12 my-3 my-md-0 col-md-4 game-filter-mb game-filter-mw">
+                    <Col md={8} />
+                    <Col
+                        xs={12}
+                        md={4}
+                        className="my-3 my-md-0 game-filter-mb game-filter-mw"
+                    >
                         <select
                             className={"form-select"}
                             onChange={(e) => {

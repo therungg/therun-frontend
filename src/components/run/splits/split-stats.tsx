@@ -39,11 +39,11 @@ export const SplitStats = ({
     return (
         <>
             <Row>
-                <Col className={"col-xl-9"}>
+                <Col xl={9}>
                     <h2 style={{ whiteSpace: "nowrap" }}>Splits Stats</h2>
                 </Col>
                 <Col
-                    className={"col-xl-3"}
+                    xl={3}
                     style={{ display: "flex", justifyContent: "flex-end" }}
                 >
                     <label
@@ -72,9 +72,6 @@ export const SplitStats = ({
                 <div>
                     <div style={{ float: "left", width: "98%" }}>
                         <Row style={{ whiteSpace: "nowrap" }}>
-                            {/* <Col xs={4}>
-                                <b>+- Current PB</b>
-                            </Col> */}
                             <Col style={{ minWidth: "25%" }}>
                                 <b>Split</b>
                             </Col>
@@ -294,10 +291,8 @@ export const SplitStats = ({
                                             </div>
                                             <Row>
                                                 <Col
-                                                    className={
-                                                        `col-md-4` +
-                                                        ` ${styles.graph}`
-                                                    }
+                                                    md={4}
+                                                    className={`${styles.graph}`}
                                                 >
                                                     <SplitOverTimeGraph
                                                         history={history}
@@ -306,10 +301,8 @@ export const SplitStats = ({
                                                     />
                                                 </Col>
                                                 <Col
-                                                    className={
-                                                        `col-md-4` +
-                                                        ` ${styles.graph}`
-                                                    }
+                                                    md={4}
+                                                    className={`${styles.graph}`}
                                                 >
                                                     <GoldProgressionGraph
                                                         history={history}
@@ -318,10 +311,8 @@ export const SplitStats = ({
                                                     />
                                                 </Col>
                                                 <Col
-                                                    className={
-                                                        `col-md-4` +
-                                                        ` ${styles.graph}`
-                                                    }
+                                                    md={4}
+                                                    className={`${styles.graph}`}
                                                 >
                                                     <SplitGraph
                                                         history={history}

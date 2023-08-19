@@ -14,7 +14,7 @@ export function PatreonInfo({ session }: { session: { username: string } }) {
         <>
             <Row className="g-4 mb-4 text-center">
                 <h1 className="text-center">Support therun.gg</h1>
-                <Col className="col-10 col-xl-5 mx-auto">
+                <Col xs={10} xl={5} className="mx-auto">
                     <div className="h-100 p-4 p-md-5 bg-body-secondary border rounded-3 border-secondary border-2">
                         <h3>Become a Patron</h3>
                         <p className="mb-4">
@@ -32,7 +32,7 @@ export function PatreonInfo({ session }: { session: { username: string } }) {
                         </a>
                     </div>
                 </Col>
-                <Col className="col-10 col-xl-5 mx-auto">
+                <Col xs={10} xl={5} className="mx-auto">
                     <div className="h-100 p-4 p-md-5 bg-body-secondary border rounded-3 border-primary border-2">
                         <h3>Donate with Stripe</h3>
                         <p className="mb-4">

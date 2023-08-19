@@ -124,8 +124,8 @@ export const AutoCompletion = () => {
         return (
             <>
                 <Row>
-                    <Col className={"col-sm-12 col-12 col-md-6"}>
-                        <div className={styles.suggestionsTitle}>Users</div>
+                    <Col md={6}>
+                        <div className="fs-x-large">Users</div>
                         <ul className="m-0 list-unstyled">
                             <Results
                                 results={filteredSuggestions.users}
@@ -133,10 +133,8 @@ export const AutoCompletion = () => {
                             />
                         </ul>
                     </Col>
-                    <Col
-                        className={`col-sm-12 col-12 col-md-6 ${styles.suggestionLeft}`}
-                    >
-                        <div className={styles.suggestionsTitle}>Games</div>
+                    <Col md={6} className={`${styles.suggestionLeft}`}>
+                        <div className="fs-x-large">Games</div>
                         <ul className="m-0 list-unstyled">
                             <Results
                                 results={filteredSuggestions.games}
@@ -148,7 +146,7 @@ export const AutoCompletion = () => {
                 <hr style={{ color: "var(--bs-link-color)" }} />
                 <Row>
                     <Col>
-                        <div className={styles.suggestionsTitle}>Runs</div>
+                        <div className="fs-x-large">Runs</div>
                         <ul className="m-0 list-unstyled">
                             <Results
                                 results={filteredSuggestions.categories}

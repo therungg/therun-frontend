@@ -91,12 +91,12 @@ export const Live = ({
         <>
             {showTitle && (
                 <Row className="g-3 mb-3">
-                    <Col className="col-auto flex-grow-1">
+                    <Col xs="auto" className="flex-grow-1">
                         <h1>
                             Live Runs <LiveIcon height={18} />
                         </h1>
                     </Col>
-                    <Col className="col-auto flex-grow-1 text-end pt-3">
+                    <Col xs="auto" className="flex-grow-1 text-end">
                         <a href={"/upload-key"}>
                             <Button
                                 variant={"primary"}

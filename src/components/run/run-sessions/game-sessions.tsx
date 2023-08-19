@@ -164,11 +164,11 @@ export const GameSessions = ({
     return (
         <div className="history-page">
             <Row>
-                <Col className={"col-xl-6"}>
+                <Col xl={6}>
                     <h2>Speedrun Sessions</h2>
                 </Col>
                 <Col
-                    className={"col-xl-6"}
+                    xl={6}
                     style={{ display: "flex", justifyContent: "flex-end" }}
                 >
                     <label
@@ -220,9 +220,6 @@ export const GameSessions = ({
                         }}
                     >
                         <Row>
-                            {/* <Col xs={4}>
-                                <b>+- Current PB</b>
-                            </Col> */}
                             <Col
                                 className={`${
                                     styles.optionalColumn

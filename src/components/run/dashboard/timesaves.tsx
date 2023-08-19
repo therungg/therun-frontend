@@ -183,7 +183,7 @@ export const Timesaves = ({
                                     }}
                                 >
                                     <Row className="mt-0 py-2 mb-1 gy-3 gy-lg-0 py-lg-1 align-items-center">
-                                        <Col xl={4} lg={4} md={6}>
+                                        <Col lg={4} md={6}>
                                             <div className="fw-bold fs-big mt-0">
                                                 <SplitName
                                                     splitName={split.name}

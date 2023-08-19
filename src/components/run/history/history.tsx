@@ -387,11 +387,11 @@ export const History = ({
     return (
         <div className="history-page">
             <Row style={{ marginBottom: "0.5rem" }}>
-                <Col className={"col-xl-6"}>
+                <Col xl={6}>
                     <h2 style={{ whiteSpace: "nowrap" }}>Run History</h2>
                 </Col>
                 <Col
-                    className={"col-xl-6"}
+                    xl={6}
                     style={{ display: "flex", justifyContent: "flex-end" }}
                 >
                     <div
