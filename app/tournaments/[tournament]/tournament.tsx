@@ -136,7 +136,7 @@ export const GenericTournament = ({
                         tournamentLeaderboards.pbLeaderboard.length > 0 && (
                             <div>
                                 Current record:{" "}
-                                <span style={{ fontSize: "x-large" }}>
+                                <span className="fs-x-large">
                                     <DurationToFormatted
                                         duration={
                                             tournamentLeaderboards
@@ -195,8 +195,7 @@ export const GenericTournament = ({
                                 >
                                     <Button
                                         variant={"primary"}
-                                        className="btn-lg px-3 h-3r fw-medium"
-                                        style={{ width: "15rem" }}
+                                        className="btn-lg px-3 h-3r fw-medium w-240p"
                                     >
                                         How does this work?
                                     </Button>
@@ -207,7 +206,7 @@ export const GenericTournament = ({
                 </Col>
             </Row>
 
-            <div style={{ display: "flex", justifyContent: "center" }}>
+            <div className="d-flex justify-content-center">
                 <h2 className={runStyles.tournamentTimer}>
                     <TournamentTimer tournament={tournament} />
                 </h2>
@@ -219,11 +218,10 @@ export const GenericTournament = ({
 
             <Tabs
                 defaultActiveKey={tab}
-                className={"mb-3"}
-                style={{ position: "relative", zIndex: 0, maxWidth: "30rem" }}
+                className="position-relative z-0 mb-3 mw-30r"
             >
                 <Tab title={"Live"} eventKey={"live"}>
-                    <div style={{ marginBottom: "1rem", marginTop: "1rem" }}>
+                    <div className="my-3">
                         {currentlyViewing &&
                             updatedLiveDataMap[currentlyViewing] && (
                                 <RecommendedStream
@@ -244,7 +242,7 @@ export const GenericTournament = ({
                     {/*                     withChat={true}/>*/}
                     {/*    </div>}*/}
                     <Row>
-                        <Col xl={4} lg={12} md={12}>
+                        <Col md={12} xl={4}>
                             <EventLeaderboards
                                 tournament={tournament}
                                 gameTime={gameTime}
@@ -252,9 +250,9 @@ export const GenericTournament = ({
                                 tournamentLeaderboards={tournamentLeaderboards}
                             />
                         </Col>
-                        <Col xl={8} lg={12} md={12}>
+                        <Col md={12} xl={8}>
                             <h3>Live Runs</h3>
-                            <Row style={{ marginBottom: "1rem" }}>
+                            <Row className="mb-3">
                                 <Col>
                                     <Button
                                         className={
@@ -365,11 +363,10 @@ export const GenericTournament = ({
                                     .map((liveRun) => {
                                         return (
                                             <Col
-                                                xl={6}
                                                 lg={6}
                                                 md={12}
+                                                className="mb-3"
                                                 key={liveRun.user}
-                                                style={{ marginBottom: "1rem" }}
                                                 onClick={() => {
                                                     setCurrentlyViewing(
                                                         liveRun.user

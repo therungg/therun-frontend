@@ -38,7 +38,7 @@ export const MarathonRun = ({
             <hr />
             <div className="mt-3">
                 <Row>
-                    <Col xl={5} lg={12} md={12}>
+                    <Col md={12} xl={5}>
                         <FreeInput
                             liveRun={currentLiveRun}
                             sessionId={session.id}
@@ -48,7 +48,7 @@ export const MarathonRun = ({
                             sessionId={session.id}
                         />
                     </Col>
-                    <Col xl={4} lg={12} md={12}>
+                    <Col md={12} xl={4}>
                         <LiveRunStats
                             liveRun={currentLiveRun}
                             sessionId={session.id}
@@ -63,7 +63,7 @@ export const MarathonRun = ({
                             data={liveRunEvent(runData)}
                         />
                     </Col>
-                    <Col xl={3} lg={12} md={12}>
+                    <Col md={12} xl={3}>
                         <Stats run={runData.gameData} sessionId={session.id} />
 
                         <SendMarathonDataButton
