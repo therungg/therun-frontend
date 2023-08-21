@@ -1,4 +1,4 @@
-import { Run } from "../../../common/types";
+import { Run } from "~src/common/types";
 import { Button, Form } from "react-bootstrap";
 import styles from "../../../components/css/Userform.module.scss";
 import { useState } from "react";

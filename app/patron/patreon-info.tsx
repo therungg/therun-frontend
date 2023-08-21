@@ -1,7 +1,6 @@
 "use client";
 
 import { usePatreons } from "~src/components/patreon/use-patreons";
-import styles from "~src/components/css/Support.module.scss";
 import { Button, Col, Row, Table } from "react-bootstrap";
 import { UserLink } from "~src/components/links/links";
 import React from "react";
@@ -12,42 +11,40 @@ export function PatreonInfo({ session }: { session: { username: string } }) {
     const { data: patreonData, isLoading } = usePatreons();
 
     return (
-        <div>
-            <h1 className={styles.supportTitle}>Support therun.gg</h1>
-            <Row>
-                <Col className={styles.supportOption}>
-                    <h3 className={styles.becomeAPatreon}>Become a Patron</h3>
-                    <div className={styles.unlockText}>
-                        Read the section below to discover what you can unlock!
-                    </div>
-                    <div className={styles.goToPatreonButton}>
+        <>
+            <Row className="g-4 mb-4 text-center">
+                <h1 className="text-center">Support therun.gg</h1>
+                <Col xs={10} xl={5} className="mx-auto">
+                    <div className="h-100 p-4 p-md-5 bg-body-secondary border rounded-3 border-secondary border-2">
+                        <h3>Become a Patron</h3>
+                        <p className="mb-4">
+                            Read the section below to discover what you can
+                            unlock!
+                        </p>
                         <a
                             target={"_blank"}
                             rel={"noreferrer"}
                             href={"https://patreon.com/therungg"}
                         >
-                            <Button className={styles.learnMoreButton}>
+                            <Button className="btn btn-secondary btn-lg border-2 px-3 h-3r fw-medium w-240p h-4r fs-large mw-100">
                                 Go to Patreon
                             </Button>
                         </a>
                     </div>
                 </Col>
-                <Col className={styles.supportOptionStripe}>
-                    <h3 className={styles.becomeAPatreon}>
-                        Donate with Stripe
-                    </h3>
-                    <div className={styles.unlockText}>
-                        To support me on a one-time basis, you can donate with
-                        Stripe
-                    </div>
-
-                    <div className={styles.goToPatreonButton}>
+                <Col xs={10} xl={5} className="mx-auto">
+                    <div className="h-100 p-4 p-md-5 bg-body-secondary border rounded-3 border-primary border-2">
+                        <h3>Donate with Stripe</h3>
+                        <p className="mb-4">
+                            To support me on a one-time basis, you can donate
+                            with Stripe
+                        </p>
                         <a
                             target={"_blank"}
                             rel={"noreferrer"}
                             href={stripePaymentButton}
                         >
-                            <Button className={styles.learnMoreButtonStripe}>
+                            <Button className="btn btn-primary btn-lg border-2 px-3 h-3r fw-medium w-240p h-4r fs-large mw-100">
                                 Donate with Stripe
                             </Button>
                         </a>
@@ -56,47 +53,38 @@ export function PatreonInfo({ session }: { session: { username: string } }) {
             </Row>
             <hr />
             <Row>
-                <Col lg={6} md={12}>
-                    <div className={styles.explainTextMargin}>
+                <Col lg={6} md={12} className="text-center">
+                    <div className="d-flex justify-content-center mb-3">
                         <PatreonBunnySvg size={95} />
                     </div>
-
-                    <div className={styles.explainTextMargin}>
-                        The Run will always be{" "}
-                        <span>&nbsp;without ads&nbsp;</span> and{" "}
-                        <span>&nbsp;without paywalls</span>.
-                    </div>
-
-                    <div className={styles.explainText}>
+                    <p>
+                        The Run will always be without ads and without paywalls.
+                    </p>
+                    <p>
                         If you like what I do, please consider joining the
                         Patreon program.
-                    </div>
-
-                    <div className={styles.explainTextMargin}>
+                        <br />
                         This allows me to keep the site running and build more
                         cool stuff in the future!
-                    </div>
+                    </p>
 
-                    <div className={styles.explainText}>
+                    <p>
                         In return for your unending generosity, I will give you
                         some cool little visual perks.
-                    </div>
-
-                    <div className={styles.explainTextMargin}>
+                        <br />
                         See the table with benefits for what I can give you!
-                    </div>
+                    </p>
                     {session.username && (
-                        <div className={styles.explainText}>
+                        <p>
                             To claim your benefits,&nbsp;
                             <a href={"/change-appearance"}>click here!</a>
-                        </div>
+                        </p>
                     )}
 
                     <hr />
 
-                    <h2 className={styles.explainText}>Patrons</h2>
-
-                    <Row>
+                    <h2 className="mb-3">Patrons</h2>
+                    <Row xs={1} sm={2} md={3} lg={2} xl={3} className="g-3">
                         {patreonData &&
                             !isLoading &&
                             Object.keys(patreonData)
@@ -108,257 +96,197 @@ export function PatreonInfo({ session }: { session: { username: string } }) {
                                 })
                                 .map((key, n) => {
                                     return (
-                                        <Col
-                                            xl={4}
-                                            key={n}
-                                            className={styles.patron}
-                                        >
+                                        <Col key={n} className="fs-x-large">
                                             <UserLink username={key} />
                                         </Col>
                                     );
                                 })}
                     </Row>
                 </Col>
-                <Col>
+                <Col className="text-center">
                     <Table responsive>
                         <thead>
                             <tr>
-                                <th style={{ width: "60%" }}></th>
-                                <th style={{ width: "20%" }}>
-                                    <div className={styles.explainText}>
-                                        For free
-                                    </div>
-                                </th>
-                                <th style={{ width: "20%" }}>
-                                    <div className={styles.explainText}>
-                                        For Patreons
-                                    </div>
-                                </th>
+                                <th className="w-60"></th>
+                                <th className="w-20">For free</th>
+                                <th className="w-20">For Patreons</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>
+                                <td className="text-start">
                                     Unlimited access to data from all your
                                     favorite runners
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>Profile with overview of all your runs</td>
-                                <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                <td className="text-start">
+                                    Profile with overview of all your runs
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
+                                </td>
+                                <td>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>Advanced stats about all your runs</td>
-                                <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                <td className="text-start">
+                                    Advanced stats about all your runs
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
+                                </td>
+                                <td>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>Compare your stats to others</td>
-                                <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                <td className="text-start">
+                                    Compare your stats to others
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
+                                </td>
+                                <td>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>Access to The Run Live</td>
-                                <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                <td className="text-start">
+                                    Access to The Run Live
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
+                                </td>
+                                <td>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>
+                                <td className="text-start">
                                     Automatic real-time syncing of your splits
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>Twitch extension</td>
+                                <td className="text-start">Twitch extension</td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>
+                                <td className="text-start">
                                     Any other feature available now or in the
                                     future
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>Neat game overview</td>
-                                <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                <td className="text-start">
+                                    Neat game overview
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
+                                </td>
+                                <td>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>
+                                <td className="text-start">
                                     Game + category leaderboards for a bunch of
                                     stats
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>
+                                <td className="text-start">
                                     This amazing golden rabbit next to your name{" "}
                                     <PatreonBunnySvg size={20} />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Cross />
-                                    </div>
+                                    <Cross />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>
+                                <td className="text-start">
                                     Customize how your name shows up on the site
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Cross />
-                                    </div>
+                                    <Cross />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>
+                                <td className="text-start">
                                     Exclusive access to a Patreon Discord-role +
                                     channel
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Cross />
-                                    </div>
+                                    <Cross />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>
+                                <td className="text-start">
                                     Special shoutouts on the site (like on this
                                     page!)
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Cross />
-                                    </div>
+                                    <Cross />
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Checkmark />
                                 </td>
                             </tr>
                             <tr>
-                                <td>My eternal thanks and gratitude</td>
-                                <td>
-                                    <div className={styles.explainText}>
-                                        <Cross />
-                                    </div>
+                                <td className="text-start">
+                                    My eternal thanks and gratitude
                                 </td>
                                 <td>
-                                    <div className={styles.explainText}>
-                                        <Checkmark />
-                                    </div>
+                                    <Cross />
+                                </td>
+                                <td>
+                                    <Checkmark />
                                 </td>
                             </tr>
                         </tbody>
                     </Table>
                 </Col>
             </Row>
-        </div>
+        </>
     );
 }
 
@@ -368,7 +296,7 @@ const Checkmark = () => {
             xmlns="http://www.w3.org/2000/svg"
             width="32"
             height="32"
-            fill="var(--color-link)"
+            fill="var(--bs-link-color)"
             className="bi bi-check"
             viewBox="0 0 16 16"
         >
@@ -383,7 +311,7 @@ export const Cross = () => {
             xmlns="http://www.w3.org/2000/svg"
             width="32"
             height="32"
-            fill="var(--color-negative)"
+            fill="var(--bs-red)"
             className="bi bi-x-lg"
             viewBox="0 0 16 16"
         >
@@ -407,24 +335,23 @@ export const PatreonBunnySvg = ({ size = 20, url = "/patron" }) => {
 
 export const PatreonBunnySvgWithoutLink = ({ size = 20 }) => {
     return (
-        <span style={{ marginBottom: "4%" }}>
-            <svg
-                id="Layer_1"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="35 200 612 400"
-                height={size}
-            >
-                <path
-                    style={{ fill: "var(--color-gold)" }}
-                    d="M103.51,473.8l2.36-3.44c-.37-4.54-1.06-9.06-2.14-13.49-32.19-131.96,197.53-172.35,277.76-106.65,6.68,5.11,16.31,3.34,20.44-3.93l13.36-22.2c-54.41-32.73-68.58-59.52-77.11-70.73-18.57-24.43-19.34-44.31,49.85-16.62,25.44,10.18,38.92,12.46,75.01,55.12,21.22,25.15,56,4.13,78.2,25.54,100.41,97.26-42.64,76.04-90.78,140.49-.43,.57-.78,1.42-1.04,2.44-1.9,7.4,2.52,14.99,9.81,17.29,46.56,14.66,72.89,58.42,28.96,68.6-14.64,3.39-30.05,1.36-43.49-5.36-33.33-16.66-67.47-27.26-99.51-44.39-9.43-5.04-25.73-12.25-36.16-14.6-33.33-7.49-70.05-6.03-96.79,0-12.66,2.86-28.94,6.71-38.41,15.58-29.34,28.85-97.41,118.26-104.63,39.71-2.4-26.13,15.9-44.67,34.32-63.37Z"
-                />
+        <svg
+            id="Layer_1"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="35 200 612 400"
+            height={size}
+            className="mb-1"
+        >
+            <path
+                style={{ fill: "var(--bs-secondary)" }}
+                d="M103.51,473.8l2.36-3.44c-.37-4.54-1.06-9.06-2.14-13.49-32.19-131.96,197.53-172.35,277.76-106.65,6.68,5.11,16.31,3.34,20.44-3.93l13.36-22.2c-54.41-32.73-68.58-59.52-77.11-70.73-18.57-24.43-19.34-44.31,49.85-16.62,25.44,10.18,38.92,12.46,75.01,55.12,21.22,25.15,56,4.13,78.2,25.54,100.41,97.26-42.64,76.04-90.78,140.49-.43,.57-.78,1.42-1.04,2.44-1.9,7.4,2.52,14.99,9.81,17.29,46.56,14.66,72.89,58.42,28.96,68.6-14.64,3.39-30.05,1.36-43.49-5.36-33.33-16.66-67.47-27.26-99.51-44.39-9.43-5.04-25.73-12.25-36.16-14.6-33.33-7.49-70.05-6.03-96.79,0-12.66,2.86-28.94,6.71-38.41,15.58-29.34,28.85-97.41,118.26-104.63,39.71-2.4-26.13,15.9-44.67,34.32-63.37Z"
+            />
 
-                <path
-                    style={{ fill: "var(--color-gold)" }}
-                    d="M132.32,370.39c-1.48-4.85-3.65-9.48-6.44-13.72-1.43-2.18-3.1-4.31-5.41-5.52-3.41-1.78-7.73-1.15-10.98,.91s-5.53,5.37-7.14,8.86c-.79,1.71-1.46,3.52-2.73,4.92-4.61,5.08-13.62,1.78-19.38,5.5-4.52,2.92-5.22,10.25-1.34,13.98,1.54,1.48,3.64,2.46,4.63,4.35,1.1,2.11,.46,4.64,.36,7.01-.25,5.61,2.94,11.23,7.87,13.9s11.38,2.26,15.94-1.02"
-                />
-            </svg>
-        </span>
+            <path
+                style={{ fill: "var(--bs-secondary)" }}
+                d="M132.32,370.39c-1.48-4.85-3.65-9.48-6.44-13.72-1.43-2.18-3.1-4.31-5.41-5.52-3.41-1.78-7.73-1.15-10.98,.91s-5.53,5.37-7.14,8.86c-.79,1.71-1.46,3.52-2.73,4.92-4.61,5.08-13.62,1.78-19.38,5.5-4.52,2.92-5.22,10.25-1.34,13.98,1.54,1.48,3.64,2.46,4.63,4.35,1.1,2.11,.46,4.64,.36,7.01-.25,5.61,2.94,11.23,7.87,13.9s11.38,2.26,15.94-1.02"
+            />
+        </svg>
     );
 };
 
@@ -443,7 +370,7 @@ export const PatreonBunnySvgMarioPipe = ({ size = 20, url = "/patron" }) => {
                 height={size}
             >
                 <path
-                    style={{ fill: "var(--color-gold)" }}
+                    style={{ fill: "var(--bs-secondary)" }}
                     d="M255.2,440.8l-0.7-2.6c-2.4-1.7-5-3.3-7.7-4.6c-79.7-39.6-2.9-171.8,63.9-184.2c5.4-1.2,8.6-6.8,6.7-11.9
 		l-5.5-16.1c-39.4,13.4-58.8,9.2-68,8.8c-20.1-1-30.4-9,12.7-32c15.8-8.4,22.7-14.2,59.3-14.3c21.6,0,25.7-26.3,45.8-28.4
 		c91.2-9.2,20.1,53.5,32,104.8c0.1,0.5,0.4,1,0.8,1.6c2.9,4.1,8.6,5.1,12.8,2.4c27-17.1,60.1-11.8,46.6,14.5
@@ -451,7 +378,7 @@ export const PatreonBunnySvgMarioPipe = ({ size = 20, url = "/patron" }) => {
 		c-3.9,7.6-8.9,17.3-8.4,25.8c2.1,26.9,18.1,98.8-24.3,69.2C258.4,475,256.8,458,255.2,440.8z"
                 />
                 <path
-                    style={{ fill: "var(--color-gold)" }}
+                    style={{ fill: "var(--bs-secondary)" }}
                     d="M215.6,382.7c-3.1-1.3-6.3-2.2-9.6-2.6c-1.7-0.2-3.5-0.3-5,0.4c-2.3,1-3.8,3.4-4.2,5.9c-0.3,2.5,0.4,5,1.4,7.3
 		c0.5,1.1,1.1,2.2,1.3,3.4c0.6,4.5-4.9,7.6-5.4,12c-0.4,3.5,2.9,6.9,6.4,6.6c1.4-0.1,2.8-0.8,4.1-0.5c1.5,0.3,2.5,1.7,3.7,2.8
 		c2.7,2.5,6.9,3.3,10.3,1.9c3.4-1.3,5.9-4.8,6.2-8.4"

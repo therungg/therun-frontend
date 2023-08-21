@@ -6,7 +6,6 @@ import { LiveUserRun } from "~src/components/live/live-user-run";
 import { RecommendedStream } from "~src/components/live/recommended-stream";
 import runStyles from "~src/components/css/LiveRun.module.scss";
 import { DurationToFormatted } from "~src/components/util/datetime";
-import homeStyles from "~src/components/css/Home.module.scss";
 import useSWR from "swr";
 import { fetcher } from "~src/utils/fetcher";
 import TournamentStats from "~src/components/tournament/tournament-stats";
@@ -22,9 +21,8 @@ import { LiveDataMap } from "~app/live/live.types";
 import { getRecommendedStream, liveRunIsInSearch } from "~app/live/utilities";
 import { isLiveDataEligibleForTournament } from "~app/tournaments/[tournament]/is-live-data-eligible-for-tournament.component";
 import { liveRunArrayToMap } from "~app/tournaments/[tournament]/live-run-array-to-map.component";
-import searchStyles from "~src/components/css/Search.module.scss";
-import styles from "~src/components/css/Games.module.scss";
 import { EventLeaderboards } from "~app/tournaments/[tournament]/event-leaderboards.component";
+import { Search as SearchIcon } from "react-bootstrap-icons";
 import { TournamentTimer } from "~app/tournaments/[tournament]/tournament-timer";
 
 export const GenericTournament = ({
@@ -138,7 +136,7 @@ export const GenericTournament = ({
                         tournamentLeaderboards.pbLeaderboard.length > 0 && (
                             <div>
                                 Current record:{" "}
-                                <span style={{ fontSize: "x-large" }}>
+                                <span className="fs-x-large">
                                     <DurationToFormatted
                                         duration={
                                             tournamentLeaderboards
@@ -168,15 +166,7 @@ export const GenericTournament = ({
                 <Col xl={2}>
                     <div>
                         {tournament.logoUrl && (
-                            <div
-                                style={{
-                                    fontSize: "1.5rem",
-                                    height: "100%",
-                                    display: "flex",
-                                    justifyContent: "flex-end",
-                                }}
-                                className={homeStyles.learnMoreButtonContainer}
-                            >
+                            <div className="d-flex pt-3 justify-content-end h-100">
                                 <Image
                                     src={tournament.logoUrl}
                                     alt={"Tournament Logo"}
@@ -205,8 +195,7 @@ export const GenericTournament = ({
                                 >
                                     <Button
                                         variant={"primary"}
-                                        className={homeStyles.learnMoreButton}
-                                        style={{ width: "15rem" }}
+                                        className="btn-lg px-3 h-3r fw-medium w-240p"
                                     >
                                         How does this work?
                                     </Button>
@@ -217,7 +206,7 @@ export const GenericTournament = ({
                 </Col>
             </Row>
 
-            <div style={{ display: "flex", justifyContent: "center" }}>
+            <div className="d-flex justify-content-center">
                 <h2 className={runStyles.tournamentTimer}>
                     <TournamentTimer tournament={tournament} />
                 </h2>
@@ -229,11 +218,10 @@ export const GenericTournament = ({
 
             <Tabs
                 defaultActiveKey={tab}
-                className={"mb-3"}
-                style={{ position: "relative", zIndex: 0, maxWidth: "30rem" }}
+                className="position-relative z-0 mb-3 mw-30r"
             >
                 <Tab title={"Live"} eventKey={"live"}>
-                    <div style={{ marginBottom: "1rem", marginTop: "1rem" }}>
+                    <div className="my-3">
                         {currentlyViewing &&
                             updatedLiveDataMap[currentlyViewing] && (
                                 <RecommendedStream
@@ -254,7 +242,7 @@ export const GenericTournament = ({
                     {/*                     withChat={true}/>*/}
                     {/*    </div>}*/}
                     <Row>
-                        <Col xl={4} lg={12} md={12}>
+                        <Col md={12} xl={4}>
                             <EventLeaderboards
                                 tournament={tournament}
                                 gameTime={gameTime}
@@ -262,9 +250,9 @@ export const GenericTournament = ({
                                 tournamentLeaderboards={tournamentLeaderboards}
                             />
                         </Col>
-                        <Col xl={8} lg={12} md={12}>
+                        <Col md={12} xl={8}>
                             <h3>Live Runs</h3>
-                            <Row style={{ marginBottom: "1rem" }}>
+                            <Row className="mb-3">
                                 <Col>
                                     <Button
                                         className={
@@ -327,54 +315,38 @@ export const GenericTournament = ({
                                 </Col>
                             </Row>
 
-                            <div>
-                                <div
-                                    className={runStyles.searchContainer}
-                                    style={{
-                                        marginLeft: "0",
-                                        justifyContent: "center",
-                                    }}
-                                >
-                                    <div
-                                        className={`${searchStyles.searchContainer} ${styles.filter}`}
-                                        style={{
-                                            marginLeft: "0",
-                                            justifyContent: "center",
+                            <div className="d-flex justify-content-center">
+                                <div className="mb-3 input-group game-filter-mw">
+                                    <span
+                                        className="input-group-text"
+                                        onClick={() => {
+                                            const searchElement =
+                                                document.getElementById(
+                                                    "gameSearch"
+                                                );
+                                            if (
+                                                document.activeElement !==
+                                                searchElement
+                                            ) {
+                                                searchElement.focus();
+                                            }
                                         }}
                                     >
-                                        <span
-                                            className={
-                                                "material-symbols-outlined"
-                                            }
-                                            onClick={() => {
-                                                const searchElement =
-                                                    document.getElementById(
-                                                        "gameSearch"
-                                                    );
-                                                if (
-                                                    document.activeElement !==
-                                                    searchElement
-                                                ) {
-                                                    searchElement.focus();
-                                                }
-                                            }}
-                                        >
-                                            search
-                                        </span>
-                                        <input
-                                            type="search"
-                                            className={`form-control ${searchStyles.search}`}
-                                            placeholder="Filter by game/category/user"
-                                            style={{ marginBottom: "0" }}
-                                            onChange={(e) => {
-                                                setSearch(e.target.value);
-                                            }}
-                                            value={search}
-                                            id="gameSearch"
-                                        />
-                                    </div>
+                                        <SearchIcon size={18} />
+                                    </span>
+                                    <input
+                                        type="search"
+                                        className="form-control"
+                                        placeholder="Filter by game/category/user"
+                                        onChange={(e) => {
+                                            setSearch(e.target.value);
+                                        }}
+                                        value={search}
+                                        id="gameSearch"
+                                    />
                                 </div>
                             </div>
+
                             <Row>
                                 {Object.values(updatedLiveDataMap).length ==
                                     0 && (
@@ -391,11 +363,10 @@ export const GenericTournament = ({
                                     .map((liveRun) => {
                                         return (
                                             <Col
-                                                xl={6}
                                                 lg={6}
                                                 md={12}
+                                                className="mb-3"
                                                 key={liveRun.user}
-                                                style={{ marginBottom: "1rem" }}
                                                 onClick={() => {
                                                     setCurrentlyViewing(
                                                         liveRun.user

@@ -2,13 +2,14 @@ import { Col, Image, Row } from "react-bootstrap";
 import styles from "../css/LiveRun.module.scss";
 import React, { useEffect, useState } from "react";
 import { UserLink } from "../links/links";
-import { TwitchIcon } from "../user/userform";
 import { usePatreons } from "../patreon/use-patreons";
 import patreonStyles from "../patreon/patreon-styles";
 import { DurationToFormatted } from "../util/datetime";
 import { LiveRun } from "~app/live/live.types";
 import { LiveSplitTimerComponent } from "~app/live/live-split-timer.component";
 import { GameImage } from "~src/components/image/gameimage";
+import { Twitch as TwitchIcon } from "react-bootstrap-icons";
+import { getColorMode } from "~src/utils/colormode";
 
 export const LiveUserRun = ({
     liveRun,
@@ -29,7 +30,7 @@ export const LiveUserRun = ({
     const [liveUserStyles, setLiveUserStyles] = useState({});
     const { data: patreons, isLoading } = usePatreons();
     useEffect(function () {
-        setDark(document.documentElement.dataset.theme !== "light");
+        setDark(getColorMode() !== "light");
     }, []);
 
     useEffect(() => {
@@ -50,7 +51,7 @@ export const LiveUserRun = ({
                     ? darkStyle.backgroundImage
                     : lightStyle.backgroundImage;
             } else {
-                borderColor = "var(--color-link)";
+                borderColor = "var(--bs-link-color)";
             }
             setLiveUserStyles({ borderColor, gradient });
         }
@@ -84,12 +85,13 @@ export const LiveUserRun = ({
 
     return (
         <div
-            className={
-                styles.liveRunContainer +
-                (liveRun.user == currentlyActive
-                    ? ` ${styles.activeRunContainer}`
-                    : "")
-            }
+            className={`card d-flex flex-row rounded-0 h-110p overflow-hidden w-100 game-border ${
+                styles.liveRunContainer
+            } ${
+                liveRun.user == currentlyActive
+                    ? "bg-body-tertiary"
+                    : "bg-body-secondary"
+            }`}
             style={
                 liveUserStyles.gradient
                     ? {
@@ -103,152 +105,139 @@ export const LiveUserRun = ({
                               liveUserStyles.gradient ||
                               liveUserStyles.borderColor
                                   ? "2px"
-                                  : "1px",
+                                  : "",
                       }
             }
         >
-            {/*ToDo: nooooo*/}
-            <div className={"holyshit"}>
-                {liveRun.gameImage &&
-                    liveRun.gameImage.length > 0 &&
-                    liveRun.gameImage != "noimage" && (
-                        <div>
-                            <GameImage
-                                alt={liveRun.game}
-                                src={liveRun.gameImage}
-                                quality={"small"}
-                                height={108}
-                                width={81}
-                                style={
-                                    liveUserStyles.gradient ||
-                                    liveUserStyles.borderColor
-                                        ? {
-                                              height: liveUserStyles.gradient
-                                                  ? "106px"
-                                                  : "106px",
-                                          }
-                                        : {}
-                                }
-                            />
-                        </div>
-                    )}
-                {(!liveRun.gameImage ||
-                    liveRun.gameImage.length < 1 ||
-                    liveRun.gameImage == "noimage") && (
-                    <div style={{ marginTop: "17.5px" }}>
-                        <Image
-                            alt={"Logo"}
-                            src={
-                                dark
-                                    ? "/logo_dark_theme_no_text_transparent.png"
-                                    : "/logo_light_theme_no_text_transparent.png"
+            {liveRun.gameImage &&
+                liveRun.gameImage.length > 0 &&
+                liveRun.gameImage != "noimage" && (
+                    <div
+                        style={{
+                            minWidth: "81px",
+                            maxWidth: "81px",
+                        }}
+                    >
+                        <GameImage
+                            alt={liveRun.game}
+                            src={liveRun.gameImage}
+                            quality={"small"}
+                            height={108}
+                            width={81}
+                            style={
+                                liveUserStyles.gradient ||
+                                liveUserStyles.borderColor
+                                    ? {
+                                          height: liveUserStyles.gradient
+                                              ? "106px"
+                                              : "106px",
+                                      }
+                                    : {}
                             }
-                            width={"75px"}
-                            height={"75px"}
                         />
                     </div>
                 )}
-            </div>
-            <div className={styles.infoBody}>
-                <div className={styles.maxHeight}>
-                    <Row className={styles.maxHeight}>
-                        <Col xs={7} style={{ paddingRight: "0" }}>
-                            <div className={styles.metadataBody}>
-                                <div style={{ width: "calc(100%)" }}>
-                                    <div className={styles.username}>
-                                        <div>
-                                            {ranking && (
-                                                <div>
-                                                    &nbsp;#{ranking}
-                                                    &nbsp;-&nbsp;
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div
-                                            style={{
-                                                whiteSpace: "nowrap",
-                                                overflow: "hidden",
-                                            }}
-                                        >
-                                            <UserLink
-                                                username={liveRun.user}
-                                                parentIsUrl={isUrl}
-                                            />
-                                        </div>
-                                        {liveRun.currentlyStreaming && (
-                                            <div
-                                                style={{
-                                                    marginLeft: "0.6rem",
-                                                    alignItems: "flex-start",
-                                                }}
-                                            >
-                                                <TwitchIcon height={22} />
-                                            </div>
-                                        )}
-                                    </div>
-                                    {showGameCategory && (
-                                        <div className={styles.game}>
-                                            {liveRun.game}
-                                        </div>
-                                    )}
-                                    {showGameCategory && (
-                                        <div className={styles.category}>
-                                            {liveRun.category}
-                                        </div>
-                                    )}
-
-                                    {!showGameCategory &&
-                                        tournamentPbGameTime && (
-                                            <div className={styles.game}>
-                                                Tournament PB -{" "}
-                                                {!!tournamentPbGameTime && (
-                                                    <DurationToFormatted
-                                                        duration={
-                                                            tournamentPbGameTime
-                                                        }
-                                                    />
-                                                )}
-                                            </div>
-                                        )}
-
-                                    {!showGameCategory &&
-                                        tournamentPb &&
-                                        !tournamentPbGameTime && (
-                                            <div className={styles.game}>
-                                                Tournament PB -{" "}
-                                                {!!tournamentPb && (
-                                                    <DurationToFormatted
-                                                        duration={tournamentPb}
-                                                    />
-                                                )}
-                                            </div>
-                                        )}
-
-                                    {!showGameCategory &&
-                                        liveRun.pb &&
-                                        liveRun.pb != tournamentPbGameTime &&
-                                        liveRun.pb != tournamentPb && (
-                                            <div className={styles.game}>
-                                                Personal Best -{" "}
-                                                {
-                                                    <DurationToFormatted
-                                                        duration={liveRun.pb}
-                                                    />
-                                                }
-                                            </div>
-                                        )}
-                                </div>
-                            </div>
-                        </Col>
-                        <Col xs={5} style={{ paddingLeft: "0" }}>
-                            <LiveSplitTimerComponent
-                                liveRun={liveRun}
-                                dark={dark}
-                            />
-                        </Col>
-                    </Row>
+            {(!liveRun.gameImage ||
+                liveRun.gameImage.length < 1 ||
+                liveRun.gameImage == "noimage") && (
+                <div
+                    style={{
+                        minWidth: "81px",
+                        maxWidth: "81px",
+                    }}
+                >
+                    <Image
+                        alt={"Logo"}
+                        src={
+                            dark
+                                ? "/logo_dark_theme_no_text_transparent.png"
+                                : "/logo_light_theme_no_text_transparent.png"
+                        }
+                        width={"75px"}
+                        height={"75px"}
+                        className="mt-3"
+                    />
                 </div>
-            </div>
+            )}
+
+            <Row
+                className="h-100 py-2 px-3 flex-1 w-100 justify-content-between"
+                style={{
+                    minWidth: "calc(100% - 81px + var(--bs-gutter-x))",
+                    maxWidth: "calc(100% - 81px + var(--bs-gutter-x))",
+                }}
+            >
+                <Col xs={7} className="mw-350p ps-3">
+                    <div className="fs-responsive-large d-flex">
+                        {ranking && (
+                            <div className="me-auto">
+                                &nbsp;#{ranking}
+                                &nbsp;-&nbsp;
+                            </div>
+                        )}
+                        <UserLink
+                            username={liveRun.user}
+                            parentIsUrl={isUrl}
+                            icon={false}
+                        />
+                        {liveRun.currentlyStreaming && (
+                            <div className="ms-2">
+                                <TwitchIcon height={22} color={"#6441a5"} />
+                            </div>
+                        )}
+                    </div>
+                    {showGameCategory && (
+                        <div className="text-truncate fs-large">
+                            {liveRun.game}
+                        </div>
+                    )}
+                    {showGameCategory && (
+                        <div className="text-truncate fs-large">
+                            {liveRun.category}
+                        </div>
+                    )}
+
+                    {!showGameCategory && tournamentPbGameTime && (
+                        <div className="text-truncate fs-large">
+                            Tournament PB -{" "}
+                            {!!tournamentPbGameTime && (
+                                <DurationToFormatted
+                                    duration={tournamentPbGameTime}
+                                />
+                            )}
+                        </div>
+                    )}
+
+                    {!showGameCategory &&
+                        tournamentPb &&
+                        !tournamentPbGameTime && (
+                            <div className="text-truncate">
+                                Tournament PB -{" "}
+                                {!!tournamentPb && (
+                                    <DurationToFormatted
+                                        duration={tournamentPb}
+                                    />
+                                )}
+                            </div>
+                        )}
+
+                    {!showGameCategory &&
+                        liveRun.pb &&
+                        liveRun.pb != tournamentPbGameTime &&
+                        liveRun.pb != tournamentPb && (
+                            <div className="text-truncate">
+                                Personal Best -{" "}
+                                {<DurationToFormatted duration={liveRun.pb} />}
+                            </div>
+                        )}
+                </Col>
+                <Col
+                    xs={5}
+                    className="d-flex justify-content-end align-items-center"
+                >
+                    <LiveSplitTimerComponent liveRun={liveRun} dark={dark} />
+                </Col>
+            </Row>
         </div>
     );
 };
@@ -263,7 +252,7 @@ export const LiveIcon = ({ height = 16, dark = false }) => {
     );
 };
 
-export const Flag = ({ height = 16, dark = false }) => {
+export const Flag = ({ className = "", height = 16, dark = false }) => {
     return (
         <Image
             alt={"Flag"}
@@ -273,7 +262,7 @@ export const Flag = ({ height = 16, dark = false }) => {
                     : "/Flag finish greenTR-lighttransparant(1).png"
             }
             height={height}
-            style={{ marginTop: "0.5rem" }}
+            className={`mt-2 ${className}`}
         />
     );
 };

@@ -22,7 +22,6 @@ import { Col, Row } from "react-bootstrap";
 import { getFormattedString } from "../util/datetime";
 import moment from "moment";
 import { UnderlineTooltip } from "../tooltip";
-import styles from "../css/Timesaves.module.scss";
 import { useState } from "react";
 
 ChartJS.register(
@@ -158,11 +157,11 @@ export const WrHistory = ({
                             style={{
                                 tickLabels: {
                                     fontSize: 10,
-                                    color: "var(--color-text)",
-                                    fill: "var(--color-text)",
+                                    color: "var(--bs-body-color)",
+                                    fill: "var(--bs-body-color)",
                                 },
                                 axis: {
-                                    stroke: "var(--color-text)",
+                                    stroke: "var(--bs-body-color)",
                                 },
                             }}
                             data={victoryData}
@@ -181,16 +180,16 @@ export const WrHistory = ({
                             style={{
                                 tickLabels: {
                                     fontSize: 10,
-                                    color: "var(--color-text)",
-                                    fill: "var(--color-text)",
+                                    color: "var(--bs-body-color)",
+                                    fill: "var(--bs-body-color)",
                                     angle: 75,
                                     padding: 26,
                                 },
                                 axis: {
-                                    color: "var(--color-text)",
-                                    borderColor: "var(--color-text)",
-                                    fill: "var(--color-text)",
-                                    stroke: "var(--color-text)",
+                                    color: "var(--bs-body-color)",
+                                    borderColor: "var(--bs-body-color)",
+                                    fill: "var(--bs-body-color)",
+                                    stroke: "var(--bs-body-color)",
                                 },
                             }}
                             data={victoryData}
@@ -281,7 +280,7 @@ export const WrHistory = ({
                         />
                         <input
                             type={"number"}
-                            className={`${styles.numberInput} form-select`}
+                            className="form-control w-8r ms-2 bg-body-secondary"
                             onChange={(e) => {
                                 let val =
                                     e.target.value > maxLength

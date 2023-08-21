@@ -3,8 +3,7 @@ import { Col, Nav, Row, Tab, Table } from "react-bootstrap";
 import { DurationToFormatted, getFormattedString } from "../util/datetime";
 import { ReactElement, useState } from "react";
 import { UserLink } from "../links/links";
-import searchStyles from "../css/Search.module.scss";
-import styles from "../css/Games.module.scss";
+import { Search as SearchIcon } from "react-bootstrap-icons";
 
 export const getLeaderboard = (
     name: string,
@@ -22,16 +21,10 @@ export const getLeaderboard = (
             <Col>
                 <Table bordered striped={search.length == 0} hover responsive>
                     <thead>
-                        <tr>
-                            <th style={{ width: "14%", textAlign: "center" }}>
-                                #
-                            </th>
-                            <th style={{ width: "38%", textAlign: "center" }}>
-                                User
-                            </th>
-                            <th style={{ width: "38%", textAlign: "center" }}>
-                                {name}
-                            </th>
+                        <tr className="text-center">
+                            <th style={{ width: "14%" }}>#</th>
+                            <th style={{ width: "38%" }}>User</th>
+                            <th style={{ width: "38%" }}>{name}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -56,20 +49,18 @@ export const getLeaderboard = (
                                             leaderboard.username
                                                 .toLowerCase()
                                                 .includes(search.toLowerCase())
-                                                ? ""
-                                                : styles.hiddenLeaderboardRow
+                                                ? "text-center"
+                                                : "d-none"
                                         }
                                     >
-                                        <td style={{ textAlign: "center" }}>
-                                            {leaderboard.placing}
-                                        </td>
-                                        <td style={{ textAlign: "center" }}>
+                                        <td>{leaderboard.placing}</td>
+                                        <td>
                                             <UserLink
                                                 url={url}
                                                 username={leaderboard.username}
                                             />
                                         </td>
-                                        <td style={{ textAlign: "center" }}>
+                                        <td>
                                             {transform
                                                 ? transform(
                                                       leaderboard.stat,
@@ -313,12 +304,10 @@ export const GameLeaderboards = ({
                     </Nav>
                 </Col>
                 <Col lg={9} md={8}>
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                        <div
-                            className={`${searchStyles.searchContainer} ${styles.filter}`}
-                        >
+                    <div className="d-flex justify-content-center">
+                        <div className="mb-3 input-group game-filter-mw">
                             <span
-                                className={"material-symbols-outlined"}
+                                className="input-group-text"
                                 onClick={() => {
                                     const searchElement =
                                         document.getElementById("gameSearch");
@@ -329,14 +318,12 @@ export const GameLeaderboards = ({
                                     }
                                 }}
                             >
-                                {" "}
-                                search{" "}
+                                <SearchIcon size={18} />
                             </span>
                             <input
                                 type="search"
-                                className={`form-control ${searchStyles.search}`}
+                                className="form-control"
                                 placeholder="Filter by name"
-                                style={{ marginBottom: "0" }}
                                 onChange={(e) => {
                                     setSearch(e.target.value);
                                 }}

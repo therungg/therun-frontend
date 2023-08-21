@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import patreonStyles from "./patreon-styles";
 import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import { usePatreons } from "./use-patreons";
+import { getColorMode } from "~src/utils/colormode";
 
 export const NameAsPatreon = ({ name }) => {
     const { data: patreons, isLoading } = usePatreons();
@@ -43,7 +44,7 @@ export const PatreonName = ({
 }) => {
     const [dark, setDark] = useState(true);
     useEffect(function () {
-        setDark(document.documentElement.dataset.theme !== "light");
+        setDark(getColorMode() !== "light");
     }, []);
 
     const colors = patreonStyles();
@@ -55,10 +56,10 @@ export const PatreonName = ({
     style = dark ? style.style[0] : style.style[1];
 
     return (
-        <span>
+        <>
             <span style={style}>{name}</span>{" "}
             {icon && <PatreonBunnySvgWithoutLink size={size} />}
-        </span>
+        </>
     );
 };
 

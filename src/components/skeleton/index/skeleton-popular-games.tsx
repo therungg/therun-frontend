@@ -11,8 +11,8 @@ export const SkeletonPopularGames = (
         className={styles.popularGames}
         height={100}
         speed={2}
-        backgroundColor="var(--color-secondary)"
-        foregroundColor="var(--color-bg)"
+        backgroundColor="var(--bs-secondary-bg)"
+        foregroundColor="var(--bs-body-bg)"
         {...props}
     >
         <rect x="100%" y="0" width="1" height="641" />

@@ -14,8 +14,8 @@ export const SkeletonPersonalBests = (
         height={100}
         speed={2}
         title="Loading personal bests"
-        backgroundColor="var(--color-secondary)"
-        foregroundColor="var(--color-bg)"
+        backgroundColor="var(--bs-secondary-bg)"
+        foregroundColor="var(--bs-body-bg)"
         {...props}
     >
         <rect x="0" y="0" rx="0" ry="0" width="100%" height="63" />
