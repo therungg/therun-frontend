@@ -24,6 +24,7 @@ const qualityMap: Record<Quality, IgdbQualityString> = {
 };
 
 interface GameImageProps {
+    className?: string;
     src: string;
     alt: string;
     width?: SafeNumber;
@@ -36,6 +37,7 @@ interface GameImageProps {
 
 export const GameImage = (Props: GameImageProps) => {
     const {
+        className = "img-fluid",
         src,
         alt = "Game Image",
         quality = "medium",
@@ -48,6 +50,7 @@ export const GameImage = (Props: GameImageProps) => {
 
     return (
         <Image
+            className={className}
             src={`https://images.igdb.com/igdb/image/upload/t_${qualityMap[quality]}${file}`}
             alt={alt}
             loading={"lazy"}

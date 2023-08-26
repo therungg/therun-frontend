@@ -1,19 +1,14 @@
 .card {
   white-space: nowrap;
-  color: var(--color-text);
-  background-color: var(--color-secondary);
+  color: var(--bs-body-color);
+  background-color: var(--bs-secondary-bg);
   border-radius: 10px;
   border-width: 2px;
-  border-color: var(--color-secondary);
+  border-color: var(--bs-secondary-bg);
   min-height: 9.5rem;
 }
 
-.cardHeader {
-  background-color: var(--color-secondary);
-}
-
 .cardBody {
-  background-color: var(--color-bg);
   --bs-card-spacer-x: clamp(.2rem, 2%, .6rem);
   --bs-card-spacer-y: clamp(.2rem, 2%, .6rem);
 }
@@ -84,19 +79,19 @@
   }
 }
 
-@media screen and (max-width: 992px) {
+@media screen and (max-width: 991.98px) {
   .filter {
     width: 60%;
   }
 }
 
-@media screen and (max-width: 768px) {
+@media screen and (max-width: 767.98px) {
   .filter {
     width: 80%;
   }
 }
 
-@media screen and (max-width: 576px) {
+@media screen and (max-width: 575.98px) {
   .filter {
     width: 100%;
   }

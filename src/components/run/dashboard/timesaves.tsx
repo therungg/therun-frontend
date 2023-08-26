@@ -1,8 +1,7 @@
-import { RunHistory, SplitsHistory } from "../../../common/types";
+import { RunHistory, SplitsHistory } from "~src/common/types";
 import { useState } from "react";
 import { Col, Row, Table } from "react-bootstrap";
 import { DurationToFormatted } from "../../util/datetime";
-import styles from "../../css/Timesaves.module.scss";
 import { InfoTooltip, UnderlineTooltip } from "../../tooltip";
 import Switch from "react-switch";
 import SplitName from "../../transformers/split-name";
@@ -118,17 +117,21 @@ export const Timesaves = ({
         <div>
             <Row>
                 <Col lg={4} md={12}>
-                    <h2 style={{ width: "18rem" }}>Timesaves</h2>
+                    <h2>Timesaves</h2>
                 </Col>
-                <Col lg={4} md={12} className={styles.modeToggle}>
-                    <div style={{ marginRight: "0.5rem" }}>Table mode</div>
+                <Col
+                    lg={4}
+                    md={12}
+                    className="d-flex justify-content-start align-items-center justify-content-lg-center"
+                >
+                    <div className="me-2">Table mode</div>
                     <Switch
                         onColor={getComputedStyle(
                             document.documentElement
-                        ).getPropertyValue("--color-link")}
+                        ).getPropertyValue("--bs-link-color")}
                         offColor={getComputedStyle(
                             document.documentElement
-                        ).getPropertyValue("--color-tertiary")}
+                        ).getPropertyValue("--bs-tertiary-bg")}
                         name={"switch"}
                         onChange={(checked) => {
                             setVisual(checked);
@@ -136,18 +139,10 @@ export const Timesaves = ({
                         checked={visual}
                     />
 
-                    <div style={{ marginLeft: "0.5rem" }}>Visual mode</div>
+                    <div className="ms-2">Visual mode</div>
                 </Col>
                 <Col>
-                    <div
-                        style={{
-                            width: "100%",
-                            display: "flex",
-                            justifyContent: "flex-end",
-                            alignItems: "center",
-                            marginBottom: "0.5rem",
-                        }}
-                    >
+                    <div className="d-flex justify-content-end align-items-center mb-2 w-100">
                         <UnderlineTooltip
                             title={"Sample size"}
                             content={
@@ -158,7 +153,7 @@ export const Timesaves = ({
                         />
                         <input
                             type={"number"}
-                            className={`${styles.numberInput} form-select`}
+                            className="form-control w-8r ms-2 bg-body-secondary"
                             onChange={(e) => {
                                 let val =
                                     e.target.value > history.length
@@ -173,7 +168,7 @@ export const Timesaves = ({
                 </Col>
             </Row>
             {visual && (
-                <div className={styles.visual}>
+                <div className="mt-3">
                     {splits
                         .slice()
                         .sort((a, b) => (a.bestDiff < b.bestDiff ? 1 : -1))
@@ -182,23 +177,14 @@ export const Timesaves = ({
                             return (
                                 <div
                                     key={`splitvisual${split.name}`}
-                                    className={styles.visualTimesave}
+                                    className="rounded-4 px-4 mb-2"
                                     style={{
-                                        backgroundImage: `linear-gradient(to right, var(--color-positive-${key}), var(--color-bg))`,
+                                        backgroundImage: `linear-gradient(to right, var(--color-positive-${key}), var(--bs-body-bg))`,
                                     }}
                                 >
-                                    <Row
-                                        style={{
-                                            width: "100%",
-                                            height: "100%",
-                                        }}
-                                    >
-                                        <Col xl={4} lg={4} md={6}>
-                                            <div
-                                                className={
-                                                    styles.visualSplitname
-                                                }
-                                            >
+                                    <Row className="mt-0 py-2 mb-1 gy-3 gy-lg-0 py-lg-1 align-items-center">
+                                        <Col lg={4} md={6}>
+                                            <div className="fw-bold fs-big mt-0">
                                                 <SplitName
                                                     splitName={split.name}
                                                 />
@@ -208,7 +194,7 @@ export const Timesaves = ({
                                             xl={4}
                                             lg={4}
                                             md={6}
-                                            className={styles.visualSplitData}
+                                            className="fs-x-medium"
                                         >
                                             <div>
                                                 <div>
@@ -225,45 +211,37 @@ export const Timesaves = ({
                                                 </div>
                                             </div>
                                         </Col>
-                                        <Col
-                                            style={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                            }}
-                                        >
+                                        <Col>
                                             <div>
-                                                <div>
-                                                    Time in PB:{" "}
-                                                    <b>
-                                                        <DurationToFormatted
-                                                            duration={
-                                                                split.single
-                                                                    .time
-                                                            }
-                                                            withMillis={true}
-                                                        />
-                                                    </b>
-                                                </div>
-                                                <div>
-                                                    Chance to save time:{" "}
-                                                    <b>
-                                                        {(
-                                                            split.timeSave * 100
-                                                        ).toFixed(2)}
-                                                        %
-                                                    </b>
-                                                </div>
-                                                <div>
-                                                    % of total time to save:{" "}
-                                                    <b>
-                                                        {(
-                                                            (split.bestDiff /
-                                                                totalPossibleTimesave) *
-                                                            100
-                                                        ).toFixed(2)}
-                                                        %
-                                                    </b>
-                                                </div>
+                                                Time in PB:{" "}
+                                                <b>
+                                                    <DurationToFormatted
+                                                        duration={
+                                                            split.single.time
+                                                        }
+                                                        withMillis={true}
+                                                    />
+                                                </b>
+                                            </div>
+                                            <div>
+                                                Chance to save time:{" "}
+                                                <b>
+                                                    {(
+                                                        split.timeSave * 100
+                                                    ).toFixed(2)}
+                                                    %
+                                                </b>
+                                            </div>
+                                            <div>
+                                                % of total time to save:{" "}
+                                                <b>
+                                                    {(
+                                                        (split.bestDiff /
+                                                            totalPossibleTimesave) *
+                                                        100
+                                                    ).toFixed(2)}
+                                                    %
+                                                </b>
                                             </div>
                                         </Col>
                                     </Row>
@@ -305,9 +283,9 @@ export const Timesaves = ({
                                 />
                             </th>
                             <th
-                                className={`${
-                                    styles.optionalColumn
-                                } ${getSortableClassName("timesave")}`}
+                                className={`d-none d-lg-table-cell ${getSortableClassName(
+                                    "timesave"
+                                )}`}
                                 onClick={() => changeSort("timesave")}
                             >
                                 Timesave%
@@ -322,9 +300,9 @@ export const Timesaves = ({
                                 />
                             </th>
                             <th
-                                className={`${
-                                    styles.optionalColumn
-                                } ${getSortableClassName("10")}`}
+                                className={`d-none d-lg-table-cell ${getSortableClassName(
+                                    "10"
+                                )}`}
                                 onClick={() => changeSort("10")}
                             >
                                 Best 10%
@@ -340,9 +318,9 @@ export const Timesaves = ({
                                 />
                             </th>
                             <th
-                                className={`${
-                                    styles.optionalColumn
-                                } ${getSortableClassName("50")}`}
+                                className={`d-none d-lg-table-cell ${getSortableClassName(
+                                    "50"
+                                )}`}
                                 onClick={() => changeSort("50")}
                             >
                                 Best 50%
@@ -360,9 +338,9 @@ export const Timesaves = ({
                                 />
                             </th>
                             <th
-                                className={`${
-                                    styles.optionalColumn
-                                } ${getSortableClassName("#")}`}
+                                className={`d-none d-lg-table-cell ${getSortableClassName(
+                                    "#"
+                                )}`}
                                 onClick={() => changeSort("#")}
                             >
                                 Split#
@@ -397,8 +375,8 @@ export const Timesaves = ({
                                             style={{
                                                 color:
                                                     split.bestDiff >= 0
-                                                        ? "var(--color-link)"
-                                                        : "var(--color-negative)",
+                                                        ? "var(--bs-link-color)"
+                                                        : "var(--bs-red)",
                                                 marginRight: "1rem",
                                             }}
                                         >
@@ -417,7 +395,7 @@ export const Timesaves = ({
                                         %)
                                     </td>
 
-                                    <td className={styles.optionalColumn}>
+                                    <td className="d-none d-lg-table-cell">
                                         {split.timeSave == 0
                                             ? "Need gold"
                                             : `${(split.timeSave * 100).toFixed(
@@ -431,15 +409,13 @@ export const Timesaves = ({
                                     ].map((val, num) => {
                                         return (
                                             <td
-                                                className={
-                                                    styles.optionalColumn
-                                                }
+                                                className="d-none d-lg-table-cell"
                                                 key={val + num.toString()}
                                                 style={{
                                                     color:
                                                         val >= 0
-                                                            ? "var(--color-link)"
-                                                            : "var(--color-negative)",
+                                                            ? "var(--bs-link-color)"
+                                                            : "var(--bs-red)",
                                                 }}
                                             >
                                                 {val >= 0 ? "-" : "+"}
@@ -450,7 +426,7 @@ export const Timesaves = ({
                                             </td>
                                         );
                                     })}
-                                    <td className={styles.optionalColumn}>
+                                    <td className="d-none d-lg-table-cell">
                                         {split.values.length}
                                     </td>
                                 </tr>

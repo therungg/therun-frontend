@@ -2,7 +2,6 @@
 import { Alert, Button, Col, Form, Image, Row } from "react-bootstrap";
 import { useState } from "react";
 import axios from "axios";
-import styles from "~src/components/css/ContactForm.module.scss";
 
 // TODO:: This should just be some form library, not this custom stuff
 export const Contact = () => {
@@ -94,14 +93,13 @@ export const Contact = () => {
                 </a>
                 . Alternatively, just fill in this form!
             </p>
-            <Row className={styles.contactFormContainer}>
-                <Col xl={4} lg={3} md={2} />
+            <Row className="mt-5 pt-4 justify-content-center">
                 <Col
                     xl={4}
                     lg={6}
                     md={8}
                     sm={12}
-                    className={styles.contactForm}
+                    className="text-center align-items-center"
                 >
                     <Form
                         validated={validated}
@@ -195,10 +193,9 @@ export const Contact = () => {
                         </Button>
                     </Form>
                 </Col>
-                <Col xl={4} lg={3} md={2} />
             </Row>
 
-            <div className={styles.contactFormImage}>
+            <div className="d-flex justify-content-end">
                 <Image
                     src={"/ContactformTR-light.png"}
                     alt={"Contact"}

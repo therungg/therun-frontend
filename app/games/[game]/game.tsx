@@ -63,12 +63,12 @@ export const Game: React.FunctionComponent<GameProps> = ({ data }) => {
                 setCategory: setCurrentCategory,
             }}
         >
-            <Row className={styles.gameHeader}>
-                <Col xs={9}>
+            <Row className="mb-3">
+                <Col sm={9}>
                     <GameHeader data={data} />
                 </Col>
                 {statsGameTime && (
-                    <Col className={styles.gameTimeFormContainer}>
+                    <Col className="align-self-end">
                         <GametimeForm
                             useGameTime={useGameTime}
                             setUseGameTime={setUseGameTime}

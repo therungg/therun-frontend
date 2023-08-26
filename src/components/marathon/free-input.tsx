@@ -15,13 +15,13 @@ export const FreeInput = ({
     const [input, setInput] = useState("");
 
     return (
-        <div style={{ marginBottom: "1rem" }}>
+        <div className="mb-3">
             <h2>Free Input</h2>
             <textarea
                 style={{
-                    background: "var(--color-tertiary)",
+                    background: "var(--bs-tertiary-bg)",
                     border: "none",
-                    color: "var(--color-text)",
+                    color: "var(--bs-body-color)",
                     width: "100%",
                     height: "6rem",
                 }}
@@ -30,7 +30,6 @@ export const FreeInput = ({
                     setInput(e.target.value);
                 }}
             />
-
             <SendMarathonDataButton
                 description={"Send Free Input to ESA"}
                 sessionId={sessionId}

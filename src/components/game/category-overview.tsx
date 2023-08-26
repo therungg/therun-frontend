@@ -6,7 +6,6 @@ import {
     UserGameCategoryLink,
     UserLink,
 } from "../links/links";
-import styles from "../css/Game.module.scss";
 import { Dispatch } from "react";
 
 export const CategoryOverview = ({
@@ -24,11 +23,11 @@ export const CategoryOverview = ({
                 <tr>
                     <th>Name</th>
                     <th>Best run</th>
-                    <th className={styles.optionalColumn}>Total playtime</th>
-                    <th className={styles.statsHorizontal}>
+                    <th className="d-none d-sm-table-cell">Total playtime</th>
+                    <th className="d-none d-md-table-cell">
                         Finished/Total Attempts
                     </th>
-                    <th className={styles.statsHorizontal}>Total uploads</th>
+                    <th className="d-none d-md-table-cell">Total uploads</th>
                 </tr>
             </thead>
             <tbody>
@@ -36,7 +35,7 @@ export const CategoryOverview = ({
                     return (
                         category.pbLeaderboard[0] && (
                             <tr key={category.categoryName}>
-                                <td style={{ whiteSpace: "nowrap" }}>
+                                <td className="text-nowrap">
                                     <GameCategoryLink
                                         category={category.categoryName}
                                         game={game}
@@ -76,10 +75,7 @@ export const CategoryOverview = ({
                                     />
                                     )
                                 </td>
-                                <td
-                                    className={styles.optionalColumn}
-                                    style={{ whiteSpace: "nowrap" }}
-                                >
+                                <td className="d-none d-sm-table-cell text-nowrap">
                                     <DurationToFormatted
                                         duration={
                                             category.stats.totalRunTime
@@ -88,10 +84,7 @@ export const CategoryOverview = ({
                                         }
                                     />
                                 </td>
-                                <td
-                                    className={styles.statsHorizontal}
-                                    style={{ whiteSpace: "nowrap" }}
-                                >
+                                <td className="d-none d-md-table-cell text-nowrap">
                                     {category.stats.finishedAttemptCount}/
                                     {category.stats.attemptCount} (
                                     {(
@@ -101,7 +94,7 @@ export const CategoryOverview = ({
                                     ).toFixed(2)}
                                     %)
                                 </td>
-                                <td className={styles.statsHorizontal}>
+                                <td className="d-none d-md-table-cell">
                                     {category.stats.uploadCount}
                                 </td>
                             </tr>

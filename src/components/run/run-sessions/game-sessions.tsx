@@ -1,4 +1,4 @@
-import { RunHistory, RunSession, SplitsHistory } from "../../../common/types";
+import { RunHistory, RunSession, SplitsHistory } from "~src/common/types";
 import {
     Difference,
     DurationToFormatted,
@@ -8,7 +8,6 @@ import { Accordion, Card, Col, Pagination, Row, Table } from "react-bootstrap";
 import { useEffect, useState } from "react";
 import moment from "moment/moment";
 import styles from "../../css/Session.module.scss";
-import paginationStyles from "../../css/Pagination.module.scss";
 
 export const GameSessions = ({
     sessions,
@@ -165,11 +164,11 @@ export const GameSessions = ({
     return (
         <div className="history-page">
             <Row>
-                <Col className={"col-xl-6"}>
+                <Col xl={6}>
                     <h2>Speedrun Sessions</h2>
                 </Col>
                 <Col
-                    className={"col-xl-6"}
+                    xl={6}
                     style={{ display: "flex", justifyContent: "flex-end" }}
                 >
                     <label
@@ -221,9 +220,6 @@ export const GameSessions = ({
                         }}
                     >
                         <Row>
-                            {/* <Col xs={4}>
-                                <b>+- Current PB</b>
-                            </Col> */}
                             <Col
                                 className={`${
                                     styles.optionalColumn
@@ -562,11 +558,14 @@ export const GameSessions = ({
                     })}
             </Accordion>
 
-            <div className={paginationStyles.paginationWrapper}>
-                <Pagination onClick={onPaginationClick} size="lg">
-                    {items}
-                </Pagination>
-            </div>
+            <Pagination
+                className="justify-content-center"
+                onClick={onPaginationClick}
+                size="lg"
+            >
+                {items}
+            </Pagination>
+
             <div style={{ display: "flex", justifyContent: "center" }}>
                 Showing {(active - 1) * 10 + 1} -{" "}
                 {active * 10 < sessions.length ? active * 10 : sessions.length}{" "}
@@ -594,7 +593,7 @@ export const buildItems = (active: number, last: number) => {
     for (let number = begin; number < end; number++) {
         items.push(
             <Pagination.Item
-                className={paginationStyles.optional}
+                className="d-none d-md-block"
                 key={number}
                 active={number == active}
             >

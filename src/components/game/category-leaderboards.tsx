@@ -7,8 +7,7 @@ import {
 } from "./game-leaderboards";
 import { Col, Nav, Row, Tab } from "react-bootstrap";
 import { useState } from "react";
-import searchStyles from "../css/Search.module.scss";
-import styles from "../css/Games.module.scss";
+import { Search as SearchIcon } from "react-bootstrap-icons";
 
 export const CategoryLeaderboards = ({
     leaderboards,
@@ -287,12 +286,10 @@ export const CategoryLeaderboards = ({
                     </Nav>
                 </Col>
                 <Col lg={9} md={8}>
-                    <div className={"flex-center"}>
-                        <div
-                            className={`${searchStyles.searchContainer} ${styles.filter}`}
-                        >
+                    <div className="d-flex justify-content-center">
+                        <div className="mb-3 input-group game-filter-mw">
                             <span
-                                className={"material-symbols-outlined"}
+                                className="input-group-text"
                                 onClick={() => {
                                     const searchElement =
                                         document.getElementById("gameSearch");
@@ -303,14 +300,12 @@ export const CategoryLeaderboards = ({
                                     }
                                 }}
                             >
-                                {" "}
-                                search{" "}
+                                <SearchIcon size={18} />
                             </span>
                             <input
                                 type="search"
-                                className={`form-control ${searchStyles.search}`}
+                                className="form-control"
                                 placeholder="Filter by name"
-                                style={{ marginBottom: "0" }}
                                 onChange={(e) => {
                                     setSearch(e.target.value);
                                 }}

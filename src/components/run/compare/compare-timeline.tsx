@@ -132,14 +132,8 @@ export const CompareTimeline = ({
                 <Col>
                     <h2>Runs Timeline</h2>
                 </Col>
-                <Col style={{ display: "flex", justifyContent: "end" }}>
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "end",
-                            alignSelf: "center",
-                        }}
-                    >
+                <Col className="d-flex justify-content-end">
+                    <div className="d-flex justify-content-end align-self-center">
                         <label
                             htmlFor={"switch"}
                             style={{

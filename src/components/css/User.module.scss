@@ -5,10 +5,6 @@
     padding-top: 1rem;
 }
 
-.filterMargin {
-    z-index: -10;
-}
-
 .sameGameRunHeader {
     display: none;
 }
@@ -23,9 +19,6 @@
     display: none;
 }
 
-.video {
-    height: 50rem;
-}
 
 .hideSelectArrow {
     -webkit-appearance: none !important;
@@ -33,14 +26,6 @@
     text-indent: 0.01px;
     text-overflow: "";
     appearance: none !important;
-}
-
-.title {
-    white-space: nowrap;
-}
-
-.gameTimeForm {
-    align-self: flex-end;
 }
 
 .image {
@@ -53,27 +38,8 @@
     justify-self: center;
 }
 
-@media screen and (max-width: 1200px) {
-    .video {
-        height: 40rem;
-    }
-}
+@media screen and (max-width: 767.98px) {
 
-@media screen and (max-width: 992px) {
-    .video {
-        height: 30rem;
-    }
-}
-
-@media screen and (max-width: 770px) {
-    .video {
-        height: 20rem;
-    }
-    .gameTimeForm {
-        justify-content: flex-start;
-        display: flex;
-        margin-top: 2rem;
-    }
     .filterRow {
         position: relative;
         float: left;
@@ -95,10 +61,6 @@
 
     .splitComparisonOption {
         display: revert;
-    }
-
-    .title {
-        white-space: revert;
     }
 
     .image {
