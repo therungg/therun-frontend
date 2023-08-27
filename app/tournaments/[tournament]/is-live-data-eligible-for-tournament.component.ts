@@ -27,3 +27,12 @@ export const isLiveDataEligibleForTournament = (
 
     return true;
 };
+
+export const isLiveDataEligibleForTournaments = (
+    data: LiveRun,
+    tournaments: Tournament[]
+): boolean => {
+    return !!tournaments
+        .map((tournament) => isLiveDataEligibleForTournament(tournament, data))
+        .find((bool) => bool);
+};

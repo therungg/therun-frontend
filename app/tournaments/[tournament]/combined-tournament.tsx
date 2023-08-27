@@ -1,45 +1,39 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Button, Col, Image, Row, Tab, Tabs } from "react-bootstrap";
-import { LiveUserRun } from "~src/components/live/live-user-run";
-import { RecommendedStream } from "~src/components/live/recommended-stream";
-import runStyles from "~src/components/css/LiveRun.module.scss";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import useSWR from "swr";
-import { fetcher } from "~src/utils/fetcher";
-import TournamentStats from "~src/components/tournament/tournament-stats";
-import BanUser from "~src/components/tournament/ban-user";
+import { LiveDataMap } from "~app/live/live.types";
 import {
     Tournament,
     TournamentInfo,
 } from "~src/components/tournament/tournament-info";
-import { TournamentRuns } from "~src/components/tournament/tournament-runs";
-import { TournamentStandings } from "~src/components/tournament/tournament-standings";
-import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
-import { LiveDataMap } from "~app/live/live.types";
+import React, { useEffect, useState } from "react";
 import { getRecommendedStream, liveRunIsInSearch } from "~app/live/utilities";
-import { isLiveDataEligibleForTournament } from "~app/tournaments/[tournament]/is-live-data-eligible-for-tournament.component";
+import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
+import { isLiveDataEligibleForTournaments } from "~app/tournaments/[tournament]/is-live-data-eligible-for-tournament.component";
 import { liveRunArrayToMap } from "~app/tournaments/[tournament]/live-run-array-to-map.component";
-import { EventLeaderboards } from "~app/tournaments/[tournament]/event-leaderboards.component";
+import { Button, Col, Row, Tab, Tabs } from "react-bootstrap";
+import runStyles from "~src/components/css/LiveRun.module.scss";
+import { DurationToFormatted } from "~src/components/util/datetime";
+import Countdown from "react-countdown";
+import { RecommendedStream } from "~src/components/live/recommended-stream";
+import { LiveUserRun } from "~src/components/live/live-user-run";
+import { CombinedEventLeaderboards } from "~app/tournaments/[tournament]/combined-event-leaderboards.component";
+import { getCombinedTournamentLeaderboardComponent } from "~app/tournaments/[tournament]/get-combined-tournament-leaderboard.component";
+import { CombinedTournamentSeedingTable } from "~app/tournaments/[tournament]/combined-tournament-seeding-table";
 import { Search as SearchIcon } from "react-bootstrap-icons";
-import { TournamentTimer } from "~app/tournaments/[tournament]/tournament-timer";
 
-export const GenericTournament = ({
+export const CombinedTournament = ({
     liveDataMap,
-    session,
     username,
-    tournament,
+    guidingTournament,
+    tournaments,
     tab,
 }: {
     liveDataMap: LiveDataMap;
-    session: any;
     username?: string;
-    tournament: Tournament;
+    guidingTournament: Tournament;
+    tournaments: Tournament[];
     tab: string;
 }) => {
-    const gameTime = !!tournament.gameTime;
-
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
     const [sort, setSort] = useState("personalBest");
     const [search, setSearch] = useState("");
@@ -47,33 +41,25 @@ export const GenericTournament = ({
     const recommendedStream = getRecommendedStream(liveDataMap, username);
     const [currentlyViewing, setCurrentlyViewing] = useState(recommendedStream);
 
-    let tournamentLeaderboards = null;
-    if (tournament.leaderboards) {
-        tournamentLeaderboards =
-            gameTime && tournament.leaderboards.gameTime
-                ? tournament.leaderboards.gameTime
-                : tournament.leaderboards;
-    }
+    const tournamentLeaderboards = null;
 
-    const { data } = useSWR(
-        `/api/tournaments/${tournament.name}/stats`,
-        fetcher
-    );
-    const { data: qualifierData } = useSWR(
-        tournament.qualifier
-            ? `/api/tournaments/${tournament.qualifier}`
-            : null,
-        fetcher
-    );
-
+    const eventStarted = new Date() > new Date(guidingTournament.startDate);
     const lastMessage = useReconnectWebsocket();
+
+    // const { data } = useSWR(
+    //     tournaments.map(
+    //         (tournament) =>
+    //             `/api/tournaments/${safeEncodeURI(tournament.name)}/stats`
+    //     ),
+    //     multiFetcher
+    // );
 
     useEffect(() => {
         if (lastMessage !== null) {
             const newData = JSON.parse(lastMessage.data);
             const user = newData.user;
 
-            if (isLiveDataEligibleForTournament(newData.run, tournament)) {
+            if (isLiveDataEligibleForTournaments(newData.run, tournaments)) {
                 let newMap: LiveDataMap = JSON.parse(
                     JSON.stringify(updatedLiveDataMap)
                 );
@@ -118,25 +104,61 @@ export const GenericTournament = ({
         setUpdatedLiveDataMap(newMap);
     }, [sort]);
 
+    const renderCountdown = ({ days, hours, minutes, completed }) => {
+        if (completed) {
+            return <div>Event ended!</div>;
+        }
+
+        if (!eventStarted) {
+            return <></>;
+        }
+
+        return (
+            <div>
+                {!!parseInt(days) && `${days} days, `}{" "}
+                {!!parseInt(hours) && `${hours} hours and `}{" "}
+                {`${minutes} minute${minutes === 1 ? "" : "s"} to go!`}
+            </div>
+        );
+    };
+
+    const renderCountdownToStart = ({ days, hours, minutes, completed }) => {
+        if (completed) {
+            return <></>;
+        }
+
+        return (
+            <div>
+                Event starts in {!!days && `${days} days, `}{" "}
+                {hours && `${hours} hours and `}{" "}
+                {`${minutes} minute${minutes === 1 ? "" : "s"}!`}
+            </div>
+        );
+    };
+
+    const standingsMap = getCombinedTournamentLeaderboardComponent(tournaments);
+
     return (
         <div>
             <Row
                 className={
                     runStyles.tournamentInfo +
-                    (tournament.logoUrl
+                    (guidingTournament.logoUrl
                         ? ` ${runStyles.tournamentInfoLogo}`
                         : "")
                 }
             >
-                <Col xl={10}>
-                    <h1>{tournament.shortName || tournament.name}</h1>
+                <Col>
+                    <h1>
+                        {guidingTournament.shortName || guidingTournament.name}
+                    </h1>
 
                     {tournamentLeaderboards &&
                         tournamentLeaderboards.pbLeaderboard &&
                         tournamentLeaderboards.pbLeaderboard.length > 0 && (
                             <div>
                                 Current record:{" "}
-                                <span className="fs-x-large">
+                                <span style={{ fontSize: "x-large" }}>
                                     <DurationToFormatted
                                         duration={
                                             tournamentLeaderboards
@@ -151,64 +173,49 @@ export const GenericTournament = ({
                                 }
                             </div>
                         )}
-                    <div>
-                        {tournament.game} - {tournament.category}
-                    </div>
-                    {tournament.socials && tournament.socials.twitch && (
-                        <div>
-                            Watch live at{" "}
-                            <a href={tournament.socials.twitch.url}>
-                                {tournament.socials.twitch.urlDisplay}
-                            </a>
-                        </div>
-                    )}
-                </Col>
-                <Col xl={2}>
-                    <div>
-                        {tournament.logoUrl && (
-                            <div className="d-flex pt-3 justify-content-end h-100">
-                                <Image
-                                    src={tournament.logoUrl}
-                                    alt={"Tournament Logo"}
-                                    height={120}
-                                />
-                            </div>
-                        )}
-
-                        {(!tournament.eligibleUsers ||
-                            tournament.eligibleUsers.length === 0) && (
-                            <div
-                                className={
-                                    runStyles.tournamentHowDoesThisWorkButton
-                                }
-                            >
-                                <a
-                                    href={
-                                        tournament.description?.includes(
-                                            "Moist"
-                                        )
-                                            ? "/moist-setup"
-                                            : "/upload-key"
+                    {guidingTournament.socials &&
+                        guidingTournament.socials.twitch && (
+                            <div>
+                                Watch live at{" "}
+                                <a href={guidingTournament.socials.twitch.url}>
+                                    {
+                                        guidingTournament.socials.twitch
+                                            .urlDisplay
                                     }
-                                    rel={"noreferrer"}
-                                    target={"_blank"}
-                                >
-                                    <Button
-                                        variant={"primary"}
-                                        className="btn-lg px-3 h-3r fw-medium w-240p"
-                                    >
-                                        How does this work?
-                                    </Button>
                                 </a>
                             </div>
                         )}
-                    </div>
                 </Col>
             </Row>
 
-            <div className="d-flex justify-content-center">
+            <div style={{ display: "flex", justifyContent: "center" }}>
                 <h2 className={runStyles.tournamentTimer}>
-                    <TournamentTimer tournament={tournament} />
+                    <Countdown
+                        date={
+                            new Date(
+                                guidingTournament.eligiblePeriods &&
+                                guidingTournament.eligiblePeriods.length > 0
+                                    ? guidingTournament.eligiblePeriods[0]
+                                          .startDate
+                                    : guidingTournament.startDate
+                            )
+                        }
+                        renderer={renderCountdownToStart}
+                    ></Countdown>
+                    <Countdown
+                        date={
+                            new Date(
+                                guidingTournament.eligiblePeriods &&
+                                guidingTournament.eligiblePeriods.length > 1
+                                    ? guidingTournament.eligiblePeriods[1]
+                                          .endDate
+                                    : guidingTournament.endDate
+                            )
+                        }
+                        renderer={renderCountdown}
+                    >
+                        <div>Tournament ended!</div>
+                    </Countdown>
                 </h2>
             </div>
             <Row>
@@ -218,7 +225,8 @@ export const GenericTournament = ({
 
             <Tabs
                 defaultActiveKey={tab}
-                className="position-relative z-0 mb-3 mw-30r"
+                className={"mb-3"}
+                style={{ position: "relative", zIndex: 0, maxWidth: "30rem" }}
             >
                 <Tab title={"Live"} eventKey={"live"}>
                     <Row className="g-3 my-3">
@@ -226,7 +234,7 @@ export const GenericTournament = ({
                             updatedLiveDataMap[currentlyViewing] && (
                                 <RecommendedStream
                                     stream={
-                                        tournament.forceStream ||
+                                        guidingTournament.forceStream ||
                                         updatedLiveDataMap[currentlyViewing]
                                             .user
                                     }
@@ -236,23 +244,15 @@ export const GenericTournament = ({
                                 />
                             )}
                     </Row>
-                    {/*{(!currentlyViewing || !updatedLiveDataMap[currentlyViewing] && tournament.forceStream) &&*/}
-                    {/*    <div style={{marginBottom: '1rem', marginTop: '1rem'}}>*/}
-                    {/*        <TwitchEmbed channel={tournament.forceStream} width={'100%'} height={'600px'} muted*/}
-                    {/*                     withChat={true}/>*/}
-                    {/*    </div>}*/}
                     <Row>
-                        <Col md={12} xl={4}>
-                            <EventLeaderboards
-                                tournament={tournament}
-                                gameTime={gameTime}
-                                qualifierData={qualifierData}
-                                tournamentLeaderboards={tournamentLeaderboards}
+                        <Col xl={4} lg={12} md={12}>
+                            <CombinedEventLeaderboards
+                                tournaments={tournaments}
                             />
                         </Col>
-                        <Col md={12} xl={8}>
+                        <Col xl={8} lg={12} md={12}>
                             <h3>Live Runs</h3>
-                            <Row className="mb-3">
+                            <Row style={{ marginBottom: "1rem" }}>
                                 <Col>
                                     <Button
                                         className={
@@ -346,7 +346,6 @@ export const GenericTournament = ({
                                     />
                                 </div>
                             </div>
-
                             <Row>
                                 {Object.values(updatedLiveDataMap).length ==
                                     0 && (
@@ -363,10 +362,11 @@ export const GenericTournament = ({
                                     .map((liveRun) => {
                                         return (
                                             <Col
+                                                xl={6}
                                                 lg={6}
                                                 md={12}
-                                                className="mb-3"
                                                 key={liveRun.user}
+                                                style={{ marginBottom: "1rem" }}
                                                 onClick={() => {
                                                     setCurrentlyViewing(
                                                         liveRun.user
@@ -381,6 +381,7 @@ export const GenericTournament = ({
                                                     key={liveRun.user}
                                                     showGameCategory={false}
                                                     leaderboard={
+                                                        tournamentLeaderboards &&
                                                         tournamentLeaderboards.pbLeaderboard
                                                     }
                                                 />
@@ -391,33 +392,15 @@ export const GenericTournament = ({
                         </Col>
                     </Row>
                 </Tab>
+                <Tab title={"Seeding"} eventKey={"seeding"}>
+                    <CombinedTournamentSeedingTable
+                        tournaments={tournaments}
+                        leaderboards={standingsMap}
+                    />
+                </Tab>
                 <Tab title={"Info"} eventKey={"info"}>
-                    <TournamentInfo tournament={tournament} />
+                    <TournamentInfo tournament={guidingTournament} />
                 </Tab>
-                <Tab title={"Runs"} eventKey={"runs"}>
-                    <TournamentRuns
-                        data={data}
-                        tournament={tournament}
-                        gameTime={false}
-                    />
-                </Tab>
-                {tournament.pointDistribution && (
-                    <Tab title={"Standings"} eventKey={"standings"}>
-                        <TournamentStandings tournament={tournament} />
-                    </Tab>
-                )}
-                <Tab title={"Stats"} eventKey={"stats"}>
-                    <TournamentStats
-                        data={data}
-                        tournament={tournament}
-                        gameTime={false}
-                    />
-                </Tab>
-                {tournament.moderators.includes(session.username) && (
-                    <Tab title={"Ban User"} eventKey={"ban"}>
-                        <BanUser session={session} tournament={tournament} />
-                    </Tab>
-                )}
             </Tabs>
         </div>
     );

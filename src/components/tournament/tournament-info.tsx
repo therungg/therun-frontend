@@ -47,7 +47,7 @@ interface Social {
     url: string;
 }
 
-interface DateRange {
+export interface DateRange {
     startDate: string;
     endDate: string;
 }
@@ -105,11 +105,9 @@ export const TournamentInfo = ({ tournament }: { tournament: Tournament }) => {
                         Object.values(tournament.socials).map((social) => {
                             return (
                                 <>
-                                    <tr>
-                                        <th key={social.display}>
-                                            {social.display}
-                                        </th>
-                                        <td key={social.display}>
+                                    <tr key={social.display}>
+                                        <th>{social.display}</th>
+                                        <td>
                                             <a
                                                 target={"_blank"}
                                                 rel={"noreferrer"}

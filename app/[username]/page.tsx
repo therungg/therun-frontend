@@ -13,6 +13,7 @@ import {
 import { TournamentPage } from "~app/tournaments/[tournament]/page";
 import { Metadata } from "next";
 import buildMetadata, { getUserProfilePhoto } from "~src/utils/metadata";
+import { CombinedTournamentPage } from "~app/tournaments/[tournament]/combined-tournament-page";
 
 export const revalidate = 60;
 
@@ -29,10 +30,17 @@ export default async function Page({ params, searchParams }: PageProps) {
     const tournament = getTournamentNameFromSlug(username);
 
     if (tournament) {
-        return TournamentPage({
-            params: { tournament },
-            searchParams,
-        });
+        if ("guidingTournament" in tournament) {
+            return CombinedTournamentPage({
+                params: tournament,
+                searchParams,
+            });
+        } else {
+            return TournamentPage({
+                params: tournament,
+                searchParams,
+            });
+        }
     }
 
     const runs = await getUserRuns(username);
