@@ -10,18 +10,16 @@ import { getRecommendedStream, liveRunIsInSearch } from "~app/live/utilities";
 import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
 import { isLiveDataEligibleForTournaments } from "~app/tournaments/[tournament]/is-live-data-eligible-for-tournament.component";
 import { liveRunArrayToMap } from "~app/tournaments/[tournament]/live-run-array-to-map.component";
-import { Button, Col, Image, Row, Tab, Tabs } from "react-bootstrap";
+import { Button, Col, Row, Tab, Tabs } from "react-bootstrap";
 import runStyles from "~src/components/css/LiveRun.module.scss";
 import { DurationToFormatted } from "~src/components/util/datetime";
-import homeStyles from "~src/components/css/Home.module.scss";
 import Countdown from "react-countdown";
 import { RecommendedStream } from "~src/components/live/recommended-stream";
-import searchStyles from "~src/components/css/Search.module.scss";
-import styles from "~src/components/css/Games.module.scss";
 import { LiveUserRun } from "~src/components/live/live-user-run";
 import { CombinedEventLeaderboards } from "~app/tournaments/[tournament]/combined-event-leaderboards.component";
 import { getCombinedTournamentLeaderboardComponent } from "~app/tournaments/[tournament]/get-combined-tournament-leaderboard.component";
 import { CombinedTournamentSeedingTable } from "~app/tournaments/[tournament]/combined-tournament-seeding-table";
+import { Search as SearchIcon } from "react-bootstrap-icons";
 
 export const CombinedTournament = ({
     liveDataMap,
@@ -150,7 +148,7 @@ export const CombinedTournament = ({
                         : "")
                 }
             >
-                <Col xl={10}>
+                <Col>
                     <h1>
                         {guidingTournament.shortName || guidingTournament.name}
                     </h1>
@@ -187,56 +185,6 @@ export const CombinedTournament = ({
                                 </a>
                             </div>
                         )}
-                </Col>
-                <Col xl={2}>
-                    <div>
-                        {guidingTournament.logoUrl && (
-                            <div
-                                style={{
-                                    fontSize: "1.5rem",
-                                    height: "100%",
-                                    display: "flex",
-                                    justifyContent: "flex-end",
-                                }}
-                                className={homeStyles.learnMoreButtonContainer}
-                            >
-                                <Image
-                                    src={guidingTournament.logoUrl}
-                                    alt={"Tournament Logo"}
-                                    height={120}
-                                />
-                            </div>
-                        )}
-
-                        {(!guidingTournament.eligibleUsers ||
-                            guidingTournament.eligibleUsers.length === 0) && (
-                            <div
-                                className={
-                                    runStyles.tournamentHowDoesThisWorkButton
-                                }
-                            >
-                                <a
-                                    href={
-                                        guidingTournament.description?.includes(
-                                            "Moist"
-                                        )
-                                            ? "/moist-setup"
-                                            : "/upload-key"
-                                    }
-                                    rel={"noreferrer"}
-                                    target={"_blank"}
-                                >
-                                    <Button
-                                        variant={"primary"}
-                                        className={homeStyles.learnMoreButton}
-                                        style={{ width: "15rem" }}
-                                    >
-                                        How does this work?
-                                    </Button>
-                                </a>
-                            </div>
-                        )}
-                    </div>
                 </Col>
             </Row>
 
@@ -281,7 +229,7 @@ export const CombinedTournament = ({
                 style={{ position: "relative", zIndex: 0, maxWidth: "30rem" }}
             >
                 <Tab title={"Live"} eventKey={"live"}>
-                    <div style={{ marginBottom: "1rem", marginTop: "1rem" }}>
+                    <Row className="g-3 my-3">
                         {currentlyViewing &&
                             updatedLiveDataMap[currentlyViewing] && (
                                 <RecommendedStream
@@ -295,7 +243,7 @@ export const CombinedTournament = ({
                                     }
                                 />
                             )}
-                    </div>
+                    </Row>
                     <Row>
                         <Col xl={4} lg={12} md={12}>
                             <CombinedEventLeaderboards
@@ -367,52 +315,35 @@ export const CombinedTournament = ({
                                 </Col>
                             </Row>
 
-                            <div>
-                                <div
-                                    className={runStyles.searchContainer}
-                                    style={{
-                                        marginLeft: "0",
-                                        justifyContent: "center",
-                                    }}
-                                >
-                                    <div
-                                        className={`${searchStyles.searchContainer} ${styles.filter}`}
-                                        style={{
-                                            marginLeft: "0",
-                                            justifyContent: "center",
+                            <div className="d-flex justify-content-center">
+                                <div className="mb-3 input-group game-filter-mw">
+                                    <span
+                                        className="input-group-text"
+                                        onClick={() => {
+                                            const searchElement =
+                                                document.getElementById(
+                                                    "gameSearch"
+                                                );
+                                            if (
+                                                document.activeElement !==
+                                                searchElement
+                                            ) {
+                                                searchElement.focus();
+                                            }
                                         }}
                                     >
-                                        <span
-                                            className={
-                                                "material-symbols-outlined"
-                                            }
-                                            onClick={() => {
-                                                const searchElement =
-                                                    document.getElementById(
-                                                        "gameSearch"
-                                                    );
-                                                if (
-                                                    document.activeElement !==
-                                                    searchElement
-                                                ) {
-                                                    searchElement.focus();
-                                                }
-                                            }}
-                                        >
-                                            search
-                                        </span>
-                                        <input
-                                            type="search"
-                                            className={`form-control ${searchStyles.search}`}
-                                            placeholder="Filter by game/category/user"
-                                            style={{ marginBottom: "0" }}
-                                            onChange={(e) => {
-                                                setSearch(e.target.value);
-                                            }}
-                                            value={search}
-                                            id="gameSearch"
-                                        />
-                                    </div>
+                                        <SearchIcon size={18} />
+                                    </span>
+                                    <input
+                                        type="search"
+                                        className="form-control"
+                                        placeholder="Filter by game/category/user"
+                                        onChange={(e) => {
+                                            setSearch(e.target.value);
+                                        }}
+                                        value={search}
+                                        id="gameSearch"
+                                    />
                                 </div>
                             </div>
                             <Row>

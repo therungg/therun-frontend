@@ -221,7 +221,7 @@ export const GenericTournament = ({
                 className="position-relative z-0 mb-3 mw-30r"
             >
                 <Tab title={"Live"} eventKey={"live"}>
-                    <div className="my-3">
+                    <Row className="g-3 my-3">
                         {currentlyViewing &&
                             updatedLiveDataMap[currentlyViewing] && (
                                 <RecommendedStream
@@ -235,7 +235,7 @@ export const GenericTournament = ({
                                     }
                                 />
                             )}
-                    </div>
+                    </Row>
                     {/*{(!currentlyViewing || !updatedLiveDataMap[currentlyViewing] && tournament.forceStream) &&*/}
                     {/*    <div style={{marginBottom: '1rem', marginTop: '1rem'}}>*/}
                     {/*        <TwitchEmbed channel={tournament.forceStream} width={'100%'} height={'600px'} muted*/}

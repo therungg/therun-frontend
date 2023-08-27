@@ -23,11 +23,11 @@ export const CombinedEventLeaderboards = ({
                     {tournaments.map((tournament) => {
                         return (
                             <option
-                                key={tournament.name}
-                                title={tournament.name}
-                                value={tournament.name}
+                                key={tournament.shortName}
+                                title={tournament.shortName}
+                                value={tournament.shortName}
                             >
-                                {tournament.name}
+                                {tournament.shortName}
                             </option>
                         );
                     })}
@@ -42,8 +42,8 @@ export const CombinedEventLeaderboards = ({
 
                 return (
                     <PaginatedGameLeaderboard
-                        key={tournament.name}
-                        name={tournament.name}
+                        key={tournament.shortName}
+                        name={tournament.shortName}
                         leaderboard={tournament.leaderboards?.pbLeaderboard}
                         transform={(stat) => {
                             return (

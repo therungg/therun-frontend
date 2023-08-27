@@ -41,16 +41,16 @@ const tournamentEntries: Array<[string, TournamentEntryValue]> = [
     ["basementcup", { tournament: "Ultimate Basement Cup 2023" }],
     ["tcs", { tournament: "TCS Community BTR" }],
     [
-        "3dmmi",
+        "3dmm",
         {
             guidingTournament: "3D Mario Madness Season 3",
             tournaments: [
-                "3DMMI SM64 70 Star",
-                "3DMMI SMS Any%",
-                "3DMMI SMG Any%",
-                "3DMMI SMG2 Any%",
-                "3DMMI SM3DW Any%",
-                "3DMMI SMO Any%",
+                "3DMM SM64 70 Star",
+                "3DMM SMS Any%",
+                "3DMM SMG Any%",
+                "3DMM SMG2 Any%",
+                "3DMM SM3DW Any%",
+                "3DMM SMO Any%",
             ],
         },
     ],
