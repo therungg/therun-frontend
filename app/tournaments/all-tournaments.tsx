@@ -4,6 +4,7 @@ import { Tournament } from "~src/components/tournament/tournament-info";
 import { Card, Col, Image, Row } from "react-bootstrap";
 import { FromNow } from "~src/components/util/datetime";
 import { AllTournamentsProps } from "~app/tournaments/all-tournaments.types";
+import { safeEncodeURI } from "~src/utils/uri";
 
 export function AllTournaments({
     finishedTournaments,
@@ -46,7 +47,11 @@ export const ListTournaments = ({
                     <Col sm={12} lg={6} key={tournament.name}>
                         {tournament.logoUrl && (
                             <div className="float-start d-flex d-none d-sm-block align-items-center me-2 ms-2">
-                                <a href={`/tournaments/${tournament.name}`}>
+                                <a
+                                    href={`/tournaments/${safeEncodeURI(
+                                        tournament.name
+                                    )}`}
+                                >
                                     <Image
                                         className="w-auto"
                                         alt={"Tournament Logo"}
@@ -61,7 +66,9 @@ export const ListTournaments = ({
                             <Card.Header className="border-0">
                                 <div className="overflow-hidden">
                                     <a
-                                        href={`/tournaments/${tournament.name}`}
+                                        href={`/tournaments/${safeEncodeURI(
+                                            tournament.name
+                                        )}`}
                                         className="fs-large"
                                     >
                                         {tournament.shortName ||

@@ -10,6 +10,7 @@ import { LiveSplitTimerComponent } from "~app/live/live-split-timer.component";
 import { GameImage } from "~src/components/image/gameimage";
 import { Twitch as TwitchIcon } from "react-bootstrap-icons";
 import { getColorMode } from "~src/utils/colormode";
+import { CombinedLeaderboardStat } from "~app/tournaments/[tournament]/get-combined-tournament-leaderboard.component";
 
 export const LiveUserRun = ({
     liveRun,
@@ -18,6 +19,7 @@ export const LiveUserRun = ({
     leaderboard = null,
     leaderboardGameTime = null,
     isUrl = false,
+    seedingTable = null,
 }: {
     liveRun: LiveRun;
     currentlyActive?: string;
@@ -25,6 +27,7 @@ export const LiveUserRun = ({
     leaderboard?: any;
     leaderboardGameTime?: any;
     isUrl?: boolean;
+    seedingTable?: CombinedLeaderboardStat[];
 }) => {
     const [dark, setDark] = useState(true);
     const [liveUserStyles, setLiveUserStyles] = useState({});
@@ -60,6 +63,7 @@ export const LiveUserRun = ({
     let tournamentPb = null;
     let tournamentPbGameTime = null;
     let ranking = null;
+    let seed = null;
 
     if (leaderboard) {
         const pbLeaderboardIndex = leaderboard.findIndex(
@@ -81,6 +85,14 @@ export const LiveUserRun = ({
             ranking = pbLeaderboardIndex + 1;
             tournamentPbGameTime = leaderboardGameTime[pbLeaderboardIndex].stat;
         }
+    }
+
+    if (seedingTable) {
+        const userSeed = seedingTable.findIndex(
+            (val) => val.username === liveRun.user
+        );
+
+        if (userSeed > -1) seed = userSeed + 1;
     }
 
     return (
@@ -170,11 +182,12 @@ export const LiveUserRun = ({
                 <Col xs={7} className="mw-350p ps-3">
                     <div className="fs-responsive-large d-flex">
                         {ranking && (
-                            <div className="me-auto">
-                                &nbsp;#{ranking}
+                            <div>
+                                #{ranking}
                                 &nbsp;-&nbsp;
                             </div>
                         )}
+                        {seed && <div>#{seed}&nbsp;-&nbsp;</div>}
                         <UserLink
                             username={liveRun.user}
                             parentIsUrl={isUrl}
