@@ -35,7 +35,7 @@ export const CombinedTournament = ({
     tab: string;
 }) => {
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
-    const [sort, setSort] = useState("personalBest");
+    const [sort, setSort] = useState("seed");
     const [search, setSearch] = useState("");
 
     const recommendedStream = getRecommendedStream(liveDataMap, username);
@@ -45,6 +45,8 @@ export const CombinedTournament = ({
 
     const eventStarted = new Date() > new Date(guidingTournament.startDate);
     const lastMessage = useReconnectWebsocket();
+
+    const standingsMap = getCombinedTournamentLeaderboardComponent(tournaments);
 
     // const { data } = useSWR(
     //     tournaments.map(
@@ -83,7 +85,9 @@ export const CombinedTournament = ({
                 newMap = liveRunArrayToMap(
                     Object.values(newMap),
                     sort,
-                    tournamentLeaderboards
+                    tournamentLeaderboards,
+                    null,
+                    standingsMap
                 );
 
                 setUpdatedLiveDataMap(newMap);
@@ -98,7 +102,9 @@ export const CombinedTournament = ({
         newMap = liveRunArrayToMap(
             Object.values(newMap),
             sort,
-            tournamentLeaderboards
+            tournamentLeaderboards,
+            null,
+            standingsMap
         );
 
         setUpdatedLiveDataMap(newMap);
@@ -135,8 +141,6 @@ export const CombinedTournament = ({
             </div>
         );
     };
-
-    const standingsMap = getCombinedTournamentLeaderboardComponent(tournaments);
 
     return (
         <div>
@@ -272,30 +276,15 @@ export const CombinedTournament = ({
                                     <Button
                                         className={
                                             runStyles.sortButton +
-                                            (sort === "pb"
+                                            (sort === "seed"
                                                 ? ` ${runStyles.sortButtonActive}`
                                                 : "")
                                         }
                                         onClick={() => {
-                                            setSort("pb");
+                                            setSort("seed");
                                         }}
                                     >
-                                        Sort by Tournament PB
-                                    </Button>
-                                </Col>
-                                <Col>
-                                    <Button
-                                        className={
-                                            runStyles.sortButton +
-                                            (sort === "personalBest"
-                                                ? ` ${runStyles.sortButtonActive}`
-                                                : "")
-                                        }
-                                        onClick={() => {
-                                            setSort("personalBest");
-                                        }}
-                                    >
-                                        Sort by Personal Best
+                                        Sort by Seed
                                     </Button>
                                 </Col>
                                 <Col>
@@ -384,6 +373,7 @@ export const CombinedTournament = ({
                                                         tournamentLeaderboards &&
                                                         tournamentLeaderboards.pbLeaderboard
                                                     }
+                                                    seedingTable={standingsMap}
                                                 />
                                             </Col>
                                         );

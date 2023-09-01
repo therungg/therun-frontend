@@ -1,10 +1,12 @@
 import { LiveRun } from "~app/live/live.types";
+import { CombinedLeaderboardStat } from "~app/tournaments/[tournament]/get-combined-tournament-leaderboard.component";
 
 export const liveRunArrayToMap = (
     liveData: LiveRun[],
     sort = "pb",
     leaderboards = null,
-    leaderboardsRta = null
+    leaderboardsRta = null,
+    seedingTable: CombinedLeaderboardStat[] | null = null
 ) => {
     liveData.sort((a, b) => {
         if (sort === "time") {
@@ -99,6 +101,19 @@ export const liveRunArrayToMap = (
 
             if (aLeaderboardRanking < bLeaderboardRanking) return -1;
             return 1;
+        }
+        if (sort === "seed") {
+            const aStat = seedingTable?.findIndex(
+                (value) => value.username === a.user
+            );
+            const bStat = seedingTable?.findIndex(
+                (value) => value.username === b.user
+            );
+
+            if (bStat === -1) return -1;
+            if (aStat === -1) return 1;
+
+            return bStat - aStat;
         }
     });
 
