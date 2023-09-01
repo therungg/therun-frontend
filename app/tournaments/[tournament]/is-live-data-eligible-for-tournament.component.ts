@@ -7,10 +7,16 @@ export const isLiveDataEligibleForTournament = (
     data: LiveRun,
     tournament: Tournament
 ): boolean => {
-    if (!data || !data.game || !data.category || !data.user) return false;
+    if (!data || !data.user) return false;
 
-    if (!equalsCaseInsensitive(data.game, tournament.game)) return false;
-    if (!equalsCaseInsensitive(data.category, tournament.category))
+    if (
+        !tournament.eligibleRuns.find((run) => {
+            return (
+                equalsCaseInsensitive(run.game, data.game) &&
+                equalsCaseInsensitive(run.category, data.category)
+            );
+        })
+    )
         return false;
 
     if (
