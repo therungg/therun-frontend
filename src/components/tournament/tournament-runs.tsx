@@ -4,8 +4,9 @@ import { DurationToFormatted, IsoToFormatted } from "../util/datetime";
 import moment from "moment";
 import { buildItems } from "../run/run-sessions/game-sessions";
 import { Search as SearchIcon } from "react-bootstrap-icons";
+import { UserLink } from "~src/components/links/links";
 
-export const TournamentRuns = ({ data }) => {
+export const TournamentRuns = ({ data, showGame = false }) => {
     const [sortColumn, setSortColumn] = useState("date");
     const [sortAsc, setSortAsc] = useState(true);
 
@@ -18,7 +19,7 @@ export const TournamentRuns = ({ data }) => {
     let [useRuns, setUseRuns] = useState(null);
 
     useEffect(() => {
-        if (data && data.runList) {
+        if (data && data.runList && data.runList.length > 0) {
             if (!items) {
                 setUseRuns(data.runList);
             }
@@ -42,7 +43,18 @@ export const TournamentRuns = ({ data }) => {
                 .normalize("NFD")
                 .replace(/\p{Diacritic}/gu, "");
 
-            return accurateUser.includes(accurateSearch);
+            const accurateGame = showGame
+                ? run.game
+                      .toLowerCase()
+                      .replaceAll(" ", "")
+                      .normalize("NFD")
+                      .replace(/\p{Diacritic}/gu, "")
+                : "";
+
+            return (
+                accurateUser.includes(accurateSearch) ||
+                accurateGame.includes(accurateSearch)
+            );
         });
     }
 
@@ -96,6 +108,12 @@ export const TournamentRuns = ({ data }) => {
             res = parseInt(a.time) > parseInt(b.time) ? 1 : -1;
         }
 
+        if (sortColumn === "game") {
+            if (a.game === b.game)
+                res = parseInt(a.time) > parseInt(b.time) ? 1 : -1;
+            else res = a.game > b.game ? 1 : -1;
+        }
+
         if (!sortAsc) res *= -1;
         return res;
     });
@@ -144,7 +162,9 @@ export const TournamentRuns = ({ data }) => {
                     <input
                         type="search"
                         className="form-control"
-                        placeholder="Filter by user"
+                        placeholder={`Filter by user${
+                            showGame ? " or Game" : ""
+                        }`}
                         onChange={(e) => {
                             setSearch(e.target.value);
                         }}
@@ -162,6 +182,14 @@ export const TournamentRuns = ({ data }) => {
                         >
                             User
                         </th>
+                        {showGame && (
+                            <th
+                                className={getSortableClassName("game")}
+                                onClick={() => changeSort("game")}
+                            >
+                                Game
+                            </th>
+                        )}
                         <th
                             className={getSortableClassName("time")}
                             onClick={() => changeSort("time")}
@@ -182,7 +210,10 @@ export const TournamentRuns = ({ data }) => {
                         .map((run) => {
                             return (
                                 <tr key={run.endedAt + run.user}>
-                                    <td>{run.user}</td>
+                                    <td>
+                                        <UserLink username={run.user} />
+                                    </td>
+                                    {showGame && <td>{run.game}</td>}
                                     <td>
                                         <DurationToFormatted
                                             duration={run.time}
