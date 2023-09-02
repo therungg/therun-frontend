@@ -15,7 +15,7 @@ interface LayoutInput {
 
 const themeInitializerScript = `
        (function () {
-         document.documentElement.dataset.theme = window.localStorage.getItem("theme") || "light";
+         document.documentElement.dataset.bsTheme = window.localStorage.getItem("theme") || "light";
        })();
    `;
 
@@ -86,11 +86,6 @@ export const Layout = ({
                     />
                     <meta name="msapplication-TileColor" content="#da532c" />
                     <meta name="theme-color" content="#ffffff" />
-
-                    <link
-                        rel="stylesheet"
-                        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-                    />
                 </Head>
 
                 <script
@@ -108,8 +103,8 @@ export const Layout = ({
                                 animationDuration: `${animationDuration}s`,
                             }}
                         >
-                            <div style={{ display: "flex" }}>
-                                <span style={{ marginRight: "2rem" }}>
+                            <div className="d-flex">
+                                <span className="me-4">
                                     A special thanks to our Tier 3 Patrons:
                                 </span>
 
@@ -120,14 +115,14 @@ export const Layout = ({
 
                                         return (
                                             !v.preferences ||
-                                            !!v.preferences.featureInScrollbar
+                                            v.preferences.featureInScrollbar
                                         );
                                     })
                                     .map(([k]) => {
                                         return (
                                             <div
+                                                className="me-4"
                                                 key={`${k}patron`}
-                                                style={{ marginRight: "2rem" }}
                                             >
                                                 <UserLink
                                                     key={`${k}patron`}
@@ -140,8 +135,8 @@ export const Layout = ({
                         </div>
                     </div>
 
-                    <div style={{ paddingTop: "1rem" }}>
-                        <div className={"container"}>
+                    <div className="pb-3">
+                        <div className="container">
                             <Row>
                                 <Col>
                                     <h3>General</h3>

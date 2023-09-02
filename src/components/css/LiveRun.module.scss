@@ -1,67 +1,25 @@
-.liveRunContainer {
-  border: 1px solid var(--color-tertiary);
-  background-color: var(--color-secondary);
-  display: flex;
-  height: 110px;
-}
+.splitRow {
 
-.activeRunContainer {
-  background-color: var(--color-tertiary);
+  &Active {
+    background-color: var(--split-active-color);
+  }
+
+  :hover {
+    background-color: var(--bs-tertiary-bg);
+    cursor: pointer;
+  }
+
+  &:not(:last-child) {
+    border-bottom: var(--bs-border-width) var(--bs-border-style) var(--bs-tertiary-bg);
+  }
 }
 
 .liveRunContainer:hover {
   cursor: pointer;
-  background-color: var(--color-tertiary);
+  background-color: var(--bs-tertiary-bg) !important;
 }
 
-.splitsContainer {
-  background-color: var(--color-secondary);
-  display: flex;
-  height: 100%;
-  padding: 0;
-  border: 1px solid var(--color-tertiary);
-}
-
-.uploadKeyButton {
-  font-size: 1.5rem;
-  height: 100%;
-  display: flex;
-  justify-content: flex-end;
-  align-self: flex-end;
-}
-
-.recommendedStreamContainer {
-  margin-bottom: 2rem;
-  margin-top: 1rem;
-}
-
-.searchContainer {
-  display: flex;
-  justify-content: flex-start;
-}
-
-.gameImage {
-  height: 108px;
-}
-
-.infoBody {
-  margin-left: 1.5rem;
-  margin-right: 1.5rem;
-
-  width: 100%;
-}
-
-.maxHeight {
-  height: 100%;
-}
-
-.metadataBody {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  max-width: 390px;
-}
-
+// ToDo: Remove in the future
 .timerBody {
   height: 100%;
   display: flex;
@@ -69,254 +27,53 @@
   justify-content: flex-end;
 }
 
-.username {
-  font-size: x-large;
-  display: flex;
-}
+.splitName {
+  width: 250px;
 
-.game {
-  font-size: large;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  @media screen and (max-width: 1899.98px) {
+    width: 220px;
+  }
 
-.category {
-  font-size: large;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  @media screen and (min-width: 1199.98px) and (max-width: 1599.98px) {
+    width: 185px;
+  }
 
-.gameSmall {
-  font-size: 0.9rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.timer {
-  font-size: x-large;
-}
-
-.delta {
-  font-size: large;
-}
-
-.recommendedRunContainer {
-  padding: 0 0.5rem;
-}
-
-.recommendedRunRow {
-}
-
-.splitsContainerContainer {
-  width: 100%;
-  height: 337px;
-}
-
-.splitsHeader {
-  height: 15%;
-  background-color: var(--color-tertiary);
-}
-
-.splitsHeaderGameContainer {
-  padding-left: 1.5rem;
-}
-
-.splitsHeaderGame {
-  display: flex;
-  justify-content: flex-start;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.splitsHeaderComparisonContainer {
-  padding-right: 1.5rem;
-}
-
-.splitsHeaderComparison {
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.splitsBox {
-  width: 100%;
-  overflow-y: scroll;
-  height: 55%;
-}
-
-.splitsTable {
-  width: 100%;
-}
-
-.splitRow {
-  width: 100%;
-}
-
-.splitRow:hover {
-  background-color: var(--color-tertiary);
-  cursor: pointer;
-}
-
-.splitRowActive {
-  background-color: var(--color-split-active);
+  @media screen and (min-width: 1200px) and (max-width: 1599.98px) {
+    width: 141px;
+  }
 }
 
 .finalSplitRow {
   background-color: blue;
-}
 
-.finalSplitRow:hover {
-  background-color: var(--color-border);
-  cursor: pointer;
-}
-
-.splitRow:not(:last-child) {
-  border-bottom: 1px solid var(--color-tertiary);
-}
-
-.splitNameContainer {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  padding: 0.1rem 0.5rem;
-}
-
-.splitName {
-  width: 250px;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
-.splitTimeContainer {
-  width: 18%;
-}
-
-.splitTime {
-  display: flex;
-  justify-content: flex-end;
-  padding-right: 0.5rem;
-}
-
-.splitTimerContainer {
-  height: 30%;
-  background-color: var(--color-tertiary);
-}
-
-.seperator {
-  margin: 0;
-  color: var(--color-text);
-}
-
-.splitsTimerContainer {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  height: 90%;
-  padding: 0 1rem;
-  margin-bottom: -0.35rem;
-}
-
-.splitsTimer {
-  font-size: 1.5rem;
-}
-
-.splitIndividualContainer {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  height: 100%;
-  padding: 0 1rem;
-  margin: 0;
-}
-
-.splitIndividualTimer {
-  font-size: medium;
-}
-
-.splitsFooterContainer {
-  height: 3.5rem;
-}
-
-.splitsFooterStatsContainer {
-  height: 100%;
-  display: flex;
-  align-items: center;
-}
-
-.splitsFooterStats {
-  margin: 1.5rem 0.5rem 0.5rem;
-}
-
-.splitsFooterPossibleContainer {
-  display: flex;
-  align-items: flex-end;
-}
-
-.splitsFooterPossible {
-  font-size: 0.8rem;
-}
-
-.splitsFooterTimeSave {
-  font-size: 0.8rem;
-  width: 64px;
-}
-
-.splitsFooterStatsTime {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  margin-bottom: -1px;
-  width: 100%;
-}
-
-.splitsFooterTimerContainer {
-  margin-top: 0.22rem;
-  margin-right: 0.3rem;
-}
-
-.splitsFooterTimerMainContainer {
-  margin-bottom: 0.13rem;
-}
-
-.twitchStream {
-  height: 340px;
-}
-
-.splitsStatsContainer {
-  border: 1px solid var(--color-tertiary);
-  background-color: var(--color-secondary);
-  display: flex;
-  height: 340px;
+  &:hover {
+    background-color: var(--bs-border-color);
+    cursor: pointer;
+  }
 }
 
 .sortButton {
-  background-color: var(--color-secondary);
+  background-color: var(--bs-secondary-bg);
   width: 100%;
   height: 100%;
-  border-color: var(--color-tertiary);
-}
+  border-color: var(--bs-tertiary-bg);
 
-.sortButtonActive {
-  background-color: var(--color-tertiary);
-}
+  &Active {
+    background-color: var(--bs-tertiary-bg);
+  }
 
-.sortButton:hover {
-  background-color: var(--color-tertiary);
-  border-color: var(--color-tertiary);
+  &:hover {
+    background-color: var(--bs-tertiary-bg);
+    border-color: var(--bs-tertiary-bg);
+  }
 }
 
 .tournamentInfo {
   width: 100%;
-}
 
-.tournamentInfoLogo {
-  margin-bottom: 0;
+  &Logo {
+    margin-bottom: 0;
+  }
 }
 
 .tournamentHowDoesThisWorkButton {
@@ -333,20 +90,11 @@
   margin-bottom: -5rem;
 }
 
-@media screen and (max-width: 1900px) {
-  .metadataBody {
-    max-width: 350px;
-  }
-
-  .splitName {
-    width: 220px;
-  }
+.timer {
+  font-size: x-large;
 }
 
-@media screen and (max-width: 1200px) {
-  .splitsContainer {
-    margin-bottom: 1rem;
-  }
+@media screen and (max-width: 1199.98px) {
 
   .metadataBody {
     max-width: 320px;
@@ -365,7 +113,7 @@
   }
 }
 
-@media screen and (max-width: 574px) {
+@media screen and (max-width: 575.98px) {
   .infoBody {
     margin-left: 0.8rem;
     margin-right: 0.8rem;
@@ -374,33 +122,17 @@
   .metadataBody {
     max-width: 210px;
   }
-
-  .twitchStream {
-    height: 100%;
-  }
 }
 
-@media screen and (max-width: 992px) {
-  .twitchStream {
-    height: 400px;
-    padding: 0;
-    margin-bottom: 1rem;
-  }
-}
-
-@media screen and (max-width: 766px) {
-  .twitchStream {
-    height: 295px;
-    padding: 0;
-  }
+@media screen and (max-width: 767.98px) {
 
   .username {
     font-size: large;
   }
 }
 
-@media screen and (min-width: 1200px) {
-  @media screen and (max-width: 1599px) {
+@media screen and (min-width: 1199.98px) {
+  @media screen and (max-width: 1599.98px) {
     .infoBody {
       margin-left: 1.2rem;
       margin-right: 1.2rem;
@@ -409,13 +141,9 @@
     .metadataBody {
       max-width: 293px;
     }
-
-    .splitName {
-      width: 185px;
-    }
   }
 
-  @media screen and (max-width: 1399px) {
+  @media screen and (max-width: 1399.98px) {
     .metadataBody {
       max-width: 250px;
     }
@@ -443,10 +171,6 @@
     .infoBody {
       margin-left: 1rem;
       margin-right: 1rem;
-    }
-
-    .splitName {
-      width: 141px;
     }
   }
 }

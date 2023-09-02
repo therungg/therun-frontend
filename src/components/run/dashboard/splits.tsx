@@ -36,10 +36,7 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
     return (
         <div>
             <Row>
-                <Col
-                    className={"col-xl-9"}
-                    style={{ whiteSpace: "nowrap", display: "flex" }}
-                >
+                <Col xl={9} style={{ whiteSpace: "nowrap", display: "flex" }}>
                     <h2>Splits {gameTime && "(IGT)"}</h2>
                     {run.splitsFile && (
                         <a
@@ -53,10 +50,7 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                         </a>
                     )}
                 </Col>
-                <Col
-                    className={"col-sm-3"}
-                    style={{ display: "flex", justifyContent: "end" }}
-                >
+                <Col sm={3} style={{ display: "flex", justifyContent: "end" }}>
                     <div
                         style={{
                             display: "flex",
@@ -85,10 +79,10 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                         <Switch
                             onColor={getComputedStyle(
                                 document.documentElement
-                            ).getPropertyValue("--color-link")}
+                            ).getPropertyValue("--bs-link-color")}
                             offColor={getComputedStyle(
                                 document.documentElement
-                            ).getPropertyValue("--color-tertiary")}
+                            ).getPropertyValue("--bs-tertiary-bg")}
                             name={"switch"}
                             onChange={(checked) => {
                                 setTotalTime(checked);

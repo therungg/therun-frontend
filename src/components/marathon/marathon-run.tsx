@@ -6,7 +6,6 @@ import EventDisplay from "./event-display";
 import { generalDataEvent } from "./events/general-data-event";
 import LiveRunStats, { liveRunEvent } from "./live-run-stats";
 import { useEffect, useState } from "react";
-import styles from "../css/LiveRun.module.scss";
 import SuggestedEvents from "./suggested-events";
 import { FreeInput } from "./free-input";
 import { LiveRun } from "~app/live/live.types";
@@ -25,46 +24,21 @@ export const MarathonRun = ({
     }, [runData]);
 
     return (
-        <div style={{ marginTop: "1rem" }}>
+        <div className="mt-3">
             <Row>
-                <Col>
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            width: "100%",
-                        }}
-                    >
-                        <div style={{ width: "600px" }}>
-                            <LiveUserRun liveRun={runData} />
-                        </div>
-                    </div>
+                <Col md={6}>
+                    <LiveUserRun liveRun={runData} />
                 </Col>
-                <Col>
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            width: "100%",
-                        }}
-                    >
-                        <div
-                            style={{
-                                width: "600px",
-                                padding: "0.5rem",
-                                overflow: "scroll",
-                            }}
-                            className={styles.liveRunContainer}
-                        >
-                            <EventDisplay session={session} />
-                        </div>
+                <Col md={6}>
+                    <div className="h-110p p-2 overflow-auto bg-body-secondary">
+                        <EventDisplay session={session} />
                     </div>
                 </Col>
             </Row>
             <hr />
-            <div style={{ marginTop: "1rem" }}>
+            <div className="mt-3">
                 <Row>
-                    <Col xl={5} lg={12} md={12}>
+                    <Col md={12} xl={5}>
                         <FreeInput
                             liveRun={currentLiveRun}
                             sessionId={session.id}
@@ -74,7 +48,7 @@ export const MarathonRun = ({
                             sessionId={session.id}
                         />
                     </Col>
-                    <Col xl={4} lg={12} md={12}>
+                    <Col md={12} xl={4}>
                         <LiveRunStats
                             liveRun={currentLiveRun}
                             sessionId={session.id}
@@ -89,7 +63,7 @@ export const MarathonRun = ({
                             data={liveRunEvent(runData)}
                         />
                     </Col>
-                    <Col xl={3} lg={12} md={12}>
+                    <Col md={12} xl={3}>
                         <Stats run={runData.gameData} sessionId={session.id} />
 
                         <SendMarathonDataButton

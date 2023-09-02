@@ -36,7 +36,7 @@ export const ShowComparison = ({
     return (
         <div>
             <Row>
-                <Col className={"col-md-8"}>
+                <Col md={8}>
                     <Row>
                         <Col>
                             <h2>Splits</h2>
@@ -79,7 +79,7 @@ export const ShowComparison = ({
                         key={userOne + userTwo + gameTime}
                     />
                 </Col>
-                <Col className={"col-md-4"}>
+                <Col md={4}>
                     <div>
                         <h2>Stats</h2>
                         <ComparisonTable

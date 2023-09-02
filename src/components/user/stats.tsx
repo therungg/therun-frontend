@@ -192,16 +192,16 @@ export const PlayTimePerDayOfWeekGraph = ({
                     style={{
                         tickLabels: {
                             fontSize: 11,
-                            color: "var(--color-text)",
-                            fill: "var(--color-text)",
+                            color: "var(--bs-body-color)",
+                            fill: "var(--bs-body-color)",
                             angle: 0,
                             padding: 10,
                         },
                         axis: {
-                            color: "var(--color-text)",
-                            borderColor: "var(--color-text)",
-                            fill: "var(--color-text)",
-                            stroke: "var(--color-text)",
+                            color: "var(--bs-body-color)",
+                            borderColor: "var(--bs-body-color)",
+                            fill: "var(--bs-body-color)",
+                            stroke: "var(--bs-body-color)",
                         },
                     }}
                     data={victoryData}
@@ -233,7 +233,7 @@ export const PlayTimePerDayOfWeekGraph = ({
                                 const res = color(
                                     d.data
                                         ? d.data[d.index]._y
-                                        : "var(--color-link)"
+                                        : "var(--bs-link-color)"
                                 );
                                 return res;
                             },
@@ -292,16 +292,16 @@ export const PlaytimePerHourGraph = ({
                     style={{
                         tickLabels: {
                             fontSize: 11,
-                            color: "var(--color-text)",
-                            fill: "var(--color-text)",
+                            color: "var(--bs-body-color)",
+                            fill: "var(--bs-body-color)",
                             angle: 0,
                             padding: 10,
                         },
                         axis: {
-                            color: "var(--color-text)",
-                            borderColor: "var(--color-text)",
-                            fill: "var(--color-text)",
-                            stroke: "var(--color-text)",
+                            color: "var(--bs-body-color)",
+                            borderColor: "var(--bs-body-color)",
+                            fill: "var(--bs-body-color)",
+                            stroke: "var(--bs-body-color)",
                         },
                     }}
                     data={victoryData}
@@ -318,16 +318,16 @@ export const PlaytimePerHourGraph = ({
                     style={{
                         tickLabels: {
                             fontSize: 11,
-                            color: "var(--color-text)",
-                            fill: "var(--color-text)",
+                            color: "var(--bs-body-color)",
+                            fill: "var(--bs-body-color)",
                             angle: 0,
                             padding: 25,
                         },
                         axis: {
-                            color: "var(--color-text)",
-                            borderColor: "var(--color-text)",
-                            fill: "var(--color-text)",
-                            stroke: "var(--color-text)",
+                            color: "var(--bs-body-color)",
+                            borderColor: "var(--bs-body-color)",
+                            fill: "var(--bs-body-color)",
+                            stroke: "var(--bs-body-color)",
                         },
                     }}
                     data={victoryData}

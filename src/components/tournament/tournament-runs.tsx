@@ -3,11 +3,10 @@ import { Pagination, Table } from "react-bootstrap";
 import { DurationToFormatted, IsoToFormatted } from "../util/datetime";
 import moment from "moment";
 import { buildItems } from "../run/run-sessions/game-sessions";
-import paginationStyles from "../css/Pagination.module.scss";
-import searchStyles from "../css/Search.module.scss";
-import styles from "../css/Games.module.scss";
+import { Search as SearchIcon } from "react-bootstrap-icons";
+import { UserLink } from "~src/components/links/links";
 
-export const TournamentRuns = ({ data }) => {
+export const TournamentRuns = ({ data, showGame = false }) => {
     const [sortColumn, setSortColumn] = useState("date");
     const [sortAsc, setSortAsc] = useState(true);
 
@@ -20,7 +19,7 @@ export const TournamentRuns = ({ data }) => {
     let [useRuns, setUseRuns] = useState(null);
 
     useEffect(() => {
-        if (data && data.runList) {
+        if (data && data.runList && data.runList.length > 0) {
             if (!items) {
                 setUseRuns(data.runList);
             }
@@ -44,7 +43,18 @@ export const TournamentRuns = ({ data }) => {
                 .normalize("NFD")
                 .replace(/\p{Diacritic}/gu, "");
 
-            return accurateUser.includes(accurateSearch);
+            const accurateGame = showGame
+                ? run.game
+                      .toLowerCase()
+                      .replaceAll(" ", "")
+                      .normalize("NFD")
+                      .replace(/\p{Diacritic}/gu, "")
+                : "";
+
+            return (
+                accurateUser.includes(accurateSearch) ||
+                accurateGame.includes(accurateSearch)
+            );
         });
     }
 
@@ -98,6 +108,12 @@ export const TournamentRuns = ({ data }) => {
             res = parseInt(a.time) > parseInt(b.time) ? 1 : -1;
         }
 
+        if (sortColumn === "game") {
+            if (a.game === b.game)
+                res = parseInt(a.time) > parseInt(b.time) ? 1 : -1;
+            else res = a.game > b.game ? 1 : -1;
+        }
+
         if (!sortAsc) res *= -1;
         return res;
     });
@@ -129,43 +145,32 @@ export const TournamentRuns = ({ data }) => {
     return (
         <div>
             <h2>Tournament runs</h2>
-            <div>
-                <div
-                    style={{
-                        justifyContent: "flex-start",
-                        display: "flex",
-                        marginBottom: "0.3rem",
-                    }}
-                >
-                    <div
-                        className={`${searchStyles.searchContainer} ${styles.filter}`}
-                        style={{ marginLeft: "0" }}
+            <div className="d-flex justify-content-start mb-1">
+                <div className="mb-3 input-group game-filter-mw">
+                    <span
+                        className="input-group-text"
+                        onClick={() => {
+                            const searchElement =
+                                document.getElementById("gameSearch");
+                            if (document.activeElement !== search) {
+                                searchElement.focus();
+                            }
+                        }}
                     >
-                        <span
-                            className={"material-symbols-outlined"}
-                            onClick={() => {
-                                const searchElement =
-                                    document.getElementById("gameSearch");
-                                if (document.activeElement !== search) {
-                                    searchElement.focus();
-                                }
-                            }}
-                        >
-                            {" "}
-                            search{" "}
-                        </span>
-                        <input
-                            type="search"
-                            className={`form-control ${searchStyles.search}`}
-                            placeholder="Filter by user"
-                            style={{ marginBottom: "0" }}
-                            onChange={(e) => {
-                                setSearch(e.target.value);
-                            }}
-                            value={search}
-                            id="tournamentRunSearch"
-                        />
-                    </div>
+                        <SearchIcon size={18} />
+                    </span>
+                    <input
+                        type="search"
+                        className="form-control"
+                        placeholder={`Filter by user${
+                            showGame ? " or Game" : ""
+                        }`}
+                        onChange={(e) => {
+                            setSearch(e.target.value);
+                        }}
+                        value={search}
+                        id="tournamentRunSearch"
+                    />
                 </div>
             </div>
             <Table responsive striped bordered hover>
@@ -177,6 +182,14 @@ export const TournamentRuns = ({ data }) => {
                         >
                             User
                         </th>
+                        {showGame && (
+                            <th
+                                className={getSortableClassName("game")}
+                                onClick={() => changeSort("game")}
+                            >
+                                Game
+                            </th>
+                        )}
                         <th
                             className={getSortableClassName("time")}
                             onClick={() => changeSort("time")}
@@ -197,7 +210,10 @@ export const TournamentRuns = ({ data }) => {
                         .map((run) => {
                             return (
                                 <tr key={run.endedAt + run.user}>
-                                    <td>{run.user}</td>
+                                    <td>
+                                        <UserLink username={run.user} />
+                                    </td>
+                                    {showGame && <td>{run.game}</td>}
                                     <td>
                                         <DurationToFormatted
                                             duration={run.time}
@@ -211,11 +227,15 @@ export const TournamentRuns = ({ data }) => {
                         })}
                 </tbody>
             </Table>
-            <div className={paginationStyles.paginationWrapper}>
-                <Pagination onClick={onPaginationClick} size="lg">
-                    {items}
-                </Pagination>
-            </div>
+
+            <Pagination
+                className="justify-content-center"
+                onClick={onPaginationClick}
+                size="lg"
+            >
+                {items}
+            </Pagination>
+
             <div style={{ display: "flex", justifyContent: "center" }}>
                 Showing {(active - 1) * 10 + 1} -{" "}
                 {active * 10 < data.runList.length

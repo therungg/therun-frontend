@@ -1,21 +1,9 @@
 "use client";
 import React from "react";
 import styles from "./css/DarkModeSlider.module.scss";
+import { getColorMode, setColorMode } from "~src/utils/colormode";
 
 export const DarkModeSlider = () => {
-    // I read the theme from local storage and set it onto body data attribute earlier in my code, so
-    const [theme, setTheme] = React.useState(
-        document.documentElement.dataset.theme || "light"
-    );
-
-    // sync the changed theme value to local storage and body data attribute
-    React.useEffect(() => {
-        if (theme && theme !== document.documentElement.dataset.theme) {
-            window.localStorage.setItem("theme", theme);
-            document.documentElement.dataset.theme = theme;
-        }
-    }, [theme]);
-
     return (
         <>
             <div className={styles.switch}>
@@ -24,9 +12,11 @@ export const DarkModeSlider = () => {
                     className={styles.switch__input}
                     id="Switch"
                     onChange={(checked) => {
-                        setTheme(!checked.target.checked ? "dark" : "light");
+                        setColorMode(
+                            !checked.target.checked ? "dark" : "light"
+                        );
                     }}
-                    checked={theme == "light"}
+                    checked={getColorMode() == "light"}
                 />
                 <label className={styles.switch__label} htmlFor="Switch">
                     <span className={styles.switch__indicator}></span>
