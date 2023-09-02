@@ -2,13 +2,16 @@ import { Tournament } from "~src/components/tournament/tournament-info";
 import React, { useState } from "react";
 import { DurationToFormatted } from "~src/components/util/datetime";
 import { PaginatedGameLeaderboard } from "~src/components/game/paginated-game-leaderboard";
+import { CombinedLeaderboardStat } from "~app/tournaments/[tournament]/get-combined-tournament-leaderboard.component";
 
 export const CombinedEventLeaderboards = ({
     tournaments,
+    seedingTable,
 }: {
     tournaments: Tournament[];
+    seedingTable: CombinedLeaderboardStat[];
 }) => {
-    const [leaderboard, setLeaderboard] = useState(tournaments[0].name);
+    const [leaderboard, setLeaderboard] = useState("Seed");
 
     const metaLeaderboards = generateMetaDataCombinedLeaderboards(tournaments);
 
@@ -22,6 +25,9 @@ export const CombinedEventLeaderboards = ({
                         setLeaderboard(e.target.value);
                     }}
                 >
+                    <option key={"Seed"} title={"Seed"} value={"Seed"}>
+                        Provisional Seed
+                    </option>
                     {tournaments.map((tournament) => {
                         return (
                             <option
@@ -56,6 +62,18 @@ export const CombinedEventLeaderboards = ({
                     </option>
                 </select>
             </div>
+            {leaderboard === "Seed" && (
+                <PaginatedGameLeaderboard
+                    name={"Completed Games"}
+                    leaderboard={seedingTable.map((seed) => {
+                        return {
+                            username: seed.username,
+                            stat: seed.gameCount,
+                            placing: seed.seed,
+                        };
+                    })}
+                />
+            )}
             {tournaments.map((tournament) => {
                 if (
                     leaderboard !== tournament.name

@@ -19,7 +19,7 @@ export const LiveUserRun = ({
     leaderboard = null,
     leaderboardGameTime = null,
     isUrl = false,
-    seedingTable = null,
+    seedingTable = [],
 }: {
     liveRun: LiveRun;
     currentlyActive?: string;
@@ -181,7 +181,7 @@ export const LiveUserRun = ({
             >
                 <Col xs={7} className="mw-350p ps-3">
                     <div className="fs-responsive-large d-flex">
-                        {ranking && (
+                        {ranking && !seed && (
                             <div>
                                 #{ranking}
                                 &nbsp;-&nbsp;

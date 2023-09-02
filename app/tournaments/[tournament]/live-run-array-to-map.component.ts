@@ -113,7 +113,7 @@ export const liveRunArrayToMap = (
             if (bStat === -1) return -1;
             if (aStat === -1) return 1;
 
-            return bStat - aStat;
+            return aStat - bStat;
         }
     });
 

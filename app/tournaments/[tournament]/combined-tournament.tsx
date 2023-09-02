@@ -20,6 +20,7 @@ import { CombinedEventLeaderboards } from "~app/tournaments/[tournament]/combine
 import { getCombinedTournamentLeaderboardComponent } from "~app/tournaments/[tournament]/get-combined-tournament-leaderboard.component";
 import { CombinedTournamentSeedingTable } from "~app/tournaments/[tournament]/combined-tournament-seeding-table";
 import { Search as SearchIcon } from "react-bootstrap-icons";
+import { equalsCaseInsensitive } from "~src/utils/string";
 
 export const CombinedTournament = ({
     liveDataMap,
@@ -252,6 +253,7 @@ export const CombinedTournament = ({
                         <Col xl={4} lg={12} md={12}>
                             <CombinedEventLeaderboards
                                 tournaments={tournaments}
+                                seedingTable={standingsMap}
                             />
                         </Col>
                         <Col xl={8} lg={12} md={12}>
@@ -284,7 +286,7 @@ export const CombinedTournament = ({
                                             setSort("seed");
                                         }}
                                     >
-                                        Sort by Seed
+                                        Sort by Provisional Seed
                                     </Button>
                                 </Col>
                                 <Col>
@@ -349,6 +351,23 @@ export const CombinedTournament = ({
                                         liveRunIsInSearch(run, search)
                                     )
                                     .map((liveRun) => {
+                                        const relevantTournament =
+                                            tournaments.find((tournament) => {
+                                                return tournament.eligibleRuns.find(
+                                                    (run) => {
+                                                        return (
+                                                            equalsCaseInsensitive(
+                                                                run.game,
+                                                                liveRun.game
+                                                            ) &&
+                                                            equalsCaseInsensitive(
+                                                                run.category,
+                                                                liveRun.category
+                                                            )
+                                                        );
+                                                    }
+                                                );
+                                            });
                                         return (
                                             <Col
                                                 xl={6}
@@ -370,8 +389,11 @@ export const CombinedTournament = ({
                                                     key={liveRun.user}
                                                     showGameCategory={false}
                                                     leaderboard={
-                                                        tournamentLeaderboards &&
-                                                        tournamentLeaderboards.pbLeaderboard
+                                                        relevantTournament
+                                                            ? relevantTournament
+                                                                  .leaderboards
+                                                                  ?.pbLeaderboard
+                                                            : null
                                                     }
                                                     seedingTable={standingsMap}
                                                 />

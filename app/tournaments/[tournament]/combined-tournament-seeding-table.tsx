@@ -3,6 +3,7 @@ import { Tournament } from "~src/components/tournament/tournament-info";
 import { Table } from "react-bootstrap";
 import { DurationToFormatted } from "~src/components/util/datetime";
 import { useState } from "react";
+import { UserLink } from "~src/components/links/links";
 
 export const CombinedTournamentSeedingTable = ({
     tournaments,
@@ -120,7 +121,9 @@ export const CombinedTournamentSeedingTable = ({
                     {leaderboards.map((leaderboard) => (
                         <tr key={leaderboard.username}>
                             <td>{leaderboard.seed}</td>
-                            <td>{leaderboard.username}</td>
+                            <td>
+                                <UserLink username={leaderboard.username} />
+                            </td>
                             {tournaments.map((tournament) => {
                                 const run = leaderboard.runs.get(
                                     tournament.game as string
