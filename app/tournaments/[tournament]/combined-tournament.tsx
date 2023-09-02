@@ -21,6 +21,10 @@ import { getCombinedTournamentLeaderboardComponent } from "~app/tournaments/[tou
 import { CombinedTournamentSeedingTable } from "~app/tournaments/[tournament]/combined-tournament-seeding-table";
 import { Search as SearchIcon } from "react-bootstrap-icons";
 import { equalsCaseInsensitive } from "~src/utils/string";
+import useSWR from "swr";
+import { multiFetcher } from "~src/utils/fetcher";
+import { safeEncodeURI } from "~src/utils/uri";
+import { TournamentRuns } from "~src/components/tournament/tournament-runs";
 
 export const CombinedTournament = ({
     liveDataMap,
@@ -42,6 +46,8 @@ export const CombinedTournament = ({
     const recommendedStream = getRecommendedStream(liveDataMap, username);
     const [currentlyViewing, setCurrentlyViewing] = useState(recommendedStream);
 
+    const [runList, setRunList] = useState([]);
+
     const tournamentLeaderboards = null;
 
     const eventStarted = new Date() > new Date(guidingTournament.startDate);
@@ -49,13 +55,32 @@ export const CombinedTournament = ({
 
     const standingsMap = getCombinedTournamentLeaderboardComponent(tournaments);
 
-    // const { data } = useSWR(
-    //     tournaments.map(
-    //         (tournament) =>
-    //             `/api/tournaments/${safeEncodeURI(tournament.name)}/stats`
-    //     ),
-    //     multiFetcher
-    // );
+    const { data } = useSWR(
+        tournaments.map(
+            (tournament) =>
+                `/api/tournaments/${safeEncodeURI(tournament.name)}/stats`
+        ),
+        multiFetcher
+    );
+
+    useEffect(() => {
+        if (data) {
+            const fullRunList = [];
+            data.forEach((runs, key) => {
+                if (!runs) return;
+
+                const game = tournaments[key].game;
+
+                runs.runList.forEach((run) => {
+                    fullRunList.push({
+                        ...run,
+                        game,
+                    });
+                });
+            });
+            setRunList(fullRunList);
+        }
+    }, [data]);
 
     useEffect(() => {
         if (lastMessage !== null) {
@@ -409,6 +434,9 @@ export const CombinedTournament = ({
                         tournaments={tournaments}
                         leaderboards={standingsMap}
                     />
+                </Tab>
+                <Tab title={"Runs"} eventKey={"runs"}>
+                    <TournamentRuns data={{ runList }} showGame={true} />
                 </Tab>
                 <Tab title={"Info"} eventKey={"info"}>
                     <TournamentInfo tournament={guidingTournament} />
