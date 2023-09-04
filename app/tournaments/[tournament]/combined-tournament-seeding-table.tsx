@@ -130,6 +130,9 @@ export const CombinedTournamentSeedingTable = ({
                                 );
                                 return (
                                     <td
+                                        title={`${run?.differenceToFirst.toFixed(
+                                            2
+                                        )}%`}
                                         key={
                                             leaderboard.username +
                                             tournament.game
