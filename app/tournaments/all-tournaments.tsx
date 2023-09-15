@@ -13,15 +13,17 @@ export function AllTournaments({
 }: AllTournamentsProps) {
     return (
         <div>
-            <h1>Ongoing tournaments</h1>
+            <h1>Tournaments</h1>
+
+            <h2>Ongoing tournaments</h2>
 
             <ListTournaments tournaments={ongoingTournaments} />
 
-            <h1>Upcoming tournaments</h1>
+            <h2>Upcoming tournaments</h2>
 
             <ListTournaments tournaments={upcomingTournaments} />
 
-            <h1>Finished tournaments</h1>
+            <h2>Finished tournaments</h2>
 
             <ListTournaments tournaments={finishedTournaments} />
         </div>
@@ -34,7 +36,7 @@ export const ListTournaments = ({
     tournaments: Tournament[];
 }) => {
     return (
-        <Row>
+        <Row className={"g-3 mb-5"}>
             {tournaments.map((tournament: Tournament) => {
                 const startDate = new Date(tournament.startDate);
                 const endDate = new Date(tournament.endDate);
@@ -46,7 +48,7 @@ export const ListTournaments = ({
                 return (
                     <Col sm={12} lg={6} key={tournament.name}>
                         {tournament.logoUrl && (
-                            <div className="float-start d-flex d-none d-sm-block align-items-center me-2 ms-2">
+                            <div className="float-start d-flex d-none d-sm-block align-items-center me-2">
                                 <a
                                     href={`/tournaments/${safeEncodeURI(
                                         tournament.name
