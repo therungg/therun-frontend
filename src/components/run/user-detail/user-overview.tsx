@@ -93,6 +93,7 @@ export const UserOverview = ({
                 return (
                     <div
                         key={n}
+                        className="clearfix"
                         style={{
                             marginLeft:
                                 sameGame && globalData && images.length > 0
