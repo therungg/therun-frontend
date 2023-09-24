@@ -87,6 +87,7 @@ const Topbar = ({
                             <b>Live</b>
                         </Nav.Link>
                         <Nav.Link href="/games/">Games</Nav.Link>
+                        <Nav.Link href="/moist/">Moist</Nav.Link>
                         <Nav.Link href="/patron">
                             Support <PatreonBunnySvgWithoutLink />
                         </Nav.Link>

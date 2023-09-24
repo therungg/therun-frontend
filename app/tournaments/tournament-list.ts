@@ -23,8 +23,7 @@ const tournamentEntries: Array<[string, TournamentEntryValue]> = [
     [
         "moist",
         {
-            tournament:
-                "The Elder Scrolls Adventures: Redguard Speedrun Challenge",
+            tournament: "Escape from Lavender Island",
         },
     ],
     ["saesr", { tournament: "NCW Seeding" }],
