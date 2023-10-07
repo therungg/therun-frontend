@@ -25,7 +25,7 @@
     "js-levenshtein": "^1.1.6",
     "luxon": "^3.0.4",
     "moment": "^2.29.1",
-    "next": "^13.4.2",
+    "next": "^13.5.4",
     "next-axiom": "^0.17.0",
     "next-nprogress-bar": "^1.2.2",
     "next-themes": "^0.2.1",
