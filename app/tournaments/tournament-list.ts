@@ -41,6 +41,7 @@ const tournamentEntries: Array<[string, TournamentEntryValue]> = [
     ["tcs", { tournament: "TCS Community BTR" }],
     ["nitro_cup", { tournament: "Nitro Cup" }],
     ["nitro_tournament", { tournament: "Nitro Tournament 4" }],
+    ["knuckles", { tournament: "Knuckles Story Eclipse the Record" }],
     [
         "3dmm",
         {
