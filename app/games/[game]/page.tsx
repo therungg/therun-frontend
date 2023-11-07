@@ -16,7 +16,7 @@ export default async function GamePage({ params }: PageProps) {
         throw new Error("Params not found");
     }
     const response = await fetch(
-        `${baseUrl}/api/ges/${safeEncodeURI(gameName)}`
+        `${baseUrl}/api/games/${safeEncodeURI(gameName)}`
     );
     const data = await response.json();
 
