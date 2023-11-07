@@ -22,6 +22,10 @@ export const getGame = async (game: string) => {
         return getGame(game.replace(" ", "+"));
     }
 
+    if (!gameData.data) {
+        return gameData;
+    }
+
     return { ...gameData, global: { ...globalGameData } };
 };
 
