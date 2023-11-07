@@ -16,7 +16,7 @@ export default async function GamePage({ params }: PageProps) {
         throw new Error("Params not found");
     }
     const response = await fetch(
-        `${baseUrl}/api/games/${safeEncodeURI(gameName)}`
+        `${baseUrl}/api/ges/${safeEncodeURI(gameName)}`
     );
     const data = await response.json();
 
@@ -28,6 +28,7 @@ export default async function GamePage({ params }: PageProps) {
                 the upload is not processed yet. If you have uploaded runs for
                 the game, but this page still shows, please{" "}
                 <a href={"/contact"}>contact me!</a>
+                {JSON.stringify(data)}
             </>
         );
     }
