@@ -17,14 +17,13 @@ const tournamentEntries: Array<[string, TournamentEntryValue]> = [
         { tournament: "Defeat Ganon No SRM Community Clash Main Event" },
     ],
     ["dirtythirty", { tournament: "Dirty Thirty Sapphire Tourney 2" }],
-    ["gsa", { tournament: "SWRC Season 3: Super Mario Sunshine" }],
+    ["gsa", { tournament: "PACE MK8" }],
     ["hgss", { tournament: "HGSS Blitz" }],
     ["lego", { tournament: "Lego Challenge 3" }],
     [
         "moist",
         {
-            tournament:
-                "The Elder Scrolls Adventures: Redguard Speedrun Challenge",
+            tournament: "Escape from Lavender Island",
         },
     ],
     ["saesr", { tournament: "NCW Seeding" }],
@@ -41,6 +40,8 @@ const tournamentEntries: Array<[string, TournamentEntryValue]> = [
     ["basementcup", { tournament: "Ultimate Basement Cup 2023" }],
     ["tcs", { tournament: "TCS Community BTR" }],
     ["nitro_cup", { tournament: "Nitro Cup" }],
+    ["nitro_tournament", { tournament: "Nitro Tournament 4" }],
+    ["knuckles", { tournament: "Knuckles Story Eclipse the Record" }],
     [
         "3dmm",
         {
