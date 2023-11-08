@@ -7,6 +7,7 @@ import {
     UserLink,
 } from "../links/links";
 import { Dispatch } from "react";
+import { InfoTooltip } from "../tooltip";
 
 export const CategoryOverview = ({
     categories,
@@ -22,7 +23,21 @@ export const CategoryOverview = ({
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Best run</th>
+                    <th>
+                        Best run
+                        <InfoTooltip
+                            title={"Best run"}
+                            content={
+                                <div>
+                                    This is the best time out of all users of
+                                    The Run. This may or may not be equivalent
+                                    to the world record; if the world record
+                                    holder does not use The Run, their time will
+                                    not be displayed here.
+                                </div>
+                            }
+                        />
+                    </th>
                     <th className="d-none d-sm-table-cell">Total playtime</th>
                     <th className="d-none d-md-table-cell">
                         Finished/Total Attempts
