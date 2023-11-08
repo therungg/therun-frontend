@@ -15,7 +15,6 @@ import {
     TournamentInfo,
 } from "~src/components/tournament/tournament-info";
 import { TournamentRuns } from "~src/components/tournament/tournament-runs";
-import { TournamentStandings } from "~src/components/tournament/tournament-standings";
 import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
 import { LiveDataMap } from "~app/live/live.types";
 import { getRecommendedStream, liveRunIsInSearch } from "~app/live/utilities";
@@ -401,11 +400,11 @@ export const GenericTournament = ({
                         gameTime={false}
                     />
                 </Tab>
-                {tournament.pointDistribution && (
-                    <Tab title={"Standings"} eventKey={"standings"}>
-                        <TournamentStandings tournament={tournament} />
-                    </Tab>
-                )}
+                {/*{tournament.pointDistribution && (*/}
+                {/*    <Tab title={"Standings"} eventKey={"standings"}>*/}
+                {/*        <TournamentStandings tournament={tournament} />*/}
+                {/*    </Tab>*/}
+                {/*)}*/}
                 <Tab title={"Stats"} eventKey={"stats"}>
                     <TournamentStats
                         data={data}
