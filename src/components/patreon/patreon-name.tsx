@@ -58,7 +58,12 @@ export const PatreonName = ({
     return (
         <>
             <span style={style}>{name}</span>{" "}
-            {icon && <PatreonBunnySvgWithoutLink size={size} />}
+            {icon && (
+                <PatreonBunnySvgWithoutLink
+                    className={"tw-text-therun-bunny"}
+                    size={size}
+                />
+            )}
         </>
     );
 };

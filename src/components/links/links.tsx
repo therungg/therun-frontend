@@ -63,7 +63,10 @@ export const UserLink = ({
     return (
         <>
             {!parentIsUrl ? (
-                <a className="overflow-hidden text-truncate" href={url}>
+                <a
+                    className="tw-flex tw-flex-row tw-gap-2 tw-items-center overflow-hidden text-truncate"
+                    href={url}
+                >
                     {element}
                 </a>
             ) : (
