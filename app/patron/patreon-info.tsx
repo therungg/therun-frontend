@@ -333,14 +333,21 @@ export const PatreonBunnySvg = ({ size = 20, url = "/patron" }) => {
     );
 };
 
-export const PatreonBunnySvgWithoutLink = ({ size = 20 }) => {
+export const PatreonBunnySvgWithoutLink = ({
+    size = 20,
+    className,
+}: {
+    size?: number;
+    className?: string;
+}) => {
     return (
         <svg
             id="Layer_1"
             xmlns="http://www.w3.org/2000/svg"
             viewBox="35 200 612 400"
             height={size}
-            className="tw-text-therun-bunny"
+            className={className}
+            fill={"currentColor"}
         >
             <path
                 fill={"currentColor"}

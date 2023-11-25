@@ -29,7 +29,7 @@ const navigationMenu = [
         label: "Support",
         slug: "/patron",
         isBold: false,
-        icon: <PatreonBunnySvgWithoutLink />,
+        icon: <PatreonBunnySvgWithoutLink className={"tw-text-therun-bunny"} />,
     },
 ];
 
@@ -66,7 +66,7 @@ export const Header = ({
     picture?: string;
 }) => {
     const { getColorMode } = useColorMode();
-    const [menuIsOpen, setMenuIsOpen] = useState(true);
+    const [menuIsOpen, setMenuIsOpen] = useState(false);
 
     return (
         <header className="tw-border-b-4 tw-border-b-therun-green tw-mb-4 px-5">

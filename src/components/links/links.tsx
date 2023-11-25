@@ -83,7 +83,8 @@ export const UserGameCategoryLink = ({
     category,
     children,
     url,
-}: UserGameCategoryLinkProps) => {
+    className,
+}: UserGameCategoryLinkProps & { className?: string }) => {
     if (!game || !category) {
         return (
             <div className="text-truncate">
@@ -94,6 +95,7 @@ export const UserGameCategoryLink = ({
 
     return (
         <Link
+            className={className}
             href={
                 url
                     ? url
@@ -101,7 +103,6 @@ export const UserGameCategoryLink = ({
                           category
                       )}`
             }
-            legacyBehavior
         >
             {children ? children : `${display(game)} - ${display(category)}`}
         </Link>
