@@ -5,11 +5,11 @@ speedrunners.
 
 ## Features
 
-- Live Runs tracking
-- Advanced statistics
-- Games overview
-- Splits backup
-- Twitch Extension
+-   Live Runs tracking
+-   Advanced statistics
+-   Games overview
+-   Splits backup
+-   Twitch Extension
 
 and many, many more.
 
