@@ -1,7 +1,7 @@
 import { safeEncodeURI } from "~src/utils/uri";
 
 const fetchData = async (url: string) => {
-    const res = await fetch(url);
+    const res = await fetch(url, { cache: "no-cache" });
     const json = await res.json();
 
     return json.result;
