@@ -8,7 +8,7 @@ const fetchData = async (url: string) => {
 };
 
 export const getGame = async (game: string) => {
-    game = game.replace("   ", " + ");
+    game = game.replace("   ", " + ").toLowerCase().replace(/\s/g, "");
     game = safeEncodeURI(game);
 
     const promises = [
