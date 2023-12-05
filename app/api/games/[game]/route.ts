@@ -17,6 +17,6 @@ export async function GET(
 
     return apiResponse({
         body: gameData,
-        cache: { maxAge: revalidate, swr: 15000 },
+        cache: { maxAge: revalidate, swr: 60 },
     });
 }
