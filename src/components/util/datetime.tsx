@@ -249,9 +249,15 @@ export const DurationAsTimer = ({ duration }: { duration: string }) => {
     );
 };
 
-export const FromNow = ({ time }: { time: string | Date }) => {
+export const FromNow = ({
+    time,
+    className,
+}: {
+    time: string | Date;
+    className?: string;
+}) => {
     return (
-        <abbr title={moment(time).format("LLLL")}>
+        <abbr title={moment(time).format("LLLL")} className={className}>
             {moment(time).fromNow()}
         </abbr>
     );

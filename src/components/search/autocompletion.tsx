@@ -1,27 +1,40 @@
-import { useState } from "react";
-import { Col, Row } from "react-bootstrap";
+import { ChangeEventHandler, ReactNode, useState } from "react";
 import { getFormattedString } from "../util/datetime";
-import styles from "../css/Search.module.scss";
-import { safeEncodeURI } from "~src/utils/uri";
 import { Search as SearchIcon } from "react-bootstrap-icons";
+import Link from "next/link";
+
+interface SearchSuggestionUser {
+    user: string;
+    game: string;
+    run: string;
+    pb: string;
+    pbgt: string;
+}
+
+interface SearchSuggestions {
+    users: {
+        [key: string]: SearchSuggestionUser[];
+    };
+    games: { [key: string]: SearchSuggestionUser[] };
+    categories: { [key: string]: SearchSuggestionUser[] };
+}
 
 // This page was one of the first I ever wrote for the site and is fully outdated and terrible.
 // The entire search view needs to be refactored
 //TODO:: FIX
 export const AutoCompletion = () => {
-    const [filteredSuggestions, setFilteredSuggestions] = useState({
-        users: {},
-        games: {},
-        categories: {},
-    });
+    const [filteredSuggestions, setFilteredSuggestions] =
+        useState<SearchSuggestions>({
+            users: {},
+            games: {},
+            categories: {},
+        });
     const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
 
-    let suggestions = { users: {}, games: {}, categories: {} };
-
-    const onChange = async (e) => {
+    const onChange: ChangeEventHandler<HTMLInputElement> = async (e) => {
         e.preventDefault();
         const userInput = e.target.value;
         setInput(userInput);
@@ -33,7 +46,9 @@ export const AutoCompletion = () => {
 
         // TODO:: Only search after user has not input anything for some time (300ms or something)
         setLoading(true);
-        suggestions = await (await fetch(`/api/search?q=${userInput}`)).json();
+        const suggestions = (await (
+            await fetch(`/api/search?q=${userInput}`)
+        ).json()) as unknown as SearchSuggestions;
         setLoading(false);
 
         setFilteredSuggestions(suggestions);
@@ -66,102 +81,45 @@ export const AutoCompletion = () => {
         }
     };
 
-    const Results = ({ results, type }) => {
+    const SuggestionListComponent = ({
+        label,
+        suggestions,
+        slugBuilder,
+        labelBuilder,
+    }: {
+        label: string;
+        suggestions: { [key: string]: SearchSuggestionUser[] };
+        // eslint-disable-next-line no-unused-vars
+        slugBuilder: (key: string, value: SearchSuggestionUser[]) => string;
+        // eslint-disable-next-line no-unused-vars
+        labelBuilder: (key: string, value: SearchSuggestionUser[]) => ReactNode;
+    }) => {
         return (
-            <>
-                {Object.keys(results)
-                    .slice(0, 5)
-                    .map((result) => {
-                        return transformResult(
-                            type,
-                            result,
-                            results[result][0]
-                        );
-                    })
-                    .filter((result) => !!result)}
-            </>
+            <div className={"tw-flex tw-flex-col tw-gap-2"}>
+                <span className="tw-text-lg tw-font-bold">{label}</span>
+                <>
+                    {Object.entries(suggestions).map(([key, value]) => (
+                        <Link
+                            href={slugBuilder(key, value)}
+                            key={key}
+                            className={
+                                "tw-border-b tw-border-transparent hover:tw-border-b hover:tw-border-b-therun-green"
+                            }
+                        >
+                            {labelBuilder(key, value)}
+                        </Link>
+                    ))}
+                </>
+            </div>
         );
     };
 
-    const transformResult = (type: string, result: string, results: any) => {
-        if (type == "runs") {
-            const split = result.split("//");
-
-            if (split.length !== 3) return null;
-
-            const pb = results.pbgt ? results.pbgt : results.pb;
-
-            const username = split[0];
-            const game = split[1];
-            const category = split[2];
-            let value = `${game} - ${category} by ${username} in ${getFormattedString(
-                pb
-            )}`;
-            if (results.pbgt) value += " (IGT)";
-            const url = `/${username}/${safeEncodeURI(game)}/${safeEncodeURI(
-                category
-            )}`;
-            return (
-                <li key={value}>
-                    <a key={value} href={url} title={value}>
-                        {value}
-                    </a>
-                </li>
-            );
-        }
-
-        const url = type == "users" ? `/${result}` : `/games/${result}`;
-        return (
-            <li key={result}>
-                <a key={result} href={url} title={result}>
-                    {result}
-                </a>
-            </li>
-        );
-    };
-
-    const Suggestions = () => {
-        return (
-            <>
-                <Row>
-                    <Col md={6}>
-                        <div className="fs-x-large">Users</div>
-                        <ul className="m-0 list-unstyled">
-                            <Results
-                                results={filteredSuggestions.users}
-                                type={"users"}
-                            />
-                        </ul>
-                    </Col>
-                    <Col md={6} className={`${styles.suggestionLeft}`}>
-                        <div className="fs-x-large">Games</div>
-                        <ul className="m-0 list-unstyled">
-                            <Results
-                                results={filteredSuggestions.games}
-                                type={"games"}
-                            />
-                        </ul>
-                    </Col>
-                </Row>
-                <hr style={{ color: "var(--bs-link-color)" }} />
-                <Row>
-                    <Col>
-                        <div className="fs-x-large">Runs</div>
-                        <ul className="m-0 list-unstyled">
-                            <Results
-                                results={filteredSuggestions.categories}
-                                type={"runs"}
-                            />
-                        </ul>
-                    </Col>
-                </Row>
-            </>
-        );
-    };
-
-    const SuggestionsListComponent = () => {
-        let hasSuggestions =
-            filteredSuggestions && Object.keys(filteredSuggestions).length > 0;
+    const SuggestionResultComponent = ({
+        suggestions,
+    }: {
+        suggestions: SearchSuggestions;
+    }) => {
+        let hasSuggestions = Object.keys(suggestions).length > 0;
 
         if (!hasSuggestions) return <></>;
 
@@ -173,12 +131,48 @@ export const AutoCompletion = () => {
         }
 
         return (
-            <div
-                className={`dropdown-menu d-block text-center p-3 ${styles.suggestions}`}
-                id="suggestions"
-            >
+            <div className="tw-bg-gray-100 tw-p-5 tw-rounded-b lg:tw-absolute">
                 {hasSuggestions ? (
-                    Suggestions()
+                    <>
+                        <div className="tw-flex tw-flex-col tw-gap-8">
+                            <SuggestionListComponent
+                                label={"Users"}
+                                suggestions={suggestions.users}
+                                slugBuilder={(key) => `/${key}`}
+                                labelBuilder={(key) => key}
+                            />
+                            <SuggestionListComponent
+                                label={"Games"}
+                                suggestions={suggestions.games}
+                                slugBuilder={(gameName) => `/games/${gameName}`}
+                                labelBuilder={(key) => key}
+                            />
+                            <SuggestionListComponent
+                                label={"Categories"}
+                                suggestions={suggestions.categories}
+                                slugBuilder={(key) => `/${key}`}
+                                labelBuilder={(key, value) => {
+                                    const [, ...runName] =
+                                        value[0].run.split("//");
+                                    return (
+                                        <span>
+                                            <span
+                                                className={"tw-font-semibold"}
+                                            >
+                                                {runName.join(" / ")}
+                                            </span>{" "}
+                                            by {value[0].user} in{" "}
+                                            <span className={"tw-font-bold"}>
+                                                {getFormattedString(
+                                                    value[0].pb
+                                                )}
+                                            </span>
+                                        </span>
+                                    );
+                                }}
+                            />
+                        </div>
+                    </>
                 ) : (
                     <ul className="m-0 list-unstyled">
                         <li>
@@ -195,39 +189,28 @@ export const AutoCompletion = () => {
     };
 
     return (
-        <div
-            className="dropdown"
-            tabIndex={-1}
-            onKeyDown={(e) => {
-                if (e.code === "Escape") {
-                    setShowSuggestions(false);
+        <div>
+            <form
+                // onChange={onChange}
+                className={
+                    "tw-flex tw-flex-row tw-items-center tw-border tw-rounded-t tw-pl-2 tw-gap-4 "
                 }
-            }}
-        >
-            <div className="input-group">
-                <span
-                    className="input-group-text"
-                    onClick={() => {
-                        const search = document.getElementById("searchBox");
-                        if (document.activeElement !== search) {
-                            search.focus();
-                        }
-                    }}
-                >
+            >
+                <label htmlFor={"searchBox"} className="">
                     <SearchIcon size={18} />
-                </span>
+                </label>
                 <input
                     type="search"
-                    className="form-control"
+                    className="tw-flex-grow tw-py-2 tw-pl-2"
                     placeholder="Find a User or Game"
                     onChange={async (e) => await onChange(e)}
                     onKeyDown={onKeyDown}
                     value={input}
                     id="searchBox"
                 />
-            </div>
+            </form>
             {showSuggestions && input && filteredSuggestions && (
-                <SuggestionsListComponent />
+                <SuggestionResultComponent suggestions={filteredSuggestions} />
             )}
         </div>
     );

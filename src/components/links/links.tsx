@@ -63,7 +63,10 @@ export const UserLink = ({
     return (
         <>
             {!parentIsUrl ? (
-                <a className="overflow-hidden text-truncate" href={url}>
+                <a
+                    className="tw-flex tw-flex-row tw-gap-2 tw-items-center overflow-hidden text-truncate"
+                    href={url}
+                >
                     {element}
                 </a>
             ) : (
@@ -83,7 +86,8 @@ export const UserGameCategoryLink = ({
     category,
     children,
     url,
-}: UserGameCategoryLinkProps) => {
+    className,
+}: UserGameCategoryLinkProps & { className?: string }) => {
     if (!game || !category) {
         return (
             <div className="text-truncate">
@@ -94,6 +98,7 @@ export const UserGameCategoryLink = ({
 
     return (
         <Link
+            className={className}
             href={
                 url
                     ? url
@@ -101,7 +106,6 @@ export const UserGameCategoryLink = ({
                           category
                       )}`
             }
-            legacyBehavior
         >
             {children ? children : `${display(game)} - ${display(category)}`}
         </Link>

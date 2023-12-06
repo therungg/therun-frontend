@@ -1,5 +1,5 @@
 import React from "react";
-import "../src/styles/_import.scss";
+import "../src/styles/globals.css";
 import { Header } from "./header";
 import { Footer } from "./footer";
 import { Content } from "./content";
@@ -18,9 +18,10 @@ export default async function RootLayout({
     children: React.ReactNode;
 }) {
     const session = await getSession();
+
     return (
-        <html lang="en" suppressHydrationWarning>
-            <body>
+        <html lang="en">
+            <body id={"body"}>
                 <Providers>
                     <Scripts />
                     <Header
