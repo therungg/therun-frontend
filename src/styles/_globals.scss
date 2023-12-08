@@ -1,0 +1,248 @@
+// Always stick footer to the bottom in case content is not high enough
+body {
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+.bg {
+  &-light { background-color: #eee; }
+  &-dark  { background-color: #232323; }
+}
+
+.main-container {
+  flex-grow: 1;
+}
+
+.input-group,
+.form-select,
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.border-hover:hover {
+  --bs-border-color:var(--bs-secondary);
+}
+
+.with-filter {
+  width: 66.6666%;
+}
+
+.timeZoneSelect {
+
+  > div {
+    background-color: var(--bs-secondary-bg)!important;
+  }
+
+  * {
+    color: var(--bs-body-color)!important;
+  }
+}
+
+// Custom button styles
+button {
+
+  &.twitch {
+    --bs-btn-color:#fff;
+    --bs-btn-bg:#9147ff;
+    --bs-btn-border-color:#9147ff;
+    --bs-btn-hover-bg:#772ce8;
+    --bs-btn-active-bg:#772ce8;
+    --bs-btn-hover-border-color:#772ce8;
+    --bs-btn-active-border-color:#772ce8;
+  }
+
+  &.patreon {
+    --bs-btn-color:#fff;
+    --bs-btn-bg:#F96854;
+    --bs-btn-border-color:#F96854;
+    --bs-btn-hover-bg:#953e32;
+    --bs-btn-active-bg:#953e32;
+    --bs-btn-hover-border-color:#953e32;
+    --bs-btn-active-border-color:#953e32;
+  }
+}
+
+// User login dropdown
+#basic-nav-dropdown {
+  text-decoration: none;
+  color: var(--bs-link-color);
+}
+
+.patreon-scroll-bar {
+  width: 100%;
+  height: 3rem;
+  overflow: hidden;
+  white-space: nowrap;
+  border-top: solid 1px var(--bs-secondary);
+  border-bottom: solid 1px var(--bs-secondary);
+  background: var(--bs-tertiary-bg);
+
+  div {
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    line-height: 3rem;
+    font-size: 1.2rem;
+    animation: patreon-scroll linear infinite;
+  }
+}
+
+// Resets
+a {
+  outline: 0;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+abbr {
+  text-decoration: none !important;
+}
+
+// Custom scrollbar styles
+body {
+
+  * {
+    -ms-overflow-style: auto;
+    scrollbar-color: var(--bs-tertiary-bg) var(--bs-secondary-bg);
+    scrollbar-width: thin;
+  }
+
+  *::-webkit-scrollbar-track {
+    background-color: var(--bs-secondary-bg);
+    border: 0 solid var(--bs-secondary-bg);
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--bs-tertiary-bg);
+    border: 0 solid var(--bs-secondary-bg);
+    min-height: 2rem;
+    border-radius: 0.625rem;
+  }
+
+  *::-webkit-scrollbar-corner {
+    background-color: var(--bs-secondary-bg);
+  }
+
+  *::-webkit-scrollbar {
+    width: 0.625rem;
+    height: 0.625rem;
+  }
+}
+
+.fs {
+  &-smaller              { font-size: smaller !important; }
+  &-small                { font-size: 0.8rem!important; }
+  &-medium               { font-size: medium!important; }
+  &-x-medium             { font-size: 1.1rem!important; }
+  &-big                  { font-size: 1.5rem!important; }
+  &-large                { font-size: large!important; }
+  &-larger               { font-size: larger!important; }
+  &-x-large              { font-size: x-large!important; }
+  &-xx-large             { font-size: xx-large!important; }
+  &-xxx-large            { font-size: xxx-large!important; }
+  &-responsive-large     { font-size: clamp(18px, 1.5vw, 24px)!important; }
+  &-responsive-larger    { font-size: clamp(1.4rem, 3vw, 2rem)!important; }
+  &-responsive-xxx-large { font-size: clamp(3rem, 5vw, 5rem)!important; }
+  &-15p                  { font-size: 15px; }
+}
+
+.form-control {
+
+}
+
+.form-floating > label:after {
+  background:none!important;
+}
+
+.list-style-inside {
+  list-style-position: inside;
+}
+
+.game-card {
+  border: 2px solid;
+  border-color: var(--bs-card-cap-bg) !important;
+  border-radius: 10px;
+}
+
+.dropdown-toggle {
+
+  &:after {
+    content: none !important;
+  }
+}
+
+// Custom border
+.border.border {
+
+  &-tertiary {
+    --bs-border-opacity: 1;
+    border-color: rgba(var(--bs-tertiary-bg-rgb), var(--bs-border-opacity))!important;
+  }
+}
+
+.game-border {
+  border: 1px solid var(--bs-card-border-color);
+  --bs-card-border-color: var(--bs-tertiary-bg)!important;
+}
+
+// Widths
+.mw-search {
+  @media (min-width: 576px) { width: 80%!important }
+  @media (min-width: 768px) { width: 60%!important }
+  @media (min-width: 992px) { width: 40%!important }
+}
+
+.mw-md-66 {
+  @media (min-width: 768px) { max-width: 66.6666%!important }
+}
+
+// Filters
+div.game-filter {
+
+  &-mb {
+    @media (min-width: 768px) { margin-bottom: -100%!important }
+  }
+
+  &-mw { max-width: 40rem!important }
+}
+
+// Tables
+.table>:not(:first-child) {
+  border-top-width: 2px !important;
+}
+
+
+// Add custom container max-width
+@media (min-width: 1599.98px) {
+  .container {
+    max-width: 1510px !important;
+  }
+}
+
+@media (min-width: 1899.98px) {
+  .container {
+    max-width: 1640px !important;
+  }
+}
+
+@keyframes patreon-scroll {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}

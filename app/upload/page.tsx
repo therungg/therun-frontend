@@ -1,6 +1,6 @@
 import { Metadata } from "next";
-import { getSession } from "../../src/actions/session.action";
-import { Dragdrop } from "../../src/components/dragdrop";
+import { getSession } from "~src/actions/session.action";
+import { Dragdrop } from "~src/components/dragdrop";
 
 export const metadata: Metadata = {
     title: "Upload",

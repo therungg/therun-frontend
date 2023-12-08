@@ -1,8 +1,7 @@
 "use client";
 import React, { useContext } from "react";
-import searchStyles from "~src/components/css/Search.module.scss";
-import styles from "~src/components/css/Games.module.scss";
 import { PaginationContext } from "~src/components/pagination/pagination.context";
+import { Search as SearchIcon } from "react-bootstrap-icons";
 
 export const useSearch = () => {
     const { search, setSearch } = useContext(PaginationContext);
@@ -26,30 +25,33 @@ export const RenderSearch = () => {
 
     return (
         <div>
-            <div className={`${searchStyles.searchContainer} ${styles.filter}`}>
-                <span
-                    className={"material-symbols-outlined"}
-                    onClick={() => {
-                        if (document.activeElement !== searchInputRef.current) {
-                            searchInputRef.current?.focus();
-                        }
-                    }}
-                >
-                    {" "}
-                    search{" "}
-                </span>
-                <input
-                    type="search"
-                    className={`form-control ${searchStyles.search}`}
-                    placeholder="Filter by game/category/user"
-                    style={{ marginBottom: "0" }}
-                    onChange={(e) => {
-                        setSearch(e.target.value);
-                    }}
-                    ref={searchInputRef}
-                    value={search}
-                    id="gameSearch"
-                />
+            <div className="d-flex justify-content-start">
+                <div className="mb-3 input-group">
+                    <span
+                        className="input-group-text"
+                        onClick={() => {
+                            if (
+                                document.activeElement !==
+                                searchInputRef.current
+                            ) {
+                                searchInputRef.current?.focus();
+                            }
+                        }}
+                    >
+                        <SearchIcon size={18} />
+                    </span>
+                    <input
+                        type="search"
+                        className="form-control"
+                        placeholder="Filter by game/category/user"
+                        onChange={(e) => {
+                            setSearch(e.target.value);
+                        }}
+                        ref={searchInputRef}
+                        value={search}
+                        id="gameSearch"
+                    />
+                </div>
             </div>
         </div>
     );

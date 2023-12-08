@@ -6,7 +6,6 @@ import { useLiveRunsWebsocket } from "~src/components/websocket/use-reconnect-we
 import { liveRunArrayToMap } from "~app/live/utilities";
 import MarathonRun from "~src/components/marathon/marathon-run";
 import { Col, Row } from "react-bootstrap";
-import styles from "~src/components/css/Search.module.scss";
 
 export default function ShowMarathon({
     liveDataMap,
@@ -56,22 +55,16 @@ export default function ShowMarathon({
 
     if (!currentUserData && !selectedUser) {
         return (
-            <div>
+            <>
                 <BasePage
                     selectedUser={selectedUser}
                     setSelectedUser={setSelectedUser}
                     updatedLiveDataMap={updatedLiveDataMap}
                 />
-                <div
-                    style={{
-                        marginTop: "1rem",
-                        display: "flex",
-                        justifyContent: "center",
-                    }}
-                >
+                <p className="text-center mt-3">
                     Please select or type a username to begin.
-                </div>
-            </div>
+                </p>
+            </>
         );
     }
 
@@ -81,89 +74,68 @@ export default function ShowMarathon({
         selectedUser.length > 0
     ) {
         return (
-            <div>
+            <>
                 <BasePage
                     selectedUser={selectedUser}
                     setSelectedUser={setSelectedUser}
                     updatedLiveDataMap={updatedLiveDataMap}
                 />
-                <div
-                    style={{
-                        marginTop: "1rem",
-                        display: "flex",
-                        justifyContent: "center",
-                    }}
-                >
+                <p className="text-center mt-3">
                     Waiting for user data to become available... Please try a
                     reset, which will upload the data.
-                </div>
-            </div>
+                </p>
+            </>
         );
     }
 
     return (
-        <div>
+        <>
             <BasePage
                 selectedUser={selectedUser}
                 setSelectedUser={setSelectedUser}
                 updatedLiveDataMap={updatedLiveDataMap}
             />
             <hr />
-            <div>
-                {currentUserData.gameData && (
-                    <MarathonRun runData={currentUserData} session={session} />
-                )}
-            </div>
-        </div>
+            {currentUserData.gameData && (
+                <MarathonRun runData={currentUserData} session={session} />
+            )}
+        </>
     );
 }
 
 const BasePage = ({ selectedUser, setSelectedUser, updatedLiveDataMap }) => {
     return (
-        <div>
-            <div style={{ display: "flex", justifyContent: "center" }}>
-                <h1>Marathon Dashboard</h1>
-            </div>
+        <div className="text-center">
+            <h1>Marathon Dashboard</h1>
             <Row>
-                <Col>
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                        Select a user:
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                        <div>
-                            <select
-                                className={"form-select"}
-                                style={{ width: "600px" }}
-                                value={selectedUser}
-                                onChange={(e) => {
-                                    setSelectedUser(e.target.value);
-                                }}
-                            >
-                                <option key={""}>Select a user</option>
-                                {Object.keys(updatedLiveDataMap).map((key) => {
-                                    return <option key={key}>{key}</option>;
-                                })}
-                            </select>
-                        </div>
-                    </div>
+                <Col md={6} className="mb-3 m-md-0">
+                    <label htmlFor={"selectMarathonUser"}>Select a user:</label>
+                    <select
+                        className="form-select"
+                        value={selectedUser}
+                        id={"selectMarathonUser"}
+                        onChange={(e) => {
+                            setSelectedUser(e.target.value);
+                        }}
+                    >
+                        <option key={""}>Select a user</option>
+                        {Object.keys(updatedLiveDataMap).map((key) => {
+                            return <option key={key}>{key}</option>;
+                        })}
+                    </select>
                 </Col>
-                <Col>
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                        Or poll for user:
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                        <input
-                            type="search"
-                            className={`form-control ${styles.search}`}
-                            placeholder="Poll for a user"
-                            onChange={async (e) => {
-                                setSelectedUser(e.target.value);
-                            }}
-                            value={selectedUser}
-                            id="searchBox"
-                            style={{ width: "600px" }}
-                        />
-                    </div>
+                <Col md={6}>
+                    <label htmlFor={"searchBox"}>Or poll for user:</label>
+                    <input
+                        type="search"
+                        className="form-control"
+                        placeholder="Poll for a user"
+                        onChange={async (e) => {
+                            setSelectedUser(e.target.value);
+                        }}
+                        value={selectedUser}
+                        id="searchBox"
+                    />
                 </Col>
             </Row>
         </div>

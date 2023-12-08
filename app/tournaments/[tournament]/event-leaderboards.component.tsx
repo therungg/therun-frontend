@@ -3,6 +3,7 @@ import { DurationToFormatted } from "~src/components/util/datetime";
 import React, { useState } from "react";
 import { Tournament } from "~src/components/tournament/tournament-info";
 import { PaginatedGameLeaderboard } from "~src/components/game/paginated-game-leaderboard";
+import { Row } from "react-bootstrap";
 
 export const EventLeaderboards = ({
     tournament,
@@ -17,9 +18,9 @@ export const EventLeaderboards = ({
 }) => {
     const [leaderboard, setLeaderboard] = useState(gameTime ? "pbIGT" : "pb");
     return (
-        <div>
-            <h3>Event leaderboards</h3>
-            <div style={{ marginBottom: "1rem" }}>
+        <Row className="g-3">
+            <h3>Event Leaderboards</h3>
+            <div>
                 <select
                     className={"form-select"}
                     onChange={(e) => {
@@ -83,7 +84,7 @@ export const EventLeaderboards = ({
                 </select>
             </div>
             {tournamentLeaderboards && (
-                <span>
+                <>
                     {" "}
                     {leaderboard == "pbIGT" && (
                         <PaginatedGameLeaderboard
@@ -209,8 +210,8 @@ export const EventLeaderboards = ({
                             }}
                         />
                     )}
-                </span>
+                </>
             )}
-        </div>
+        </Row>
     );
 };

@@ -14,7 +14,7 @@
 }
 
 .consistencyColor {
-    color: var(--color-text);
+    color: var(--bs-body-color);
 }
 
 .options {
@@ -27,7 +27,7 @@
     margin: 0 2rem;
 }
 
-@media screen and (max-width: 1200px) {
+@media screen and (max-width: 1199.98px) {
     .splitDetailColumn {
         display: none;
     }
@@ -41,7 +41,7 @@
     }
 }
 
-@media screen and (max-width: 766px) {
+@media screen and (max-width: 767.98px) {
     .options {
         display: revert;
     }

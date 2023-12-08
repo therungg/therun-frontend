@@ -1,7 +1,6 @@
 import { Run } from "../../common/types";
 import { DurationToFormatted, FromNow } from "../util/datetime";
 import { UserGameCategoryLink, UserLink } from "../links/links";
-import styles from "../css/Home.module.scss";
 
 export const RunPreview = ({ run }: { run: Run }) => {
     const duration = run.hasGameTime
@@ -12,8 +11,8 @@ export const RunPreview = ({ run }: { run: Run }) => {
 
     return (
         <tr>
-            <td>
-                <div className={styles.runPreviewTitle}>
+            <td className="p-2">
+                <div className="fs-larger">
                     <UserGameCategoryLink
                         url={run.url}
                         username={run.user}
@@ -24,7 +23,7 @@ export const RunPreview = ({ run }: { run: Run }) => {
                     {gameTimeLabel}
                 </div>
 
-                <div className={styles.runPreviewInfo}>
+                <div className="fs-smaller">
                     <FromNow time={run.personalBestTime} /> by{" "}
                     <UserLink username={run.user} />
                     <br />

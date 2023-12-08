@@ -1,4 +1,4 @@
-import { RunHistory, SplitsHistory } from "../../../common/types";
+import { RunHistory, SplitsHistory } from "~src/common/types";
 import {
     GoldHistory,
     GoldProgressionGraph,
@@ -9,7 +9,6 @@ import { DurationToFormatted, IsoToFormatted } from "../../util/datetime";
 import moment from "moment/moment";
 import { useEffect, useState } from "react";
 import { buildItems } from "../run-sessions/game-sessions";
-import paginationStyles from "../../css/Pagination.module.scss";
 import { BestAchievedGraph } from "../splits/best-achieved-graph";
 import { UnderlineTooltip } from "../../tooltip";
 import { isOutlier } from "../splits/split-stats";
@@ -381,7 +380,7 @@ export const Golds = ({
                                     display: "flex",
                                     justifyContent: "flex-end",
                                     alignItems: "center",
-                                    color: "var(--color-link)",
+                                    color: "var(--bs-link-color)",
                                     cursor: "pointer",
                                 }}
                                 onClick={() => {
@@ -411,7 +410,7 @@ export const Golds = ({
                                         display: "flex",
                                         justifyContent: "flex-end",
                                         alignItems: "center",
-                                        color: "var(--color-link)",
+                                        color: "var(--bs-link-color)",
                                         cursor: "pointer",
                                     }}
                                     onClick={async () => {
@@ -560,7 +559,7 @@ export const Golds = ({
                                                         style={{
                                                             display: "flex",
                                                             cursor: "pointer",
-                                                            color: "var(--color-link)",
+                                                            color: "var(--bs-link-color)",
                                                             justifyContent:
                                                                 "center",
                                                         }}
@@ -678,7 +677,7 @@ export const Golds = ({
                                                 ) : (
                                                     <div
                                                         style={{
-                                                            color: "var(--color-link)",
+                                                            color: "var(--bs-link-color)",
                                                         }}
                                                     >
                                                         {"-"}
@@ -695,11 +694,14 @@ export const Golds = ({
                         </tbody>
                     </Table>
 
-                    <div className={paginationStyles.paginationWrapper}>
-                        <Pagination onClick={onPaginationClick} size="lg">
-                            {items}
-                        </Pagination>
-                    </div>
+                    <Pagination
+                        className="justify-content-center"
+                        onClick={onPaginationClick}
+                        size="lg"
+                    >
+                        {items}
+                    </Pagination>
+
                     <div style={{ display: "flex", justifyContent: "center" }}>
                         Showing {(active - 1) * 10 + 1} -{" "}
                         {active * 10 < allGoldsSorted.length

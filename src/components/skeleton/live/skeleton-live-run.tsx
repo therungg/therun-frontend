@@ -14,8 +14,8 @@ export const SkeletonLiveRun = (props: PropsFrom<typeof ContentLoader>) => {
             className={styles.liveRun}
             speed={2}
             title="Loading live run"
-            backgroundColor="var(--color-secondary)"
-            foregroundColor="var(--color-bg)"
+            backgroundColor="var(--bs-secondary-bg)"
+            foregroundColor="var(--bs-body-bg)"
             {...props}
         >
             <rect x="0" y="0" width={"25%"} height={itemHeight} />

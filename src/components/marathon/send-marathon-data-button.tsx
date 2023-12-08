@@ -1,5 +1,4 @@
 import { Button } from "react-bootstrap";
-import styles from "../css/Home.module.scss";
 import React from "react";
 
 export interface MarathonEvent {
@@ -27,14 +26,14 @@ export const SendMarathonDataButton = ({
     return (
         <div>
             {description && (
-                <div style={{ marginBottom: "0.5rem" }}>
+                <div className="mb-2">
                     <i>{description}</i>
                 </div>
             )}
             <Button
-                style={{ height: description ? "3rem" : "2rem" }}
                 variant={"primary"}
-                className={styles.submitEventButton}
+                className={`w-100 fw-medium d-inline-flex justify-content-center 
+                    align-items-center ${description ? "h-3r" : "h-2r"}`}
                 onClick={async () => {
                     if (
                         confirm(

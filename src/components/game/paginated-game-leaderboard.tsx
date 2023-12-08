@@ -10,7 +10,7 @@ import { PaginationSearch } from "~src/components/pagination/pagination-search";
 export interface PaginatedGameLeaderboardProps {
     name: string;
     leaderboard: Count[];
-    transform: (
+    transform?: (
         // eslint-disable-next-line no-unused-vars
         stat: string | number,
         // eslint-disable-next-line no-unused-vars
@@ -42,7 +42,9 @@ const PaginatedGameLeaderboardComponent = ({
 
     return (
         <div>
-            <PaginationSearch text={"Search user"} />
+            <div>
+                <PaginationSearch text={"Search user"} />
+            </div>
             {getLeaderboard(name, pagination.data, "", transform)}
             <PaginationControl {...pagination} minimalLayout={true} />
         </div>

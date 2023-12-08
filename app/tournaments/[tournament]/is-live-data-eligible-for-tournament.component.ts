@@ -7,11 +7,18 @@ export const isLiveDataEligibleForTournament = (
     data: LiveRun,
     tournament: Tournament
 ): boolean => {
-    if (!data || !data.game || !data.category || !data.user) return false;
+    if (!data || !data.user) return false;
 
-    if (!equalsCaseInsensitive(data.game, tournament.game)) return false;
-    if (!equalsCaseInsensitive(data.category, tournament.category))
+    if (
+        !tournament.eligibleRuns.find((run) => {
+            return (
+                equalsCaseInsensitive(run.game, data.game) &&
+                equalsCaseInsensitive(run.category, data.category)
+            );
+        })
+    ) {
         return false;
+    }
 
     if (
         tournament.ineligibleUsers &&
@@ -26,4 +33,13 @@ export const isLiveDataEligibleForTournament = (
     }
 
     return true;
+};
+
+export const isLiveDataEligibleForTournaments = (
+    data: LiveRun,
+    tournaments: Tournament[]
+): boolean => {
+    return tournaments
+        .map((tournament) => isLiveDataEligibleForTournament(data, tournament))
+        .includes(true);
 };

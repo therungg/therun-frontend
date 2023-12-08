@@ -1,44 +1,22 @@
-.gameHeader {
-    margin-bottom: 1rem;
-}
-
-.gameImage {
-    float: left;
-    margin-right: 1rem;
-}
-
-.gameTitleContainer {
-    display: flex;
-    align-items: center;
-    height: 100%;
-}
-
-.gameTimeFormContainer {
-    align-self: flex-end;
-}
-
 .gamesNavigationContainer {
-    position: relative;
+  position: relative;
+}
+
+.navigation {
+  margin-bottom: 1rem;
+  position: absolute;
+  width: 101.6%;
+  padding-top: 1rem;
 }
 
 .tabsContainer {
-    position: relative;
-    z-index: 1;
-    margin-bottom: 1rem;
-}
-
-.statsHorizontal {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 1rem;
 }
 
 .statsVertical {
     display: none;
-}
-
-.navigation {
-    margin-bottom: 1rem;
-    position: absolute;
-    width: 101.6%;
-    padding-top: 1rem;
 }
 
 .form {
@@ -64,11 +42,7 @@
     border-top: 2rem solid transparent;
 }
 
-@media screen and (max-width: 766px) {
-    .statsHorizontal {
-        display: none;
-    }
-
+@media screen and (max-width: 767.98px) {
     .statsVertical {
         display: revert;
     }
@@ -94,7 +68,7 @@
     }
 }
 
-@media screen and (max-width: 576px) {
+@media screen and (max-width: 575.98px) {
     .optionalColumn {
         display: none;
     }

@@ -2,10 +2,6 @@
 
 import { LiveIcon, LiveUserRun } from "~src/components/live/live-user-run";
 import React, { useEffect, useState } from "react";
-import searchStyles from "~src/components/css/Search.module.scss";
-import styles from "~src/components/css/Games.module.scss";
-import runStyles from "~src/components/css/LiveRun.module.scss";
-import homeStyles from "~src/components/css/Home.module.scss";
 import { Button, Col, Row } from "react-bootstrap";
 import { RecommendedStream } from "~src/components/live/recommended-stream";
 import { useLiveRunsWebsocket } from "~src/components/websocket/use-reconnect-websocket";
@@ -18,6 +14,7 @@ import {
 import { LiveDataMap, LiveProps } from "~app/live/live.types";
 import { getLiveRunForUser } from "~src/lib/live-runs";
 import { SkeletonLiveRun } from "~src/components/skeleton/live/skeleton-live-run";
+import { Search as SearchIcon } from "react-bootstrap-icons";
 
 export const Live = ({
     liveDataMap,
@@ -95,77 +92,63 @@ export const Live = ({
     }, [currentlyViewing]);
 
     return (
-        <div>
+        <>
             {showTitle && (
-                <Row>
-                    <Col sm={7} xs={12}>
+                <Row className="g-3 mb-3">
+                    <Col xs="auto" className="flex-grow-1">
                         <h1>
                             Live Runs <LiveIcon height={18} />
                         </h1>
                     </Col>
-                    <Col sm={5} xs={12}>
-                        <div className={runStyles.uploadKeyButton}>
-                            <div
-                                className={homeStyles.learnMoreButtonContainer}
+                    <Col xs="auto" className="flex-grow-1 text-end">
+                        <a href={"/upload-key"}>
+                            <Button
+                                variant={"primary"}
+                                className="btn-lg px-3 w-240p h-3r fw-medium"
                             >
-                                <a href={"/upload-key"}>
-                                    <Button
-                                        variant={"primary"}
-                                        className={homeStyles.learnMoreButton}
-                                        style={{ width: "15rem" }}
-                                    >
-                                        How does this work?
-                                    </Button>
-                                </a>
-                            </div>
-                        </div>
+                                How does this work?
+                            </Button>
+                        </a>
                     </Col>
                 </Row>
             )}
-
-            <div className={runStyles.recommendedStreamContainer}>
-                {loadingUserData && <SkeletonLiveRun />}
-                {!loadingUserData &&
-                    currentlyViewing &&
-                    updatedLiveDataMap[currentlyViewing] && (
+            {loadingUserData && <SkeletonLiveRun />}
+            {!loadingUserData &&
+                currentlyViewing &&
+                updatedLiveDataMap[currentlyViewing] && (
+                    <Row className="g-3">
                         <RecommendedStream
                             liveRun={updatedLiveDataMap[currentlyViewing]}
                         />
-                    )}
-            </div>
-            <div>
-                <div className={runStyles.searchContainer}>
-                    <div
-                        className={`${searchStyles.searchContainer} ${styles.filter}`}
-                        style={{ marginLeft: "0" }}
+                    </Row>
+                )}
+            <Row className="g-3 my-3">
+                <div className="input-group mw-search">
+                    <span
+                        className="input-group-text"
+                        onClick={() => {
+                            const searchElement =
+                                document.getElementById("gameSearch");
+                            if (document.activeElement !== searchElement) {
+                                searchElement.focus();
+                            }
+                        }}
                     >
-                        <span
-                            className={"material-symbols-outlined"}
-                            onClick={() => {
-                                const searchElement =
-                                    document.getElementById("gameSearch");
-                                if (document.activeElement !== searchElement) {
-                                    searchElement.focus();
-                                }
-                            }}
-                        >
-                            search
-                        </span>
-                        <input
-                            type="search"
-                            className={`form-control ${searchStyles.search}`}
-                            placeholder="Filter by game/category/user"
-                            style={{ marginBottom: "0" }}
-                            onChange={(e) => {
-                                setSearch(e.target.value);
-                            }}
-                            value={search}
-                            id="gameSearch"
-                        />
-                    </div>
+                        <SearchIcon size={18} />
+                    </span>
+                    <input
+                        type="search"
+                        className="form-control"
+                        placeholder="Filter by game/category/user"
+                        onChange={(e) => {
+                            setSearch(e.target.value);
+                        }}
+                        value={search}
+                        id="gameSearch"
+                    />
                 </div>
-            </div>
-            <Row>
+            </Row>
+            <Row xs={1} lg={2} xl={3} className="g-3">
                 {Object.values(updatedLiveDataMap).length == 0 && (
                     <div>Unfortunately, nobody is running live now...</div>
                 )}
@@ -180,11 +163,7 @@ export const Live = ({
                     .map((liveRun) => {
                         return (
                             <Col
-                                xl={4}
-                                lg={6}
-                                md={12}
                                 key={liveRun.user}
-                                style={{ marginBottom: "1rem" }}
                                 onClick={() => {
                                     setCurrentlyViewing(liveRun.user);
 
@@ -200,6 +179,6 @@ export const Live = ({
                         );
                     })}
             </Row>
-        </div>
+        </>
     );
 };

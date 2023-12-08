@@ -5,7 +5,7 @@ interface IsoToFormattedProps {
 }
 
 interface DurationToFormattedProps {
-    duration: string;
+    duration: string | number;
     withMillis?: boolean;
     withDays?: boolean;
     padded?: boolean;
@@ -65,10 +65,10 @@ export const Difference = ({
             <div
                 style={{
                     color: isGold
-                        ? "var(--color-gold)"
+                        ? "var(--bs-secondary)"
                         : diff <= 0
-                        ? "var(--color-link)"
-                        : "var(--color-negative)",
+                        ? "var(--bs-link-color)"
+                        : "var(--bs-red)",
                 }}
             >
                 {formatted}
@@ -101,11 +101,9 @@ export const DifferenceFromOne = ({
             )}`}
         >
             <div
+                className="text-end"
                 style={{
-                    color:
-                        diff <= 0
-                            ? "var(--color-link)"
-                            : "var(--color-negative)",
+                    color: diff <= 0 ? "var(--bs-link-color)" : "var(--bs-red)",
                 }}
             >
                 {formatted}

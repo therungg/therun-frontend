@@ -88,27 +88,27 @@ export const RecentRuns = ({
                 lineTension: 0.1,
                 backgroundColor:
                     getComputedStyle(document.documentElement).getPropertyValue(
-                        "--color-link"
+                        "--bs-link-color"
                     ) || "",
                 borderColor: getComputedStyle(
                     document.documentElement
-                ).getPropertyValue("--color-link"),
+                ).getPropertyValue("--bs-link-color"),
                 borderCapStyle: "butt",
                 borderDash: [],
                 borderDashOffset: 0.0,
                 borderJoinStyle: "miter",
                 pointBorderColor: getComputedStyle(
                     document.documentElement
-                ).getPropertyValue("--color-link"),
+                ).getPropertyValue("--bs-link-color"),
                 pointBackgroundColor: "#fff",
                 pointBorderWidth: 1,
                 pointHoverRadius: 5,
                 pointHoverBackgroundColor: getComputedStyle(
                     document.documentElement
-                ).getPropertyValue("--color-link"),
+                ).getPropertyValue("--bs-link-color"),
                 pointHoverBorderColor: getComputedStyle(
                     document.documentElement
-                ).getPropertyValue("--color-link"),
+                ).getPropertyValue("--bs-link-color"),
                 pointHoverBorderWidth: 2,
                 pointRadius: 1,
                 pointHitRadius: 10,

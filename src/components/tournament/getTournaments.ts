@@ -1,3 +1,5 @@
+import { safeEncodeURI } from "~src/utils/uri";
+
 export const getTournaments = async () => {
     const url = `${process.env.NEXT_PUBLIC_DATA_URL}/tournaments/`;
 
@@ -17,7 +19,9 @@ export const getTournamentByName = async (name: string) => {
 };
 
 export const getTournamentStatsByName = async (name: string) => {
-    const url = `${process.env.NEXT_PUBLIC_DATA_URL}/tournaments/${name}/stats`;
+    const url = `${
+        process.env.NEXT_PUBLIC_DATA_URL
+    }/tournaments/${safeEncodeURI(name)}/stats`;
 
     const res = await fetch(url);
     const json = await res.json();

@@ -1,4 +1,4 @@
-import { Attempt, RunHistory, SplitsHistory } from "../../../common/types";
+import { Attempt, RunHistory, SplitsHistory } from "~src/common/types";
 import {
     Difference,
     DurationToFormatted,
@@ -10,7 +10,6 @@ import { Accordion, Card, Col, Pagination, Row, Table } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import styles from "../../css/Session.module.scss";
 import runStyles from "../../css/Runs.module.scss";
-import paginationStyles from "../../css/Pagination.module.scss";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Switch from "react-switch";
@@ -156,6 +155,9 @@ export const History = ({
     ) => {
         if (newSplitFilter === "none") return;
 
+        if (newSplitFilter === "duration")
+            return updateSplitFiltersForDuration();
+
         if (newSplitFilter === "full") newSplitFilter = splits.length - 1;
 
         let min = 0;
@@ -183,6 +185,24 @@ export const History = ({
         setDisplaySplitFilterTwo(getFormattedString(min.toString()));
     };
 
+    const updateSplitFiltersForDuration = () => {
+        let min = 0;
+        let max = 100000000000000000;
+        const relevantHistory = history.filter((h) => !!h.duration && !!h.time);
+
+        relevantHistory.forEach((h) => {
+            const useTime = parseInt(h.duration);
+            if (useTime > min) min = useTime;
+            if (useTime < max) max = useTime;
+        });
+
+        setSplitFilterOne(max);
+        setSplitFilterTwo(min);
+
+        setDisplaySplitFilterOne(getFormattedString(max.toString()));
+        setDisplaySplitFilterTwo(getFormattedString(min.toString()));
+    };
+
     if (history.length > 0 && splitFilter !== "none" && splitFilterOne !== 0) {
         let currentSplitFilter = splitFilter;
         if (currentSplitFilter === "full")
@@ -191,24 +211,39 @@ export const History = ({
         history = history.filter((run) => {
             let include = false;
 
-            if (!run.splits[currentSplitFilter] && splitFilter != "full") {
+            if (
+                !run.splits[currentSplitFilter] &&
+                splitFilter !== "full" &&
+                splitFilter !== "duration"
+            ) {
                 return false;
             }
 
             if (run.splits.length === 0) return false;
 
-            if (splitFilter === "full" && !run.time) {
+            if (
+                (splitFilter === "full" || splitFilter === "duration") &&
+                !run.time
+            ) {
                 return false;
             }
 
-            const situationalCurrentSplitFilter =
-                splitFilter === "full"
-                    ? run.splits.length - 1
-                    : currentSplitFilter;
+            let time = "";
 
-            const time = totalTime
-                ? run.splits[situationalCurrentSplitFilter as number].totalTime
-                : run.splits[situationalCurrentSplitFilter as number].splitTime;
+            if (splitFilter === "duration") {
+                time = run.duration;
+            } else {
+                const situationalCurrentSplitFilter =
+                    splitFilter === "full"
+                        ? run.splits.length - 1
+                        : currentSplitFilter;
+
+                time = totalTime
+                    ? run.splits[situationalCurrentSplitFilter as number]
+                          .totalTime
+                    : run.splits[situationalCurrentSplitFilter as number]
+                          .splitTime;
+            }
 
             if (!parseInt(time) && parseInt(time) == 0) return false;
 
@@ -251,22 +286,37 @@ export const History = ({
         }
 
         if (sortColumn == "split") {
-            const aTime = totalTime
-                ? a.splits[
-                      splitFilter === "full" ? a.splits.length - 1 : splitFilter
-                  ].totalTime
-                : a.splits[
-                      splitFilter === "full" ? a.splits.length - 1 : splitFilter
-                  ].splitTime;
-            const bTime = totalTime
-                ? b.splits[
-                      splitFilter === "full" ? b.splits.length - 1 : splitFilter
-                  ].totalTime
-                : b.splits[
-                      splitFilter === "full" ? b.splits.length - 1 : splitFilter
-                  ].splitTime;
+            if (splitFilter === "duration") {
+                const aTime = a.duration;
+                const bTime = b.duration;
 
-            res = parseInt(aTime) > parseInt(bTime) ? -1 : 1;
+                res = parseInt(aTime) > parseInt(bTime) ? -1 : 1;
+            } else {
+                const aTime = totalTime
+                    ? a.splits[
+                          splitFilter === "full"
+                              ? a.splits.length - 1
+                              : splitFilter
+                      ].totalTime
+                    : a.splits[
+                          splitFilter === "full"
+                              ? a.splits.length - 1
+                              : splitFilter
+                      ].splitTime;
+                const bTime = totalTime
+                    ? b.splits[
+                          splitFilter === "full"
+                              ? b.splits.length - 1
+                              : splitFilter
+                      ].totalTime
+                    : b.splits[
+                          splitFilter === "full"
+                              ? b.splits.length - 1
+                              : splitFilter
+                      ].splitTime;
+
+                res = parseInt(aTime) > parseInt(bTime) ? -1 : 1;
+            }
         }
 
         if (!sortAsc) res *= -1;
@@ -342,6 +392,8 @@ export const History = ({
         splitName =
             splitFilter === "full"
                 ? "Full run time"
+                : splitFilter === "duration"
+                ? "Run duration"
                 : splits[splitFilter as number].name;
 
         filterTextSplitFilter = `${splitName} ${splitFilterType} `;
@@ -388,11 +440,11 @@ export const History = ({
     return (
         <div className="history-page">
             <Row style={{ marginBottom: "0.5rem" }}>
-                <Col className={"col-xl-6"}>
+                <Col xl={6}>
                     <h2 style={{ whiteSpace: "nowrap" }}>Run History</h2>
                 </Col>
                 <Col
-                    className={"col-xl-6"}
+                    xl={6}
                     style={{ display: "flex", justifyContent: "flex-end" }}
                 >
                     <div
@@ -400,7 +452,7 @@ export const History = ({
                             alignSelf: "center",
                             fontSize: "1.5rem",
                             textDecoration:
-                                "underline var(--color-text) dotted",
+                                "underline var(--bs-body-color) dotted",
                             cursor: "pointer",
                         }}
                         onClick={() => {
@@ -476,7 +528,7 @@ export const History = ({
             {showFilters && (
                 <div
                     style={{
-                        border: "1px var(--color-secondary) solid",
+                        border: "1px var(--bs-secondary-bg) solid",
                         marginBottom: "1rem",
                         paddingTop: "1rem",
                     }}
@@ -525,7 +577,9 @@ export const History = ({
 
                                                 if (
                                                     e.currentTarget.value ===
-                                                    "full"
+                                                        "full" ||
+                                                    e.currentTarget.value ===
+                                                        "duration"
                                                 ) {
                                                     currentTotalTime = true;
                                                     setTotalTime(
@@ -548,6 +602,12 @@ export const History = ({
                                                 value={"full"}
                                             >
                                                 Full run
+                                            </option>
+                                            <option
+                                                key={"duration"}
+                                                value={"duration"}
+                                            >
+                                                Run Duration
                                             </option>
                                             <option disabled>
                                                 ------------------------------------
@@ -958,6 +1018,26 @@ export const History = ({
                     .reverse()
                     .slice((active - 1) * 10, active * 10)
                     .map((run) => {
+                        let filterString = "";
+                        if (splitFilter === "duration") {
+                            filterString = getFormattedString(run.duration);
+                        } else if (splitName) {
+                            filterString = getFormattedString(
+                                totalTime
+                                    ? run.splits[
+                                          splitFilter === "full"
+                                              ? run.splits.length - 1
+                                              : splitFilter
+                                      ].totalTime
+                                    : run.splits[
+                                          splitFilter === "full"
+                                              ? run.splits.length - 1
+                                              : splitFilter
+                                      ].splitTime,
+                                true
+                            );
+                        }
+
                         return (
                             <Accordion.Item
                                 key={
@@ -1023,28 +1103,7 @@ export const History = ({
                                                         styles.optionalColumn
                                                     }
                                                 >
-                                                    {getFormattedString(
-                                                        totalTime
-                                                            ? run.splits[
-                                                                  splitFilter ===
-                                                                  "full"
-                                                                      ? run
-                                                                            .splits
-                                                                            .length -
-                                                                        1
-                                                                      : splitFilter
-                                                              ].totalTime
-                                                            : run.splits[
-                                                                  splitFilter ===
-                                                                  "full"
-                                                                      ? run
-                                                                            .splits
-                                                                            .length -
-                                                                        1
-                                                                      : splitFilter
-                                                              ].splitTime,
-                                                        true
-                                                    )}
+                                                    {filterString}
                                                 </Col>
                                             )}
                                         </Row>
@@ -1246,7 +1305,7 @@ export const History = ({
                                                             <td
                                                                 style={{
                                                                     borderRight:
-                                                                        "3px solid var(--color-tertiary)",
+                                                                        "3px solid var(--bs-tertiary-bg)",
                                                                 }}
                                                             >
                                                                 <div
@@ -1329,7 +1388,7 @@ export const History = ({
                                                             <td
                                                                 style={{
                                                                     borderRight:
-                                                                        "1px solid var(--color-tertiary)",
+                                                                        "1px solid var(--bs-tertiary-bg)",
                                                                 }}
                                                             >
                                                                 <div
@@ -1432,11 +1491,13 @@ export const History = ({
                     })}
             </Accordion>
 
-            <div className={paginationStyles.paginationWrapper}>
-                <Pagination onClick={onPaginationClick} size="lg">
-                    {items}
-                </Pagination>
-            </div>
+            <Pagination
+                className="justify-content-center"
+                onClick={onPaginationClick}
+                size="lg"
+            >
+                {items}
+            </Pagination>
             <div style={{ display: "flex", justifyContent: "center" }}>
                 Showing {(active - 1) * 10 + 1} -{" "}
                 {active * 10 < history.length ? active * 10 : history.length}{" "}
@@ -1464,7 +1525,7 @@ const buildItems = (active: number, last: number) => {
     for (let number = begin; number < end; number++) {
         items.push(
             <Pagination.Item
-                className={paginationStyles.optional}
+                className="d-none d-md-block"
                 key={number}
                 active={number == active}
             >

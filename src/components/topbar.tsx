@@ -1,14 +1,15 @@
 "use client";
 import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
-import { Search } from "./search";
 import dynamic from "next/dynamic";
-import styles from "./css/Topbar.module.scss";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import Image from "next/image";
 import { TwitchUser } from "./twitch/TwitchUser";
 import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
+import { getColorMode } from "~src/utils/colormode";
+import { Upload } from "react-bootstrap-icons";
+import { AutoCompletion } from "~src/components/search/autocompletion";
 
 const DarkModeSlider = dynamic(() => import("./dark-mode-slider"), {
     ssr: false,
@@ -26,7 +27,7 @@ const Topbar = ({
     const [dark, setDark] = useState(true);
 
     useEffect(function () {
-        setDark(document.documentElement.dataset.theme !== "light");
+        setDark(getColorMode() !== "light");
     }, []);
 
     const showDropdown = () => {
@@ -47,73 +48,51 @@ const Topbar = ({
     return (
         <Navbar
             expand="lg"
-            className={styles.navbar}
             onMouseLeave={hideDropdown}
+            data-bs-theme={dark ? "dark" : "light"}
         >
             <Container>
-                <Navbar.Brand href="/" className={styles.navbarLogo}>
-                    <div style={{ display: "flex" }}>
-                        <Image
-                            alt={"Logo"}
-                            src={
-                                dark
-                                    ? "/logo_dark_theme_no_text_transparent.png"
-                                    : "/logo_light_theme_no_text_transparent.png"
-                            }
-                            height={"44"}
-                            width={"44"}
-                            style={{
-                                alignSelf: "flex-start",
-                                marginRight: "0.5rem",
-                                maxWidth: "100%",
-                                height: "auto",
-                            }}
-                        />
-                        <div style={{ alignSelf: "center" }}>
-                            The Run{" "}
-                            <i>
-                                <sup>beta</sup>
-                            </i>
-                        </div>
-                    </div>
+                <Navbar.Brand href="/" className="d-flex">
+                    <Image
+                        alt={"TheRun"}
+                        src={`/logo_${
+                            dark ? "dark" : "light"
+                        }_theme_no_text_transparent.png`}
+                        height={"44"}
+                        width={"44"}
+                        className="img-fluid align-self-start me-2"
+                    />
+                    <span className="align-self-center">
+                        The Run{" "}
+                        <i>
+                            <sup>beta</sup>
+                        </i>
+                    </span>
                 </Navbar.Brand>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
-                    <Nav className={`me-auto ${styles.nav}`}>
+                    <Nav className="me-auto">
                         {username && (
-                            <Nav.Link
-                                className={styles.navLink}
-                                href="/upload"
-                                style={{ maxHeight: "2rem" }}
-                            >
-                                <div style={{ display: "flex" }}>
+                            <Nav.Link className="mh-2r" href="/upload">
+                                <div className="d-flex">
                                     <b>Upload</b>
-                                    <span
-                                        className={
-                                            "material-symbols-outlined upload-icon"
-                                        }
-                                    >
-                                        {" "}
-                                        file_upload{" "}
+
+                                    <span className="ms-2">
+                                        <Upload size={18} />
                                     </span>
                                 </div>
                             </Nav.Link>
                         )}
-                        <Nav.Link className={styles.navLink} href="/live">
+                        <Nav.Link href="/live">
                             <b>Live</b>
                         </Nav.Link>
-                        <Nav.Link className={styles.navLink} href="/races/">
-                            Races
-                        </Nav.Link>
-                        <Nav.Link className={styles.navLink} href="/games/">
-                            Games
-                        </Nav.Link>
-                        <Nav.Link className={styles.navLink} href="/patron">
+                        <Nav.Link href="/games/">Games</Nav.Link>
+                        <Nav.Link href="/patron">
                             Support <PatreonBunnySvgWithoutLink />
                         </Nav.Link>
                     </Nav>
-                    <Nav className="ml-auto mr-5">
-                        <Search />
+                    <Nav className="ml-auto mb-2 mb-lg-0 me-lg-2">
+                        <AutoCompletion />
                     </Nav>
                     <Nav
                         className="ml-auto"

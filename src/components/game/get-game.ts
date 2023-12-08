@@ -1,14 +1,14 @@
 import { safeEncodeURI } from "~src/utils/uri";
 
 const fetchData = async (url: string) => {
-    const res = await fetch(url);
+    const res = await fetch(url, { cache: "no-cache" });
     const json = await res.json();
 
     return json.result;
 };
 
 export const getGame = async (game: string) => {
-    game = game.replace("   ", " + ");
+    game = game.replace("   ", " + ").toLowerCase().replace(/\s/g, "");
     game = safeEncodeURI(game);
 
     const promises = [
@@ -20,6 +20,10 @@ export const getGame = async (game: string) => {
 
     if (!gameData && game.includes(" ")) {
         return getGame(game.replace(" ", "+"));
+    }
+
+    if (!gameData.data) {
+        return gameData;
     }
 
     return { ...gameData, global: { ...globalGameData } };
