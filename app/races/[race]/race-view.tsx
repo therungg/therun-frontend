@@ -1,6 +1,6 @@
 "use client";
 
-import { Race } from "~app/races/races.types";
+import { Race, RaceParticipant } from "~app/races/races.types";
 import { arrayToMap } from "~src/utils/array";
 import { User } from "../../../types/session.types";
 import { Button, Table } from "react-bootstrap";
@@ -17,8 +17,10 @@ interface RaceDetailProps {
 export const RaceDetail = ({ race, user }: RaceDetailProps) => {
     const router = useRouter();
     const [readyLoading, setReadyLoading] = useState(false);
+    const [raceParticipantsMap, setRaceParticipantsMap] = useState<
+        Map<string, RaceParticipant>
+    >(arrayToMap(race.participants || [], "user"));
 
-    const raceParticipantsMap = arrayToMap(race.participants || [], "user");
     const raceIsPending = race.status === "pending";
     const userParticipates = user && raceParticipantsMap.has(user.username);
 
@@ -50,12 +52,25 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
             lastMessage.data.raceId
         ) {
             // eslint-disable-next-line no-console
-            console.log("New race event", lastMessage.data);
+            console.log("New race event", lastMessage.data, lastMessage.type);
+
+            if (lastMessage.type === "participantUpdate") {
+                // Create a new Map for the updated state
+                const updatedMap = new Map(raceParticipantsMap);
+
+                updatedMap.set(
+                    (lastMessage.data as RaceParticipant).user,
+                    lastMessage.data as RaceParticipant
+                );
+
+                setRaceParticipantsMap(updatedMap);
+            }
         }
     }, [lastMessage]);
 
     return (
         <div>
+            {JSON.stringify(Array.from(raceParticipantsMap))}
             {readyLoading && <div>Setting ready/unready</div>}
             {raceIsPending && userParticipates && (
                 <div>
