@@ -1,5 +1,5 @@
-import { generateSession } from "../../lib/generate-session";
-import { getSessionData } from "../../lib/get-session-data";
+import { generateSession } from "~src/lib/generate-session";
+import { getSessionData } from "~src/lib/get-session-data";
 
 export const getSession = async (sessionId: string): Promise<any> => {
     return getSessionData(sessionId);
