@@ -23,11 +23,15 @@ export const subjects = [
     "leaderboard",
     "moderators",
 ] as const;
+type AllowedActions = (typeof actions)[number];
+type AllowedSubjects = (typeof subjects)[number];
 type AppAbilities = [
-    (typeof actions)[number],
+    AllowedActions,
     (
         | (typeof subjects)[number]
-        | ForcedSubject<Exclude<(typeof subjects)[number], "all">>
+        | ForcedSubject<(typeof subjects)[number]>
+        // eslint-disable-next-line no-unused-vars
+        | ForcedSubject<{ [key in AllowedSubjects]?: string }>
     )
 ];
 
