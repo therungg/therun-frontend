@@ -57,7 +57,7 @@ const User = ({
             }
 
             if (data.type === "DELETE") {
-                setLiveRun([]);
+                setLiveRun(undefined);
             }
         }
     }, [lastMessage]);

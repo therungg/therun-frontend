@@ -8,8 +8,7 @@ import { GlobalGameData } from "~app/[username]/[game]/[run]/run";
 import styles from "../../css/User.module.scss";
 import { GameImage } from "~src/components/image/gameimage";
 import { getColorMode } from "~src/utils/colormode";
-import { Can } from "~src/rbac/Can.component";
-import { subject } from "@casl/ability";
+import { Can, subject } from "~src/rbac/Can.component";
 
 export const UserOverview = ({
     runs,
@@ -181,9 +180,7 @@ export const UserOverview = ({
                                     <th style={{ width: "29%" }}>PB Time</th>
                                     <Can
                                         I={"delete"}
-                                        this={subject("run", {
-                                            run: "joeys64",
-                                        })}
+                                        this={subject("run", username)}
                                     >
                                         <th>Delete</th>
                                         <th>Edit</th>
@@ -273,7 +270,10 @@ export const UserOverview = ({
                                                     }
                                                 />
                                             </td>
-                                            <Can I={"delete"} a={"run"}>
+                                            <Can
+                                                I={"delete"}
+                                                this={subject("run", username)}
+                                            >
                                                 <td
                                                     style={{
                                                         display: "flex",
