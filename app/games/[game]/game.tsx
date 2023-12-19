@@ -31,7 +31,7 @@ export const Game: React.FunctionComponent<GameProps> = ({ data }) => {
             !data.global?.forceRealTime &&
             data.statsGameTime &&
             data.statsGameTime.categoryLeaderboards.length >
-                data.stats.categoryLeaderboards.length * 0.9
+                data.stats.categoryLeaderboards.length * 0.5
         );
     });
 
