@@ -8,6 +8,7 @@ import { GlobalGameData } from "~app/[username]/[game]/[run]/run";
 import styles from "../../css/User.module.scss";
 import { GameImage } from "~src/components/image/gameimage";
 import { getColorMode } from "~src/utils/colormode";
+import { Can, subject } from "~src/rbac/Can.component";
 
 export const UserOverview = ({
     runs,
@@ -24,9 +25,6 @@ export const UserOverview = ({
     allGlobalGameData: GlobalGameData[];
     parentForceUpdate: () => void;
 }) => {
-    const isOwner =
-        session.username &&
-        [username, "joeys64", "therun_gg"].includes(session.username);
     const [, forceUpdate] = useReducer((x) => x + 1, 0);
     const [openedEdit, setOpenedEdit] = useState([]);
     const [dark, setDark] = useState(true);
@@ -180,9 +178,14 @@ export const UserOverview = ({
                                     <th style={{ width: "13%" }}>Attempts</th>
                                     <th style={{ width: "13%" }}>Played</th>
                                     <th style={{ width: "29%" }}>PB Time</th>
-                                    {isOwner && <th>Delete</th>}
-                                    {isOwner && <th>Edit</th>}
-                                    {isOwner && <th>Highlight</th>}
+                                    <Can
+                                        I={"delete"}
+                                        this={subject("run", username)}
+                                    >
+                                        <th>Delete</th>
+                                        <th>Edit</th>
+                                        <th>Highlight</th>
+                                    </Can>
                                 </tr>
                             </thead>
                             <tbody>
@@ -267,7 +270,10 @@ export const UserOverview = ({
                                                     }
                                                 />
                                             </td>
-                                            {isOwner && (
+                                            <Can
+                                                I={"delete"}
+                                                this={subject("run", username)}
+                                            >
                                                 <td
                                                     style={{
                                                         display: "flex",
@@ -309,9 +315,6 @@ export const UserOverview = ({
                                                         <TrashIcon />
                                                     </div>
                                                 </td>
-                                            )}
-
-                                            {isOwner && (
                                                 <td>
                                                     <div
                                                         style={{
@@ -348,9 +351,6 @@ export const UserOverview = ({
                                                         </div>
                                                     </div>
                                                 </td>
-                                            )}
-
-                                            {isOwner && (
                                                 <td>
                                                     <div
                                                         style={{
@@ -397,7 +397,7 @@ export const UserOverview = ({
                                                         </div>
                                                     </div>
                                                 </td>
-                                            )}
+                                            </Can>
                                         </tr>
                                     );
                                 })}
