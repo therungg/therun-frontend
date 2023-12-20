@@ -14,6 +14,7 @@ import {
 } from "~src/components/websocket/use-reconnect-websocket";
 import Countdown from "react-countdown";
 import { DurationToFormatted } from "~src/components/util/datetime";
+import { Can } from "~src/rbac/Can.component";
 
 interface RaceOverviewProps {
     races: Race[];
@@ -93,11 +94,11 @@ export const RaceOverview = ({
     return (
         <div>
             <h1>Races</h1>
-            {user?.id && (
+            <Can I={"create"} a={"race"}>
                 <a href={"/races/create"}>
                     <Button>Create race</Button>
                 </a>
-            )}
+            </Can>
 
             {registeringForRace && <div>Registering for race...</div>}
             <Table responsive bordered striped>
