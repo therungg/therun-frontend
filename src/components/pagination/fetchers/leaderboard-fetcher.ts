@@ -12,7 +12,7 @@ export const leaderboardFetcher: PaginationFetcher<Count> = async (
     page: number,
     pageSize: number,
     query: string,
-    initialData: Count[]
+    initialData: Count[],
 ): Promise<PaginatedData<Count>> => {
     const newItems = initialData.filter((item) => {
         return includesCaseInsensitive(query, item.username);

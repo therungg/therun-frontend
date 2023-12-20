@@ -59,7 +59,7 @@ const tournamentEntries: Array<[string, TournamentEntryValue]> = [
 ];
 
 const tournamentMap: Map<string, Tournament | CombinedTournament> = new Map(
-    tournamentEntries
+    tournamentEntries,
 );
 
 export const getAllTournamentSlugs = (): string[] => {
@@ -67,7 +67,7 @@ export const getAllTournamentSlugs = (): string[] => {
 };
 
 export const getTournamentNameFromSlug = (
-    slug: string
+    slug: string,
 ): Tournament | CombinedTournament | undefined => {
     return tournamentMap.get(slug);
 };

@@ -42,7 +42,7 @@ export const ListTournaments = ({
                 const endDate = new Date(tournament.endDate);
                 const durationInDays = Math.round(
                     (endDate.getTime() - startDate.getTime()) /
-                        (1000 * 60 * 60 * 24)
+                        (1000 * 60 * 60 * 24),
                 );
 
                 return (
@@ -51,7 +51,7 @@ export const ListTournaments = ({
                             <div className="float-start d-flex d-none d-sm-block align-items-center me-2">
                                 <a
                                     href={`/tournaments/${safeEncodeURI(
-                                        tournament.name
+                                        tournament.name,
                                     )}`}
                                 >
                                     <Image
@@ -69,7 +69,7 @@ export const ListTournaments = ({
                                 <div className="overflow-hidden">
                                     <a
                                         href={`/tournaments/${safeEncodeURI(
-                                            tournament.name
+                                            tournament.name,
                                         )}`}
                                         className="fs-large"
                                     >

@@ -43,11 +43,9 @@ export const GameHeader: React.FunctionComponent<GameHeaderProps> = ({
                         </a>
                     )}
                     {category !== "*" &&
-                        ` - ${
-                            categories.find(
-                                (cat) => cat.categoryName === category
-                            )?.categoryNameDisplay
-                        }`}
+                        ` - ${categories.find(
+                            (cat) => cat.categoryName === category,
+                        )?.categoryNameDisplay}`}
                 </Title>
             </div>
         </Row>

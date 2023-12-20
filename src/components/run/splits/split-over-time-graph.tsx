@@ -22,7 +22,7 @@ export const SplitOverTimeGraph = ({
     total?: boolean;
 }) => {
     const [splitTimeKey, setSplitTimeKey] = useState(
-        total ? "totalTime" : "splitTime"
+        total ? "totalTime" : "splitTime",
     );
     const [groupKey, setGroupKey] = useState(total ? "total" : "single");
 
@@ -53,7 +53,7 @@ export const SplitOverTimeGraph = ({
                 isOutlier(
                     parseInt(split[groupKey].averageTime),
                     parseInt(split[groupKey].stdDev),
-                    parseInt(currentSplit[splitTimeKey])
+                    parseInt(currentSplit[splitTimeKey]),
                 )
             )
                 return;
@@ -116,7 +116,7 @@ export const SplitOverTimeGraph = ({
                 pointRadius: 1,
                 pointHitRadius: 10,
                 data: splits.map(
-                    (currentRedSplit: redSplit) => currentRedSplit.time
+                    (currentRedSplit: redSplit) => currentRedSplit.time,
                 ),
             },
         ],

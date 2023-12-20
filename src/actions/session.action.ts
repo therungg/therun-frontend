@@ -16,7 +16,7 @@ export const createSession = async (code: string) => {
 
     const { loginData, userInfo } = await loginWithTwitch(
         `${baseUrl}/api`,
-        code
+        code,
     );
 
     const twitchSessionId = await createNewSession(
@@ -26,7 +26,7 @@ export const createSession = async (code: string) => {
         {
             username: userInfo.preferred_username,
             picture: userInfo.picture,
-        }
+        },
     );
 
     if (twitchSessionId) {

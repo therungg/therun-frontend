@@ -145,7 +145,7 @@ export const TournamentInfo = ({ tournament }: { tournament: Tournament }) => {
                                                 </span>
                                             </li>
                                         );
-                                    }
+                                    },
                                 )}
                             </ul>
                         </Col>

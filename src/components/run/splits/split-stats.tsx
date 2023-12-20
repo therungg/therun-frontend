@@ -163,7 +163,7 @@ export const SplitStats = ({
                 const consistencyScore = calculateConsistencyScore(
                     parseInt(split.single.averageTime),
                     parseInt(split.single.stdDev),
-                    totalResetsOnSplit / (totalResetsOnSplit + totalSplits)
+                    totalResetsOnSplit / (totalResetsOnSplit + totalSplits),
                 );
 
                 return (
@@ -278,10 +278,10 @@ export const SplitStats = ({
                                                         <Switch
                                                             name={"switch"}
                                                             onChange={(
-                                                                checked
+                                                                checked,
                                                             ) => {
                                                                 setShowTotal(
-                                                                    checked
+                                                                    checked,
                                                                 );
                                                             }}
                                                             checked={showTotal}
@@ -336,7 +336,7 @@ export const SplitStats = ({
 const calculateConsistencyScore = (
     avg: number,
     stddev: number,
-    resetPercentage: number
+    resetPercentage: number,
 ): number => {
     if (stddev == 0 || avg == 0) return 0;
 
@@ -386,7 +386,7 @@ export const isOutlier = (
     avg: number,
     stddev: number,
     time: number,
-    onlydown = false
+    onlydown = false,
 ) => {
     const maxdevs = 5;
 

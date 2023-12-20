@@ -2,7 +2,7 @@ import { Run, RunSession } from "~src/common/types";
 
 export const prepareSessions = (
     runs: Run[],
-    gametime: boolean
+    gametime: boolean,
 ): RunSession[] => {
     const sessions: RunSession[] = [];
 

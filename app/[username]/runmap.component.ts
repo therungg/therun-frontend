@@ -83,7 +83,7 @@ export const getRunmap = (runs: Run[]): Map<string, Run[]> => {
                 return 1;
             }
             return 0;
-        })
+        }),
     );
 
     sortedRunMap.forEach((values, key) => {

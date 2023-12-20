@@ -16,14 +16,14 @@ export const CurrentRunDetails = ({ liveRun }: CurrentRunDetailsProps) => {
         liveRun;
 
     const latestSplitIndex = splits.findIndex(
-        (split, index) => split.splitTime && index >= currentSplitIndex - 1
+        (split, index) => split.splitTime && index >= currentSplitIndex - 1,
     );
 
     const fasterSplits =
         latestSplitIndex >= 0
             ? splits[latestSplitIndex].recentCompletionsTotal.filter(
                   (split) =>
-                      split < (splits[latestSplitIndex].splitTime as number)
+                      split < (splits[latestSplitIndex].splitTime as number),
               ).length
             : 0;
     const allSplits =
@@ -90,8 +90,8 @@ export const CurrentRunDetails = ({ liveRun }: CurrentRunDetailsProps) => {
                     {percentile === 0
                         ? "Best run ever!"
                         : percentile === null
-                        ? "-"
-                        : `Top ${percentile.toFixed(1)}% run`}
+                          ? "-"
+                          : `Top ${percentile.toFixed(1)}% run`}
                 </Col>
             </Row>
         </div>

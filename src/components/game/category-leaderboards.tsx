@@ -22,7 +22,7 @@ export const CategoryLeaderboards = ({
         search,
         (stat) => {
             return `${((stat as number) * 100).toFixed(2)}%`;
-        }
+        },
     );
     const playtimeLeaderboard = getLeaderboard(
         "Total Playtime",
@@ -30,7 +30,7 @@ export const CategoryLeaderboards = ({
         search,
         (stat) => {
             return <DurationToFormatted duration={stat.toString()} />;
-        }
+        },
     );
     const pbLeaderboard = getLeaderboard(
         "Personal Best",
@@ -38,7 +38,7 @@ export const CategoryLeaderboards = ({
         search,
         (stat) => {
             return <DurationToFormatted duration={stat.toString()} />;
-        }
+        },
     );
     const sobLeaderboard = getLeaderboard(
         "Sum of bests",
@@ -46,7 +46,7 @@ export const CategoryLeaderboards = ({
         search,
         (stat) => {
             return <DurationToFormatted duration={stat.toString()} />;
-        }
+        },
     );
 
     if (leaderboards.pbLeaderboard.length < 1) {
@@ -106,20 +106,20 @@ export const CategoryLeaderboards = ({
                                                 getFormattedString(
                                                     leaderboards.pbLeaderboard[0].stat.toString(),
                                                     false,
-                                                    true
+                                                    true,
                                                 ),
                                             ],
                                             [
                                                 "Average",
                                                 getFormattedString(
                                                     getAverageFromLeaderboard(
-                                                        leaderboards.pbLeaderboard
+                                                        leaderboards.pbLeaderboard,
                                                     ).toString(),
                                                     false,
-                                                    true
+                                                    true,
                                                 ),
                                             ],
-                                        ])
+                                        ]),
                                     )}
                                 </Tab.Pane>
                             )}
@@ -132,20 +132,20 @@ export const CategoryLeaderboards = ({
                                                 getFormattedString(
                                                     leaderboards.sumOfBestsLeaderboard[0].stat.toString(),
                                                     false,
-                                                    true
+                                                    true,
                                                 ),
                                             ],
                                             [
                                                 "Average",
                                                 getFormattedString(
                                                     getAverageFromLeaderboard(
-                                                        leaderboards.sumOfBestsLeaderboard
+                                                        leaderboards.sumOfBestsLeaderboard,
                                                     ).toString(),
                                                     false,
-                                                    true
+                                                    true,
                                                 ),
                                             ],
-                                        ])
+                                        ]),
                                     )}
                                 </Tab.Pane>
                             )}
@@ -159,7 +159,7 @@ export const CategoryLeaderboards = ({
                                                 getFormattedString(
                                                     leaderboards.stats.totalRunTime.toString(),
                                                     false,
-                                                    true
+                                                    true,
                                                 ),
                                             ],
                                             [
@@ -167,20 +167,20 @@ export const CategoryLeaderboards = ({
                                                 getFormattedString(
                                                     leaderboards.totalRunTimeLeaderboard[0].stat.toString(),
                                                     false,
-                                                    true
+                                                    true,
                                                 ),
                                             ],
                                             [
                                                 "Average",
                                                 getFormattedString(
                                                     getAverageFromLeaderboard(
-                                                        leaderboards.totalRunTimeLeaderboard
+                                                        leaderboards.totalRunTimeLeaderboard,
                                                     ).toString(),
                                                     false,
-                                                    true
+                                                    true,
                                                 ),
                                             ],
-                                        ])
+                                        ]),
                                     )}
                                 </Tab.Pane>
                             )}
@@ -205,7 +205,7 @@ export const CategoryLeaderboards = ({
                                             "Finished attempts",
                                             leaderboards.stats.finishedAttemptCount.toLocaleString(),
                                         ],
-                                    ])
+                                    ]),
                                 )}
                             </Tab.Pane>
                             {leaderboards.uploadLeaderboard.length > 0 && (
@@ -224,11 +224,11 @@ export const CategoryLeaderboards = ({
                                                 "Average",
                                                 parseInt(
                                                     getAverageFromLeaderboard(
-                                                        leaderboards.uploadLeaderboard
-                                                    ).toFixed(0)
+                                                        leaderboards.uploadLeaderboard,
+                                                    ).toFixed(0),
                                                 ).toLocaleString(),
                                             ],
-                                        ])
+                                        ]),
                                     )}
                                 </Tab.Pane>
                             )}
@@ -249,11 +249,11 @@ export const CategoryLeaderboards = ({
                                                 "Average",
                                                 parseInt(
                                                     getAverageFromLeaderboard(
-                                                        leaderboards.attemptCountLeaderboard
-                                                    ).toFixed(0)
+                                                        leaderboards.attemptCountLeaderboard,
+                                                    ).toFixed(0),
                                                 ).toLocaleString(),
                                             ],
-                                        ])
+                                        ]),
                                     )}
                                 </Tab.Pane>
                             )}
@@ -274,11 +274,11 @@ export const CategoryLeaderboards = ({
                                                 "Average",
                                                 parseInt(
                                                     getAverageFromLeaderboard(
-                                                        leaderboards.finishedAttemptCountLeaderboard
-                                                    ).toFixed(0)
+                                                        leaderboards.finishedAttemptCountLeaderboard,
+                                                    ).toFixed(0),
                                                 ).toLocaleString(),
                                             ],
-                                        ])
+                                        ]),
                                     )}
                                 </Tab.Pane>
                             )}
@@ -331,21 +331,21 @@ export const CategoryLeaderboards = ({
                             {getLeaderboard(
                                 "Total Uploads",
                                 leaderboards.uploadLeaderboard,
-                                search
+                                search,
                             )}
                         </Tab.Pane>
                         <Tab.Pane eventKey="category-attempts">
                             {getLeaderboard(
                                 "Total Attempts",
                                 leaderboards.attemptCountLeaderboard,
-                                search
+                                search,
                             )}
                         </Tab.Pane>
                         <Tab.Pane eventKey="category-finished-attempts">
                             {getLeaderboard(
                                 "Total Finished Runs",
                                 leaderboards.finishedAttemptCountLeaderboard,
-                                search
+                                search,
                             )}
                         </Tab.Pane>
                     </Tab.Content>

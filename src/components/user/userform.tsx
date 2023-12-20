@@ -62,7 +62,7 @@ export const Userform = ({ username, session, userData }) => {
                                     {
                                         method: "PUT",
                                         body: JSON.stringify(form),
-                                    }
+                                    },
                                 );
                             }
 
@@ -211,7 +211,7 @@ const Edit = ({ username, form, setForm }) => {
                                 >
                                     <option value={""}>Show no country</option>
                                     {Array.from(
-                                        Object.entries(countries())
+                                        Object.entries(countries()),
                                     ).map(([key, value]) => {
                                         return (
                                             <option key={key} value={key}>

@@ -3,7 +3,7 @@ import { History } from "../common/types";
 
 export const getSplitsHistory = async (
     filename: string,
-    hasGameTime = false
+    hasGameTime = false,
 ): Promise<History> => {
     const res = await fetch(getSplitsHistoryUrl(filename, hasGameTime), {
         mode: "cors",
@@ -14,7 +14,7 @@ export const getSplitsHistory = async (
 
 export const getSplitsHistoryUrl = (
     filename: string,
-    hasGameTime = false
+    hasGameTime = false,
 ): string => {
     filename = filename
         .split("/")

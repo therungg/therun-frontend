@@ -64,7 +64,7 @@ export default async function Page({ params, searchParams }: PageProps) {
             const thisGlobalGameData = allGlobalGameData.find(
                 (value: GlobalGameData) => {
                     return value.display === run.game;
-                }
+                },
             );
 
             return (

@@ -12,12 +12,12 @@ export function middleware(request: NextRequest) {
     };
 
     const redirect = reroutes.find((reroute) =>
-        shouldReroute(reroute, request.nextUrl.pathname.replace("/", ""))
+        shouldReroute(reroute, request.nextUrl.pathname.replace("/", "")),
     );
 
     if (redirect) {
         return NextResponse.redirect(
-            `${request.nextUrl.origin}/${redirect}${request.nextUrl.search}`
+            `${request.nextUrl.origin}/${redirect}${request.nextUrl.search}`,
         );
     }
 

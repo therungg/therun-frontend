@@ -1,6 +1,6 @@
 export const includesCaseInsensitive = (
     haystack: string[],
-    needle: string
+    needle: string,
 ): boolean => {
     return haystack
         .map((entry) => entry.toLowerCase().trim())

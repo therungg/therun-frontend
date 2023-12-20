@@ -7,6 +7,6 @@ export const isChannelLive = (oauthToken: string, channelName: string) => {
                 Authorization: `Bearer ${oauthToken}`,
                 "Client-Id": clientId,
             },
-        }
+        },
     );
 };

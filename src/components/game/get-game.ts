@@ -34,7 +34,7 @@ export const getGameGlobal = async (game: string) => {
     game = safeEncodeURI(game);
 
     const globalGameData = await fetchData(
-        `${process.env.NEXT_PUBLIC_DATA_URL}/games/global/${game}`
+        `${process.env.NEXT_PUBLIC_DATA_URL}/games/global/${game}`,
     );
 
     if (!globalGameData && game.includes(" ")) {

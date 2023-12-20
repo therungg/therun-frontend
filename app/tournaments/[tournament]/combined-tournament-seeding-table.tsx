@@ -103,7 +103,7 @@ export const CombinedTournamentSeedingTable = ({
                             <th
                                 key={tournament.game}
                                 className={getSortableClassName(
-                                    tournament.game
+                                    tournament.game,
                                 )}
                                 onClick={() => {
                                     changeSort(tournament.game);
@@ -126,12 +126,12 @@ export const CombinedTournamentSeedingTable = ({
                             </td>
                             {tournaments.map((tournament) => {
                                 const run = leaderboard.runs.get(
-                                    tournament.game as string
+                                    tournament.game as string,
                                 );
                                 return (
                                     <td
                                         title={`${run?.differenceToFirst.toFixed(
-                                            2
+                                            2,
                                         )}%`}
                                         key={
                                             leaderboard.username +

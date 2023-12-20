@@ -132,7 +132,7 @@ export const EventLeaderboards = ({
                                         return tournament.pointDistribution[
                                             key
                                         ];
-                                    }
+                                    },
                                 )}
                             </div>
                         )}
@@ -154,7 +154,7 @@ export const EventLeaderboards = ({
                                                 duration={stat.toString()}
                                             />
                                         );
-                                    }
+                                    },
                                 )}
                             </div>
                         )}

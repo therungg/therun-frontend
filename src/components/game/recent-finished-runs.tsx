@@ -19,7 +19,7 @@ export const RecentFinishedRuns: React.FC<Props> = ({
         (run) =>
             !!run.achievedAt &&
             run.achievedAt !== "null" &&
-            run.achievedAt !== "ended.toISOString()"
+            run.achievedAt !== "ended.toISOString()",
     );
 
     const runRows = runs

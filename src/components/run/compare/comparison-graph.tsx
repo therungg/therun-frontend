@@ -49,19 +49,19 @@ export const ComparisonGraph = ({
                                 value,
                                 compareValue,
                                 variant,
-                                "time"
+                                "time",
                             )}
                             {comparisonCell(
                                 value,
                                 compareValue,
                                 variant,
-                                "bestPossibleTime"
+                                "bestPossibleTime",
                             )}
                             {comparisonCell(
                                 value,
                                 compareValue,
                                 variant,
-                                "bestAchievedTime"
+                                "bestAchievedTime",
                             )}
                         </tr>
                     );
@@ -75,7 +75,7 @@ const comparisonCell = (
     value: SplitsHistory,
     compareValue: SplitsHistory,
     variant: "single" | "total",
-    subject: "time" | "bestPossibleTime" | "bestAchievedTime"
+    subject: "time" | "bestPossibleTime" | "bestAchievedTime",
 ) => {
     return (
         <td>

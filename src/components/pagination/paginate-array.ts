@@ -3,7 +3,7 @@ import { PaginatedData } from "~src/components/pagination/pagination.types";
 export function paginateArray<T>(
     subject: T[],
     pageSize: number,
-    page: number
+    page: number,
 ): PaginatedData<T> {
     const totalItems = subject.length;
     const totalPages = Math.ceil(totalItems / pageSize);

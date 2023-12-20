@@ -4,7 +4,7 @@ import { Run } from "../common/types";
 export const getRun = async (
     username: string,
     game: string,
-    run: string
+    run: string,
 ): Promise<Run> => {
     const url = `${
         process.env.NEXT_PUBLIC_DATA_URL
@@ -18,7 +18,7 @@ export const getRun = async (
 
 export const getRunByCustomUrl = async (
     username: string,
-    customUrl: string
+    customUrl: string,
 ): Promise<Run> => {
     const url = `${
         process.env.NEXT_PUBLIC_DATA_URL

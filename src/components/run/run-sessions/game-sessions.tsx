@@ -50,7 +50,7 @@ export const GameSessions = ({
     if (runsPast != "all") {
         if (runsPast == "finished") {
             sessions = sessions.filter(
-                (session) => session.finishedRuns.length > 0
+                (session) => session.finishedRuns.length > 0,
             );
         } else {
             sessions = sessions.filter((session) => {
@@ -303,7 +303,7 @@ export const GameSessions = ({
                                             parseInt(split.totalTime))
                                 ) {
                                     bestTimePerSplit[key] = Number(
-                                        split.totalTime
+                                        split.totalTime,
                                     );
                                 }
                             });
@@ -311,7 +311,7 @@ export const GameSessions = ({
 
                         resetPerSplit = Array.from(
                             resetPerSplit,
-                            (item) => item || 0
+                            (item) => item || 0,
                         );
 
                         return (
@@ -346,12 +346,12 @@ export const GameSessions = ({
                                             <Col>
                                                 <DurationToFormatted
                                                     duration={moment(
-                                                        session.endedAt
+                                                        session.endedAt,
                                                     )
                                                         .diff(
                                                             moment(
-                                                                session.startedAt
-                                                            )
+                                                                session.startedAt,
+                                                            ),
                                                         )
                                                         .toString()}
                                                 />
@@ -371,7 +371,7 @@ export const GameSessions = ({
                                                     .sort(
                                                         (a, b) =>
                                                             parseInt(a) -
-                                                            parseInt(b)
+                                                            parseInt(b),
                                                     )
                                                     .map((time: string) => {
                                                         return (
@@ -542,13 +542,13 @@ export const GameSessions = ({
                                                             </td>
                                                             <td>
                                                                 {resetPercent.toFixed(
-                                                                    2
+                                                                    2,
                                                                 )}
                                                                 %
                                                             </td>
                                                         </tr>
                                                     );
-                                                }
+                                                },
                                             )}
                                         </tbody>
                                     </Table>
@@ -598,7 +598,7 @@ export const buildItems = (active: number, last: number) => {
                 active={number == active}
             >
                 {number}
-            </Pagination.Item>
+            </Pagination.Item>,
         );
     }
 

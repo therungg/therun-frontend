@@ -10,7 +10,7 @@ export async function GET(
         params,
     }: {
         params: { user: string };
-    }
+    },
 ) {
     const { user } = params;
     const userData = await advancedUserStats(user, "0");

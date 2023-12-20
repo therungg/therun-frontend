@@ -35,7 +35,7 @@ ChartJS.register(
     BarController,
     BarElement,
     CategoryScale,
-    Legend
+    Legend,
 );
 
 export interface WrHistoryInterface {
@@ -210,7 +210,7 @@ export const WrHistory = ({
                             const currentHistoryData = historyData[n];
 
                             const user = players.find(
-                                (p) => p.username == currentHistoryData.user
+                                (p) => p.username == currentHistoryData.user,
                             );
 
                             return (
@@ -234,7 +234,7 @@ export const WrHistory = ({
                             labels={({ index }) => {
                                 const wr = historyData[index];
                                 return `${wr.user}\n${getFormattedString(
-                                    wr.time
+                                    wr.time,
                                 )}\n${moment(wr.endedAt).format("L LT")}`;
                             }}
                             labelComponent={
@@ -251,7 +251,7 @@ export const WrHistory = ({
                                         const data = historyData[n.index];
 
                                         const user = players.find(
-                                            (p) => p.username == data.user
+                                            (p) => p.username == data.user,
                                         );
 
                                         return user.color;

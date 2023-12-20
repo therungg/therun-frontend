@@ -13,12 +13,12 @@ export const TournamentStandings = ({
 }) => {
     const { data: tournament1Data }: { data: Tournament } = useSWR(
         "/api/tournaments/GSA PACE Qualifiers 1",
-        fetcher
+        fetcher,
     );
 
     const { data: tournament2Data }: { data: Tournament } = useSWR(
         "/api/tournaments/GSA PACE Qualifiers 2",
-        fetcher
+        fetcher,
     );
 
     if (!tournament1Data || !tournament2Data) {
@@ -87,7 +87,7 @@ export const TournamentStandings = ({
                         "",
                         (stat) => {
                             return stat;
-                        }
+                        },
                     )}
                 </Col>
                 <Col>
@@ -107,7 +107,7 @@ export const TournamentStandings = ({
                                     )
                                 </div>
                             );
-                        }
+                        },
                     )}
                 </Col>
                 <Col>
@@ -127,7 +127,7 @@ export const TournamentStandings = ({
                                     )
                                 </div>
                             );
-                        }
+                        },
                     )}
                 </Col>
                 <Col>
@@ -147,7 +147,7 @@ export const TournamentStandings = ({
                                     )
                                 </div>
                             );
-                        }
+                        },
                     )}
                 </Col>
             </Row>

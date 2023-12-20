@@ -12,7 +12,7 @@ export type FeatureFlags = "MAINTENANCE_MODE";
 */
 export const getFeatureFlag = async (
     key: FeatureFlags,
-    defaultValue = false
+    defaultValue = false,
 ): Promise<boolean> => {
     const prefixedKey = prefixKey(key);
     if ((process.env.EDGE_CONFIG ?? "").trim().length !== 0) {

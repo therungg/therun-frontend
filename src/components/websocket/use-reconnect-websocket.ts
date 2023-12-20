@@ -17,14 +17,14 @@ export const useReconnectWebsocket = (username?: string) => {
 
     const { lastMessage, sendMessage, readyState } = useWebSocket(
         websocketUrl,
-        options
+        options,
     );
 
     useEffect(() => {
         if (readyState === ReadyState.OPEN) {
             const interval = setInterval(
                 () => sendMessage(""),
-                pingIntervalMinutes * 60 * 1000
+                pingIntervalMinutes * 60 * 1000,
             );
 
             return () => clearInterval(interval);

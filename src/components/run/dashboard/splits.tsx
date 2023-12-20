@@ -23,13 +23,13 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
     const [selectedComparison, setSelectedComparison] =
         useState("Best Possible");
     const [selectedAlternative, setSelectedAlternative] = useState(
-        hasAlternatives ? splits[0].single.alternative[0].name : ""
+        hasAlternatives ? splits[0].single.alternative[0].name : "",
     );
 
     const splitToUse = totalTime ? "total" : "single";
     const splitsFile = decodeURIComponent(run.splitsFile as string).replace(
         "%",
-        "%25"
+        "%25",
     );
     const url = `${process.env.NEXT_PUBLIC_SPLITS_CLOUDFRONT_URL}/${splitsFile}`;
 
@@ -78,10 +78,10 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                         </label>
                         <Switch
                             onColor={getComputedStyle(
-                                document.documentElement
+                                document.documentElement,
                             ).getPropertyValue("--bs-link-color")}
                             offColor={getComputedStyle(
-                                document.documentElement
+                                document.documentElement,
                             ).getPropertyValue("--bs-tertiary-bg")}
                             name={"switch"}
                             onChange={(checked) => {
@@ -228,7 +228,7 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                                                     ].alternative.find(
                                                         (time) =>
                                                             time.name ==
-                                                            selectedAlternative
+                                                            selectedAlternative,
                                                     ).time || ""
                                                 }
                                                 withMillis={true}
@@ -244,7 +244,7 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                                                     ].alternative.find(
                                                         (time) =>
                                                             time.name ==
-                                                            selectedAlternative
+                                                            selectedAlternative,
                                                     ).time
                                                 }
                                                 withMillis={true}
