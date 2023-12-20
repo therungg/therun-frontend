@@ -12,12 +12,12 @@ import { Userform } from "~src/components/user/userform";
 import { HighlightedRun } from "~src/components/run/dashboard/highlighted-run";
 import { LiveIcon, LiveUserRun } from "~src/components/live/live-user-run";
 import Stats from "~src/components/user/stats";
-import { TwitchEmbed } from "~src/vendor/react-twitch-embed/dist/index";
 import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
 import { LiveRun } from "~app/live/live.types";
 import { getRunmap } from "~app/[username]/runmap.component";
 import { prepareSessions } from "~app/[username]/prepare-sessions.component";
 import { GlobalGameData } from "~app/[username]/[game]/[run]/run";
+import { TwitchEmbed } from "react-twitch-embed";
 
 export interface UserPageProps {
     runs: Run[];
