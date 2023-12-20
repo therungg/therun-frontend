@@ -6,7 +6,7 @@ const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
 
 export async function POST(
     request: NextRequest,
-    { params }: { params: { race: string } }
+    { params }: { params: { race: string } },
 ) {
     const session = await getSession();
 

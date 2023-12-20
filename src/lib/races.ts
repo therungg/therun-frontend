@@ -10,7 +10,7 @@ export const getAllRaces = async (): Promise<Race[]> => {
 };
 
 export const getRaceParticipationsByUser = async (
-    user?: string
+    user?: string,
 ): Promise<RaceParticipant[] | undefined> => {
     if (!user) return;
 
@@ -31,7 +31,7 @@ export const getRaceByRaceId = async (raceId: string): Promise<Race> => {
 
 export const updateRaceStatus = async (
     raceId: string,
-    action: string
+    action: string,
 ): Promise<Race> => {
     const baseUrl = await getBaseUrl();
     const url = `${baseUrl}/api/races/${raceId}/${action}`;

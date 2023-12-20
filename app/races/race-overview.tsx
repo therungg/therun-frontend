@@ -31,7 +31,7 @@ export const RaceOverview = ({
     const [registeringForRace, setRegisteringForRace] = useState(false);
     const [stateRaces, setStateRaces] = useState(races);
     const [raceParticipationMap, setRaceParticipationMap] = useState(
-        arrayToMap<RaceParticipant, "raceId">(raceParticipations, "raceId")
+        arrayToMap<RaceParticipant, "raceId">(raceParticipations, "raceId"),
     );
 
     const lastMessage = useAllRacesWebsocket();
@@ -46,7 +46,7 @@ export const RaceOverview = ({
             const newRaces = JSON.parse(JSON.stringify(stateRaces));
 
             const index = stateRaces.findIndex(
-                (race) => race.raceId === lastMessage.data.raceId
+                (race) => race.raceId === lastMessage.data.raceId,
             );
 
             if (index !== -1) {
@@ -73,16 +73,16 @@ export const RaceOverview = ({
             if (
                 userParticipationMessage.data.status === "unjoined" &&
                 newRaceParticipationMap.has(
-                    userParticipationMessage.data.raceId
+                    userParticipationMessage.data.raceId,
                 )
             ) {
                 newRaceParticipationMap.delete(
-                    userParticipationMessage.data.raceId
+                    userParticipationMessage.data.raceId,
                 );
             } else {
                 newRaceParticipationMap.set(
                     userParticipationMessage.data.raceId,
-                    userParticipationMessage.data
+                    userParticipationMessage.data,
                 );
             }
 
@@ -114,7 +114,7 @@ export const RaceOverview = ({
                 <tbody>
                     {stateRaces.map((race) => {
                         const userIsInRace = raceParticipationMap.has(
-                            race.raceId
+                            race.raceId,
                         );
 
                         const userParticipation = userIsInRace
@@ -195,21 +195,21 @@ export const RaceOverview = ({
                                                         onClick={async () => {
                                                             // TODO: This should not be inline (seperate component) and obviously should not refresh the page but update the state
                                                             setRegisteringForRace(
-                                                                true
+                                                                true,
                                                             );
                                                             const result =
                                                                 await unjoinRace(
-                                                                    race.raceId
+                                                                    race.raceId,
                                                                 );
                                                             setRegisteringForRace(
-                                                                false
+                                                                false,
                                                             );
                                                             if (result.raceId) {
                                                                 router.refresh();
                                                             } else {
                                                                 // eslint-disable-next-line no-console
                                                                 console.error(
-                                                                    result
+                                                                    result,
                                                                 );
                                                             }
                                                         }}
@@ -230,25 +230,25 @@ export const RaceOverview = ({
                                                     onClick={async () => {
                                                         // TODO: This should not be inline (seperate component)
                                                         setRegisteringForRace(
-                                                            true
+                                                            true,
                                                         );
                                                         const result =
                                                             await joinRace(
-                                                                race.raceId
+                                                                race.raceId,
                                                             );
                                                         setRegisteringForRace(
-                                                            false
+                                                            false,
                                                         );
                                                         if (result.raceId) {
                                                             const redirectUrl = `/races/${race.raceId}`;
 
                                                             router.push(
-                                                                redirectUrl
+                                                                redirectUrl,
                                                             );
                                                         } else {
                                                             // eslint-disable-next-line no-console
                                                             console.error(
-                                                                result
+                                                                result,
                                                             );
                                                         }
                                                     }}

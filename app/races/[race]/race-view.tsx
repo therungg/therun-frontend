@@ -60,7 +60,7 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
 
                 updatedMap.set(
                     (lastMessage.data as RaceParticipant).user,
-                    lastMessage.data as RaceParticipant
+                    lastMessage.data as RaceParticipant,
                 );
 
                 setRaceParticipantsMap(updatedMap);
