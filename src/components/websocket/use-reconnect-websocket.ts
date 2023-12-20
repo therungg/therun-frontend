@@ -19,18 +19,18 @@ export const useAllRacesWebsocket = () =>
 export const useRaceWebsocket = (raceId: string) =>
     useReconnectWebsocket<WebsocketRaceMessage<Race | RaceParticipant>>(
         "race",
-        raceId
+        raceId,
     );
 
 export const useUserRaceParticipationsWebsocket = (user: User | undefined) =>
     useReconnectWebsocket<WebsocketRaceMessage<RaceParticipant>>(
         "race",
-        user ? `${user.username}-races` : null
+        user ? `${user.username}-races` : null,
     );
 
 export const useReconnectWebsocket = <T>(
     type: WebsocketType,
-    value?: string | null
+    value?: string | null,
 ): T => {
     const options: Options = {
         shouldReconnect: () => true,
@@ -48,14 +48,14 @@ export const useReconnectWebsocket = <T>(
 
     const { lastJsonMessage, sendMessage, readyState } = useWebSocket<T>(
         value !== null ? websocketUrl : null,
-        options
+        options,
     );
 
     useEffect(() => {
         if (readyState === ReadyState.OPEN) {
             const interval = setInterval(
                 () => sendMessage(""),
-                pingIntervalMinutes * 60 * 1000
+                pingIntervalMinutes * 60 * 1000,
             );
 
             return () => clearInterval(interval);

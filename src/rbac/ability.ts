@@ -32,7 +32,7 @@ type AppAbilities = [
         | ForcedSubject<(typeof subjects)[number]>
         // eslint-disable-next-line no-unused-vars
         | ForcedSubject<{ [key in AllowedSubjects]?: string }>
-    )
+    ),
 ];
 
 export type AppAbility = MongoAbility<AppAbilities>;
@@ -42,7 +42,7 @@ type DefinePermissions = (
     // eslint-disable-next-line no-unused-vars
     user: User,
     // eslint-disable-next-line no-unused-vars
-    builder: AbilityBuilder<AppAbility>
+    builder: AbilityBuilder<AppAbility>,
 ) => void;
 
 const rolePermissions: Record<Role, DefinePermissions> = {

@@ -75,7 +75,7 @@ export const AutoCompletion = () => {
                         return transformResult(
                             type,
                             result,
-                            results[result][0]
+                            results[result][0],
                         );
                     })
                     .filter((result) => !!result)}
@@ -95,11 +95,11 @@ export const AutoCompletion = () => {
             const game = split[1];
             const category = split[2];
             let value = `${game} - ${category} by ${username} in ${getFormattedString(
-                pb
+                pb,
             )}`;
             if (results.pbgt) value += " (IGT)";
             const url = `/${username}/${safeEncodeURI(game)}/${safeEncodeURI(
-                category
+                category,
             )}`;
             return (
                 <li key={value}>
@@ -185,8 +185,8 @@ export const AutoCompletion = () => {
                             {input.length < 2
                                 ? "Please input at least 2 characters"
                                 : !loading
-                                ? `No results for ${input}`
-                                : "Loading..."}
+                                  ? `No results for ${input}`
+                                  : "Loading..."}
                         </li>
                     </ul>
                 )}

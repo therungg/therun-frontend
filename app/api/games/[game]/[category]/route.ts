@@ -11,7 +11,7 @@ export async function GET(
         params,
     }: {
         params: { game: string; category: string };
-    }
+    },
 ) {
     const { game, category } = params;
 
@@ -21,7 +21,7 @@ export async function GET(
 
     const gameData = await getCategory(
         safeEncodeURI(game),
-        safeEncodeURI(category)
+        safeEncodeURI(category),
     );
 
     return apiResponse({

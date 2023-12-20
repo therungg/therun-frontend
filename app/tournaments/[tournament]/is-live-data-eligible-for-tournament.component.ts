@@ -5,7 +5,7 @@ import { includesCaseInsensitive } from "~src/utils/array";
 
 export const isLiveDataEligibleForTournament = (
     data: LiveRun,
-    tournament: Tournament
+    tournament: Tournament,
 ): boolean => {
     if (!data || !data.user) return false;
 
@@ -37,7 +37,7 @@ export const isLiveDataEligibleForTournament = (
 
 export const isLiveDataEligibleForTournaments = (
     data: LiveRun,
-    tournaments: Tournament[]
+    tournaments: Tournament[],
 ): boolean => {
     return tournaments
         .map((tournament) => isLiveDataEligibleForTournament(data, tournament))

@@ -14,12 +14,12 @@ export interface PaginatedGameLeaderboardProps {
         // eslint-disable-next-line no-unused-vars
         stat: string | number,
         // eslint-disable-next-line no-unused-vars
-        key: number
+        key: number,
     ) => string | number | ReactElement;
 }
 
 export const PaginatedGameLeaderboard = (
-    props: PaginatedGameLeaderboardProps
+    props: PaginatedGameLeaderboardProps,
 ) => {
     return (
         <PaginationContextProvider>
@@ -37,7 +37,7 @@ const PaginatedGameLeaderboardComponent = ({
         leaderboard,
         leaderboardFetcher,
         15,
-        0
+        0,
     );
 
     return (

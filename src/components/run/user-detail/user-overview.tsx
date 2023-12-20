@@ -36,7 +36,7 @@ export const UserOverview = ({
     const images = Array.from(runs).filter(([game]) => {
         game = game.split("#")[0];
         const globalData = allGlobalGameData.find(
-            (data) => data.display.toLowerCase() == game.toLowerCase()
+            (data) => data.display.toLowerCase() == game.toLowerCase(),
         );
 
         return globalData && globalData.image && globalData.image != "noimage";
@@ -82,7 +82,7 @@ export const UserOverview = ({
                 const longestVar = Math.max(...varLenghts);
 
                 const globalData = allGlobalGameData.find(
-                    (data) => data.display.toLowerCase() == game.toLowerCase()
+                    (data) => data.display.toLowerCase() == game.toLowerCase(),
                 );
                 const forceRealTime = globalData && globalData.forceRealTime;
                 let xl = 6;
@@ -196,7 +196,7 @@ export const UserOverview = ({
                                         !forceRealTime &&
                                         run.gameTimeData.personalBest &&
                                         parseInt(
-                                            run.gameTimeData.personalBest
+                                            run.gameTimeData.personalBest,
                                         ) > 1000
                                             ? { ...run, ...run.gameTimeData }
                                             : run;
@@ -288,24 +288,24 @@ export const UserOverview = ({
                                                         onClick={async () => {
                                                             if (
                                                                 confirm(
-                                                                    `Are you sure you want to delete ${run.game} - ${run.run}?`
+                                                                    `Are you sure you want to delete ${run.game} - ${run.run}?`,
                                                                 )
                                                             ) {
                                                                 const userIdentifier = `${session.id}-${username}`;
                                                                 const deleteUrl =
                                                                     run.url.replace(
                                                                         username,
-                                                                        userIdentifier
+                                                                        userIdentifier,
                                                                     );
                                                                 await fetch(
                                                                     `/api/users/${deleteUrl}`,
                                                                     {
                                                                         method: "DELETE",
-                                                                    }
+                                                                    },
                                                                 );
 
                                                                 delete runs.get(
-                                                                    game
+                                                                    game,
                                                                 )[runKey];
 
                                                                 forceUpdate();
@@ -335,14 +335,14 @@ export const UserOverview = ({
                                                                         run.originalRun
                                                                 ) {
                                                                     setOpenedEdit(
-                                                                        []
+                                                                        [],
                                                                     );
                                                                 } else {
                                                                     setOpenedEdit(
                                                                         [
                                                                             game,
                                                                             run.originalRun,
-                                                                        ]
+                                                                        ],
                                                                     );
                                                                 }
                                                             }}
@@ -368,14 +368,14 @@ export const UserOverview = ({
                                                                 const editUrl =
                                                                     run.url.replace(
                                                                         username,
-                                                                        userIdentifier
+                                                                        userIdentifier,
                                                                     );
                                                                 const result =
                                                                     await fetch(
                                                                         `/api/users/${editUrl}/highlight`,
                                                                         {
                                                                             method: "PUT",
-                                                                        }
+                                                                        },
                                                                     );
 
                                                                 const str =

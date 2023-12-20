@@ -15,7 +15,7 @@ export interface CombinedLeaderboardRun extends Count {
 }
 
 export const getCombinedTournamentLeaderboardComponent = (
-    tournaments: Tournament[]
+    tournaments: Tournament[],
 ): CombinedLeaderboardStat[] => {
     const userGameMap: Map<
         string,
@@ -52,7 +52,7 @@ export const getCombinedTournamentLeaderboardComponent = (
     Array.from(userGameMap.entries()).forEach(([username, runs]) => {
         const count = runs.size;
         const runDifferences = Array.from(runs.values()).map(
-            (run) => run.differenceToFirst
+            (run) => run.differenceToFirst,
         );
 
         const sum = runDifferences.reduce((a, c) => a + c, 0);

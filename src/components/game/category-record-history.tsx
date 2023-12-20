@@ -23,7 +23,7 @@ export const CategoryRecordHistory = ({
             revalidateOnReconnect: false,
             revalidateOnFocus: false,
             revalidateIfStale: false,
-        }
+        },
     );
 
     const [visualMode, setVisualMode] = useState(true);
@@ -50,10 +50,10 @@ export const CategoryRecordHistory = ({
                     <span className="me-2">Data Mode</span>
                     <Switch
                         onColor={getComputedStyle(
-                            document.documentElement
+                            document.documentElement,
                         ).getPropertyValue("--bs-tertiary-bg")}
                         offColor={getComputedStyle(
-                            document.documentElement
+                            document.documentElement,
                         ).getPropertyValue("--bs-tertiary-bg")}
                         checkedIcon={false}
                         uncheckedIcon={false}

@@ -8,7 +8,7 @@ export const Can = createContextualCan(AbilityContext.Consumer);
 
 export const subject = <T extends (typeof subjects)[number]>(
     type: T,
-    object: string | object
+    object: string | object,
 ) => {
     object = typeof object === "string" ? { [type]: object } : object;
     return caslSubject(type, object);

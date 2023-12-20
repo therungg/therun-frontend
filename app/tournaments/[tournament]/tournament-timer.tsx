@@ -75,7 +75,7 @@ export const TournamentTimer = ({ tournament }: { tournament: Tournament }) => {
                             new Date(
                                 tournament.eligiblePeriods[
                                     currentHeatIndex
-                                ].endDate
+                                ].endDate,
                             )
                         }
                         renderer={renderCountdown}
@@ -90,7 +90,7 @@ export const TournamentTimer = ({ tournament }: { tournament: Tournament }) => {
                     <Countdown
                         date={
                             new Date(
-                                tournament.eligiblePeriods[nextHeat].startDate
+                                tournament.eligiblePeriods[nextHeat].startDate,
                             )
                         }
                         renderer={renderCountdown}

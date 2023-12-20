@@ -7,7 +7,7 @@ export async function genericFetcher<T>(
     page: number,
     pageSize: number,
     query: string,
-    initialData: PaginatedData<T>
+    initialData: PaginatedData<T>,
 ): Promise<PaginatedData<T>> {
     return paginateArray(initialData.items, page, pageSize);
 }

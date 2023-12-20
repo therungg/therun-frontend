@@ -5,7 +5,7 @@ import { apiResponse } from "~app/api/response";
 export async function POST(request: NextRequest) {
     const urlBase = process.env.NEXT_PUBLIC_UPLOAD_URL;
     const url = `${urlBase}?filename=${safeEncodeURI(
-        request.headers.get("filename") as string
+        request.headers.get("filename") as string,
     )}&sessionId=${request.headers.get("sessionid")}`;
 
     const presignedUrl = await fetch(url, {

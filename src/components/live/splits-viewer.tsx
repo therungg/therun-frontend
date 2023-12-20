@@ -19,7 +19,7 @@ export const SplitsViewer = ({
     setSelectedSplit: any;
 }) => {
     const [comparison, setComparison] = useState(
-        activeLiveRun.currentComparison || "Personal Best"
+        activeLiveRun.currentComparison || "Personal Best",
     );
     const [manuallyChangedComparison, setManuallyChangedComparison] =
         useState(false);
@@ -63,8 +63,8 @@ export const SplitsViewer = ({
                             {(
                                 Array.from(
                                     Object.keys(
-                                        activeLiveRun.splits[0].comparisons
-                                    )
+                                        activeLiveRun.splits[0].comparisons,
+                                    ),
                                 ) || ["Personal Best"]
                             ).map((comp) => {
                                 return (
@@ -93,7 +93,7 @@ export const SplitsViewer = ({
 
                             const splitStatus = getSplitStatus(
                                 activeLiveRun,
-                                k
+                                k,
                             );
 
                             return (
@@ -212,7 +212,7 @@ export const SplitsViewer = ({
                             }
                             onClick={() => {
                                 setSelectedSplit(
-                                    activeLiveRun.splits.length - 1
+                                    activeLiveRun.splits.length - 1,
                                 );
                             }}
                         >

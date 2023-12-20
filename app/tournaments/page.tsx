@@ -10,13 +10,13 @@ export default async function TournamentsPage() {
     const now = new Date().toISOString();
 
     const finishedTournaments = tournaments.filter(
-        (tournament) => tournament.endDate < now
+        (tournament) => tournament.endDate < now,
     );
     const ongoingTournaments = tournaments.filter(
-        (tournament) => tournament.startDate < now && tournament.endDate > now
+        (tournament) => tournament.startDate < now && tournament.endDate > now,
     );
     const upcomingTournaments = tournaments.filter(
-        (tournament) => tournament.startDate > now
+        (tournament) => tournament.startDate > now,
     );
 
     return (

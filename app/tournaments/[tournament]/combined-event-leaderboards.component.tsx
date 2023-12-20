@@ -124,7 +124,7 @@ export const CombinedEventLeaderboards = ({
 };
 
 const generateLeaderboard = (
-    data: Map<string, number>
+    data: Map<string, number>,
 ): { username: string; stat: number; placing: number }[] => {
     return Array.from(data.entries())
         .map(([username, stat]) => ({
@@ -138,7 +138,7 @@ const generateLeaderboard = (
 
 const updateLeaderboardMap = (
     map: Map<string, number>,
-    leaderboard: { username: string; stat: string }[]
+    leaderboard: { username: string; stat: string }[],
 ) => {
     leaderboard.forEach((item) => {
         if (!map.has(item.username)) {
@@ -146,7 +146,7 @@ const updateLeaderboardMap = (
         }
         map.set(
             item.username,
-            map.get(item.username)! + parseInt(item.stat, 10)
+            map.get(item.username)! + parseInt(item.stat, 10),
         );
     });
 };
@@ -159,15 +159,15 @@ const generateMetaDataCombinedLeaderboards = (tournaments: Tournament[]) => {
     tournaments.forEach((tournament) => {
         updateLeaderboardMap(
             playTime,
-            tournament.leaderboards?.totalRunTimeLeaderboard || []
+            tournament.leaderboards?.totalRunTimeLeaderboard || [],
         );
         updateLeaderboardMap(
             attempts,
-            tournament.leaderboards?.attemptCountLeaderboard || []
+            tournament.leaderboards?.attemptCountLeaderboard || [],
         );
         updateLeaderboardMap(
             finishedAttempts,
-            tournament.leaderboards?.finishedAttemptCountLeaderboard || []
+            tournament.leaderboards?.finishedAttemptCountLeaderboard || [],
         );
     });
 

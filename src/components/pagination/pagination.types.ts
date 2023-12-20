@@ -23,5 +23,5 @@ export type PaginationFetcher<T> = (
     // eslint-disable-next-line no-unused-vars
     query: string,
     // eslint-disable-next-line no-unused-vars
-    initialData: T[]
+    initialData: T[],
 ) => Promise<PaginatedData<T>>;

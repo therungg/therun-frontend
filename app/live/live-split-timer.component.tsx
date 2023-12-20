@@ -52,7 +52,7 @@ export const LiveSplitTimerComponent = ({
 
     const lastSplitStatus = getSplitStatus(
         liveRun,
-        liveRun.splits ? liveRun.splits.length - 1 : 0
+        liveRun.splits ? liveRun.splits.length - 1 : 0,
     );
 
     return (

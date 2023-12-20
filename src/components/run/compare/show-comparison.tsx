@@ -27,7 +27,7 @@ export const ShowComparison = ({
 }) => {
     const [matchedOne, matchedTwo] = matchSplits(
         JSON.parse(JSON.stringify(one)),
-        JSON.parse(JSON.stringify(two))
+        JSON.parse(JSON.stringify(two)),
     );
     const [totalTime, setTotalTime] = useState(true);
     const variant = totalTime ? "total" : "single";
@@ -106,7 +106,7 @@ export const ShowComparison = ({
 
 const matchSplits = (
     one: SplitsHistory[],
-    two: SplitsHistory[]
+    two: SplitsHistory[],
 ): SplitsHistory[][] => {
     // If splits are same length, might take this out?
     if (one.length === two.length) return [one, two];
@@ -115,11 +115,11 @@ const matchSplits = (
         one.length <= two.length
             ? matchSplitsByName(
                   one.map((hist) => hist.name),
-                  two.map((hist) => hist.name)
+                  two.map((hist) => hist.name),
               )
             : matchSplitsByName(
                   two.map((hist) => hist.name),
-                  one.map((hist) => hist.name)
+                  one.map((hist) => hist.name),
               );
 
     const otherSplits = one.length <= two.length ? [...two] : [...one];

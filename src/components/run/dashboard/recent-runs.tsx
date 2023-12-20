@@ -28,7 +28,7 @@ ChartJS.register(
     BarController,
     BarElement,
     CategoryScale,
-    Legend
+    Legend,
 );
 
 const amount = 100000;
@@ -45,7 +45,7 @@ export const RecentRuns = ({
     let attempts = history
         .filter(
             (attempt: RunHistory) =>
-                !!attempt.time && parseInt(attempt.time) > 0
+                !!attempt.time && parseInt(attempt.time) > 0,
         )
         .slice()
         .reverse()
@@ -88,26 +88,26 @@ export const RecentRuns = ({
                 lineTension: 0.1,
                 backgroundColor:
                     getComputedStyle(document.documentElement).getPropertyValue(
-                        "--bs-link-color"
+                        "--bs-link-color",
                     ) || "",
                 borderColor: getComputedStyle(
-                    document.documentElement
+                    document.documentElement,
                 ).getPropertyValue("--bs-link-color"),
                 borderCapStyle: "butt",
                 borderDash: [],
                 borderDashOffset: 0.0,
                 borderJoinStyle: "miter",
                 pointBorderColor: getComputedStyle(
-                    document.documentElement
+                    document.documentElement,
                 ).getPropertyValue("--bs-link-color"),
                 pointBackgroundColor: "#fff",
                 pointBorderWidth: 1,
                 pointHoverRadius: 5,
                 pointHoverBackgroundColor: getComputedStyle(
-                    document.documentElement
+                    document.documentElement,
                 ).getPropertyValue("--bs-link-color"),
                 pointHoverBorderColor: getComputedStyle(
-                    document.documentElement
+                    document.documentElement,
                 ).getPropertyValue("--bs-link-color"),
                 pointHoverBorderWidth: 2,
                 pointRadius: 1,

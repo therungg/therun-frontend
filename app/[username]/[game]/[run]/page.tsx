@@ -50,7 +50,7 @@ export async function generateMetadata({
     if (!username) return buildMetadata();
 
     const gameAndCategory = `${safeDecodeURI(params.game)} - ${safeDecodeURI(
-        params.run
+        params.run,
     )}`;
 
     return buildMetadata({

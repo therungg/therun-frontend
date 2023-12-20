@@ -95,14 +95,14 @@ export const Media = () => {
                                     <div className="d-flex justify-content-start align-self-center mb-2">
                                         <Switch
                                             onColor={getComputedStyle(
-                                                document.documentElement
+                                                document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-link-color"
+                                                "--bs-link-color",
                                             )}
                                             offColor={getComputedStyle(
-                                                document.documentElement
+                                                document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-tertiary-bg"
+                                                "--bs-tertiary-bg",
                                             )}
                                             name={"switch"}
                                             onChange={(checked) => {
@@ -121,14 +121,14 @@ export const Media = () => {
                                     <div className="d-flex justify-content-start align-self-center mb-2">
                                         <Switch
                                             onColor={getComputedStyle(
-                                                document.documentElement
+                                                document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-link-color"
+                                                "--bs-link-color",
                                             )}
                                             offColor={getComputedStyle(
-                                                document.documentElement
+                                                document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-tertiary-bg"
+                                                "--bs-tertiary-bg",
                                             )}
                                             name={"switch"}
                                             onChange={(checked) => {
@@ -147,14 +147,14 @@ export const Media = () => {
                                     <div className="d-flex justify-content-start align-self-center mb-2">
                                         <Switch
                                             onColor={getComputedStyle(
-                                                document.documentElement
+                                                document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-link-color"
+                                                "--bs-link-color",
                                             )}
                                             offColor={getComputedStyle(
-                                                document.documentElement
+                                                document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-tertiary-bg"
+                                                "--bs-tertiary-bg",
                                             )}
                                             name={"switch"}
                                             onChange={(checked) => {
@@ -173,14 +173,14 @@ export const Media = () => {
                                     <div className="d-flex justify-content-start align-self-center mb-2">
                                         <Switch
                                             onColor={getComputedStyle(
-                                                document.documentElement
+                                                document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-link-color"
+                                                "--bs-link-color",
                                             )}
                                             offColor={getComputedStyle(
-                                                document.documentElement
+                                                document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-tertiary-bg"
+                                                "--bs-tertiary-bg",
                                             )}
                                             name={"switch"}
                                             onChange={(checked) => {
@@ -224,14 +224,14 @@ export const Media = () => {
                                     <div className="d-flex justify-content-start align-self-center mb-2">
                                         <Switch
                                             onColor={getComputedStyle(
-                                                document.documentElement
+                                                document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-link-color"
+                                                "--bs-link-color",
                                             )}
                                             offColor={getComputedStyle(
-                                                document.documentElement
+                                                document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-tertiary-bg"
+                                                "--bs-tertiary-bg",
                                             )}
                                             name={"switch"}
                                             onChange={(checked) => {
@@ -250,14 +250,14 @@ export const Media = () => {
                                     <div className="d-flex justify-content-start align-self-center mb-2">
                                         <Switch
                                             onColor={getComputedStyle(
-                                                document.documentElement
+                                                document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-link-color"
+                                                "--bs-link-color",
                                             )}
                                             offColor={getComputedStyle(
-                                                document.documentElement
+                                                document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-tertiary-bg"
+                                                "--bs-tertiary-bg",
                                             )}
                                             name={"switch"}
                                             onChange={(checked) => {
@@ -276,14 +276,14 @@ export const Media = () => {
                                     <div className="d-flex justify-content-start align-self-center mb-2">
                                         <Switch
                                             onColor={getComputedStyle(
-                                                document.documentElement
+                                                document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-link-color"
+                                                "--bs-link-color",
                                             )}
                                             offColor={getComputedStyle(
-                                                document.documentElement
+                                                document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-tertiary-bg"
+                                                "--bs-tertiary-bg",
                                             )}
                                             name={"switch"}
                                             onChange={(checked) => {

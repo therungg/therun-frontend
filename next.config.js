@@ -1,9 +1,6 @@
 /** @type {import('next').NextConfig} */
 // eslint-disable-next-line import/no-commonjs
 module.exports = {
-    experimental: {
-        serverActions: true,
-    },
     typescript: {
         ignoreBuildErrors: true,
     },
@@ -15,8 +12,15 @@ module.exports = {
                 protocol: "https",
                 hostname: "images.igdb.com",
             },
+            {
+                protocol: "https",
+                hostname: "raw.githubusercontent.com",
+            },
+            {
+                protocol: "https",
+                hostname: "static-cdn.jtvnw.net",
+            },
         ],
-        domains: ["static-cdn.jtvnw.net", "raw.githubusercontent.com"],
     },
     async redirects() {
         return [

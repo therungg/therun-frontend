@@ -31,7 +31,7 @@ export const getTournamentStatsByName = async (name: string) => {
 
 export const banUserFromTournament = async (
     name: string,
-    userString: string
+    userString: string,
 ) => {
     const url = `${process.env.NEXT_PUBLIC_DATA_URL}/tournaments/${name}/removeUser/${userString}`;
 

@@ -22,7 +22,7 @@ export const SplitDetails = ({
         selectedSplit = liveRun.splits.length - 1;
 
     const [splitStatus, setSplitStatus] = useState(
-        getSplitStatus(liveRun, selectedSplit)
+        getSplitStatus(liveRun, selectedSplit),
     );
 
     useEffect(() => {

@@ -6,7 +6,7 @@ export const equalsCaseInsensitive = (a?: string, b?: string): boolean => {
 
 export const includesCaseInsensitive = (
     needle: string,
-    haystack: string
+    haystack: string,
 ): boolean => {
     return haystack.toLowerCase().trim().includes(needle.toLowerCase().trim());
 };

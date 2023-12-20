@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
             {
                 error: "Must be GET request and supply `q` parameter",
             },
-            { status: 400 }
+            { status: 400 },
         );
     }
 
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
                     cat.run.split("//").filter((r) => !!r).length === 3 &&
                     (!!cat.pb || !!cat.pbgt)
                 );
-            }
+            },
         );
 
         if (result.categories[category].length === 0) {

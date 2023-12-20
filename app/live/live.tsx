@@ -26,7 +26,7 @@ export const Live = ({
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
     const [search, setSearch] = useState("");
     const [currentlyViewing, setCurrentlyViewing] = useState(
-        getRecommendedStream(liveDataMap, username)
+        getRecommendedStream(liveDataMap, username),
     );
 
     const [loadingUserData, setLoadingUserData] = useState(true);
@@ -38,12 +38,12 @@ export const Live = ({
                 isWebsocketDataProcessable(
                     lastMessage,
                     forceGame,
-                    forceCategory
+                    forceCategory,
                 )
             ) {
                 const user = lastMessage.user;
                 const newMap: LiveDataMap = JSON.parse(
-                    JSON.stringify(updatedLiveDataMap)
+                    JSON.stringify(updatedLiveDataMap),
                 );
 
                 if (lastMessage.type == "UPDATE") {
@@ -76,7 +76,7 @@ export const Live = ({
                 setLoadingUserData(true);
 
                 const newMap: LiveDataMap = JSON.parse(
-                    JSON.stringify(updatedLiveDataMap)
+                    JSON.stringify(updatedLiveDataMap),
                 );
 
                 newMap[currentlyViewing] = await getLiveRunForUser(user);
@@ -155,7 +155,7 @@ export const Live = ({
 
                 {Object.values(updatedLiveDataMap).length > 0 &&
                     Object.values(updatedLiveDataMap).filter((liveRun) =>
-                        liveRunIsInSearch(liveRun, search)
+                        liveRunIsInSearch(liveRun, search),
                     ).length == 0 && <div>No runs matched your search!</div>}
 
                 {Object.values(updatedLiveDataMap)

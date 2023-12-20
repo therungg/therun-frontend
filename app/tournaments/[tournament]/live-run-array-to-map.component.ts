@@ -6,7 +6,7 @@ export const liveRunArrayToMap = (
     sort = "pb",
     leaderboards = null,
     leaderboardsRta = null,
-    seedingTable: CombinedLeaderboardStat[] | null = null
+    seedingTable: CombinedLeaderboardStat[] | null = null,
 ) => {
     liveData.sort((a, b) => {
         if (sort === "time") {
@@ -68,12 +68,12 @@ export const liveRunArrayToMap = (
             const aLeaderboardRanking = leaderboards.pbLeaderboard.findIndex(
                 (count) => {
                     return count.username == aUser;
-                }
+                },
             );
             const bLeaderboardRanking = leaderboards.pbLeaderboard.findIndex(
                 (count) => {
                     return count.username == bUser;
-                }
+                },
             );
 
             if (aLeaderboardRanking < 0 && bLeaderboardRanking < 0) {
@@ -104,10 +104,10 @@ export const liveRunArrayToMap = (
         }
         if (sort === "seed") {
             const aStat = seedingTable?.findIndex(
-                (value) => value.username === a.user
+                (value) => value.username === a.user,
             );
             const bStat = seedingTable?.findIndex(
-                (value) => value.username === b.user
+                (value) => value.username === b.user,
             );
 
             if (bStat === -1) return -1;

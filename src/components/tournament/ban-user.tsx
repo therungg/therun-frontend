@@ -32,7 +32,7 @@ export const BanUser = ({ tournament, session }) => {
                     onClick={async () => {
                         if (
                             confirm(
-                                `Are you sure you want to ban ${bannedUser}?`
+                                `Are you sure you want to ban ${bannedUser}?`,
                             )
                         ) {
                             const user = `${session.id}-${bannedUser}`;
@@ -41,7 +41,7 @@ export const BanUser = ({ tournament, session }) => {
                                 `/api/tournaments/${tournament.name}/removeUser/${user}`,
                                 {
                                     method: "GET",
-                                }
+                                },
                             );
                         }
                     }}

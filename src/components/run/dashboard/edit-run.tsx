@@ -117,7 +117,7 @@ export const EditRun = ({
                             const userIdentifier = `${session.id}-${username}`;
                             const deleteUrl = run.url.replace(
                                 username,
-                                userIdentifier
+                                userIdentifier,
                             );
 
                             const res = await fetch(`/api/users/${deleteUrl}`, {

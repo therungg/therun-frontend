@@ -6,7 +6,7 @@ export const revalidate = 30;
 
 export async function GET(
     _: NextRequest,
-    { params }: { params: { tournament: string } }
+    { params }: { params: { tournament: string } },
 ) {
     const result = await getTournamentStatsByName(params.tournament);
 

@@ -67,13 +67,13 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
     const [hide, setHide] = useState(preferences.hide);
     const [showIcon, setShowIcon] = useState(preferences.showIcon);
     const [featureOnOverview, setFeatureOnOverview] = useState(
-        preferences.featureOnOverview
+        preferences.featureOnOverview,
     );
     const [featureInScrollbar, setFeatureInScrollbar] = useState(
-        preferences.featureInScrollbar
+        preferences.featureInScrollbar,
     );
     const [colorPreference, setColorPreference] = useState(
-        preferences.colorPreference
+        preferences.colorPreference,
     );
 
     return (
@@ -114,12 +114,12 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                                                 ) {
                                                     setColorPreference(
                                                         parseInt(
-                                                            style.id as string
-                                                        )
+                                                            style.id as string,
+                                                        ),
                                                     );
                                                 } else {
                                                     alert(
-                                                        `This color is only available for tier ${n} Patreons or higher.`
+                                                        `This color is only available for tier ${n} Patreons or higher.`,
                                                     );
                                                 }
                                             }}
@@ -232,7 +232,7 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                                     featureOnOverview,
                                     featureInScrollbar,
                                     colorPreference,
-                                }
+                                },
                             );
 
                             Router.reload();

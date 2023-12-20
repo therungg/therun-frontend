@@ -9,7 +9,7 @@ export const createNewSession = async (
     accessToken: string,
     refreshToken: string,
     expiresIn: number,
-    data: any
+    data: any,
 ): Promise<string> => {
     return generateSession({
         accessToken,

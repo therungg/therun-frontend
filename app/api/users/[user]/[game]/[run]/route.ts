@@ -11,7 +11,7 @@ export async function PUT(
         params,
     }: {
         params: { user: string; game: string; run: string };
-    }
+    },
 ) {
     const { user } = params;
     const game = safeDecodeURI(params.game);
@@ -59,7 +59,7 @@ export async function GET(
         params,
     }: {
         params: { user: string; game: string; run: string };
-    }
+    },
 ) {
     const { user } = params;
     const game = safeDecodeURI(params.game);
@@ -79,7 +79,7 @@ export async function DELETE(
         params,
     }: {
         params: { user: string; game: string; run: string };
-    }
+    },
 ) {
     const { user } = params;
     const game = safeDecodeURI(params.game);
@@ -106,7 +106,7 @@ const edit = async (
     user: string,
     game: string,
     category: string,
-    body: string
+    body: string,
 ) => {
     const url = `${
         process.env.NEXT_PUBLIC_DATA_URL

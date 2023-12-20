@@ -67,7 +67,7 @@ export const LiveUserRun = ({
 
     if (leaderboard) {
         const pbLeaderboardIndex = leaderboard.findIndex(
-            (count) => count.username == liveRun.user
+            (count) => count.username == liveRun.user,
         );
 
         if (pbLeaderboardIndex > -1) {
@@ -78,7 +78,7 @@ export const LiveUserRun = ({
 
     if (leaderboardGameTime) {
         const pbLeaderboardIndex = leaderboardGameTime.findIndex(
-            (count) => count.username == liveRun.user
+            (count) => count.username == liveRun.user,
         );
 
         if (pbLeaderboardIndex > -1) {
@@ -89,7 +89,7 @@ export const LiveUserRun = ({
 
     if (seedingTable) {
         const userSeed = seedingTable.findIndex(
-            (val) => val.username === liveRun.user
+            (val) => val.username === liveRun.user,
         );
 
         if (userSeed > -1) seed = userSeed + 1;

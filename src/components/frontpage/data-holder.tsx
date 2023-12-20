@@ -15,7 +15,7 @@ export const DataHolder = ({ runs }: { runs: Run[] }) => {
                             .filter(
                                 (run) =>
                                     run.personalBestTime != undefined &&
-                                    run.personalBestTime != "0"
+                                    run.personalBestTime != "0",
                             )
                             .map((run: Run) => {
                                 return (
