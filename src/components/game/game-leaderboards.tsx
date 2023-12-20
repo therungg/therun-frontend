@@ -13,8 +13,8 @@ export const getLeaderboard = (
         // eslint-disable-next-line no-unused-vars
         stat: string | number,
         // eslint-disable-next-line no-unused-vars
-        key: number
-    ) => string | number | ReactElement
+        key: number,
+    ) => string | number | ReactElement,
 ) => {
     return (
         <Row>
@@ -64,7 +64,7 @@ export const getLeaderboard = (
                                             {transform
                                                 ? transform(
                                                       leaderboard.stat,
-                                                      key
+                                                      key,
                                                   )
                                                 : leaderboard.stat.toLocaleString()}
                                         </td>
@@ -128,7 +128,7 @@ export const GameLeaderboards = ({
         search,
         (stat) => {
             return `${((stat as number) * 100).toFixed(2)}%`;
-        }
+        },
     );
     const playtimeLeaderboard = getLeaderboard(
         "Total Playtime",
@@ -141,7 +141,7 @@ export const GameLeaderboards = ({
                     padded={true}
                 />
             );
-        }
+        },
     );
 
     return (
@@ -186,7 +186,7 @@ export const GameLeaderboards = ({
                                             getFormattedString(
                                                 leaderboards.stats.totalRunTime.toString(),
                                                 false,
-                                                true
+                                                true,
                                             ),
                                         ],
                                         [
@@ -194,20 +194,20 @@ export const GameLeaderboards = ({
                                             getFormattedString(
                                                 leaderboards.totalRunTimeLeaderboard[0].stat.toString(),
                                                 false,
-                                                true
+                                                true,
                                             ),
                                         ],
                                         [
                                             "Average",
                                             getFormattedString(
                                                 getAverageFromLeaderboard(
-                                                    leaderboards.totalRunTimeLeaderboard
+                                                    leaderboards.totalRunTimeLeaderboard,
                                                 ).toString(),
                                                 false,
-                                                true
+                                                true,
                                             ),
                                         ],
-                                    ])
+                                    ]),
                                 )}
                             </Tab.Pane>
                             <Tab.Pane eventKey="game-attempts">
@@ -225,11 +225,11 @@ export const GameLeaderboards = ({
                                             "Average",
                                             parseInt(
                                                 getAverageFromLeaderboard(
-                                                    leaderboards.attemptCountLeaderboard
-                                                ).toFixed(0)
+                                                    leaderboards.attemptCountLeaderboard,
+                                                ).toFixed(0),
                                             ).toLocaleString(),
                                         ],
-                                    ])
+                                    ]),
                                 )}
                             </Tab.Pane>
                             <Tab.Pane eventKey="game-finished-attempts">
@@ -247,11 +247,11 @@ export const GameLeaderboards = ({
                                             "Average",
                                             parseInt(
                                                 getAverageFromLeaderboard(
-                                                    leaderboards.finishedAttemptCountLeaderboard
-                                                ).toFixed(0)
+                                                    leaderboards.finishedAttemptCountLeaderboard,
+                                                ).toFixed(0),
                                             ).toLocaleString(),
                                         ],
-                                    ])
+                                    ]),
                                 )}
                             </Tab.Pane>
                             <Tab.Pane eventKey="game-completion">
@@ -275,7 +275,7 @@ export const GameLeaderboards = ({
                                             "Finished attempts",
                                             leaderboards.stats.finishedAttemptCount.toLocaleString(),
                                         ],
-                                    ])
+                                    ]),
                                 )}
                             </Tab.Pane>
                             <Tab.Pane eventKey="game-uploads">
@@ -293,11 +293,11 @@ export const GameLeaderboards = ({
                                             "Average",
                                             parseInt(
                                                 getAverageFromLeaderboard(
-                                                    leaderboards.uploadLeaderboard
-                                                ).toFixed(0)
+                                                    leaderboards.uploadLeaderboard,
+                                                ).toFixed(0),
                                             ).toLocaleString(),
                                         ],
-                                    ])
+                                    ]),
                                 )}
                             </Tab.Pane>
                         </Tab.Content>
@@ -340,14 +340,14 @@ export const GameLeaderboards = ({
                             {getLeaderboard(
                                 "Total Attempts",
                                 leaderboards.attemptCountLeaderboard,
-                                search
+                                search,
                             )}
                         </Tab.Pane>
                         <Tab.Pane eventKey="game-finished-attempts">
                             {getLeaderboard(
                                 "Total Finished Runs",
                                 leaderboards.finishedAttemptCountLeaderboard,
-                                search
+                                search,
                             )}
                         </Tab.Pane>
                         <Tab.Pane eventKey="game-completion">
@@ -357,7 +357,7 @@ export const GameLeaderboards = ({
                             {getLeaderboard(
                                 "Total Uploads",
                                 leaderboards.uploadLeaderboard,
-                                search
+                                search,
                             )}
                         </Tab.Pane>
                     </Tab.Content>

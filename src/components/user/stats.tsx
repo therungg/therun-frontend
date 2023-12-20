@@ -142,7 +142,7 @@ export const PlayTimeTable = ({
                             Playtime in {currentYear}:{" "}
                             <span style={{ fontSize: "larger" }}>
                                 {getFormattedString(
-                                    playtimePerYear[currentYear].total
+                                    playtimePerYear[currentYear].total,
                                 )}
                             </span>
                         </div>
@@ -174,7 +174,7 @@ export const PlayTimePerDayOfWeekGraph = ({
                 y: stat.total,
                 fill: "green",
             };
-        }
+        },
     );
 
     const color = scaleLinear()
@@ -233,7 +233,7 @@ export const PlayTimePerDayOfWeekGraph = ({
                                 const res = color(
                                     d.data
                                         ? d.data[d.index]._y
-                                        : "var(--bs-link-color)"
+                                        : "var(--bs-link-color)",
                                 );
                                 return res;
                             },
@@ -274,7 +274,7 @@ export const PlaytimePerHourGraph = ({
                 y: stat.total,
                 fill: "green",
             };
-        }
+        },
     );
 
     const color = scaleLinear()

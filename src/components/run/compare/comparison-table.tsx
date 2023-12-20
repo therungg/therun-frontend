@@ -73,7 +73,7 @@ export const ComparisonTable = ({
                     >
                         {getNumberDifference(
                             runOne.attemptCount,
-                            runTwo.attemptCount
+                            runTwo.attemptCount,
                         )}
                     </td>
                 </tr>
@@ -96,7 +96,7 @@ export const ComparisonTable = ({
                     >
                         {getNumberDifference(
                             parseInt(runOne.finishedAttemptCount),
-                            parseInt(runTwo.finishedAttemptCount)
+                            parseInt(runTwo.finishedAttemptCount),
                         )}
                     </td>
                 </tr>
@@ -128,7 +128,7 @@ export const ComparisonTable = ({
                             parseInt(runOne.finishedAttemptCount) /
                                 runOne.attemptCount,
                             parseInt(runTwo.finishedAttemptCount) /
-                                runTwo.attemptCount
+                                runTwo.attemptCount,
                         )}
                     </td>
                 </tr>

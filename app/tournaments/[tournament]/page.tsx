@@ -41,7 +41,7 @@ export const TournamentPage = async ({
     let liveData: LiveRun[] = await getLiveRunsForTournament(tournament);
 
     liveData = liveData.filter((data) =>
-        isLiveDataEligibleForTournament(data, tournament)
+        isLiveDataEligibleForTournament(data, tournament),
     );
 
     let tournamentLeaderboards = null;
@@ -60,7 +60,7 @@ export const TournamentPage = async ({
             liveDataMap={liveRunArrayToMap(
                 liveData,
                 "pb",
-                tournamentLeaderboards
+                tournamentLeaderboards,
             )}
             session={session}
             tournament={tournament}

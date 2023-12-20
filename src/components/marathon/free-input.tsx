@@ -42,7 +42,7 @@ export const FreeInput = ({
 
 export const freeInputEvent = (
     liveRun: LiveRun,
-    input: string
+    input: string,
 ): MarathonEvent => {
     return {
         type: "free_input_event",

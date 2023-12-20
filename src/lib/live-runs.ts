@@ -22,7 +22,7 @@ export const getAllLiveRuns = async (game = null, category = null) => {
 
 export const getLiveRunsForTournament = async (tournament: Tournament) => {
     const results = tournament.eligibleRuns.map((run) =>
-        getLiveRunsForGameCategory(run.game, run.category)
+        getLiveRunsForGameCategory(run.game, run.category),
     );
 
     return (await Promise.all(results)).flat();
@@ -30,12 +30,12 @@ export const getLiveRunsForTournament = async (tournament: Tournament) => {
 
 export const getLiveRunsForGameCategory = async (
     game: string,
-    category: string
+    category: string,
 ): Promise<LiveRun[]> => {
     const result = await fetch(
         `${liveRunUrl}?game=${safeEncodeURI(game)}&category=${safeEncodeURI(
-            category
-        )}`
+            category,
+        )}`,
     );
 
     return result.json();

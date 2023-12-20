@@ -98,7 +98,7 @@ export const UserGameCategoryLink = ({
                 url
                     ? url
                     : `/${username}/${safeEncodeURI(game)}/${safeEncodeURI(
-                          category
+                          category,
                       )}`
             }
             legacyBehavior

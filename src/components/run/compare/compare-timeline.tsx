@@ -19,7 +19,7 @@ export const CompareTimeline = ({
     const [pbOnly, setPbOnly] = useState(false);
 
     const attempts = runsOne.filter(
-        (attempt: RunHistory) => !!attempt.time && parseInt(attempt.time) > 0
+        (attempt: RunHistory) => !!attempt.time && parseInt(attempt.time) > 0,
     );
     const pbs = getPbs(attempts);
     let runToShow = pbOnly ? pbs : attempts;
@@ -33,7 +33,7 @@ export const CompareTimeline = ({
     }
 
     const attemptsTwo = runsTwo.filter(
-        (attempt: RunHistory) => !!attempt.time && parseInt(attempt.time) > 0
+        (attempt: RunHistory) => !!attempt.time && parseInt(attempt.time) > 0,
     );
     const pbsTwo = getPbs(attemptsTwo);
     let runToShowTwo = pbOnly ? pbsTwo : attemptsTwo;

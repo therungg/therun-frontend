@@ -14,7 +14,7 @@ const fetchData = async (url: string) => {
 };
 
 export const getGamesPagesFromSearchParams = async (
-    searchParams: URLSearchParams
+    searchParams: URLSearchParams,
 ) => {
     const query = searchParams.get("query");
     const page = searchParams.get("page");
@@ -23,14 +23,14 @@ export const getGamesPagesFromSearchParams = async (
     return getGamesPage(
         query ?? undefined,
         page ? parseInt(page) : undefined,
-        pageSize ? parseInt(pageSize) : undefined
+        pageSize ? parseInt(pageSize) : undefined,
     );
 };
 
 export const getGamesPage = async (
     query: string = "",
     page: number = 1,
-    pageSize: number = 10
+    pageSize: number = 10,
 ): Promise<PaginatedGameResult> => {
     const url = `${process.env.NEXT_PUBLIC_DATA_URL}/games?query=${query}&page=${page}&pageSize=${pageSize}`;
 

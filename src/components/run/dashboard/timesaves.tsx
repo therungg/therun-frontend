@@ -14,7 +14,7 @@ export const Timesaves = ({
     splits: SplitsHistory[];
 }) => {
     const [lastN, setLastN] = useState(
-        history.length < 500 ? history.length : 500
+        history.length < 500 ? history.length : 500,
     );
     const [sortColumn, setSortColumn] = useState("best");
     const [sortAsc, setSortAsc] = useState(true);
@@ -127,10 +127,10 @@ export const Timesaves = ({
                     <div className="me-2">Table mode</div>
                     <Switch
                         onColor={getComputedStyle(
-                            document.documentElement
+                            document.documentElement,
                         ).getPropertyValue("--bs-link-color")}
                         offColor={getComputedStyle(
-                            document.documentElement
+                            document.documentElement,
                         ).getPropertyValue("--bs-tertiary-bg")}
                         name={"switch"}
                         onChange={(checked) => {
@@ -284,7 +284,7 @@ export const Timesaves = ({
                             </th>
                             <th
                                 className={`d-none d-lg-table-cell ${getSortableClassName(
-                                    "timesave"
+                                    "timesave",
                                 )}`}
                                 onClick={() => changeSort("timesave")}
                             >
@@ -301,7 +301,7 @@ export const Timesaves = ({
                             </th>
                             <th
                                 className={`d-none d-lg-table-cell ${getSortableClassName(
-                                    "10"
+                                    "10",
                                 )}`}
                                 onClick={() => changeSort("10")}
                             >
@@ -319,7 +319,7 @@ export const Timesaves = ({
                             </th>
                             <th
                                 className={`d-none d-lg-table-cell ${getSortableClassName(
-                                    "50"
+                                    "50",
                                 )}`}
                                 onClick={() => changeSort("50")}
                             >
@@ -339,7 +339,7 @@ export const Timesaves = ({
                             </th>
                             <th
                                 className={`d-none d-lg-table-cell ${getSortableClassName(
-                                    "#"
+                                    "#",
                                 )}`}
                                 onClick={() => changeSort("#")}
                             >
@@ -399,7 +399,7 @@ export const Timesaves = ({
                                         {split.timeSave == 0
                                             ? "Need gold"
                                             : `${(split.timeSave * 100).toFixed(
-                                                  2
+                                                  2,
                                               )}%`}
                                     </td>
 

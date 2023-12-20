@@ -49,7 +49,7 @@ export const Difference = ({
         withMillis,
         false,
         human,
-        true
+        true,
     )}`;
 
     return (
@@ -59,7 +59,7 @@ export const Difference = ({
                 true,
                 false,
                 human,
-                false
+                false,
             )}`}
         >
             <div
@@ -67,8 +67,8 @@ export const Difference = ({
                     color: isGold
                         ? "var(--bs-secondary)"
                         : diff <= 0
-                        ? "var(--bs-link-color)"
-                        : "var(--bs-red)",
+                          ? "var(--bs-link-color)"
+                          : "var(--bs-red)",
                 }}
             >
                 {formatted}
@@ -89,7 +89,7 @@ export const DifferenceFromOne = ({
         Math.abs(diff).toString(),
         withMillis,
         false,
-        true
+        true,
     )}`;
 
     return (
@@ -97,7 +97,7 @@ export const DifferenceFromOne = ({
             title={`${diff <= 0 ? "-" : "+"}${getFormattedString(
                 Math.abs(diff).toString(),
                 true,
-                false
+                false,
             )}`}
         >
             <div
@@ -141,7 +141,7 @@ export const getDurationAsTimer = (duration: string) => {
     const hours = Math.floor(milli / (60 * 60 * 1000));
 
     return `${formatNumber(hours)}:${formatNumber(minutes)}:${formatNumber(
-        seconds
+        seconds,
     )}`;
 };
 
@@ -151,7 +151,7 @@ export const getFormattedString = (
     padded: boolean = false,
     human: boolean = true,
     difference: boolean = false,
-    showDays = false
+    showDays = false,
 ) => {
     let milli = parseInt(duration);
     if (milli < 0) milli *= -1;
@@ -162,7 +162,7 @@ export const getFormattedString = (
     const seconds = String(Math.floor((milli / 1000) % 60)).padStart(2, "0");
     const minutes = String(Math.floor((milli / (60 * 1000)) % 60)).padStart(
         2,
-        "0"
+        "0",
     );
     const hours = Math.floor(milli / (60 * 60 * 1000));
     const days = Math.floor(hours / 24);
@@ -232,7 +232,7 @@ export const DurationToFormatted = ({
                     padded,
                     human,
                     false,
-                    withDays
+                    withDays,
                 )}
             </abbr>
         </>

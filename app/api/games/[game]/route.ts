@@ -10,7 +10,7 @@ export async function GET(
         params,
     }: {
         params: { game: string };
-    }
+    },
 ) {
     const { game } = params;
     const gameData = await getGame(game);

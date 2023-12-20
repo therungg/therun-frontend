@@ -24,7 +24,7 @@ export async function POST(request: Request) {
             (error, info) => {
                 if (error) return reject(error);
                 return resolve(info);
-            }
+            },
         );
     });
 

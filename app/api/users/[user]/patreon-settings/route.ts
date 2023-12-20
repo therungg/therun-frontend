@@ -8,7 +8,7 @@ export async function POST(
         params,
     }: {
         params: { user: string };
-    }
+    },
 ) {
     const { user } = params;
     const userData = await savePatreonSettings(user, await request.json());

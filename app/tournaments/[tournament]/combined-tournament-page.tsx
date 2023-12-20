@@ -26,17 +26,17 @@ export const CombinedTournamentPage = async ({
     const tab = searchParams.tab ?? "live";
 
     const guidingTournament: Tournament = await getTournamentByName(
-        params.guidingTournament
+        params.guidingTournament,
     );
 
     const tournamentPromises = tournamentNames.map((tournamentName) =>
-        getTournamentData(tournamentName)
+        getTournamentData(tournamentName),
     );
     const allTournamentData: { tournament: Tournament; liveData: LiveRun[] }[] =
         await Promise.all(tournamentPromises);
 
     const allTournaments = allTournamentData.map(
-        (tournamentData) => tournamentData.tournament
+        (tournamentData) => tournamentData.tournament,
     );
 
     const allLiveRuns = allTournamentData
@@ -54,10 +54,10 @@ export const CombinedTournamentPage = async ({
 };
 
 const getTournamentData = async (
-    tournamentName: string
+    tournamentName: string,
 ): Promise<{ tournament: Tournament; liveData: LiveRun[] }> => {
     const tournament: Tournament = await getTournamentByName(
-        safeEncodeURI(tournamentName)
+        safeEncodeURI(tournamentName),
     );
 
     tournament.game = tournament.eligibleRuns[0].game;
@@ -66,7 +66,7 @@ const getTournamentData = async (
     let liveData: LiveRun[] = await getLiveRunsForTournament(tournament);
 
     liveData = liveData.filter((data) =>
-        isLiveDataEligibleForTournament(data, tournament)
+        isLiveDataEligibleForTournament(data, tournament),
     );
 
     return { tournament, liveData };

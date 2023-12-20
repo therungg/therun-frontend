@@ -39,7 +39,7 @@ export const Game: React.FunctionComponent<GameProps> = ({ data }) => {
 
     const sortedCategories = React.useMemo(() => {
         return [...stats.categoryLeaderboards].sort((a, b) =>
-            a.stats.totalRunTime < b.stats.totalRunTime ? 1 : -1
+            a.stats.totalRunTime < b.stats.totalRunTime ? 1 : -1,
         );
     }, [stats]);
 
@@ -51,7 +51,7 @@ export const Game: React.FunctionComponent<GameProps> = ({ data }) => {
 
     const currentCategoryLeaderboard = React.useMemo(() => {
         return stats.categoryLeaderboards.find(
-            (leaderboard) => leaderboard.categoryName == currentCategory
+            (leaderboard) => leaderboard.categoryName == currentCategory,
         );
     }, [stats, currentCategory]);
 
@@ -114,7 +114,7 @@ export const Game: React.FunctionComponent<GameProps> = ({ data }) => {
                                             stats.categoryLeaderboards.find(
                                                 (leaderboard) =>
                                                     leaderboard.categoryName ==
-                                                    currentCategory
+                                                    currentCategory,
                                             ) as CategoryLeaderboard
                                         }
                                     />

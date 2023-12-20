@@ -13,7 +13,7 @@ function usePagination<T>(
     initialData: PaginatedData<T> | T[],
     fetchPage?: PaginationFetcher<T>,
     pageSize: number = 10,
-    debounce: number = 400
+    debounce: number = 400,
 ): PaginationHook<T> {
     let fullData = initialData;
 

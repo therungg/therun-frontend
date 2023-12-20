@@ -56,13 +56,13 @@ export const GenericTournament = ({
 
     const { data } = useSWR(
         `/api/tournaments/${tournament.name}/stats`,
-        fetcher
+        fetcher,
     );
     const { data: qualifierData } = useSWR(
         tournament.qualifier
             ? `/api/tournaments/${tournament.qualifier}`
             : null,
-        fetcher
+        fetcher,
     );
 
     const lastMessage = useReconnectWebsocket();
@@ -74,7 +74,7 @@ export const GenericTournament = ({
 
             if (isLiveDataEligibleForTournament(newData.run, tournament)) {
                 let newMap: LiveDataMap = JSON.parse(
-                    JSON.stringify(updatedLiveDataMap)
+                    JSON.stringify(updatedLiveDataMap),
                 );
 
                 if (newData.type == "UPDATE") {
@@ -87,7 +87,7 @@ export const GenericTournament = ({
                     if (recommendedStream == user) {
                         const newRecommendedStream = getRecommendedStream(
                             newMap,
-                            username
+                            username,
                         );
                         setCurrentlyViewing(newRecommendedStream);
                     }
@@ -96,7 +96,7 @@ export const GenericTournament = ({
                 newMap = liveRunArrayToMap(
                     Object.values(newMap),
                     sort,
-                    tournamentLeaderboards
+                    tournamentLeaderboards,
                 );
 
                 setUpdatedLiveDataMap(newMap);
@@ -106,12 +106,12 @@ export const GenericTournament = ({
 
     useEffect(() => {
         let newMap: LiveDataMap = JSON.parse(
-            JSON.stringify(updatedLiveDataMap)
+            JSON.stringify(updatedLiveDataMap),
         );
         newMap = liveRunArrayToMap(
             Object.values(newMap),
             sort,
-            tournamentLeaderboards
+            tournamentLeaderboards,
         );
 
         setUpdatedLiveDataMap(newMap);
@@ -184,7 +184,7 @@ export const GenericTournament = ({
                                 <a
                                     href={
                                         tournament.description?.includes(
-                                            "Moist"
+                                            "Moist",
                                         )
                                             ? "/moist-setup"
                                             : "/upload-key"
@@ -321,7 +321,7 @@ export const GenericTournament = ({
                                         onClick={() => {
                                             const searchElement =
                                                 document.getElementById(
-                                                    "gameSearch"
+                                                    "gameSearch",
                                                 );
                                             if (
                                                 document.activeElement !==
@@ -357,7 +357,7 @@ export const GenericTournament = ({
 
                                 {Object.values(updatedLiveDataMap)
                                     .filter((run) =>
-                                        liveRunIsInSearch(run, search)
+                                        liveRunIsInSearch(run, search),
                                     )
                                     .map((liveRun) => {
                                         return (
@@ -368,7 +368,7 @@ export const GenericTournament = ({
                                                 key={liveRun.user}
                                                 onClick={() => {
                                                     setCurrentlyViewing(
-                                                        liveRun.user
+                                                        liveRun.user,
                                                     );
                                                 }}
                                             >

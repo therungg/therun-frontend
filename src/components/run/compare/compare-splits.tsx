@@ -44,7 +44,7 @@ export const CompareSplits = ({
             : statsData.stats;
 
     let catLeaderboard = stats.categoryLeaderboards.find(
-        (leaderboard) => leaderboard.categoryNameDisplay == category
+        (leaderboard) => leaderboard.categoryNameDisplay == category,
     );
 
     if (!catLeaderboard) {
@@ -93,7 +93,7 @@ export const CompareSplits = ({
                 onChange={async (e) => {
                     const selectedUser = e.currentTarget.value.split(" (")[0];
                     const fullUser = catLeaderboard.pbLeaderboard.find(
-                        (l) => l.username == selectedUser
+                        (l) => l.username == selectedUser,
                     );
                     const correctUrl = fullUser.url;
                     setCurrentUser(selectedUser);
@@ -116,11 +116,11 @@ export const CompareSplits = ({
                                 await fetch(
                                     getSplitsHistoryUrl(
                                         gamesData.meta.historyFilename,
-                                        false
+                                        false,
                                     ),
                                     {
                                         mode: "cors",
-                                    }
+                                    },
                                 )
                             ).json();
 
@@ -131,11 +131,11 @@ export const CompareSplits = ({
                                     await fetch(
                                         getSplitsHistoryUrl(
                                             gamesData.meta.historyFilename,
-                                            true
+                                            true,
                                         ),
                                         {
                                             mode: "cors",
-                                        }
+                                        },
                                     )
                                 ).json();
                             }

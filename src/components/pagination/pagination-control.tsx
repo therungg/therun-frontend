@@ -57,7 +57,7 @@ export default function PaginationControl<T>({
 export const buildItems = (
     active: number,
     last: number,
-    minimalLayout: boolean = false
+    minimalLayout: boolean = false,
 ) => {
     const maxItems = minimalLayout ? 3 : 5;
     const middle = minimalLayout ? 2 : 3;
@@ -75,8 +75,8 @@ export const buildItems = (
         active < maxItems - 1
             ? 1
             : active > last - (middle - 1)
-            ? last - middle
-            : active - (middle - 1);
+              ? last - middle
+              : active - (middle - 1);
     const end = active > last - (middle - 1) ? last + 1 : begin + maxItems;
 
     for (let number = begin; number < end; number++) {
@@ -87,7 +87,7 @@ export const buildItems = (
                 active={number == active}
             >
                 {number}
-            </Pagination.Item>
+            </Pagination.Item>,
         );
     }
 

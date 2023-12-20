@@ -5,7 +5,7 @@ import { PropsFrom } from "../../../../types/utility.types";
 import styles from "./skeleton.module.scss";
 
 export const SkeletonPersonalBests = (
-    props: PropsFrom<typeof ContentLoader>
+    props: PropsFrom<typeof ContentLoader>,
 ) => (
     <ContentLoader
         uniqueKey="skeleton-personal-bests"

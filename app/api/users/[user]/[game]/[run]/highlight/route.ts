@@ -8,7 +8,7 @@ export async function PUT(
         params,
     }: {
         params: { user: string; game: string; run: string };
-    }
+    },
 ) {
     const { user } = params;
     const game = safeDecodeURI(params.game);
@@ -23,7 +23,7 @@ const highlight = async (user, game, category) => {
     const url = `${
         process.env.NEXT_PUBLIC_DATA_URL
     }/users/${user}/${safeEncodeURI(game)}/${safeEncodeURI(
-        category
+        category,
     )}/highlight`;
     const res = await fetch(url, {
         method: "PUT",

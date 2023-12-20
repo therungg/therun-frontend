@@ -31,10 +31,10 @@ export const Golds = ({
     const [useHistory, setUseHistory] = useState(
         history.length > 20000
             ? [...history]
-            : JSON.parse(JSON.stringify(history))
+            : JSON.parse(JSON.stringify(history)),
     );
     const [useSplits, setUseSplits] = useState(
-        JSON.parse(JSON.stringify(splits))
+        JSON.parse(JSON.stringify(splits)),
     );
     const [hasMergedSplits, setHasMergedSplits] = useState(false);
 
@@ -77,7 +77,7 @@ export const Golds = ({
         useHistory
             .filter(
                 (run) =>
-                    run.splits.length > key - 1 && run.startedAt != undefined
+                    run.splits.length > key - 1 && run.startedAt != undefined,
             )
             .forEach((run) => {
                 if (run.startedAt == undefined) return false;
@@ -94,7 +94,7 @@ export const Golds = ({
                     .map((search) => {
                         return parseInt(
                             splits.find((thisSplit) => thisSplit.name == search)
-                                .single.bestPossibleTime
+                                .single.bestPossibleTime,
                         );
                     })
                     .reduce((a, partial) => a + partial, 0);
@@ -110,7 +110,7 @@ export const Golds = ({
                         parseInt(split.single.averageTime),
                         parseInt(split.single.stdDev),
                         parseInt(currentSplit.splitTime),
-                        true
+                        true,
                     )
                 ) {
                     return false;
@@ -184,7 +184,7 @@ export const Golds = ({
 
     if (splitFilter !== "no-filter") {
         allGoldsSorted = allGoldsSorted.filter(
-            (gold) => gold.split === splitFilter
+            (gold) => gold.split === splitFilter,
         );
     }
 
@@ -288,14 +288,14 @@ export const Golds = ({
 
     const collapseSubsplits = async () => {
         let firstSubSplit = useSplits.findIndex((split: SplitsHistory) =>
-            split.name.toString().startsWith("-")
+            split.name.toString().startsWith("-"),
         );
 
         while (firstSubSplit !== -1) {
             removeSplit(firstSubSplit);
             // await new Promise(r => setTimeout(r, 5));
             firstSubSplit = useSplits.findIndex((split: SplitsHistory) =>
-                split.name.toString().startsWith("-")
+                split.name.toString().startsWith("-"),
             );
         }
     };
@@ -385,10 +385,10 @@ export const Golds = ({
                                 }}
                                 onClick={() => {
                                     setUseSplits(
-                                        JSON.parse(JSON.stringify(splits))
+                                        JSON.parse(JSON.stringify(splits)),
                                     );
                                     setUseHistory(
-                                        JSON.parse(JSON.stringify(history))
+                                        JSON.parse(JSON.stringify(history)),
                                     );
                                     setHasMergedSplits(false);
                                 }}
@@ -478,7 +478,7 @@ export const Golds = ({
                                                         href={"#"}
                                                         onClick={() => {
                                                             setSplitFilter(
-                                                                best.split
+                                                                best.split,
                                                             );
                                                         }}
                                                     >
@@ -508,7 +508,7 @@ export const Golds = ({
                                                                 <div>
                                                                     {best.mergedSplits.map(
                                                                         (
-                                                                            name
+                                                                            name,
                                                                         ) => (
                                                                             <div
                                                                                 key={
@@ -519,7 +519,7 @@ export const Golds = ({
                                                                                     name
                                                                                 }
                                                                             </div>
-                                                                        )
+                                                                        ),
                                                                     )}
                                                                 </div>
                                                             }
@@ -543,7 +543,7 @@ export const Golds = ({
                                                     iso={moment(best.date)
                                                         .add(
                                                             best.totalTime,
-                                                            "milliseconds"
+                                                            "milliseconds",
                                                         )
                                                         .toISOString()}
                                                 />
@@ -582,7 +582,7 @@ export const Golds = ({
                                         history={useHistory}
                                         split={useSplits.find(
                                             (split) =>
-                                                split.name === splitFilter
+                                                split.name === splitFilter,
                                         )}
                                     />
                                 </div>
@@ -593,7 +593,7 @@ export const Golds = ({
                                         history={useHistory}
                                         split={useSplits.find(
                                             (split) =>
-                                                split.name === splitFilter
+                                                split.name === splitFilter,
                                         )}
                                     />
                                 </div>
@@ -659,7 +659,7 @@ export const Golds = ({
                                                     iso={moment(gold.date)
                                                         .add(
                                                             gold.totalTime,
-                                                            "milliseconds"
+                                                            "milliseconds",
                                                         )
                                                         .toISOString()}
                                                 />

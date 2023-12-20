@@ -14,7 +14,7 @@ export const SplitGraph = ({
     total?: boolean;
 }) => {
     const [splitTimeKey, setSplitTimeKey] = useState(
-        total ? "totalTime" : "splitTime"
+        total ? "totalTime" : "splitTime",
     );
     const [groupKey, setGroupKey] = useState(total ? "total" : "single");
 
@@ -42,7 +42,7 @@ export const SplitGraph = ({
                 isOutlier(
                     parseInt(split[groupKey].averageTime),
                     parseInt(split[groupKey].stdDev),
-                    parseInt(currentSplit[splitTimeKey])
+                    parseInt(currentSplit[splitTimeKey]),
                 )
             ) {
                 return;
@@ -55,7 +55,7 @@ export const SplitGraph = ({
                 return;
 
             const group = Math.floor(
-                parseInt(currentSplit[splitTimeKey]) / 1000
+                parseInt(currentSplit[splitTimeKey]) / 1000,
             );
 
             if (!lowestGroup || group < lowestGroup) lowestGroup = group;
@@ -96,7 +96,7 @@ export const SplitGraph = ({
                 }}
                 data={{
                     labels: Array.from(sorted.keys()).map((seconds) =>
-                        getFormattedString((seconds * 1000).toString())
+                        getFormattedString((seconds * 1000).toString()),
                     ),
                     datasets: [
                         {

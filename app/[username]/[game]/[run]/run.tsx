@@ -65,7 +65,7 @@ export default function RunDetail({
             !!run.gameTimeData &&
             run.gameTimeData.personalBest &&
             parseInt(run.gameTimeData.personalBest) &&
-            !forceRealTime
+            !forceRealTime,
     );
     const [gameData, setGameData] = useState(null);
     const [dataLoading, setDataLoading] = useState(false);

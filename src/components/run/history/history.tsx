@@ -40,14 +40,14 @@ export const History = ({
     const startFilter = history.filter((h) => !!h.startedAt);
 
     const start = new Date(
-        new Date(startFilter[0].startedAt).setHours(0, 0, 0)
+        new Date(startFilter[0].startedAt).setHours(0, 0, 0),
     );
     const end = new Date(
         new Date(startFilter[startFilter.length - 1].endedAt).setHours(
             23,
             59,
-            59
-        )
+            59,
+        ),
     );
 
     const [startDate, setStartDate] = useState(start);
@@ -95,7 +95,7 @@ export const History = ({
         history = history.filter(
             (h) =>
                 new Date(h.startedAt) <= endDate &&
-                new Date(h.endedAt) >= startDate
+                new Date(h.endedAt) >= startDate,
         );
     }
 
@@ -144,14 +144,14 @@ export const History = ({
             }
         } else {
             history = history.filter(
-                (run) => run.splits.length > parseInt(runsPast)
+                (run) => run.splits.length > parseInt(runsPast),
             );
         }
     }
 
     const updateSplitFilters = (
         newSplitFilter: string,
-        newTotalTime: boolean
+        newTotalTime: boolean,
     ) => {
         if (newSplitFilter === "none") return;
 
@@ -164,7 +164,7 @@ export const History = ({
         let max = 100000000000000000;
         const relevantHistory = history.filter(
             (h) =>
-                h.splits.length > newSplitFilter && !!h.splits[newSplitFilter]
+                h.splits.length > newSplitFilter && !!h.splits[newSplitFilter],
         );
 
         relevantHistory.forEach((h) => {
@@ -378,7 +378,7 @@ export const History = ({
 
     if (hasDateFilter) {
         filterTextDate = `${moment(startDate).format("L")} - ${moment(
-            endDate
+            endDate,
         ).format("L")}`;
     }
 
@@ -393,15 +393,15 @@ export const History = ({
             splitFilter === "full"
                 ? "Full run time"
                 : splitFilter === "duration"
-                ? "Run duration"
-                : splits[splitFilter as number].name;
+                  ? "Run duration"
+                  : splits[splitFilter as number].name;
 
         filterTextSplitFilter = `${splitName} ${splitFilterType} `;
 
         switch (splitFilterType) {
             case "between":
                 filterTextSplitFilter += `${getFormattedString(
-                    splitFilterOne
+                    splitFilterOne,
                 )} and ${getFormattedString(splitFilterTwo)}`;
                 break;
             case "under":
@@ -570,7 +570,7 @@ export const History = ({
                                             className={"form-select"}
                                             onChange={(e) => {
                                                 setSplitFilter(
-                                                    e.currentTarget.value
+                                                    e.currentTarget.value,
                                                 );
                                                 let currentTotalTime =
                                                     totalTime;
@@ -583,13 +583,13 @@ export const History = ({
                                                 ) {
                                                     currentTotalTime = true;
                                                     setTotalTime(
-                                                        currentTotalTime
+                                                        currentTotalTime,
                                                     );
                                                 }
 
                                                 updateSplitFilters(
                                                     e.currentTarget.value,
-                                                    currentTotalTime
+                                                    currentTotalTime,
                                                 );
                                             }}
                                             value={splitFilter}
@@ -679,7 +679,7 @@ export const History = ({
                                                         setTotalTime(checked);
                                                         updateSplitFilters(
                                                             splitFilter,
-                                                            checked
+                                                            checked,
                                                         );
                                                     }}
                                                     checked={totalTime}
@@ -722,7 +722,7 @@ export const History = ({
                                             style={{ width: "8rem" }}
                                             onChange={(e) => {
                                                 setSplitFilterType(
-                                                    e.currentTarget.value
+                                                    e.currentTarget.value,
                                                 );
                                             }}
                                         >
@@ -736,7 +736,7 @@ export const History = ({
                                                             {split}
                                                         </option>
                                                     );
-                                                }
+                                                },
                                             )}
                                         </select>
 
@@ -753,11 +753,11 @@ export const History = ({
                                                 value={displaySplitFilterOne}
                                                 onChange={(e) => {
                                                     const res = timeToMillis(
-                                                        e.target.value
+                                                        e.target.value,
                                                     );
                                                     setSplitFilterOne(res);
                                                     setDisplaySplitFilterOne(
-                                                        e.target.value
+                                                        e.target.value,
                                                     );
                                                 }}
                                             />
@@ -789,11 +789,11 @@ export const History = ({
                                                     onChange={(e) => {
                                                         const res =
                                                             timeToMillis(
-                                                                e.target.value
+                                                                e.target.value,
                                                             );
                                                         setSplitFilterTwo(res);
                                                         setDisplaySplitFilterTwo(
-                                                            e.target.value
+                                                            e.target.value,
                                                         );
                                                     }}
                                                 />
@@ -926,7 +926,7 @@ export const History = ({
                                             className={"form-select"}
                                             onChange={(e) => {
                                                 setRunsPast(
-                                                    e.currentTarget.value
+                                                    e.currentTarget.value,
                                                 );
                                             }}
                                             value={runsPast}
@@ -1034,7 +1034,7 @@ export const History = ({
                                               ? run.splits.length - 1
                                               : splitFilter
                                       ].splitTime,
-                                true
+                                true,
                             );
                         }
 
@@ -1064,7 +1064,7 @@ export const History = ({
                                                 >
                                                     {run.time
                                                         ? getFormattedString(
-                                                              run.time
+                                                              run.time,
                                                           )
                                                         : "Reset"}
                                                 </div>
@@ -1072,21 +1072,23 @@ export const History = ({
                                             <Col>
                                                 {run.time
                                                     ? getFormattedString(
-                                                          run.time
+                                                          run.time,
                                                       )
                                                     : getFormattedString(
-                                                          run.duration
+                                                          run.duration,
                                                       )}
                                             </Col>
                                             <Col>
                                                 {run.time
                                                     ? "Finished run!"
                                                     : run.splits.length ==
-                                                      splits.length
-                                                    ? splits[splits.length - 1]
-                                                          .name
-                                                    : splits[run.splits.length]
-                                                          .name}
+                                                        splits.length
+                                                      ? splits[
+                                                            splits.length - 1
+                                                        ].name
+                                                      : splits[
+                                                            run.splits.length
+                                                        ].name}
                                             </Col>
                                             <Col
                                                 className={
@@ -1530,7 +1532,7 @@ const buildItems = (active: number, last: number) => {
                 active={number == active}
             >
                 {number}
-            </Pagination.Item>
+            </Pagination.Item>,
         );
     }
 

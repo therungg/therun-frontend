@@ -18,7 +18,7 @@ export const RecommendedStream = ({
     const [dark, setDark] = useState(true);
     const [activeLiveRun, setActiveLiveRun] = useState(liveRun);
     const [selectedSplit, setSelectedSplit] = useState(
-        liveRun.currentSplitIndex
+        liveRun.currentSplitIndex,
     );
     const [recommendedStyles, setRecommendedStyles] = useState({});
     const [manuallyChangedSplit, setManuallyChangedSplit] = useState(false);
@@ -108,7 +108,7 @@ export const RecommendedStream = ({
 
     const currentSplitSplitStatus = getSplitStatus(
         liveRun,
-        liveRun.currentSplitIndex
+        liveRun.currentSplitIndex,
     );
 
     return (
@@ -122,7 +122,7 @@ export const RecommendedStream = ({
                         setSelectedSplit(e);
 
                         setManuallyChangedSplit(
-                            e !== activeLiveRun.currentSplitIndex
+                            e !== activeLiveRun.currentSplitIndex,
                         );
                     }}
                 />
@@ -185,10 +185,10 @@ export const getSplitStatus = (liveRun: LiveRun, k: number) => {
         liveRun.currentSplitIndex < k
             ? "future"
             : liveRun.currentSplitIndex == k
-            ? "current"
-            : time
-            ? "completed"
-            : "skipped";
+              ? "current"
+              : time
+                ? "completed"
+                : "skipped";
     const name = split.name.toString();
     const isSubSplit = name ? name.startsWith("-") : false;
     const isActive = status == "current";

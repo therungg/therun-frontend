@@ -68,7 +68,7 @@ export const TournamentStats = ({ data, tournament, gameTime = true }) => {
                                                     </td>
                                                 </tr>
                                             );
-                                        }
+                                        },
                                     )}
                                 </tbody>
                             </Table>

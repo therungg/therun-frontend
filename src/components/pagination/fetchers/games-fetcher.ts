@@ -10,7 +10,7 @@ import {
 export const gamesFetcher: PaginationFetcher<Game> = async (
     page: number,
     pageSize: number,
-    query: string
+    query: string,
 ): Promise<PaginatedData<Game>> => {
     const baseUrl = await getBaseUrl();
 

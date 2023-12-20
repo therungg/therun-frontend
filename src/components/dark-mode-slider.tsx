@@ -13,7 +13,7 @@ export const DarkModeSlider = () => {
                     id="Switch"
                     onChange={(checked) => {
                         setColorMode(
-                            !checked.target.checked ? "dark" : "light"
+                            !checked.target.checked ? "dark" : "light",
                         );
                     }}
                     checked={getColorMode() == "light"}

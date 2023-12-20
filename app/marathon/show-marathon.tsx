@@ -25,7 +25,7 @@ export default function ShowMarathon({
             const data = JSON.parse(lastMessage.data);
             const user = data.user;
             let newMap: LiveDataMap = JSON.parse(
-                JSON.stringify(updatedLiveDataMap)
+                JSON.stringify(updatedLiveDataMap),
             );
 
             if (data.type == "UPDATE") {

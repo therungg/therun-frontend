@@ -3,7 +3,7 @@ import { safeEncodeURI } from "~src/utils/uri";
 export const upload = async (
     file: File,
     contents: string,
-    sessionId: string
+    sessionId: string,
 ) => {
     if (file.size > 50 * 1000 * 1000) {
         return {
@@ -14,7 +14,7 @@ export const upload = async (
     const baseUrl = process.env.NEXT_PUBLIC_UPLOAD_URL;
 
     const url = `${baseUrl}?filename=${safeEncodeURI(
-        file.name
+        file.name,
     )}&sessionId=${sessionId}`;
 
     const presignedUrl = await fetch(url, {

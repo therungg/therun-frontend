@@ -59,7 +59,7 @@ export const CategoryOverview = ({
                                             href={"#"}
                                             onClick={() => {
                                                 setCurrentCategory(
-                                                    category.categoryName
+                                                    category.categoryName,
                                                 );
                                             }}
                                         >

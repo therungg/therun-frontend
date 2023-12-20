@@ -41,7 +41,7 @@ const User = ({
     liveData,
 }: UserPageProps) => {
     const [useGameTime, setUseGameTime] = useState(
-        hasGameTime && defaultGameTime
+        hasGameTime && defaultGameTime,
     );
     const [currentGame, setCurrentGame] = useState("all-games");
     const [, forceUpdate] = useReducer((x) => x + 1, 0);

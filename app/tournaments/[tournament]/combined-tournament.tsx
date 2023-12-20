@@ -58,9 +58,9 @@ export const CombinedTournament = ({
     const { data } = useSWR(
         tournaments.map(
             (tournament) =>
-                `/api/tournaments/${safeEncodeURI(tournament.name)}/stats`
+                `/api/tournaments/${safeEncodeURI(tournament.name)}/stats`,
         ),
-        multiFetcher
+        multiFetcher,
     );
 
     useEffect(() => {
@@ -89,7 +89,7 @@ export const CombinedTournament = ({
 
             if (isLiveDataEligibleForTournaments(newData.run, tournaments)) {
                 let newMap: LiveDataMap = JSON.parse(
-                    JSON.stringify(updatedLiveDataMap)
+                    JSON.stringify(updatedLiveDataMap),
                 );
 
                 if (newData.type == "UPDATE") {
@@ -102,7 +102,7 @@ export const CombinedTournament = ({
                     if (recommendedStream == user) {
                         const newRecommendedStream = getRecommendedStream(
                             newMap,
-                            username
+                            username,
                         );
                         setCurrentlyViewing(newRecommendedStream);
                     }
@@ -113,7 +113,7 @@ export const CombinedTournament = ({
                     sort,
                     tournamentLeaderboards,
                     null,
-                    standingsMap
+                    standingsMap,
                 );
 
                 setUpdatedLiveDataMap(newMap);
@@ -123,14 +123,14 @@ export const CombinedTournament = ({
 
     useEffect(() => {
         let newMap: LiveDataMap = JSON.parse(
-            JSON.stringify(updatedLiveDataMap)
+            JSON.stringify(updatedLiveDataMap),
         );
         newMap = liveRunArrayToMap(
             Object.values(newMap),
             sort,
             tournamentLeaderboards,
             null,
-            standingsMap
+            standingsMap,
         );
 
         setUpdatedLiveDataMap(newMap);
@@ -227,7 +227,7 @@ export const CombinedTournament = ({
                                 guidingTournament.eligiblePeriods.length > 0
                                     ? guidingTournament.eligiblePeriods[0]
                                           .startDate
-                                    : guidingTournament.startDate
+                                    : guidingTournament.startDate,
                             )
                         }
                         renderer={renderCountdownToStart}
@@ -239,7 +239,7 @@ export const CombinedTournament = ({
                                 guidingTournament.eligiblePeriods.length > 1
                                     ? guidingTournament.eligiblePeriods[1]
                                           .endDate
-                                    : guidingTournament.endDate
+                                    : guidingTournament.endDate,
                             )
                         }
                         renderer={renderCountdown}
@@ -338,7 +338,7 @@ export const CombinedTournament = ({
                                         onClick={() => {
                                             const searchElement =
                                                 document.getElementById(
-                                                    "gameSearch"
+                                                    "gameSearch",
                                                 );
                                             if (
                                                 document.activeElement !==
@@ -373,7 +373,7 @@ export const CombinedTournament = ({
 
                                 {Object.values(updatedLiveDataMap)
                                     .filter((run) =>
-                                        liveRunIsInSearch(run, search)
+                                        liveRunIsInSearch(run, search),
                                     )
                                     .map((liveRun) => {
                                         const relevantTournament =
@@ -383,14 +383,14 @@ export const CombinedTournament = ({
                                                         return (
                                                             equalsCaseInsensitive(
                                                                 run.game,
-                                                                liveRun.game
+                                                                liveRun.game,
                                                             ) &&
                                                             equalsCaseInsensitive(
                                                                 run.category,
-                                                                liveRun.category
+                                                                liveRun.category,
                                                             )
                                                         );
-                                                    }
+                                                    },
                                                 );
                                             });
                                         return (
@@ -402,7 +402,7 @@ export const CombinedTournament = ({
                                                 style={{ marginBottom: "1rem" }}
                                                 onClick={() => {
                                                     setCurrentlyViewing(
-                                                        liveRun.user
+                                                        liveRun.user,
                                                     );
                                                 }}
                                             >

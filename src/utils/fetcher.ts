@@ -7,7 +7,7 @@ export const multiFetcher = async (urls: string[]) => {
     const results = await Promise.allSettled(
         urls.map((url) => {
             return fetcher(url);
-        })
+        }),
     );
 
     return results.map((result) => {

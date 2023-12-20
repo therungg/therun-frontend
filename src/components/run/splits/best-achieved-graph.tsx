@@ -40,7 +40,7 @@ export const BestAchievedGraph = ({
                 isOutlier(
                     parseInt(split.total.averageTime),
                     parseInt(split.total.stdDev),
-                    parseInt(currentSplit.totalTime)
+                    parseInt(currentSplit.totalTime),
                 )
             ) {
                 return;

@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
 
     const result = await getAllLiveRuns(
         searchParams.get("game"),
-        searchParams.get("category")
+        searchParams.get("category"),
     );
 
     return apiResponse({ body: result });

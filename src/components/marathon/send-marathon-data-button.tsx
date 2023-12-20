@@ -37,7 +37,7 @@ export const SendMarathonDataButton = ({
                 onClick={async () => {
                     if (
                         confirm(
-                            `Are you sure you want to send the event ${data.name} to ESA?`
+                            `Are you sure you want to send the event ${data.name} to ESA?`,
                         )
                     ) {
                         await sendMarathonData(sessionId, data);

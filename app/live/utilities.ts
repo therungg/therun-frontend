@@ -50,21 +50,22 @@ export const liveRunIsInSearch = (liveRun: LiveRun, search: string) => {
 
 export const getRecommendedStream = (
     liveDataMap: LiveDataMap,
-    username?: string
+    username?: string,
 ): string => {
     let recommendedStream = "";
     const lowercaseUsername = username?.toLowerCase();
 
     if (lowercaseUsername) {
         const user = Object.values(liveDataMap).find(
-            (data) => data.user && data.user.toLowerCase() === lowercaseUsername
+            (data) =>
+                data.user && data.user.toLowerCase() === lowercaseUsername,
         );
         recommendedStream = user?.user || "";
     }
 
     if (!recommendedStream) {
         const streamingRun = Object.values(liveDataMap).find(
-            (data) => data.currentlyStreaming && data.currentSplitIndex > -1
+            (data) => data.currentlyStreaming && data.currentSplitIndex > -1,
         );
         if (streamingRun) recommendedStream = streamingRun.user;
     }
@@ -80,7 +81,7 @@ export const getRecommendedStream = (
 export const isWebsocketDataProcessable = (
     data: any,
     forceGame?: string | null,
-    forceCategory?: string | null
+    forceCategory?: string | null,
 ): boolean => {
     if (!data) return false;
 
