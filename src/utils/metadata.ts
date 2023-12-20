@@ -51,7 +51,6 @@ export default function buildMetadata(props?: MetadataProps): Metadata {
         title,
         description,
         keywords: props?.keywords || ["TheRun", "Speedrun", "Statistics"],
-        themeColor: "#007c00",
         manifest: "/site.webmanifest",
         referrer: "strict-origin-when-cross-origin",
         other: {
@@ -94,7 +93,7 @@ export default function buildMetadata(props?: MetadataProps): Metadata {
 }
 
 export async function getUserProfilePhoto(
-    username: string
+    username: string,
 ): Promise<OpenGraphImage[] | undefined> {
     let response: Response;
     try {
@@ -118,12 +117,12 @@ export async function getUserProfilePhoto(
 }
 
 export async function getGameImage(
-    game: string
+    game: string,
 ): Promise<OpenGraphImage[] | undefined> {
     let response: Response;
     try {
         response = await fetch(
-            `${getBaseUrl()}/api/games/${safeEncodeURI(game)}/global`
+            `${getBaseUrl()}/api/games/${safeEncodeURI(game)}/global`,
         );
     } catch (e) {
         // Allow this one since it's server-side
