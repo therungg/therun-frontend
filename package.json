@@ -11,6 +11,8 @@
     "prepush": "next lint --fix"
   },
   "dependencies": {
+    "@casl/ability": "^6.5.0",
+    "@casl/react": "^3.1.0",
     "@uiw/react-heat-map": "^2.0.5",
     "@ungap/structured-clone": "^1.0.1",
     "@vercel/edge-config": "^0.1.10",

@@ -11,6 +11,7 @@ import {
     Twitter as TwitterIcon,
     Youtube as YoutubeIcon,
 } from "react-bootstrap-icons";
+import { Can, subject } from "~src/rbac/Can.component";
 
 //TODO:: Would be better to use some form lib, not sure why i built it this way
 export const Userform = ({ username, session, userData }) => {
@@ -49,44 +50,41 @@ export const Userform = ({ username, session, userData }) => {
                 Display({ username, form, showTimezone: !!userData.timezone })}
             {editingInfo && Edit({ username, form, setForm })}
 
-            {session.username &&
-                [username, "joeys64", "therun_gg"].includes(
-                    session.username
-                ) && (
-                    <div className="mt-3 d-flex align-items-center">
-                        <Button
-                            variant={"primary"}
-                            className="w-240p"
-                            onClick={async () => {
-                                if (editingInfo) {
-                                    await fetch(
-                                        `/api/users/${session.id}-${username}`,
-                                        {
-                                            method: "PUT",
-                                            body: JSON.stringify(form),
-                                        }
-                                    );
-                                }
+            <Can I={"edit"} this={subject("user", username)}>
+                <div className="mt-3 d-flex align-items-center">
+                    <Button
+                        variant={"primary"}
+                        className="w-240p"
+                        onClick={async () => {
+                            if (editingInfo) {
+                                await fetch(
+                                    `/api/users/${session.id}-${username}`,
+                                    {
+                                        method: "PUT",
+                                        body: JSON.stringify(form),
+                                    }
+                                );
+                            }
 
-                                setEditingInfo(!editingInfo);
+                            setEditingInfo(!editingInfo);
+                        }}
+                    >
+                        {editingInfo ? "Update info" : "Edit info"}
+                    </Button>
+                    {editingInfo && (
+                        <Button
+                            variant={"danger"}
+                            className="ms-3"
+                            onClick={() => {
+                                setEditingInfo(false);
                             }}
                         >
-                            {editingInfo ? "Update info" : "Edit info"}
+                            {" "}
+                            Cancel
                         </Button>
-                        {editingInfo && (
-                            <Button
-                                variant={"danger"}
-                                className="ms-3"
-                                onClick={() => {
-                                    setEditingInfo(false);
-                                }}
-                            >
-                                {" "}
-                                Cancel
-                            </Button>
-                        )}
-                    </div>
-                )}
+                    )}
+                </div>
+            </Can>
         </div>
     );
 };

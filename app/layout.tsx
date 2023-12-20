@@ -21,7 +21,7 @@ export default async function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <body>
-                <Providers>
+                <Providers user={session}>
                     <Scripts />
                     <Header
                         username={session?.username}
