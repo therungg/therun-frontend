@@ -1,12 +1,12 @@
 import { LiveRun } from "~app/live/live.types";
 import { Col } from "react-bootstrap";
 import { useEffect, useRef, useState } from "react";
-import { TwitchEmbed } from "../../vendor/react-twitch-embed/dist/index";
 import { LiverunStatsPanel } from "./liverun-stats-panel";
 import { SplitsViewer } from "./splits-viewer";
 import patreonStyles from "../patreon/patreon-styles";
 import { usePatreons } from "../patreon/use-patreons";
 import { getColorMode } from "~src/utils/colormode";
+import { TwitchEmbed } from "react-twitch-embed";
 
 export const RecommendedStream = ({
     liveRun,
