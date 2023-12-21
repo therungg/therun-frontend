@@ -15,6 +15,7 @@ import { LiveDataMap, LiveProps } from "~app/live/live.types";
 import { getLiveRunForUser } from "~src/lib/live-runs";
 import { SkeletonLiveRun } from "~src/components/skeleton/live/skeleton-live-run";
 import { Search as SearchIcon } from "react-bootstrap-icons";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 
 export const Live = ({
     liveDataMap,
@@ -32,6 +33,7 @@ export const Live = ({
     const [loadingUserData, setLoadingUserData] = useState(true);
     const lastMessage = useReconnectWebsocket();
 
+    const [parent] = useAutoAnimate(/* optional config */);
     useEffect(() => {
         if (lastMessage !== null) {
             const data = JSON.parse(lastMessage.data);
@@ -144,7 +146,7 @@ export const Live = ({
                     />
                 </div>
             </Row>
-            <Row xs={1} lg={2} xl={3} className="g-3">
+            <Row xs={1} lg={2} xl={3} className="g-3" ref={parent}>
                 {Object.values(updatedLiveDataMap).length == 0 && (
                     <div>Unfortunately, nobody is running live now...</div>
                 )}
