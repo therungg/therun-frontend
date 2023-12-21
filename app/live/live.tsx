@@ -16,6 +16,7 @@ import { getLiveRunForUser } from "~src/lib/live-runs";
 import { SkeletonLiveRun } from "~src/components/skeleton/live/skeleton-live-run";
 import { Search as SearchIcon } from "react-bootstrap-icons";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
+import { useDebounce } from "usehooks-ts";
 
 export const Live = ({
     liveDataMap,
@@ -33,7 +34,12 @@ export const Live = ({
     const [loadingUserData, setLoadingUserData] = useState(true);
     const lastMessage = useReconnectWebsocket();
 
-    const [parent] = useAutoAnimate(/* optional config */);
+    const debouncedUpdatedLiveDataMap = useDebounce(updatedLiveDataMap, 1200);
+
+    const [parent] = useAutoAnimate({
+        duration: 600,
+        easing: "ease-out",
+    });
     useEffect(() => {
         if (lastMessage !== null) {
             const data = JSON.parse(lastMessage.data);
@@ -156,7 +162,7 @@ export const Live = ({
                         liveRunIsInSearch(liveRun, search),
                     ).length == 0 && <div>No runs matched your search!</div>}
 
-                {Object.values(updatedLiveDataMap)
+                {Object.values(debouncedUpdatedLiveDataMap)
                     .filter((liveRun) => liveRunIsInSearch(liveRun, search))
                     .map((liveRun) => {
                         return (
