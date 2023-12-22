@@ -39,13 +39,15 @@ export const createSession = async (code: string) => {
 };
 
 export const getSession = async (): Promise<User> => {
-    let sessionId = cookies().get("session_id")?.value ?? "";
-    if (sessionId === "undefined") sessionId = "";
+    const defaultSession = { id: "", username: "", picture: "" };
+    const sessionId = cookies().get("session_id")?.value;
+
+    if (!sessionId || sessionId === "undefined") return defaultSession;
     const session = await getExistingSession(sessionId);
 
     if (session) {
         return { id: sessionId, ...session };
     }
 
-    return { id: "", username: "", picture: "" };
+    return defaultSession;
 };
