@@ -27,10 +27,9 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
     );
 
     const splitToUse = totalTime ? "total" : "single";
-    const splitsFile = decodeURIComponent(run.splitsFile as string).replace(
-        "%",
-        "%25",
-    );
+    const splitsFile = decodeURIComponent(run.splitsFile as string)
+        .replaceAll("%", "%25")
+        .replaceAll("++", "%2B+");
     const url = `${process.env.NEXT_PUBLIC_SPLITS_CLOUDFRONT_URL}/${splitsFile}`;
 
     return (
