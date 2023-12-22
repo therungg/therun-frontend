@@ -39,7 +39,8 @@ export const createSession = async (code: string) => {
 };
 
 export const getSession = async (): Promise<User> => {
-    const sessionId = cookies().get("session_id")?.value ?? "";
+    let sessionId = cookies().get("session_id")?.value ?? "";
+    if (sessionId === "undefined") sessionId = "";
     const session = await getExistingSession(sessionId);
 
     if (session) {
