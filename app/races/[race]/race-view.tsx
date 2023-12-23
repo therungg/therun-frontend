@@ -1,27 +1,37 @@
 "use client";
 
-import { Race, RaceParticipant } from "~app/races/races.types";
+import {
+    Race,
+    RaceParticipant,
+    RaceParticipantWithLiveData,
+} from "~app/races/races.types";
 import { arrayToMap } from "~src/utils/array";
 import { User } from "../../../types/session.types";
-import { Button, Table } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import { readyRace, unreadyRace } from "~src/lib/races";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useRaceWebsocket } from "~src/components/websocket/use-reconnect-websocket";
+import { RaceParticipantOverview } from "~app/races/[race]/race-participant-overview";
 
 interface RaceDetailProps {
     race: Race;
     user?: User;
 }
 
+export type RaceParticipantsMap = Map<string, RaceParticipant>;
+
 export const RaceDetail = ({ race, user }: RaceDetailProps) => {
+    const [raceState, setRaceState] = useState(race);
+
     const router = useRouter();
     const [readyLoading, setReadyLoading] = useState(false);
-    const [raceParticipantsMap, setRaceParticipantsMap] = useState<
-        Map<string, RaceParticipant>
-    >(arrayToMap(race.participants || [], "user"));
+    const [raceParticipantsMap, setRaceParticipantsMap] =
+        useState<RaceParticipantsMap>(
+            arrayToMap(raceState.participants || [], "user"),
+        );
 
-    const raceIsPending = race.status === "pending";
+    const raceIsPending = raceState.status === "pending";
     const userParticipates = user && raceParticipantsMap.has(user.username);
 
     const userIsReady =
@@ -32,8 +42,8 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
         // TODO: This should not be inline (seperate component) and obviously should not refresh the page but update the state
         setReadyLoading(true);
         const result = ready
-            ? await readyRace(race.raceId)
-            : await unreadyRace(race.raceId);
+            ? await readyRace(raceState.raceId)
+            : await unreadyRace(raceState.raceId);
         setReadyLoading(false);
         if (result.raceId) {
             router.refresh();
@@ -43,7 +53,7 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
         }
     };
 
-    const lastMessage = useRaceWebsocket(race.raceId);
+    const lastMessage = useRaceWebsocket(raceState.raceId);
 
     useEffect(() => {
         if (
@@ -51,9 +61,6 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
             lastMessage.data &&
             lastMessage.data.raceId
         ) {
-            // eslint-disable-next-line no-console
-            console.log("New race event", lastMessage.data, lastMessage.type);
-
             if (lastMessage.type === "participantUpdate") {
                 // Create a new Map for the updated state
                 const updatedMap = new Map(raceParticipantsMap);
@@ -64,13 +71,41 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
                 );
 
                 setRaceParticipantsMap(updatedMap);
+
+                const index = raceState.participants?.findIndex(
+                    (participant) =>
+                        participant.user ===
+                        (lastMessage.data as RaceParticipant).user,
+                );
+
+                const newRace = { ...raceState };
+
+                if (index && index > -1) {
+                    (newRace.participants as RaceParticipantWithLiveData[])[
+                        index
+                    ] = lastMessage.data as RaceParticipant;
+                } else {
+                    newRace.participants?.push(
+                        lastMessage.data as RaceParticipant,
+                    );
+                }
+
+                setRaceState(newRace);
+            }
+            if (lastMessage.type === "raceUpdate") {
+                const newRace = {
+                    ...raceState,
+                    ...lastMessage.data,
+                };
+                setRaceState(newRace as Race);
             }
         }
     }, [lastMessage]);
 
     return (
         <div>
-            {JSON.stringify(Array.from(raceParticipantsMap))}
+            <div className={"h1"}>{raceState.customName}</div>
+            <div className={"h3"}>Status: {raceState.status}</div>
             {readyLoading && <div>Setting ready/unready</div>}
             {raceIsPending && userParticipates && (
                 <div>
@@ -86,14 +121,7 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
                     )}
                 </div>
             )}
-            <Table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </Table>
+            <RaceParticipantOverview race={raceState} />
         </div>
     );
 };

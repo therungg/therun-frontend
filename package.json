@@ -11,10 +11,10 @@
     "prepush": "next lint --fix"
   },
   "dependencies": {
-    "@hookform/resolvers": "^3.2.0",
-    "@types/hapi__joi": "^17.1.9",
     "@casl/ability": "^6.5.0",
     "@casl/react": "^3.1.0",
+    "@hookform/resolvers": "^3.2.0",
+    "@types/hapi__joi": "^17.1.9",
     "@uiw/react-heat-map": "^2.0.5",
     "@ungap/structured-clone": "^1.0.1",
     "@vercel/edge-config": "^0.1.10",
@@ -38,6 +38,7 @@
     "node-blob": "^0.0.2",
     "nodemailer": "^6.7.5",
     "nprogress": "^0.2.0",
+    "rc-progress": "^3.5.1",
     "react": "^18.2.0",
     "react-async": "^10.0.1",
     "react-autosuggest": "^10.1.0",

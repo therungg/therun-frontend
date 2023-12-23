@@ -33,7 +33,7 @@ export interface Race {
     topParticipants: RaceParticipant[];
 
     // Only available in race detail, gives full list
-    participants?: RaceParticipant[];
+    participants?: RaceParticipantWithLiveData[];
 }
 
 export type RaceParticipant = {
@@ -42,6 +42,27 @@ export type RaceParticipant = {
     status: RaceParticipantStatus;
     pb: string;
 };
+
+export interface RaceParticipantWithLiveData extends RaceParticipant {
+    liveData?: RaceLiveData;
+}
+
+export interface RaceLiveData {
+    runPercentageSplits: number;
+    runPercentageTime: number;
+    currentSplitIndex: number;
+    totalSplits: number;
+    currentTime: number;
+    gameTime: boolean;
+    startedAt: number;
+    currentSplitName: string;
+    currentPrediction: number;
+    streaming: boolean;
+    delta: number;
+    runFinished: boolean;
+    bestPossibleTime: number;
+    timeToNextSplit?: number;
+}
 
 // TODO:: determine which rules are possible
 export interface RaceRule {}
