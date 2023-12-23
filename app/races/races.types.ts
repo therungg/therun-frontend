@@ -17,7 +17,6 @@ export interface Race {
     creator: string;
     createdAt: string;
     startsAt?: string | null;
-    startedAt?: string | null;
     game: string;
     category: string;
     canStartEarly: boolean;

@@ -38,7 +38,6 @@
     "node-blob": "^0.0.2",
     "nodemailer": "^6.7.5",
     "nprogress": "^0.2.0",
-    "rc-progress": "^3.5.1",
     "react": "^18.2.0",
     "react-async": "^10.0.1",
     "react-autosuggest": "^10.1.0",

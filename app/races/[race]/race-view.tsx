@@ -13,6 +13,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useRaceWebsocket } from "~src/components/websocket/use-reconnect-websocket";
 import { RaceParticipantOverview } from "~app/races/[race]/race-participant-overview";
+import { FromNow } from "~src/components/util/datetime";
 
 interface RaceDetailProps {
     race: Race;
@@ -80,7 +81,7 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
 
                 const newRace = { ...raceState };
 
-                if (index && index > -1) {
+                if (index !== undefined && index > -1) {
                     (newRace.participants as RaceParticipantWithLiveData[])[
                         index
                     ] = lastMessage.data as RaceParticipant;
@@ -106,6 +107,14 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
         <div>
             <div className={"h1"}>{raceState.customName}</div>
             <div className={"h3"}>Status: {raceState.status}</div>
+            <div className={"h3"}>
+                Started:{" "}
+                {raceState.startTime ? (
+                    <FromNow time={raceState.startTime} />
+                ) : (
+                    <>Race pending</>
+                )}
+            </div>
             {readyLoading && <div>Setting ready/unready</div>}
             {raceIsPending && userParticipates && (
                 <div>

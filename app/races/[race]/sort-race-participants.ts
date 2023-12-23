@@ -14,7 +14,12 @@ export const sortRaceParticipants = (race: Race) => {
         if (a.liveData && b.liveData) {
             return b.liveData.runPercentageTime - a.liveData.runPercentageTime;
         }
-
+        if (a.pb && !b.pb) {
+            return -1;
+        }
+        if (!a.pb && b.pb) {
+            return 1;
+        }
         // Parse pb to handle "0", 0, and undefined correctly
         const aPb = parseInt(a.pb);
         const bPb = parseInt(b.pb);
