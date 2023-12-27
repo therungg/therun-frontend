@@ -7,13 +7,14 @@ import {
 } from "~app/races/races.types";
 import { arrayToMap } from "~src/utils/array";
 import { User } from "../../../types/session.types";
-import { Button } from "react-bootstrap";
+import { Button, Col, Row } from "react-bootstrap";
 import { readyRace, unreadyRace } from "~src/lib/races";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useRaceWebsocket } from "~src/components/websocket/use-reconnect-websocket";
 import { RaceParticipantOverview } from "~app/races/[race]/race-participant-overview";
 import { FromNow } from "~src/components/util/datetime";
+import { RaceParticipantDetail } from "~app/races/[race]/race-participant-detail";
 
 interface RaceDetailProps {
     race: Race;
@@ -105,15 +106,24 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
 
     return (
         <div>
-            <div className={"h1"}>{raceState.customName}</div>
-            <div className={"h3"}>Status: {raceState.status}</div>
-            <div className={"h3"}>
-                Started:{" "}
-                {raceState.startTime ? (
-                    <FromNow time={raceState.startTime} />
-                ) : (
-                    <>Race pending</>
-                )}
+            <div
+                className={
+                    "d-flex flex-column justify-content-center align-items-center mb-4"
+                }
+            >
+                <h1>{raceState.customName}</h1>
+                <h3>Status: {raceState.status}</h3>
+                <h3>
+                    Started{" "}
+                    {raceState.startTime ? (
+                        <FromNow time={raceState.startTime} />
+                    ) : (
+                        <>Race pending</>
+                    )}
+                </h3>
+                <h3>
+                    {raceState.game} - {raceState.category}
+                </h3>
             </div>
             {readyLoading && <div>Setting ready/unready</div>}
             {raceIsPending && userParticipates && (
@@ -130,7 +140,14 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
                     )}
                 </div>
             )}
-            <RaceParticipantOverview race={raceState} />
+            <Row>
+                <Col xl={4}>
+                    <RaceParticipantOverview race={raceState} />
+                </Col>
+                <Col xl={8}>
+                    <RaceParticipantDetail race={raceState} />
+                </Col>
+            </Row>
         </div>
     );
 };
