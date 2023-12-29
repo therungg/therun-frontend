@@ -3,7 +3,7 @@
 import { Race, RaceParticipant } from "~app/races/races.types";
 import { Button, Table } from "react-bootstrap";
 import Link from "next/link";
-import { joinRace, unjoinRace } from "~src/lib/races";
+import { createFictionalTestRace, joinRace, unjoinRace } from "~src/lib/races";
 import { User } from "../../types/session.types";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -14,7 +14,8 @@ import {
 } from "~src/components/websocket/use-reconnect-websocket";
 import Countdown from "react-countdown";
 import { DurationToFormatted } from "~src/components/util/datetime";
-import { Can } from "~src/rbac/Can.component";
+import { Can, subject } from "~src/rbac/Can.component";
+import { UserLink } from "~src/components/links/links";
 
 interface RaceOverviewProps {
     races: Race[];
@@ -99,17 +100,33 @@ export const RaceOverview = ({
                     <Button>Create race</Button>
                 </a>
             </Can>
+            <Can I={"moderate"} a={"race"}>
+                <Button
+                    onClick={async () => {
+                        await createFictionalTestRace();
+                        // router.refresh();
+                    }}
+                >
+                    Create fictional test race
+                </Button>
+            </Can>
 
             {registeringForRace && <div>Registering for race...</div>}
             <Table responsive bordered striped>
                 <thead>
                     <tr>
-                        <th>name</th>
-                        <th>url</th>
-                        <th>ready/joined</th>
+                        <th>Name</th>
+                        <th>Created By</th>
+                        <th>Url</th>
+                        <th>Ready/Joined</th>
                         <th>Top participants</th>
-                        <th>status</th>
-                        {user?.id && <th>join/leave</th>}
+                        <th>Status</th>
+                        <Can I={"join"} a={"race"}>
+                            <th>Join/Leave</th>
+                        </Can>
+                        <Can I={"edit"} a={"race"}>
+                            <th>Delete</th>
+                        </Can>
                     </tr>
                 </thead>
                 <tbody>
@@ -125,6 +142,9 @@ export const RaceOverview = ({
                         return (
                             <tr key={race.raceId}>
                                 <td>{race.customName}</td>
+                                <td>
+                                    <UserLink username={race.creator} />
+                                </td>
                                 <td>
                                     <Link href={`/races/${race.raceId}`}>
                                         Link
@@ -187,7 +207,7 @@ export const RaceOverview = ({
                                             </div>
                                         )}
                                 </td>
-                                {user?.id && (
+                                <Can I={"join"} a={"race"}>
                                     <td>
                                         {userIsInRace &&
                                             race.status === "pending" && (
@@ -258,7 +278,16 @@ export const RaceOverview = ({
                                                 </Button>
                                             )}
                                     </td>
-                                )}
+                                </Can>
+
+                                <td>
+                                    <Can
+                                        I={"edit"}
+                                        this={subject("race", race)}
+                                    >
+                                        (Delete)
+                                    </Can>
+                                </td>
                             </tr>
                         );
                     })}

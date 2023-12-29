@@ -55,6 +55,17 @@ export const createRace = async (input: CreateRaceInput) => {
     return (await result.json()).result as Race;
 };
 
+export const createFictionalTestRace = async () => {
+    const baseUrl = await getBaseUrl();
+    const url = `${baseUrl}/api/races/createFictionalTestRace`;
+
+    const result = await fetch(url, {
+        method: "POST",
+    });
+
+    return (await result.json()).result as Race;
+};
+
 export const joinRace = (raceId: string): Promise<Race> =>
     updateRaceStatus(raceId, "join");
 export const unjoinRace = (raceId: string): Promise<Race> =>

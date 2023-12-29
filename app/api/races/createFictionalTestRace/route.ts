@@ -1,12 +1,11 @@
-import { NextRequest } from "next/server";
-import { apiResponse } from "~app/api/response";
 import { getSession } from "~src/actions/session.action";
 import { getApiKey } from "~src/actions/api-key.action";
+import { apiResponse } from "~app/api/response";
 import { confirmPermission } from "~src/rbac/confirm-permission";
 
 const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
 
-export async function POST(request: NextRequest) {
+export async function POST() {
     const session = await getSession();
     const apiKey = getApiKey();
 
@@ -26,9 +25,7 @@ export async function POST(request: NextRequest) {
         });
     }
 
-    const url = `${racesApiUrl}`;
-
-    const body = await request.text();
+    const url = `${racesApiUrl}/testRace`;
 
     const postResult = await fetch(url, {
         method: "POST",
@@ -36,7 +33,6 @@ export async function POST(request: NextRequest) {
             Authorization: `Bearer ${session.id}`,
             "x-api-key": apiKey,
         },
-        body,
     });
 
     if (postResult.status !== 200) {
