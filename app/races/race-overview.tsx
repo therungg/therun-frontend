@@ -3,7 +3,12 @@
 import { Race, RaceParticipant } from "~app/races/races.types";
 import { Button, Table } from "react-bootstrap";
 import Link from "next/link";
-import { createFictionalTestRace, joinRace, unjoinRace } from "~src/lib/races";
+import {
+    createFictionalTestRace,
+    deleteRace,
+    joinRace,
+    unjoinRace,
+} from "~src/lib/races";
 import { User } from "../../types/session.types";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -285,7 +290,16 @@ export const RaceOverview = ({
                                         I={"edit"}
                                         this={subject("race", race)}
                                     >
-                                        (Delete)
+                                        <Button
+                                            onClick={async () => {
+                                                // TODO: This should not be inline (seperate component)
+                                                await deleteRace(race.raceId);
+
+                                                router.push("/races");
+                                            }}
+                                        >
+                                            Delete race
+                                        </Button>
                                     </Can>
                                 </td>
                             </tr>

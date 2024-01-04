@@ -55,6 +55,17 @@ export const createRace = async (input: CreateRaceInput) => {
     return (await result.json()).result as Race;
 };
 
+export const deleteRace = async (raceId: string) => {
+    const baseUrl = await getBaseUrl();
+    const url = `${baseUrl}/api/races/${raceId}`;
+
+    const result = await fetch(url, {
+        method: "DELETE",
+    });
+
+    return (await result.json()).result;
+};
+
 export const createFictionalTestRace = async () => {
     const baseUrl = await getBaseUrl();
     const url = `${baseUrl}/api/races/createFictionalTestRace`;
