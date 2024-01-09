@@ -7,14 +7,14 @@ import {
 } from "~app/races/races.types";
 import { arrayToMap } from "~src/utils/array";
 import { User } from "../../../types/session.types";
-import { Button, Col, Row } from "react-bootstrap";
-import { readyRace, unreadyRace } from "~src/lib/races";
+import { Col, Row } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useRaceWebsocket } from "~src/components/websocket/use-reconnect-websocket";
 import { RaceParticipantOverview } from "~app/races/[race]/race-participant-overview";
 import { FromNow } from "~src/components/util/datetime";
 import { RaceParticipantDetail } from "~app/races/[race]/race-participant-detail";
+import { ReadyRaceButton } from "~app/races/components/buttons/ready-race-button";
+import { UnreadyRaceButton } from "~app/races/components/buttons/unready-race-button";
 
 interface RaceDetailProps {
     race: Race;
@@ -26,34 +26,18 @@ export type RaceParticipantsMap = Map<string, RaceParticipant>;
 export const RaceDetail = ({ race, user }: RaceDetailProps) => {
     const [raceState, setRaceState] = useState(race);
 
-    const router = useRouter();
-    const [readyLoading, setReadyLoading] = useState(false);
     const [raceParticipantsMap, setRaceParticipantsMap] =
         useState<RaceParticipantsMap>(
             arrayToMap(raceState.participants || [], "user"),
         );
 
-    const raceIsPending = raceState.status === "pending";
+    const raceIsPending =
+        raceState.status === "pending" || raceState.status === "starting";
     const userParticipates = user && raceParticipantsMap.has(user.username);
 
     const userIsReady =
         userParticipates &&
         raceParticipantsMap.get(user?.username)?.status === "ready";
-
-    const onReadyClick = async (ready: boolean) => {
-        // TODO: This should not be inline (seperate component) and obviously should not refresh the page but update the state
-        setReadyLoading(true);
-        const result = ready
-            ? await readyRace(raceState.raceId)
-            : await unreadyRace(raceState.raceId);
-        setReadyLoading(false);
-        if (result.raceId) {
-            router.refresh();
-        } else {
-            // eslint-disable-next-line no-console
-            console.error(result);
-        }
-    };
 
     const lastMessage = useRaceWebsocket(raceState.raceId);
 
@@ -125,19 +109,10 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
                     {raceState.game} - {raceState.category}
                 </h3>
             </div>
-            {readyLoading && <div>Setting ready/unready</div>}
             {raceIsPending && userParticipates && (
                 <div>
-                    {!userIsReady && (
-                        <Button onClick={() => onReadyClick(true)}>
-                            Ready up
-                        </Button>
-                    )}
-                    {userIsReady && (
-                        <Button onClick={() => onReadyClick(false)}>
-                            Unready
-                        </Button>
-                    )}
+                    {!userIsReady && <ReadyRaceButton raceId={race.raceId} />}
+                    {userIsReady && <UnreadyRaceButton raceId={race.raceId} />}
                 </div>
             )}
             <Row>

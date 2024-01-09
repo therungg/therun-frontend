@@ -1,11 +1,9 @@
 "use client";
 
 import { Race, RaceParticipant } from "~app/races/races.types";
-import { Button, Table } from "react-bootstrap";
+import { Button, Form, Table } from "react-bootstrap";
 import Link from "next/link";
-import { deleteRace, joinRace, unjoinRace } from "~src/lib/races";
 import { User } from "../../types/session.types";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { arrayToMap } from "~src/utils/array";
 import {
@@ -17,6 +15,10 @@ import { DurationToFormatted } from "~src/components/util/datetime";
 import { Can, subject } from "~src/rbac/Can.component";
 import { UserLink } from "~src/components/links/links";
 import { createFictionalTestRace } from "~src/actions/races/create-fictional-test-race.action";
+import { SubmitButton } from "~src/actions/components/submit-button";
+import { LeaveRaceButton } from "~app/races/components/buttons/leave-race-button";
+import { DeleteRaceButton } from "~app/races/components/buttons/delete-race-button";
+import { JoinRaceButton } from "~app/races/components/buttons/join-race-button";
 
 interface RaceOverviewProps {
     pendingRaces: Race[];
@@ -33,8 +35,6 @@ export const RaceOverview = ({
     raceParticipations,
 }: RaceOverviewProps) => {
     const races = pendingRaces;
-    const router = useRouter();
-    const [registeringForRace, setRegisteringForRace] = useState(false);
     const [stateRaces, setStateRaces] = useState(races);
     const [raceParticipationMap, setRaceParticipationMap] = useState(
         arrayToMap<RaceParticipant, "raceId">(raceParticipations, "raceId"),
@@ -105,16 +105,13 @@ export const RaceOverview = ({
                 </a>
             </Can>
             <Can I={"moderate"} a={"race"}>
-                <Button
-                    onClick={async () => {
-                        await createFictionalTestRace();
-                    }}
-                >
-                    Create fictional test race
-                </Button>
+                <Form action={createFictionalTestRace}>
+                    <SubmitButton
+                        innerText={"Create Fictional Test Race"}
+                        pendingText={"Creating Race..."}
+                    />
+                </Form>
             </Can>
-
-            {registeringForRace && <div>Registering for race...</div>}
             <Table responsive bordered striped>
                 <thead>
                     <tr>
@@ -215,31 +212,9 @@ export const RaceOverview = ({
                                         {userIsInRace &&
                                             race.status === "pending" && (
                                                 <div>
-                                                    <Button
-                                                        onClick={async () => {
-                                                            // TODO: This should not be inline (seperate component) and obviously should not refresh the page but update the state
-                                                            setRegisteringForRace(
-                                                                true,
-                                                            );
-                                                            const result =
-                                                                await unjoinRace(
-                                                                    race.raceId,
-                                                                );
-                                                            setRegisteringForRace(
-                                                                false,
-                                                            );
-                                                            if (result.raceId) {
-                                                                router.refresh();
-                                                            } else {
-                                                                // eslint-disable-next-line no-console
-                                                                console.error(
-                                                                    result,
-                                                                );
-                                                            }
-                                                        }}
-                                                    >
-                                                        Leave Race
-                                                    </Button>
+                                                    <LeaveRaceButton
+                                                        raceId={race.raceId}
+                                                    />
                                                     <div>
                                                         Status:{" "}
                                                         {
@@ -250,35 +225,9 @@ export const RaceOverview = ({
                                             )}
                                         {!userIsInRace &&
                                             race.status === "pending" && (
-                                                <Button
-                                                    onClick={async () => {
-                                                        // TODO: This should not be inline (seperate component)
-                                                        setRegisteringForRace(
-                                                            true,
-                                                        );
-                                                        const result =
-                                                            await joinRace(
-                                                                race.raceId,
-                                                            );
-                                                        setRegisteringForRace(
-                                                            false,
-                                                        );
-                                                        if (result.raceId) {
-                                                            const redirectUrl = `/races/${race.raceId}`;
-
-                                                            router.push(
-                                                                redirectUrl,
-                                                            );
-                                                        } else {
-                                                            // eslint-disable-next-line no-console
-                                                            console.error(
-                                                                result,
-                                                            );
-                                                        }
-                                                    }}
-                                                >
-                                                    Join race
-                                                </Button>
+                                                <JoinRaceButton
+                                                    raceId={race.raceId}
+                                                />
                                             )}
                                     </td>
                                 </Can>
@@ -288,16 +237,9 @@ export const RaceOverview = ({
                                         I={"edit"}
                                         this={subject("race", race)}
                                     >
-                                        <Button
-                                            onClick={async () => {
-                                                // TODO: This should not be inline (seperate component)
-                                                await deleteRace(race.raceId);
-
-                                                router.push("/races");
-                                            }}
-                                        >
-                                            Delete race
-                                        </Button>
+                                        <DeleteRaceButton
+                                            raceId={race.raceId}
+                                        />
                                     </Can>
                                 </td>
                             </tr>

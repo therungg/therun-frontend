@@ -89,10 +89,6 @@ export const deleteRace = async (raceId: string) => {
     return (await result.json()).result;
 };
 
-export const joinRace = (raceId: string): Promise<Race> =>
-    updateRaceStatus(raceId, "join");
-export const unjoinRace = (raceId: string): Promise<Race> =>
-    updateRaceStatus(raceId, "unjoin");
 export const readyRace = (raceId: string): Promise<Race> =>
     updateRaceStatus(raceId, "ready");
 export const unreadyRace = (raceId: string): Promise<Race> =>
