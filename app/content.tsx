@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import ProgressBar from "next-nprogress-bar";
+import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
 import { Container } from "react-bootstrap";
 import { Helmet } from "react-helmet-async";
 import { useTheme } from "next-themes";
@@ -45,7 +45,6 @@ export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
                 color="#fffd00"
                 options={{ showSpinner: false }}
                 shallowRouting
-                appDirectory
             />
             {children}
         </Container>
