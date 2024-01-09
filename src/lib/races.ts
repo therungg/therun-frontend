@@ -1,12 +1,47 @@
-import { CreateRaceInput, Race, RaceParticipant } from "~app/races/races.types";
+"use server";
+
+import {
+    ActiveRaces,
+    PaginatedRaces,
+    Race,
+    RaceParticipant,
+} from "~app/races/races.types";
 import { getBaseUrl } from "~src/actions/base-url.action";
 
 const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
 
-export const getAllRaces = async (): Promise<Race[]> => {
+export const getAllFinishedRaces = async (): Promise<PaginatedRaces> => {
     const races = await fetch(racesApiUrl, { next: { revalidate: 0 } });
 
-    return (await races.json()).result as Race[];
+    return (await races.json()).result as PaginatedRaces;
+};
+
+export const getAllFinishedRacesByGame = async (
+    game: string,
+): Promise<PaginatedRaces> => {
+    const races = await fetch(`${racesApiUrl}?game=${game}`, {
+        next: { revalidate: 0 },
+    });
+
+    return (await races.json()).result as PaginatedRaces;
+};
+
+export const getAllActiveRaces = async (): Promise<ActiveRaces> => {
+    const races = await fetch(`${racesApiUrl}/active`, {
+        next: { revalidate: 0 },
+    });
+
+    return (await races.json()).result as ActiveRaces;
+};
+
+export const getAllActiveRacesByGame = async (
+    game: string,
+): Promise<ActiveRaces> => {
+    const races = await fetch(`${racesApiUrl}/active?game=${game}`, {
+        next: { revalidate: 0 },
+    });
+
+    return (await races.json()).result as ActiveRaces;
 };
 
 export const getRaceParticipationsByUser = async (
@@ -43,18 +78,6 @@ export const updateRaceStatus = async (
     return (await result.json()).result as Race;
 };
 
-export const createRace = async (input: CreateRaceInput) => {
-    const baseUrl = await getBaseUrl();
-    const url = `${baseUrl}/api/races`;
-
-    const result = await fetch(url, {
-        method: "POST",
-        body: JSON.stringify(input),
-    });
-
-    return (await result.json()).result as Race;
-};
-
 export const deleteRace = async (raceId: string) => {
     const baseUrl = await getBaseUrl();
     const url = `${baseUrl}/api/races/${raceId}`;
@@ -64,17 +87,6 @@ export const deleteRace = async (raceId: string) => {
     });
 
     return (await result.json()).result;
-};
-
-export const createFictionalTestRace = async () => {
-    const baseUrl = await getBaseUrl();
-    const url = `${baseUrl}/api/races/createFictionalTestRace`;
-
-    const result = await fetch(url, {
-        method: "POST",
-    });
-
-    return (await result.json()).result as Race;
 };
 
 export const joinRace = (raceId: string): Promise<Race> =>

@@ -24,15 +24,18 @@ export interface Race {
     customRules: RaceRule[];
     customName: string;
     visible: boolean;
-    participantCount: number;
-    readyParticipantCount: number;
-    startTime?: string;
-
     // Only best 3 participants by pb
     topParticipants: RaceParticipant[];
-
     // Only available in race detail, gives full list
     participants?: RaceParticipantWithLiveData[];
+    participantCount: number;
+    readyParticipantCount: number;
+    finishedParticipantCount: number;
+    startTime: string | null;
+    endTime: string | null;
+    isTestRace: boolean;
+    increment?: number;
+    gameIncrement?: number;
 }
 
 export type RaceParticipant = {
@@ -79,4 +82,18 @@ export type WebsocketRaceMessageType = "raceUpdate" | "participantUpdate";
 export interface WebsocketRaceMessage<T extends Race | RaceParticipant> {
     type: WebsocketRaceMessageType;
     data: T;
+}
+
+export interface PaginatedRaces {
+    page: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+    items: Race[];
+}
+
+export interface ActiveRaces {
+    inProgress: Race[];
+    pending: Race[];
+    starting: Race[];
 }

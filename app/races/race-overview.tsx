@@ -3,12 +3,7 @@
 import { Race, RaceParticipant } from "~app/races/races.types";
 import { Button, Table } from "react-bootstrap";
 import Link from "next/link";
-import {
-    createFictionalTestRace,
-    deleteRace,
-    joinRace,
-    unjoinRace,
-} from "~src/lib/races";
+import { deleteRace, joinRace, unjoinRace } from "~src/lib/races";
 import { User } from "../../types/session.types";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -21,19 +16,23 @@ import Countdown from "react-countdown";
 import { DurationToFormatted } from "~src/components/util/datetime";
 import { Can, subject } from "~src/rbac/Can.component";
 import { UserLink } from "~src/components/links/links";
+import { createFictionalTestRace } from "~src/actions/races/create-fictional-test-race.action";
 
 interface RaceOverviewProps {
-    races: Race[];
+    pendingRaces: Race[];
+    inProgressRaces: Race[];
     user?: User;
     raceParticipations: RaceParticipant[];
 }
 
 //TODO: Very basic first page that just shows some functionality. Proof of concept only.
 export const RaceOverview = ({
-    races,
+    pendingRaces,
+    // inProgressRaces,
     user,
     raceParticipations,
 }: RaceOverviewProps) => {
+    const races = pendingRaces;
     const router = useRouter();
     const [registeringForRace, setRegisteringForRace] = useState(false);
     const [stateRaces, setStateRaces] = useState(races);
@@ -109,7 +108,6 @@ export const RaceOverview = ({
                 <Button
                     onClick={async () => {
                         await createFictionalTestRace();
-                        // router.refresh();
                     }}
                 >
                     Create fictional test race
