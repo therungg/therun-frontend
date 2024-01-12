@@ -50,16 +50,21 @@ export interface RaceParticipantWithLiveData extends RaceParticipant {
 }
 
 export interface RaceLiveData {
+    // How far along is a runner if you look at the split amount (useful when theres no pb yet, to at least have an indication)
     runPercentageSplits: number;
+    // How far along is a runner compared to pb (best way to see how far someone is)
     runPercentageTime: number;
     currentSplitIndex: number;
     totalSplits: number;
     currentTime: number;
     gameTime: boolean;
+    // Important: with this info we can know how far into a split the runner is. Useful to infer percentage in between splits.
     startedAt: number;
     currentSplitName: string;
+    // Not very stable, but can use it
     currentPrediction: number;
     streaming: boolean;
+    // +- to pb currently
     delta: number;
     runFinished: boolean;
     bestPossibleTime: number;
