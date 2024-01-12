@@ -10,6 +10,11 @@
     "prepare": "husky install",
     "prepush": "next lint --fix"
   },
+  "overrides": {
+    "react": "^18.3.0-canary-f1039be4a-20240107",
+    "react-dom": "^18.3.0-canary-f1039be4a-20240107",
+    "next": "^14.0.5-canary.45"
+  },
   "dependencies": {
     "@casl/ability": "^6.5.0",
     "@casl/react": "^3.1.0",

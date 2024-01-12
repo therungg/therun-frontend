@@ -18,7 +18,7 @@ export const RaceActionButton = ({
 }: RaceActionButtonProps) => {
     return (
         <Form action={action}>
-            <input hidden name={"raceId"} value={raceId} />
+            <input hidden name={"raceId"} value={raceId} readOnly />
             <SubmitButton innerText={innerText} pendingText={pendingText} />
         </Form>
     );
