@@ -4,7 +4,7 @@ import { Button, Form } from "react-bootstrap";
 import { countries } from "~src/common/countries";
 import { hasFlag } from "country-flag-icons";
 import { NameAsPatreon } from "../patreon/patreon-name";
-import { TimezoneSelect } from "~src/vendor/timezone-select-js/lib";
+import TimezoneSelect from "react-timezone-select";
 import Image from "next/image";
 import {
     Twitch as TwitchIcon,
