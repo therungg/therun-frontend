@@ -19,6 +19,7 @@ import { LeaveRaceButton } from "~app/races/components/buttons/leave-race-button
 import { JoinRaceButton } from "~app/races/components/buttons/join-race-button";
 import { AbandonRaceButton } from "~app/races/components/buttons/abandon-race-button";
 import { ConfirmFinalTimeForm } from "~app/races/components/forms/confirm-final-time-form";
+import { FinishRaceButton } from "~app/races/components/buttons/finish-race-button";
 
 interface RaceDetailProps {
     race: Race;
@@ -146,7 +147,10 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
                 </div>
             )}
             {raceStarted && (userIsReady || userStarted) && (
-                <AbandonRaceButton raceId={race.raceId} />
+                <div>
+                    <FinishRaceButton raceId={race.raceId} />
+                    <AbandonRaceButton raceId={race.raceId} />
+                </div>
             )}
             <Row>
                 <Col xl={4}>

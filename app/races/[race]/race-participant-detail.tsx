@@ -53,6 +53,12 @@ export const RaceParticipantDetailView = ({
                 PB: <DurationToFormatted duration={participant.pb} />
             </div>
             <div>Status: {participant.status}</div>
+            <div>
+                Final time:{" "}
+                {participant.finalTime && (
+                    <DurationToFormatted duration={participant.finalTime} />
+                )}
+            </div>
             {participant.liveData && (
                 <div>
                     <div>
@@ -98,14 +104,6 @@ export const RaceParticipantDetailView = ({
                         <DifferenceFromOne
                             diff={participant.liveData?.delta as number}
                         />
-                    </div>
-                    <div>
-                        Final time:{" "}
-                        {participant.finalTime && (
-                            <DurationToFormatted
-                                duration={participant.finalTime}
-                            />
-                        )}
                     </div>
                     <div>
                         {participant.liveData && (

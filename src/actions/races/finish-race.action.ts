@@ -1,7 +1,6 @@
 "use server";
 
 import { getSession } from "~src/actions/session.action";
-import { redirect } from "next/navigation";
 
 const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
 
@@ -13,7 +12,7 @@ export async function finishRace(raceInput: FormData) {
         return;
     }
 
-    const url = `${racesApiUrl}/${raceId}/participants`;
+    const url = `${racesApiUrl}/${raceId}/participants/finish`;
 
     await fetch(url, {
         method: "POST",
@@ -21,6 +20,4 @@ export async function finishRace(raceInput: FormData) {
             Authorization: `Bearer ${session.id}`,
         },
     });
-
-    redirect(`/races/${raceId}`);
 }
