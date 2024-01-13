@@ -18,6 +18,7 @@ import { UnreadyRaceButton } from "~app/races/components/buttons/unready-race-bu
 import { LeaveRaceButton } from "~app/races/components/buttons/leave-race-button";
 import { JoinRaceButton } from "~app/races/components/buttons/join-race-button";
 import { AbandonRaceButton } from "~app/races/components/buttons/abandon-race-button";
+import { ConfirmFinalTimeForm } from "~app/races/components/forms/confirm-final-time-form";
 
 interface RaceDetailProps {
     race: Race;
@@ -46,6 +47,11 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
     const userStarted =
         userParticipates &&
         raceParticipantsMap.get(user?.username)?.status === "started";
+
+    const userFinished =
+        userParticipates &&
+        raceParticipantsMap.get(user?.username)?.status === "finished" &&
+        raceParticipantsMap.get(user?.username)?.finalTime;
 
     const lastMessage = useRaceWebsocket(raceState.raceId);
 
@@ -120,6 +126,15 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
                     {raceState.game} - {raceState.category}
                 </h3>
             </div>
+            {userFinished && (
+                <ConfirmFinalTimeForm
+                    raceId={race.raceId}
+                    finalTime={
+                        raceParticipantsMap.get(user?.username)
+                            ?.finalTime as number
+                    }
+                />
+            )}
             {raceIsPending && !userParticipates && (
                 <JoinRaceButton raceId={race.raceId} />
             )}

@@ -100,6 +100,14 @@ export const RaceParticipantDetailView = ({
                         />
                     </div>
                     <div>
+                        Final time:{" "}
+                        {participant.finalTime && (
+                            <DurationToFormatted
+                                duration={participant.finalTime}
+                            />
+                        )}
+                    </div>
+                    <div>
                         {participant.liveData && (
                             <ProgressBar
                                 animated
