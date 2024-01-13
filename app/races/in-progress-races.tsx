@@ -4,7 +4,10 @@ import { Race } from "~app/races/races.types";
 import { UserLink } from "~src/components/links/links";
 import Link from "next/link";
 import { Table } from "react-bootstrap";
-import { DurationToFormatted } from "~src/components/util/datetime";
+import {
+    DurationToFormatted,
+    LocalizedTime,
+} from "~src/components/util/datetime";
 
 export const InProgressRaces = ({ races }: { races: Race[] }) => {
     return (
@@ -55,9 +58,9 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
                                     })}
                             </td>
                             <td>
-                                {new Date(
-                                    race.startTime as string,
-                                ).toLocaleString()}
+                                <LocalizedTime
+                                    date={new Date(race.startTime as string)}
+                                />
                             </td>
                         </tr>
                     );
