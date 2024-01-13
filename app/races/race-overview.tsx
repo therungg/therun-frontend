@@ -75,7 +75,10 @@ export const RaceOverview = ({
                     newRaces.unshift(lastMessage.data);
                 }
                 setStateInProgressPendingRaces(newRaces);
-            } else {
+            } else if (
+                lastMessage.data.status === "starting" ||
+                lastMessage.data.status === "pending"
+            ) {
                 const newRaces = JSON.parse(JSON.stringify(statePendingRaces));
 
                 const index = statePendingRaces.findIndex(

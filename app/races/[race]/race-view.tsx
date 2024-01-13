@@ -15,6 +15,9 @@ import { FromNow } from "~src/components/util/datetime";
 import { RaceParticipantDetail } from "~app/races/[race]/race-participant-detail";
 import { ReadyRaceButton } from "~app/races/components/buttons/ready-race-button";
 import { UnreadyRaceButton } from "~app/races/components/buttons/unready-race-button";
+import { LeaveRaceButton } from "~app/races/components/buttons/leave-race-button";
+import { JoinRaceButton } from "~app/races/components/buttons/join-race-button";
+import { AbandonRaceButton } from "~app/races/components/buttons/abandon-race-button";
 
 interface RaceDetailProps {
     race: Race;
@@ -33,11 +36,16 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
 
     const raceIsPending =
         raceState.status === "pending" || raceState.status === "starting";
+    const raceStarted = raceState.status === "progress";
     const userParticipates = user && raceParticipantsMap.has(user.username);
 
     const userIsReady =
         userParticipates &&
         raceParticipantsMap.get(user?.username)?.status === "ready";
+
+    const userAbandoned =
+        userParticipates &&
+        raceParticipantsMap.get(user?.username)?.status === "abandoned";
 
     const lastMessage = useRaceWebsocket(raceState.raceId);
 
@@ -109,11 +117,18 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
                     {raceState.game} - {raceState.category}
                 </h3>
             </div>
+            {raceIsPending && !userParticipates && (
+                <JoinRaceButton raceId={race.raceId} />
+            )}
             {raceIsPending && userParticipates && (
                 <div>
+                    <LeaveRaceButton raceId={race.raceId} />
                     {!userIsReady && <ReadyRaceButton raceId={race.raceId} />}
                     {userIsReady && <UnreadyRaceButton raceId={race.raceId} />}
                 </div>
+            )}
+            {raceStarted && userParticipates && !userAbandoned && (
+                <AbandonRaceButton raceId={race.raceId} />
             )}
             <Row>
                 <Col xl={4}>

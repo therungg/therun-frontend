@@ -1,3 +1,5 @@
+"use client";
+
 import { Race } from "~app/races/races.types";
 import { UserLink } from "~src/components/links/links";
 import Link from "next/link";
