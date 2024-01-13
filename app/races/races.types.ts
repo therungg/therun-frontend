@@ -43,6 +43,7 @@ export type RaceParticipant = {
     user: string;
     status: RaceParticipantStatus;
     pb: string;
+    finalTime: number | null;
 };
 
 export interface RaceParticipantWithLiveData extends RaceParticipant {

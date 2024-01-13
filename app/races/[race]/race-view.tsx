@@ -43,9 +43,9 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
         userParticipates &&
         raceParticipantsMap.get(user?.username)?.status === "ready";
 
-    const userAbandoned =
+    const userStarted =
         userParticipates &&
-        raceParticipantsMap.get(user?.username)?.status === "abandoned";
+        raceParticipantsMap.get(user?.username)?.status === "started";
 
     const lastMessage = useRaceWebsocket(raceState.raceId);
 
@@ -91,6 +91,9 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
                     ...raceState,
                     ...lastMessage.data,
                 };
+
+                // Needs to be overridden because this is not accurate from the general race websocket
+                newRace.participants = raceState.participants;
                 setRaceState(newRace as Race);
             }
         }
@@ -127,7 +130,7 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
                     {userIsReady && <UnreadyRaceButton raceId={race.raceId} />}
                 </div>
             )}
-            {raceStarted && userParticipates && !userAbandoned && (
+            {raceStarted && (userIsReady || userStarted) && (
                 <AbandonRaceButton raceId={race.raceId} />
             )}
             <Row>

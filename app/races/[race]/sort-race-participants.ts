@@ -2,6 +2,17 @@ import { Race } from "~app/races/races.types";
 
 export const sortRaceParticipants = (race: Race) => {
     return race.participants?.sort((a, b) => {
+        if (a.finalTime && !b.finalTime) {
+            return -1;
+        }
+        if (a.finalTime && !b.finalTime) {
+            return -1;
+        }
+
+        if (a.finalTime && b.finalTime) {
+            return a.finalTime - b.finalTime;
+        }
+
         // Check for liveData presence
         if (a.liveData && !b.liveData) {
             return -1;
