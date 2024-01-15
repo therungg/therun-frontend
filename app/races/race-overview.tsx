@@ -1,6 +1,7 @@
 "use client";
 
 import {
+    PaginatedRaces,
     Race,
     RaceParticipant,
     WebsocketRaceMessage,
@@ -19,10 +20,13 @@ import { createFictionalTestRace } from "~src/actions/races/create-fictional-tes
 import { SubmitButton } from "~src/actions/components/submit-button";
 import { InProgressRaces } from "~app/races/in-progress-races";
 import { PendingRaces } from "~app/races/pending-races";
+import { FinishedRaces } from "~app/races/finished-races";
+import { PaginationContextProvider } from "~src/components/pagination/pagination.context-provider";
 
 interface RaceOverviewProps {
     pendingRaces: Race[];
     inProgressRaces: Race[];
+    finishedRaces: PaginatedRaces;
     user?: User;
     raceParticipations: RaceParticipant[];
 }
@@ -31,6 +35,7 @@ interface RaceOverviewProps {
 export const RaceOverview = ({
     pendingRaces,
     inProgressRaces,
+    finishedRaces,
     user,
     raceParticipations,
 }: RaceOverviewProps) => {
@@ -153,6 +158,11 @@ export const RaceOverview = ({
                     />
                 </Col>
             </Row>
+            <hr />
+
+            <PaginationContextProvider>
+                <FinishedRaces races={finishedRaces} />
+            </PaginationContextProvider>
         </div>
     );
 };

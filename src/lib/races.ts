@@ -7,21 +7,33 @@ import {
     RaceParticipant,
 } from "~app/races/races.types";
 import { getBaseUrl } from "~src/actions/base-url.action";
+import { PaginationFetcher } from "~src/components/pagination/pagination.types";
 
 const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
 
-export const getAllFinishedRaces = async (): Promise<PaginatedRaces> => {
-    const races = await fetch(racesApiUrl, { next: { revalidate: 0 } });
+export const getPaginatedFinishedRaces: PaginationFetcher<Race> = async (
+    page = 1,
+    pageSize = 5,
+): Promise<PaginatedRaces> => {
+    const races = await fetch(
+        `${racesApiUrl}?page=${page}&pageSize=${pageSize}`,
+        { next: { revalidate: 0 } },
+    );
 
     return (await races.json()).result as PaginatedRaces;
 };
 
-export const getAllFinishedRacesByGame = async (
+export const getPaginatedFinishedRacesByGame = async (
     game: string,
+    page = 1,
+    pageSize = 5,
 ): Promise<PaginatedRaces> => {
-    const races = await fetch(`${racesApiUrl}?game=${game}`, {
-        next: { revalidate: 0 },
-    });
+    const races = await fetch(
+        `${racesApiUrl}?page=${page}&pageSize=${pageSize}&game=${game}`,
+        {
+            next: { revalidate: 0 },
+        },
+    );
 
     return (await races.json()).result as PaginatedRaces;
 };

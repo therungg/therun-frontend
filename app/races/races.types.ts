@@ -1,3 +1,5 @@
+import { PaginatedData } from "~src/components/pagination/pagination.types";
+
 export type RaceStatus =
     | "pending"
     | "starting"
@@ -90,14 +92,7 @@ export interface WebsocketRaceMessage<T extends Race | RaceParticipant> {
     data: T;
 }
 
-export interface PaginatedRaces {
-    page: number;
-    pageSize: number;
-    totalItems: number;
-    totalPages: number;
-    items: Race[];
-}
-
+export type PaginatedRaces = PaginatedData<Race>;
 export interface ActiveRaces {
     inProgress: Race[];
     pending: Race[];
