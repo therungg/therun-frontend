@@ -20,6 +20,8 @@ import { JoinRaceButton } from "~app/races/components/buttons/join-race-button";
 import { AbandonRaceButton } from "~app/races/components/buttons/abandon-race-button";
 import { ConfirmFinalTimeForm } from "~app/races/components/forms/confirm-final-time-form";
 import { FinishRaceButton } from "~app/races/components/buttons/finish-race-button";
+import { CreateNextRace } from "~app/races/[race]/create-next-race";
+import Link from "next/link";
 
 interface RaceDetailProps {
     race: Race;
@@ -124,8 +126,17 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
                     )}
                 </h3>
                 <h3>
-                    {raceState.game} - {raceState.category}
+                    {raceState.displayGame} - {raceState.displayCategory}
                 </h3>
+                <CreateNextRace race={raceState} user={user} />
+                {raceState.previousRaceId && (
+                    <h3>
+                        Successor of{" "}
+                        <Link href={raceState.previousRaceId}>
+                            {raceState.previousRaceId}
+                        </Link>
+                    </h3>
+                )}
             </div>
             {userFinished && (
                 <ConfirmFinalTimeForm

@@ -18,9 +18,12 @@ export interface Race {
     raceId: string;
     creator: string;
     createdAt: string;
-    startsAt?: string | null;
+    startsAt: string | null;
     game: string;
+    displayGame: string;
     category: string;
+    displayCategory: string;
+    description: string;
     canStartEarly: boolean;
     status: RaceStatus;
     customRules: RaceRule[];
@@ -38,6 +41,9 @@ export interface Race {
     isTestRace: boolean;
     increment?: number;
     gameIncrement?: number;
+    isFeatured: boolean;
+    nextRaceId?: string;
+    previousRaceId?: string;
 }
 
 export type RaceParticipant = {
@@ -46,6 +52,11 @@ export type RaceParticipant = {
     status: RaceParticipantStatus;
     pb: string;
     finalTime: number | null;
+    joinedAtDate: string | null;
+    readyAtDate: string | null;
+    finishedAtDate: string | null;
+    confirmedAtDate: string | null;
+    abandondedAtDate: string | null;
 };
 
 export interface RaceParticipantWithLiveData extends RaceParticipant {
