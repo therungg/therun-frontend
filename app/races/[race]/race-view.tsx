@@ -11,17 +11,9 @@ import { Col, Row } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useRaceWebsocket } from "~src/components/websocket/use-reconnect-websocket";
 import { RaceParticipantOverview } from "~app/races/[race]/race-participant-overview";
-import { FromNow } from "~src/components/util/datetime";
 import { RaceParticipantDetail } from "~app/races/[race]/race-participant-detail";
-import { ReadyRaceButton } from "~app/races/components/buttons/ready-race-button";
-import { UnreadyRaceButton } from "~app/races/components/buttons/unready-race-button";
-import { LeaveRaceButton } from "~app/races/components/buttons/leave-race-button";
-import { JoinRaceButton } from "~app/races/components/buttons/join-race-button";
-import { AbandonRaceButton } from "~app/races/components/buttons/abandon-race-button";
-import { ConfirmFinalTimeForm } from "~app/races/components/forms/confirm-final-time-form";
-import { FinishRaceButton } from "~app/races/components/buttons/finish-race-button";
-import { CreateNextRace } from "~app/races/[race]/create-next-race";
-import Link from "next/link";
+import { RaceActions } from "~app/races/[race]/race-actions";
+import { RaceHeader } from "~app/races/[race]/race-header";
 
 interface RaceDetailProps {
     race: Race;
@@ -37,24 +29,6 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
         useState<RaceParticipantsMap>(
             arrayToMap(raceState.participants || [], "user"),
         );
-
-    const raceIsPending =
-        raceState.status === "pending" || raceState.status === "starting";
-    const raceStarted = raceState.status === "progress";
-    const userParticipates = user && raceParticipantsMap.has(user.username);
-
-    const userIsReady =
-        userParticipates &&
-        raceParticipantsMap.get(user?.username)?.status === "ready";
-
-    const userStarted =
-        userParticipates &&
-        raceParticipantsMap.get(user?.username)?.status === "started";
-
-    const userFinished =
-        userParticipates &&
-        raceParticipantsMap.get(user?.username)?.status === "finished" &&
-        raceParticipantsMap.get(user?.username)?.finalTime;
 
     const lastMessage = useRaceWebsocket(raceState.raceId);
 
@@ -110,67 +84,26 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
 
     return (
         <div>
+            <RaceHeader race={raceState} />
+            <RaceActions
+                race={raceState}
+                user={user}
+                raceParticipantsMap={raceParticipantsMap}
+            />
             <div
                 className={
                     "d-flex flex-column justify-content-center align-items-center mb-4"
                 }
             >
-                <h1>{raceState.customName}</h1>
-                <h3>Status: {raceState.status}</h3>
-                <h3>
-                    Started{" "}
-                    {raceState.startTime ? (
-                        <FromNow time={raceState.startTime} />
-                    ) : (
-                        <>Race pending</>
-                    )}
-                </h3>
-                <h3>
-                    {raceState.displayGame} - {raceState.displayCategory}
-                </h3>
-                <CreateNextRace race={raceState} user={user} />
-                {raceState.previousRaceId && (
-                    <h3>
-                        Successor of{" "}
-                        <Link href={raceState.previousRaceId}>
-                            {raceState.previousRaceId}
-                        </Link>
-                    </h3>
-                )}
+                <Row>
+                    <Col xl={4}>
+                        <RaceParticipantOverview race={raceState} />
+                    </Col>
+                    <Col xl={8}>
+                        <RaceParticipantDetail race={raceState} />
+                    </Col>
+                </Row>
             </div>
-            {userFinished && (
-                <ConfirmFinalTimeForm
-                    raceId={race.raceId}
-                    finalTime={
-                        raceParticipantsMap.get(user?.username)
-                            ?.finalTime as number
-                    }
-                />
-            )}
-            {raceIsPending && !userParticipates && (
-                <JoinRaceButton raceId={race.raceId} />
-            )}
-            {raceIsPending && userParticipates && (
-                <div>
-                    <LeaveRaceButton raceId={race.raceId} />
-                    {!userIsReady && <ReadyRaceButton raceId={race.raceId} />}
-                    {userIsReady && <UnreadyRaceButton raceId={race.raceId} />}
-                </div>
-            )}
-            {raceStarted && (userIsReady || userStarted) && (
-                <div>
-                    <FinishRaceButton raceId={race.raceId} />
-                    <AbandonRaceButton raceId={race.raceId} />
-                </div>
-            )}
-            <Row>
-                <Col xl={4}>
-                    <RaceParticipantOverview race={raceState} />
-                </Col>
-                <Col xl={8}>
-                    <RaceParticipantDetail race={raceState} />
-                </Col>
-            </Row>
         </div>
     );
 };

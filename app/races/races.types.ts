@@ -23,6 +23,7 @@ export interface Race {
     displayGame: string;
     category: string;
     displayCategory: string;
+    gameImage: string;
     description: string;
     canStartEarly: boolean;
     status: RaceStatus;
