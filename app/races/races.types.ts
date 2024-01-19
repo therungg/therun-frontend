@@ -45,6 +45,10 @@ export interface Race {
     isFeatured: boolean;
     nextRaceId?: string;
     previousRaceId?: string;
+    forceStream?: string;
+    password?: string;
+    ranked: boolean;
+    autoConfirm: boolean;
 }
 
 export type RaceParticipant = {
@@ -95,6 +99,11 @@ export interface CreateRaceInput {
     selfJoin?: boolean;
     canStartEarly?: boolean;
     customName?: string;
+    previousRaceId?: string;
+    password?: string;
+    forceStream?: string;
+    ranked?: boolean;
+    autoConfirm?: boolean;
 }
 
 export type WebsocketRaceMessageType = "raceUpdate" | "participantUpdate";

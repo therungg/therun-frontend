@@ -44,7 +44,8 @@ export const PendingRaces = ({
                         <tr key={race.raceId}>
                             <td>
                                 <Link href={`/races/${race.raceId}`}>
-                                    {race.customName}
+                                    {race.customName ||
+                                        `${race.displayGame} - ${race.displayCategory}`}
                                 </Link>
                                 {race.startTime &&
                                     race.status === "starting" && (

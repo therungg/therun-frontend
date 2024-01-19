@@ -27,7 +27,8 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
                         <tr key={race.raceId}>
                             <td>
                                 <Link href={`/races/${race.raceId}`}>
-                                    {race.customName}
+                                    {race.customName ||
+                                        `${race.displayGame} - ${race.displayCategory}`}
                                 </Link>
                             </td>
                             <td>

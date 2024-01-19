@@ -20,7 +20,7 @@ export const CreateNextRace = ({ race, user }: { race: Race; user?: User }) => {
 
 const GoToNextRace = ({ raceId }: { raceId: string }) => {
     return (
-        <div>
+        <div className={"mb-4"}>
             <span className={"mx-3"}>A new race has been created!</span>
             <Button>
                 <Link href={`/races/${raceId}`}>Go to next race</Link>

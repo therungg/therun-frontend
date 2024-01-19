@@ -14,6 +14,7 @@ import { RaceParticipantOverview } from "~app/races/[race]/race-participant-over
 import { RaceParticipantDetail } from "~app/races/[race]/race-participant-detail";
 import { RaceActions } from "~app/races/[race]/race-actions";
 import { RaceHeader } from "~app/races/[race]/race-header";
+import { RaceTimer } from "~app/races/[race]/race-timer";
 
 interface RaceDetailProps {
     race: Race;
@@ -85,6 +86,9 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
     return (
         <div>
             <RaceHeader race={raceState} />
+            <div className={"d-flex flex-column align-items-center h1"}>
+                <RaceTimer race={raceState} />
+            </div>
             <RaceActions
                 race={raceState}
                 user={user}
