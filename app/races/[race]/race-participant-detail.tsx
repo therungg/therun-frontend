@@ -1,125 +1,159 @@
 import { Race, RaceParticipantWithLiveData } from "~app/races/races.types";
-import { sortRaceParticipants } from "~app/races/[race]/sort-race-participants";
 import { Col, Row } from "react-bootstrap";
-import ProgressBar from "react-bootstrap/ProgressBar";
+import { getPercentageDoneFromLiverun } from "~app/races/[race]/get-percentage-done-from-liverun";
+import React, { useState } from "react";
+import { TwitchEmbed } from "react-twitch-embed";
+import { Line } from "rc-progress";
 import {
     DifferenceFromOne,
     DurationToFormatted,
 } from "~src/components/util/datetime";
-import { getPercentageDoneFromLiverun } from "~app/races/[race]/get-percentage-done-from-liverun";
+import { UserLink } from "~src/components/links/links";
+import { Twitch as TwitchIcon } from "react-bootstrap-icons";
+import styles from "../../../src/components/css/LiveRun.module.scss";
+import { RaceParticipantTimer } from "~app/races/[race]/race-timer";
+import { readableRaceParticipantStatus } from "~app/races/[race]/readable-race-status";
 
 interface RaceParticipantDetailProps {
     race: Race;
 }
 
+const enableTwitchStreamFeature = true;
+
 export const RaceParticipantDetail = ({ race }: RaceParticipantDetailProps) => {
-    const participants = sortRaceParticipants(race);
+    const participants = race.participants as RaceParticipantWithLiveData[];
+    const firstTwitchStreamingParticipant =
+        enableTwitchStreamFeature &&
+        participants.find((participant) => participant.liveData?.streaming);
+    const [stream, setStream] = useState(firstTwitchStreamingParticipant?.user);
+    const highlightedRunIndex = participants?.findIndex(
+        (participant) => participant.user === stream,
+    );
+    const highlightedParticipant =
+        highlightedRunIndex > -1 ? participants[highlightedRunIndex] : null;
+
     return (
-        <Row>
-            {participants?.map((participant, i) => {
-                return (
-                    <Col key={participant.user} xl={6}>
-                        <RaceParticipantDetailView
-                            placing={i + 1}
-                            participant={participant}
+        <div>
+            <Row>
+                {enableTwitchStreamFeature && (
+                    <Col xl={6} className={"mb-3"}>
+                        <TwitchEmbed
+                            channel={stream}
+                            width={"100%"}
+                            height={295}
+                            muted
+                            withChat={false}
                         />
                     </Col>
-                );
-            })}
-        </Row>
+                )}
+                {highlightedParticipant && (
+                    <Col xl={6}>
+                        <RaceParticipantDetailView
+                            placing={highlightedRunIndex + 1}
+                            participant={highlightedParticipant}
+                            isHighlighted={enableTwitchStreamFeature}
+                        />
+                    </Col>
+                )}
+                {participants?.map((participant, i) => {
+                    if (highlightedParticipant?.user === participant.user)
+                        return;
+
+                    return (
+                        <Col
+                            key={participant.user}
+                            xl={6}
+                            onClick={() => {
+                                setStream(participant.user);
+                            }}
+                        >
+                            <RaceParticipantDetailView
+                                placing={i + 1}
+                                participant={participant}
+                            />
+                        </Col>
+                    );
+                })}
+            </Row>
+        </div>
     );
 };
 
 export const RaceParticipantDetailView = ({
     participant,
     placing,
+    isHighlighted = false,
 }: {
     participant: RaceParticipantWithLiveData;
     placing: number;
+    isHighlighted?: boolean;
 }) => {
     const percentage = getPercentageDoneFromLiverun(participant);
     return (
         <div
-            className={
-                "border border-2 border-white border-opacity-100 m-4 p-2"
-            }
+            className={`px-4 pt-2 pb-3 ${
+                isHighlighted ? "bg-body-tertiary" : "bg-body-secondary"
+            } game-border mh-100 mb-3 ${
+                enableTwitchStreamFeature && styles.liveRunContainer
+            }`}
         >
-            <Col xl={4}>
-                {placing}. {participant.user}
-            </Col>
-            <hr />
+            <div>
+                <span className={"h3 flex-center"}>
+                    <UserLink
+                        username={participant.user}
+                        parentIsUrl={false}
+                        icon={false}
+                    />
+
+                    {participant.liveData?.streaming && (
+                        <div className="ms-2">
+                            <TwitchIcon height={22} color={"#6441a5"} />
+                        </div>
+                    )}
+                    {participant.finalTime && (
+                        <div className={"ms-4 fst-italic"}>
+                            <DurationToFormatted
+                                duration={participant.finalTime}
+                            />
+                        </div>
+                    )}
+                    {participant.status === "started" &&
+                        participant.liveData?.startedAt && (
+                            <div className={"ms-4"}>
+                                <RaceParticipantTimer
+                                    raceParticipant={participant}
+                                />
+                            </div>
+                        )}
+                </span>
+            </div>
+            <div className={"flex-center"}>
+                {readableRaceParticipantStatus(participant.status)}
+            </div>
+            <div>
+                Position: <b>{placing}</b>
+            </div>
             <div>
                 PB: <DurationToFormatted duration={participant.pb} />
             </div>
-            <div>Status: {participant.status}</div>
             <div>
-                Final time:{" "}
-                {participant.finalTime && (
-                    <DurationToFormatted duration={participant.finalTime} />
-                )}
+                BPT: <DurationToFormatted duration={participant.pb} />
             </div>
-            {participant.liveData && (
+            <div>
+                <DifferenceFromOne
+                    diff={participant.liveData?.delta as number}
+                    className={""}
+                />
+            </div>
+            <div>{percentage.toFixed(0)}% Done</div>
+            {!participant.finalTime && (
                 <div>
-                    <div>
-                        Time:{" "}
-                        <DurationToFormatted
-                            duration={
-                                participant.liveData?.currentTime as number
-                            }
-                        />
-                    </div>
-                    <div>
-                        Current split: {participant.liveData?.currentSplitName}{" "}
-                        ({participant.liveData?.currentSplitIndex + 1}/
-                        {participant.liveData?.totalSplits})
-                    </div>
-                    <div>
-                        Predicted end time:{" "}
-                        <DurationToFormatted
-                            duration={
-                                participant.liveData
-                                    ?.currentPrediction as number
-                            }
-                        />
-                    </div>
-                    <div>
-                        Best Possible time:{" "}
-                        <DurationToFormatted
-                            duration={
-                                participant.liveData?.bestPossibleTime as number
-                            }
-                        />
-                    </div>
-                    <div>
-                        Time to next split:{" "}
-                        <DurationToFormatted
-                            duration={
-                                participant.liveData?.timeToNextSplit as number
-                            }
-                        />
-                    </div>
-                    <div>
-                        Delta:{" "}
-                        <DifferenceFromOne
-                            diff={participant.liveData?.delta as number}
-                        />
-                    </div>
-                    <div>
-                        {participant.liveData && (
-                            <ProgressBar
-                                animated
-                                max={100}
-                                label={
-                                    percentage > 9
-                                        ? `${percentage.toFixed(0)}%`
-                                        : ""
-                                }
-                                now={percentage}
-                            />
-                        )}
-                    </div>
+                    Current Split: {participant.liveData?.currentSplitName} (
+                    {participant.liveData?.currentSplitIndex + 1}/
+                    {participant.liveData?.totalSplits})
                 </div>
             )}
+            <Line percent={percentage} />
         </div>
     );
 };

@@ -89,17 +89,21 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
     return (
         <div>
             <RaceHeader race={raceState} />
-            <RaceActions
-                race={raceState}
-                user={user}
-                raceParticipantsMap={raceParticipantsMap}
-            />
             <div className={"d-flex flex-column align-items-center h1"}>
                 <RaceTimer race={raceState} />
             </div>
             <Row>
                 <Col xl={4}>
-                    <RaceParticipantOverview race={raceState} />
+                    <div className={"mb-3"}>
+                        <RaceParticipantOverview race={raceState} />
+                    </div>
+                    <div>
+                        <RaceActions
+                            race={raceState}
+                            user={user}
+                            raceParticipantsMap={raceParticipantsMap}
+                        />
+                    </div>
                 </Col>
                 <Col xl={8}>
                     <RaceParticipantDetail race={raceState} />

@@ -54,7 +54,7 @@ export const RaceActions = ({
     return (
         <div
             className={
-                "bg-body-secondary mb-2 game-border mh-100 px-4 py-2 d-flex"
+                "bg-body-secondary mb-2 game-border mh-100 px-4 py-4 d-flex"
             }
         >
             {userFinished && (

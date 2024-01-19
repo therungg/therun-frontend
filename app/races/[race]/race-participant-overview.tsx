@@ -31,17 +31,17 @@ export const RaceParticipantOverview = ({
             <hr />
             <div className={"d-flex flex-row mb-1"}>
                 <Col xl={1}></Col>
-                <Col xl={3}></Col>
+                <Col xl={5}></Col>
                 <Col xl={2} className={"fw-bold"}>
-                    % Done
+                    %
                 </Col>
-                <Col xl={3} className={"fw-bold"}>
+                <Col xl={2} className={"fw-bold"}>
                     PB
                 </Col>
                 {/*<Col xl={2} className={"fw-bold"}>*/}
                 {/*    BPT*/}
                 {/*</Col>*/}
-                <Col xl={3} className={"fw-bold"}>
+                <Col xl={2} className={"fw-bold"}>
                     Status
                 </Col>
             </div>
@@ -73,13 +73,13 @@ export const RaceParticipantItem = ({
         <div>
             <div className={"d-flex flex-row"}>
                 <Col xl={1}>{placing}.</Col>
-                <Col xl={3}>
+                <Col xl={5}>
                     <UserLink username={participant.user} />
                 </Col>
                 <Col xl={2}>
                     {percentage > 0 && `${percentage.toFixed(0)}%`}
                 </Col>
-                <Col xl={3}>
+                <Col xl={2}>
                     <DurationToFormatted duration={participant.pb} />
                 </Col>
                 {/*<Col xl={2}>*/}
@@ -89,7 +89,7 @@ export const RaceParticipantItem = ({
                 {/*        />*/}
                 {/*    )}*/}
                 {/*</Col>*/}
-                <Col xl={3}>
+                <Col xl={2}>
                     <RaceParticipantStatus
                         race={race}
                         participant={participant}
@@ -123,13 +123,16 @@ const RaceParticipantStatus = ({
         new Date(race.startTime as string).getTime();
     return (
         <div>
-            {participant.status === "finished" && (
-                <span className={"fst-italic"}>
-                    <DurationToFormatted
-                        duration={participant.finalTime?.toString() as string}
-                    />
-                </span>
-            )}
+            {participant.status === "finished" ||
+                (participant.status === "confirmed" && (
+                    <span className={"fst-italic"}>
+                        <DurationToFormatted
+                            duration={
+                                participant.finalTime?.toString() as string
+                            }
+                        />
+                    </span>
+                ))}
             {participant.status === "started" && (
                 <div className={"d-flex"}>
                     {/*<RaceParticipantTimer raceParticipant={participant} />*/}
