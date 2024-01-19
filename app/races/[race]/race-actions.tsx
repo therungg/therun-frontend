@@ -20,7 +20,7 @@ export const RaceActions = ({
     user?: User;
     raceParticipantsMap: RaceParticipantsMap;
 }) => {
-    if (!user) return;
+    if (!user?.username) return;
 
     const raceIsPending = race.status === "pending";
     const raceStarted = race.status === "progress";

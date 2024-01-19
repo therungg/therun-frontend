@@ -123,16 +123,14 @@ const RaceParticipantStatus = ({
         new Date(race.startTime as string).getTime();
     return (
         <div>
-            {participant.status === "finished" ||
-                (participant.status === "confirmed" && (
-                    <span className={"fst-italic"}>
-                        <DurationToFormatted
-                            duration={
-                                participant.finalTime?.toString() as string
-                            }
-                        />
-                    </span>
-                ))}
+            {(participant.status === "finished" ||
+                participant.status === "confirmed") && (
+                <span className={"fst-italic"}>
+                    <DurationToFormatted
+                        duration={participant.finalTime?.toString() as string}
+                    />
+                </span>
+            )}
             {participant.status === "started" && (
                 <div className={"d-flex"}>
                     {/*<RaceParticipantTimer raceParticipant={participant} />*/}
