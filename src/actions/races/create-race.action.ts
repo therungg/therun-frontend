@@ -52,7 +52,6 @@ const validateInput = (
     input: CreateRaceInput,
 ): Joi.ValidationResult<CreateRaceInput> => {
     const raceSchema: Joi.ObjectSchema<CreateRaceInput> = Joi.object({
-        // startsAt: Joi.date().iso().required(),
         game: Joi.string().required().min(1).max(200),
         category: Joi.string().required().min(1).max(200),
         selfJoin: Joi.boolean().optional(),

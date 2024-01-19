@@ -93,9 +93,11 @@ export const Difference = ({
 export const DifferenceFromOne = ({
     diff,
     withMillis = false,
+    className = "text-end",
 }: {
     diff: number;
     withMillis?: boolean;
+    className?: string;
 }) => {
     if (!diff && diff !== 0) return <></>;
     const formatted = `${diff <= 0 ? "-" : "+"}${getFormattedString(
@@ -114,7 +116,7 @@ export const DifferenceFromOne = ({
             )}`}
         >
             <div
-                className="text-end"
+                className={className}
                 style={{
                     color: diff <= 0 ? "var(--bs-link-color)" : "var(--bs-red)",
                 }}

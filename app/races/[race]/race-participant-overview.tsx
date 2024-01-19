@@ -1,8 +1,13 @@
 import { Race, RaceParticipantWithLiveData } from "~app/races/races.types";
 import { sortRaceParticipants } from "~app/races/[race]/sort-race-participants";
-import ProgressBar from "react-bootstrap/ProgressBar";
-import { Col } from "react-bootstrap";
-
+import { Col, Spinner } from "react-bootstrap";
+import { UserLink } from "~src/components/links/links";
+import {
+    DifferenceFromOne,
+    DurationToFormatted,
+} from "~src/components/util/datetime";
+import { getPercentageDoneFromLiverun } from "~app/races/[race]/get-percentage-done-from-liverun";
+import { useAutoAnimate } from "@formkit/auto-animate/react";
 interface RaceParticipantOverviewProps {
     race: Race;
 }
@@ -11,83 +16,139 @@ export const RaceParticipantOverview = ({
     race,
 }: RaceParticipantOverviewProps) => {
     const participants = sortRaceParticipants(race);
+
+    const [parent] = useAutoAnimate({
+        duration: 300,
+        easing: "ease-out",
+    });
+
     return (
-        <>
+        <div
+            className={"px-4 pt-2 pb-3 bg-body-secondary game-border mh-100"}
+            ref={parent}
+        >
+            <span className={"h4 flex-center mb-3"}>Standings</span>
+            <hr />
+            <div className={"d-flex flex-row mb-1"}>
+                <Col xl={1}></Col>
+                <Col xl={3}></Col>
+                <Col xl={2} className={"fw-bold"}>
+                    % Done
+                </Col>
+                <Col xl={3} className={"fw-bold"}>
+                    PB
+                </Col>
+                {/*<Col xl={2} className={"fw-bold"}>*/}
+                {/*    BPT*/}
+                {/*</Col>*/}
+                <Col xl={3} className={"fw-bold"}>
+                    Status
+                </Col>
+            </div>
             {participants?.map((participant, i) => {
                 return (
                     <RaceParticipantItem
                         placing={i + 1}
+                        race={race}
                         key={participant.user}
                         participant={participant}
                     />
                 );
             })}
-        </>
+        </div>
     );
 };
 
 export const RaceParticipantItem = ({
     participant,
+    race,
     placing,
 }: {
     participant: RaceParticipantWithLiveData;
+    race: Race;
     placing: number;
 }) => {
-    const percentage = !participant.liveData
-        ? 0
-        : participant.liveData?.runPercentageTime * 100;
+    const percentage = getPercentageDoneFromLiverun(participant);
     return (
-        <div className={"d-flex flex-row"}>
-            <Col xl={4}>
-                {placing}. {participant.user}
-            </Col>
-            {/*<div>*/}
-            {/*    PB: <DurationToFormatted duration={participant.pb} />*/}
-            {/*</div>*/}
-            {/*<div>Status: {participant.status}</div>*/}
-            {/*<div>*/}
-            {/*    Time:{" "}*/}
-            {/*    <DurationToFormatted*/}
-            {/*        duration={participant.liveData?.currentTime as number}*/}
-            {/*    />*/}
-            {/*</div>*/}
-            {/*<Col xl={3}>{participant.liveData?.currentSplitName}</Col>*/}
-            {/*<div>*/}
-            {/*    Predicted end time:{" "}*/}
-            {/*    <DurationToFormatted*/}
-            {/*        duration={participant.liveData?.currentPrediction as number}*/}
-            {/*    />*/}
-            {/*</div>*/}
-            {/*<div>*/}
-            {/*    Best Possible time:{" "}*/}
-            {/*    <DurationToFormatted*/}
-            {/*        duration={participant.liveData?.bestPossibleTime as number}*/}
-            {/*    />*/}
-            {/*</div>*/}
-            {/*<div>*/}
-            {/*    Time to next split:{" "}*/}
-            {/*    <DurationToFormatted*/}
-            {/*        duration={participant.liveData?.timeToNextSplit as number}*/}
-            {/*    />*/}
-            {/*</div>*/}
-            {/*<div>*/}
-            {/*    Delta:{" "}*/}
-            {/*    <DifferenceFromOne*/}
-            {/*        diff={participant.liveData?.delta as number}*/}
-            {/*    />*/}
-            {/*</div>*/}
-            <Col xl={8}>
-                {participant.liveData && (
-                    <ProgressBar
-                        animated
-                        max={100}
-                        label={
-                            percentage > 9 ? `${percentage.toFixed(0)}%` : ""
-                        }
-                        now={percentage}
+        <div>
+            <div className={"d-flex flex-row"}>
+                <Col xl={1}>{placing}.</Col>
+                <Col xl={3}>
+                    <UserLink username={participant.user} />
+                </Col>
+                <Col xl={2}>
+                    {percentage > 0 && `${percentage.toFixed(0)}%`}
+                </Col>
+                <Col xl={3}>
+                    <DurationToFormatted duration={participant.pb} />
+                </Col>
+                {/*<Col xl={2}>*/}
+                {/*    {participant.liveData && (*/}
+                {/*        <DurationToFormatted*/}
+                {/*            duration={participant.liveData.bestPossibleTime}*/}
+                {/*        />*/}
+                {/*    )}*/}
+                {/*</Col>*/}
+                <Col xl={3}>
+                    <RaceParticipantStatus
+                        race={race}
+                        participant={participant}
                     />
-                )}
-            </Col>
+                </Col>
+            </div>
+            <>
+                {/*{percentage > 0 && (*/}
+                {/*    <div className={"d-flex pt-1 pb-2"}>*/}
+                {/*        /!*<small className={"small"}>*!/*/}
+                {/*        /!*    {percentage.toFixed(0)}%{" "}*!/*/}
+                {/*        /!*</small>*!/*/}
+                {/*        <Line percent={percentage} strokeColor={"#27a11b"} />*/}
+                {/*    </div>*/}
+                {/*)}*/}
+            </>
+            <hr className={"p-0 my-1"} />
+        </div>
+    );
+};
+
+const RaceParticipantStatus = ({
+    participant,
+    race,
+}: {
+    participant: RaceParticipantWithLiveData;
+    race: Race;
+}) => {
+    const abandonedTime =
+        new Date(participant.abandondedAtDate as string).getTime() -
+        new Date(race.startTime as string).getTime();
+    return (
+        <div>
+            {participant.status === "finished" && (
+                <span className={"fst-italic"}>
+                    <DurationToFormatted
+                        duration={participant.finalTime?.toString() as string}
+                    />
+                </span>
+            )}
+            {participant.status === "started" && (
+                <div className={"d-flex"}>
+                    {/*<RaceParticipantTimer raceParticipant={participant} />*/}
+                    {/*{"   ("}*/}
+                    <DifferenceFromOne
+                        diff={participant.liveData?.delta as number}
+                        className={""}
+                    />
+                    {/*{")"}*/}
+                </div>
+            )}
+            {participant.status === "abandoned" && (
+                <span>
+                    DNF <DurationToFormatted duration={abandonedTime} />
+                </span>
+            )}
+            {participant.status === "ready" && (
+                <Spinner animation={"grow"} size={"sm"} />
+            )}
         </div>
     );
 };

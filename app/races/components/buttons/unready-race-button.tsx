@@ -1,13 +1,16 @@
-import { RaceActionButton } from "~app/races/components/buttons/race-action-button";
+import {
+    RaceActionButton,
+    RaceActionProps,
+} from "~app/races/components/buttons/race-action-button";
 import { unreadyRace } from "~src/actions/races/unready-race.action";
 
-export const UnreadyRaceButton = ({ raceId }: { raceId: string }) => {
+export const UnreadyRaceButton = (props: RaceActionProps) => {
     return (
         <RaceActionButton
-            raceId={raceId}
             action={unreadyRace}
             innerText={"Not ready"}
             pendingText={"Setting not ready..."}
+            {...props}
         />
     );
 };

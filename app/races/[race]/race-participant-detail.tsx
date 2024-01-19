@@ -6,6 +6,7 @@ import {
     DifferenceFromOne,
     DurationToFormatted,
 } from "~src/components/util/datetime";
+import { getPercentageDoneFromLiverun } from "~app/races/[race]/get-percentage-done-from-liverun";
 
 interface RaceParticipantDetailProps {
     race: Race;
@@ -36,9 +37,7 @@ export const RaceParticipantDetailView = ({
     participant: RaceParticipantWithLiveData;
     placing: number;
 }) => {
-    const percentage = !participant.liveData
-        ? 0
-        : participant.liveData?.runPercentageTime * 100;
+    const percentage = getPercentageDoneFromLiverun(participant);
     return (
         <div
             className={

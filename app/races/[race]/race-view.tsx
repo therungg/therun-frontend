@@ -15,6 +15,7 @@ import { RaceParticipantDetail } from "~app/races/[race]/race-participant-detail
 import { RaceActions } from "~app/races/[race]/race-actions";
 import { RaceHeader } from "~app/races/[race]/race-header";
 import { RaceTimer } from "~app/races/[race]/race-timer";
+import { sortRaceParticipants } from "~app/races/[race]/sort-race-participants";
 
 interface RaceDetailProps {
     race: Race;
@@ -68,6 +69,8 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
                     );
                 }
 
+                newRace.participants = sortRaceParticipants(newRace);
+
                 setRaceState(newRace);
             }
             if (lastMessage.type === "raceUpdate") {
@@ -77,7 +80,7 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
                 };
 
                 // Needs to be overridden because this is not accurate from the general race websocket
-                newRace.participants = raceState.participants;
+                newRace.participants = sortRaceParticipants(raceState);
                 setRaceState(newRace as Race);
             }
         }
@@ -86,28 +89,22 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
     return (
         <div>
             <RaceHeader race={raceState} />
-            <div className={"d-flex flex-column align-items-center h1"}>
-                <RaceTimer race={raceState} />
-            </div>
             <RaceActions
                 race={raceState}
                 user={user}
                 raceParticipantsMap={raceParticipantsMap}
             />
-            <div
-                className={
-                    "d-flex flex-column justify-content-center align-items-center mb-4"
-                }
-            >
-                <Row>
-                    <Col xl={4}>
-                        <RaceParticipantOverview race={raceState} />
-                    </Col>
-                    <Col xl={8}>
-                        <RaceParticipantDetail race={raceState} />
-                    </Col>
-                </Row>
+            <div className={"d-flex flex-column align-items-center h1"}>
+                <RaceTimer race={raceState} />
             </div>
+            <Row>
+                <Col xl={4}>
+                    <RaceParticipantOverview race={raceState} />
+                </Col>
+                <Col xl={8}>
+                    <RaceParticipantDetail race={raceState} />
+                </Col>
+            </Row>
         </div>
     );
 };

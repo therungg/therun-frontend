@@ -3,9 +3,17 @@ import { Button } from "react-bootstrap";
 import Link from "next/link";
 import { User } from "../../../types/session.types";
 import { CreateNextRaceButton } from "~app/races/components/buttons/create-next-race-button";
+import { RaceActionProps } from "~app/races/components/buttons/race-action-button";
 
-export const CreateNextRace = ({ race, user }: { race: Race; user?: User }) => {
-    if (race.nextRaceId) return <GoToNextRace raceId={race.nextRaceId} />;
+interface CreateNextRaceProps extends Omit<RaceActionProps, "raceId"> {
+    user?: User;
+    race: Race;
+}
+
+export const CreateNextRace = (props: CreateNextRaceProps) => {
+    const { race, user } = props;
+    if (race.nextRaceId)
+        return <GoToNextRace {...props} raceId={race.nextRaceId} />;
 
     if (race.status === "pending" || race.status === "starting") return <></>;
 
@@ -13,18 +21,20 @@ export const CreateNextRace = ({ race, user }: { race: Race; user?: User }) => {
 
     return (
         <div>
-            <CreateNextRaceButton raceId={race.raceId} />
+            <CreateNextRaceButton {...props} raceId={race.raceId} />
         </div>
     );
 };
 
-const GoToNextRace = ({ raceId }: { raceId: string }) => {
+const GoToNextRace = (props: RaceActionProps) => {
     return (
-        <div className={"mb-4"}>
-            <span className={"mx-3"}>A new race has been created!</span>
-            <Button>
-                <Link href={`/races/${raceId}`}>Go to next race</Link>
-            </Button>
+        <div>
+            <Link href={`/races/${props.raceId}`}>
+                <Button {...props} variant={"primary"}>
+                    Go to next race
+                </Button>
+            </Link>
+            <span className={"ms-2"}>A new race has been created!</span>
         </div>
     );
 };

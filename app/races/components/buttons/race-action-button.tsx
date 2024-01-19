@@ -4,22 +4,23 @@ import {
     SubmitButtonProps,
 } from "~src/actions/components/submit-button";
 
-interface RaceActionButtonProps extends SubmitButtonProps {
+export interface RaceActionProps
+    extends Omit<SubmitButtonProps, "pendingText" | "innerText"> {
     raceId: string;
-    // eslint-disable-next-line no-unused-vars
-    action: (raceInput: FormData) => Promise<any>;
 }
 
-export const RaceActionButton = ({
-    raceId,
-    pendingText,
-    innerText,
-    action,
-}: RaceActionButtonProps) => {
+interface RaceActionButtonProps extends SubmitButtonProps {
+    // eslint-disable-next-line no-unused-vars
+    action: (raceInput: FormData) => Promise<any>;
+    raceId: string;
+}
+
+export const RaceActionButton = (props: RaceActionButtonProps) => {
+    const { action, raceId } = props;
     return (
         <Form action={action}>
             <input hidden name={"raceId"} value={raceId} readOnly />
-            <SubmitButton innerText={innerText} pendingText={pendingText} />
+            <SubmitButton {...props} />
         </Form>
     );
 };

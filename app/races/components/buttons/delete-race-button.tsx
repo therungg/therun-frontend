@@ -1,13 +1,16 @@
-import { RaceActionButton } from "~app/races/components/buttons/race-action-button";
+import {
+    RaceActionButton,
+    RaceActionProps,
+} from "~app/races/components/buttons/race-action-button";
 import { deleteRace } from "~src/actions/races/delete-race.action";
 
-export const DeleteRaceButton = ({ raceId }: { raceId: string }) => {
+export const DeleteRaceButton = (props: RaceActionProps) => {
     return (
         <RaceActionButton
-            raceId={raceId}
             action={deleteRace}
             innerText={"Delete Race"}
             pendingText={"Deleting Race"}
+            {...props}
         />
     );
 };

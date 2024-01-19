@@ -11,6 +11,7 @@ export type RaceParticipantStatus =
     | "ready"
     | "started"
     | "finished"
+    | "confirmed"
     | "abandoned"
     | "unjoined";
 
@@ -18,7 +19,6 @@ export interface Race {
     raceId: string;
     creator: string;
     createdAt: string;
-    startsAt: string | null;
     game: string;
     displayGame: string;
     category: string;
@@ -39,6 +39,7 @@ export interface Race {
     finishedParticipantCount: number;
     startTime: string | null;
     endTime: string | null;
+    firstFinishedParticipantTime: number | null;
     isTestRace: boolean;
     increment?: number;
     gameIncrement?: number;

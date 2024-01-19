@@ -25,7 +25,15 @@ export const RaceHeader = ({ race }: { race: Race }) => {
                     <div>
                         Created by <UserLink username={race.creator} />
                     </div>
-                    <div>{race.participantCount} participants</div>
+                    {race.status === "pending" && (
+                        <div>
+                            {race.readyParticipantCount}/{race.participantCount}{" "}
+                            participants ready!
+                        </div>
+                    )}
+                    {race.status !== "pending" && (
+                        <div>{race.participantCount} participants</div>
+                    )}
                     <div>{race.description}</div>
                     {race.previousRaceId && (
                         <div>
