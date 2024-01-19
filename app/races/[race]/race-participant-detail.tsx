@@ -35,7 +35,7 @@ export const RaceParticipantDetail = ({ race }: RaceParticipantDetailProps) => {
     return (
         <div>
             <Row>
-                {enableTwitchStreamFeature && (
+                {enableTwitchStreamFeature && stream && (
                     <Col xl={6} className={"mb-3"}>
                         <TwitchEmbed
                             channel={stream}
