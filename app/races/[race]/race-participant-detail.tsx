@@ -151,7 +151,7 @@ export const RaceParticipantDetailView = ({
             {!participant.finalTime && (
                 <div>
                     Current Split: {participant.liveData?.currentSplitName} (
-                    {participant.liveData?.currentSplitIndex + 1}/
+                    {(participant.liveData?.currentSplitIndex as number) + 1}/
                     {participant.liveData?.totalSplits})
                 </div>
             )}
