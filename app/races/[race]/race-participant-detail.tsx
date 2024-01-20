@@ -25,7 +25,9 @@ export const RaceParticipantDetail = ({ race }: RaceParticipantDetailProps) => {
     const firstTwitchStreamingParticipant =
         enableTwitchStreamFeature &&
         participants.find((participant) => participant.liveData?.streaming);
-    const [stream, setStream] = useState(firstTwitchStreamingParticipant?.user);
+    const [stream, setStream] = useState(
+        race.forceStream || firstTwitchStreamingParticipant?.user,
+    );
     const highlightedRunIndex = participants?.findIndex(
         (participant) => participant.user === stream,
     );
