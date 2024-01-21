@@ -3,16 +3,21 @@ import { RaceParticipantWithLiveData } from "~app/races/races.types";
 export const getPercentageDoneFromLiverun = (
     participant: RaceParticipantWithLiveData,
 ) => {
-    let percentage = 0;
-
     if (participant.finalTime) {
-        percentage = 100;
-    } else if (participant.liveData) {
-        percentage =
-            participant.liveData.runPercentageTime ||
-            participant.liveData.runPercentageSplits;
-        percentage *= 100;
+        return 100; // Participant has finished the race.
     }
 
-    return percentage;
+    if (participant.liveData) {
+        const { runPercentageTime, runPercentageSplits } = participant.liveData;
+        let completionPercentage = runPercentageTime || runPercentageSplits;
+
+        // Ensure the percentage is based on splits if the initial value exceeds 1. Can happen due to js bug on time percentage
+        if (completionPercentage > 1) {
+            completionPercentage = runPercentageSplits;
+        }
+
+        return completionPercentage * 100;
+    }
+
+    return 0; // Default to 0% if no live data is available.
 };

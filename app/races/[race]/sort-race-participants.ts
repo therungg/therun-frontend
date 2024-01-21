@@ -1,60 +1,60 @@
-import { Race } from "~app/races/races.types";
+import { Race, RaceParticipantWithLiveData } from "~app/races/races.types";
 
 export const sortRaceParticipants = (race: Race) => {
     // return race.participants;
 
-    return race.participants?.sort((a, b) => {
-        if (a.finalTime && !b.finalTime) {
-            return -1;
-        }
-        if (!a.finalTime && b.finalTime) {
-            return 1;
+    const participants = race.participants as RaceParticipantWithLiveData[];
+
+    return participants.sort((a, b) => {
+        // Final time comparison
+        if (a.finalTime || b.finalTime) {
+            if (!a.finalTime) return 1;
+            if (!b.finalTime) return -1;
+            return a.finalTime - b.finalTime; // Both have finalTime, compare them directly
         }
 
-        if (a.finalTime && b.finalTime) {
-            return a.finalTime - b.finalTime;
-        }
-
-        if (a.status === "abandoned" && b.status !== "abandoned") {
-            return 1;
-        }
-
-        if (b.status === "abandoned" && a.status !== "abandoned") {
-            return -1;
-        }
-
-        if (a.status === "abandoned" && b.status === "abandoned") {
+        // Status comparison, prioritizing non-abandoned over abandoned
+        if (a.status === "abandoned" || b.status === "abandoned") {
+            if (a.status !== "abandoned") return -1;
+            if (b.status !== "abandoned") return 1;
+            // If both are abandoned, compare abandonment times
             return (
-                new Date(b.abandondedAtDate as string).getTime() -
-                new Date(a.abandondedAtDate as string).getTime()
+                parseInt(a.abandondedAtDate as string) -
+                parseInt(b.abandondedAtDate as string)
             );
         }
 
-        if (a.liveData && !b.liveData) {
-            return -1;
-        }
-        if (!a.liveData && b.liveData) {
-            return 1;
+        // LiveData comparison, prioritizing participants with liveData
+        if (a.liveData || b.liveData) {
+            if (!a.liveData) return 1;
+            if (!b.liveData) return -1;
+            // Both have liveData, compare their percentages
+            const aPercentage = (
+                a.liveData.runPercentageTime && a.liveData.runPercentageTime > 1
+                    ? a.liveData.runPercentageSplits
+                    : a.liveData.runPercentageTime
+            ) as number;
+            const bPercentage = (
+                b.liveData.runPercentageTime && b.liveData.runPercentageTime > 1
+                    ? b.liveData.runPercentageSplits
+                    : b.liveData.runPercentageTime
+            ) as number;
+            return bPercentage - aPercentage; // Higher percentage first
         }
 
-        if (a.liveData && b.liveData) {
-            return b.liveData.runPercentageTime - a.liveData.runPercentageTime;
-        }
-        if (a.pb && !b.pb) {
-            return -1;
-        }
-        if (!a.pb && b.pb) {
-            return 1;
-        }
-        if (a.pb && b.pb) {
-            // Parse pb to handle "0", 0, and undefined correctly
-            const aPb = parseInt(a.pb);
-            const bPb = parseInt(b.pb);
-
-            // Sort by pb
+        // Personal best (pb) comparison
+        if (a.pb || b.pb) {
+            if (!a.pb) return 1;
+            if (!b.pb) return -1;
+            const aPb = parseInt(a.pb, 10);
+            const bPb = parseInt(b.pb, 10);
             return aPb - bPb;
         }
 
-        return a.joinedAtDate - b.joinedAtDate;
+        // Joined date comparison as a last resort
+        return (
+            parseInt(a.joinedAtDate as string) -
+            parseInt(b.joinedAtDate as string)
+        );
     });
 };

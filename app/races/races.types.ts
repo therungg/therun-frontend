@@ -72,8 +72,8 @@ export interface RaceParticipantWithLiveData extends RaceParticipant {
 export interface RaceLiveData {
     // How far along is a runner if you look at the split amount (useful when theres no pb yet, to at least have an indication)
     runPercentageSplits: number;
-    // How far along is a runner compared to pb (best way to see how far someone is)
-    runPercentageTime: number;
+    // How far along is a runner compared to pb (best way to see how far someone is). Can be null if runner has no pb yet
+    runPercentageTime: number | null;
     currentSplitIndex: number;
     totalSplits: number;
     currentTime: number;
@@ -82,12 +82,12 @@ export interface RaceLiveData {
     startedAt: number;
     currentSplitName: string;
     // Not very stable, but can use it
-    currentPrediction: number;
+    currentPrediction: number | null;
     streaming: boolean;
     // +- to pb currently
     delta: number;
     runFinished: boolean;
-    bestPossibleTime: number;
+    bestPossibleTime: number | null;
     timeToNextSplit?: number;
 }
 
@@ -116,6 +116,7 @@ export interface WebsocketRaceMessage<T extends Race | RaceParticipant> {
 }
 
 export type PaginatedRaces = PaginatedData<Race>;
+
 export interface ActiveRaces {
     inProgress: Race[];
     pending: Race[];
