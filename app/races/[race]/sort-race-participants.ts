@@ -19,8 +19,8 @@ export const sortRaceParticipants = (race: Race) => {
             if (b.status !== "abandoned") return 1;
             // If both are abandoned, compare abandonment times
             return (
-                parseInt(a.abandondedAtDate as string) -
-                parseInt(b.abandondedAtDate as string)
+                new Date(b.abandondedAtDate as string).getTime() -
+                new Date(a.abandondedAtDate as string).getTime()
             );
         }
 
@@ -31,13 +31,13 @@ export const sortRaceParticipants = (race: Race) => {
             // Both have liveData, compare their percentages
             const aPercentage = (
                 a.liveData.runPercentageTime && a.liveData.runPercentageTime > 1
-                    ? a.liveData.runPercentageSplits
-                    : a.liveData.runPercentageTime
+                    ? a.liveData.runPercentageTime
+                    : a.liveData.runPercentageSplits
             ) as number;
             const bPercentage = (
                 b.liveData.runPercentageTime && b.liveData.runPercentageTime > 1
-                    ? b.liveData.runPercentageSplits
-                    : b.liveData.runPercentageTime
+                    ? b.liveData.runPercentageTime
+                    : b.liveData.runPercentageSplits
             ) as number;
             return bPercentage - aPercentage; // Higher percentage first
         }
