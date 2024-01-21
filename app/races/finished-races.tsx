@@ -9,7 +9,7 @@ import { UserLink } from "~src/components/links/links";
 import { LocalizedTime } from "~src/components/util/datetime";
 
 export const FinishedRaces = ({ races }: { races: PaginatedRaces }) => {
-    const pagination = usePagination<Race>(races, getPaginatedFinishedRaces, 5);
+    const pagination = usePagination<Race>(races, getPaginatedFinishedRaces);
 
     const { isLoading, data } = pagination;
     // Make this a skeleton

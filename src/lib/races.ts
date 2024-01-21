@@ -10,10 +10,11 @@ import { getBaseUrl } from "~src/actions/base-url.action";
 import { PaginationFetcher } from "~src/components/pagination/pagination.types";
 
 const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
+const paginationPageSize = 10;
 
 export const getPaginatedFinishedRaces: PaginationFetcher<Race> = async (
     page = 1,
-    pageSize = 5,
+    pageSize = paginationPageSize,
 ): Promise<PaginatedRaces> => {
     const races = await fetch(
         `${racesApiUrl}?page=${page}&pageSize=${pageSize}`,
@@ -26,7 +27,7 @@ export const getPaginatedFinishedRaces: PaginationFetcher<Race> = async (
 export const getPaginatedFinishedRacesByGame = async (
     game: string,
     page = 1,
-    pageSize = 5,
+    pageSize = paginationPageSize,
 ): Promise<PaginatedRaces> => {
     const races = await fetch(
         `${racesApiUrl}?page=${page}&pageSize=${pageSize}&game=${game}`,
