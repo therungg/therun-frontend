@@ -45,7 +45,7 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
                                             >
                                                 {race.displayGame}
                                             </Card.Title>
-                                            <span>
+                                            <span className={"text-nowrap"}>
                                                 <span className={"me-1"}>
                                                     {race.participantCount}
                                                 </span>
