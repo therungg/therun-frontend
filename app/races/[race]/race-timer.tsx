@@ -61,12 +61,9 @@ export const RaceParticipantTimer = ({
 const getTimerOffsetForRace = (race: Race) => {
     let initialOffset = 0;
 
-    if (race.status === "progress" && race.startTime)
+    if (race.status === "progress" && race.startTime) {
         initialOffset =
             (new Date().getTime() - new Date(race.startTime).getTime()) / 1000;
-
-    if (race.firstFinishedParticipantTime) {
-        initialOffset = race.firstFinishedParticipantTime / 1000;
     } else if (race.status === "finished") {
         initialOffset =
             (new Date(race.endTime as string).getTime() -

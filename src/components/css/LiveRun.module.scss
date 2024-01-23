@@ -19,6 +19,10 @@
   background-color: var(--bs-tertiary-bg) !important;
 }
 
+a > .liveRunContainer {
+  text-underline: none;
+}
+
 // ToDo: Remove in the future
 .timerBody {
   height: 100%;

@@ -2,11 +2,12 @@
 
 import {
     ActiveRaces,
+    GameStats,
+    GlobalStats,
     PaginatedRaces,
     Race,
     RaceParticipant,
 } from "~app/races/races.types";
-import { getBaseUrl } from "~src/actions/base-url.action";
 import { PaginationFetcher } from "~src/components/pagination/pagination.types";
 
 const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
@@ -77,36 +78,27 @@ export const getRaceByRaceId = async (raceId: string): Promise<Race> => {
     return (await races.json()).result as Race;
 };
 
-export const updateRaceStatus = async (
-    raceId: string,
-    action: string,
-): Promise<Race> => {
-    const baseUrl = await getBaseUrl();
-    const url = `${baseUrl}/api/races/${raceId}/${action}`;
+export const getGlobalRaceStats = async (): Promise<GlobalStats> => {
+    const url = `${racesApiUrl}/stats`;
 
-    const result = await fetch(url, {
-        method: "POST",
-    });
+    const races = await fetch(url, { next: { revalidate: 0 } });
 
-    return (await result.json()).result as Race;
+    return (await races.json()).result as GlobalStats;
 };
 
-export const deleteRace = async (raceId: string) => {
-    const baseUrl = await getBaseUrl();
-    const url = `${baseUrl}/api/races/${raceId}`;
+export const getRaceGameStats = async (): Promise<GameStats[]> => {
+    const url = `${racesApiUrl}/stats/games`;
 
-    const result = await fetch(url, {
-        method: "DELETE",
-    });
+    const races = await fetch(url, { next: { revalidate: 0 } });
 
-    return (await result.json()).result;
+    return ((await races.json()).result as GameStats[])
+        .sort((a, b) => {
+            // Hack because api returns ties in totalGames randomly.
+            if (a.totalRaces === b.totalRaces) {
+                return b.totalRaceTime - a.totalRaceTime;
+            }
+
+            return 1;
+        })
+        .slice(0, 3);
 };
-
-export const readyRace = (raceId: string): Promise<Race> =>
-    updateRaceStatus(raceId, "ready");
-export const unreadyRace = (raceId: string): Promise<Race> =>
-    updateRaceStatus(raceId, "unready");
-
-// eslint-disable-next-line no-unused-vars
-export const canCreateRace = (sessionId: string): Promise<boolean> =>
-    Promise.resolve(true); // TODO:: Endpoint is WIP, just returns true now. Will check if user can create race

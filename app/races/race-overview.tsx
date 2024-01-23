@@ -1,12 +1,14 @@
 "use client";
 
 import {
+    GameStats,
+    GlobalStats,
     PaginatedRaces,
     Race,
     RaceParticipant,
     WebsocketRaceMessage,
 } from "~app/races/races.types";
-import { Button, Col, Form, Row } from "react-bootstrap";
+import { Col, Row } from "react-bootstrap";
 
 import { User } from "../../types/session.types";
 import { useEffect, useState } from "react";
@@ -15,27 +17,29 @@ import {
     useAllRacesWebsocket,
     useUserRaceParticipationsWebsocket,
 } from "~src/components/websocket/use-reconnect-websocket";
-import { Can } from "~src/rbac/Can.component";
-import { createFictionalTestRace } from "~src/actions/races/create-fictional-test-race.action";
-import { SubmitButton } from "~src/actions/components/submit-button";
 import { InProgressRaces } from "~app/races/in-progress-races";
 import { PendingRaces } from "~app/races/pending-races";
 import { FinishedRaces } from "~app/races/finished-races";
 import { PaginationContextProvider } from "~src/components/pagination/pagination.context-provider";
+import { GlobalRaceStats } from "~app/races/global-race-stats";
+import { CreateRaceButtons } from "~app/races/create-race-buttons";
 
 interface RaceOverviewProps {
     pendingRaces: Race[];
     inProgressRaces: Race[];
     finishedRaces: PaginatedRaces;
+    globalRaceStats: GlobalStats;
+    globalGameStats: GameStats[];
     user?: User;
     raceParticipations: RaceParticipant[];
 }
 
-//TODO: Very basic first page that just shows some functionality. Proof of concept only.
 export const RaceOverview = ({
     pendingRaces,
     inProgressRaces,
     finishedRaces,
+    globalRaceStats,
+    globalGameStats,
     user,
     raceParticipations,
 }: RaceOverviewProps) => {
@@ -129,32 +133,21 @@ export const RaceOverview = ({
 
     return (
         <div>
-            <h1>Races</h1>
-            <div className={"flex-center mb-4"}>
-                <Can I={"create"} a={"race"}>
-                    <a href={"/races/create"}>
-                        <Button>Create race</Button>
-                    </a>
-                </Can>
-                <Can I={"moderate"} a={"race"}>
-                    <Form action={createFictionalTestRace}>
-                        <SubmitButton
-                            innerText={"Create Fictional Test Race"}
-                            pendingText={"Creating Race..."}
-                        />
-                    </Form>
-                </Can>
+            <div className={"d-flex"}>
+                <h1>Races</h1>
+                <span className={"mx-2 fst-italic"}>alpha</span>
             </div>
             <Row>
-                <Col>
-                    <h2>In progress Races</h2>
+                <Col xl={8} lg={7} md={12}>
                     <InProgressRaces races={stateInProgressRaces} />
                 </Col>
-                <Col>
-                    <h2>Upcoming Races</h2>
-                    <PendingRaces
-                        races={statePendingRaces}
-                        raceParticipationMap={raceParticipationMap}
+                <Col xl={4} lg={5} md={12}>
+                    <PendingRaces races={statePendingRaces} />
+                    <CreateRaceButtons />
+
+                    <GlobalRaceStats
+                        stats={globalRaceStats}
+                        gameStats={globalGameStats}
                     />
                 </Col>
             </Row>

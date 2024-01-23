@@ -122,3 +122,40 @@ export interface ActiveRaces {
     pending: Race[];
     starting: Race[];
 }
+
+export type RaceStatType =
+    | "global"
+    | "game"
+    | "game#category"
+    | "user"
+    | "game#user"
+    | "game#category#user";
+
+export interface Stats {
+    type: RaceStatType;
+    value: string;
+    totalRaces: number;
+    finishPercentage: number;
+    totalRaceTime: number;
+    averageRaceTime: number;
+}
+
+export interface GlobalStats extends Stats {
+    type: "global";
+    value: "global";
+    totalParticipations: number;
+    totalFinishedParticipations: number;
+}
+
+export interface SpecificStats extends Stats {
+    displayValue: string;
+}
+
+export interface GameStats extends SpecificStats {
+    type: "game" | "game#category";
+    image: string;
+}
+
+export interface UserStats extends SpecificStats {
+    totalFinishedRaces: number;
+}
