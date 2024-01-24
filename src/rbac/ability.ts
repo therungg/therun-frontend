@@ -79,6 +79,7 @@ const rolePermissions: Record<Role, DefinePermissions> = {
     "race-admin": function (user, { can }) {
         can("edit", "race");
         can("delete", "race");
+        can("moderate", "race");
     },
 };
 
