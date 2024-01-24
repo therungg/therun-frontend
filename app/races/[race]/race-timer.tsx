@@ -27,7 +27,11 @@ export const RaceTimer = ({ race }: { race: Race }) => {
                 date={race.startTime}
                 renderer={({ seconds, completed }) => {
                     if (!completed) {
-                        return <span>Starts in {seconds}...</span>;
+                        return (
+                            <span suppressHydrationWarning={true}>
+                                Starts in {seconds}...
+                            </span>
+                        );
                     }
                 }}
             />
