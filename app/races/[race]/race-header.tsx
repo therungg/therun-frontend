@@ -6,10 +6,15 @@ import { UserLink } from "~src/components/links/links";
 
 export const RaceHeader = ({ race }: { race: Race }) => {
     return (
-        <div className={"bg-body-secondary mb-2 game-border mh-100"}>
+        <div
+            className={
+                "bg-body-secondary mb-4 game-border mh-100 card game-border"
+            }
+        >
             <div className={"d-flex"}>
                 {race.gameImage && (
                     <GameImage
+                        className={"rounded-0 rounded-start"}
                         src={race.gameImage}
                         alt={race.displayGame}
                         height={352 / 2.5}

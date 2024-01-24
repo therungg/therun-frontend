@@ -72,7 +72,7 @@ export const RaceParticipantItem = ({
                 <td className={"py-1"}>
                     {percentage > 0 && `${percentage.toFixed(0)}%`}
                 </td>
-                <td className={"py-1"}>
+                <td className={"py-1 text-nowrap"}>
                     <RaceParticipantStatus
                         race={race}
                         participant={participant}

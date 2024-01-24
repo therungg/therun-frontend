@@ -26,15 +26,18 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
             </div>
             <RaceHeader race={raceState} />
             <Row>
-                <Col xl={4}>
-                    <div className={"mb-3"}>
+                <Col xl={4} xxl={3} className={"order-xl-last"}>
+                    <div
+                        className={"mb-3 mb-xl-0 sticky-top"}
+                        style={{ top: "1rem" }}
+                    >
                         <RaceParticipantOverview race={raceState} />
                     </div>
                     <div>
                         <RaceActions race={raceState} user={user} />
                     </div>
                 </Col>
-                <Col xl={8}>
+                <Col xl={8} xxl={9}>
                     <RaceParticipantDetail race={raceState} />
                 </Col>
             </Row>
