@@ -36,9 +36,9 @@ export const RaceParticipantDetail = ({ race }: RaceParticipantDetailProps) => {
 
     return (
         <>
-            <Row>
+            <Row className={"mb-4"}>
                 {enableTwitchStreamFeature && stream && (
-                    <Col className={"mb-4"}>
+                    <Col>
                         <TwitchEmbed
                             className={
                                 "mb-3 card game-border ratio ratio-16x9 rounded overflow-hidden"

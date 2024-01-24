@@ -7,9 +7,7 @@ import { UserLink } from "~src/components/links/links";
 export const RaceHeader = ({ race }: { race: Race }) => {
     return (
         <div
-            className={
-                "bg-body-secondary mb-4 game-border mh-100 card game-border"
-            }
+            className={"bg-body-secondary game-border mh-100 card game-border"}
         >
             <div className={"d-flex"}>
                 {race.gameImage && (

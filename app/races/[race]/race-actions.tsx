@@ -47,7 +47,7 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
     if (userConfirmed && !userCreatedRace) return;
 
     return (
-        <div className={"bg-body-secondary d-flex mb-2 card mh-100 p-4 gap-2"}>
+        <>
             {userFinished && (
                 <ConfirmFinalTimeForm
                     raceId={race.raceId}
@@ -71,6 +71,6 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
                 </div>
             )}
             <CreateNextRace race={race} user={user} />
-        </div>
+        </>
     );
 };
