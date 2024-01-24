@@ -48,6 +48,18 @@ export const GameImage = (Props: GameImageProps) => {
         style,
     } = Props;
 
+    if (!src)
+        return (
+            <Image
+                width={width}
+                height={height}
+                loading={"lazy"}
+                className={className}
+                src={`/logo_dark_theme_no_text_transparent.png`}
+                alt={alt}
+            ></Image>
+        );
+
     const file = src.slice(src.lastIndexOf("/"));
 
     return (

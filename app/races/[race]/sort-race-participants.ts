@@ -1,9 +1,12 @@
 import { Race, RaceParticipantWithLiveData } from "~app/races/races.types";
 
-export const sortRaceParticipants = (race: Race) => {
+export const sortRaceParticipants = (
+    race: Race,
+): RaceParticipantWithLiveData[] => {
     // return race.participants;
-
     const participants = race.participants as RaceParticipantWithLiveData[];
+
+    if (!participants) return [];
 
     return participants.sort((a, b) => {
         // Final time comparison

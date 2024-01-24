@@ -46,13 +46,13 @@ export const useRace = (race: Race) => {
                 setRaceState(newRace);
             }
             if (lastMessage.type === "raceUpdate") {
-                const newRace = {
+                const newRace: Race = {
                     ...raceState,
                     ...lastMessage.data,
-                };
+                } as Race;
 
                 newRace.participants = sortRaceParticipants(raceState);
-                setRaceState(newRace as Race);
+                setRaceState(newRace);
             }
         }
     }, [lastMessage]);
@@ -105,12 +105,9 @@ export const useRaces = (races: Race[]) => {
                 );
 
                 if (index !== -1) {
-                    newRaces[index] = {
-                        participants: sortRaceParticipants(
-                            newRaces[index].participants,
-                        ),
-                        ...lastMessage.data,
-                    };
+                    const participants = newRaces[index].participants;
+                    newRaces[index] = lastMessage.data as Race;
+                    newRaces[index].participants = participants;
                 } else {
                     newRaces.unshift(lastMessage.data);
                 }
