@@ -9,40 +9,35 @@ import { AbandonRaceButton } from "~app/races/components/buttons/abandon-race-bu
 import React from "react";
 import { Race } from "~app/races/races.types";
 import { User } from "../../../types/session.types";
-import { RaceParticipantsMap } from "~app/races/[race]/race-view";
 
-export const RaceActions = ({
-    race,
-    user,
-    raceParticipantsMap,
-}: {
-    race: Race;
-    user?: User;
-    raceParticipantsMap: RaceParticipantsMap;
-}) => {
+export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
     if (!user?.username) return;
 
     const raceIsPending = race.status === "pending";
     const raceStarted = race.status === "progress";
-    const userParticipates = user && raceParticipantsMap.has(user.username);
+    const loggedinUserParticipation = user?.username
+        ? race.participants?.find(
+              (participant) => participant.user === user.username,
+          )
+        : null;
+
+    const userParticipates = !!loggedinUserParticipation;
 
     const userIsReady =
-        userParticipates &&
-        raceParticipantsMap.get(user?.username)?.status === "ready";
+        userParticipates && loggedinUserParticipation.status === "ready";
 
     const userStarted =
-        userParticipates &&
-        raceParticipantsMap.get(user?.username)?.status === "started";
+        userParticipates && loggedinUserParticipation.status === "started";
 
     const userFinished =
         userParticipates &&
-        raceParticipantsMap.get(user?.username)?.status === "finished" &&
-        raceParticipantsMap.get(user?.username)?.finalTime;
+        loggedinUserParticipation.status === "finished" &&
+        loggedinUserParticipation.finalTime;
 
     const userConfirmed =
         userParticipates &&
-        raceParticipantsMap.get(user?.username)?.status === "confirmed" &&
-        raceParticipantsMap.get(user?.username)?.finalTime;
+        loggedinUserParticipation.status === "confirmed" &&
+        loggedinUserParticipation.finalTime;
 
     const userCreatedRace = race.creator === user?.username;
 
@@ -60,10 +55,7 @@ export const RaceActions = ({
             {userFinished && (
                 <ConfirmFinalTimeForm
                     raceId={race.raceId}
-                    finalTime={
-                        raceParticipantsMap.get(user?.username)
-                            ?.finalTime as number
-                    }
+                    finalTime={loggedinUserParticipation.finalTime as number}
                 />
             )}
             {raceIsPending && !userParticipates && (

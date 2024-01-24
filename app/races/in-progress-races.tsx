@@ -1,9 +1,10 @@
 "use client";
 
-import { Race } from "~app/races/races.types";
+import { Race, RaceParticipantWithLiveData } from "~app/races/races.types";
 import { Card, Col, Row } from "react-bootstrap";
 import styles from "../../src/components/css/LiveRun.module.scss";
 import { RaceTimer } from "~app/races/[race]/race-timer";
+import { RaceParticipantPercentage } from "~app/races/components/race-participant-percentage";
 
 export const InProgressRaces = ({ races }: { races: Race[] }) => {
     if (races.length === 0) {
@@ -16,6 +17,9 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
     return (
         <Row>
             {races.map((race) => {
+                const participants =
+                    race.participants as RaceParticipantWithLiveData[];
+                const firstPlace = participants[0];
                 return (
                     <Col key={race.raceId} className={"mb-3"} xl={6} xs={12}>
                         <a
@@ -60,6 +64,13 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
                                             <span style={{ fontSize: "unset" }}>
                                                 <RaceTimer race={race} />
                                             </span>
+                                        </div>
+                                        <div>
+                                            #1: {firstPlace.user} (
+                                            <RaceParticipantPercentage
+                                                participant={firstPlace}
+                                            />
+                                            )
                                         </div>
                                     </Col>
                                 </Row>

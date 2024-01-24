@@ -30,10 +30,10 @@ export interface Race {
     customRules: RaceRule[];
     customName: string;
     visible: boolean;
-    // Only best 3 participants by pb
-    topParticipants: RaceParticipant[];
-    // Only available in race detail, gives full list
+    // Not available in paginated races due to too much data
     participants?: RaceParticipantWithLiveData[];
+    // Only available in paginated races because pending races have no results yet
+    results: RaceResult[] | null;
     participantCount: number;
     readyParticipantCount: number;
     finishedParticipantCount: number;
@@ -50,6 +50,13 @@ export interface Race {
     password?: string;
     ranked: boolean;
     autoConfirm: boolean;
+}
+
+export interface RaceResult {
+    position: number;
+    name: string;
+    status: RaceParticipantStatus;
+    finalTime: number | null;
 }
 
 export type RaceParticipant = {
@@ -116,12 +123,6 @@ export interface WebsocketRaceMessage<T extends Race | RaceParticipant> {
 }
 
 export type PaginatedRaces = PaginatedData<Race>;
-
-export interface ActiveRaces {
-    inProgress: Race[];
-    pending: Race[];
-    starting: Race[];
-}
 
 export type RaceStatType =
     | "global"

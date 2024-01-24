@@ -1,90 +1,23 @@
 "use client";
 
-import {
-    Race,
-    RaceParticipant,
-    RaceParticipantWithLiveData,
-} from "~app/races/races.types";
-import { arrayToMap } from "~src/utils/array";
+import { Race } from "~app/races/races.types";
 import { User } from "../../../types/session.types";
 import { Col, Row } from "react-bootstrap";
-import React, { useEffect, useState } from "react";
-import { useRaceWebsocket } from "~src/components/websocket/use-reconnect-websocket";
+import React from "react";
 import { RaceParticipantOverview } from "~app/races/[race]/race-participant-overview";
 import { RaceParticipantDetail } from "~app/races/[race]/race-participant-detail";
 import { RaceActions } from "~app/races/[race]/race-actions";
 import { RaceHeader } from "~app/races/[race]/race-header";
 import { RaceTimer } from "~app/races/[race]/race-timer";
-import { sortRaceParticipants } from "~app/races/[race]/sort-race-participants";
+import { useRace } from "~app/races/hooks/use-race";
 
 interface RaceDetailProps {
     race: Race;
     user?: User;
 }
 
-export type RaceParticipantsMap = Map<string, RaceParticipant>;
-
 export const RaceDetail = ({ race, user }: RaceDetailProps) => {
-    const [raceState, setRaceState] = useState(race);
-
-    const [raceParticipantsMap, setRaceParticipantsMap] =
-        useState<RaceParticipantsMap>(
-            arrayToMap(raceState.participants || [], "user"),
-        );
-
-    const lastMessage = useRaceWebsocket(raceState.raceId);
-
-    useEffect(() => {
-        if (
-            lastMessage !== null &&
-            lastMessage.data &&
-            lastMessage.data.raceId
-        ) {
-            if (lastMessage.type === "participantUpdate") {
-                // Create a new Map for the updated state
-                const updatedMap = new Map(raceParticipantsMap);
-
-                updatedMap.set(
-                    (lastMessage.data as RaceParticipant).user,
-                    lastMessage.data as RaceParticipant,
-                );
-
-                setRaceParticipantsMap(updatedMap);
-
-                const index = raceState.participants?.findIndex(
-                    (participant) =>
-                        participant.user ===
-                        (lastMessage.data as RaceParticipant).user,
-                );
-
-                const newRace = { ...raceState };
-
-                if (index !== undefined && index > -1) {
-                    (newRace.participants as RaceParticipantWithLiveData[])[
-                        index
-                    ] = lastMessage.data as RaceParticipant;
-                } else {
-                    newRace.participants?.push(
-                        lastMessage.data as RaceParticipant,
-                    );
-                }
-
-                newRace.participants = sortRaceParticipants(newRace);
-
-                setRaceState(newRace);
-            }
-            if (lastMessage.type === "raceUpdate") {
-                const newRace = {
-                    ...raceState,
-                    ...lastMessage.data,
-                };
-
-                // Needs to be overridden because this is not accurate from the general race websocket
-                newRace.participants = sortRaceParticipants(raceState);
-                setRaceState(newRace as Race);
-            }
-        }
-    }, [lastMessage]);
+    const raceState = useRace(race);
 
     return (
         <div>
@@ -98,11 +31,7 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
                         <RaceParticipantOverview race={raceState} />
                     </div>
                     <div>
-                        <RaceActions
-                            race={raceState}
-                            user={user}
-                            raceParticipantsMap={raceParticipantsMap}
-                        />
+                        <RaceActions race={raceState} user={user} />
                     </div>
                 </Col>
                 <Col xl={8}>

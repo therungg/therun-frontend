@@ -14,7 +14,10 @@ export const useLiveRunsWebsocket = (username?: string) =>
     useReconnectWebsocket<WebsocketLiveRunMessage>("liveRun", username);
 
 export const useAllRacesWebsocket = () =>
-    useReconnectWebsocket<WebsocketRaceMessage<Race>>("race", "all-races");
+    useReconnectWebsocket<WebsocketRaceMessage<Race | RaceParticipant>>(
+        "race",
+        "all-races",
+    );
 
 export const useRaceWebsocket = (raceId: string) =>
     useReconnectWebsocket<WebsocketRaceMessage<Race | RaceParticipant>>(

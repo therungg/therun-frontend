@@ -1,7 +1,6 @@
 "use server";
 
 import {
-    ActiveRaces,
     GameStats,
     GlobalStats,
     PaginatedRaces,
@@ -40,22 +39,22 @@ export const getPaginatedFinishedRacesByGame = async (
     return (await races.json()).result as PaginatedRaces;
 };
 
-export const getAllActiveRaces = async (): Promise<ActiveRaces> => {
+export const getAllActiveRaces = async (): Promise<Race[]> => {
     const races = await fetch(`${racesApiUrl}/active`, {
         next: { revalidate: 0 },
     });
 
-    return (await races.json()).result as ActiveRaces;
+    return (await races.json()).result as Race[];
 };
 
 export const getAllActiveRacesByGame = async (
     game: string,
-): Promise<ActiveRaces> => {
+): Promise<Race[]> => {
     const races = await fetch(`${racesApiUrl}/active?game=${game}`, {
         next: { revalidate: 0 },
     });
 
-    return (await races.json()).result as ActiveRaces;
+    return (await races.json()).result as Race[];
 };
 
 export const getRaceParticipationsByUser = async (
