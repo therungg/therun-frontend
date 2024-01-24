@@ -35,11 +35,16 @@ export const GlobalRaceStats = ({
                 />
             </div>
             <hr />
-            {gameStats.map((gameStat) => {
-                return (
-                    <ShowGameStat key={gameStat.value} gameStat={gameStat} />
-                );
-            })}
+            <Row className={"gap-3"}>
+                {gameStats.map((gameStat) => {
+                    return (
+                        <ShowGameStat
+                            key={gameStat.value}
+                            gameStat={gameStat}
+                        />
+                    );
+                })}
+            </Row>
         </div>
     );
 };
@@ -74,26 +79,30 @@ const ShowStat = ({
 
 const ShowGameStat = ({ gameStat }: { gameStat: GameStats }) => {
     return (
-        <div key={gameStat.value} className={"d-flex mb-2"}>
+        <div key={gameStat.value} className={"d-flex w-100"}>
             <GameImage
                 alt={`Image for ${gameStat.image}`}
                 src={gameStat.image}
                 quality={"large"}
                 height={64 * 1.3}
                 width={48 * 1.3}
-                className={"rounded-3"}
+                className={"rounded-2"}
             />
-            <div className={"px-3"}>
+            <div
+                className={
+                    "px-3 flex-grow-1 d-flex flex-column justify-content-center"
+                }
+            >
                 <div
-                    className={"h5 m-0 p-0"}
+                    className={"h5 mb-1 p-0"}
                     style={{
                         color: "var(--bs-link-color)",
                     }}
                 >
                     {gameStat.displayValue}
                 </div>
-                <div>{gameStat.totalRaces} races</div>
-                <div>
+                <div className={"d-flex justify-content-between"}>
+                    {gameStat.totalRaces} races
                     <DurationToFormatted duration={gameStat.totalRaceTime} />
                 </div>
             </div>

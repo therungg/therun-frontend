@@ -47,11 +47,7 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
     if (userConfirmed && !userCreatedRace) return;
 
     return (
-        <div
-            className={
-                "bg-body-secondary mb-2 game-border mh-100 px-4 py-4 d-flex"
-            }
-        >
+        <div className={"bg-body-secondary d-flex mb-2 card mh-100 p-4 gap-2"}>
             {userFinished && (
                 <ConfirmFinalTimeForm
                     raceId={race.raceId}
@@ -62,19 +58,19 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
                 <JoinRaceButton raceId={race.raceId} />
             )}
             {raceIsPending && userParticipates && (
-                <div className={"d-flex"}>
-                    <LeaveRaceButton raceId={race.raceId} className={"me-2"} />
+                <div className={"d-flex gap-2"}>
+                    <LeaveRaceButton raceId={race.raceId} />
                     {!userIsReady && <ReadyRaceButton raceId={race.raceId} />}
                     {userIsReady && <UnreadyRaceButton raceId={race.raceId} />}
                 </div>
             )}
             {raceStarted && (userIsReady || userStarted) && (
-                <div className={"d-flex"}>
-                    <FinishRaceButton raceId={race.raceId} className={"me-2"} />
+                <div className={"d-flex gap-2"}>
+                    <FinishRaceButton raceId={race.raceId} />
                     <AbandonRaceButton raceId={race.raceId} />
                 </div>
             )}
-            <CreateNextRace race={race} user={user} className={"mx-2"} />
+            <CreateNextRace race={race} user={user} />
         </div>
     );
 };

@@ -27,20 +27,28 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
                             className={"text-decoration-none"}
                         >
                             <Card
-                                className={`${styles.liveRunContainer} game-border`}
+                                className={`${styles.liveRunContainer} game-border h-100`}
                             >
-                                <Row>
-                                    <Col xs={3}>
+                                <Row className={"h-100"}>
+                                    <Col xs={4}>
                                         <Card.Img
-                                            variant="bottom"
                                             className={
-                                                "rounded-2 me-0 pe-0 h-100 d-inline-block"
+                                                "rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
                                             }
                                             src={race.gameImage}
                                         />
                                     </Col>
-                                    <Col xs={9} className={"ps-2 pe-4 py-2"}>
-                                        <div className="d-flex justify-content-between pe-3">
+                                    <Col
+                                        xs={8}
+                                        className={
+                                            "p-2 ps-1 pe-4 gap-2 d-flex flex-column"
+                                        }
+                                    >
+                                        <div
+                                            className={
+                                                "d-flex justify-content-between gap-3"
+                                            }
+                                        >
                                             <Card.Title
                                                 className="mb-0"
                                                 style={{
@@ -56,21 +64,34 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
                                                 <PersonIcon />
                                             </span>
                                         </div>
-
-                                        <div className="d-flex justify-content-between pe-3">
-                                            <Card.Text>
-                                                {race.displayCategory}
-                                            </Card.Text>
-                                            <span style={{ fontSize: "unset" }}>
-                                                <RaceTimer race={race} />
-                                            </span>
-                                        </div>
-                                        <div>
+                                        <Card.Text
+                                            className={
+                                                "flex-grow-1 pb-3 mb-1 border-bottom"
+                                            }
+                                        >
+                                            {race.displayCategory}
+                                        </Card.Text>
+                                        <div
+                                            className={
+                                                "d-flex flex-column justify-content-end align-items-end text-end"
+                                            }
+                                        >
                                             #1: {firstPlace.user} (
                                             <RaceParticipantPercentage
                                                 participant={firstPlace}
                                             />
                                             )
+                                            <span
+                                                style={{
+                                                    fontSize:
+                                                        "clamp(18px, 3vw, 24px)",
+                                                }}
+                                                className={
+                                                    "text-end opacity-50 lh-1 mt-1"
+                                                }
+                                            >
+                                                <RaceTimer race={race} />
+                                            </span>
                                         </div>
                                     </Col>
                                 </Row>

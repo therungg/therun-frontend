@@ -39,18 +39,26 @@ export const RaceOverview = ({
     });
 
     return (
-        <div>
-            <div className={"d-flex"}>
-                <h1>Races</h1>
-                <span className={"mx-2 fst-italic"}>alpha</span>
-            </div>
+        <>
+            <Row className={"mb-3"}>
+                <Col md={12} lg={7} className={"d-flex"}>
+                    <h1>Races</h1>
+                    <span className={"mx-2 fst-italic"}>alpha</span>
+                </Col>
+                <Col
+                    md={12}
+                    lg={5}
+                    className="d-flex mt-3 mt-lg-0 justify-content-end align-items-center"
+                >
+                    <CreateRaceButtons />
+                </Col>
+            </Row>
             <Row>
                 <Col xl={8} lg={7} md={12}>
                     <InProgressRaces races={inProgressRaces} />
                 </Col>
                 <Col xl={4} lg={5} md={12}>
                     <PendingRaces races={upcomingRaces} />
-                    <CreateRaceButtons />
                     <GlobalRaceStats
                         stats={globalRaceStats}
                         gameStats={globalGameStats}
@@ -62,6 +70,6 @@ export const RaceOverview = ({
             <PaginationContextProvider>
                 <FinishedRaces races={finishedRaces} />
             </PaginationContextProvider>
-        </div>
+        </>
     );
 };

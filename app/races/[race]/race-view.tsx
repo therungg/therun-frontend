@@ -21,10 +21,10 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
 
     return (
         <div>
-            <RaceHeader race={raceState} />
             <div className={"d-flex flex-column align-items-center h1"}>
                 <RaceTimer race={raceState} />
             </div>
+            <RaceHeader race={raceState} />
             <Row>
                 <Col xl={4}>
                     <div className={"mb-3"}>

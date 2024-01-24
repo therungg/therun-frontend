@@ -34,7 +34,7 @@ const GoToNextRace = (props: RaceActionProps) => {
                     Go to next race
                 </Button>
             </Link>
-            <span className={"ms-2"}>A new race has been created!</span>
+            <span>A new race has been created!</span>
         </div>
     );
 };

@@ -1,6 +1,6 @@
 import { Race, RaceParticipantWithLiveData } from "~app/races/races.types";
 import { sortRaceParticipants } from "~app/races/[race]/sort-race-participants";
-import { Col, Spinner } from "react-bootstrap";
+import { Spinner } from "react-bootstrap";
 import { UserLink } from "~src/components/links/links";
 import {
     DifferenceFromOne,
@@ -23,38 +23,31 @@ export const RaceParticipantOverview = ({
     });
 
     return (
-        <div
-            className={"px-4 pt-2 pb-3 bg-body-secondary game-border mh-100"}
-            ref={parent}
-        >
+        <div className={"px-4 pt-2 pb-3 card game-border mh-100"} ref={parent}>
             <span className={"h4 flex-center mb-3"}>Standings</span>
             <hr />
-            <div className={"d-flex flex-row mb-1"}>
-                <Col xl={1}></Col>
-                <Col xl={5}></Col>
-                <Col xl={2} className={"fw-bold"}>
-                    %
-                </Col>
-                <Col xl={2} className={"fw-bold"}>
-                    PB
-                </Col>
-                {/*<Col xl={2} className={"fw-bold"}>*/}
-                {/*    BPT*/}
-                {/*</Col>*/}
-                <Col xl={2} className={"fw-bold"}>
-                    Status
-                </Col>
-            </div>
-            {participants?.map((participant, i) => {
-                return (
-                    <RaceParticipantItem
-                        placing={i + 1}
-                        race={race}
-                        key={participant.user}
-                        participant={participant}
-                    />
-                );
-            })}
+            <table className={"w-100 text-end"}>
+                <thead>
+                    <tr>
+                        <th className={"py-1 text-start"}></th>
+                        <th className={"py-1"}></th>
+                        <th className={"py-1"}>%</th>
+                        <th className={"py-1"}>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {participants?.map((participant, i) => {
+                        return (
+                            <RaceParticipantItem
+                                placing={i + 1}
+                                race={race}
+                                key={participant.user}
+                                participant={participant}
+                            />
+                        );
+                    })}
+                </tbody>
+            </table>
         </div>
     );
 };
@@ -70,44 +63,23 @@ export const RaceParticipantItem = ({
 }) => {
     const percentage = getPercentageDoneFromLiverun(participant);
     return (
-        <div>
-            <div className={"d-flex flex-row"}>
-                <Col xl={1}>{placing}.</Col>
-                <Col xl={5}>
+        <>
+            <tr className={"border-top"}>
+                <td className={"py-1 text-start"}>{placing}.</td>
+                <td className={"py-1 d-flex justify-self-end flex-grow-1"}>
                     <UserLink username={participant.user} />
-                </Col>
-                <Col xl={2}>
+                </td>
+                <td className={"py-1"}>
                     {percentage > 0 && `${percentage.toFixed(0)}%`}
-                </Col>
-                <Col xl={2}>
-                    <DurationToFormatted duration={participant.pb} />
-                </Col>
-                {/*<Col xl={2}>*/}
-                {/*    {participant.liveData && (*/}
-                {/*        <DurationToFormatted*/}
-                {/*            duration={participant.liveData.bestPossibleTime}*/}
-                {/*        />*/}
-                {/*    )}*/}
-                {/*</Col>*/}
-                <Col xl={2}>
+                </td>
+                <td className={"py-1"}>
                     <RaceParticipantStatus
                         race={race}
                         participant={participant}
                     />
-                </Col>
-            </div>
-            <>
-                {/*{percentage > 0 && (*/}
-                {/*    <div className={"d-flex pt-1 pb-2"}>*/}
-                {/*        /!*<small className={"small"}>*!/*/}
-                {/*        /!*    {percentage.toFixed(0)}%{" "}*!/*/}
-                {/*        /!*</small>*!/*/}
-                {/*        <Line percent={percentage} strokeColor={"#27a11b"} />*/}
-                {/*    </div>*/}
-                {/*)}*/}
-            </>
-            <hr className={"p-0 my-1"} />
-        </div>
+                </td>
+            </tr>
+        </>
     );
 };
 
