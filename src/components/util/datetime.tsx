@@ -1,4 +1,7 @@
+"use client";
+
 import moment from "moment/moment";
+import { useEffect, useState } from "react";
 
 interface IsoToFormattedProps {
     iso: string | Date;
@@ -23,6 +26,16 @@ export const getMonthDay = (iso: string | Date) => {
 export const IsoToFormatted = ({ iso }: IsoToFormattedProps) => {
     if (iso === "0") return <i>Unknown</i>;
     return <>{moment(iso).format("L LT")}</>;
+};
+
+export const LocalizedTime = ({ date }: { date: Date }) => {
+    const [stateDate, setStateDate] = useState(date.toString());
+
+    useEffect(() => {
+        setStateDate(date.toLocaleString());
+    }, []);
+
+    return <>{stateDate}</>;
 };
 
 export const Difference = ({
@@ -80,9 +93,11 @@ export const Difference = ({
 export const DifferenceFromOne = ({
     diff,
     withMillis = false,
+    className = "text-end",
 }: {
     diff: number;
     withMillis?: boolean;
+    className?: string;
 }) => {
     if (!diff && diff !== 0) return <></>;
     const formatted = `${diff <= 0 ? "-" : "+"}${getFormattedString(
@@ -101,7 +116,7 @@ export const DifferenceFromOne = ({
             )}`}
         >
             <div
-                className="text-end"
+                className={className}
                 style={{
                     color: diff <= 0 ? "var(--bs-link-color)" : "var(--bs-red)",
                 }}

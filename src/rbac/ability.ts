@@ -9,11 +9,13 @@ import { Role, User } from "../../types/session.types";
 
 export const actions = [
     "create",
+    "join",
     "edit",
     "delete",
     "ban",
     "style",
     "view-restricted",
+    "moderate",
 ] as const;
 export const subjects = [
     "user",
@@ -75,9 +77,9 @@ const rolePermissions: Record<Role, DefinePermissions> = {
         can("edit", "leaderboard");
     },
     "race-admin": function (user, { can }) {
-        actions.forEach((action) => {
-            can(action, "race");
-        });
+        can("edit", "race");
+        can("delete", "race");
+        can("moderate", "race");
     },
 };
 
@@ -89,8 +91,9 @@ const defaultPermissions: DefinePermissions = (user, { can }) => {
         });
         can(action, "user", { user: user.username });
         can(action, "run", { run: user.username });
-        can(action, "race", { creator: user.username });
+        can("edit", "race", { creator: user.username });
         can("create", "race");
+        can("join", "race");
     });
 };
 

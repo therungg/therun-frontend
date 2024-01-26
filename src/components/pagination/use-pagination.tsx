@@ -20,6 +20,7 @@ function usePagination<T>(
     if (Array.isArray(initialData)) {
         initialData = paginateArray(initialData, pageSize, 1);
     } else {
+        pageSize = fullData.pageSize;
         fullData = fullData.items;
     }
 

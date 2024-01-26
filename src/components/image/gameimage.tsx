@@ -26,13 +26,14 @@ const qualityMap: Record<Quality, IgdbQualityString> = {
 interface GameImageProps {
     className?: string;
     src: string;
-    alt: string;
+    alt?: string;
     width?: SafeNumber;
     height?: SafeNumber;
     quality?: Quality;
     loading?: LoadingValue;
     placeholder?: PlaceholderValue;
     style?: React.CSSProperties;
+    fill?: boolean;
 }
 
 export const GameImage = (Props: GameImageProps) => {
@@ -41,10 +42,23 @@ export const GameImage = (Props: GameImageProps) => {
         src,
         alt = "Game Image",
         quality = "medium",
+        fill = false,
         width,
         height,
         style,
     } = Props;
+
+    if (!src)
+        return (
+            <Image
+                width={width}
+                height={height}
+                loading={"lazy"}
+                className={className}
+                src={`/logo_dark_theme_no_text_transparent.png`}
+                alt={alt}
+            ></Image>
+        );
 
     const file = src.slice(src.lastIndexOf("/"));
 
@@ -57,6 +71,7 @@ export const GameImage = (Props: GameImageProps) => {
             width={width}
             height={height}
             style={style}
+            fill={fill}
         />
     );
 };

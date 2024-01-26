@@ -2,7 +2,7 @@
 
 import { LiveDataMap } from "~app/live/live.types";
 import { useEffect, useState } from "react";
-import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
+import { useLiveRunsWebsocket } from "~src/components/websocket/use-reconnect-websocket";
 import { liveRunArrayToMap } from "~app/live/utilities";
 import MarathonRun from "~src/components/marathon/marathon-run";
 import { Col, Row } from "react-bootstrap";
@@ -18,21 +18,20 @@ export default function ShowMarathon({
     const [selectedUser, setSelectedUser] = useState("");
     const [currentUserData, setCurrentUserData] = useState();
 
-    const lastMessage = useReconnectWebsocket();
+    const lastMessage = useLiveRunsWebsocket();
 
     useEffect(() => {
         if (lastMessage !== null) {
-            const data = JSON.parse(lastMessage.data);
-            const user = data.user;
+            const user = lastMessage.user;
             let newMap: LiveDataMap = JSON.parse(
                 JSON.stringify(updatedLiveDataMap),
             );
 
-            if (data.type == "UPDATE") {
-                newMap[user] = data.run;
+            if (lastMessage.type == "UPDATE") {
+                newMap[user] = lastMessage.run;
             }
 
-            if (data.type == "DELETE") {
+            if (lastMessage.type == "DELETE") {
                 delete newMap[user];
             }
 

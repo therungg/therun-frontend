@@ -50,7 +50,9 @@ export const UserLink = ({
         let showIcon = icon;
         if (patreons[withoutSlash].preferences) {
             color = patreons[withoutSlash].preferences.colorPreference;
-            showIcon = patreons[withoutSlash].preferences.showIcon;
+            if (showIcon) {
+                showIcon = patreons[withoutSlash].preferences.showIcon;
+            }
         }
 
         withoutSlash = (

@@ -68,7 +68,7 @@ export const buildItems = (
     ];
 
     if (active > middle) {
-        items.push(<Pagination.Ellipsis />);
+        items.push(<Pagination.Ellipsis key={"ellipsisOne"} />);
     }
 
     const begin =
@@ -92,7 +92,7 @@ export const buildItems = (
     }
 
     if (active < last - 2) {
-        items.push(<Pagination.Ellipsis />);
+        items.push(<Pagination.Ellipsis key={"ellipsisTwo"} />);
     }
 
     items.push(<Pagination.Next key={"next"} />);

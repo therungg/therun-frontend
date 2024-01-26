@@ -5,7 +5,7 @@ import { Run, RunHistory, RunSession, SplitsHistory } from "~src/common/types";
 import { LiveRun } from "~app/live/live.types";
 import React, { useEffect, useState } from "react";
 import { AppContext } from "~src/common/app.context";
-import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
+import { useLiveRunsWebsocket } from "~src/components/websocket/use-reconnect-websocket";
 import { StatsData } from "~app/games/[game]/game.types";
 import { getSplitsHistoryUrl } from "~src/lib/get-splits-history";
 import { Col, Row, Tab, Tabs } from "react-bootstrap";
@@ -74,16 +74,15 @@ export default function RunDetail({
     const [gameTimeRuns, setGameTimeRuns] = useState(null);
     const [liveRun, setLiveRun] = useState(liveData);
 
-    const lastMessage = useReconnectWebsocket(username);
+    const lastMessage = useLiveRunsWebsocket(username);
 
     useEffect(() => {
         if (lastMessage !== null) {
-            const data = JSON.parse(lastMessage.data);
-            if (data.type === "UPDATE") {
-                setLiveRun(JSON.parse(lastMessage.data).run);
+            if (lastMessage.type === "UPDATE") {
+                setLiveRun(lastMessage.run);
             }
 
-            if (data.type === "DELETE") {
+            if (lastMessage.type === "DELETE") {
                 setLiveRun([]);
             }
         }

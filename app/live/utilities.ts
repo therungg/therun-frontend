@@ -1,4 +1,8 @@
-import { LiveDataMap, LiveRun } from "~app/live/live.types";
+import {
+    LiveDataMap,
+    LiveRun,
+    WebsocketLiveRunMessage,
+} from "~app/live/live.types";
 
 export const liveRunArrayToMap = (liveData: LiveRun[]) => {
     liveData.sort((a, b) => {
@@ -79,7 +83,7 @@ export const getRecommendedStream = (
 };
 
 export const isWebsocketDataProcessable = (
-    data: any,
+    data: WebsocketLiveRunMessage,
     forceGame?: string | null,
     forceCategory?: string | null,
 ): boolean => {
