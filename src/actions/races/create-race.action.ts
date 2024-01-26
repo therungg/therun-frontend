@@ -13,6 +13,8 @@ export async function createRace(prevState: any, raceInput: FormData) {
     const input: CreateRaceInput = {
         game: raceInput.get("game") as string,
         category: raceInput.get("category") as string,
+        description: raceInput.get("description") as string,
+        customName: raceInput.get("customName") as string,
     };
 
     const { error } = validateInput(input);
@@ -48,15 +50,21 @@ export async function createRace(prevState: any, raceInput: FormData) {
     redirect(`/races/${raceId}`);
 }
 
-const validateInput = (
+export const validateInput = (
     input: CreateRaceInput,
 ): Joi.ValidationResult<CreateRaceInput> => {
     const raceSchema: Joi.ObjectSchema<CreateRaceInput> = Joi.object({
         game: Joi.string().required().min(1).max(200),
         category: Joi.string().required().min(1).max(200),
+        description: Joi.string().min(1).max(1000).optional(),
         selfJoin: Joi.boolean().optional(),
         canStartEarly: Joi.boolean().optional(),
-        customName: Joi.string().min(1).max(200).optional(),
+        customName: Joi.string().min(1).max(40).optional(),
+        previousRaceId: Joi.string().min(3).max(5).optional(),
+        forceStream: Joi.string().optional(),
+        password: Joi.string().optional(),
+        ranked: Joi.boolean().optional(),
+        autoConfirm: Joi.boolean().optional(),
     });
 
     return raceSchema.validate(input);

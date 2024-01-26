@@ -1,12 +1,12 @@
 import { PaginatedRaces, Race } from "~app/races/races.types";
 import usePagination from "~src/components/pagination/use-pagination";
 import { getPaginatedFinishedRaces } from "~src/lib/races";
-import PaginationControl from "~src/components/pagination/pagination-control";
 import React from "react";
 import { Table } from "react-bootstrap";
 import Link from "next/link";
 import { UserLink } from "~src/components/links/links";
 import { LocalizedTime } from "~src/components/util/datetime";
+import PaginationControl from "~src/components/pagination/pagination-control";
 
 export const FinishedRaces = ({ races }: { races: PaginatedRaces }) => {
     const pagination = usePagination<Race>(races, getPaginatedFinishedRaces);

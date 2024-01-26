@@ -9,11 +9,10 @@ import {
 import { Col, Row } from "react-bootstrap";
 import { InProgressRaces } from "~app/races/in-progress-races";
 import { PendingRaces } from "~app/races/pending-races";
-import { FinishedRaces } from "~app/races/finished-races";
-import { PaginationContextProvider } from "~src/components/pagination/pagination.context-provider";
 import { GlobalRaceStats } from "~app/races/global-race-stats";
 import { CreateRaceButtons } from "~app/races/create-race-buttons";
 import { useRaces } from "~app/races/hooks/use-race";
+import { RecentlyFinishedRaces } from "~app/races/recently-finished-races";
 
 interface RaceOverviewProps {
     races: Race[];
@@ -30,13 +29,8 @@ export const RaceOverview = ({
 }: RaceOverviewProps) => {
     const racesState = useRaces(races);
 
-    const inProgressRaces = racesState.filter((race) => {
-        return race.status === "progress" || race.status === "starting";
-    });
-
-    const upcomingRaces = racesState.filter((race) => {
-        return race.status === "pending";
-    });
+    const inProgressRaces = getInProgressRaces(racesState);
+    const upcomingRaces = getUpcomingRaces(racesState);
 
     return (
         <>
@@ -53,9 +47,10 @@ export const RaceOverview = ({
                     <CreateRaceButtons />
                 </Col>
             </Row>
-            <Row>
+            <Row className={"gx-5 gy-5"}>
                 <Col xl={8} lg={7} md={12}>
                     <InProgressRaces races={inProgressRaces} />
+                    {/*<h3>Recently Finished Races</h3>*/}
                 </Col>
                 <Col xl={4} lg={5} md={12}>
                     <PendingRaces races={upcomingRaces} />
@@ -63,13 +58,32 @@ export const RaceOverview = ({
                         stats={globalRaceStats}
                         gameStats={globalGameStats}
                     />
+                    <RecentlyFinishedRaces races={finishedRaces.items} />
                 </Col>
             </Row>
-            <hr />
-
-            <PaginationContextProvider>
-                <FinishedRaces races={finishedRaces} />
-            </PaginationContextProvider>
         </>
     );
+};
+
+const getInProgressRaces = (races: Race[]): Race[] => {
+    return races
+        .filter((race) => {
+            return (
+                race.status === "progress" ||
+                race.status === "starting" ||
+                race.status === "finished"
+            );
+        })
+        .sort((a, b) => {
+            return (
+                new Date(a.startTime as string).getTime() -
+                new Date(b.startTime as string).getTime()
+            );
+        });
+};
+
+const getUpcomingRaces = (races: Race[]): Race[] => {
+    return races.filter((race) => {
+        return race.status === "pending";
+    });
 };

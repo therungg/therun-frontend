@@ -1,31 +1,34 @@
 import { Race } from "~app/races/races.types";
-import React from "react";
+import styles from "~src/components/css/LiveRun.module.scss";
 import { GameImage } from "~src/components/image/gameimage";
-import styles from "../../src/components/css/LiveRun.module.scss";
+import React from "react";
 import { PersonIcon } from "~src/icons/person-icon";
+import { RaceFirstPlace } from "~app/races/components/race-first-place";
 
-export const PendingRaces = ({ races }: { races: Race[] }) => {
+export const RecentlyFinishedRaces = ({ races }: { races: Race[] }) => {
     return (
         <div
             className={"bg-body-secondary mb-3 game-border px-4 py-3 rounded-3"}
         >
-            <span className={"h3"}>Upcoming Races</span>
+            <span className={"h3"}>Recently Finished Races</span>
             <hr />
             {races.length === 0 && <span>No races upcoming</span>}
             {races.length > 0 &&
                 races.map((race) => {
-                    return <PendingRace key={race.raceId} race={race} />;
+                    return (
+                        <RecentlyFinishedRace key={race.raceId} race={race} />
+                    );
                 })}
         </div>
     );
 };
 
-export const PendingRace = ({ race }: { race: Race }) => {
+export const RecentlyFinishedRace = ({ race }: { race: Race }) => {
     return (
         <a href={`/races/${race.raceId}`} className={"text-decoration-none"}>
             <div
                 key={race.raceId}
-                className={`d-flex mb-3 ${styles.liveRunContainer} rounded-3`}
+                className={`d-flex mb-3 ${styles.liveRunContainer} rounded-3 h-100`}
                 style={{ color: "var(--bs-body-color)" }}
             >
                 <GameImage
@@ -36,7 +39,7 @@ export const PendingRace = ({ race }: { race: Race }) => {
                     width={48 * 1.3}
                     className={"rounded-3"}
                 />
-                <div className={"px-3 w-100"}>
+                <div className={"px-3 w-100 h-100"}>
                     <div className={"d-flex justify-content-between gap-2"}>
                         <div
                             className={"h5 m-0 p-0"}
@@ -48,7 +51,6 @@ export const PendingRace = ({ race }: { race: Race }) => {
                         </div>
                         <span className={"text-nowrap"}>
                             <span className={"me-1"}>
-                                {race.readyParticipantCount}/
                                 {race.participantCount}
                             </span>
                             <PersonIcon />
@@ -63,6 +65,7 @@ export const PendingRace = ({ race }: { race: Race }) => {
                         {/*    <PencilIcon />*/}
                         {/*</span>*/}
                     </div>
+                    <RaceFirstPlace race={race} />
                 </div>
             </div>
         </a>

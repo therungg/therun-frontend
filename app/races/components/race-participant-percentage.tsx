@@ -15,5 +15,5 @@ export const RaceParticipantPercentage = ({
 
     percentage *= 100;
 
-    return <>{percentage.toFixed(2)}%</>;
+    return <>{percentage.toFixed(0)}%</>;
 };
