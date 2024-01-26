@@ -22,7 +22,7 @@ export const RaceParticipantStatusOverview = ({
     ).length;
 
     return (
-        <>
+        <span className={"text-nowrap"}>
             <span className={"border-right pe-1"}>
                 {abandonded}
                 <XIcon />
@@ -35,6 +35,6 @@ export const RaceParticipantStatusOverview = ({
                 {finished}
                 <FlagIcon />
             </span>
-        </>
+        </span>
     );
 };
