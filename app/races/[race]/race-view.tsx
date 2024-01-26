@@ -20,24 +20,32 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
     const raceState = useRace(race);
 
     return (
-        <div>
-            <div className={"d-flex flex-column align-items-center h1"}>
+        <Row className={"gap-4"}>
+            <Col className={"d-flex flex-column h1"}>
                 <RaceTimer race={raceState} />
-            </div>
-            <RaceHeader race={raceState} />
-            <Row>
-                <Col xl={4}>
-                    <div className={"mb-3"}>
-                        <RaceParticipantOverview race={raceState} />
-                    </div>
-                    <div>
-                        <RaceActions race={raceState} user={user} />
-                    </div>
-                </Col>
-                <Col xl={8}>
-                    <RaceParticipantDetail race={raceState} />
-                </Col>
-            </Row>
-        </div>
+            </Col>
+            <Col
+                md={12}
+                lg={5}
+                className="d-flex justify-content-end align-items-center gap-2 flex-wrap"
+            >
+                <RaceActions race={raceState} user={user} />
+            </Col>
+            <Col xs={12}>
+                <RaceHeader race={raceState} />
+            </Col>
+            <Col>
+                <Row>
+                    <Col xl={4} className={"order-xl-last mb-4 mb-xl-0"}>
+                        <div className={"sticky-top"} style={{ top: "1rem" }}>
+                            <RaceParticipantOverview race={raceState} />
+                        </div>
+                    </Col>
+                    <Col xl={8}>
+                        <RaceParticipantDetail race={raceState} />
+                    </Col>
+                </Row>
+            </Col>
+        </Row>
     );
 };

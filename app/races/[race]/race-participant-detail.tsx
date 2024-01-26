@@ -35,21 +35,26 @@ export const RaceParticipantDetail = ({ race }: RaceParticipantDetailProps) => {
         highlightedRunIndex > -1 ? participants[highlightedRunIndex] : null;
 
     return (
-        <div>
-            <Row>
+        <>
+            <Row className={"mb-4"}>
                 {enableTwitchStreamFeature && stream && (
-                    <Col xl={6} className={"mb-3"}>
+                    <Col>
                         <TwitchEmbed
+                            className={
+                                "mb-3 card game-border ratio ratio-16x9 rounded overflow-hidden"
+                            }
                             channel={stream}
                             width={"100%"}
-                            height={295}
+                            height={"100%"}
                             muted
                             withChat={false}
                         />
                     </Col>
                 )}
+            </Row>
+            <Row xs={1} md={2} xxl={3} className={"g-4"}>
                 {highlightedParticipant && (
-                    <Col xl={6}>
+                    <Col>
                         <RaceParticipantDetailView
                             placing={highlightedRunIndex + 1}
                             participant={highlightedParticipant}
@@ -64,7 +69,6 @@ export const RaceParticipantDetail = ({ race }: RaceParticipantDetailProps) => {
                     return (
                         <Col
                             key={participant.user}
-                            xl={6}
                             onClick={() => {
                                 setStream(participant.user);
                             }}
@@ -77,7 +81,7 @@ export const RaceParticipantDetail = ({ race }: RaceParticipantDetailProps) => {
                     );
                 })}
             </Row>
-        </div>
+        </>
     );
 };
 
@@ -93,7 +97,7 @@ export const RaceParticipantDetailView = ({
     const percentage = getPercentageDoneFromLiverun(participant);
     return (
         <div
-            className={`px-4 pt-2 pb-3 ${
+            className={`px-4 pt-2 pb-3 card game-border h-100 ${
                 isHighlighted ? "bg-body-tertiary" : "bg-body-secondary"
             } game-border mh-100 mb-3 ${
                 enableTwitchStreamFeature && styles.liveRunContainer
