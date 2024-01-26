@@ -83,7 +83,14 @@ const getInProgressRaces = (races: Race[]): Race[] => {
 };
 
 const getUpcomingRaces = (races: Race[]): Race[] => {
-    return races.filter((race) => {
-        return race.status === "pending";
-    });
+    return races
+        .filter((race) => {
+            return race.status === "pending";
+        })
+        .sort((a, b) => {
+            return (
+                new Date(a.startTime as string).getTime() -
+                new Date(b.startTime as string).getTime()
+            );
+        });
 };

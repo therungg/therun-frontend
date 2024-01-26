@@ -1,12 +1,13 @@
 "use client";
 
-import { Race } from "~app/races/races.types";
+import { Race, RaceParticipantWithLiveData } from "~app/races/races.types";
 import { Card, Col, Row } from "react-bootstrap";
 import styles from "../../src/components/css/LiveRun.module.scss";
 import { RaceTimer } from "~app/races/[race]/race-timer";
 import { PersonIcon } from "~src/icons/person-icon";
 import { ClockIcon } from "~src/icons/clock-icon";
 import { RaceFirstPlace } from "~app/races/components/race-first-place";
+import { RaceParticipantStatusOverview } from "~app/races/components/race-participant-status-overview";
 
 export const InProgressRaces = ({ races }: { races: Race[] }) => {
     if (races.length === 0) {
@@ -102,12 +103,28 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
                                         </div>
                                         <div
                                             className={
-                                                "h-100 d-flex justify-content-end align-items-end"
+                                                "h-100 d-flex align-items-end justify-content-between"
                                             }
                                         >
-                                            <Card.Text>
-                                                <RaceFirstPlace race={race} />
-                                            </Card.Text>
+                                            <div>
+                                                <RaceParticipantStatusOverview
+                                                    participants={
+                                                        race.participants as RaceParticipantWithLiveData[]
+                                                    }
+                                                />
+                                            </div>
+
+                                            <div
+                                                className={
+                                                    "d-flex align-items-end text-truncate"
+                                                }
+                                            >
+                                                <Card.Text>
+                                                    <RaceFirstPlace
+                                                        race={race}
+                                                    />
+                                                </Card.Text>
+                                            </div>
                                         </div>
                                     </Col>
                                 </Row>
