@@ -47,9 +47,10 @@ export const TournamentRuns = ({
     const [items, setItems] = useState(null);
 
     // eslint-disable-next-line prefer-const
-    let [useRuns, setUseRuns] = useState(null);
+    let [useRuns, setUseRuns] = useState([]);
 
-    const isAdmin = tournament.moderators?.includes(user.username);
+    const isAdmin =
+        user.username && tournament.moderators?.includes(user.username);
 
     useEffect(() => {
         if (data && data.runList && data.runList.length > 0) {
@@ -60,8 +61,6 @@ export const TournamentRuns = ({
             setItems(buildItems(active, last));
         }
     }, [data, active]);
-
-    if (!useRuns) return <div>Loading data...</div>;
 
     if (search) {
         const accurateSearch = search
@@ -206,42 +205,44 @@ export const TournamentRuns = ({
                     />
                 </div>
             </div>
-            <div className={"m-2"}>
-                <Form action={addTime}>
-                    <input
-                        hidden
-                        name={"tournament"}
-                        value={tournament.name}
-                        readOnly
-                    />
-                    <input
-                        hidden
-                        name={"date"}
-                        value={tournament.eligiblePeriods[0].startDate}
-                        readOnly
-                    />
-                    User: <input name={"user"} type={"text"} />
-                    Time:{" "}
-                    <input
-                        type={"text"}
-                        name={"finalTimeInput"}
-                        value={finalTimeInput}
-                        onChange={(event) => {
-                            setFinalTimeInput(event.target.value);
-                        }}
-                    />
-                    <input
-                        hidden
-                        name={"time"}
-                        value={confirmedFinalTime}
-                        readOnly
-                    />
-                    <SubmitButton
-                        innerText={"Add Run"}
-                        pendingText={"Adding Run"}
-                    />
-                </Form>
-            </div>
+            {isAdmin && (
+                <div className={"m-2"}>
+                    <Form action={addTime}>
+                        <input
+                            hidden
+                            name={"tournament"}
+                            value={tournament.name}
+                            readOnly
+                        />
+                        <input
+                            hidden
+                            name={"date"}
+                            value={tournament.eligiblePeriods[0].startDate}
+                            readOnly
+                        />
+                        User: <input name={"user"} type={"text"} />
+                        Time:{" "}
+                        <input
+                            type={"text"}
+                            name={"finalTimeInput"}
+                            value={finalTimeInput}
+                            onChange={(event) => {
+                                setFinalTimeInput(event.target.value);
+                            }}
+                        />
+                        <input
+                            hidden
+                            name={"time"}
+                            value={confirmedFinalTime}
+                            readOnly
+                        />
+                        <SubmitButton
+                            innerText={"Add Run"}
+                            pendingText={"Adding Run"}
+                        />
+                    </Form>
+                </div>
+            )}
             <Table responsive striped bordered hover>
                 <thead>
                     <tr>
@@ -340,11 +341,9 @@ export const TournamentRuns = ({
 
             <div style={{ display: "flex", justifyContent: "center" }}>
                 Showing {(active - 1) * 10 + 1} -{" "}
-                {active * 10 < data.runList.length
-                    ? active * 10
-                    : data.runList.length}{" "}
-                out of {data.runList.length} runs{" "}
-                {totalCount !== data.runList.length &&
+                {active * 10 < useRuns.length ? active * 10 : useRuns.length}{" "}
+                out of {useRuns.length} runs{" "}
+                {totalCount !== useRuns.length &&
                     ` (${totalCount} without filter)`}
             </div>
         </div>
