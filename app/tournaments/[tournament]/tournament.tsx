@@ -15,7 +15,7 @@ import {
     TournamentInfo,
 } from "~src/components/tournament/tournament-info";
 import { TournamentRuns } from "~src/components/tournament/tournament-runs";
-import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
+import { useLiveRunsWebsocket } from "~src/components/websocket/use-reconnect-websocket";
 import { LiveDataMap } from "~app/live/live.types";
 import { getRecommendedStream, liveRunIsInSearch } from "~app/live/utilities";
 import { isLiveDataEligibleForTournament } from "~app/tournaments/[tournament]/is-live-data-eligible-for-tournament.component";
@@ -23,6 +23,7 @@ import { liveRunArrayToMap } from "~app/tournaments/[tournament]/live-run-array-
 import { EventLeaderboards } from "~app/tournaments/[tournament]/event-leaderboards.component";
 import { Search as SearchIcon } from "react-bootstrap-icons";
 import { TournamentTimer } from "~app/tournaments/[tournament]/tournament-timer";
+import { TournamentStandings } from "~src/components/tournament/tournament-standings";
 
 export const GenericTournament = ({
     liveDataMap,
@@ -65,11 +66,11 @@ export const GenericTournament = ({
         fetcher,
     );
 
-    const lastMessage = useReconnectWebsocket();
+    const lastMessage = useLiveRunsWebsocket();
 
     useEffect(() => {
         if (lastMessage !== null) {
-            const newData = JSON.parse(lastMessage.data);
+            const newData = lastMessage;
             const user = newData.user;
 
             if (isLiveDataEligibleForTournament(newData.run, tournament)) {
@@ -397,14 +398,15 @@ export const GenericTournament = ({
                     <TournamentRuns
                         data={data}
                         tournament={tournament}
+                        user={session}
                         gameTime={false}
                     />
                 </Tab>
-                {/*{tournament.pointDistribution && (*/}
-                {/*    <Tab title={"Standings"} eventKey={"standings"}>*/}
-                {/*        <TournamentStandings tournament={tournament} />*/}
-                {/*    </Tab>*/}
-                {/*)}*/}
+                {tournament.pointDistribution && (
+                    <Tab title={"Standings"} eventKey={"standings"}>
+                        <TournamentStandings tournament={tournament} />
+                    </Tab>
+                )}
                 <Tab title={"Stats"} eventKey={"stats"}>
                     <TournamentStats
                         data={data}

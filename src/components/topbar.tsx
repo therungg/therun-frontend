@@ -86,6 +86,9 @@ const Topbar = ({
                         <Nav.Link href="/live">
                             <b>Live</b>
                         </Nav.Link>
+                        <Nav.Link href="/gsa">
+                            <b>PACE Qualifiers</b>
+                        </Nav.Link>
                         {/*<Nav.Link href="/races">*/}
                         {/*    <b>Races</b>*/}
                         {/*</Nav.Link>*/}
