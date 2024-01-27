@@ -39,6 +39,13 @@ export interface Tournament {
     game?: string;
     category?: string;
     excludedRuns: ExcludedRun[];
+    customRuns: CustomRun[];
+}
+
+export interface CustomRun {
+    user: string;
+    date: string;
+    time: string;
 }
 
 interface Social {

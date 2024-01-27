@@ -36,8 +36,10 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
                                                 "rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
                                             }
                                             src={
-                                                race.gameImage ||
-                                                `/logo_dark_theme_no_text_transparent.png`
+                                                race.gameImage &&
+                                                race.gameImage !== "noImage"
+                                                    ? race.gameImage
+                                                    : `/logo_dark_theme_no_text_transparent.png`
                                             }
                                             height={100}
                                             width={20}

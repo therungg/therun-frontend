@@ -1,12 +1,43 @@
 import React, { useEffect, useState } from "react";
-import { Pagination, Table } from "react-bootstrap";
-import { DurationToFormatted, IsoToFormatted } from "../util/datetime";
+import { Form, Pagination, Table } from "react-bootstrap";
+import {
+    DurationToFormatted,
+    getFormattedString,
+    IsoToFormatted,
+    timeToMillis,
+} from "../util/datetime";
 import moment from "moment";
 import { buildItems } from "../run/run-sessions/game-sessions";
 import { Search as SearchIcon } from "react-bootstrap-icons";
 import { UserLink } from "~src/components/links/links";
+import { User } from "../../../types/session.types";
+import { Tournament } from "~src/components/tournament/tournament-info";
+import { SubmitButton } from "~src/actions/components/submit-button";
+import { excludeRun } from "~src/actions/tournaments/exclude-run.action";
+import { addTime } from "~src/actions/tournaments/add-time.action";
 
-export const TournamentRuns = ({ data, showGame = false }) => {
+export const TournamentRuns = ({
+    data,
+    user,
+    tournament,
+    showGame = false,
+}: {
+    data: {
+        runList: unknown[];
+    };
+    user: User;
+    tournament: Tournament;
+    showGame?: boolean;
+}) => {
+    const finalTime = 0;
+    const [confirmedFinalTime, setConfirmedFinalTime] = useState(finalTime);
+    const [finalTimeInput, setFinalTimeInput] = useState(
+        getFormattedString(finalTime.toString(), true),
+    );
+
+    useEffect(() => {
+        setConfirmedFinalTime(timeToMillis(finalTimeInput));
+    }, [finalTimeInput]);
     const [sortColumn, setSortColumn] = useState("date");
     const [sortAsc, setSortAsc] = useState(true);
 
@@ -17,6 +48,8 @@ export const TournamentRuns = ({ data, showGame = false }) => {
 
     // eslint-disable-next-line prefer-const
     let [useRuns, setUseRuns] = useState(null);
+
+    const isAdmin = tournament.moderators?.includes(user.username);
 
     useEffect(() => {
         if (data && data.runList && data.runList.length > 0) {
@@ -173,6 +206,42 @@ export const TournamentRuns = ({ data, showGame = false }) => {
                     />
                 </div>
             </div>
+            <div className={"m-2"}>
+                <Form action={addTime}>
+                    <input
+                        hidden
+                        name={"tournament"}
+                        value={tournament.name}
+                        readOnly
+                    />
+                    <input
+                        hidden
+                        name={"date"}
+                        value={tournament.eligiblePeriods[0].startDate}
+                        readOnly
+                    />
+                    User: <input name={"user"} type={"text"} />
+                    Time:{" "}
+                    <input
+                        type={"text"}
+                        name={"finalTimeInput"}
+                        value={finalTimeInput}
+                        onChange={(event) => {
+                            setFinalTimeInput(event.target.value);
+                        }}
+                    />
+                    <input
+                        hidden
+                        name={"time"}
+                        value={confirmedFinalTime}
+                        readOnly
+                    />
+                    <SubmitButton
+                        innerText={"Add Run"}
+                        pendingText={"Adding Run"}
+                    />
+                </Form>
+            </div>
             <Table responsive striped bordered hover>
                 <thead>
                     <tr>
@@ -202,6 +271,7 @@ export const TournamentRuns = ({ data, showGame = false }) => {
                         >
                             Date
                         </th>
+                        {isAdmin && <th>Remove Run</th>}
                     </tr>
                 </thead>
                 <tbody>
@@ -222,6 +292,38 @@ export const TournamentRuns = ({ data, showGame = false }) => {
                                     <td>
                                         <IsoToFormatted iso={run.endedAt} />
                                     </td>
+                                    {isAdmin && (
+                                        <td>
+                                            <Form action={excludeRun}>
+                                                <input
+                                                    hidden
+                                                    name={"tournament"}
+                                                    value={tournament.name}
+                                                    readOnly
+                                                />
+
+                                                <input
+                                                    hidden
+                                                    name={"date"}
+                                                    value={run.endedAt}
+                                                    readOnly
+                                                />
+
+                                                <input
+                                                    hidden
+                                                    name={"user"}
+                                                    value={run.user}
+                                                    readOnly
+                                                />
+                                                <SubmitButton
+                                                    innerText={"Exclude Run"}
+                                                    pendingText={
+                                                        "Excluding Run..."
+                                                    }
+                                                />
+                                            </Form>
+                                        </td>
+                                    )}
                                 </tr>
                             );
                         })}
