@@ -29,7 +29,7 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
                             <Card
                                 className={`${styles.liveRunContainer} game-border h-100`}
                             >
-                                <Row>
+                                <Row className={"flex-grow-1"}>
                                     <Col xs={4}>
                                         <Card.Img
                                             className={
@@ -37,7 +37,7 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
                                             }
                                             src={
                                                 race.gameImage &&
-                                                race.gameImage !== "noImage"
+                                                race.gameImage !== "noimage"
                                                     ? race.gameImage
                                                     : `/logo_dark_theme_no_text_transparent.png`
                                             }

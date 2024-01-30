@@ -27,18 +27,18 @@ interface GameImageProps {
     className?: string;
     src: string;
     alt?: string;
-    width?: SafeNumber;
-    height?: SafeNumber;
+    width: SafeNumber;
+    height: SafeNumber;
     quality?: Quality;
     loading?: LoadingValue;
     placeholder?: PlaceholderValue;
     style?: React.CSSProperties;
     fill?: boolean;
+    sizes?: string;
 }
 
-export const GameImage = (Props: GameImageProps) => {
+export const GameImage = (props: GameImageProps) => {
     const {
-        className = "img-fluid",
         src,
         alt = "Game Image",
         quality = "medium",
@@ -46,7 +46,10 @@ export const GameImage = (Props: GameImageProps) => {
         width,
         height,
         style,
-    } = Props;
+        sizes,
+    } = props;
+
+    const className = `img-fluid ${props.className || ""}`;
 
     if (!src)
         return (
@@ -72,6 +75,7 @@ export const GameImage = (Props: GameImageProps) => {
             height={height}
             style={style}
             fill={fill}
+            sizes={sizes}
         />
     );
 };

@@ -1,53 +1,110 @@
-import { Race } from "~app/races/races.types";
-import Link from "next/link";
+import { Race, RaceParticipantWithLiveData } from "~app/races/races.types";
 import React from "react";
-import { GameImage } from "~src/components/image/gameimage";
-import { UserLink } from "~src/components/links/links";
+import { PersonIcon } from "~src/icons/person-icon";
+import { Card, Col, Row } from "react-bootstrap";
+import { RaceParticipantStatusOverview } from "~app/races/components/race-participant-status-overview";
+import { RaceFirstPlace } from "~app/races/components/race-first-place";
 
 export const RaceHeader = ({ race }: { race: Race }) => {
     return (
         <div
             className={"bg-body-secondary game-border mh-100 card game-border"}
         >
-            <div className={"d-flex"}>
-                {race.gameImage && (
-                    <GameImage
-                        className={"rounded-0 rounded-start"}
-                        src={race.gameImage}
-                        alt={race.displayGame}
-                        height={352 / 2.5}
-                        width={264 / 2.5}
-                        quality={"hd"}
-                    />
-                )}
-                <div className={"flex-grow-1 flex-shrink-0 px-4 py-3"}>
-                    <div className={"h5"}>
-                        {race.displayGame} - {race.displayCategory}
-                    </div>
-                    {race.customName && <div>{race.customName}</div>}
-                    <div>
-                        Created by <UserLink username={race.creator} />
-                    </div>
-                    {race.status === "pending" && (
-                        <div>
-                            {race.readyParticipantCount}/{race.participantCount}{" "}
-                            participants ready!
+            <Card className={`game-border h-100`}>
+                <Row style={{ minHeight: "10rem" }}>
+                    <Col xs={4} sm={2}>
+                        <Card.Img
+                            className={
+                                "rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
+                            }
+                            style={{
+                                minWidth: "5rem",
+                                maxHeight: "18rem",
+                                maxWidth: "10rem",
+                            }}
+                            src={
+                                race.gameImage && race.gameImage !== "noimage"
+                                    ? race.gameImage
+                                    : `/logo_dark_theme_no_text_transparent.png`
+                            }
+                            height={100}
+                            width={20}
+                        />
+                    </Col>
+                    <Col
+                        xs={8}
+                        sm={10}
+                        className={"p-2 ps-1 pe-4 d-flex flex-column"}
+                    >
+                        <div className={"d-flex justify-content-between gap-3"}>
+                            <Card.Title
+                                className="m-0 p-0 h5 text-truncate"
+                                style={{
+                                    color: "var(--bs-link-color)",
+                                }}
+                            >
+                                {race.displayGame}
+                            </Card.Title>
+                            <span className={"text-nowrap"}>
+                                <span className={"me-1"}>
+                                    {race.participantCount}
+                                </span>
+                                <PersonIcon />
+                            </span>
                         </div>
-                    )}
-                    {race.status !== "pending" && (
-                        <div>{race.participantCount} participants</div>
-                    )}
-                    <div>{race.description}</div>
-                    {race.previousRaceId && (
-                        <div>
-                            Successor of{" "}
-                            <Link href={race.previousRaceId}>
-                                {race.previousRaceId}
-                            </Link>
+
+                        <div
+                            className={
+                                "d-flex justify-content-between gap-3 mb-0 pb-2 w-100 border-bottom"
+                            }
+                        >
+                            <div
+                                className={
+                                    "pb-0 mb-0 w-100 fst-italic text-truncate"
+                                }
+                            >
+                                {race.displayCategory}
+                            </div>
                         </div>
-                    )}
-                </div>
-            </div>
+
+                        {race.customName && (
+                            <div className={"pt-1 pb-2"}>
+                                <Card.Text className={"text-truncate"}>
+                                    {race.customName}
+                                </Card.Text>
+                            </div>
+                        )}
+                        <div className={"pt-1"}>
+                            <Card.Text className={"text-truncate"}>
+                                {race.description}
+                            </Card.Text>
+                        </div>
+                        <div
+                            className={
+                                "h-100 d-flex align-items-end justify-content-between"
+                            }
+                        >
+                            <div>
+                                <RaceParticipantStatusOverview
+                                    participants={
+                                        race.participants as RaceParticipantWithLiveData[]
+                                    }
+                                />
+                            </div>
+
+                            <div
+                                className={
+                                    "d-flex align-items-end text-truncate"
+                                }
+                            >
+                                <Card.Text>
+                                    <RaceFirstPlace race={race} />
+                                </Card.Text>
+                            </div>
+                        </div>
+                    </Col>
+                </Row>
+            </Card>
         </div>
     );
 };

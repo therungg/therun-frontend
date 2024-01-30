@@ -16,7 +16,7 @@ export const getPercentageDoneFromLiverun = (
             completionPercentage = runPercentageSplits;
         }
 
-        return completionPercentage * 100;
+        return Number((completionPercentage * 100).toFixed(2));
     }
 
     return 0; // Default to 0% if no live data is available.
