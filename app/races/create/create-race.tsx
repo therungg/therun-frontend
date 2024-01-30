@@ -6,12 +6,21 @@ import { useFormState, useFormStatus } from "react-dom";
 import { Button, Form } from "react-bootstrap";
 import { createRace } from "~src/actions/races/create-race.action";
 import React from "react";
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+} from "~src/components/breadcrumbs/breadcrumb";
 
 export default function CreateRace() {
     const [state, formAction] = useFormState(createRace, { message: "" });
 
+    const breadcrumbs: BreadcrumbItem[] = [
+        { content: "Races", href: "/races" },
+        { content: "Create a new Race" },
+    ];
     return (
         <>
+            <Breadcrumb breadcrumbs={breadcrumbs} />
             {/*Todo: make nice flash messages for errors and success*/}
             {state?.message && state.message}
 
