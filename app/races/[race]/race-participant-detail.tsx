@@ -6,7 +6,10 @@ import { UserLink } from "~src/components/links/links";
 import { Twitch as TwitchIcon } from "react-bootstrap-icons";
 import styles from "../../../src/components/css/LiveRun.module.scss";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
-import { DurationToFormatted } from "~src/components/util/datetime";
+import {
+    DifferenceFromOne,
+    DurationToFormatted,
+} from "~src/components/util/datetime";
 import { readableRaceParticipantStatus } from "~app/races/[race]/readable-race-status";
 import { RaceParticipantTimer } from "~app/races/[race]/race-timer";
 import { getPercentageDoneFromLiverun } from "~app/races/[race]/get-percentage-done-from-liverun";
@@ -191,6 +194,21 @@ const RaceParticipantDetailBody = ({
                 <RaceParticipantTimer raceParticipant={participant} />
             </span>
             <hr style={{ margin: "0.7rem 0" }} />
+            <div className={"justify-content-between d-flex"}>
+                <span>
+                    BPT -{" "}
+                    <span className={"fw-bold"}>
+                        <DurationToFormatted
+                            duration={
+                                participant.liveData.bestPossibleTime as number
+                            }
+                        />
+                    </span>
+                </span>
+                <span>
+                    <DifferenceFromOne diff={participant.liveData.delta} />
+                </span>
+            </div>
             <div
                 className={
                     "justify-content-between d-flex w-100 flex-grow-1 p-0 m-0"
@@ -202,16 +220,6 @@ const RaceParticipantDetailBody = ({
                     {participant.liveData.currentSplitName}
                 </span>
                 <span>{percentage}%</span>
-            </div>
-            <div>
-                BPT -{" "}
-                <span className={"fw-bold"}>
-                    <DurationToFormatted
-                        duration={
-                            participant.liveData.bestPossibleTime as number
-                        }
-                    />
-                </span>
             </div>
         </div>
     );
