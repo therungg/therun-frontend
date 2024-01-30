@@ -33,15 +33,18 @@ export const sortRaceParticipants = (
             if (!b.liveData) return -1;
             // Both have liveData, compare their percentages
             const aPercentage = (
-                a.liveData.runPercentageTime && a.liveData.runPercentageTime > 1
+                a.liveData.runPercentageTime &&
+                a.liveData.runPercentageTime <= 1
                     ? a.liveData.runPercentageTime
                     : a.liveData.runPercentageSplits
             ) as number;
             const bPercentage = (
-                b.liveData.runPercentageTime && b.liveData.runPercentageTime > 1
+                b.liveData.runPercentageTime &&
+                b.liveData.runPercentageTime <= 1
                     ? b.liveData.runPercentageTime
                     : b.liveData.runPercentageSplits
             ) as number;
+
             return bPercentage - aPercentage; // Higher percentage first
         }
 

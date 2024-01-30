@@ -16,11 +16,11 @@ interface RaceActionButtonProps extends SubmitButtonProps {
 }
 
 export const RaceActionButton = (props: RaceActionButtonProps) => {
-    const { action, raceId } = props;
+    const { action, raceId, ...buttonProps } = props;
     return (
         <Form action={action}>
             <input hidden name={"raceId"} value={raceId} readOnly />
-            <SubmitButton {...props} />
+            <SubmitButton {...buttonProps} />
         </Form>
     );
 };

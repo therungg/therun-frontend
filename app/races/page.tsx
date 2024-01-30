@@ -15,7 +15,7 @@ import {
 export default async function RacePage() {
     const promises = [
         getAllActiveRaces(),
-        getPaginatedFinishedRaces(1, 9),
+        getPaginatedFinishedRaces(1, 3),
         getGlobalRaceStats(),
         getRaceGameStats(),
     ];

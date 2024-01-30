@@ -11,7 +11,7 @@ import { Race } from "~app/races/races.types";
 import { User } from "../../../types/session.types";
 
 export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
-    if (!user?.username) return;
+    if (!user?.username) return null;
 
     const raceIsPending = race.status === "pending";
     const raceStarted = race.status === "progress";
@@ -41,10 +41,10 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
 
     const userCreatedRace = race.creator === user?.username;
 
-    if (race.status === "starting") return;
+    if (race.status === "starting") return null;
     if (race.status !== "pending" && !userParticipates && !userCreatedRace)
-        return;
-    if (userConfirmed && !userCreatedRace) return;
+        return null;
+    if (userConfirmed && !userCreatedRace) return null;
 
     return (
         <>

@@ -1,7 +1,7 @@
 import { RaceParticipantWithLiveData } from "~app/races/races.types";
-import { XIcon } from "~src/icons/x-icon";
 import { HourglassIcon } from "~src/icons/hourglass-icon";
 import { FlagIcon } from "~src/icons/flag-icon";
+import { LogoutIcon } from "~src/icons/logout-icon";
 
 export const RaceParticipantStatusOverview = ({
     participants,
@@ -23,11 +23,11 @@ export const RaceParticipantStatusOverview = ({
 
     return (
         <span className={"text-nowrap"}>
-            <span className={"border-right pe-1"}>
+            <span className={"border-right pe-3"}>
                 {abandonded}
-                <XIcon />
+                <LogoutIcon />
             </span>
-            <span className={"border-right pe-1"}>
+            <span className={"border-right pe-3"}>
                 {progress}
                 <HourglassIcon />
             </span>
