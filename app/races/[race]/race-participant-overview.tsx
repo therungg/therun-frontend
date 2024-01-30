@@ -1,13 +1,11 @@
 import { Race, RaceParticipantWithLiveData } from "~app/races/races.types";
 import { sortRaceParticipants } from "~app/races/[race]/sort-race-participants";
 import { UserLink } from "~src/components/links/links";
-import {
-    DifferenceFromOne,
-    DurationToFormatted,
-} from "~src/components/util/datetime";
+import { DurationToFormatted } from "~src/components/util/datetime";
 import { getPercentageDoneFromLiverun } from "~app/races/[race]/get-percentage-done-from-liverun";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { TrophyIcon } from "~src/icons/trophy-icon";
+import { RaceParticipantTimer } from "~app/races/[race]/race-timer";
 
 interface RaceParticipantOverviewProps {
     race: Race;
@@ -34,8 +32,14 @@ export const RaceParticipantOverview = ({
             <table className={"w-100 text-end"}>
                 <thead>
                     <tr>
-                        <th className={"py-1 text-start"}></th>
-                        <th className={"py-1"}></th>
+                        <th className={"py-1 text-start"}>#</th>
+                        <th
+                            className={
+                                "py-1 d-flex justify-self-end flex-grow-1"
+                            }
+                        >
+                            Username
+                        </th>
                         <th className={"py-1"}>PB</th>
                         <th className={"py-1"}>%</th>
                         <th className={"py-1"}>Status</th>
@@ -90,7 +94,10 @@ export const RaceParticipantItem = ({
                 <td>
                     <DurationToFormatted duration={participant.pb} />
                 </td>
-                <td>{percentage > 0 && `${percentage.toFixed(0)}%`}</td>
+                <td>
+                    {percentage > 0 && `${percentage.toFixed(0)}%`}
+                    {percentage === 0 && "-"}
+                </td>
                 <td className={"text-nowrap"}>
                     <RaceParticipantStatus
                         race={race}
@@ -134,24 +141,18 @@ const RaceParticipantStatus = ({
             )}
             {participant.status === "started" && (
                 <div>
-                    {/*<RaceParticipantTimer raceParticipant={participant} />*/}
-                    {/*{"   ("}*/}
-                    <DifferenceFromOne
-                        diff={participant.liveData?.delta as number}
-                        className={""}
-                    />
-                    {/*{")"}*/}
+                    <RaceParticipantTimer raceParticipant={participant} />
                 </div>
             )}
             {participant.status === "abandoned" && (
-                <span style={{ color: "var(--bs-red)" }}>
-                    DNF
+                <span>
+                    Abandoned
                     {/*<DurationToFormatted duration={abandonedTime} />*/}
                 </span>
             )}
             {participant.status === "ready" && (
                 <span>
-                    ...
+                    In Progress
                     {/*<Spinner animation={"grow"} size={"sm"} />*/}
                 </span>
             )}
