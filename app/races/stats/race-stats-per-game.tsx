@@ -34,7 +34,7 @@ const RaceStatsPerGameDisplay = ({
             <Row className={"my-1 mb-3 g-3"}>
                 {pagination.data.map((gameStats) => {
                     return (
-                        <Col xl={6} lg={12} key={gameStats.value}>
+                        <Col xxl={6} xl={12} key={gameStats.value}>
                             <StatsPerGame stats={gameStats} />
                         </Col>
                     );
@@ -47,6 +47,19 @@ const RaceStatsPerGameDisplay = ({
 
 const StatsPerGame = ({ stats }: { stats: GameStats }) => {
     return (
+        <div>
+            <div className={"d-none d-md-block"}>
+                <StatsPerGameXxl stats={stats} />
+            </div>
+            <div className={"d-md-none"}>
+                <StatsPerGameSmallScreen stats={stats} />
+            </div>
+        </div>
+    );
+};
+
+const StatsPerGameXxl = ({ stats }: { stats: GameStats }) => {
+    return (
         <div
             className={
                 "bg-body-secondary game-border mh-100 h-100 card game-border"
@@ -54,7 +67,7 @@ const StatsPerGame = ({ stats }: { stats: GameStats }) => {
         >
             <Card className={`game-border h-100`}>
                 <Row className={"h-100"}>
-                    <Col xs={4} sm={2}>
+                    <Col md={2}>
                         <Card.Img
                             className={
                                 "rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
@@ -68,11 +81,7 @@ const StatsPerGame = ({ stats }: { stats: GameStats }) => {
                             width={20}
                         />
                     </Col>
-                    <Col
-                        xs={8}
-                        sm={10}
-                        className={"p-2 ps-1 pe-4 d-flex flex-column"}
-                    >
+                    <Col md={10} className={"p-2 ps-1 pe-4 d-flex flex-column"}>
                         <div className={"justify-content-between d-flex"}>
                             <span
                                 className={"h4 text-truncate"}
@@ -88,7 +97,7 @@ const StatsPerGame = ({ stats }: { stats: GameStats }) => {
                         </div>
                         <hr className={"mt-1"} />
                         <Row className={"align-content-center h-100"}>
-                            <Col xl={3}>
+                            <Col md={3}>
                                 <div className={"flex-center"}>Total Time</div>
                                 <hr className={"m-1 flex-center"} />
                                 <span
@@ -100,7 +109,7 @@ const StatsPerGame = ({ stats }: { stats: GameStats }) => {
                                     />
                                 </span>
                             </Col>
-                            <Col xl={3}>
+                            <Col md={3}>
                                 <div className={"flex-center"}>
                                     Races Joined
                                 </div>
@@ -112,7 +121,7 @@ const StatsPerGame = ({ stats }: { stats: GameStats }) => {
                                     {stats.totalParticipations}
                                 </span>
                             </Col>
-                            <Col xl={3}>
+                            <Col md={3}>
                                 <div className={"flex-center"}>
                                     Races Finished
                                 </div>
@@ -124,7 +133,7 @@ const StatsPerGame = ({ stats }: { stats: GameStats }) => {
                                     {stats.totalFinishedParticipations}
                                 </span>
                             </Col>
-                            <Col xl={3}>
+                            <Col md={3}>
                                 <div className={"flex-center"}>Finish %</div>
                                 <hr className={"m-1 flex-center"} />
                                 <span
@@ -135,6 +144,75 @@ const StatsPerGame = ({ stats }: { stats: GameStats }) => {
                                 </span>
                             </Col>
                         </Row>
+                    </Col>
+                </Row>
+            </Card>
+        </div>
+    );
+};
+
+const StatsPerGameSmallScreen = ({ stats }: { stats: GameStats }) => {
+    return (
+        <div
+            className={
+                "bg-body-secondary game-border mh-100 h-100 card game-border"
+            }
+        >
+            <Card className={`game-border h-100`}>
+                <Row className={"h-100"}>
+                    <Col xs={3} sm={3}>
+                        <Card.Img
+                            className={
+                                "rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
+                            }
+                            src={
+                                stats.image && stats.image !== "noimage"
+                                    ? stats.image
+                                    : `/logo_dark_theme_no_text_transparent.png`
+                            }
+                            height={20}
+                            width={5}
+                        />
+                    </Col>
+                    <Col
+                        xs={9}
+                        sm={9}
+                        className={"p-2 ps-1 pe-4 d-flex flex-column"}
+                    >
+                        <div className={"justify-content-between d-flex"}>
+                            <span
+                                className={"h4 text-truncate"}
+                                style={{
+                                    color: "var(--bs-link-color)",
+                                }}
+                            >
+                                {stats.displayValue}
+                            </span>
+                            <span className={"fs-5"}>{stats.totalRaces}</span>
+                        </div>
+                        <hr className={"m-0"} />
+                        <span className={"justify-content-between d-flex"}>
+                            <span>Total Time</span>
+                            <span>
+                                <DurationToFormatted
+                                    duration={stats.totalRaceTime}
+                                />
+                            </span>
+                        </span>
+                        <span className={"justify-content-between d-flex"}>
+                            <span>Races Joined</span>
+                            <span>{stats.totalParticipations}</span>
+                        </span>
+                        <span className={"justify-content-between d-flex"}>
+                            <span>Races Finished</span>
+                            <span>{stats.totalFinishedParticipations}</span>
+                        </span>
+                        <span className={"justify-content-between d-flex"}>
+                            <span>Finish %</span>
+                            <span>
+                                {(stats.finishPercentage * 100).toFixed(2)}%
+                            </span>
+                        </span>
                     </Col>
                 </Row>
             </Card>
