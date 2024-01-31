@@ -24,7 +24,7 @@ export const readableRaceParticipantStatus = (
         case "confirmed":
             return "Finished";
         case "finished":
-            return "Finished (awaiting confirmation)";
+            return "Confirming...";
         case "joined":
             return "Joined";
         case "ready":

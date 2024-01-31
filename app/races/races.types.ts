@@ -155,6 +155,8 @@ export interface SpecificStats extends Stats {
 export interface GameStats extends SpecificStats {
     type: "game" | "game#category";
     image: string;
+    totalParticipations: number;
+    totalFinishedParticipations: number;
 }
 
 export interface UserStats extends SpecificStats {

@@ -13,7 +13,7 @@ function usePagination<T>(
     initialData: PaginatedData<T> | T[],
     fetchPage?: PaginationFetcher<T>,
     pageSize: number = 10,
-    debounce: number = 400,
+    debounce?: number,
 ): PaginationHook<T> {
     let fullData = initialData;
 
@@ -24,7 +24,12 @@ function usePagination<T>(
         fullData = fullData.items;
     }
 
-    if (fetchPage === undefined) fetchPage = genericFetcher;
+    if (fetchPage === undefined) {
+        fetchPage = genericFetcher;
+        debounce = 1;
+    } else if (debounce === undefined) {
+        debounce = 400;
+    }
 
     const [data, setData] = useState<{ [key: string]: PaginatedData<T> }>({
         "1-": initialData,

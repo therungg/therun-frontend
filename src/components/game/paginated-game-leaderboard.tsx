@@ -37,7 +37,6 @@ const PaginatedGameLeaderboardComponent = ({
         leaderboard,
         leaderboardFetcher,
         15,
-        0,
     );
 
     return (

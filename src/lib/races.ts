@@ -85,19 +85,21 @@ export const getGlobalRaceStats = async (): Promise<GlobalStats> => {
     return (await races.json()).result as GlobalStats;
 };
 
-export const getRaceGameStats = async (): Promise<GameStats[]> => {
-    const url = `${racesApiUrl}/stats/games`;
+export const getRaceGameStats = async (limit = 3): Promise<GameStats[]> => {
+    let url = `${racesApiUrl}/stats/games`;
 
-    const races = await fetch(url, { next: { revalidate: 0 } });
+    if (limit > 0) {
+        url += `?limit=${limit}`;
+    }
 
-    return ((await races.json()).result as GameStats[])
-        .sort((a, b) => {
-            // Hack because api returns ties in totalGames randomly.
-            if (a.totalRaces === b.totalRaces) {
-                return b.totalRaceTime - a.totalRaceTime;
-            }
+    const races = await fetch(url, { next: { revalidate: 60 * 60 } });
 
-            return 1;
-        })
-        .slice(0, 3);
+    return ((await races.json()).result as GameStats[]).sort((a, b) => {
+        // Hack because api returns ties in totalGames randomly.
+        if (a.totalRaces === b.totalRaces) {
+            return b.totalRaceTime - a.totalRaceTime;
+        }
+
+        return 1;
+    });
 };

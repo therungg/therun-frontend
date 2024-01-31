@@ -15,7 +15,14 @@ export const GlobalRaceStats = ({
         <div
             className={"bg-body-secondary mb-3 game-border px-4 py-3 rounded-3"}
         >
-            <span className={"h3"}>Race Stats</span>
+            <div
+                className={
+                    "justify-content-between w-100 d-flex align-items-center"
+                }
+            >
+                <span className={"h3 m-0"}>Race Stats</span>
+                <a href={"/races/stats"}>View all stats</a>
+            </div>
             <hr />
             <div>
                 <ShowStat stat={"Finished Races"} value={stats.totalRaces} />

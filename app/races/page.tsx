@@ -11,13 +11,14 @@ import {
     PaginatedRaces,
     Race,
 } from "~app/races/races.types";
+import buildMetadata from "~src/utils/metadata";
 
 export default async function RacePage() {
     const promises = [
         getAllActiveRaces(),
         getPaginatedFinishedRaces(1, 3),
         getGlobalRaceStats(),
-        getRaceGameStats(),
+        getRaceGameStats(3),
     ];
 
     const [races, finishedRaces, globalRaceStats, gameStats]: [
@@ -41,3 +42,8 @@ export default async function RacePage() {
         />
     );
 }
+
+export const metadata = buildMetadata({
+    title: "Speedrun Races",
+    description: "Watch and participate in Speedrun Races!",
+});

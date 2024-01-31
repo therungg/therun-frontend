@@ -4,13 +4,21 @@ import { GameImage } from "~src/components/image/gameimage";
 import React from "react";
 import { PersonIcon } from "~src/icons/person-icon";
 import { RaceFirstPlace } from "~app/races/components/race-first-place";
+import { FromNow } from "~src/components/util/datetime";
 
 export const RecentlyFinishedRaces = ({ races }: { races: Race[] }) => {
     return (
         <div
             className={"bg-body-secondary mb-3 game-border px-4 py-3 rounded-3"}
         >
-            <span className={"h3"}>Recently Finished Races</span>
+            <div
+                className={
+                    "justify-content-between w-100 d-flex align-items-center"
+                }
+            >
+                <span className={"h3 m-0"}>Finished Races</span>
+                <a href={"/races/finished"}>View all finished races</a>
+            </div>
             <hr />
             {races.length === 0 && <span>No races upcoming</span>}
             {races.length > 0 &&
@@ -60,10 +68,9 @@ export const RecentlyFinishedRace = ({ race }: { race: Race }) => {
                         <div className={"fst-italic"}>
                             {race.displayCategory}
                         </div>
-                        {/*<span>*/}
-                        {/*    <span className={"me-1"}>{race.creator}</span>*/}
-                        {/*    <PencilIcon />*/}
-                        {/*</span>*/}
+                        <span>
+                            <FromNow time={race.endTime as string} />
+                        </span>
                     </div>
                     <RaceFirstPlace race={race} />
                 </div>
