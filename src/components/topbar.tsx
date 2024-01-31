@@ -83,11 +83,18 @@ const Topbar = ({
                                 </div>
                             </Nav.Link>
                         )}
+                        <Nav.Link href="/races">
+                            <b>
+                                <span className="align-self-center">
+                                    Races{" "}
+                                    <i>
+                                        <sup>beta</sup>
+                                    </i>
+                                </span>
+                            </b>
+                        </Nav.Link>
                         <Nav.Link href="/live">
                             <b>Live</b>
-                        </Nav.Link>
-                        <Nav.Link href="/gsa">
-                            <b>PACE Qualifiers</b>
                         </Nav.Link>
                         {/*<Nav.Link href="/races">*/}
                         {/*    <b>Races</b>*/}
