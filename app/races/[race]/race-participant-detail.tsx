@@ -97,8 +97,8 @@ export const RaceParticipantDetailView = ({
         >
             <div>
                 <span className={"justify-content-between w-100 d-flex"}>
-                    <span className={"fs-3"}>
-                        <span>
+                    <span className={"fs-3 text-nowrap"}>
+                        <span className={"text-truncate"}>
                             <UserLink
                                 username={participant.user}
                                 parentIsUrl={false}

@@ -37,7 +37,7 @@ export const RaceOverview = ({
             <Row className={"mb-3"}>
                 <Col md={12} lg={7} className={"d-flex"}>
                     <h1>Races</h1>
-                    <span className={"mx-2 fst-italic"}>alpha</span>
+                    <span className={"mx-2 fst-italic"}>beta</span>
                 </Col>
                 <Col
                     md={12}
