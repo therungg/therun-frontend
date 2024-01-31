@@ -174,18 +174,6 @@ const RaceParticipantDetailBody = ({
         );
     }
 
-    if (!participant.liveData) {
-        return (
-            <div
-                className={
-                    "flex-center h-100 w-100 align-items-center fst-italic"
-                }
-            >
-                Awaiting Live Data...{" "}
-            </div>
-        );
-    }
-
     const percentage = getPercentageDoneFromLiverun(participant);
 
     return (
@@ -194,33 +182,49 @@ const RaceParticipantDetailBody = ({
                 <RaceParticipantTimer raceParticipant={participant} />
             </span>
             <hr style={{ margin: "0.7rem 0" }} />
-            <div className={"justify-content-between d-flex"}>
-                <span>
-                    BPT -{" "}
-                    <span className={"fw-bold"}>
-                        <DurationToFormatted
-                            duration={
-                                participant.liveData.bestPossibleTime as number
-                            }
-                        />
-                    </span>
-                </span>
-                <span>
-                    <DifferenceFromOne diff={participant.liveData.delta} />
-                </span>
-            </div>
-            <div
-                className={
-                    "justify-content-between d-flex w-100 flex-grow-1 p-0 m-0"
-                }
-            >
-                <span className={"text-truncate"}>
-                    {participant.liveData.currentSplitIndex + 1}/
-                    {participant.liveData.totalSplits} -{" "}
-                    {participant.liveData.currentSplitName}
-                </span>
-                <span>{percentage}%</span>
-            </div>
+            {participant.liveData && participant.status === "started" && (
+                <>
+                    <div className={"justify-content-between d-flex"}>
+                        <span>
+                            BPT -{" "}
+                            <span className={"fw-bold"}>
+                                <DurationToFormatted
+                                    duration={
+                                        participant.liveData
+                                            .bestPossibleTime as number
+                                    }
+                                />
+                            </span>
+                        </span>
+                        <span>
+                            <DifferenceFromOne
+                                diff={participant.liveData.delta}
+                            />
+                        </span>
+                    </div>
+                    <div
+                        className={
+                            "justify-content-between d-flex w-100 flex-grow-1 p-0 m-0"
+                        }
+                    >
+                        <span className={"text-truncate"}>
+                            {participant.liveData.currentSplitIndex + 1}/
+                            {participant.liveData.totalSplits} -{" "}
+                            {participant.liveData.currentSplitName}
+                        </span>
+                        <span>{percentage}%</span>
+                    </div>
+                </>
+            )}
+            {participant.status === "joined" && (
+                <>
+                    <div
+                        className={"flex-center align-items-center fst-italic"}
+                    >
+                        Awaiting Live Data...{" "}
+                    </div>
+                </>
+            )}
         </div>
     );
 };

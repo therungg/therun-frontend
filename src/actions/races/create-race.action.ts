@@ -32,6 +32,15 @@ export async function createRace(prevState: any, raceInput: FormData) {
 
     confirmPermission(session, "create", "race");
 
+    // Is the match ranked?
+    input.ranked = true;
+
+    // Let creator join race automatically
+    input.selfJoin = true;
+
+    // Confirm final time without asking automatically
+    input.autoConfirm = false;
+
     const result = await fetch(racesApiUrl, {
         method: "POST",
         headers: {
