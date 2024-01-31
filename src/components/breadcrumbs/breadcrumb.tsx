@@ -1,3 +1,5 @@
+"use client";
+
 import { Breadcrumb as BootstrapBreadCrumb } from "react-bootstrap";
 
 export interface BreadcrumbItem {
