@@ -6,6 +6,7 @@ import { getPercentageDoneFromLiverun } from "~app/races/[race]/get-percentage-d
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { TrophyIcon } from "~src/icons/trophy-icon";
 import { RaceParticipantTimer } from "~app/races/[race]/race-timer";
+import { RaceParticipantRatingDisplay } from "~app/races/components/race-participant-rating-display";
 
 interface RaceParticipantOverviewProps {
     race: Race;
@@ -40,7 +41,7 @@ export const RaceParticipantOverview = ({
                         >
                             Username
                         </th>
-                        <th className={"py-1"}>PB</th>
+                        <th className={"py-1"}>Rating</th>
                         <th className={"py-1"}>%</th>
                         <th className={"py-1"}>Status</th>
                     </tr>
@@ -92,7 +93,9 @@ export const RaceParticipantItem = ({
                     )}
                 </td>
                 <td>
-                    <DurationToFormatted duration={participant.pb} />
+                    <RaceParticipantRatingDisplay
+                        raceParticipant={participant}
+                    />
                 </td>
                 <td>
                     {percentage > 0 && `${percentage.toFixed(0)}%`}
@@ -146,7 +149,7 @@ const RaceParticipantStatus = ({
             )}
             {participant.status === "abandoned" && (
                 <span>
-                    Abandoned
+                    DNF
                     {/*<DurationToFormatted duration={abandonedTime} />*/}
                 </span>
             )}

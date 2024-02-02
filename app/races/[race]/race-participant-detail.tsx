@@ -13,6 +13,7 @@ import {
 import { readableRaceParticipantStatus } from "~app/races/[race]/readable-race-status";
 import { RaceParticipantTimer } from "~app/races/[race]/race-timer";
 import { getPercentageDoneFromLiverun } from "~app/races/[race]/get-percentage-done-from-liverun";
+import { RaceParticipantRatingDisplay } from "~app/races/components/race-participant-rating-display";
 
 interface RaceParticipantDetailProps {
     race: Race;
@@ -135,7 +136,9 @@ export const RaceParticipantDetailView = ({
                             </span>
                         </span>
                     )}
+                    {!participant.pb && "No PB"}
                 </span>
+                <RaceParticipantRatingDisplay raceParticipant={participant} />
                 {readableRaceParticipantStatus(participant.status)}
             </div>
             <hr style={{ margin: "0.7rem 0" }} />

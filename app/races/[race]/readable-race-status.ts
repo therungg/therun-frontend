@@ -20,9 +20,9 @@ export const readableRaceParticipantStatus = (
 ) => {
     switch (status) {
         case "abandoned":
-            return "Abandoned";
+            return "DNF";
         case "confirmed":
-            return "Finished";
+            return "Done";
         case "finished":
             return "Confirming...";
         case "joined":
