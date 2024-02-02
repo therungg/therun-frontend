@@ -31,7 +31,7 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
         <>
             <Breadcrumb breadcrumbs={breadcrumbs} />
             <Row>
-                <Col xl={8} xs={12}>
+                <Col xxl={8} xl={7} xs={12}>
                     <RaceHeader race={raceState} />
                     <Col className={"flex-center justify-content-between py-2"}>
                         <div className={"fs-1 align-self-center"}>
@@ -44,11 +44,13 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
                     <div className={"d-lg-none"}>
                         <RaceParticipantOverview race={raceState} />
                     </div>
-                    <RaceParticipantDetail race={raceState} />
+                    <div className={"pb-4"}>
+                        <RaceParticipantDetail race={raceState} />
+                    </div>
                 </Col>
-                <Col xl={4} className={"d-none d-lg-block"}>
+                <Col xxl={4} xl={5} className={"d-none d-lg-block"}>
                     {/* This instance of RaceParticipantOverview will show on xl screens and up */}
-                    <div className={"sticky-top"}>
+                    <div className={"sticky-top"} style={{ zIndex: 999 }}>
                         <RaceParticipantOverview race={raceState} />
                     </div>
                 </Col>

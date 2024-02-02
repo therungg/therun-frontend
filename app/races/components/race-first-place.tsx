@@ -18,7 +18,8 @@ export const RaceFirstPlace = ({ race }: { race: Race }) => {
 
 const RaceFirstPlaceFinishedRace = ({ race }: { race: Race }) => {
     const results = race.results as RaceResult[];
-    const firstPlace = results[0].status === "confirmed" ? results[0] : null;
+    const firstPlace =
+        results && results[0].status === "confirmed" ? results[0] : null;
     return (
         <>
             {firstPlace && (

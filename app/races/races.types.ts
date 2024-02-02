@@ -70,6 +70,8 @@ export type RaceParticipant = {
     finishedAtDate: string | null;
     confirmedAtDate: string | null;
     abandondedAtDate: string | null;
+    ratingBefore: number;
+    ratingAfter: number | null;
 };
 
 export interface RaceParticipantWithLiveData extends RaceParticipant {
