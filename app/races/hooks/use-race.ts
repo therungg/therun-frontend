@@ -34,9 +34,13 @@ export const useRace = (race: Race) => {
                 const newRace = { ...raceState };
 
                 if (index !== undefined && index > -1) {
-                    (newRace.participants as RaceParticipantWithLiveData[])[
-                        index
-                    ] = newParticipant;
+                    if (newParticipant.status === "unjoined") {
+                        newRace.participants?.splice(index, 1);
+                    } else {
+                        (newRace.participants as RaceParticipantWithLiveData[])[
+                            index
+                        ] = newParticipant;
+                    }
                 } else {
                     newRace.participants?.push(newParticipant);
                 }

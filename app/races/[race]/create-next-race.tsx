@@ -20,7 +20,7 @@ export const CreateNextRace = (props: CreateNextRaceProps) => {
     if (!user || race.creator !== user.username) return <></>;
 
     return (
-        <div>
+        <div className={"mb-4"}>
             <CreateNextRaceButton {...props} raceId={race.raceId} />
         </div>
     );
@@ -28,13 +28,13 @@ export const CreateNextRace = (props: CreateNextRaceProps) => {
 
 const GoToNextRace = (props: RaceActionProps) => {
     return (
-        <div>
+        <div className={"mb-4"}>
+            <span className={"mb-2"}>A new race has been created!</span>
             <Link href={`/races/${props.raceId}`}>
                 <Button {...props} variant={"primary"}>
                     Go to next race
                 </Button>
             </Link>
-            <span>A new race has been created!</span>
         </div>
     );
 };

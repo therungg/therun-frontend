@@ -1,6 +1,5 @@
 import { CreateNextRace } from "~app/races/[race]/create-next-race";
 import { ConfirmFinalTimeForm } from "~app/races/components/forms/confirm-final-time-form";
-import { JoinRaceButton } from "~app/races/components/buttons/join-race-button";
 import { LeaveRaceButton } from "~app/races/components/buttons/leave-race-button";
 import { ReadyRaceButton } from "~app/races/components/buttons/ready-race-button";
 import { UnreadyRaceButton } from "~app/races/components/buttons/unready-race-button";
@@ -9,6 +8,8 @@ import { AbandonRaceButton } from "~app/races/components/buttons/abandon-race-bu
 import React from "react";
 import { Race } from "~app/races/races.types";
 import { User } from "../../../types/session.types";
+import { CommentOnRaceForm } from "~app/races/components/forms/race-comment-form";
+import { JoinRaceForm } from "~app/races/components/forms/join-race-form";
 
 export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
     if (!user?.username) return null;
@@ -39,6 +40,9 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
         loggedinUserParticipation.status === "confirmed" &&
         loggedinUserParticipation.finalTime;
 
+    const userAbandoned =
+        userParticipates && loggedinUserParticipation.status === "abandoned";
+
     const userCreatedRace = race.creator === user?.username;
 
     if (race.status === "starting") return null;
@@ -47,30 +51,69 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
     if (userConfirmed && !userCreatedRace) return null;
 
     return (
-        <>
+        <div className={"rounded-3 p-4 mb-3 game-border bg-body-secondary"}>
+            <span className={"h4 flex-center mb-3"}>Race Actions</span>
+            <hr />
+
             {userFinished && (
-                <ConfirmFinalTimeForm
-                    raceId={race.raceId}
-                    finalTime={loggedinUserParticipation.finalTime as number}
-                />
+                <div className={"d-flex"}>
+                    <ConfirmFinalTimeForm
+                        raceId={race.raceId}
+                        finalTime={
+                            loggedinUserParticipation.finalTime as number
+                        }
+                    />
+                </div>
             )}
+
+            {(userFinished || userConfirmed || userAbandoned) &&
+                !loggedinUserParticipation.comment && (
+                    <CommentOnRaceForm raceId={race.raceId} />
+                )}
             {raceIsPending && !userParticipates && (
-                <JoinRaceButton raceId={race.raceId} />
+                <div className={"d-flex"}>
+                    <JoinRaceForm race={race} />
+                </div>
             )}
             {raceIsPending && userParticipates && (
-                <div className={"d-flex gap-2"}>
-                    <LeaveRaceButton raceId={race.raceId} />
-                    {!userIsReady && <ReadyRaceButton raceId={race.raceId} />}
-                    {userIsReady && <UnreadyRaceButton raceId={race.raceId} />}
+                <div>
+                    {!userIsReady && (
+                        <>
+                            <ReadyRaceButton
+                                className={"w-100 fs-5"}
+                                raceId={race.raceId}
+                            />
+
+                            <LeaveRaceButton
+                                className={"w-100 fs-5 mt-2"}
+                                raceId={race.raceId}
+                                variant={"danger"}
+                            />
+                        </>
+                    )}
+                    {userIsReady && (
+                        <UnreadyRaceButton
+                            className={"w-100 fs-5"}
+                            raceId={race.raceId}
+                            variant={"danger"}
+                        />
+                    )}
                 </div>
             )}
+            <CreateNextRace race={race} user={user} className={"w-100 fs-5"} />
             {raceStarted && (userIsReady || userStarted) && (
-                <div className={"d-flex gap-2"}>
-                    <FinishRaceButton raceId={race.raceId} />
-                    <AbandonRaceButton raceId={race.raceId} />
+                <div>
+                    <FinishRaceButton
+                        raceId={race.raceId}
+                        className={"w-100 fs-5"}
+                    />
+                    <AbandonRaceButton
+                        raceId={race.raceId}
+                        className={"w-100 fs-5 mt-2"}
+                        variant={"danger"}
+                    />
                 </div>
             )}
-            <CreateNextRace race={race} user={user} />
-        </>
+        </div>
     );
 };

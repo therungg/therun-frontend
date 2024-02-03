@@ -10,6 +10,7 @@ export const JoinRaceButton = (props: RaceActionProps) => {
             action={joinRace}
             innerText={"Join Race"}
             pendingText={"Joining Race"}
+            className={"w-100"}
             {...props}
         />
     );

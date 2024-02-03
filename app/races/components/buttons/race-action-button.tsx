@@ -18,7 +18,7 @@ interface RaceActionButtonProps extends SubmitButtonProps {
 export const RaceActionButton = (props: RaceActionButtonProps) => {
     const { action, raceId, ...buttonProps } = props;
     return (
-        <Form action={action}>
+        <Form action={action} className={buttonProps.className}>
             <input hidden name={"raceId"} value={raceId} readOnly />
             <SubmitButton {...buttonProps} />
         </Form>
