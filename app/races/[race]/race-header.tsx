@@ -7,9 +7,7 @@ import { RaceFirstPlace } from "~app/races/components/race-first-place";
 
 export const RaceHeader = ({ race }: { race: Race }) => {
     return (
-        <div
-            className={"bg-body-secondary game-border mh-100 card game-border"}
-        >
+        <div className={"bg-body-secondary mh-100 card game-border"}>
             <Card className={`game-border h-100`}>
                 <Row style={{ minHeight: "10rem" }}>
                     <Col xs={4} sm={2}>
@@ -65,6 +63,11 @@ export const RaceHeader = ({ race }: { race: Race }) => {
                             >
                                 {race.displayCategory}
                             </div>
+                            {!race.ranked && (
+                                <div className={"text-nowrap fst-italic"}>
+                                    Unranked
+                                </div>
+                            )}
                         </div>
 
                         {race.customName && (

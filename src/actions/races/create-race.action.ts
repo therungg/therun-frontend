@@ -15,6 +15,10 @@ export async function createRace(prevState: any, raceInput: FormData) {
         category: raceInput.get("category") as string,
         description: raceInput.get("description") as string,
         customName: raceInput.get("customName") as string,
+        selfJoin: !!raceInput.get("selfJoin"),
+        ranked: !!raceInput.get("ranked"),
+        forceStream: raceInput.get("forceStream") as string,
+        password: raceInput.get("password") as string,
     };
 
     const { error } = validateInput(input);
@@ -32,12 +36,6 @@ export async function createRace(prevState: any, raceInput: FormData) {
 
     confirmPermission(session, "create", "race");
 
-    // Is the match ranked?
-    input.ranked = true;
-
-    // Let creator join race automatically
-    input.selfJoin = true;
-
     // Confirm final time without asking automatically
     input.autoConfirm = false;
 
@@ -51,7 +49,8 @@ export async function createRace(prevState: any, raceInput: FormData) {
     });
 
     if (result.status !== 200) {
-        return { message: await result.text() };
+        const response = await result.text();
+        return { message: response };
     }
 
     const raceId = (await result.json()).result.raceId;
@@ -65,14 +64,14 @@ export const validateInput = (
     const raceSchema: Joi.ObjectSchema<CreateRaceInput> = Joi.object({
         game: Joi.string().required().min(1).max(200),
         category: Joi.string().required().min(1).max(200),
-        description: Joi.string().min(1).max(1000).optional(),
+        customName: Joi.string().min(0).max(40).optional(),
+        description: Joi.string().min(0).max(1000).optional(),
+        ranked: Joi.boolean().optional(),
         selfJoin: Joi.boolean().optional(),
         canStartEarly: Joi.boolean().optional(),
-        customName: Joi.string().min(1).max(40).optional(),
         previousRaceId: Joi.string().min(3).max(5).optional(),
-        forceStream: Joi.string().optional(),
-        password: Joi.string().optional(),
-        ranked: Joi.boolean().optional(),
+        forceStream: Joi.string().min(0).max(100).optional(),
+        password: Joi.string().min(0).max(100).optional(),
         autoConfirm: Joi.boolean().optional(),
     });
 

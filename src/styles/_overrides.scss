@@ -1,6 +1,6 @@
 // Custom variables
 :root {
-  --split-active-color:lightblue;
+  --split-active-color: lightblue;
   --color-positive-0: #65af65;
   --color-positive-1: #73b673;
   --color-positive-2: #81bd81;
@@ -14,8 +14,8 @@
 }
 
 [data-bs-theme="dark"] {
-  --split-active-color:darkblue;
-  --bs-secondary:#fdc544;
+  --split-active-color: darkblue;
+  --bs-secondary: #fdc544;
   --color-positive-0: #217719;
   --color-positive-1: #207119;
   --color-positive-2: #1f6b18;
@@ -31,14 +31,21 @@
 .btn {
 
   &-primary,
-  &-secondary {
+  &-secondary,
+  &-danger {
     --bs-btn-color: var(--bs-body-color);
-    --bs-btn-bg:    hsla(0,0%,39%,.2);
+    --bs-btn-bg: hsla(0, 0%, 39%, .2);
+    --bs-btn-disabled-bg: var(--bs-body-color);
   }
 
   &-secondary {
     --bs-btn-hover-bg: var(--bs-secondary);
   }
+
+  &-danger {
+    --bs-btn-hover-bg: var(--bs-danger);
+  }
+
 }
 
 .nav-tabs {

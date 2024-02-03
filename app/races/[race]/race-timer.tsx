@@ -54,6 +54,25 @@ export const RaceParticipantTimer = ({
             1000
           : 0;
 
+    useEffect(() => {
+        if (
+            raceParticipant.status === "finished" ||
+            raceParticipant.status === "confirmed"
+        ) {
+            const newoffset = raceParticipant.finalTime
+                ? raceParticipant.finalTime / 1000
+                : raceParticipant.liveData
+                  ? (new Date().getTime() -
+                        parseInt(
+                            raceParticipant.liveData.startedAt.toString(),
+                        )) /
+                    1000
+                  : 0;
+            timer.setTime(newoffset);
+            timer.stopTimer();
+        }
+    }, [raceParticipant.status]);
+
     const timer = useSpeedrunTimer(
         initialOffset,
         raceParticipant.status === "started",

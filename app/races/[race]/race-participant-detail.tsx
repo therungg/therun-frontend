@@ -1,7 +1,6 @@
 import { Race, RaceParticipantWithLiveData } from "~app/races/races.types";
 import { Col, Row } from "react-bootstrap";
-import React, { useState } from "react";
-import { TwitchEmbed } from "react-twitch-embed";
+import React from "react";
 import { UserLink } from "~src/components/links/links";
 import { Twitch as TwitchIcon } from "react-bootstrap-icons";
 import styles from "../../../src/components/css/LiveRun.module.scss";
@@ -17,18 +16,15 @@ import { RaceParticipantRatingDisplay } from "~app/races/components/race-partici
 
 interface RaceParticipantDetailProps {
     race: Race;
+    // eslint-disable-next-line no-unused-vars
+    setStream: (user: string) => void;
 }
 
-const enableTwitchStreamFeature = false;
-
-export const RaceParticipantDetail = ({ race }: RaceParticipantDetailProps) => {
+export const RaceParticipantDetail = ({
+    race,
+    setStream,
+}: RaceParticipantDetailProps) => {
     const participants = race.participants as RaceParticipantWithLiveData[];
-    const firstTwitchStreamingParticipant =
-        enableTwitchStreamFeature &&
-        participants.find((participant) => participant.liveData?.streaming);
-    const [stream, setStream] = useState(
-        race.forceStream || firstTwitchStreamingParticipant?.user,
-    );
 
     const [parent] = useAutoAnimate({
         duration: 300,
@@ -37,31 +33,18 @@ export const RaceParticipantDetail = ({ race }: RaceParticipantDetailProps) => {
 
     return (
         <>
-            {enableTwitchStreamFeature && (
-                <Row className={"mb-4"}>
-                    {enableTwitchStreamFeature && stream && (
-                        <Col>
-                            <TwitchEmbed
-                                className={
-                                    "mb-3 card game-border ratio ratio-16x9 rounded overflow-hidden"
-                                }
-                                channel={stream}
-                                width={"100%"}
-                                height={"100%"}
-                                muted
-                                withChat={false}
-                            />
-                        </Col>
-                    )}
-                </Row>
-            )}
             <Row xs={1} md={2} xxl={3} className={"g-4"} ref={parent}>
                 {participants?.map((participant, i) => {
                     return (
                         <Col
                             key={participant.user}
                             onClick={() => {
-                                setStream(participant.user);
+                                if (
+                                    participant.liveData &&
+                                    participant.liveData.streaming
+                                ) {
+                                    setStream(participant.user);
+                                }
                             }}
                         >
                             <RaceParticipantDetailView
@@ -93,7 +76,9 @@ export const RaceParticipantDetailView = ({
             className={`px-4 pt-2 pb-1 card game-border h-100 ${
                 isHighlighted ? "bg-body-tertiary" : "bg-body-secondary"
             } game-border mh-100 mb-3 ${
-                enableTwitchStreamFeature && styles.liveRunContainer
+                participant.liveData &&
+                participant.liveData.streaming &&
+                styles.liveRunContainer
             }`}
         >
             <div>
@@ -159,30 +144,26 @@ const RaceParticipantDetailBody = ({
     participant: RaceParticipantWithLiveData;
     race: Race;
 }) => {
-    if (participant.status === "abandoned") {
-        const abandonedTime =
-            new Date(participant.abandondedAtDate as string).getTime() -
-            new Date(race.startTime as string).getTime();
-        return (
-            <div
-                className={
-                    "flex-center h-100 w-100 align-items-center fst-italic"
-                }
-            >
-                Abandoned -{" "}
-                <span className={"ps-1"}>
-                    <DurationToFormatted duration={abandonedTime} />
-                </span>
-            </div>
-        );
-    }
+    const abandonedTime =
+        new Date(participant.abandondedAtDate as string).getTime() -
+        new Date(race.startTime as string).getTime();
 
     const percentage = getPercentageDoneFromLiverun(participant);
 
     return (
         <div className={"w-100"}>
             <span className={"flex-center w-100 fs-4"}>
-                <RaceParticipantTimer raceParticipant={participant} />
+                {participant.status === "abandoned" && (
+                    <>
+                        Abandoned -{" "}
+                        <span className={"ps-1"}>
+                            <DurationToFormatted duration={abandonedTime} />
+                        </span>
+                    </>
+                )}
+                {participant.status !== "abandoned" && (
+                    <RaceParticipantTimer raceParticipant={participant} />
+                )}
             </span>
             <hr style={{ margin: "0.7rem 0" }} />
             {participant.liveData && participant.status === "started" && (
@@ -219,14 +200,19 @@ const RaceParticipantDetailBody = ({
                     </div>
                 </>
             )}
-            {participant.status === "joined" && (
-                <>
-                    <div
-                        className={"flex-center align-items-center fst-italic"}
-                    >
-                        Awaiting Live Data...{" "}
-                    </div>
-                </>
+            {race.status === "progress" && participant.status === "ready" && (
+                <div
+                    className={"flex-center align-items-center fst-italic h-50"}
+                >
+                    Awaiting Live Data...{" "}
+                </div>
+            )}
+            {participant.comment && (
+                <div
+                    className={"fst-italic flex-center align-items-center h-50"}
+                >
+                    &quot;{participant.comment}&quot;
+                </div>
             )}
         </div>
     );

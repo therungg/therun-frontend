@@ -31,25 +31,28 @@ export const ConfirmFinalTimeForm = ({
             <Form action={confirmFinalTime}>
                 <input hidden name={"raceId"} value={raceId} readOnly />
 
-                <input
-                    type={"text"}
-                    name={"finalTimeInput"}
-                    value={finalTimeInput}
-                    onChange={(event) => {
-                        setFinalTimeInput(event.target.value);
-                    }}
-                />
-
-                <input
-                    hidden
-                    name={"finalTime"}
-                    value={confirmedFinalTime}
-                    readOnly
-                />
-                <SubmitButton
-                    innerText={"Confirm time"}
-                    pendingText={"Confirming time..."}
-                />
+                <div className={"d-flex gap-2"}>
+                    <input
+                        type={"text"}
+                        name={"finalTimeInput"}
+                        className={"form-control"}
+                        value={finalTimeInput}
+                        onChange={(event) => {
+                            setFinalTimeInput(event.target.value);
+                        }}
+                    />
+                    <input
+                        hidden
+                        name={"finalTime"}
+                        value={confirmedFinalTime}
+                        readOnly
+                    />
+                    <SubmitButton
+                        className={"text-nowrap"}
+                        innerText={"Confirm time"}
+                        pendingText={"Confirming time..."}
+                    />
+                </div>
             </Form>
         </div>
     );

@@ -47,7 +47,7 @@ export interface Race {
     nextRaceId?: string;
     previousRaceId?: string;
     forceStream?: string;
-    password?: string;
+    requiresPassword?: boolean;
     ranked: boolean;
     autoConfirm: boolean;
 }
@@ -72,6 +72,7 @@ export type RaceParticipant = {
     abandondedAtDate: string | null;
     ratingBefore: number;
     ratingAfter: number | null;
+    comment?: string | null;
 };
 
 export interface RaceParticipantWithLiveData extends RaceParticipant {
