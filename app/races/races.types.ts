@@ -116,6 +116,7 @@ export interface CreateRaceInput {
     forceStream?: string;
     ranked?: boolean;
     autoConfirm?: boolean;
+    countdown?: number;
 }
 
 export type WebsocketRaceMessageType =

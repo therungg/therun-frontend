@@ -123,6 +123,28 @@ export default function CreateRace() {
                                         />
                                     </Form.Group>
                                 </div>
+                                <div className={"row g-3 mb-4"}>
+                                    <Form.Group controlId={"countdown"}>
+                                        <Form.Label>
+                                            <UnderlineTooltip
+                                                title={"Countdown seconds"}
+                                                content={
+                                                    "By default, the countdown when everyone is ready starts at 10 seconds. Customize that here"
+                                                }
+                                                element={"Countdown seconds"}
+                                            />
+                                        </Form.Label>
+                                        <Form.Control
+                                            name={"countdown"}
+                                            type={"number"}
+                                            required={false}
+                                            min={3}
+                                            step={1}
+                                            max={60 * 60}
+                                            defaultValue={10}
+                                        />
+                                    </Form.Group>
+                                </div>
                                 <div className={"row g-3 mb-3"}>
                                     <Form.Group controlId={"ranked"}>
                                         <Form.Check

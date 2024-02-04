@@ -19,6 +19,7 @@ export async function createRace(prevState: any, raceInput: FormData) {
         ranked: !!raceInput.get("ranked"),
         forceStream: raceInput.get("forceStream") as string,
         password: raceInput.get("password") as string,
+        countdown: Number(raceInput.get("countdown")),
     };
 
     const { error } = validateInput(input);
@@ -73,6 +74,10 @@ export const validateInput = (
         forceStream: Joi.string().min(0).max(100).optional(),
         password: Joi.string().min(0).max(100).optional(),
         autoConfirm: Joi.boolean().optional(),
+        countdown: Joi.number()
+            .optional()
+            .min(3)
+            .max(60 * 60),
     });
 
     return raceSchema.validate(input);
