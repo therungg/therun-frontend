@@ -1,5 +1,6 @@
 import {
     Race,
+    RaceMessage,
     RaceParticipant,
     RaceParticipantWithLiveData,
     WebsocketRaceMessage,
@@ -12,12 +13,13 @@ import {
 import { sortRaceParticipants } from "~app/races/[race]/sort-race-participants";
 
 const raceMessageIsValid = (
-    message: WebsocketRaceMessage<Race | RaceParticipant>,
+    message: WebsocketRaceMessage<Race | RaceParticipant | RaceMessage>,
 ) => {
     return message !== null && message.data && message.data.raceId;
 };
-export const useRace = (race: Race) => {
+export const useRace = (race: Race, messages: RaceMessage[]) => {
     const [raceState, setRaceState] = useState(race);
+    const [messagesState, setMessagesState] = useState(messages);
 
     const lastMessage = useRaceWebsocket(raceState.raceId);
 
@@ -58,10 +60,15 @@ export const useRace = (race: Race) => {
                 newRace.participants = sortRaceParticipants(raceState);
                 setRaceState(newRace);
             }
+            if (lastMessage.type === "message") {
+                const newMessages = [...messagesState];
+                newMessages.unshift(lastMessage.data as RaceMessage);
+                setMessagesState(newMessages);
+            }
         }
     }, [lastMessage]);
 
-    return raceState;
+    return { raceState, messagesState };
 };
 
 export const useRaces = (races: Race[]) => {

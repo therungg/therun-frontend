@@ -52,9 +52,6 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
 
     return (
         <div className={"rounded-3 p-4 mb-3 game-border bg-body-secondary"}>
-            <span className={"h4 flex-center mb-3"}>Race Actions</span>
-            <hr />
-
             {userFinished && (
                 <div className={"d-flex"}>
                     <ConfirmFinalTimeForm

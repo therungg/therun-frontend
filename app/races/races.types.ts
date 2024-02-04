@@ -118,9 +118,14 @@ export interface CreateRaceInput {
     autoConfirm?: boolean;
 }
 
-export type WebsocketRaceMessageType = "raceUpdate" | "participantUpdate";
+export type WebsocketRaceMessageType =
+    | "raceUpdate"
+    | "participantUpdate"
+    | "message";
 
-export interface WebsocketRaceMessage<T extends Race | RaceParticipant> {
+export interface WebsocketRaceMessage<
+    T extends Race | RaceParticipant | RaceMessage,
+> {
     type: WebsocketRaceMessageType;
     data: T;
 }
@@ -165,3 +170,51 @@ export interface GameStats extends SpecificStats {
 export interface UserStats extends SpecificStats {
     totalFinishedRaces: number;
 }
+
+export interface RaceMessage {
+    raceId: string;
+    time: string;
+    message?: string;
+    data?: RaceMessageData;
+    type: RaceMessageType;
+}
+
+export interface RaceMessageData {}
+
+export interface RaceMessageUserData {
+    user: string;
+}
+
+export interface RaceMessageParticipantCommentData extends RaceMessageUserData {
+    comment: string;
+}
+
+export interface RaceMessageParticipantSplitData extends RaceMessageUserData {
+    splitName: string;
+    time: number;
+    percentage: number;
+}
+
+export interface RaceMesageParticipantTimeData extends RaceMessageUserData {
+    time: number;
+}
+
+export type RaceMessageType =
+    | "race-created"
+    | "race-starting"
+    | "race-start-canceled"
+    | "race-started"
+    | "race-abort"
+    | "race-finish"
+    | "race-rated"
+    | "race-stats-parsed"
+    | "participant-join"
+    | "participant-unjoin"
+    | "participant-ready"
+    | "participant-unready"
+    | "participant-split"
+    | "participant-abandon"
+    | "participant-finish"
+    | "participant-confirm"
+    | "participant-comment"
+    | "chat";

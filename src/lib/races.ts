@@ -5,6 +5,7 @@ import {
     GlobalStats,
     PaginatedRaces,
     Race,
+    RaceMessage,
     RaceParticipant,
 } from "~app/races/races.types";
 import { PaginationFetcher } from "~src/components/pagination/pagination.types";
@@ -102,4 +103,14 @@ export const getRaceGameStats = async (limit = 3): Promise<GameStats[]> => {
 
         return 1;
     });
+};
+
+export const getRaceMessages = async (
+    raceId: string,
+): Promise<RaceMessage[]> => {
+    const url = `${racesApiUrl}/${raceId}/messages`;
+
+    const messages = await fetch(url, { next: { revalidate: 0 } });
+
+    return (await messages.json()).result;
 };

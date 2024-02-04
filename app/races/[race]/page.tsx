@@ -1,7 +1,7 @@
-import { getRaceByRaceId } from "~src/lib/races";
+import { getRaceByRaceId, getRaceMessages } from "~src/lib/races";
 import { RaceDetail } from "~app/races/[race]/race-view";
 import { getSession } from "~src/actions/session.action";
-import { Race } from "~app/races/races.types";
+import { Race, RaceMessage } from "~app/races/races.types";
 import { User } from "../../../types/session.types";
 import { sortRaceParticipants } from "~app/races/[race]/sort-race-participants";
 
@@ -10,11 +10,21 @@ interface PageProps {
 }
 
 export default async function RaceDetailPage({ params }: PageProps) {
-    const promises = [getRaceByRaceId(params.race), getSession()];
+    const raceId = params.race;
 
-    const [race, session] = (await Promise.all(promises)) as [Race, User];
+    const promises = [
+        getRaceByRaceId(raceId),
+        getSession(),
+        getRaceMessages(raceId),
+    ];
+
+    const [race, session, messages] = (await Promise.all(promises)) as [
+        Race,
+        User,
+        RaceMessage[],
+    ];
 
     race.participants = sortRaceParticipants(race);
 
-    return <RaceDetail race={race} user={session} />;
+    return <RaceDetail race={race} user={session} messages={messages} />;
 }

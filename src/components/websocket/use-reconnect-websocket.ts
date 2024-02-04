@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { WebsocketLiveRunMessage } from "~app/live/live.types";
 import {
     Race,
+    RaceMessage,
     RaceParticipant,
     WebsocketRaceMessage,
 } from "~app/races/races.types";
@@ -20,10 +21,9 @@ export const useAllRacesWebsocket = () =>
     );
 
 export const useRaceWebsocket = (raceId: string) =>
-    useReconnectWebsocket<WebsocketRaceMessage<Race | RaceParticipant>>(
-        "race",
-        raceId,
-    );
+    useReconnectWebsocket<
+        WebsocketRaceMessage<Race | RaceParticipant | RaceMessage>
+    >("race", raceId);
 
 export const useUserRaceParticipationsWebsocket = (user: User | undefined) =>
     useReconnectWebsocket<WebsocketRaceMessage<RaceParticipant>>(

@@ -1,6 +1,10 @@
 "use client";
 
-import { Race, RaceParticipantWithLiveData } from "~app/races/races.types";
+import {
+    Race,
+    RaceMessage,
+    RaceParticipantWithLiveData,
+} from "~app/races/races.types";
 import { User } from "../../../types/session.types";
 import { Col, Row } from "react-bootstrap";
 import React, { useState } from "react";
@@ -15,14 +19,16 @@ import {
     BreadcrumbItem,
 } from "~src/components/breadcrumbs/breadcrumb";
 import { RaceStream } from "~app/races/[race]/race-stream";
+import { RaceChat } from "~app/races/[race]/race-chat";
 
 interface RaceDetailProps {
     race: Race;
     user?: User;
+    messages: RaceMessage[];
 }
 
-export const RaceDetail = ({ race, user }: RaceDetailProps) => {
-    const raceState = useRace(race);
+export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
+    const { raceState, messagesState } = useRace(race, messages);
     const [stream, setStream] = useState(getInitialRaceStream(raceState));
 
     const breadcrumbs: BreadcrumbItem[] = [
@@ -33,7 +39,7 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
         <>
             <Breadcrumb breadcrumbs={breadcrumbs} />
             <Row>
-                <Col xxl={8} xl={7} xs={12}>
+                <Col xxl={8} lg={7} xs={12}>
                     <RaceHeader race={raceState} />
                     <Col className={"flex-center justify-content-between py-2"}>
                         <div className={"fs-1 align-self-center"}>
@@ -41,7 +47,12 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
                         </div>
                     </Col>
                     <div className={"d-lg-none"}>
+                        <RaceParticipantOverview race={raceState} />
                         <RaceActions race={raceState} user={user} />
+                        <RaceChat
+                            raceMessages={messagesState}
+                            race={raceState}
+                        />
                     </div>
                     <div className={"pb-4"}>
                         <RaceParticipantDetail
@@ -50,13 +61,12 @@ export const RaceDetail = ({ race, user }: RaceDetailProps) => {
                         />
                     </div>
                 </Col>
-                <Col xxl={4} xl={5} className={"d-none d-lg-block"}>
+                <Col xxl={4} lg={5} className={"d-none d-lg-block"}>
                     {/* This instance of RaceParticipantOverview will show on xl screens and up */}
+                    <RaceParticipantOverview race={raceState} />
                     <RaceActions race={raceState} user={user} />
+                    <RaceChat raceMessages={messagesState} race={raceState} />
                     <RaceStream stream={stream} />
-                    <div className={"sticky-top"} style={{ zIndex: 999 }}>
-                        <RaceParticipantOverview race={raceState} />
-                    </div>
                 </Col>
             </Row>
         </>
