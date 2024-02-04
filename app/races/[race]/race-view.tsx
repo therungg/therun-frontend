@@ -63,7 +63,7 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
                 </Col>
                 <Col xxl={4} lg={5} className={"d-none d-lg-block"}>
                     <RaceParticipantOverview race={raceState} />
-                    {/*<RaceActions race={raceState} user={user} />*/}
+                    <RaceActions race={raceState} user={user} />
                     <RaceChat raceMessages={messagesState} race={raceState} />
                     <RaceStream stream={stream} />
                 </Col>
