@@ -1,16 +1,18 @@
 import {
     Race,
+    RaceMesageParticipantTimeData,
     RaceMessage,
     RaceMessageParticipantCommentData,
     RaceMessageParticipantSplitData,
     RaceMessageUserData,
 } from "~app/races/races.types";
 import { SendChatMessageForm } from "~app/races/components/forms/send-chat-message-form";
-import { Col, Form, Row } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import { UserLink } from "~src/components/links/links";
 import { DurationToFormatted } from "~src/components/util/datetime";
-import React, { useState } from "react";
+import React, { Suspense, useState } from "react";
 import { random } from "nanoid";
+import { NoSSR } from "next/dist/shared/lib/lazy-dynamic/dynamic-no-ssr";
 
 interface FilterOptions {
     chat: boolean;
@@ -103,7 +105,7 @@ const ChatFilterOptions = ({
                                 subject.slice(1)
                             }
                             id={`${subject}_id_${rnd}`}
-                            checked={filterOptions[subject] as boolean}
+                            defaultChecked={true}
                             onClick={() => {
                                 const newFilterOptions = { ...filterOptions };
                                 newFilterOptions[subject] =
@@ -135,32 +137,31 @@ const Chat = ({ raceMessages }: { raceMessages: RaceMessage[] }) => {
 
 const Chatmessage = ({ message }: { message: RaceMessage }) => {
     return (
-        <span>
-            <Row>
-                <Col xs={3} sm={2} md={1} lg={2} xxl={1}>
-                    <small
-                        suppressHydrationWarning
-                        title={new Date(message.time).toLocaleTimeString()}
-                        className={"text-nowrap"}
-                    >
-                        {new Date(message.time).toLocaleTimeString([], {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                        })}
-                    </small>
-                </Col>
-                <Col
-                    xs={9}
-                    sm={10}
-                    md={11}
-                    lg={10}
-                    xxl={11}
-                    className={"ps-xxl-5 ps-xl-3 ps-lg-4 ps-md-4 "}
-                >
-                    {getRaceMessage(message)}
-                </Col>
-            </Row>
-        </span>
+        <div className={"d-flex"}>
+            <span className={"me-2"}>
+                <Suspense fallback={<ChatMessageTime time={message.time} />}>
+                    <NoSSR>
+                        <ChatMessageTime time={message.time} />
+                    </NoSSR>
+                </Suspense>
+            </span>
+            <div className={"w-100"}>{getRaceMessage(message)}</div>
+        </div>
+    );
+};
+
+const ChatMessageTime = ({ time }: { time: string }) => {
+    return (
+        <small
+            suppressHydrationWarning
+            title={new Date(time).toLocaleTimeString()}
+            className={"text-nowrap"}
+        >
+            {new Date(time).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+            })}
+        </small>
     );
 };
 
@@ -170,17 +171,17 @@ const getRaceMessage = (message: RaceMessage) => {
 
     switch (message.type) {
         case "race-created":
-            return "Race was created!";
+            return "Race was created";
         case "race-starting":
-            return "Everyone is ready. Countdown started!";
+            return "Everyone is ready. Countdown started";
         case "race-start-canceled":
             return "The start was canceled";
         case "race-started":
-            return "Race has started!";
+            return "Race has started";
         case "race-abort":
             return "Race was canceled";
         case "race-finish":
-            return "Everyone is done. The race is finished!";
+            return "Everyone is done. The race is finished";
         case "race-rated":
             return "Participant ratings have been updated";
         case "race-stats-parsed":
@@ -189,7 +190,7 @@ const getRaceMessage = (message: RaceMessage) => {
             return (
                 <>
                     <UserLink icon={false} username={user as string} /> has
-                    joined the race!
+                    joined the race
                 </>
             );
         case "participant-unjoin":
@@ -202,15 +203,14 @@ const getRaceMessage = (message: RaceMessage) => {
         case "participant-ready":
             return (
                 <>
-                    <UserLink icon={false} username={user as string} /> is
-                    ready!
+                    <UserLink icon={false} username={user as string} /> is ready
                 </>
             );
         case "participant-unready":
             return (
                 <>
                     <UserLink icon={false} username={user as string} /> is not
-                    ready!
+                    ready
                 </>
             );
         case "participant-split": {
@@ -224,16 +224,19 @@ const getRaceMessage = (message: RaceMessage) => {
                 );
             }
             return (
-                <div className={"justify-content-between w-100 d-flex"}>
-                    <span>
-                        <UserLink icon={false} username={user as string} />{" "}
-                        split
+                <div className={"w-100"}>
+                    <span className={"justify-content-between d-flex w-100"}>
+                        <span>
+                            <UserLink icon={false} username={user as string} />
+                        </span>
+                        <small>
+                            <span className={"fst-italic"}>
+                                {data.splitName}
+                            </span>{" "}
+                            | <DurationToFormatted duration={data.time} /> |{" "}
+                            {(data.percentage * 100).toFixed(0)}%
+                        </small>
                     </span>
-                    <small>
-                        <span className={"fst-italic"}>{data.splitName}</span> |{" "}
-                        <DurationToFormatted duration={data.time} /> |{" "}
-                        {(data.percentage * 100).toFixed(0)}%
-                    </small>
                 </div>
             );
         }
@@ -248,27 +251,44 @@ const getRaceMessage = (message: RaceMessage) => {
             const data = message.data as RaceMessageParticipantCommentData;
             return (
                 <>
-                    <UserLink icon={false} username={user as string} />:{" "}
+                    <UserLink icon={false} username={user as string} />{" "}
+                    commented:{" "}
                     <span className={"fst-italic"}>
                         &quot;{data.comment}&quot;
                     </span>
                 </>
             );
         }
-        case "participant-finish":
+        case "participant-finish": {
+            const data = message.data as RaceMesageParticipantTimeData;
             return (
                 <>
                     <UserLink icon={false} username={user as string} /> finished
-                    the race
+                    the race{" "}
+                    {data.time && (
+                        <span className={"fw-bold"}>
+                            {" "}
+                            - <DurationToFormatted duration={data.time} />
+                        </span>
+                    )}
                 </>
             );
-        case "participant-confirm":
+        }
+        case "participant-confirm": {
+            const data = message.data as RaceMesageParticipantTimeData;
             return (
                 <>
                     <UserLink icon={false} username={user as string} />{" "}
-                    confirmed their time
+                    confirmed their time{" "}
+                    {data.time && (
+                        <span className={"fw-bold"}>
+                            {" "}
+                            - <DurationToFormatted duration={data.time} />
+                        </span>
+                    )}
                 </>
             );
+        }
         case "chat":
             return (
                 <>
