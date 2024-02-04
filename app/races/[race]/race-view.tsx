@@ -62,9 +62,8 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
                     </div>
                 </Col>
                 <Col xxl={4} lg={5} className={"d-none d-lg-block"}>
-                    {/* This instance of RaceParticipantOverview will show on xl screens and up */}
                     <RaceParticipantOverview race={raceState} />
-                    <RaceActions race={raceState} user={user} />
+                    {/*<RaceActions race={raceState} user={user} />*/}
                     <RaceChat raceMessages={messagesState} race={raceState} />
                     <RaceStream stream={stream} />
                 </Col>
