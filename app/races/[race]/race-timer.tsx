@@ -28,7 +28,10 @@ export const RaceTimer = ({ race }: { race: Race }) => {
                 renderer={({ seconds, completed }) => {
                     if (!completed) {
                         return (
-                            <span suppressHydrationWarning={true}>
+                            <span
+                                suppressHydrationWarning={true}
+                                className={"text-nowrap"}
+                            >
                                 Starts in {seconds}...
                             </span>
                         );
