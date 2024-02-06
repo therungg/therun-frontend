@@ -75,7 +75,7 @@ export const GameCategoryInput = (props: FormGroupProps) => {
     };
 
     return (
-        <div className={"row g-3 mb-3 pe-0"}>
+        <div className={"row g-3 mb-4 pe-0"}>
             {clickedGame && (
                 <div className={"col-md-6"}>
                     {!clickedCategory && <span>Game</span>}
@@ -120,51 +120,56 @@ export const GameCategoryInput = (props: FormGroupProps) => {
                     </div>
                 </div>
             )}
-            {!clickedGame && (
-                <Form.Group {...props} controlId={"game"}>
-                    <Form.Label>Game</Form.Label>
-                    <Form.Control
-                        type={"text"}
-                        placeholder={"Enter Game"}
-                        value={inputValue}
-                        onChange={(e) => {
-                            setClickedGame(false);
-                            setInputValue(e.target.value);
-                        }}
-                        name={"game"}
+            <Form.Group
+                {...props}
+                controlId={"game"}
+                className={`col-md-6${clickedGame ? " d-none" : ""}`}
+            >
+                <Form.Label>Game</Form.Label>
+                <Form.Control
+                    autoComplete={"off"}
+                    type={"text"}
+                    placeholder={"Enter Game"}
+                    value={inputValue}
+                    onChange={(e) => {
+                        setClickedGame(false);
+                        setInputValue(e.target.value);
+                    }}
+                    name={"game"}
+                />
+                {!clickedGame && inputValue !== search && (
+                    <span>Loading suggestions...</span>
+                )}
+                {!clickedGame && suggestions.length > 0 && (
+                    <SuggestedGamesList
+                        games={suggestions}
+                        setGame={setSuggestedGame}
                     />
-                    {!clickedGame && inputValue !== search && (
-                        <span>Loading suggestions...</span>
-                    )}
-                    {!clickedGame && suggestions && (
-                        <SuggestedGamesList
-                            games={suggestions}
-                            setGame={setSuggestedGame}
-                        />
-                    )}
-                </Form.Group>
-            )}
-            {!clickedCategory && (
-                <Form.Group className={"col-md-6"} controlId={"category"}>
-                    <Form.Label>Category</Form.Label>
-                    <Form.Control
-                        name={"category"}
-                        type={"text"}
-                        placeholder={"Enter Category"}
-                        value={categoryInput}
-                        onChange={(e) => {
-                            setClickedCategory(false);
-                            setCategoryInput(e.target.value);
-                        }}
+                )}
+            </Form.Group>
+            <Form.Group
+                className={`col-md-6${clickedCategory ? " d-none" : ""}`}
+                controlId={"category"}
+            >
+                <Form.Label>Category</Form.Label>
+                <Form.Control
+                    autoComplete={"off"}
+                    name={"category"}
+                    type={"text"}
+                    placeholder={"Enter Category"}
+                    value={categoryInput}
+                    onChange={(e) => {
+                        setClickedCategory(false);
+                        setCategoryInput(e.target.value);
+                    }}
+                />
+                {!clickedCategory && categorySuggestions.length > 0 && (
+                    <SuggestedCategoryList
+                        categories={categorySuggestions}
+                        setCategory={setSuggestedCategory}
                     />
-                    {!clickedCategory && categorySuggestions.length > 0 && (
-                        <SuggestedCategoryList
-                            categories={categorySuggestions}
-                            setCategory={setSuggestedCategory}
-                        />
-                    )}
-                </Form.Group>
-            )}
+                )}
+            </Form.Group>
         </div>
     );
 };
