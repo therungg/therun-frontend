@@ -10,7 +10,7 @@ export interface Game {
     image?: string;
 }
 
-interface Category {
+export interface Category {
     bestTimeUser: string;
     bestTime: string;
     category: string;

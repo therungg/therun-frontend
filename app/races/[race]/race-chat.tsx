@@ -10,9 +10,10 @@ import { SendChatMessageForm } from "~app/races/components/forms/send-chat-messa
 import { Form } from "react-bootstrap";
 import { UserLink } from "~src/components/links/links";
 import { DurationToFormatted } from "~src/components/util/datetime";
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { random } from "nanoid";
 import { NoSSR } from "next/dist/shared/lib/lazy-dynamic/dynamic-no-ssr";
+import { User } from "../../../types/session.types";
 
 interface FilterOptions {
     chat: boolean;
@@ -24,10 +25,25 @@ interface FilterOptions {
 export const RaceChat = ({
     race,
     raceMessages,
+    user,
 }: {
     race: Race;
     raceMessages: RaceMessage[];
+    user?: User;
 }) => {
+    const [stateMessages, setStateMessages] =
+        useState<RaceMessage[]>(raceMessages);
+
+    const addMessage = (message: RaceMessage) => {
+        const newMessages = [...stateMessages];
+        newMessages.unshift(message);
+        setStateMessages(newMessages);
+    };
+
+    useEffect(() => {
+        setStateMessages(raceMessages);
+    }, [raceMessages]);
+
     const [filterOptions, setFilterOptions] = useState<FilterOptions>({
         chat: true,
         race: true,
@@ -35,7 +51,7 @@ export const RaceChat = ({
         splits: true,
     });
 
-    const filteredMessages = raceMessages.filter((message) => {
+    const filteredMessages = stateMessages.filter((message) => {
         if (!filterOptions.chat) {
             if (message.type === "chat") return false;
         }
@@ -69,7 +85,11 @@ export const RaceChat = ({
                 />
             </div>
             <Chat raceMessages={filteredMessages} />
-            <SendChatMessageForm raceId={race.raceId} />
+            <SendChatMessageForm
+                raceId={race.raceId}
+                addMessage={addMessage}
+                user={user}
+            />
         </div>
     );
 };

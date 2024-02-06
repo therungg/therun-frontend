@@ -50,6 +50,7 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
                         <RaceParticipantOverview race={raceState} />
                         <RaceActions race={raceState} user={user} />
                         <RaceChat
+                            user={user}
                             raceMessages={messagesState}
                             race={raceState}
                         />
@@ -64,7 +65,11 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
                 <Col xxl={4} lg={5} className={"d-none d-lg-block"}>
                     <RaceParticipantOverview race={raceState} />
                     <RaceActions race={raceState} user={user} />
-                    <RaceChat raceMessages={messagesState} race={raceState} />
+                    <RaceChat
+                        raceMessages={messagesState}
+                        race={raceState}
+                        user={user}
+                    />
                     <RaceStream stream={stream} />
                 </Col>
             </Row>
