@@ -155,8 +155,8 @@ const RaceParticipantStatus = ({
             )}
             {participant.status === "ready" && (
                 <span>
-                    In Progress
-                    {/*<Spinner animation={"grow"} size={"sm"} />*/}
+                    {race.status === "progress" && <span>In Progress</span>}
+                    {race.status === "pending" && <span>Ready</span>}
                 </span>
             )}
         </div>
