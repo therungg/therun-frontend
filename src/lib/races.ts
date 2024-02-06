@@ -19,7 +19,7 @@ export const getPaginatedFinishedRaces: PaginationFetcher<Race> = async (
 ): Promise<PaginatedRaces> => {
     const races = await fetch(
         `${racesApiUrl}?page=${page}&pageSize=${pageSize}`,
-        { next: { revalidate: 0 } },
+        { next: { revalidate: 60 * 10 } },
     );
 
     return (await races.json()).result as PaginatedRaces;
@@ -81,7 +81,8 @@ export const getRaceByRaceId = async (raceId: string): Promise<Race> => {
 export const getGlobalRaceStats = async (): Promise<GlobalStats> => {
     const url = `${racesApiUrl}/stats`;
 
-    const races = await fetch(url, { next: { revalidate: 0 } });
+    // Cache global stats 10 min for page speed
+    const races = await fetch(url, { next: { revalidate: 60 * 10 } });
 
     return (await races.json()).result as GlobalStats;
 };
@@ -93,7 +94,9 @@ export const getRaceGameStats = async (limit = 3): Promise<GameStats[]> => {
         url += `?limit=${limit}`;
     }
 
-    const races = await fetch(url, { next: { revalidate: 60 * 60 } });
+    const races = await fetch(url, {
+        next: { revalidate: limit > 0 && limit < 10 ? 60 * 10 : 60 * 60 },
+    });
 
     return ((await races.json()).result as GameStats[]).sort((a, b) => {
         // Hack because api returns ties in totalGames randomly.
