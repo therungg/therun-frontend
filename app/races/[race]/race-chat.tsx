@@ -267,6 +267,13 @@ const getRaceMessage = (message: RaceMessage) => {
                     abandoned the race
                 </>
             );
+        case "participant-undo-abandon":
+            return (
+                <>
+                    <UserLink icon={false} username={user as string} /> undid
+                    their abandon
+                </>
+            );
         case "participant-comment": {
             const data = message.data as RaceMessageParticipantCommentData;
             return (

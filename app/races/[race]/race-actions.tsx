@@ -10,6 +10,7 @@ import { Race } from "~app/races/races.types";
 import { User } from "../../../types/session.types";
 import { CommentOnRaceForm } from "~app/races/components/forms/race-comment-form";
 import { JoinRaceForm } from "~app/races/components/forms/join-race-form";
+import { UndoAbandonRaceButton } from "~app/races/components/buttons/undo-abandon-race-button";
 
 export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
     if (!user?.username) return null;
@@ -43,12 +44,18 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
     const userAbandoned =
         userParticipates && loggedinUserParticipation.status === "abandoned";
 
+    const userReset =
+        userAbandoned &&
+        loggedinUserParticipation.liveData &&
+        loggedinUserParticipation.liveData.currentSplitIndex === -1;
+
     const userCreatedRace = race.creator === user?.username;
 
     if (race.status === "starting") return null;
     if (race.status !== "pending" && !userParticipates && !userCreatedRace)
         return null;
-    if (userConfirmed && !userCreatedRace) return null;
+    if (userConfirmed && loggedinUserParticipation.comment && !userCreatedRace)
+        return null;
 
     return (
         <div className={"rounded-3 p-4 mb-3 game-border bg-body-secondary"}>
@@ -110,6 +117,12 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
                         variant={"danger"}
                     />
                 </div>
+            )}
+            {userReset && (
+                <UndoAbandonRaceButton
+                    raceId={race.raceId}
+                    className={"w-100 fs-5"}
+                />
             )}
         </div>
     );

@@ -215,6 +215,7 @@ export type RaceMessageType =
     | "participant-unready"
     | "participant-split"
     | "participant-abandon"
+    | "participant-undo-abandon"
     | "participant-finish"
     | "participant-confirm"
     | "participant-comment"
