@@ -11,6 +11,7 @@ import {
     BreadcrumbItem,
 } from "~src/components/breadcrumbs/breadcrumb";
 import { UnderlineTooltip } from "~src/components/tooltip";
+import { GameCategoryInput } from "~src/components/form/game-input";
 
 export default function CreateRace() {
     const [state, formAction] = useFormState(createRace, { message: "" });
@@ -28,28 +29,7 @@ export default function CreateRace() {
             <Form action={formAction} className={"row"}>
                 <fieldset className={"border py-3 px-4"}>
                     <legend className={"w-auto mb-0"}>Create a new race</legend>
-                    <div className={"row g-3 mb-3"}>
-                        <Form.Group className={"col-md-6"} controlId={"game"}>
-                            <Form.Label>Game</Form.Label>
-                            <Form.Control
-                                type={"text"}
-                                placeholder={"Enter Game"}
-                                name={"game"}
-                            />
-                        </Form.Group>
-
-                        <Form.Group
-                            className={"col-md-6"}
-                            controlId={"category"}
-                        >
-                            <Form.Label>Category</Form.Label>
-                            <Form.Control
-                                name={"category"}
-                                type={"text"}
-                                placeholder={"Enter Category"}
-                            />
-                        </Form.Group>
-                    </div>
+                    <GameCategoryInput className={"col-md-6"} />
                     <Accordion>
                         <Accordion.Item eventKey={"create"}>
                             <Accordion.Header>
@@ -87,7 +67,7 @@ export default function CreateRace() {
                                             <UnderlineTooltip
                                                 title={"Twitch Stream"}
                                                 content={
-                                                    "Force a specific stream instead of the participant's streams on the race page"
+                                                    "Force a specific stream instead of the participant's streams on the race page. Only input the name of the stream, no need to input https://twitch.tv/siglemic, just input siglemic"
                                                 }
                                                 element={"Twitch Stream"}
                                             />
@@ -96,7 +76,7 @@ export default function CreateRace() {
                                             name={"forceStream"}
                                             type={"text"}
                                             placeholder={
-                                                "Enter a stream to show"
+                                                "Enter the name of a stream to show"
                                             }
                                             required={false}
                                         />
