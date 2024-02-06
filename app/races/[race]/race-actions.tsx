@@ -118,7 +118,7 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
                     />
                 </div>
             )}
-            {userReset && (
+            {userReset && raceStarted && (
                 <UndoAbandonRaceButton
                     raceId={race.raceId}
                     className={"w-100 fs-5"}
