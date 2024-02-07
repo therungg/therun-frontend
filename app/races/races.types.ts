@@ -50,6 +50,7 @@ export interface Race {
     requiresPassword?: boolean;
     ranked: boolean;
     autoConfirm: boolean;
+    countdownSeconds: number;
 }
 
 export interface RaceResult {
@@ -64,6 +65,9 @@ export type RaceParticipant = {
     user: string;
     status: RaceParticipantStatus;
     pb: string;
+    disqualified: boolean;
+    disqualifiedBy: string | null;
+    disqualifiedReason: string | null;
     finalTime: number | null;
     joinedAtDate: string | null;
     readyAtDate: string | null;
@@ -215,6 +219,7 @@ export type RaceMessageType =
     | "participant-unready"
     | "participant-split"
     | "participant-abandon"
+    | "participant-disqualified"
     | "participant-undo-abandon"
     | "participant-finish"
     | "participant-confirm"

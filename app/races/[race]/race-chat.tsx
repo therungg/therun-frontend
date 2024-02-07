@@ -286,6 +286,14 @@ const getRaceMessage = (message: RaceMessage) => {
                 </>
             );
         }
+        case "participant-disqualified": {
+            return (
+                <>
+                    <UserLink icon={false} username={user as string} /> was
+                    disqualified
+                </>
+            );
+        }
         case "participant-finish": {
             const data = message.data as RaceMesageParticipantTimeData;
             return (
