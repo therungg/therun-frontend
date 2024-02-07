@@ -33,7 +33,7 @@ export const RaceParticipantDetail = ({
 
     return (
         <>
-            <Row xs={1} md={2} xxl={3} className={"g-4"} ref={parent}>
+            <Row xs={1} sm={2} xxl={3} className={"g-4"} ref={parent}>
                 {participants?.map((participant, i) => {
                     return (
                         <Col
@@ -83,7 +83,7 @@ export const RaceParticipantDetailView = ({
         >
             <div>
                 <span className={"justify-content-between w-100 d-flex"}>
-                    <span className={"fs-3 text-nowrap"}>
+                    <span className={"fs-5 text-nowrap"}>
                         <span className={"text-truncate"}>
                             <UserLink
                                 username={participant.user}
@@ -97,7 +97,7 @@ export const RaceParticipantDetailView = ({
                             </span>
                         )}
                     </span>
-                    <span className={"fs-4"}>
+                    <span className={"fs-5"}>
                         {participant.status !== "abandoned" && (
                             <span className={"justify-content-end"}>
                                 #{placing}
@@ -127,7 +127,7 @@ export const RaceParticipantDetailView = ({
                 {readableRaceParticipantStatus(participant.status)}
             </div>
             <hr style={{ margin: "0.7rem 0" }} />
-            <div style={{ minHeight: "6.7rem" }} className={"d-flex"}>
+            <div style={{ minHeight: "5.2rem" }} className={"d-flex"}>
                 <RaceParticipantDetailBody
                     participant={participant}
                     race={race}
@@ -152,15 +152,18 @@ const RaceParticipantDetailBody = ({
 
     return (
         <div className={"w-100"}>
-            <span className={"flex-center w-100 fs-4"}>
-                {participant.status === "abandoned" && (
-                    <>
-                        Abandoned -{" "}
-                        <span className={"ps-1"}>
-                            <DurationToFormatted duration={abandonedTime} />
-                        </span>
-                    </>
-                )}
+            <span className={"flex-center w-100 fs-5"}>
+                {participant.status === "abandoned" &&
+                    !participant.disqualified && (
+                        <>
+                            Abandoned -{" "}
+                            <span className={"ps-1"}>
+                                <DurationToFormatted duration={abandonedTime} />
+                            </span>
+                        </>
+                    )}
+                {participant.status === "abandoned" &&
+                    participant.disqualified && <>Disqualified</>}
                 {participant.status !== "abandoned" && (
                     <RaceParticipantTimer raceParticipant={participant} />
                 )}
@@ -207,11 +210,18 @@ const RaceParticipantDetailBody = ({
                     Awaiting Live Data...{" "}
                 </div>
             )}
-            {participant.comment && (
+            {participant.comment && !participant.disqualifiedReason && (
                 <div
                     className={"fst-italic flex-center align-items-center h-50"}
                 >
                     &quot;{participant.comment}&quot;
+                </div>
+            )}
+            {participant.disqualifiedReason && (
+                <div
+                    className={"fst-italic flex-center align-items-center h-50"}
+                >
+                    &quot;{participant.disqualifiedReason}&quot;
                 </div>
             )}
         </div>
