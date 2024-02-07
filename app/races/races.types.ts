@@ -220,3 +220,12 @@ export type RaceMessageType =
     | "participant-confirm"
     | "participant-comment"
     | "chat";
+
+/**
+ * -------------- RESPONSES ------------------
+ */
+
+export interface RaceGameStatsByGame {
+    stats: GameStats;
+    categories: GameStats[];
+}

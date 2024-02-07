@@ -5,6 +5,7 @@ import {
     GlobalStats,
     PaginatedRaces,
     Race,
+    RaceGameStatsByGame,
     RaceMessage,
     RaceParticipant,
 } from "~app/races/races.types";
@@ -106,6 +107,16 @@ export const getRaceGameStats = async (limit = 3): Promise<GameStats[]> => {
 
         return 1;
     });
+};
+
+export const getRaceGameStatsByGame = async (
+    game: string,
+): Promise<RaceGameStatsByGame> => {
+    const url = `${racesApiUrl}/stats/games/${game}`;
+
+    const stats = await fetch(url, { next: { revalidate: 60 } });
+
+    return (await stats.json()).result as RaceGameStatsByGame;
 };
 
 export const getRaceMessages = async (
