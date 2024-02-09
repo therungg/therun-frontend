@@ -80,7 +80,6 @@ export const History = ({
 
         if (
             h.time &&
-            h.splits.length == splits.length &&
             parseInt(h.time) >= parseInt(splits[splits.length - 1].total.time)
         ) {
             if (currentPb == null || parseInt(h.time) < currentPb.time) {
