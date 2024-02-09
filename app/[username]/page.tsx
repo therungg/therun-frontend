@@ -15,7 +15,7 @@ import { Metadata } from "next";
 import buildMetadata, { getUserProfilePhoto } from "~src/utils/metadata";
 import { CombinedTournamentPage } from "~app/tournaments/[tournament]/combined-tournament-page";
 
-export const revalidate = 60;
+export const revalidate = 0;
 
 interface PageProps {
     params: { username: string };
