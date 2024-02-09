@@ -8,6 +8,7 @@ import PaginationControl from "~src/components/pagination/pagination-control";
 import { PaginationContextProvider } from "~src/components/pagination/pagination.context-provider";
 import { Card, Col, Row } from "react-bootstrap";
 import { DurationToFormatted } from "~src/components/util/datetime";
+import styles from "~src/components/css/LiveRun.module.scss";
 
 export const RaceStatsPerGame = ({
     globalGameStats,
@@ -35,7 +36,12 @@ const RaceStatsPerGameDisplay = ({
                 {pagination.data.map((gameStats) => {
                     return (
                         <Col xxl={6} xl={12} key={gameStats.value}>
-                            <StatsPerGame stats={gameStats} />
+                            <a
+                                href={`/races/stats/${gameStats.displayValue}`}
+                                className={"text-decoration-none"}
+                            >
+                                <StatsPerGame stats={gameStats} />
+                            </a>
                         </Col>
                     );
                 })}
@@ -45,27 +51,41 @@ const RaceStatsPerGameDisplay = ({
     );
 };
 
-const StatsPerGame = ({ stats }: { stats: GameStats }) => {
+export const StatsPerGame = ({
+    stats,
+    isLink = true,
+}: {
+    stats: GameStats;
+    isLink?: boolean;
+}) => {
     return (
-        <div>
+        <div className={`rounded-3`}>
             <div className={"d-none d-md-block"}>
-                <StatsPerGameXxl stats={stats} />
+                <StatsPerGameXxl stats={stats} isLink={isLink} />
             </div>
             <div className={"d-md-none"}>
-                <StatsPerGameSmallScreen stats={stats} />
+                <StatsPerGameSmallScreen stats={stats} isLink={isLink} />
             </div>
         </div>
     );
 };
 
-const StatsPerGameXxl = ({ stats }: { stats: GameStats }) => {
+const StatsPerGameXxl = ({
+    stats,
+    isLink = true,
+}: {
+    stats: GameStats;
+    isLink?: boolean;
+}) => {
     return (
         <div
-            className={
-                "bg-body-secondary game-border mh-100 h-100 card game-border"
-            }
+            className={`bg-body-secondary game-border mh-100 h-100 card game-border`}
         >
-            <Card className={`game-border h-100`}>
+            <Card
+                className={`game-border h-100 ${
+                    isLink && styles.liveRunContainer
+                }`}
+            >
                 <Row className={"h-100"}>
                     <Col md={2}>
                         <Card.Img
@@ -151,14 +171,24 @@ const StatsPerGameXxl = ({ stats }: { stats: GameStats }) => {
     );
 };
 
-const StatsPerGameSmallScreen = ({ stats }: { stats: GameStats }) => {
+const StatsPerGameSmallScreen = ({
+    stats,
+    isLink = true,
+}: {
+    stats: GameStats;
+    isLink?: boolean;
+}) => {
     return (
         <div
             className={
                 "bg-body-secondary game-border mh-100 h-100 card game-border"
             }
         >
-            <Card className={`game-border h-100`}>
+            <Card
+                className={`game-border h-100 ${
+                    isLink && styles.liveRunContainer
+                }`}
+            >
                 <Row className={"h-100"}>
                     <Col xs={3} sm={3}>
                         <Card.Img

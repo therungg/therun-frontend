@@ -26,13 +26,15 @@ export const getPaginatedFinishedRaces: PaginationFetcher<Race> = async (
     return (await races.json()).result as PaginatedRaces;
 };
 
-export const getPaginatedFinishedRacesByGame = async (
-    game: string,
+export const getPaginatedFinishedRacesByGame: PaginationFetcher<Race> = async (
     page = 1,
     pageSize = paginationPageSize,
+    query,
+    initialData,
+    params,
 ): Promise<PaginatedRaces> => {
     const races = await fetch(
-        `${racesApiUrl}?page=${page}&pageSize=${pageSize}&game=${game}`,
+        `${racesApiUrl}?page=${page}&pageSize=${pageSize}&game=${params.game}`,
         {
             next: { revalidate: 0 },
         },

@@ -1,4 +1,8 @@
-import { getRaceGameStatsByGame } from "~src/lib/races";
+import {
+    getPaginatedFinishedRacesByGame,
+    getRaceGameStatsByGame,
+} from "~src/lib/races";
+import { GameStats } from "~app/races/stats/[game]/game-stats";
 
 interface PageProps {
     params: { game: string };
@@ -6,6 +10,9 @@ interface PageProps {
 
 export default async function RaceGameStatsPage({ params }: PageProps) {
     const stats = await getRaceGameStatsByGame(params.game);
+    const recentRaces = await getPaginatedFinishedRacesByGame(1, 10, "", [], {
+        game: params.game,
+    });
 
-    return <div>{JSON.stringify(stats)}</div>;
+    return <GameStats stats={stats} paginatedRaces={recentRaces} />;
 }

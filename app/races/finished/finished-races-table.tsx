@@ -1,5 +1,3 @@
-"use client";
-
 import { PaginatedRaces, Race } from "~app/races/races.types";
 import { PaginationContextProvider } from "~src/components/pagination/pagination.context-provider";
 import usePagination from "~src/components/pagination/use-pagination";
@@ -14,29 +12,44 @@ import { FromNow } from "~src/components/util/datetime";
 import { GameImage } from "~src/components/image/gameimage";
 import { useRouter } from "next/navigation";
 import styles from "~src/components/css/LiveRun.module.scss";
+import { PaginationFetcher } from "~src/components/pagination/pagination.types";
 
 export const FinishedRaceTable = ({
     paginatedRaces,
+    paginationFunction = getPaginatedFinishedRaces,
+    params,
 }: {
     paginatedRaces: PaginatedRaces;
+    paginationFunction?: PaginationFetcher<Race>;
+    params?: any;
 }) => {
     return (
         <PaginationContextProvider>
-            <FinishedRaceTableView paginatedRaces={paginatedRaces} />
+            <FinishedRaceTableView
+                paginatedRaces={paginatedRaces}
+                paginationFunction={paginationFunction}
+                params={params}
+            />
         </PaginationContextProvider>
     );
 };
 
 const FinishedRaceTableView = ({
     paginatedRaces,
+    paginationFunction = getPaginatedFinishedRaces,
+    params,
 }: {
     paginatedRaces: PaginatedRaces;
+    paginationFunction: PaginationFetcher<Race>;
+    params?: any;
 }) => {
     const pagination = usePagination<Race>(
         paginatedRaces,
-        getPaginatedFinishedRaces,
+        paginationFunction,
+        paginatedRaces.pageSize,
+        0,
+        params,
     );
-
     const { isLoading, data } = pagination;
     // Make this a skeleton
     if (isLoading) return <div>Loading...</div>;
