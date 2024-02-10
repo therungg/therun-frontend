@@ -60,7 +60,7 @@ export const CurrentRunDetails = ({ liveRun }: CurrentRunDetailsProps) => {
                 >
                     <DurationToFormatted duration={pb} />
                     &nbsp;
-                    {currentSplitIndex > 0 ? (
+                    {currentSplitIndex > 0 && splits[currentSplitIndex - 1] ? (
                         <Difference
                             one={splits[currentSplitIndex - 1].splitTime}
                             two={splits[currentSplitIndex - 1].pbSplitTime}
