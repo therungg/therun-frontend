@@ -6,6 +6,7 @@ import {
     BreadcrumbItem,
 } from "~src/components/breadcrumbs/breadcrumb";
 import { FinishedRacesByGameTable } from "~app/races/stats/[game]/finished-races-by-game-table";
+import { CategoryStatsList } from "~app/races/stats/[game]/category-stats-list";
 
 export const GameStats = ({
     stats,
@@ -28,6 +29,7 @@ export const GameStats = ({
             <Row>
                 <Col xs={6}>
                     <StatsPerGame stats={stats.stats} isLink={false} />
+                    <CategoryStatsList stats={stats.categories} />
                 </Col>
                 <Col xs={6}>
                     <FinishedRacesByGameTable

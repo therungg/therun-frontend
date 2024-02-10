@@ -5,6 +5,7 @@ import {
     GlobalStats,
     PaginatedRaces,
     Race,
+    RaceGameStatsByCategory,
     RaceGameStatsByGame,
     RaceMessage,
     RaceParticipant,
@@ -119,6 +120,14 @@ export const getRaceGameStatsByGame = async (
     const stats = await fetch(url, { next: { revalidate: 60 } });
 
     return (await stats.json()).result as RaceGameStatsByGame;
+};
+
+export const getRaceCategoryStats = async (game: string, category: string) => {
+    const url = `${racesApiUrl}/stats/games/${game}/${category}`;
+
+    const stats = await fetch(url, { next: { revalidate: 60 } });
+
+    return (await stats.json()).result as RaceGameStatsByCategory;
 };
 
 export const getRaceMessages = async (

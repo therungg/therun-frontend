@@ -1,3 +1,5 @@
+"use client";
+
 import { PaginatedRaces, Race } from "~app/races/races.types";
 import { PaginationContextProvider } from "~src/components/pagination/pagination.context-provider";
 import usePagination from "~src/components/pagination/use-pagination";

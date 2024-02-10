@@ -234,3 +234,8 @@ export interface RaceGameStatsByGame {
     stats: GameStats;
     categories: GameStats[];
 }
+
+export interface RaceGameStatsByCategory {
+    stats: GameStats;
+    users: UserStats[];
+}
