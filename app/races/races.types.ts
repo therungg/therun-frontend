@@ -222,6 +222,8 @@ export type RaceMessageType =
     | "participant-disqualified"
     | "participant-undo-abandon"
     | "participant-finish"
+    | "participant-undo-finish"
     | "participant-confirm"
+    | "participant-undo-confirm"
     | "participant-comment"
     | "chat";
