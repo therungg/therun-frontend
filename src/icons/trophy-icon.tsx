@@ -1,10 +1,22 @@
-export const TrophyIcon = () => {
+type TrophyColor = "gold" | "silver" | "bronze";
+
+const trophyColors = {
+    gold: "var(--bs-secondary)",
+    silver: "silver",
+    bronze: "#CD7F32",
+};
+
+export const TrophyIcon = ({
+    trophyColor = "gold",
+}: {
+    trophyColor?: TrophyColor;
+}) => {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
             width="21"
             height="21"
-            fill="var(--bs-secondary)"
+            fill={trophyColors[trophyColor]}
             className="bi bi-stopwatch-fill"
             viewBox="-2 -2 24 24"
         >

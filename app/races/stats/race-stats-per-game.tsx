@@ -77,6 +77,7 @@ const StatsPerGameXxl = ({
     stats: GameStats;
     isLink?: boolean;
 }) => {
+    const hasCategory = stats.displayValue.split("#").length === 2;
     return (
         <div
             className={`bg-body-secondary game-border mh-100 h-100 card game-border`}
@@ -104,66 +105,24 @@ const StatsPerGameXxl = ({
                     <Col md={10} className={"p-2 ps-1 pe-4 d-flex flex-column"}>
                         <div className={"justify-content-between d-flex"}>
                             <span
-                                className={"h4 text-truncate"}
+                                className={"h4 text-truncate mb-1"}
                                 style={{
                                     color: "var(--bs-link-color)",
                                 }}
                             >
-                                {stats.displayValue}
+                                {stats.displayValue.split("#")[0]}
                             </span>
                             <span className={"fs-5"}>
                                 {stats.totalRaces} Races
                             </span>
                         </div>
+                        {hasCategory && (
+                            <div className={"fst-italic"}>
+                                {stats.displayValue.split("#")[1]}
+                            </div>
+                        )}
                         <hr className={"mt-1"} />
-                        <Row className={"align-content-center h-100"}>
-                            <Col md={3}>
-                                <div className={"flex-center"}>Total Time</div>
-                                <hr className={"m-1 flex-center"} />
-                                <span
-                                    className={"fw-bold flex-center"}
-                                    style={{ fontSize: "large" }}
-                                >
-                                    <DurationToFormatted
-                                        duration={stats.totalRaceTime}
-                                    />
-                                </span>
-                            </Col>
-                            <Col md={3}>
-                                <div className={"flex-center"}>
-                                    Races Joined
-                                </div>
-                                <hr className={"m-1 flex-center"} />
-                                <span
-                                    className={"fw-bold flex-center"}
-                                    style={{ fontSize: "large" }}
-                                >
-                                    {stats.totalParticipations}
-                                </span>
-                            </Col>
-                            <Col md={3}>
-                                <div className={"flex-center"}>
-                                    Races Finished
-                                </div>
-                                <hr className={"m-1 flex-center"} />
-                                <span
-                                    className={"fw-bold flex-center"}
-                                    style={{ fontSize: "large" }}
-                                >
-                                    {stats.totalFinishedParticipations}
-                                </span>
-                            </Col>
-                            <Col md={3}>
-                                <div className={"flex-center"}>Finish %</div>
-                                <hr className={"m-1 flex-center"} />
-                                <span
-                                    className={"fw-bold flex-center"}
-                                    style={{ fontSize: "large" }}
-                                >
-                                    {(stats.finishPercentage * 100).toFixed(2)}%
-                                </span>
-                            </Col>
-                        </Row>
+                        <StatsBody stats={stats} />
                     </Col>
                 </Row>
             </Card>
@@ -221,31 +180,98 @@ const StatsPerGameSmallScreen = ({
                             <span className={"fs-5"}>{stats.totalRaces}</span>
                         </div>
                         <hr className={"m-0"} />
-                        <span className={"justify-content-between d-flex"}>
-                            <span>Total Time</span>
-                            <span>
-                                <DurationToFormatted
-                                    duration={stats.totalRaceTime}
-                                />
-                            </span>
-                        </span>
-                        <span className={"justify-content-between d-flex"}>
-                            <span>Races Joined</span>
-                            <span>{stats.totalParticipations}</span>
-                        </span>
-                        <span className={"justify-content-between d-flex"}>
-                            <span>Races Finished</span>
-                            <span>{stats.totalFinishedParticipations}</span>
-                        </span>
-                        <span className={"justify-content-between d-flex"}>
-                            <span>Finish %</span>
-                            <span>
-                                {(stats.finishPercentage * 100).toFixed(2)}%
-                            </span>
-                        </span>
+                        <StatsBody stats={stats} />
                     </Col>
                 </Row>
             </Card>
+        </div>
+    );
+};
+
+export const StatsBody = ({ stats }: { stats: GameStats }) => {
+    return (
+        <div className={"h-100"}>
+            <div className={"d-none d-md-block h-100"}>
+                <StatsBodyXxl stats={stats} />
+            </div>
+            <div className={"d-md-none"}>
+                <StatsBodySmallScreen stats={stats} />
+            </div>
+        </div>
+    );
+};
+
+const StatsBodyXxl = ({ stats }: { stats: GameStats }) => {
+    return (
+        <Row
+            className={"align-content-center h-100"}
+            style={{ minHeight: "3rem" }}
+        >
+            <Col md={3}>
+                <div className={"flex-center"}>Total Time</div>
+                <hr className={"m-1 flex-center"} />
+                <span
+                    className={"fw-bold flex-center"}
+                    style={{ fontSize: "large" }}
+                >
+                    <DurationToFormatted duration={stats.totalRaceTime} />
+                </span>
+            </Col>
+            <Col md={3}>
+                <div className={"flex-center"}>Races Joined</div>
+                <hr className={"m-1 flex-center"} />
+                <span
+                    className={"fw-bold flex-center"}
+                    style={{ fontSize: "large" }}
+                >
+                    {stats.totalParticipations}
+                </span>
+            </Col>
+            <Col md={3}>
+                <div className={"flex-center"}>Races Finished</div>
+                <hr className={"m-1 flex-center"} />
+                <span
+                    className={"fw-bold flex-center"}
+                    style={{ fontSize: "large" }}
+                >
+                    {stats.totalFinishedParticipations}
+                </span>
+            </Col>
+            <Col md={3}>
+                <div className={"flex-center"}>Finish %</div>
+                <hr className={"m-1 flex-center"} />
+                <span
+                    className={"fw-bold flex-center"}
+                    style={{ fontSize: "large" }}
+                >
+                    {(stats.finishPercentage * 100).toFixed(2)}%
+                </span>
+            </Col>
+        </Row>
+    );
+};
+
+const StatsBodySmallScreen = ({ stats }: { stats: GameStats }) => {
+    return (
+        <div>
+            <span className={"justify-content-between d-flex"}>
+                <span>Total Time</span>
+                <span>
+                    <DurationToFormatted duration={stats.totalRaceTime} />
+                </span>
+            </span>
+            <span className={"justify-content-between d-flex"}>
+                <span>Races Joined</span>
+                <span>{stats.totalParticipations}</span>
+            </span>
+            <span className={"justify-content-between d-flex"}>
+                <span>Races Finished</span>
+                <span>{stats.totalFinishedParticipations}</span>
+            </span>
+            <span className={"justify-content-between d-flex"}>
+                <span>Finish %</span>
+                <span>{(stats.finishPercentage * 100).toFixed(2)}%</span>
+            </span>
         </div>
     );
 };

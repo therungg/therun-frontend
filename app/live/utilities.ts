@@ -14,6 +14,7 @@ export const liveRunArrayToMap = (liveData: LiveRun[]) => {
     const map = {};
 
     liveData.forEach((l) => {
+        if (!l || !l.user) return;
         let user = l.user.toString();
 
         const firstLetter = user[0];

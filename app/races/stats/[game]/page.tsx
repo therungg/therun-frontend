@@ -10,7 +10,7 @@ interface PageProps {
 
 export default async function RaceGameStatsPage({ params }: PageProps) {
     const stats = await getRaceGameStatsByGame(params.game);
-    const recentRaces = await getPaginatedFinishedRacesByGame(1, 10, "", [], {
+    const recentRaces = await getPaginatedFinishedRacesByGame(1, 5, "", [], {
         game: params.game,
     });
 

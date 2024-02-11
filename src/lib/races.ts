@@ -13,7 +13,7 @@ import {
 import { PaginationFetcher } from "~src/components/pagination/pagination.types";
 
 const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
-const paginationPageSize = 10;
+const paginationPageSize = 12;
 
 export const getPaginatedFinishedRaces: PaginationFetcher<Race> = async (
     page = 1,

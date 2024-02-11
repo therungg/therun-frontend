@@ -1,6 +1,7 @@
 "use server";
 
 import { getSession } from "~src/actions/session.action";
+import { revalidateTag } from "next/cache";
 
 export async function excludeRun(addTimeInput: FormData) {
     const tournamentName = addTimeInput.get("tournament") as string;
@@ -23,4 +24,6 @@ export async function excludeRun(addTimeInput: FormData) {
         },
         body: JSON.stringify({ user, date }),
     });
+
+    revalidateTag(`tournaments`);
 }

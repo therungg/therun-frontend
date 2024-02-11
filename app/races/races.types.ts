@@ -174,6 +174,8 @@ export interface GameStats extends SpecificStats {
 
 export interface UserStats extends SpecificStats {
     totalFinishedRaces: number;
+    rating: number;
+    racePb: number;
 }
 
 export interface RaceMessage {

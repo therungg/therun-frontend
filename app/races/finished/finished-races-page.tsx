@@ -17,6 +17,7 @@ export const FinishedRaces = ({
     return (
         <div>
             <Breadcrumb breadcrumbs={breadcrumbs} />
+            <h2>Finished Races</h2>
             <FinishedRaceTable paginatedRaces={paginatedRaces} />
         </div>
     );

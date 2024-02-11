@@ -1,6 +1,7 @@
 "use server";
 
 import { getSession } from "~src/actions/session.action";
+import { revalidateTag } from "next/cache";
 
 export async function addTime(addTimeInput: FormData) {
     const tournamentName = addTimeInput.get("tournament") as string;
@@ -24,4 +25,6 @@ export async function addTime(addTimeInput: FormData) {
         },
         body: JSON.stringify({ user, date, time }),
     });
+
+    revalidateTag(`tournaments`);
 }

@@ -13,7 +13,6 @@ export const FinishedRacesByGameTable = ({
 }) => {
     return (
         <div>
-            <h2>Recently finished Races</h2>
             <FinishedRaceTable
                 paginatedRaces={paginatedRaces}
                 paginationFunction={getPaginatedFinishedRacesByGame}
