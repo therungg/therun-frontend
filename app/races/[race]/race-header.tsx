@@ -3,7 +3,7 @@ import React from "react";
 import { PersonIcon } from "~src/icons/person-icon";
 import { Card, Col, Row } from "react-bootstrap";
 import { RaceParticipantStatusOverview } from "~app/races/components/race-participant-status-overview";
-import { RaceFirstPlace } from "~app/races/components/race-first-place";
+import { RacePlacings } from "~app/races/components/race-placings";
 
 export const RaceHeader = ({ race }: { race: Race }) => {
     return (
@@ -100,9 +100,7 @@ export const RaceHeader = ({ race }: { race: Race }) => {
                                     "d-flex align-items-end text-truncate"
                                 }
                             >
-                                <Card.Text>
-                                    <RaceFirstPlace race={race} />
-                                </Card.Text>
+                                <RacePlacings race={race} />
                             </div>
                         </div>
                     </Col>

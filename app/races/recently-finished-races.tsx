@@ -3,7 +3,7 @@ import styles from "~src/components/css/LiveRun.module.scss";
 import { GameImage } from "~src/components/image/gameimage";
 import React from "react";
 import { PersonIcon } from "~src/icons/person-icon";
-import { RaceFirstPlace } from "~app/races/components/race-first-place";
+import { RacePlacings } from "~app/races/components/race-placings";
 import { FromNow } from "~src/components/util/datetime";
 
 export const RecentlyFinishedRaces = ({ races }: { races: Race[] }) => {
@@ -72,7 +72,7 @@ export const RecentlyFinishedRace = ({ race }: { race: Race }) => {
                             <FromNow time={race.endTime as string} />
                         </span>
                     </div>
-                    <RaceFirstPlace race={race} />
+                    <RacePlacings race={race} />
                 </div>
             </div>
         </a>

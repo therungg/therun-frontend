@@ -12,7 +12,7 @@ export const getTournaments = async () => {
 export const getTournamentByName = async (name: string) => {
     const url = `${process.env.NEXT_PUBLIC_DATA_URL}/tournaments/${name}`;
 
-    const res = await fetch(url);
+    const res = await fetch(url, { next: { tags: ["tournaments"] } });
     const json = await res.json();
 
     return json.result;

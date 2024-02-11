@@ -3,6 +3,7 @@ import { Col, Row } from "react-bootstrap";
 import React, { ReactElement } from "react";
 import { DurationToFormatted } from "~src/components/util/datetime";
 import { GameImage } from "~src/components/image/gameimage";
+import styles from "~src/components/css/LiveRun.module.scss";
 
 export const GlobalRaceStats = ({
     stats,
@@ -45,10 +46,13 @@ export const GlobalRaceStats = ({
             <Row className={"gap-3"}>
                 {gameStats.map((gameStat) => {
                     return (
-                        <ShowGameStat
+                        <a
+                            href={`/races/stats/${gameStat.displayValue}`}
+                            className={`text-decoration-none`}
                             key={gameStat.value}
-                            gameStat={gameStat}
-                        />
+                        >
+                            <ShowGameStat gameStat={gameStat} />
+                        </a>
                     );
                 })}
             </Row>
@@ -86,7 +90,11 @@ const ShowStat = ({
 
 const ShowGameStat = ({ gameStat }: { gameStat: GameStats }) => {
     return (
-        <div key={gameStat.value} className={"d-flex w-100"}>
+        <div
+            key={gameStat.value}
+            className={`d-flex w-100 mb-3 ${styles.liveRunContainer} rounded-3`}
+            style={{ color: "var(--bs-body-color)" }}
+        >
             <GameImage
                 alt={`Image for ${gameStat.image}`}
                 src={gameStat.image}

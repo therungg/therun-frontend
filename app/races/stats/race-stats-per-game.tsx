@@ -8,6 +8,7 @@ import PaginationControl from "~src/components/pagination/pagination-control";
 import { PaginationContextProvider } from "~src/components/pagination/pagination.context-provider";
 import { Card, Col, Row } from "react-bootstrap";
 import { DurationToFormatted } from "~src/components/util/datetime";
+import styles from "~src/components/css/LiveRun.module.scss";
 
 export const RaceStatsPerGame = ({
     globalGameStats,
@@ -35,7 +36,12 @@ const RaceStatsPerGameDisplay = ({
                 {pagination.data.map((gameStats) => {
                     return (
                         <Col xxl={6} xl={12} key={gameStats.value}>
-                            <StatsPerGame stats={gameStats} />
+                            <a
+                                href={`/races/stats/${gameStats.displayValue}`}
+                                className={"text-decoration-none"}
+                            >
+                                <StatsPerGame stats={gameStats} />
+                            </a>
                         </Col>
                     );
                 })}
@@ -45,27 +51,42 @@ const RaceStatsPerGameDisplay = ({
     );
 };
 
-const StatsPerGame = ({ stats }: { stats: GameStats }) => {
+export const StatsPerGame = ({
+    stats,
+    isLink = true,
+}: {
+    stats: GameStats;
+    isLink?: boolean;
+}) => {
     return (
-        <div>
+        <div className={`rounded-3`}>
             <div className={"d-none d-md-block"}>
-                <StatsPerGameXxl stats={stats} />
+                <StatsPerGameXxl stats={stats} isLink={isLink} />
             </div>
             <div className={"d-md-none"}>
-                <StatsPerGameSmallScreen stats={stats} />
+                <StatsPerGameSmallScreen stats={stats} isLink={isLink} />
             </div>
         </div>
     );
 };
 
-const StatsPerGameXxl = ({ stats }: { stats: GameStats }) => {
+const StatsPerGameXxl = ({
+    stats,
+    isLink = true,
+}: {
+    stats: GameStats;
+    isLink?: boolean;
+}) => {
+    const hasCategory = stats.displayValue.split("#").length === 2;
     return (
         <div
-            className={
-                "bg-body-secondary game-border mh-100 h-100 card game-border"
-            }
+            className={`bg-body-secondary game-border mh-100 h-100 card game-border`}
         >
-            <Card className={`game-border h-100`}>
+            <Card
+                className={`game-border h-100 ${
+                    isLink && styles.liveRunContainer
+                }`}
+            >
                 <Row className={"h-100"}>
                     <Col md={2}>
                         <Card.Img
@@ -84,66 +105,24 @@ const StatsPerGameXxl = ({ stats }: { stats: GameStats }) => {
                     <Col md={10} className={"p-2 ps-1 pe-4 d-flex flex-column"}>
                         <div className={"justify-content-between d-flex"}>
                             <span
-                                className={"h4 text-truncate"}
+                                className={"h4 text-truncate mb-1"}
                                 style={{
                                     color: "var(--bs-link-color)",
                                 }}
                             >
-                                {stats.displayValue}
+                                {stats.displayValue.split("#")[0]}
                             </span>
                             <span className={"fs-5"}>
                                 {stats.totalRaces} Races
                             </span>
                         </div>
+                        {hasCategory && (
+                            <div className={"fst-italic"}>
+                                {stats.displayValue.split("#")[1]}
+                            </div>
+                        )}
                         <hr className={"mt-1"} />
-                        <Row className={"align-content-center h-100"}>
-                            <Col md={3}>
-                                <div className={"flex-center"}>Total Time</div>
-                                <hr className={"m-1 flex-center"} />
-                                <span
-                                    className={"fw-bold flex-center"}
-                                    style={{ fontSize: "large" }}
-                                >
-                                    <DurationToFormatted
-                                        duration={stats.totalRaceTime}
-                                    />
-                                </span>
-                            </Col>
-                            <Col md={3}>
-                                <div className={"flex-center"}>
-                                    Races Joined
-                                </div>
-                                <hr className={"m-1 flex-center"} />
-                                <span
-                                    className={"fw-bold flex-center"}
-                                    style={{ fontSize: "large" }}
-                                >
-                                    {stats.totalParticipations}
-                                </span>
-                            </Col>
-                            <Col md={3}>
-                                <div className={"flex-center"}>
-                                    Races Finished
-                                </div>
-                                <hr className={"m-1 flex-center"} />
-                                <span
-                                    className={"fw-bold flex-center"}
-                                    style={{ fontSize: "large" }}
-                                >
-                                    {stats.totalFinishedParticipations}
-                                </span>
-                            </Col>
-                            <Col md={3}>
-                                <div className={"flex-center"}>Finish %</div>
-                                <hr className={"m-1 flex-center"} />
-                                <span
-                                    className={"fw-bold flex-center"}
-                                    style={{ fontSize: "large" }}
-                                >
-                                    {(stats.finishPercentage * 100).toFixed(2)}%
-                                </span>
-                            </Col>
-                        </Row>
+                        <StatsBody stats={stats} />
                     </Col>
                 </Row>
             </Card>
@@ -151,14 +130,24 @@ const StatsPerGameXxl = ({ stats }: { stats: GameStats }) => {
     );
 };
 
-const StatsPerGameSmallScreen = ({ stats }: { stats: GameStats }) => {
+const StatsPerGameSmallScreen = ({
+    stats,
+    isLink = true,
+}: {
+    stats: GameStats;
+    isLink?: boolean;
+}) => {
     return (
         <div
             className={
                 "bg-body-secondary game-border mh-100 h-100 card game-border"
             }
         >
-            <Card className={`game-border h-100`}>
+            <Card
+                className={`game-border h-100 ${
+                    isLink && styles.liveRunContainer
+                }`}
+            >
                 <Row className={"h-100"}>
                     <Col xs={3} sm={3}>
                         <Card.Img
@@ -191,31 +180,98 @@ const StatsPerGameSmallScreen = ({ stats }: { stats: GameStats }) => {
                             <span className={"fs-5"}>{stats.totalRaces}</span>
                         </div>
                         <hr className={"m-0"} />
-                        <span className={"justify-content-between d-flex"}>
-                            <span>Total Time</span>
-                            <span>
-                                <DurationToFormatted
-                                    duration={stats.totalRaceTime}
-                                />
-                            </span>
-                        </span>
-                        <span className={"justify-content-between d-flex"}>
-                            <span>Races Joined</span>
-                            <span>{stats.totalParticipations}</span>
-                        </span>
-                        <span className={"justify-content-between d-flex"}>
-                            <span>Races Finished</span>
-                            <span>{stats.totalFinishedParticipations}</span>
-                        </span>
-                        <span className={"justify-content-between d-flex"}>
-                            <span>Finish %</span>
-                            <span>
-                                {(stats.finishPercentage * 100).toFixed(2)}%
-                            </span>
-                        </span>
+                        <StatsBody stats={stats} />
                     </Col>
                 </Row>
             </Card>
+        </div>
+    );
+};
+
+export const StatsBody = ({ stats }: { stats: GameStats }) => {
+    return (
+        <div className={"h-100"}>
+            <div className={"d-none d-md-block h-100"}>
+                <StatsBodyXxl stats={stats} />
+            </div>
+            <div className={"d-md-none"}>
+                <StatsBodySmallScreen stats={stats} />
+            </div>
+        </div>
+    );
+};
+
+const StatsBodyXxl = ({ stats }: { stats: GameStats }) => {
+    return (
+        <Row
+            className={"align-content-center h-100"}
+            style={{ minHeight: "3rem" }}
+        >
+            <Col md={3}>
+                <div className={"flex-center"}>Total Time</div>
+                <hr className={"m-1 flex-center"} />
+                <span
+                    className={"fw-bold flex-center"}
+                    style={{ fontSize: "large" }}
+                >
+                    <DurationToFormatted duration={stats.totalRaceTime} />
+                </span>
+            </Col>
+            <Col md={3}>
+                <div className={"flex-center"}>Races Joined</div>
+                <hr className={"m-1 flex-center"} />
+                <span
+                    className={"fw-bold flex-center"}
+                    style={{ fontSize: "large" }}
+                >
+                    {stats.totalParticipations}
+                </span>
+            </Col>
+            <Col md={3}>
+                <div className={"flex-center"}>Races Finished</div>
+                <hr className={"m-1 flex-center"} />
+                <span
+                    className={"fw-bold flex-center"}
+                    style={{ fontSize: "large" }}
+                >
+                    {stats.totalFinishedParticipations}
+                </span>
+            </Col>
+            <Col md={3}>
+                <div className={"flex-center"}>Finish %</div>
+                <hr className={"m-1 flex-center"} />
+                <span
+                    className={"fw-bold flex-center"}
+                    style={{ fontSize: "large" }}
+                >
+                    {(stats.finishPercentage * 100).toFixed(2)}%
+                </span>
+            </Col>
+        </Row>
+    );
+};
+
+const StatsBodySmallScreen = ({ stats }: { stats: GameStats }) => {
+    return (
+        <div>
+            <span className={"justify-content-between d-flex"}>
+                <span>Total Time</span>
+                <span>
+                    <DurationToFormatted duration={stats.totalRaceTime} />
+                </span>
+            </span>
+            <span className={"justify-content-between d-flex"}>
+                <span>Races Joined</span>
+                <span>{stats.totalParticipations}</span>
+            </span>
+            <span className={"justify-content-between d-flex"}>
+                <span>Races Finished</span>
+                <span>{stats.totalFinishedParticipations}</span>
+            </span>
+            <span className={"justify-content-between d-flex"}>
+                <span>Finish %</span>
+                <span>{(stats.finishPercentage * 100).toFixed(2)}%</span>
+            </span>
         </div>
     );
 };

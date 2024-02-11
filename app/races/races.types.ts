@@ -174,6 +174,8 @@ export interface GameStats extends SpecificStats {
 
 export interface UserStats extends SpecificStats {
     totalFinishedRaces: number;
+    rating: number;
+    racePb: number;
 }
 
 export interface RaceMessage {
@@ -227,3 +229,17 @@ export type RaceMessageType =
     | "participant-undo-confirm"
     | "participant-comment"
     | "chat";
+
+/**
+ * -------------- RESPONSES ------------------
+ */
+
+export interface RaceGameStatsByGame {
+    stats: GameStats;
+    categories: GameStats[];
+}
+
+export interface RaceGameStatsByCategory {
+    stats: GameStats;
+    users: UserStats[];
+}

@@ -9,7 +9,7 @@ export const RaceParticipantRatingDisplay = ({
 
     const rating = raceParticipant.ratingAfter || raceParticipant.ratingBefore;
     return (
-        <span className={"font-monospace "}>
+        <span className={"font-monospace"}>
             {rating}
             <RatingAfter raceParticipant={raceParticipant} />
         </span>

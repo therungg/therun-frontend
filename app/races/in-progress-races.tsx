@@ -6,7 +6,7 @@ import styles from "../../src/components/css/LiveRun.module.scss";
 import { RaceTimer } from "~app/races/[race]/race-timer";
 import { PersonIcon } from "~src/icons/person-icon";
 import { ClockIcon } from "~src/icons/clock-icon";
-import { RaceFirstPlace } from "~app/races/components/race-first-place";
+import { RacePlacings } from "~app/races/components/race-placings";
 import { RaceParticipantStatusOverview } from "~app/races/components/race-participant-status-overview";
 
 export const InProgressRaces = ({ races }: { races: Race[] }) => {
@@ -122,9 +122,7 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
                                                 }
                                             >
                                                 <Card.Text>
-                                                    <RaceFirstPlace
-                                                        race={race}
-                                                    />
+                                                    <RacePlacings race={race} />
                                                 </Card.Text>
                                             </div>
                                         </div>

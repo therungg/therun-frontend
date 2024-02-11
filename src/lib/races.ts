@@ -5,13 +5,15 @@ import {
     GlobalStats,
     PaginatedRaces,
     Race,
+    RaceGameStatsByCategory,
+    RaceGameStatsByGame,
     RaceMessage,
     RaceParticipant,
 } from "~app/races/races.types";
 import { PaginationFetcher } from "~src/components/pagination/pagination.types";
 
 const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
-const paginationPageSize = 10;
+const paginationPageSize = 12;
 
 export const getPaginatedFinishedRaces: PaginationFetcher<Race> = async (
     page = 1,
@@ -25,13 +27,15 @@ export const getPaginatedFinishedRaces: PaginationFetcher<Race> = async (
     return (await races.json()).result as PaginatedRaces;
 };
 
-export const getPaginatedFinishedRacesByGame = async (
-    game: string,
+export const getPaginatedFinishedRacesByGame: PaginationFetcher<Race> = async (
     page = 1,
     pageSize = paginationPageSize,
+    query,
+    initialData,
+    params,
 ): Promise<PaginatedRaces> => {
     const races = await fetch(
-        `${racesApiUrl}?page=${page}&pageSize=${pageSize}&game=${game}`,
+        `${racesApiUrl}?page=${page}&pageSize=${pageSize}&game=${params.game}`,
         {
             next: { revalidate: 0 },
         },
@@ -106,6 +110,24 @@ export const getRaceGameStats = async (limit = 3): Promise<GameStats[]> => {
 
         return 1;
     });
+};
+
+export const getRaceGameStatsByGame = async (
+    game: string,
+): Promise<RaceGameStatsByGame> => {
+    const url = `${racesApiUrl}/stats/games/${game}`;
+
+    const stats = await fetch(url, { next: { revalidate: 60 } });
+
+    return (await stats.json()).result as RaceGameStatsByGame;
+};
+
+export const getRaceCategoryStats = async (game: string, category: string) => {
+    const url = `${racesApiUrl}/stats/games/${game}/${category}`;
+
+    const stats = await fetch(url, { next: { revalidate: 60 } });
+
+    return (await stats.json()).result as RaceGameStatsByCategory;
 };
 
 export const getRaceMessages = async (

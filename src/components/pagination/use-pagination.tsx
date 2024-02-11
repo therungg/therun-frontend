@@ -14,6 +14,7 @@ function usePagination<T>(
     fetchPage?: PaginationFetcher<T>,
     pageSize: number = 10,
     debounce?: number,
+    params?: any,
 ): PaginationHook<T> {
     let fullData = initialData;
 
@@ -62,7 +63,13 @@ function usePagination<T>(
         if (data[`${currentPage}-${query}`]) {
             setCurrentData(data[`${currentPage}-${query}`]);
         } else {
-            const result = await fetchPage(page, pageSize, query, fullData);
+            const result = await fetchPage(
+                page,
+                pageSize,
+                query,
+                fullData,
+                params,
+            );
             setCurrentData(result);
 
             setData((prevData) => ({
