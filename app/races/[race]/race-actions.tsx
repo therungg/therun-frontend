@@ -11,6 +11,8 @@ import { User } from "../../../types/session.types";
 import { CommentOnRaceForm } from "~app/races/components/forms/race-comment-form";
 import { JoinRaceForm } from "~app/races/components/forms/join-race-form";
 import { UndoAbandonRaceButton } from "~app/races/components/buttons/undo-abandon-race-button";
+import { UndoConfirmButton } from "~app/races/components/buttons/undo-confirm-button";
+import { UndoFinishButton } from "~app/races/components/buttons/undo-finish-button";
 
 export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
     if (!user?.username) return null;
@@ -122,6 +124,20 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
                 <UndoAbandonRaceButton
                     raceId={race.raceId}
                     className={"w-100 fs-5"}
+                />
+            )}
+            {userFinished && raceStarted && (
+                <UndoFinishButton
+                    raceId={race.raceId}
+                    className={"w-100 fs-5"}
+                    variant={"danger"}
+                />
+            )}
+            {userConfirmed && raceStarted && (
+                <UndoConfirmButton
+                    raceId={race.raceId}
+                    className={"w-100 fs-5"}
+                    variant={"danger"}
                 />
             )}
         </div>

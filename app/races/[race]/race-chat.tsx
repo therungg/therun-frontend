@@ -324,6 +324,22 @@ const getRaceMessage = (message: RaceMessage) => {
                 </>
             );
         }
+        case "participant-undo-finish": {
+            return (
+                <>
+                    <UserLink icon={false} username={user as string} />{" "}
+                    unfinished
+                </>
+            );
+        }
+        case "participant-undo-confirm": {
+            return (
+                <>
+                    <UserLink icon={false} username={user as string} />{" "}
+                    unconfirmed
+                </>
+            );
+        }
         case "chat":
             return (
                 <>
