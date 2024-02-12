@@ -51,7 +51,7 @@ export const GameImage = (props: GameImageProps) => {
 
     const className = `img-fluid ${props.className || ""}`;
 
-    if (!src)
+    if (!src || src === "noimage")
         return (
             <Image
                 width={width}

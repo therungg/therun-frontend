@@ -13,6 +13,7 @@ import { GlobalRaceStats } from "~app/races/global-race-stats";
 import { CreateRaceButtons } from "~app/races/create-race-buttons";
 import { useRaces } from "~app/races/hooks/use-race";
 import { RecentlyFinishedRaces } from "~app/races/recently-finished-races";
+import { RaceFaq } from "~app/races/race-faq";
 
 interface RaceOverviewProps {
     races: Race[];
@@ -45,6 +46,7 @@ export const RaceOverview = ({
                     className="d-flex mt-3 mt-lg-0 justify-content-end align-items-center"
                 >
                     <CreateRaceButtons />
+                    <RaceFaq />
                 </Col>
             </Row>
             <Row className={"gx-5 gy-5"}>

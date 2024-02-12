@@ -32,7 +32,8 @@
 
   &-primary,
   &-secondary,
-  &-danger {
+  &-danger,
+  &-info {
     --bs-btn-color: var(--bs-body-color);
     --bs-btn-bg: hsla(0, 0%, 39%, .2);
     --bs-btn-disabled-bg: var(--bs-body-color);
