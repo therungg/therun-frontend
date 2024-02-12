@@ -12,6 +12,7 @@ import {
     Race,
 } from "~app/races/races.types";
 import buildMetadata from "~src/utils/metadata";
+import { Metadata } from "next";
 
 export default async function RacePage() {
     const promises = [
@@ -43,7 +44,10 @@ export default async function RacePage() {
     );
 }
 
-export const metadata = buildMetadata({
-    title: "Speedrun Races",
-    description: "Watch and participate in Speedrun Races!",
-});
+export async function generateMetadata(): Promise<Metadata> {
+    return buildMetadata({
+        title: `Watch upcoming and ongoing speedrun races on therun.gg!`,
+        description: `Dashboard for all things speedrun racing - statistics, race history, live races, you name it. All on therun.gg`,
+        index: true,
+    });
+}

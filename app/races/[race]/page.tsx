@@ -4,6 +4,8 @@ import { getSession } from "~src/actions/session.action";
 import { Race, RaceMessage } from "~app/races/races.types";
 import { User } from "../../../types/session.types";
 import { sortRaceParticipants } from "~app/races/[race]/sort-race-participants";
+import { Metadata } from "next";
+import buildMetadata from "~src/utils/metadata";
 
 interface PageProps {
     params: { race: string };
@@ -27,4 +29,36 @@ export default async function RaceDetailPage({ params }: PageProps) {
     race.participants = sortRaceParticipants(race);
 
     return <RaceDetail race={race} user={session} messages={messages} />;
+}
+
+export async function generateMetadata({
+    params,
+}: PageProps): Promise<Metadata> {
+    const raceId = params.race;
+
+    if (!raceId) return buildMetadata();
+
+    const race = await getRaceByRaceId(raceId);
+    const game = race.displayGame;
+    const category = race.displayCategory;
+    const participantCount = race.participantCount;
+
+    return buildMetadata({
+        title: `Watch or join this speedrun race for ${game} - ${category} on therun.gg!`,
+        description: `A race between ${participantCount} people speedrunning ${game} - ${category} on therun.gg. Come check it out!`,
+        images:
+            race.gameImage && race.gameImage !== "noimage"
+                ? [
+                      {
+                          url: race.gameImage,
+                          secureUrl: race.gameImage,
+                          alt: `Game image of ${game}`,
+                          type: "image/png",
+                          width: 300,
+                          height: 300,
+                      },
+                  ]
+                : undefined,
+        index: true,
+    });
 }

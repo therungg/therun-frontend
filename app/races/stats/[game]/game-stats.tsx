@@ -30,13 +30,13 @@ export const GameStats = ({
             <RaceGameContextProvider game={stats.stats.displayValue}>
                 <Row>
                     <Col xs={12} lg={8}>
-                        <h2>Game Stats</h2>
+                        <h2>{stats.stats.displayValue} Races</h2>
                         <StatsPerGame stats={stats.stats} isLink={false} />
                         <h2 className={"mt-4"}>Categories</h2>
                         <CategoryStatsList stats={stats.categories} />
                     </Col>
                     <Col xs={12} lg={4}>
-                        <h2>Finished Races</h2>
+                        <h2>Recent Races</h2>
                         <FinishedRacesByGameTable
                             game={stats.stats.displayValue}
                             paginatedRaces={paginatedRaces}

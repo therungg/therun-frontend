@@ -64,6 +64,7 @@ export const RecentlyFinishedRace = ({ race }: { race: Race }) => {
                             <PersonIcon />
                         </span>
                     </div>
+                    <hr className={"my-1"} />
                     <div className={"d-flex justify-content-between"}>
                         <div className={"fst-italic"}>
                             {race.displayCategory}

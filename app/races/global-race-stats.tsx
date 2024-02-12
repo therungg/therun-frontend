@@ -92,7 +92,7 @@ const ShowGameStat = ({ gameStat }: { gameStat: GameStats }) => {
     return (
         <div
             key={gameStat.value}
-            className={`d-flex w-100 mb-3 ${styles.liveRunContainer} rounded-3`}
+            className={`d-flex w-100 ${styles.liveRunContainer} rounded-3`}
             style={{ color: "var(--bs-body-color)" }}
         >
             <GameImage
