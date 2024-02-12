@@ -9,6 +9,7 @@ import { PaginationContextProvider } from "~src/components/pagination/pagination
 import { Card, Col, Row } from "react-bootstrap";
 import { DurationToFormatted } from "~src/components/util/datetime";
 import styles from "~src/components/css/LiveRun.module.scss";
+import { safeEncodeURI } from "~src/utils/uri";
 
 export const RaceStatsPerGame = ({
     globalGameStats,
@@ -37,7 +38,9 @@ const RaceStatsPerGameDisplay = ({
                     return (
                         <Col xxl={6} xl={12} key={gameStats.value}>
                             <a
-                                href={`/races/stats/${gameStats.displayValue}`}
+                                href={`/races/stats/${safeEncodeURI(
+                                    gameStats.displayValue,
+                                )}`}
                                 className={"text-decoration-none"}
                             >
                                 <StatsPerGame stats={gameStats} />

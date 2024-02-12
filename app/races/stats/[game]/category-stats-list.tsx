@@ -9,6 +9,7 @@ import PaginationControl from "~src/components/pagination/pagination-control";
 import React from "react";
 import { genericFetcher } from "~src/components/pagination/fetchers/generic-fetcher";
 import { StatsBody } from "~app/races/stats/race-stats-per-game";
+import { safeEncodeURI } from "~src/utils/uri";
 
 export const CategoryStatsList = ({ stats }: { stats: GameStats[] }) => {
     return (
@@ -43,7 +44,9 @@ export const CategoryStatsPanel = ({ stats }: { stats: GameStats }) => {
     const [game, category] = stats.displayValue.split("#");
     return (
         <a
-            href={`/races/stats/${game}/${category}`}
+            href={`/races/stats/${safeEncodeURI(game)}/${safeEncodeURI(
+                category,
+            )}`}
             className={"text-decoration-none"}
         >
             <div
