@@ -26,6 +26,9 @@ const RacePlacingsFinishedRace = ({ race, amount = 1 }: RacePlacingsProps) => {
     // const results = race.results?.filter((result) => {
     //     return result.status === "confirmed";
     // }) as RaceResult[];
+
+    if (race.results && race.results[0].status === "abandoned") return <></>;
+
     return (
         <>
             {race.results?.slice(0, amount).map((result, i) => {

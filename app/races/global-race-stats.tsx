@@ -47,7 +47,9 @@ export const GlobalRaceStats = ({
                 {gameStats.map((gameStat) => {
                     return (
                         <a
-                            href={`/races/stats/${gameStat.displayValue}`}
+                            href={`/races/stats/${encodeURI(
+                                gameStat.displayValue,
+                            )}`}
                             className={`text-decoration-none`}
                             key={gameStat.value}
                         >
