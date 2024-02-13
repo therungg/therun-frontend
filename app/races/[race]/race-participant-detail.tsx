@@ -165,7 +165,10 @@ const RaceParticipantDetailBody = ({
                 {participant.status === "abandoned" &&
                     participant.disqualified && <>Disqualified</>}
                 {participant.status !== "abandoned" && (
-                    <RaceParticipantTimer raceParticipant={participant} />
+                    <RaceParticipantTimer
+                        raceParticipant={participant}
+                        raceStatus={race.status}
+                    />
                 )}
             </span>
             <hr style={{ margin: "0.7rem 0" }} />
