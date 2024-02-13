@@ -41,6 +41,7 @@ export const UserLink = ({
 
     if (!username.startsWith("/")) username = `/${username}`;
 
+    username = decodeURIComponent(username);
     let withoutSlash = username.replace("/", "");
 
     if (url === "") url = username;
