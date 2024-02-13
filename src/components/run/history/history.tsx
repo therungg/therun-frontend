@@ -1426,6 +1426,8 @@ export const History = ({
                                                                 >
                                                                     {splitAtTheTime &&
                                                                     split.totalTime >
+                                                                        0 &&
+                                                                    splitAtTheTime?.totalTime >
                                                                         0 ? (
                                                                         <Difference
                                                                             one={
@@ -1452,14 +1454,19 @@ export const History = ({
                                                                             "center",
                                                                     }}
                                                                 >
-                                                                    <DurationToFormatted
-                                                                        duration={
-                                                                            splitAtTheTime?.splitTime
-                                                                        }
-                                                                        withMillis={
-                                                                            true
-                                                                        }
-                                                                    />
+                                                                    {splitAtTheTime?.splitTime >
+                                                                    0 ? (
+                                                                        <DurationToFormatted
+                                                                            duration={
+                                                                                splitAtTheTime?.splitTime
+                                                                            }
+                                                                            withMillis={
+                                                                                true
+                                                                            }
+                                                                        />
+                                                                    ) : (
+                                                                        "-"
+                                                                    )}
                                                                 </div>
                                                             </td>
                                                             <td>
@@ -1471,14 +1478,19 @@ export const History = ({
                                                                             "center",
                                                                     }}
                                                                 >
-                                                                    <DurationToFormatted
-                                                                        duration={
-                                                                            splitAtTheTime?.totalTime
-                                                                        }
-                                                                        withMillis={
-                                                                            true
-                                                                        }
-                                                                    />
+                                                                    {splitAtTheTime?.splitTime >
+                                                                    0 ? (
+                                                                        <DurationToFormatted
+                                                                            duration={
+                                                                                splitAtTheTime?.totalTime
+                                                                            }
+                                                                            withMillis={
+                                                                                true
+                                                                            }
+                                                                        />
+                                                                    ) : (
+                                                                        "-"
+                                                                    )}
                                                                 </div>
                                                             </td>
                                                         </tr>
