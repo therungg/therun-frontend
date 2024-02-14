@@ -27,7 +27,9 @@ const RacePlacingsFinishedRace = ({ race, amount = 1 }: RacePlacingsProps) => {
     //     return result.status === "confirmed";
     // }) as RaceResult[];
 
-    if (race.results && race.results[0].status === "abandoned") return <></>;
+    // If we just need the first result and that person abandoned, we do not need to show it
+    if (race.results && amount === 1 && race.results[0].status === "abandoned")
+        return <></>;
 
     return (
         <>

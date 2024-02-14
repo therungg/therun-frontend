@@ -2,6 +2,7 @@ import {
     Race,
     RaceMesageParticipantTimeData,
     RaceMessage,
+    RaceMessageModeratorData,
     RaceMessageParticipantCommentData,
     RaceMessageParticipantSplitData,
     RaceMessageUserData,
@@ -192,14 +193,18 @@ const getRaceMessage = (message: RaceMessage) => {
     switch (message.type) {
         case "race-created":
             return "Race was created";
+        case "race-edited":
+            return `Race info was edited by ${user}`;
         case "race-starting":
             return "Everyone is ready. Countdown started";
         case "race-start-canceled":
             return "The start was canceled";
         case "race-started":
             return "Race has started";
-        case "race-abort":
-            return "Race was canceled";
+        case "race-abort": {
+            const data = message.data as RaceMessageModeratorData;
+            return `Race was canceled by ${data.moderator}`;
+        }
         case "race-finish":
             return "Everyone is done. The race is finished";
         case "race-rated":

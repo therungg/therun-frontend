@@ -144,7 +144,10 @@ const RaceParticipantStatus = ({
             )}
             {participant.status === "started" && (
                 <div>
-                    <RaceParticipantTimer raceParticipant={participant} />
+                    <RaceParticipantTimer
+                        raceParticipant={participant}
+                        raceStatus={race.status}
+                    />
                 </div>
             )}
             {participant.status === "abandoned" && (
