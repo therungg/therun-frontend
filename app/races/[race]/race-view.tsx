@@ -20,6 +20,7 @@ import {
 } from "~src/components/breadcrumbs/breadcrumb";
 import { RaceStream } from "~app/races/[race]/race-stream";
 import { RaceChat } from "~app/races/[race]/race-chat";
+import { RaceAdminActions } from "~app/races/[race]/race-admin-actions";
 
 interface RaceDetailProps {
     race: Race;
@@ -65,6 +66,7 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
                 <Col xxl={4} lg={5} className={"d-none d-lg-block"}>
                     <RaceParticipantOverview race={raceState} />
                     <RaceActions race={raceState} user={user} />
+                    <RaceAdminActions race={raceState} user={user} />
                     <RaceChat
                         raceMessages={messagesState}
                         race={raceState}

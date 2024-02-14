@@ -34,6 +34,7 @@ export interface Race {
     participants?: RaceParticipantWithLiveData[];
     // Only available in paginated races because pending races have no results yet
     results: RaceResult[] | null;
+    moderators: string[];
     participantCount: number;
     readyParticipantCount: number;
     finishedParticipantCount: number;
@@ -123,6 +124,12 @@ export interface CreateRaceInput {
     countdown?: number;
 }
 
+export interface EditRaceInput {
+    description?: string;
+    customName?: string;
+    forceStream?: string;
+}
+
 export type WebsocketRaceMessageType =
     | "raceUpdate"
     | "participantUpdate"
@@ -206,8 +213,13 @@ export interface RaceMesageParticipantTimeData extends RaceMessageUserData {
     time: number;
 }
 
+export interface RaceMessageModeratorData extends RaceMessageData {
+    moderator: string;
+}
+
 export type RaceMessageType =
     | "race-created"
+    | "race-edited"
     | "race-starting"
     | "race-start-canceled"
     | "race-started"

@@ -7,7 +7,10 @@ import { RacePlacings } from "~app/races/components/race-placings";
 
 export const RaceHeader = ({ race }: { race: Race }) => {
     return (
-        <div className={"bg-body-secondary mh-100 card game-border"}>
+        <div
+            className={"bg-body-secondary mh-100 card game-border"}
+            style={{ borderColor: race.status === "aborted" ? "red" : "" }}
+        >
             <Card className={`game-border h-100`}>
                 <Row style={{ minHeight: "10rem" }}>
                     <Col xs={4} sm={2}>
@@ -63,7 +66,15 @@ export const RaceHeader = ({ race }: { race: Race }) => {
                             >
                                 {race.displayCategory}
                             </div>
-                            {!race.ranked && (
+                            {race.status === "aborted" && (
+                                <div
+                                    className={"text-nowrap"}
+                                    style={{ color: "red" }}
+                                >
+                                    Race was aborted
+                                </div>
+                            )}
+                            {race.status !== "aborted" && !race.ranked && (
                                 <div className={"text-nowrap fst-italic"}>
                                     Unranked
                                 </div>
