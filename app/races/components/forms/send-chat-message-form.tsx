@@ -42,6 +42,7 @@ export const SendChatMessageForm = ({
                     type={"text"}
                     name={"message"}
                     className={"form-control"}
+                    autoComplete={"off"}
                     placeholder={
                         user?.username
                             ? "Send a chat message"
