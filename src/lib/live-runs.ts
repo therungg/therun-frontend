@@ -36,6 +36,11 @@ export const getLiveRunsForGameCategory = async (
         `${liveRunUrl}?game=${safeEncodeURI(game)}&category=${safeEncodeURI(
             category,
         )}`,
+        {
+            next: {
+                revalidate: 60,
+            },
+        },
     );
 
     return result.json();
