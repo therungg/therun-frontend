@@ -61,9 +61,20 @@ export const useRace = (race: Race, messages: RaceMessage[]) => {
                 setRaceState(newRace);
             }
             if (lastMessage.type === "message") {
-                const newMessages = [...messagesState];
-                newMessages.unshift(lastMessage.data as RaceMessage);
-                setMessagesState(newMessages);
+                const data = lastMessage.data as RaceMessage;
+                // Don't process the message if it is not already in the messages
+                if (
+                    !messagesState.some((message) => {
+                        return (
+                            message.time === data.time &&
+                            message.message === data.message
+                        );
+                    })
+                ) {
+                    const newMessages = [...messagesState];
+                    newMessages.unshift(lastMessage.data as RaceMessage);
+                    setMessagesState(newMessages);
+                }
             }
         }
     }, [lastMessage]);

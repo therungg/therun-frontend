@@ -1,9 +1,12 @@
 import moment from "moment";
 import { CategoryLeaderboard } from "~app/games/[game]/game.types";
 import React from "react";
-import { Col, Row, Table } from "react-bootstrap";
+import { Col, Form, Row, Table } from "react-bootstrap";
 import styles from "../css/Game.module.scss";
 import { PatreonBunnySvg } from "~app/patron/patreon-info";
+import { User } from "../../../types/session.types";
+import { increaseEndTimeByAnHour } from "~src/actions/tournaments/increase-end-time-by-an-hour";
+import { SubmitButton } from "~src/actions/components/submit-button";
 
 export interface Tournament {
     name: string;
@@ -70,7 +73,15 @@ interface ExcludedRun {
 }
 
 //TODO:: This page is ugly and terrible design. There's a lot of cool data on tournaments, so use it properly.
-export const TournamentInfo = ({ tournament }: { tournament: Tournament }) => {
+export const TournamentInfo = ({
+    tournament,
+    user,
+}: {
+    tournament: Tournament;
+    user?: User;
+}) => {
+    const isAdmin =
+        user?.username && tournament.moderators?.includes(user.username);
     return (
         <div>
             {tournament.description && (
@@ -92,17 +103,188 @@ export const TournamentInfo = ({ tournament }: { tournament: Tournament }) => {
                 style={{ marginBottom: "2rem" }}
             >
                 <tbody>
-                    <tr className={styles.tableVerticalHeader}>
-                        <th colSpan={2}>Tournament</th>
-                    </tr>
-                    <tr>
-                        <th>Starting at</th>
-                        <td>{moment(tournament.startDate).format("LLL")}</td>
-                    </tr>
-                    <tr>
-                        <th>Ending at</th>
-                        <td>{moment(tournament.endDate).format("LLL")}</td>
-                    </tr>
+                    {tournament.eligiblePeriods.length === 1 && (
+                        <>
+                            <tr className={styles.tableVerticalHeader}>
+                                <th colSpan={2}>Tournament</th>
+                            </tr>
+                            <tr>
+                                <th>Starting at</th>
+                                <td>
+                                    {moment(tournament.startDate).format("LLL")}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Ending at</th>
+                                <td>
+                                    {moment(tournament.endDate).format("LLL")}
+                                    {isAdmin && (
+                                        <Form
+                                            suppressHydrationWarning
+                                            action={increaseEndTimeByAnHour}
+                                            className={"ms-2"}
+                                        >
+                                            <input
+                                                hidden
+                                                name={"tournament"}
+                                                value={tournament.name}
+                                                readOnly
+                                            />
+
+                                            <input
+                                                hidden
+                                                name={"date"}
+                                                value={new Date(
+                                                    new Date(
+                                                        tournament.endDate,
+                                                    ).getTime() +
+                                                        60 * 60 * 1000,
+                                                ).toISOString()}
+                                                readOnly
+                                            />
+
+                                            <input
+                                                hidden
+                                                name={"heat"}
+                                                value={0}
+                                                readOnly
+                                            />
+                                            <SubmitButton
+                                                innerText={`Increase End Time By An Hour`}
+                                                pendingText={
+                                                    "Increasing End Time By An Hour"
+                                                }
+                                            />
+                                        </Form>
+                                    )}
+                                </td>
+                            </tr>
+                        </>
+                    )}
+                    {tournament.eligiblePeriods.length > 1 && (
+                        <>
+                            <tr className={styles.tableVerticalHeader}>
+                                <th colSpan={2}>Tournament</th>
+                            </tr>
+                            {tournament.eligiblePeriods.map((period, i) => {
+                                const hourAfterEndDate = new Date(
+                                    new Date(period.endDate).getTime() +
+                                        60 * 60 * 1000,
+                                ).toISOString();
+                                const hourBeforeEndDate = new Date(
+                                    new Date(period.endDate).getTime() -
+                                        60 * 60 * 1000,
+                                ).toISOString();
+                                return (
+                                    <>
+                                        <tr>
+                                            <th>Day {i + 1}</th>
+                                            <td className={"d-flex"}>
+                                                {moment(
+                                                    period.startDate,
+                                                ).format("LLL")}{" "}
+                                                -{" "}
+                                                {moment(period.endDate).format(
+                                                    "LLL",
+                                                )}
+                                                {isAdmin && (
+                                                    <div>
+                                                        <Form
+                                                            suppressHydrationWarning
+                                                            action={
+                                                                increaseEndTimeByAnHour
+                                                            }
+                                                            className={"ms-2"}
+                                                        >
+                                                            <input
+                                                                hidden
+                                                                name={
+                                                                    "tournament"
+                                                                }
+                                                                value={
+                                                                    tournament.name
+                                                                }
+                                                                readOnly
+                                                            />
+
+                                                            <input
+                                                                hidden
+                                                                name={"date"}
+                                                                value={
+                                                                    hourBeforeEndDate
+                                                                }
+                                                                readOnly
+                                                            />
+
+                                                            <input
+                                                                hidden
+                                                                name={"heat"}
+                                                                value={i}
+                                                                readOnly
+                                                            />
+                                                            <SubmitButton
+                                                                variant={
+                                                                    "danger"
+                                                                }
+                                                                innerText={`Decrease End Time Of Day ${
+                                                                    i + 1
+                                                                } By An Hour`}
+                                                                pendingText={
+                                                                    "Decrease End Time By An Hour"
+                                                                }
+                                                            />
+                                                        </Form>
+                                                        <Form
+                                                            suppressHydrationWarning
+                                                            action={
+                                                                increaseEndTimeByAnHour
+                                                            }
+                                                            className={"ms-2"}
+                                                        >
+                                                            <input
+                                                                hidden
+                                                                name={
+                                                                    "tournament"
+                                                                }
+                                                                value={
+                                                                    tournament.name
+                                                                }
+                                                                readOnly
+                                                            />
+
+                                                            <input
+                                                                hidden
+                                                                name={"date"}
+                                                                value={
+                                                                    hourAfterEndDate
+                                                                }
+                                                                readOnly
+                                                            />
+
+                                                            <input
+                                                                hidden
+                                                                name={"heat"}
+                                                                value={i}
+                                                                readOnly
+                                                            />
+                                                            <SubmitButton
+                                                                innerText={`Increase End Time Of Day ${
+                                                                    i + 1
+                                                                } By An Hour`}
+                                                                pendingText={
+                                                                    "Increasing End Time By An Hour"
+                                                                }
+                                                            />
+                                                        </Form>
+                                                    </div>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    </>
+                                );
+                            })}
+                        </>
+                    )}
                     {tournament.socials && (
                         <tr className={styles.tableVerticalHeader}>
                             <th colSpan={2}>Tournament socials</th>

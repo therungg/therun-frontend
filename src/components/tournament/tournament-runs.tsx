@@ -206,40 +206,59 @@ export const TournamentRuns = ({
                 </div>
             </div>
             {isAdmin && (
-                <div className={"m-2"}>
+                <div className={"mb-3"}>
                     <Form action={addTime}>
-                        <input
-                            hidden
-                            name={"tournament"}
-                            value={tournament.name}
-                            readOnly
-                        />
-                        <input
-                            hidden
-                            name={"date"}
-                            value={tournament.eligiblePeriods[0].startDate}
-                            readOnly
-                        />
-                        User: <input name={"user"} type={"text"} />
-                        Time:{" "}
-                        <input
-                            type={"text"}
-                            name={"finalTimeInput"}
-                            value={finalTimeInput}
-                            onChange={(event) => {
-                                setFinalTimeInput(event.target.value);
-                            }}
-                        />
-                        <input
-                            hidden
-                            name={"time"}
-                            value={confirmedFinalTime}
-                            readOnly
-                        />
-                        <SubmitButton
-                            innerText={"Add Run"}
-                            pendingText={"Adding Run"}
-                        />
+                        <fieldset
+                            className={
+                                "d-flex border border-tertiary pt-0 pb-3 px-3"
+                            }
+                        >
+                            <legend className="w-auto mb-0">
+                                Add Custom Run
+                            </legend>
+                            <input
+                                hidden
+                                name={"tournament"}
+                                value={tournament.name}
+                                readOnly
+                            />
+                            <input
+                                hidden
+                                name={"date"}
+                                value={tournament.eligiblePeriods[0].startDate}
+                                readOnly
+                            />
+                            <span className={"d-flex align-items-center me-1"}>
+                                User:
+                            </span>
+                            <input
+                                name={"user"}
+                                type={"text"}
+                                className={"form-control w-25 h-25 me-3"}
+                            />
+                            <span className={"d-flex align-items-center me-1"}>
+                                Time:
+                            </span>
+                            <input
+                                type={"text"}
+                                name={"finalTimeInput"}
+                                className={"form-control w-25 h-25 me-3"}
+                                value={finalTimeInput}
+                                onChange={(event) => {
+                                    setFinalTimeInput(event.target.value);
+                                }}
+                            />
+                            <input
+                                hidden
+                                name={"time"}
+                                value={confirmedFinalTime}
+                                readOnly
+                            />
+                            <SubmitButton
+                                innerText={"Add Run"}
+                                pendingText={"Adding Run"}
+                            />
+                        </fieldset>
                     </Form>
                 </div>
             )}
