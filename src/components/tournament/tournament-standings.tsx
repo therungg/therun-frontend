@@ -3,6 +3,8 @@ import React from "react";
 import { getLeaderboard } from "../game/game-leaderboards";
 import { Col, Row } from "react-bootstrap";
 import { DurationToFormatted } from "../util/datetime";
+import useSWR from "swr";
+import { fetcher } from "../../utils";
 
 export const TournamentStandings = ({
     tournament,
@@ -13,11 +15,6 @@ export const TournamentStandings = ({
         "/api/tournaments/PACE 2024 Qualifiers 1",
         fetcher,
     );
-    
-    // const { data: tournament2Data }: { data: Tournament } = useSWR(
-    //     "/api/tournaments/GSA PACE Qualifiers 2",
-    //     fetcher,
-    // );
     
     if (!tournament1Data) {
         return <div>Loading data...</div>;
