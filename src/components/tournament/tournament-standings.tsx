@@ -4,7 +4,7 @@ import { getLeaderboard } from "../game/game-leaderboards";
 import { Col, Row } from "react-bootstrap";
 import { DurationToFormatted } from "../util/datetime";
 import useSWR from "swr";
-import { fetcher } from "../../utils";
+import { fetcher } from "~src/utils/fetcher";
 
 export const TournamentStandings = ({
     tournament,
@@ -15,7 +15,7 @@ export const TournamentStandings = ({
         "/api/tournaments/PACE 2024 Qualifiers 1",
         fetcher,
     );
-    
+
     if (!tournament1Data) {
         return <div>Loading data...</div>;
     }
@@ -26,9 +26,9 @@ export const TournamentStandings = ({
         [tournament1Data].forEach((data) => {
             if (data.leaderboards?.pbLeaderboard[index]) {
                 const standing = data.leaderboards?.pbLeaderboard[index];
-        
+
                 const user = standing.username;
-        
+
                 if (!points[user]) {
                     points[user] = {
                         stat: 0,
@@ -36,7 +36,7 @@ export const TournamentStandings = ({
                         url: standing.url,
                     };
                 }
-        
+
                 points[user].stat += point;
             }
         });
@@ -78,7 +78,12 @@ export const TournamentStandings = ({
 
                     {getLeaderboard(
                         "Total points",
-                        pointsLeaderboard,
+                        pointsLeaderboard.map((board, i) => {
+                            return {
+                                ...board,
+                                placing: i + 1,
+                            };
+                        }),
                         "",
                         (stat) => {
                             return stat;
@@ -135,7 +140,9 @@ export const TournamentStandings = ({
                         (stat, key) => {
                             return (
                                 <div>
-                                    {tournament1Data.pointDistribution[key] || 0} (
+                                    {tournament1Data.pointDistribution[key] ||
+                                        0}{" "}
+                                    (
                                     <DurationToFormatted
                                         duration={stat.toString()}
                                     />

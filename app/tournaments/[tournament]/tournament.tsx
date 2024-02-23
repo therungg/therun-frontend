@@ -392,7 +392,7 @@ export const GenericTournament = ({
                     </Row>
                 </Tab>
                 <Tab title={"Info"} eventKey={"info"}>
-                    <TournamentInfo tournament={tournament} />
+                    <TournamentInfo tournament={tournament} user={session} />
                 </Tab>
                 <Tab title={"Runs"} eventKey={"runs"}>
                     <TournamentRuns

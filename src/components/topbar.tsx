@@ -93,16 +93,12 @@ const Topbar = ({
                                 </span>
                             </b>
                         </Nav.Link>
-                        <Nav.Link href="/live">
-                            <b>Live</b>
-                        </Nav.Link>
+                        <Nav.Link href="/live">Live</Nav.Link>
                         {/*<Nav.Link href="/races">*/}
                         {/*    <b>Races</b>*/}
                         {/*</Nav.Link>*/}
                         <Nav.Link href="/games/">Games</Nav.Link>
-                        <Nav.Link href="/gsa">
-                            <b>PACE Qualifiers</b>
-                        </Nav.Link>
+                        <Nav.Link href="/gsa">PACE Qualifiers</Nav.Link>
                         <Nav.Link href="/patron">
                             Support <PatreonBunnySvgWithoutLink />
                         </Nav.Link>
