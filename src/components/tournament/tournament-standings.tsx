@@ -9,40 +9,40 @@ export const TournamentStandings = ({
 }: {
     tournament: Tournament;
 }) => {
-    // const { data: tournament1Data }: { data: Tournament } = useSWR(
-    //     "/api/tournaments/GSA PACE Qualifiers 1",
-    //     fetcher,
-    // );
-    //
+    const { data: tournament1Data }: { data: Tournament } = useSWR(
+        "/api/tournaments/PACE 2024 Qualifiers 1",
+        fetcher,
+    );
+    
     // const { data: tournament2Data }: { data: Tournament } = useSWR(
     //     "/api/tournaments/GSA PACE Qualifiers 2",
     //     fetcher,
     // );
-    //
-    // if (!tournament1Data || !tournament2Data) {
-    //     return <div>Loading data...</div>;
-    // }
+    
+    if (!tournament1Data) {
+        return <div>Loading data...</div>;
+    }
 
     const points = {};
 
     tournament.pointDistribution?.forEach((point, index) => {
-        // [tournament1Data, tournament2Data].forEach((data) => {
-        //     if (data.leaderboards?.pbLeaderboard[index]) {
-        //         const standing = data.leaderboards?.pbLeaderboard[index];
-        //
-        //         const user = standing.username;
-        //
-        //         if (!points[user]) {
-        //             points[user] = {
-        //                 stat: 0,
-        //                 username: user,
-        //                 url: standing.url,
-        //             };
-        //         }
-        //
-        //         points[user].stat += point;
-        //     }
-        // });
+        [tournament1Data].forEach((data) => {
+            if (data.leaderboards?.pbLeaderboard[index]) {
+                const standing = data.leaderboards?.pbLeaderboard[index];
+        
+                const user = standing.username;
+        
+                if (!points[user]) {
+                    points[user] = {
+                        stat: 0,
+                        username: user,
+                        url: standing.url,
+                    };
+                }
+        
+                points[user].stat += point;
+            }
+        });
 
         if (
             tournament.leaderboards &&
@@ -132,7 +132,27 @@ export const TournamentStandings = ({
                     <h2>Standings Heat 1</h2>
 
                     {getLeaderboard(
-                        "Points Heat 3",
+                        "Points Heat 1",
+                        tournament1Data.leaderboards?.pbLeaderboard,
+                        "",
+                        (stat, key) => {
+                            return (
+                                <div>
+                                    {tournament1Data.pointDistribution[key] || 0} (
+                                    <DurationToFormatted
+                                        duration={stat.toString()}
+                                    />
+                                    )
+                                </div>
+                            );
+                        },
+                    )}
+                </Col>
+                <Col>
+                    <h2>Standings Heat 2</h2>
+
+                    {getLeaderboard(
+                        "Points Heat 2",
                         tournament.leaderboards?.pbLeaderboard,
                         "",
                         (stat, key) => {
