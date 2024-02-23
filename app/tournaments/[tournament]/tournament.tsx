@@ -9,7 +9,6 @@ import { DurationToFormatted } from "~src/components/util/datetime";
 import useSWR from "swr";
 import { fetcher } from "~src/utils/fetcher";
 import TournamentStats from "~src/components/tournament/tournament-stats";
-import BanUser from "~src/components/tournament/ban-user";
 import {
     Tournament,
     TournamentInfo,
@@ -414,11 +413,6 @@ export const GenericTournament = ({
                         gameTime={false}
                     />
                 </Tab>
-                {tournament.moderators.includes(session.username) && (
-                    <Tab title={"Ban User"} eventKey={"ban"}>
-                        <BanUser session={session} tournament={tournament} />
-                    </Tab>
-                )}
             </Tabs>
         </div>
     );
