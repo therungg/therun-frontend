@@ -87,7 +87,7 @@ export const RaceParticipantTimer = ({
     }, [raceParticipant.status]);
 
     useEffect(() => {
-        if (raceStatus === "progress") {
+        if (raceStatus === "progress" && raceParticipant.status === "joined") {
             timer.startTimer();
         }
     }, [raceStatus]);
