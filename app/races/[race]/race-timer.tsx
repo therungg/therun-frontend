@@ -1,10 +1,6 @@
 "use client";
 
-import {
-    Race,
-    RaceParticipantWithLiveData,
-    RaceStatus,
-} from "~app/races/races.types";
+import { Race, RaceParticipantWithLiveData } from "~app/races/races.types";
 import { useSpeedrunTimer } from "~src/components/use-speedrun-timer";
 import { useEffect } from "react";
 import Countdown from "react-countdown";
@@ -50,18 +46,19 @@ export const RaceTimer = ({ race }: { race: Race }) => {
 
 export const RaceParticipantTimer = ({
     raceParticipant,
-    raceStatus,
+    race,
 }: {
     raceParticipant: RaceParticipantWithLiveData;
-    raceStatus: RaceStatus;
+    race: Race;
 }) => {
+    const raceStatus = race.status;
     const initialOffset = raceParticipant.finalTime
         ? raceParticipant.finalTime / 1000
         : raceParticipant.liveData
           ? (new Date().getTime() -
                 parseInt(raceParticipant.liveData.startedAt.toString())) /
             1000
-          : 0;
+          : getTimerOffsetForRace(race);
 
     useEffect(() => {
         if (
@@ -77,7 +74,7 @@ export const RaceParticipantTimer = ({
                             raceParticipant.liveData.startedAt.toString(),
                         )) /
                     1000
-                  : 0;
+                  : getTimerOffsetForRace(race);
             timer.setTime(newoffset);
         }
         if (["finished", "confirmed"].includes(raceParticipant.status)) {

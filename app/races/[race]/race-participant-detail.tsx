@@ -167,7 +167,7 @@ const RaceParticipantDetailBody = ({
                 {participant.status !== "abandoned" && (
                     <RaceParticipantTimer
                         raceParticipant={participant}
-                        raceStatus={race.status}
+                        race={race}
                     />
                 )}
             </span>

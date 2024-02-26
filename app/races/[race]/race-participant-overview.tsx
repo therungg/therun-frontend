@@ -146,7 +146,7 @@ const RaceParticipantStatus = ({
                 <div>
                     <RaceParticipantTimer
                         raceParticipant={participant}
-                        raceStatus={race.status}
+                        race={race}
                     />
                 </div>
             )}
