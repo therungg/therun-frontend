@@ -98,7 +98,6 @@ const Topbar = ({
                         {/*    <b>Races</b>*/}
                         {/*</Nav.Link>*/}
                         <Nav.Link href="/games/">Games</Nav.Link>
-                        <Nav.Link href="/gsa">PACE Qualifiers</Nav.Link>
                         <Nav.Link href="/patron">
                             Support <PatreonBunnySvgWithoutLink />
                         </Nav.Link>
