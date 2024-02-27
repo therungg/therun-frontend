@@ -55,9 +55,9 @@ export const RaceParticipantTimer = ({
     const initialOffset = raceParticipant.finalTime
         ? raceParticipant.finalTime / 1000
         : raceParticipant.liveData
-          ? (new Date().getTime() -
-                parseInt(raceParticipant.liveData.startedAt.toString())) /
-            1000
+          ? raceParticipant.liveData.currentTime / 1000 +
+            (new Date().getTime() - raceParticipant.liveData.splitStartedAt) /
+                1000
           : getTimerOffsetForRace(race);
 
     useEffect(() => {
@@ -69,11 +69,10 @@ export const RaceParticipantTimer = ({
             const newoffset = raceParticipant.finalTime
                 ? raceParticipant.finalTime / 1000
                 : raceParticipant.liveData
-                  ? (new Date().getTime() -
-                        parseInt(
-                            raceParticipant.liveData.startedAt.toString(),
-                        )) /
-                    1000
+                  ? raceParticipant.liveData.currentTime / 1000 +
+                    (new Date().getTime() -
+                        raceParticipant.liveData.splitStartedAt) /
+                        1000
                   : getTimerOffsetForRace(race);
             timer.setTime(newoffset);
         }

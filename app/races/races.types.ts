@@ -95,6 +95,7 @@ export interface RaceLiveData {
     gameTime: boolean;
     // Important: with this info we can know how far into a split the runner is. Useful to infer percentage in between splits.
     startedAt: number;
+    splitStartedAt: number;
     currentSplitName: string;
     // Not very stable, but can use it
     currentPrediction: number | null;
