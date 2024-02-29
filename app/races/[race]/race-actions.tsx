@@ -13,6 +13,8 @@ import { JoinRaceForm } from "~app/races/components/forms/join-race-form";
 import { UndoAbandonRaceButton } from "~app/races/components/buttons/undo-abandon-race-button";
 import { UndoConfirmButton } from "~app/races/components/buttons/undo-confirm-button";
 import { UndoFinishButton } from "~app/races/components/buttons/undo-finish-button";
+import { ResetAbandonedRaceButton } from "~app/races/components/buttons/reset-abandoned-race-button";
+import { isRaceModerator } from "~src/rbac/confirm-permission";
 
 export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
     if (!user?.username) return null;
@@ -58,6 +60,15 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
         return null;
     if (userConfirmed && loggedinUserParticipation.comment && !userCreatedRace)
         return null;
+
+    const everyoneAbandoned = race.participants?.every(
+        (participant) => participant.status === "abandoned",
+    );
+
+    const raceWasAbandonedMoreThan10MinutesAgo =
+        everyoneAbandoned &&
+        new Date().getTime() - new Date(race.endTime as string).getTime() >
+            1000 * 60 * 10;
 
     return (
         <div
@@ -112,6 +123,14 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
                     )}
                 </div>
             )}
+            {everyoneAbandoned &&
+                isRaceModerator(race, user) &&
+                !raceWasAbandonedMoreThan10MinutesAgo && (
+                    <ResetAbandonedRaceButton
+                        raceId={race.raceId}
+                        className={"w-100 fs-5 mb-2"}
+                    />
+                )}
             <CreateNextRace race={race} user={user} className={"w-100 fs-5"} />
             {raceStarted && (userIsReady || userStarted) && (
                 <div>
