@@ -5,16 +5,17 @@ export const substitutePercentageWithLiveData = (
 ): RaceParticipantWithLiveData => {
     if (!participant.liveData) return participant;
 
-    participant.liveData.runPercentageTime =
-        getRaceParticipantPercentageTime(participant) ||
-        participant.liveData.runPercentageTime;
-
     participant.liveData.runPercentageSplits =
         getRaceParticipantPercentageSplits(participant) ||
         participant.liveData.runPercentageSplits;
 
+    participant.liveData.runPercentageTime =
+        getRaceParticipantPercentageTime(participant) ||
+        participant.liveData.runPercentageTime;
+
     return participant;
 };
+
 export const getRaceParticipantPercentageTime = (
     participant: RaceParticipantWithLiveData,
 ): number | null | undefined => {
@@ -24,14 +25,10 @@ export const getRaceParticipantPercentageTime = (
         return null;
     }
 
-    let expectedSplitDuration = liveData.timeToNextSplit;
+    const expectedSplitDuration = liveData.timeToNextSplit;
 
     if (!expectedSplitDuration) {
-        if (!participant.pb) {
-            return liveData.runPercentageSplits;
-        }
-
-        expectedSplitDuration = parseInt(participant.pb) / liveData.totalSplits;
+        return null;
     }
 
     const maximumTime = liveData.currentTime + expectedSplitDuration;
