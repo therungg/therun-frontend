@@ -228,6 +228,7 @@ export type RaceMessageType =
     | "race-finish"
     | "race-rated"
     | "race-stats-parsed"
+    | "race-reset"
     | "participant-join"
     | "participant-unjoin"
     | "participant-ready"

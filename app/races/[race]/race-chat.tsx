@@ -205,6 +205,10 @@ const getRaceMessage = (message: RaceMessage) => {
             const data = message.data as RaceMessageModeratorData;
             return `Race was canceled by ${data.moderator}`;
         }
+        case "race-reset": {
+            const data = message.data as RaceMessageModeratorData;
+            return `Race was reset to starting state by ${data.moderator}. Starting over!`;
+        }
         case "race-finish":
             return "Everyone is done. The race is finished";
         case "race-rated":
