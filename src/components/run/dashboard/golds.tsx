@@ -29,7 +29,7 @@ export const Golds = ({
     const [sortColumn, setSortColumn] = useState("date");
     const [sortAsc, setSortAsc] = useState(true);
     const [useHistory, setUseHistory] = useState(
-        history.length > 20000
+        history.length > 10000
             ? [...history]
             : JSON.parse(JSON.stringify(history)),
     );
@@ -259,7 +259,11 @@ export const Golds = ({
             return runHistory;
         });
 
-        setUseHistory(newHistory);
+        setUseHistory(
+            newHistory.length > 10000
+                ? [...newHistory]
+                : JSON.parse(JSON.stringify(newHistory)),
+        );
     };
 
     const removeSplitNFromSplits = (n: number) => {
@@ -388,7 +392,11 @@ export const Golds = ({
                                         JSON.parse(JSON.stringify(splits)),
                                     );
                                     setUseHistory(
-                                        JSON.parse(JSON.stringify(history)),
+                                        history.length > 10000
+                                            ? [...history]
+                                            : JSON.parse(
+                                                  JSON.stringify(history),
+                                              ),
                                     );
                                     setHasMergedSplits(false);
                                 }}
