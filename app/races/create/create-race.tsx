@@ -3,18 +3,40 @@
 // eslint-disable-next-line import/named
 import { useFormState, useFormStatus } from "react-dom";
 
-import { Accordion, Button, Form } from "react-bootstrap";
+import { Accordion, Button, Col, Form, Row } from "react-bootstrap";
 import { createRace } from "~src/actions/races/create-race.action";
-import React from "react";
+import React, { useState } from "react";
 import {
     Breadcrumb,
     BreadcrumbItem,
 } from "~src/components/breadcrumbs/breadcrumb";
 import { UnderlineTooltip } from "~src/components/tooltip";
 import { GameCategoryInput } from "~src/components/form/game-input";
+import { RaceStartMethodType } from "~app/races/races.types";
 
 export default function CreateRace() {
+    function getInitialStartDateInput() {
+        const date = new Date();
+        date.setHours(date.getHours() + 1);
+        if (date.getMinutes() > 0 || date.getSeconds() > 0) {
+            date.setHours(date.getHours() + 1);
+        }
+        date.setMinutes(0);
+        date.setSeconds(0);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0"); // Months start at 0!
+        const day = String(date.getDate()).padStart(2, "0");
+        const hours = String(date.getHours()).padStart(2, "0");
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+
+        return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+
     const [state, formAction] = useFormState(createRace, { message: "" });
+    const [showStartDate, setShowStartDate] = useState(false);
+    const [startDateInput, setStartDateInput] = useState(
+        getInitialStartDateInput(),
+    );
 
     const breadcrumbs: BreadcrumbItem[] = [
         { content: "Races", href: "/races" },
@@ -36,31 +58,35 @@ export default function CreateRace() {
                                 Optional Race Options
                             </Accordion.Header>
                             <Accordion.Body>
-                                <div className={"row g-3 mb-3"}>
-                                    <Form.Group controlId={"customName"}>
-                                        <Form.Label>Race Name</Form.Label>
-                                        <Form.Control
-                                            name={"customName"}
-                                            type={"text"}
-                                            placeholder={"Enter Custom Name"}
-                                            required={false}
-                                        />
-                                    </Form.Group>
-                                </div>
-                                <div className={"row g-3 mb-3"}>
-                                    <Form.Group controlId={"description"}>
-                                        <Form.Label>Description</Form.Label>
-                                        <Form.Control
-                                            as={"textarea"}
-                                            name={"description"}
-                                            type={"textarea"}
-                                            placeholder={
-                                                "Description eg. bingo seed or tournament name"
-                                            }
-                                            required={false}
-                                        />
-                                    </Form.Group>
-                                </div>
+                                <Row className={"g-3 mb-3"}>
+                                    <Col xl={6} lg={12}>
+                                        <Form.Group controlId={"customName"}>
+                                            <Form.Label>Race Name</Form.Label>
+                                            <Form.Control
+                                                name={"customName"}
+                                                type={"text"}
+                                                placeholder={
+                                                    "Enter Custom Name"
+                                                }
+                                                required={false}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                    <Col xl={6} lg={12}>
+                                        <Form.Group controlId={"description"}>
+                                            <Form.Label>Description</Form.Label>
+                                            <Form.Control
+                                                as={"textarea"}
+                                                name={"description"}
+                                                type={"textarea"}
+                                                placeholder={
+                                                    "Description eg. bingo seed or tournament name"
+                                                }
+                                                required={false}
+                                            />
+                                        </Form.Group>
+                                    </Col>
+                                </Row>
                                 <div className={"row g-3 mb-3 d-flex"}>
                                     <Form.Group controlId={"forceStream"}>
                                         <Form.Label>
@@ -124,6 +150,77 @@ export default function CreateRace() {
                                             defaultValue={10}
                                         />
                                     </Form.Group>
+                                </div>
+                                <div className={"g-3 mb-3"}>
+                                    <div>
+                                        <Form.Label>Start Condition</Form.Label>
+                                    </div>
+                                    {(
+                                        [
+                                            "everyone-ready",
+                                            "moderator",
+                                            "datetime",
+                                        ] as RaceStartMethodType[]
+                                    ).map((type) => {
+                                        const labels = {
+                                            "everyone-ready":
+                                                "Start countdown immediately when everyone is ready",
+                                            moderator:
+                                                "Start countdown manually after everyone is ready",
+                                            datetime:
+                                                "Start countdown at a specified time",
+                                        };
+                                        return (
+                                            <Form.Check
+                                                key={type}
+                                                inline={false}
+                                                label={labels[type]}
+                                                name={"startMethod"}
+                                                type={"radio"}
+                                                id={type}
+                                                value={type}
+                                                defaultChecked={
+                                                    type === "everyone-ready"
+                                                }
+                                                onChange={() => {
+                                                    setShowStartDate(
+                                                        type === "datetime",
+                                                    );
+                                                }}
+                                            />
+                                        );
+                                    })}
+                                    {showStartDate && (
+                                        <>
+                                            <input
+                                                className={"form-control"}
+                                                style={{
+                                                    width: "15rem",
+                                                }}
+                                                type="datetime-local"
+                                                id="startTimeInput"
+                                                name="startTimeInput"
+                                                value={startDateInput}
+                                                onChange={(event) => {
+                                                    setStartDateInput(
+                                                        event.target.value,
+                                                    );
+                                                }}
+                                            />
+                                            <input
+                                                hidden
+                                                id="startTime"
+                                                name="startTime"
+                                                value={
+                                                    startDateInput
+                                                        ? new Date(
+                                                              startDateInput,
+                                                          ).toISOString()
+                                                        : ""
+                                                }
+                                            />
+                                        </>
+                                    )}
                                 </div>
                                 <div className={"row g-3 mb-3"}>
                                     <Form.Group controlId={"ranked"}>

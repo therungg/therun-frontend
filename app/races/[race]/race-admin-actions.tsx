@@ -3,6 +3,7 @@ import { User } from "../../../types/session.types";
 import { isRaceModerator } from "~src/rbac/confirm-permission";
 import { AbortRaceButton } from "~app/races/components/buttons/abort-race-button";
 import { Button } from "react-bootstrap";
+import { StartRaceButton } from "~app/races/components/buttons/start-race-button";
 
 export const RaceAdminActions = ({
     race,
@@ -20,6 +21,14 @@ export const RaceAdminActions = ({
         return <></>;
     }
 
+    const raceCanBeStarted =
+        race.startMethod === "moderator" &&
+        race.participants &&
+        race.participants.length > 1 &&
+        race.participants?.every(
+            (participant) => participant.status === "ready",
+        );
+
     return (
         <div
             className={
@@ -31,6 +40,12 @@ export const RaceAdminActions = ({
         >
             <span className={"h4 w-100 flex-center"}>Moderator actions</span>
             <hr />
+            {raceCanBeStarted && (
+                <StartRaceButton
+                    raceId={race.raceId}
+                    className={"w-100 fs-5 mt-2 mb-2"}
+                />
+            )}
             <a href={`/races/${race.raceId}/edit`}>
                 <Button variant={"primary"} className={"w-100 fs-5"}>
                     Edit race

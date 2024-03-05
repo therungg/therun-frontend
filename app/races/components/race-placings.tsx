@@ -64,6 +64,8 @@ const RacePlacingsFinishedRace = ({ race, amount = 1 }: RacePlacingsProps) => {
 const RacePlacingsProgressRace = ({ race }: RacePlacingsProps) => {
     const firstPlace = sortRaceParticipants(race)[0];
 
+    if (!firstPlace) return <></>;
+
     if (firstPlace.status === "finished" || firstPlace.status === "confirmed") {
         return (
             <>

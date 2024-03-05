@@ -196,7 +196,7 @@ const getRaceMessage = (message: RaceMessage) => {
         case "race-edited":
             return `Race info was edited by ${user}`;
         case "race-starting":
-            return "Everyone is ready. Countdown started";
+            return "Countdown started!";
         case "race-start-canceled":
             return "The start was canceled";
         case "race-started":
@@ -208,6 +208,10 @@ const getRaceMessage = (message: RaceMessage) => {
         case "race-reset": {
             const data = message.data as RaceMessageModeratorData;
             return `Race was reset to starting state by ${data.moderator}. Starting over!`;
+        }
+        case "race-moderator-start": {
+            const data = message.data as RaceMessageModeratorData;
+            return `Race was started by ${data.moderator}`;
         }
         case "race-finish":
             return "Everyone is done. The race is finished";

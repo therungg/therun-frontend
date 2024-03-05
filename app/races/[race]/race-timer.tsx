@@ -25,14 +25,19 @@ export const RaceTimer = ({ race }: { race: Race }) => {
         return (
             <Countdown
                 date={race.startTime}
-                renderer={({ seconds, completed }) => {
+                renderer={({ minutes, seconds, completed }) => {
                     if (!completed) {
+                        const minuteString =
+                            minutes > 0
+                                ? `${minutes.toString().padStart(2, "0")}:`
+                                : "";
                         return (
                             <span
                                 suppressHydrationWarning={true}
                                 className={"text-nowrap"}
                             >
-                                Starts in {seconds}...
+                                Starts in {minuteString}
+                                {seconds}...
                             </span>
                         );
                     }
