@@ -4,6 +4,7 @@ import { PersonIcon } from "~src/icons/person-icon";
 import { Card, Col, Row } from "react-bootstrap";
 import { RaceParticipantStatusOverview } from "~app/races/components/race-participant-status-overview";
 import { RacePlacings } from "~app/races/components/race-placings";
+import { LocalizedTime } from "~src/components/util/datetime";
 
 export const RaceHeader = ({ race }: { race: Race }) => {
     return (
@@ -111,6 +112,18 @@ export const RaceHeader = ({ race }: { race: Race }) => {
                                     "d-flex align-items-end text-truncate"
                                 }
                             >
+                                {race.status === "pending" &&
+                                    race.willStartAt &&
+                                    race.startMethod === "datetime" && (
+                                        <span suppressHydrationWarning={true}>
+                                            Start time:{" "}
+                                            <LocalizedTime
+                                                date={
+                                                    new Date(race.willStartAt)
+                                                }
+                                            />
+                                        </span>
+                                    )}
                                 <RacePlacings race={race} />
                             </div>
                         </div>

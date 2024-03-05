@@ -15,6 +15,8 @@ export type RaceParticipantStatus =
     | "abandoned"
     | "unjoined";
 
+export type RaceStartMethodType = "everyone-ready" | "datetime" | "moderator";
+
 export interface Race {
     raceId: string;
     creator: string;
@@ -52,6 +54,8 @@ export interface Race {
     ranked: boolean;
     autoConfirm: boolean;
     countdownSeconds: number;
+    startMethod: RaceStartMethodType;
+    willStartAt?: string | null;
 }
 
 export interface RaceResult {
@@ -123,6 +127,8 @@ export interface CreateRaceInput {
     ranked?: boolean;
     autoConfirm?: boolean;
     countdown?: number;
+    startMethod?: RaceStartMethodType;
+    startTime?: string;
 }
 
 export interface EditRaceInput {
@@ -229,6 +235,9 @@ export type RaceMessageType =
     | "race-rated"
     | "race-stats-parsed"
     | "race-reset"
+    | "race-moderator-start"
+    | "race-moderator-start-fail"
+    | "race-admin-kick"
     | "participant-join"
     | "participant-unjoin"
     | "participant-ready"

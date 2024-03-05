@@ -143,7 +143,7 @@ const RaceParticipantStatus = ({
                 </span>
             )}
             {participant.status === "started" && (
-                <div>
+                <div suppressHydrationWarning={true}>
                     <RaceParticipantTimer
                         raceParticipant={participant}
                         race={race}
