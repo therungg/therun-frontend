@@ -1,4 +1,7 @@
-import { PaginatedRaces, RaceGameStatsByGame } from "~app/races/races.types";
+import {
+    PaginatedRaces,
+    RaceGameStatsByGameWithCategoryStats,
+} from "~app/races/races.types";
 import { StatsPerGame } from "~app/races/stats/race-stats-per-game";
 import { Col, Row } from "react-bootstrap";
 import {
@@ -13,7 +16,7 @@ export const GameStats = ({
     stats,
     paginatedRaces,
 }: {
-    stats: RaceGameStatsByGame;
+    stats: RaceGameStatsByGameWithCategoryStats;
     paginatedRaces: PaginatedRaces;
 }) => {
     const breadcrumbs: BreadcrumbItem[] = [

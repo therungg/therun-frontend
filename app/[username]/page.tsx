@@ -14,6 +14,7 @@ import { TournamentPage } from "~app/tournaments/[tournament]/page";
 import { Metadata } from "next";
 import buildMetadata, { getUserProfilePhoto } from "~src/utils/metadata";
 import { CombinedTournamentPage } from "~app/tournaments/[tournament]/combined-tournament-page";
+import { getUserRaceStats } from "~src/lib/races";
 
 export const revalidate = 0;
 
@@ -53,7 +54,6 @@ export default async function Page({ params, searchParams }: PageProps) {
     });
 
     const allGlobalGameData = await Promise.all(promises);
-    const userData = await getGlobalUser(username);
 
     const hasGameTime = !!runs.find((run) => run.hasGameTime);
 
@@ -75,8 +75,19 @@ export default async function Page({ params, searchParams }: PageProps) {
         });
     }
 
-    const liveData = await getLiveRunForUser(username);
-    const session = await getSession();
+    // const userData = await getGlobalUser(username);
+    // const liveData = await getLiveRunForUser(username);
+    // const session = await getSession();
+
+    const dataPromises = [
+        getGlobalUser(username),
+        getLiveRunForUser(username),
+        getUserRaceStats(username),
+        getSession(),
+    ];
+
+    const [userData, liveData, raceStats, session] =
+        await Promise.all(dataPromises);
 
     return (
         <UserProfile
@@ -88,6 +99,7 @@ export default async function Page({ params, searchParams }: PageProps) {
             session={session}
             userData={userData}
             allGlobalGameData={allGlobalGameData}
+            raceStats={raceStats}
         />
     );
 }

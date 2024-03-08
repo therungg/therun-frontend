@@ -1,7 +1,4 @@
-import {
-    PaginatedRaces,
-    RaceGameStatsByCategory,
-} from "~app/races/races.types";
+import { RaceGameStatsByCategory } from "~app/races/races.types";
 import React from "react";
 import { CategoryStatsHeader } from "~app/races/stats/[game]/[category]/category-stats-header";
 import { Col, Row } from "react-bootstrap";
@@ -9,16 +6,19 @@ import {
     Breadcrumb,
     BreadcrumbItem,
 } from "~src/components/breadcrumbs/breadcrumb";
-import { FinishedRacesByGameTable } from "~app/races/stats/[game]/finished-races-by-game-table";
 import RaceGameContextProvider from "~app/races/context/race-game-context-provider";
 import { CategoryUserTable } from "~app/races/stats/[game]/[category]/category-user-table";
+import {
+    CategoryLeaderboards,
+    LeaderboardData,
+} from "~app/races/stats/[game]/[category]/category-leaderboards";
 
 export const CategoryStats = ({
     categoryStats,
-    paginatedRaces,
+    leaderboards,
 }: {
     categoryStats: RaceGameStatsByCategory;
-    paginatedRaces: PaginatedRaces;
+    leaderboards: LeaderboardData[];
 }) => {
     const { stats, users } = categoryStats;
     const [game, category] = stats.displayValue.split("#");
@@ -51,11 +51,8 @@ export const CategoryStats = ({
                         </div>
                     </Col>
                     <Col xs={12} lg={4}>
-                        <h2>Recent Races</h2>
-                        <FinishedRacesByGameTable
-                            game={stats.displayValue}
-                            paginatedRaces={paginatedRaces}
-                        />
+                        <h2>Leaderboards</h2>
+                        <CategoryLeaderboards leaderboards={leaderboards} />
                     </Col>
                 </Row>
             </RaceGameContextProvider>

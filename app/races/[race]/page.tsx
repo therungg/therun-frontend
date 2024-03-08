@@ -1,4 +1,8 @@
-import { getRaceByRaceId, getRaceMessages } from "~src/lib/races";
+import {
+    getRaceByRaceId,
+    getRaceMessages,
+    getTimeAndMmrLeaderboards,
+} from "~src/lib/races";
 import { RaceDetail } from "~app/races/[race]/race-view";
 import { getSession } from "~src/actions/session.action";
 import { Race, RaceMessage } from "~app/races/races.types";
@@ -6,6 +10,7 @@ import { User } from "../../../types/session.types";
 import { sortRaceParticipants } from "~app/races/[race]/sort-race-participants";
 import { Metadata } from "next";
 import buildMetadata from "~src/utils/metadata";
+import { safeEncodeURI } from "~src/utils/uri";
 
 interface PageProps {
     params: { race: string };
@@ -27,6 +32,18 @@ export default async function RaceDetailPage({ params }: PageProps) {
     ];
 
     race.participants = sortRaceParticipants(race);
+
+    const { timeLeaderboards, mmrLeaderboards } =
+        await getTimeAndMmrLeaderboards(
+            safeEncodeURI(race.game),
+            safeEncodeURI(race.category),
+            1,
+            3,
+            new Date().toISOString().slice(0, 7),
+        );
+
+    race.mmrLeaderboards = mmrLeaderboards;
+    race.timeLeaderboards = timeLeaderboards;
 
     return <RaceDetail race={race} user={session} messages={messages} />;
 }

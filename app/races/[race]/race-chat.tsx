@@ -219,6 +219,8 @@ const getRaceMessage = (message: RaceMessage) => {
             return "Participant ratings have been updated";
         case "race-stats-parsed":
             return "Race statistics have been updated";
+        case "race-leaderboards-updated":
+            return "Race leaderboards have been updated";
         case "participant-join":
             return (
                 <>

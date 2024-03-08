@@ -3,14 +3,20 @@
 import {
     GameStats,
     GlobalStats,
+    PaginatedRaceMmrStats,
     PaginatedRaces,
+    PaginatedRaceTimeStats,
     Race,
     RaceGameStatsByCategory,
     RaceGameStatsByGame,
     RaceMessage,
+    RaceMmrStat,
     RaceParticipant,
+    RaceTimeStat,
+    UserStats,
 } from "~app/races/races.types";
 import { PaginationFetcher } from "~src/components/pagination/pagination.types";
+import { URLSearchParams } from "next/dist/compiled/@edge-runtime/primitives";
 
 const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
 const paginationPageSize = 12;
@@ -72,6 +78,14 @@ export const getRaceParticipationsByUser = async (
     const races = await fetch(url, { next: { revalidate: 0 } });
 
     return (await races.json()).result as RaceParticipant[];
+};
+
+export const getUserRaceStats = async (user: string) => {
+    const url = `${racesApiUrl}/stats/users/${user}`;
+
+    const raceStats = await fetch(url, { next: { revalidate: 0 } });
+
+    return (await raceStats.json()).result as UserStats;
 };
 
 export const getRaceByRaceId = async (raceId: string): Promise<Race> => {
@@ -138,4 +152,73 @@ export const getRaceMessages = async (
     const messages = await fetch(url, { next: { revalidate: 0 } });
 
     return (await messages.json()).result;
+};
+
+export const getTimeLeaderboards = async (
+    game: string,
+    category: string,
+    page = 1,
+    pageSize = 10,
+    unique: boolean = true,
+    month: string | null = null,
+): Promise<PaginatedRaceTimeStats> => {
+    const searchParams = new URLSearchParams();
+
+    searchParams.set("page", page.toString());
+    searchParams.set("pageSize", pageSize.toString());
+
+    if (month) {
+        searchParams.set("month", month);
+    }
+
+    if (unique) {
+        searchParams.set("unique", "true");
+    }
+
+    const url = `${racesApiUrl}/timeLeaderboards/${game}/${category}?${searchParams.toString()}`;
+
+    const messages = await fetch(url, { next: { revalidate: 0 } });
+
+    return (await messages.json()).result;
+};
+
+export const getMmrLeaderboards = async (
+    game: string,
+    category: string,
+    page = 1,
+    pageSize = 10,
+): Promise<PaginatedRaceMmrStats> => {
+    const searchParams = new URLSearchParams();
+
+    searchParams.set("page", page.toString());
+    searchParams.set("pageSize", pageSize.toString());
+
+    const url = `${racesApiUrl}/mmrLeaderboards/${game}/${category}?${searchParams.toString()}`;
+
+    const messages = await fetch(url, { next: { revalidate: 0 } });
+
+    return (await messages.json()).result;
+};
+
+export const getTimeAndMmrLeaderboards = async (
+    game: string,
+    category: string,
+    page = 1,
+    pageSize = 3,
+    month: string | null = null,
+): Promise<{
+    timeLeaderboards: RaceTimeStat[];
+    mmrLeaderboards: RaceMmrStat[];
+}> => {
+    const promises = [
+        getTimeLeaderboards(game, category, page, pageSize, false, month),
+        getMmrLeaderboards(game, category, page, pageSize),
+    ];
+
+    const [timeLeaderboards, mmrLeaderboards] = await Promise.all(promises);
+
+    return {
+        timeLeaderboards: timeLeaderboards.items as RaceTimeStat[],
+        mmrLeaderboards: mmrLeaderboards.items as RaceMmrStat[],
+    };
 };
