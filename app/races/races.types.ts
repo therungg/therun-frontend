@@ -56,6 +56,8 @@ export interface Race {
     countdownSeconds: number;
     startMethod: RaceStartMethodType;
     willStartAt?: string | null;
+    timeLeaderboards: RaceTimeStat[];
+    mmrLeaderboards: RaceMmrStat[];
 }
 
 export interface RaceResult {
@@ -186,6 +188,11 @@ export interface GameStats extends SpecificStats {
     totalFinishedParticipations: number;
 }
 
+export interface CategoryStats extends GameStats {
+    bestMmrs: RaceMmrStat[];
+    bestTimes: RaceTimeStat[];
+}
+
 export interface UserStats extends SpecificStats {
     totalFinishedRaces: number;
     rating: number;
@@ -234,6 +241,7 @@ export type RaceMessageType =
     | "race-finish"
     | "race-rated"
     | "race-stats-parsed"
+    | "race-leaderboards-updated"
     | "race-reset"
     | "race-moderator-start"
     | "race-moderator-start-fail"
@@ -262,7 +270,25 @@ export interface RaceGameStatsByGame {
     categories: GameStats[];
 }
 
+export interface RaceGameStatsByGameWithCategoryStats
+    extends RaceGameStatsByGame {
+    categories: CategoryStats[];
+}
+
 export interface RaceGameStatsByCategory {
     stats: GameStats;
     users: UserStats[];
+}
+
+export type PaginatedRaceTimeStats = PaginatedData<RaceTimeStat>;
+export type PaginatedRaceMmrStats = PaginatedData<RaceMmrStat>;
+
+export interface RaceTimeStat {
+    user: string;
+    time: number;
+}
+
+export interface RaceMmrStat {
+    user: string;
+    mmr: number;
 }

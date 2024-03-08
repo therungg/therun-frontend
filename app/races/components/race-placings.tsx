@@ -48,9 +48,11 @@ const RacePlacingsFinishedRace = ({ race, amount = 1 }: RacePlacingsProps) => {
                             />
                         )}
                         {result.finalTime && (
-                            <DurationToFormatted
-                                duration={result.finalTime as number}
-                            />
+                            <b>
+                                <DurationToFormatted
+                                    duration={result.finalTime as number}
+                                />
+                            </b>
                         )}
                         {result.status === "abandoned" && <span>DNF</span>} -{" "}
                         <UserLink username={result.name} parentIsUrl={true} />

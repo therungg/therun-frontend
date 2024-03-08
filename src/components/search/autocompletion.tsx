@@ -102,8 +102,16 @@ export const AutoCompletion = () => {
                 category,
             )}`;
             return (
-                <li key={value}>
-                    <a key={value} href={url} title={value}>
+                <li key={value} onClick={() => {}}>
+                    <a
+                        key={value}
+                        href={url}
+                        title={value}
+                        className={"w-100 h-100"}
+                        style={{
+                            display: "inherit",
+                        }}
+                    >
                         {value}
                     </a>
                 </li>
@@ -113,7 +121,15 @@ export const AutoCompletion = () => {
         const url = type == "users" ? `/${result}` : `/games/${result}`;
         return (
             <li key={result}>
-                <a key={result} href={url} title={result}>
+                <a
+                    key={result}
+                    href={url}
+                    title={result}
+                    className={"w-100 h-100"}
+                    style={{
+                        display: "inherit",
+                    }}
+                >
                     {result}
                 </a>
             </li>

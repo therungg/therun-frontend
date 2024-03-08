@@ -28,7 +28,7 @@ export const RaceParticipantOverview = ({
 
     return (
         <div className={"px-4 pt-2 pb-3 mb-3 card game-border mh-100"}>
-            <span className={"h4 flex-center mb-3"}>Standings</span>
+            <span className={"h4 flex-center mb-0"}>Standings</span>
             <hr />
             <table className={"w-100 text-end"}>
                 <thead>

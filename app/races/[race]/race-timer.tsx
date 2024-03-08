@@ -91,14 +91,19 @@ export const RaceParticipantTimer = ({
     }, [raceParticipant.status]);
 
     useEffect(() => {
-        if (raceStatus === "progress" && raceParticipant.status === "joined") {
+        if (
+            raceStatus === "progress" &&
+            (raceParticipant.status === "ready" ||
+                raceParticipant.status === "started")
+        ) {
             timer.startTimer();
         }
     }, [raceStatus]);
 
     const timer = useSpeedrunTimer(
         initialOffset,
-        raceParticipant.status === "started",
+        raceParticipant.status === "started" ||
+            (raceParticipant.status === "ready" && raceStatus === "progress"),
     );
 
     return timer.render();
