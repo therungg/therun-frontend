@@ -48,9 +48,11 @@ const RacePlacingsFinishedRace = ({ race, amount = 1 }: RacePlacingsProps) => {
                             />
                         )}
                         {result.finalTime && (
-                            <DurationToFormatted
-                                duration={result.finalTime as number}
-                            />
+                            <b>
+                                <DurationToFormatted
+                                    duration={result.finalTime as number}
+                                />
+                            </b>
                         )}
                         {result.status === "abandoned" && <span>DNF</span>} -{" "}
                         <UserLink username={result.name} parentIsUrl={true} />
@@ -63,6 +65,8 @@ const RacePlacingsFinishedRace = ({ race, amount = 1 }: RacePlacingsProps) => {
 
 const RacePlacingsProgressRace = ({ race }: RacePlacingsProps) => {
     const firstPlace = sortRaceParticipants(race)[0];
+
+    if (!firstPlace) return <></>;
 
     if (firstPlace.status === "finished" || firstPlace.status === "confirmed") {
         return (

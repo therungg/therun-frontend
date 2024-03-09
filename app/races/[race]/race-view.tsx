@@ -21,6 +21,8 @@ import {
 import { RaceStream } from "~app/races/[race]/race-stream";
 import { RaceChat } from "~app/races/[race]/race-chat";
 import { RaceAdminActions } from "~app/races/[race]/race-admin-actions";
+import { RaceStartConditionInformation } from "~app/races/[race]/race-start-condition-information";
+import { RaceStats } from "~app/races/[race]/race-stats";
 
 interface RaceDetailProps {
     race: Race;
@@ -43,9 +45,18 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
                 <Col xxl={8} lg={7} xs={12}>
                     <RaceHeader race={raceState} />
                     <Col className={"flex-center justify-content-between py-2"}>
-                        <div className={"fs-1 align-self-center"}>
-                            <RaceTimer race={raceState} />
-                        </div>
+                        {raceState.status !== "pending" && (
+                            <div className={"fs-1 align-self-center"}>
+                                <RaceTimer race={raceState} />
+                            </div>
+                        )}
+                        {raceState.status === "pending" && (
+                            <div className={"fs-3 align-self-center"}>
+                                <RaceStartConditionInformation
+                                    race={raceState}
+                                />
+                            </div>
+                        )}
                     </Col>
                     <div className={"d-lg-none"}>
                         <RaceParticipantOverview race={raceState} />
@@ -55,6 +66,7 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
                             raceMessages={messagesState}
                             race={raceState}
                         />
+                        <RaceStats race={race} />
                     </div>
                     <div className={"pb-4"}>
                         <RaceParticipantDetail
@@ -72,6 +84,7 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
                         race={raceState}
                         user={user}
                     />
+                    <RaceStats race={race} />
                     <RaceStream stream={stream} />
                 </Col>
             </Row>

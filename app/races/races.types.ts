@@ -15,6 +15,8 @@ export type RaceParticipantStatus =
     | "abandoned"
     | "unjoined";
 
+export type RaceStartMethodType = "everyone-ready" | "datetime" | "moderator";
+
 export interface Race {
     raceId: string;
     creator: string;
@@ -52,6 +54,10 @@ export interface Race {
     ranked: boolean;
     autoConfirm: boolean;
     countdownSeconds: number;
+    startMethod: RaceStartMethodType;
+    willStartAt?: string | null;
+    timeLeaderboards: RaceTimeStat[];
+    mmrLeaderboards: RaceMmrStat[];
 }
 
 export interface RaceResult {
@@ -95,6 +101,7 @@ export interface RaceLiveData {
     gameTime: boolean;
     // Important: with this info we can know how far into a split the runner is. Useful to infer percentage in between splits.
     startedAt: number;
+    splitStartedAt: number;
     currentSplitName: string;
     // Not very stable, but can use it
     currentPrediction: number | null;
@@ -122,6 +129,8 @@ export interface CreateRaceInput {
     ranked?: boolean;
     autoConfirm?: boolean;
     countdown?: number;
+    startMethod?: RaceStartMethodType;
+    startTime?: string;
 }
 
 export interface EditRaceInput {
@@ -179,6 +188,11 @@ export interface GameStats extends SpecificStats {
     totalFinishedParticipations: number;
 }
 
+export interface CategoryStats extends GameStats {
+    bestMmrs: RaceMmrStat[];
+    bestTimes: RaceTimeStat[];
+}
+
 export interface UserStats extends SpecificStats {
     totalFinishedRaces: number;
     rating: number;
@@ -227,6 +241,11 @@ export type RaceMessageType =
     | "race-finish"
     | "race-rated"
     | "race-stats-parsed"
+    | "race-leaderboards-updated"
+    | "race-reset"
+    | "race-moderator-start"
+    | "race-moderator-start-fail"
+    | "race-admin-kick"
     | "participant-join"
     | "participant-unjoin"
     | "participant-ready"
@@ -251,7 +270,25 @@ export interface RaceGameStatsByGame {
     categories: GameStats[];
 }
 
+export interface RaceGameStatsByGameWithCategoryStats
+    extends RaceGameStatsByGame {
+    categories: CategoryStats[];
+}
+
 export interface RaceGameStatsByCategory {
     stats: GameStats;
     users: UserStats[];
+}
+
+export type PaginatedRaceTimeStats = PaginatedData<RaceTimeStat>;
+export type PaginatedRaceMmrStats = PaginatedData<RaceMmrStat>;
+
+export interface RaceTimeStat {
+    user: string;
+    time: number;
+}
+
+export interface RaceMmrStat {
+    user: string;
+    mmr: number;
 }

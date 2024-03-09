@@ -25,14 +25,19 @@ export const RaceTimer = ({ race }: { race: Race }) => {
         return (
             <Countdown
                 date={race.startTime}
-                renderer={({ seconds, completed }) => {
+                renderer={({ minutes, seconds, completed }) => {
                     if (!completed) {
+                        const minuteString =
+                            minutes > 0
+                                ? `${minutes.toString().padStart(2, "0")}:`
+                                : "";
                         return (
                             <span
                                 suppressHydrationWarning={true}
                                 className={"text-nowrap"}
                             >
-                                Starts in {seconds}...
+                                Starts in {minuteString}
+                                {seconds}...
                             </span>
                         );
                     }
@@ -55,9 +60,9 @@ export const RaceParticipantTimer = ({
     const initialOffset = raceParticipant.finalTime
         ? raceParticipant.finalTime / 1000
         : raceParticipant.liveData
-          ? (new Date().getTime() -
-                parseInt(raceParticipant.liveData.startedAt.toString())) /
-            1000
+          ? raceParticipant.liveData.currentTime / 1000 +
+            (new Date().getTime() - raceParticipant.liveData.splitStartedAt) /
+                1000
           : getTimerOffsetForRace(race);
 
     useEffect(() => {
@@ -69,11 +74,10 @@ export const RaceParticipantTimer = ({
             const newoffset = raceParticipant.finalTime
                 ? raceParticipant.finalTime / 1000
                 : raceParticipant.liveData
-                  ? (new Date().getTime() -
-                        parseInt(
-                            raceParticipant.liveData.startedAt.toString(),
-                        )) /
-                    1000
+                  ? raceParticipant.liveData.currentTime / 1000 +
+                    (new Date().getTime() -
+                        raceParticipant.liveData.splitStartedAt) /
+                        1000
                   : getTimerOffsetForRace(race);
             timer.setTime(newoffset);
         }
@@ -87,14 +91,19 @@ export const RaceParticipantTimer = ({
     }, [raceParticipant.status]);
 
     useEffect(() => {
-        if (raceStatus === "progress" && raceParticipant.status === "joined") {
+        if (
+            raceStatus === "progress" &&
+            (raceParticipant.status === "ready" ||
+                raceParticipant.status === "started")
+        ) {
             timer.startTimer();
         }
     }, [raceStatus]);
 
     const timer = useSpeedrunTimer(
         initialOffset,
-        raceParticipant.status === "started",
+        raceParticipant.status === "started" ||
+            (raceParticipant.status === "ready" && raceStatus === "progress"),
     );
 
     return timer.render();

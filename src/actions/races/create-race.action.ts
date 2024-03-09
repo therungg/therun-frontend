@@ -3,7 +3,7 @@
 import { getSession } from "~src/actions/session.action";
 import { getApiKey } from "~src/actions/api-key.action";
 import { confirmPermission } from "~src/rbac/confirm-permission";
-import { CreateRaceInput } from "~app/races/races.types";
+import { CreateRaceInput, RaceStartMethodType } from "~app/races/races.types";
 import Joi from "joi";
 import { redirect } from "next/navigation";
 
@@ -20,6 +20,10 @@ export async function createRace(prevState: any, raceInput: FormData) {
         forceStream: raceInput.get("forceStream") as string,
         password: raceInput.get("password") as string,
         countdown: Number(raceInput.get("countdown")),
+        startMethod: raceInput.get("startMethod") as
+            | RaceStartMethodType
+            | undefined,
+        startTime: raceInput.get("startTime") as string | undefined,
     };
 
     const { error } = validateInput(input);
@@ -78,6 +82,16 @@ export const validateInput = (
             .optional()
             .min(3)
             .max(60 * 60),
+        startMethod: Joi.string()
+            .valid(
+                ...([
+                    "everyone-ready",
+                    "moderator",
+                    "datetime",
+                ] as RaceStartMethodType[]),
+            )
+            .optional(),
+        startTime: Joi.optional(),
     });
 
     return raceSchema.validate(input);

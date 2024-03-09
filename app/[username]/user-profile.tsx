@@ -18,6 +18,8 @@ import { getRunmap } from "~app/[username]/runmap.component";
 import { prepareSessions } from "~app/[username]/prepare-sessions.component";
 import { GlobalGameData } from "~app/[username]/[game]/[run]/run";
 import { TwitchEmbed } from "react-twitch-embed";
+import { UserStats as UserRaceStats } from "~app/races/races.types";
+import { UserRaceStatsTable } from "~src/components/run/user-detail/user-race-stats";
 
 export interface UserPageProps {
     runs: Run[];
@@ -28,6 +30,7 @@ export interface UserPageProps {
     userData: any;
     allGlobalGameData: GlobalGameData[];
     liveData?: LiveRun;
+    raceStats?: UserRaceStats;
 }
 
 const User = ({
@@ -39,6 +42,7 @@ const User = ({
     session,
     allGlobalGameData,
     liveData,
+    raceStats,
 }: UserPageProps) => {
     const [useGameTime, setUseGameTime] = useState(
         hasGameTime && defaultGameTime,
@@ -203,6 +207,9 @@ const User = ({
                             )}
 
                             <UserStats runs={currentRuns} />
+                            {raceStats && (
+                                <UserRaceStatsTable raceStats={raceStats} />
+                            )}
                             {highlightedRun && (
                                 <HighlightedRun run={highlightedRun} />
                             )}

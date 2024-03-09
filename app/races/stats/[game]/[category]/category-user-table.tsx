@@ -9,6 +9,7 @@ import { Table } from "react-bootstrap";
 import { UserLink } from "~src/components/links/links";
 import { DurationToFormatted } from "~src/components/util/datetime";
 import { PaginationSearch } from "~src/components/pagination/pagination-search";
+import { TrophyIcon } from "~src/icons/trophy-icon";
 
 type UserStatsWithRanking = UserStats & { ranking: number };
 
@@ -134,7 +135,21 @@ const CategoryUserTableDisplay = ({
                             const username = user.displayValue.split("#")[2];
                             return (
                                 <tr key={user.displayValue}>
-                                    <td>#{user.ranking}</td>
+                                    <td>
+                                        {user.ranking < 4 ? (
+                                            <TrophyIcon
+                                                trophyColor={
+                                                    user.ranking === 1
+                                                        ? "gold"
+                                                        : user.ranking === 2
+                                                          ? "silver"
+                                                          : "bronze"
+                                                }
+                                            />
+                                        ) : (
+                                            <span>{user.ranking}.</span>
+                                        )}
+                                    </td>
                                     <td>
                                         <UserLink username={username} />
                                     </td>

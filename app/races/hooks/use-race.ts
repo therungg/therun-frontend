@@ -5,7 +5,7 @@ import {
     RaceParticipantWithLiveData,
     WebsocketRaceMessage,
 } from "~app/races/races.types";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     useAllRacesWebsocket,
     useRaceWebsocket,
@@ -20,6 +20,11 @@ const raceMessageIsValid = (
 export const useRace = (race: Race, messages: RaceMessage[]) => {
     const [raceState, setRaceState] = useState(race);
     const [messagesState, setMessagesState] = useState(messages);
+    const raceStateRef = useRef(raceState);
+
+    useEffect(() => {
+        raceStateRef.current = raceState;
+    }, [raceState]);
 
     const lastMessage = useRaceWebsocket(raceState.raceId);
 
@@ -78,6 +83,17 @@ export const useRace = (race: Race, messages: RaceMessage[]) => {
             }
         }
     }, [lastMessage]);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const newRace = { ...raceStateRef.current };
+            newRace.participants = sortRaceParticipants(newRace);
+            return setRaceState(newRace);
+        }, 1000);
+        return () => {
+            clearInterval(interval);
+        };
+    }, []);
 
     return { raceState, messagesState };
 };

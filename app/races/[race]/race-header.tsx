@@ -4,11 +4,13 @@ import { PersonIcon } from "~src/icons/person-icon";
 import { Card, Col, Row } from "react-bootstrap";
 import { RaceParticipantStatusOverview } from "~app/races/components/race-participant-status-overview";
 import { RacePlacings } from "~app/races/components/race-placings";
+import { LocalizedTime } from "~src/components/util/datetime";
+import { safeEncodeURI } from "~src/utils/uri";
 
 export const RaceHeader = ({ race }: { race: Race }) => {
     return (
         <div
-            className={"bg-body-secondary mh-100 card game-border"}
+            className={"bg-body-secondary mh-100 game-border card border-0"}
             style={{ borderColor: race.status === "aborted" ? "red" : "" }}
         >
             <Card className={`game-border h-100`}>
@@ -44,7 +46,13 @@ export const RaceHeader = ({ race }: { race: Race }) => {
                                     color: "var(--bs-link-color)",
                                 }}
                             >
-                                {race.displayGame}
+                                <a
+                                    href={`/races/stats/${safeEncodeURI(
+                                        race.displayGame,
+                                    )}`}
+                                >
+                                    {race.displayGame}
+                                </a>
                             </Card.Title>
                             <span className={"text-nowrap"}>
                                 <span className={"me-1"}>
@@ -111,6 +119,18 @@ export const RaceHeader = ({ race }: { race: Race }) => {
                                     "d-flex align-items-end text-truncate"
                                 }
                             >
+                                {race.status === "pending" &&
+                                    race.willStartAt &&
+                                    race.startMethod === "datetime" && (
+                                        <span suppressHydrationWarning={true}>
+                                            Start time:{" "}
+                                            <LocalizedTime
+                                                date={
+                                                    new Date(race.willStartAt)
+                                                }
+                                            />
+                                        </span>
+                                    )}
                                 <RacePlacings race={race} />
                             </div>
                         </div>

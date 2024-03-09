@@ -1,10 +1,12 @@
 import { Race, RaceParticipantWithLiveData } from "~app/races/races.types";
+import { substitutePercentageWithLiveData } from "~app/races/[race]/set-race-participant-percentages";
 
 export const sortRaceParticipants = (
     race: Race,
 ): RaceParticipantWithLiveData[] => {
-    // return race.participants;
-    const participants = race.participants as RaceParticipantWithLiveData[];
+    const participants = race.participants?.map((participant) =>
+        substitutePercentageWithLiveData(participant),
+    ) as RaceParticipantWithLiveData[];
 
     if (!participants) return [];
 

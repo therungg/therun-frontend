@@ -4,6 +4,7 @@ import React, { ReactElement } from "react";
 import { DurationToFormatted } from "~src/components/util/datetime";
 import { GameImage } from "~src/components/image/gameimage";
 import styles from "~src/components/css/LiveRun.module.scss";
+import { safeEncodeURI } from "~src/utils/uri";
 
 export const GlobalRaceStats = ({
     stats,
@@ -47,7 +48,7 @@ export const GlobalRaceStats = ({
                 {gameStats.map((gameStat) => {
                     return (
                         <a
-                            href={`/races/stats/${encodeURI(
+                            href={`/races/stats/${safeEncodeURI(
                                 gameStat.displayValue,
                             )}`}
                             className={`text-decoration-none`}
