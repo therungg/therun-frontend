@@ -1,10 +1,10 @@
 import {
     Race,
-    RaceMesageParticipantTimeData,
     RaceMessage,
     RaceMessageModeratorData,
     RaceMessageParticipantCommentData,
     RaceMessageParticipantSplitData,
+    RaceMessageParticipantTimeData,
     RaceMessageUserData,
 } from "~app/races/races.types";
 import { SendChatMessageForm } from "~app/races/components/forms/send-chat-message-form";
@@ -310,7 +310,7 @@ const getRaceMessage = (message: RaceMessage) => {
             );
         }
         case "participant-finish": {
-            const data = message.data as RaceMesageParticipantTimeData;
+            const data = message.data as RaceMessageParticipantTimeData;
             return (
                 <>
                     <UserLink icon={false} username={user as string} /> finished
@@ -325,7 +325,7 @@ const getRaceMessage = (message: RaceMessage) => {
             );
         }
         case "participant-confirm": {
-            const data = message.data as RaceMesageParticipantTimeData;
+            const data = message.data as RaceMessageParticipantTimeData;
             return (
                 <>
                     <UserLink icon={false} username={user as string} />{" "}

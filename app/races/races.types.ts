@@ -199,11 +199,11 @@ export interface UserStats extends SpecificStats {
     racePb: number;
 }
 
-export interface RaceMessage {
+export interface RaceMessage<T = RaceMessageData> {
     raceId: string;
     time: string;
     message?: string;
-    data?: RaceMessageData;
+    data?: T;
     type: RaceMessageType;
 }
 
@@ -223,7 +223,7 @@ export interface RaceMessageParticipantSplitData extends RaceMessageUserData {
     percentage: number;
 }
 
-export interface RaceMesageParticipantTimeData extends RaceMessageUserData {
+export interface RaceMessageParticipantTimeData extends RaceMessageUserData {
     time: number;
 }
 

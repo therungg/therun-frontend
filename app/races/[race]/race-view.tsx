@@ -23,6 +23,7 @@ import { RaceChat } from "~app/races/[race]/race-chat";
 import { RaceAdminActions } from "~app/races/[race]/race-admin-actions";
 import { RaceStartConditionInformation } from "~app/races/[race]/race-start-condition-information";
 import { RaceStats } from "~app/races/[race]/race-stats";
+import { RaceProgressGraph } from "~app/races/[race]/race-progress-graph";
 
 interface RaceDetailProps {
     race: Race;
@@ -72,6 +73,12 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
                         <RaceParticipantDetail
                             race={raceState}
                             setStream={setStream}
+                        />
+                    </div>
+                    <div className={"pb-4"}>
+                        <RaceProgressGraph
+                            race={raceState}
+                            messages={messagesState}
                         />
                     </div>
                 </Col>
