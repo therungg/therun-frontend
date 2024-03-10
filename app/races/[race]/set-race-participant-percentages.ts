@@ -5,13 +5,19 @@ export const substitutePercentageWithLiveData = (
 ): RaceParticipantWithLiveData => {
     if (!participant.liveData) return participant;
 
-    participant.liveData.runPercentageSplits =
+    let fromSplits =
         getRaceParticipantPercentageSplits(participant) ||
         participant.liveData.runPercentageSplits;
 
-    participant.liveData.runPercentageTime =
+    let fromTime =
         getRaceParticipantPercentageTime(participant) ||
         participant.liveData.runPercentageTime;
+
+    if (fromSplits === 1) fromSplits = 0.999;
+    if (fromTime === 1) fromTime = 0.999;
+
+    participant.liveData.runPercentageSplits = fromSplits;
+    participant.liveData.runPercentageTime = fromTime;
 
     return participant;
 };

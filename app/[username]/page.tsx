@@ -75,10 +75,6 @@ export default async function Page({ params, searchParams }: PageProps) {
         });
     }
 
-    // const userData = await getGlobalUser(username);
-    // const liveData = await getLiveRunForUser(username);
-    // const session = await getSession();
-
     const dataPromises = [
         getGlobalUser(username),
         getLiveRunForUser(username),

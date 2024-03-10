@@ -16,6 +16,11 @@ export const getPercentageDoneFromLiverun = (
             completionPercentage = runPercentageSplits;
         }
 
+        // Participant can not be done
+        if (completionPercentage === 1) {
+            completionPercentage = 0.999;
+        }
+
         return Number((completionPercentage * 100).toFixed(2));
     }
 
