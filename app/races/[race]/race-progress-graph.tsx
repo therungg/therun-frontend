@@ -3,7 +3,9 @@ import {
     RaceMessage,
     RaceMessageParticipantSplitData,
 } from "~app/races/races.types";
-import { ResponsiveBump } from "@nivo/bump";
+import { BumpSerie } from "@nivo/bump";
+import { ResponsiveLine } from "@nivo/line";
+import { getFormattedString } from "~src/components/util/datetime";
 
 interface ProgressGraphDataPoint {
     percentage: number;
@@ -27,7 +29,7 @@ export const RaceProgressGraph = ({
 
         const values = [
             {
-                percentage: 100,
+                percentage: 0,
                 time: 0,
                 splitName: "",
             },
@@ -36,7 +38,58 @@ export const RaceProgressGraph = ({
         participantsMap.set(participant.user, values);
     });
 
-    let times = [0];
+    let maxGraphTimeSeconds = 60 * 60;
+
+    if (race.status === "finished") {
+        const finishedParticipants = race.participants?.filter(
+            (participant) => participant.finalTime,
+        );
+
+        if (finishedParticipants && finishedParticipants.length > 0) {
+            maxGraphTimeSeconds =
+                (finishedParticipants[finishedParticipants.length - 1]
+                    .finalTime as number) / 1000;
+        }
+    } else {
+        const pbs = race.participants
+            ?.filter((participant) => !!participant.pb)
+            .map((participant) => parseInt(participant.pb) / 1000);
+
+        if (pbs && pbs.length > 0) {
+            const highestPb = Math.max(...pbs);
+            const minutes = highestPb / 60;
+            const nextTenMinutes = Math.ceil(minutes / 10) * 10;
+            maxGraphTimeSeconds = nextTenMinutes * 60;
+        }
+    }
+
+    maxGraphTimeSeconds = Math.ceil(maxGraphTimeSeconds);
+    const desiredTicks = 10;
+
+    const rawInterval = maxGraphTimeSeconds / desiredTicks;
+
+    // Step 4: Adjust to the nearest 1 or 5 minutes
+    let adjustedInterval;
+    if (rawInterval <= 60) {
+        adjustedInterval = 60; // 1 minute apart if the raw interval is less than or equal to 1
+    } else {
+        adjustedInterval = Math.ceil(rawInterval / (5 * 60)) * 5 * 60; // Round up to the nearest 5 minutes
+    }
+
+    // Step 5: Generate the tick values
+    const ticks: number[] = [];
+    for (
+        let currentTick = 0;
+        currentTick <= maxGraphTimeSeconds;
+        currentTick += adjustedInterval
+    ) {
+        ticks.push(currentTick);
+    }
+
+    // These must be shown on the graph
+    let times = [...ticks.slice(0, ticks.length - 1), maxGraphTimeSeconds];
+
+    const graphTicks = [...times];
 
     messages
         .filter(
@@ -56,23 +109,28 @@ export const RaceProgressGraph = ({
             const current = participantsMap.get(message.data.user);
             if (!current) return;
 
-            const percentage = message.data.percentage
+            let percentage = message.data.percentage
                 ? Number((message.data.percentage * 100).toFixed(0))
                 : 0;
 
-            const time = Number((Number(message.data.time) / 1000).toFixed(0));
+            if (percentage < 0) percentage = 0;
+            if (percentage > 100) percentage = 100;
+
+            let time = Number((Number(message.data.time) / 1000).toFixed(0));
+
+            if (time < 0) time = 0;
 
             times.push(time);
 
             if (message.type === "participant-split") {
                 current?.push({
-                    percentage: 100 - percentage,
+                    percentage,
                     time,
                     splitName: message.data.splitName,
                 });
             } else if (message.type === "participant-finish") {
                 current?.push({
-                    percentage: 0,
+                    percentage: 100,
                     time,
                     splitName: "Finish",
                 });
@@ -85,19 +143,30 @@ export const RaceProgressGraph = ({
     });
 
     const firstNivoData = {
-        id: "dummy",
-        data: times.map((time) => {
-            return {
-                x: time,
-                y: null,
-            };
-        }),
+        id: null,
+        data: [
+            ...times.map((time) => {
+                return {
+                    x: time,
+                    y: null,
+                };
+            }),
+            ...[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map(
+                (percentage) => {
+                    return {
+                        x: null,
+                        y: percentage,
+                    };
+                },
+            ),
+        ],
     };
 
     const nivoData = [
         firstNivoData,
         ...Array.from(participantsMap.entries())
             .reverse()
+            .slice(0, 10)
             .map(([username, data]) => {
                 return {
                     id: username,
@@ -109,6 +178,7 @@ export const RaceProgressGraph = ({
                                         ? null
                                         : dataPoint.time,
                                 y: Number(dataPoint.percentage.toFixed(0)),
+                                splitName: dataPoint.splitName,
                             };
                         }),
                         {
@@ -122,50 +192,130 @@ export const RaceProgressGraph = ({
 
     return (
         <div style={{ height: "500px" }}>
-            <MyResponsiveBump data={nivoData} />
+            <MyResponsiveBump data={nivoData} ticks={graphTicks} />
         </div>
     );
 };
-const MyResponsiveBump = ({ data /* see data tab */ }) => {
+const MyResponsiveBump = ({
+    data,
+    ticks,
+}: {
+    data: BumpSerie<any, any>;
+    ticks: number[];
+}) => {
     return (
-        <ResponsiveBump
+        <ResponsiveLine
+            theme={{
+                text: {
+                    fontSize: 16,
+                    fill: "var(--bs-body-color)",
+                    color: "var(--bs-body-color)",
+                },
+                axis: {
+                    ticks: {
+                        line: {
+                            stroke: "var(--bs-body-color)",
+                            strokeWidth: 0,
+                        },
+                    },
+                },
+                grid: {
+                    line: {
+                        stroke: "var(--bs-secondary-color)",
+                        opacity: 0.2,
+                    },
+                },
+            }}
             data={data}
-            colors={{ scheme: "set1" }}
-            lineWidth={2}
-            activeLineWidth={5}
-            inactiveLineWidth={3}
-            inactiveOpacity={0.15}
-            pointSize={5}
-            activePointSize={16}
-            inactivePointSize={5}
-            pointColor={{ theme: "background" }}
-            pointBorderWidth={3}
-            interpolation={"smooth"}
-            activePointBorderWidth={1}
+            colors={{ scheme: "dark2" }}
+            lineWidth={0.8}
+            pointSize={7}
+            pointColor={{ from: "color", modifiers: [] }}
+            pointBorderWidth={2}
             pointBorderColor={{ from: "serie.color" }}
+            pointLabelYOffset={-12}
+            enableTouchCrosshair={true}
+            useMesh={true}
             enableGridX={false}
-            enableGridY={false}
-            endLabel={false}
+            enableGridY={true}
+            curve={"natural"}
+            enablePoints={true}
+            xScale={{ type: "linear" }}
+            yScale={{ type: "linear" }}
+            axisTop={null}
+            axisRight={null}
+            enableCrosshair={true}
+            enableArea={false}
+            enablePointLabel={false}
+            tooltip={({ point }) => {
+                const user = point.serieId as string;
+                const percentage = point.data.y as string;
+                const time = getFormattedString(
+                    ((point.data.x as number) * 1000).toString(),
+                );
+
+                // @ts-ignore
+                const splitName = point.data.splitName as string;
+
+                return (
+                    <div
+                        className={"game-border p-3 bg-body-secondary rounded"}
+                    >
+                        {user} - {percentage}% - {time} - {splitName}
+                    </div>
+                );
+            }}
             axisBottom={{
                 tickSize: 5,
-                tickPadding: 5,
-                tickRotation: 0,
-                legend: "Time",
+                tickPadding: 10,
+                tickRotation: 23,
+                legend: null,
                 legendPosition: "middle",
-                legendOffset: 32,
-                truncateTickAt: 0,
+                tickValues: ticks,
+                format: (a) => {
+                    return getFormattedString((a * 1000).toString());
+                },
             }}
             axisLeft={{
-                tickSize: 5,
-                tickPadding: 5,
+                tickSize: 4,
+                tickPadding: 10,
                 tickRotation: 0,
-                legend: "Progress",
+                legend: null,
                 legendPosition: "middle",
-                legendOffset: -40,
+                legendOffset: -100,
                 truncateTickAt: 0,
+                tickValues: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
+                format: (a) => {
+                    return `${a}%`;
+                },
             }}
+            legends={[
+                {
+                    anchor: "top-left",
+                    direction: "column",
+                    justify: false,
+                    translateX: 20,
+                    translateY: 0,
+                    itemsSpacing: 0,
+                    itemDirection: "left-to-right",
+                    itemWidth: 80,
+                    itemHeight: 20,
+                    itemOpacity: 1,
+                    symbolSize: 12,
+                    symbolShape: "circle",
+                    symbolBorderColor: "rgba(0, 0, 0, .5)",
+                    effects: [
+                        {
+                            on: "hover",
+                            style: {
+                                itemBackground: "rgba(0, 0, 0, .03)",
+                                itemOpacity: 1,
+                            },
+                        },
+                    ],
+                },
+            ]}
             margin={{ top: 40, right: 100, bottom: 40, left: 60 }}
-            axisRight={null}
         />
     );
 };

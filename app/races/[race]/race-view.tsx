@@ -75,7 +75,7 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
                             setStream={setStream}
                         />
                     </div>
-                    <div className={"pb-4"}>
+                    <div className={"pb-4 d-none d-sm-block"}>
                         <RaceProgressGraph
                             race={raceState}
                             messages={messagesState}
