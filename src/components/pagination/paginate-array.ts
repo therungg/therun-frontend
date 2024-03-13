@@ -4,8 +4,9 @@ export function paginateArray<T>(
     subject: T[],
     pageSize: number,
     page: number,
+    totalItemsOverride?: number,
 ): PaginatedData<T> {
-    const totalItems = subject.length;
+    const totalItems = totalItemsOverride || subject.length;
     const totalPages = Math.ceil(totalItems / pageSize);
     const start = (page - 1) * pageSize;
     const end = Math.min(start + pageSize, totalItems);

@@ -33,7 +33,10 @@ export const RaceStats = ({ race }: { race: Race }) => {
                                         }
                                     />
                                     <b>{stat.mmr}</b> -{" "}
-                                    <UserLink username={stat.user} />
+                                    <UserLink
+                                        username={stat.user}
+                                        url={`/${stat.user}/races`}
+                                    />
                                 </span>
                             </div>
                         );
@@ -59,7 +62,11 @@ export const RaceStats = ({ race }: { race: Race }) => {
                                             duration={stat.time}
                                         />
                                     </b>{" "}
-                                    - <UserLink username={stat.user} />
+                                    -{" "}
+                                    <UserLink
+                                        username={stat.user}
+                                        url={`/${stat.user}/races`}
+                                    />
                                 </span>
                             </div>
                         );

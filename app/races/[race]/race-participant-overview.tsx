@@ -85,7 +85,10 @@ export const RaceParticipantItem = ({
                     {participant.status == "abandoned" && `-`}
                 </td>
                 <td className={"d-flex justify-self-end flex-grow-1"}>
-                    <UserLink username={participant.user} />
+                    <UserLink
+                        username={participant.user}
+                        url={`/${participant.user}/races`}
+                    />
                     {placing === 1 && participant.status === "confirmed" && (
                         <span className={"ms-1"}>
                             <TrophyIcon />

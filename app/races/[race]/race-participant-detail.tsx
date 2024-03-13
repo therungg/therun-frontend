@@ -89,6 +89,7 @@ export const RaceParticipantDetailView = ({
                                 username={participant.user}
                                 parentIsUrl={false}
                                 icon={false}
+                                url={`/${participant.user}/races`}
                             />
                         </span>
                         {participant.liveData?.streaming && (

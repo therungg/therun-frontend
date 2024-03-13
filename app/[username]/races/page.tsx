@@ -1,8 +1,13 @@
 "use server";
 
-import { getRaceParticipationsByUser, getUserRaceStats } from "~src/lib/races";
+import {
+    getDetailedUserStats,
+    getRaceParticipationsByUser,
+    getRacesByIds,
+} from "~src/lib/races";
 import { UserRaceProfile } from "~app/[username]/races/user-race-profile";
-import { RaceParticipant, UserStats } from "~app/races/races.types";
+import { DetailedUserStats, RaceParticipant } from "~app/races/races.types";
+import { groupCategoryStatsByGame } from "~app/[username]/races/group-category-stats-by-game";
 
 interface PageProps {
     params: { username: string };
@@ -11,21 +16,34 @@ interface PageProps {
 export default async function Page({ params }: PageProps) {
     const { username } = params;
 
+    // TODO:: how to get race data????
     const promises = [
-        getUserRaceStats(username),
+        getDetailedUserStats(username),
         getRaceParticipationsByUser(username),
     ];
 
     const [globalStats, participations] = (await Promise.all(promises)) as [
-        UserStats,
+        DetailedUserStats,
         RaceParticipant[],
     ];
+
+    const initialRaces = await getRacesByIds(
+        participations
+            .slice(0, 10)
+            .map((participation) => participation.raceId),
+    );
+
+    const categoryStatsMap = groupCategoryStatsByGame(
+        globalStats.categoryStats,
+    );
 
     return (
         <UserRaceProfile
             username={username}
-            stats={globalStats}
+            globalStats={globalStats.globalStats}
+            categoryStatsMap={categoryStatsMap}
             participations={participations || []}
+            initialRaces={initialRaces}
         />
     );
 }

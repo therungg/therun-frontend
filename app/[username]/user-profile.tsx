@@ -208,7 +208,25 @@ const User = ({
 
                             <UserStats runs={currentRuns} />
                             {raceStats && (
-                                <UserRaceStatsTable raceStats={raceStats} />
+                                <div>
+                                    <span
+                                        className={
+                                            "justify-content-between d-flex"
+                                        }
+                                    >
+                                        <h2>Races</h2>
+                                        <div
+                                            className={
+                                                "d-flex align-items-center"
+                                            }
+                                        >
+                                            <a href={`${username}/races`}>
+                                                User Race Profile
+                                            </a>
+                                        </div>
+                                    </span>
+                                    <UserRaceStatsTable raceStats={raceStats} />
+                                </div>
                             )}
                             {highlightedRun && (
                                 <HighlightedRun run={highlightedRun} />

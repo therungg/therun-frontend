@@ -3,9 +3,9 @@ import {
     RaceMessage,
     RaceMessageParticipantSplitData,
 } from "~app/races/races.types";
-import { BumpSerie } from "@nivo/bump";
-import { ResponsiveLine } from "@nivo/line";
+import { ResponsiveLine, Serie } from "@nivo/line";
 import { getFormattedString } from "~src/components/util/datetime";
+import { schemeDark2 } from "d3-scale-chromatic";
 
 interface ProgressGraphDataPoint {
     percentage: number;
@@ -56,10 +56,15 @@ export const RaceProgressGraph = ({
             .map((participant) => parseInt(participant.pb) / 1000);
 
         if (pbs && pbs.length > 0) {
-            const highestPb = Math.max(...pbs);
+            const highestPb = Math.max(...pbs) * 1.2;
             const minutes = highestPb / 60;
             const nextTenMinutes = Math.ceil(minutes / 10) * 10;
             maxGraphTimeSeconds = nextTenMinutes * 60;
+        } else if (race.status === "progress") {
+            maxGraphTimeSeconds =
+                (new Date().getTime() -
+                    new Date(race.startTime as string).getTime()) /
+                1000;
         }
     }
 
@@ -91,6 +96,7 @@ export const RaceProgressGraph = ({
 
     const graphTicks = [...times];
 
+    // Todo:: these messages include when someone undoes a split, or finishes on accident. Also, if a race resets, the messages still include it. We should filter them out.
     messages
         .filter(
             (message) =>
@@ -110,7 +116,7 @@ export const RaceProgressGraph = ({
             if (!current) return;
 
             let percentage = message.data.percentage
-                ? Number((message.data.percentage * 100).toFixed(0))
+                ? Number((message.data.percentage * 100).toFixed(2))
                 : 0;
 
             if (percentage < 0) percentage = 0;
@@ -134,9 +140,40 @@ export const RaceProgressGraph = ({
                     time,
                     splitName: "Finish",
                 });
+            } else if (message.type === "participant-confirm") {
+                current?.push({
+                    percentage: 100,
+                    time,
+                    splitName: "Finish",
+                });
             }
             participantsMap.set(message.data.user, current);
         });
+
+    // Add this to make the graph move forward in real time, does not work great yet, but looks cool
+    // race.participants?.forEach((participant) => {
+    //     if (!participant.liveData) return;
+    //
+    //     const values = participantsMap.get(participant.user);
+    //
+    //     if (!values) return;
+    //
+    //     if (participant.status === "started") {
+    //         values.push({
+    //             percentage:
+    //                 (participant.liveData.runPercentageTime ||
+    //                     participant.liveData.runPercentageSplits) * 100,
+    //             time:
+    //                 participant.liveData.currentTime / 1000 +
+    //                 (new Date().getTime() -
+    //                     participant.liveData.splitStartedAt) /
+    //                     1000,
+    //             splitName: participant.liveData.currentSplitName,
+    //         });
+    //     }
+    //
+    //     participantsMap.set(participant.user, values);
+    // });
 
     times = times.sort((a, b) => {
         return a - b;
@@ -166,7 +203,7 @@ export const RaceProgressGraph = ({
         firstNivoData,
         ...Array.from(participantsMap.entries())
             .reverse()
-            .slice(0, 10)
+            .slice(0, 8)
             .map(([username, data]) => {
                 return {
                     id: username,
@@ -192,7 +229,7 @@ export const RaceProgressGraph = ({
 
     return (
         <div style={{ height: "500px" }}>
-            <MyResponsiveBump data={nivoData} ticks={graphTicks} />
+            <MyResponsiveBump data={nivoData as Serie[]} ticks={graphTicks} />
         </div>
     );
 };
@@ -200,9 +237,10 @@ const MyResponsiveBump = ({
     data,
     ticks,
 }: {
-    data: BumpSerie<any, any>;
+    data: Serie[];
     ticks: number[];
 }) => {
+    const legendColors = schemeDark2;
     return (
         <ResponsiveLine
             theme={{
@@ -291,6 +329,7 @@ const MyResponsiveBump = ({
             }}
             legends={[
                 {
+                    toggleSerie: true,
                     anchor: "top-left",
                     direction: "column",
                     justify: false,
@@ -304,6 +343,16 @@ const MyResponsiveBump = ({
                     symbolSize: 12,
                     symbolShape: "circle",
                     symbolBorderColor: "rgba(0, 0, 0, .5)",
+                    data: data
+                        .map((dataPoint, i) => {
+                            return {
+                                label: dataPoint.id,
+                                color: legendColors[i],
+                                id: dataPoint.id,
+                            };
+                        })
+                        .filter((dataPoint) => !!dataPoint.id)
+                        .reverse(),
                     effects: [
                         {
                             on: "hover",
