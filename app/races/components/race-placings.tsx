@@ -55,7 +55,11 @@ const RacePlacingsFinishedRace = ({ race, amount = 1 }: RacePlacingsProps) => {
                             </b>
                         )}
                         {result.status === "abandoned" && <span>DNF</span>} -{" "}
-                        <UserLink username={result.name} parentIsUrl={true} />
+                        <UserLink
+                            username={result.name}
+                            parentIsUrl={true}
+                            url={`/${result.name}/races`}
+                        />
                     </div>
                 );
             })}

@@ -17,9 +17,9 @@ export interface PaginationHook<T> {
 
 export type PaginationFetcher<T> = (
     // eslint-disable-next-line no-unused-vars
-    page?: number,
+    page: number,
     // eslint-disable-next-line no-unused-vars
-    pageSize?: number,
+    pageSize: number,
     // eslint-disable-next-line no-unused-vars
     query?: string,
     // eslint-disable-next-line no-unused-vars

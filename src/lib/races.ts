@@ -1,6 +1,7 @@
 "use server";
 
 import {
+    DetailedUserStats,
     GameStats,
     GlobalStats,
     PaginatedRaceMmrStats,
@@ -58,6 +59,15 @@ export const getAllActiveRaces = async (): Promise<Race[]> => {
     return (await races.json()).result as Race[];
 };
 
+export const getRacesByIds = async (ids: string[]): Promise<Race[]> => {
+    const idsString = ids.join(",");
+    const races = await fetch(`${racesApiUrl}?raceIds=${idsString}`, {
+        next: { revalidate: 60 * 5 },
+    });
+
+    return (await races.json()).result as Race[];
+};
+
 export const getAllActiveRacesByGame = async (
     game: string,
 ): Promise<Race[]> => {
@@ -86,6 +96,14 @@ export const getUserRaceStats = async (user: string) => {
     const raceStats = await fetch(url, { next: { revalidate: 0 } });
 
     return (await raceStats.json()).result as UserStats;
+};
+
+export const getDetailedUserStats = async (user: string) => {
+    const url = `${racesApiUrl}/stats/users/${user}/detailed`;
+
+    const raceStats = await fetch(url, { next: { revalidate: 0 } });
+
+    return (await raceStats.json()).result as DetailedUserStats;
 };
 
 export const getRaceByRaceId = async (raceId: string): Promise<Race> => {

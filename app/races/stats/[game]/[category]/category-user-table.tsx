@@ -151,7 +151,10 @@ const CategoryUserTableDisplay = ({
                                         )}
                                     </td>
                                     <td>
-                                        <UserLink username={username} />
+                                        <UserLink
+                                            username={username}
+                                            url={`/${username}/races`}
+                                        />
                                     </td>
                                     <td>{user.rating}</td>
                                     <td>{user.totalRaces}</td>

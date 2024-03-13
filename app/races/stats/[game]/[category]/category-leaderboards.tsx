@@ -82,7 +82,10 @@ export const CategoryLeaderboards = ({
                                         )}
                                     </td>
                                     <td>
-                                        <UserLink username={leaderboard.user} />
+                                        <UserLink
+                                            username={leaderboard.user}
+                                            url={`/${leaderboard.user}/races`}
+                                        />
                                     </td>
                                     <td>
                                         {"mmr" in leaderboard ? (

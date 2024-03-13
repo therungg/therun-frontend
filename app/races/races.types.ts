@@ -197,6 +197,12 @@ export interface UserStats extends SpecificStats {
     totalFinishedRaces: number;
     rating: number;
     racePb: number;
+    image: string;
+    rankings: [
+        RaceRanking<"mmr">,
+        RaceRanking<"time">,
+        RaceRanking<"timeMonth">,
+    ];
 }
 
 export interface RaceMessage<T = RaceMessageData> {
@@ -280,6 +286,11 @@ export interface RaceGameStatsByCategory {
     users: UserStats[];
 }
 
+export interface DetailedUserStats {
+    globalStats: UserStats;
+    categoryStats: UserStats[];
+}
+
 export type PaginatedRaceTimeStats = PaginatedData<RaceTimeStat>;
 export type PaginatedRaceMmrStats = PaginatedData<RaceMmrStat>;
 
@@ -291,4 +302,10 @@ export interface RaceTimeStat {
 export interface RaceMmrStat {
     user: string;
     mmr: number;
+}
+
+export interface RaceRanking<T extends "mmr" | "time" | "timeMonth"> {
+    score: number;
+    rank: number;
+    type: T;
 }

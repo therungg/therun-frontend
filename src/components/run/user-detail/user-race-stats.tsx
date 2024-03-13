@@ -5,9 +5,6 @@ import { DurationToFormatted } from "~src/components/util/datetime";
 export const UserRaceStatsTable = ({ raceStats }: { raceStats: UserStats }) => {
     return (
         <>
-            <span className={"justify-content-between d-flex"}>
-                <h2>Races</h2>
-            </span>
             <Table striped bordered hover>
                 <thead>
                     <tr>

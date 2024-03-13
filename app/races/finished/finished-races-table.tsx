@@ -74,9 +74,11 @@ const FinishedRaces = ({ races }: { races: Race[] }) => {
     if (game && !category) {
         return <FinishedRaceWithCategory races={races} />;
     }
+
+    return <></>;
 };
 
-const FinishedRaceWithCategory = ({ races }: { races: Race[] }) => {
+export const FinishedRaceWithCategory = ({ races }: { races: Race[] }) => {
     return (
         <Row className={"g-2"}>
             {races.map((race) => {
@@ -142,7 +144,7 @@ const FinishedRaceWithCategory = ({ races }: { races: Race[] }) => {
     );
 };
 
-const FinishedRaceWithGameCategory = ({ races }: { races: Race[] }) => {
+export const FinishedRaceWithGameCategory = ({ races }: { races: Race[] }) => {
     return (
         <Row className={"my-1 mb-3 g-4"}>
             {races.map((race) => {
