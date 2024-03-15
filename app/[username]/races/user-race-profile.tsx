@@ -30,6 +30,10 @@ export const UserRaceProfile = ({
         { content: username, href: `/${username}` },
         { content: "Race Stats" },
     ];
+
+    if (!participations || participations.length === 0) {
+        return <div>Unfortunately, this user has not done any races yet.</div>;
+    }
     return (
         <div>
             <Breadcrumb breadcrumbs={breadcrumbs} />

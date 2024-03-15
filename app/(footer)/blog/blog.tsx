@@ -1,8 +1,10 @@
 "use client";
 import { FromNow } from "~src/components/util/datetime";
-import { ReactElement } from "react";
-import { Col, Row } from "react-bootstrap";
+import React, { ReactElement } from "react";
+import { Button, Col, Row } from "react-bootstrap";
 import Image from "next/image";
+import Link from "next/link";
+import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 
 export interface BlogInterface {
     title: string;
@@ -570,6 +572,264 @@ export const getBlogs = (): BlogInterface[] => {
                 </div>
             ),
             url: "/blog/the-run-live",
+        },
+        {
+            title: "New major feature: The Run Racing!",
+            date: new Date("2024-03-15 14:00:00"),
+            short: (
+                <>
+                    It has been a while since the last update, since updates are
+                    mostly done through Discord and Twitter. Today is special
+                    however. You can now do speedrun races on therun.gg! Races
+                    are fully real-time, so you can track your position and
+                    status live during the race, all tracked automatically by
+                    LiveSplit. Go check it out!
+                </>
+            ),
+            full: (
+                <>
+                    <p>
+                        tl;dr:{" "}
+                        <a href={"/races"} className={"fst-italic"}>
+                            Race on therun.gg, in real time, with cool stats,
+                            graphs. Easy, fun, and fully free.
+                        </a>
+                    </p>
+                    <p>
+                        It has been a while since the last update, since updates
+                        are mostly done through Discord and Twitter. Today is
+                        special however. You can now do speedrun races on
+                        therun.gg! Races are fully real-time, so you can track
+                        your position and status live during the race, all{" "}
+                        <b>tracked automatically</b> by LiveSplit.
+                    </p>
+                    <h2>About 2023</h2>
+                    <p>
+                        But first, let us talk about 2023. The start of the year
+                        was pretty slow. I had worked very hard throughout 2022
+                        and the beginning of 2023 for the Live page and the
+                        LiveSplit Component, and I was slightly burnt out after.
+                        I still built the tournaments feature, and did a lot of
+                        improvements on the site, but took it a lot slower.
+                    </p>
+                    <p>
+                        Thankfully, due to{" "}
+                        <a
+                            href={"/patron"}
+                            target={"_blank"}
+                            rel={"noreferrer"}
+                        >
+                            our fantastic supporters
+                        </a>
+                        , I could easily keep the site running while not doing
+                        too much work on it. Around September last 2023, I felt
+                        fine again and decided to work on the next big feature:
+                        Races!
+                    </p>
+                    <p>
+                        The site is completely free and has no ads.{" "}
+                        <b>
+                            If you can afford it, please consider supporting us.
+                        </b>{" "}
+                        It keeps the site running and allows me to build more
+                        cool stuff!
+                    </p>{" "}
+                    <Link href={"/patron"} className={"w-100 flex-center"}>
+                        <Button
+                            variant={"secondary"}
+                            className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
+                        >
+                            Support <PatreonBunnySvgWithoutLink />
+                        </Button>
+                    </Link>
+                    <h2>Races!!!</h2>
+                    <p>
+                        Now, on to races! Back in 2013, when I started
+                        speedrunning, races were a BIG deal. SpeedRunsLive was
+                        the place to be for everything speedrunning. At the
+                        peak, over 4000 races were done there every single month
+                        there. I, myself, did well over a hundred races on the
+                        site.
+                    </p>
+                    <p>
+                        Unfortunately, SRL is not very active anymore. Out of
+                        nostalgia, I decided I want to build my own version of
+                        races. I figured it could integrate nicely with the live
+                        data, and I could do some really cool stuff with it. And
+                        I did.
+                    </p>
+                    <h2>Real-Time</h2>
+                    <p>
+                        The big difference between racing on therun.gg and other
+                        sites, like racetime.gg and speedrunslive, is that you
+                        can track all participants in real-time throughout the
+                        race. It is like playing Mario Kart, but with
+                        speedrunning. You will know who is ahead, how far the
+                        tailgaters are behind, and you will get a cool graph of
+                        the entire race status.
+                    </p>
+                    <h2>Ease of use</h2>
+                    <p>
+                        My main goal when designing the feature was that it has
+                        to be easy, fun, quick and free to create, join,
+                        participate in and spectate races. Creating a race is a
+                        matter of entering the game, category, and pressing Go.
+                        Joining a race is one click of the button. Playing in
+                        the race is just... Doing your run. The LiveSplit
+                        Component will automatically start, track and finish
+                        your race for you.
+                    </p>
+                    <p>
+                        In addition to that, everything about your race is
+                        manually modified easily.
+                        <ul>
+                            <li>
+                                Accidentally reset? Just click Undo Abandon on
+                                therun.
+                            </li>
+                            <li>
+                                Accidentally finished? Just click Undo Finish on
+                                therun.
+                            </li>
+                            <li>Time is wrong? Adjust it easily.</li>
+                            <li>
+                                Decided to both abandon and start a new race? No
+                                need to create a new one, just click Reset Race.
+                            </li>
+                        </ul>
+                        And much more. As you can see, racing on the site is
+                        convenient and very easy. Everything was thought of (I
+                        hope???)
+                    </p>
+                    <h2>Creating a race</h2>
+                    <p>
+                        Creating a race is easy. All you have to do is be logged
+                        in with Twitch. Hit the Create new Race button on the
+                        races page, and you will be taken to the Race Create
+                        form. The only things you <b>must</b> enter are the game
+                        and category, but there are many optional
+                        customizations:
+                        <ul>
+                            <li>
+                                Set a custom race name and description for bingo
+                                seed, tournament name etc.
+                            </li>
+                            <li>
+                                Set a custom Twitch stream that shows on the
+                                page
+                            </li>
+                            <li>Set a password to join the race</li>
+                            <li>Customize how long the countdown should be</li>
+                            <li>
+                                Customize when the race should start: manually,
+                                automatically when everyone is ready, or at a
+                                specific date/time
+                            </li>
+                            <li>Will the race be ranked or unranked?</li>
+                        </ul>
+                        And more customization options will be available in the
+                        future. Of course, feel free to ignore any of these!
+                    </p>
+                    <p>
+                        Now, hit Create Race and your race will be done in a
+                        second or two. Invite fellow runners to join and you are
+                        good to go!
+                    </p>
+                    <h2>Doing a race</h2>
+                    <p>
+                        Participating in a race is just as easy. When the start
+                        condition has been fulfilled (everyone is ready or the
+                        starttime has passed), the countdown will start. You can
+                        just do your run like you are used to.
+                    </p>
+                    <h5>With the LiveSplit Component</h5>
+                    <p>
+                        I recommend using the{" "}
+                        <a href={"/upload-key"}>
+                            therun.gg LiveSplit Component
+                        </a>
+                        , which will allow the site to track you during your
+                        race. You will also appear on the Live page if you
+                        enable it! When you use the component, all of the race
+                        will be done automatically. When you finish your run
+                        your final time will be recorded automatically. If you
+                        reset, you will be abandoned from the race
+                        automatically, etc.
+                    </p>
+                    <h5>What if something goes wrong?</h5>
+                    <p>
+                        Any action can be overridden manually on the race page.
+                        You will see buttons to manually abandon, manually
+                        unabandon, manually finish, manually unfinish, and much
+                        more.
+                    </p>
+                    <h5>
+                        What if I can not or do not want to use the component?
+                    </h5>
+                    <p>
+                        That is fine! Your run will not be tracked live, but you
+                        can still join the race. When you finish your run, just
+                        hit the Finish Race button on the race page. The site
+                        will guess your time based on how long you took to press
+                        the button, but you can always manually adjust your
+                        time.
+                    </p>
+                    <h2>Stats</h2>
+                    <p>
+                        As you are used from me, I love stats, and I
+                        incorperated a bunch of them for races.
+                    </p>
+                    <h5>Race Profile</h5>
+                    <p>
+                        Every user that has done races has a Race Profile. Click
+                        your name from the race page, or check your profile to
+                        see your race stats, and go to your race stats from
+                        there. You can see your past races, your total stats,
+                        and your stats per game/category you have raced.
+                    </p>
+                    <h5>Ratings</h5>
+                    <p>
+                        I spent a lot of time to implement a custom implentation
+                        of the Elo rating system. You will have a rating for
+                        every category you run. It starts at 1500 and increases
+                        or decreased based on your performance.
+                    </p>
+                    <h5>Leaderboards</h5>
+                    <p>
+                        For every category, there are leaderboards for many
+                        stats:
+                        <ul>
+                            <li>Rating</li>
+                            <li>Best Time Ever</li>
+                            <li>Best Time this month</li>
+                            <li>Most # Races</li>
+                            <li>Most amount of races</li>
+                        </ul>
+                        And more!
+                    </p>
+                    <h5>Stats per game/category</h5>
+                    <p>
+                        Lastly, you can see stats for every game, and for every
+                        category. Go to the main /races page, and check out the
+                        stats on the right side of the page. By clicking
+                        through, you will find many cool stats!
+                    </p>
+                    <h2>Finishing up</h2>
+                    <p>
+                        There is much, much more to say about races, but this
+                        blog is already extremely long, and I want you guys to
+                        just go have fun and do some speedrun races! I worked
+                        extremely hard on this feature, and I sincerely hope you
+                        will like it.
+                    </p>
+                    <p>
+                        Thank you for checking out the site, reading the blog,
+                        and supporting me!
+                    </p>
+                    <p>Joey</p>
+                </>
+            ),
+            url: "/blog/the-run-racing",
         },
     ];
 };

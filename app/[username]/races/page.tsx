@@ -16,7 +16,6 @@ interface PageProps {
 export default async function Page({ params }: PageProps) {
     const { username } = params;
 
-    // TODO:: how to get race data????
     const promises = [
         getDetailedUserStats(username),
         getRaceParticipationsByUser(username),

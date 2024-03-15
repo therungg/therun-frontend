@@ -6,7 +6,7 @@ import {
     PaginatedRaces,
     Race,
 } from "~app/races/races.types";
-import { Col, Row } from "react-bootstrap";
+import { Button, Col, Row } from "react-bootstrap";
 import { InProgressRaces } from "~app/races/in-progress-races";
 import { PendingRaces } from "~app/races/pending-races";
 import { GlobalRaceStats } from "~app/races/global-race-stats";
@@ -14,6 +14,8 @@ import { CreateRaceButtons } from "~app/races/create-race-buttons";
 import { useRaces } from "~app/races/hooks/use-race";
 import { RecentlyFinishedRaces } from "~app/races/recently-finished-races";
 import { RaceFaq } from "~app/races/race-faq";
+import { PatreonBunnySvg } from "~app/patron/patreon-info";
+import { RacesWelcomeMessage } from "~app/races/races-welcome-message";
 
 interface RaceOverviewProps {
     races: Race[];
@@ -38,7 +40,6 @@ export const RaceOverview = ({
             <Row className={"mb-3"}>
                 <Col md={12} lg={7} className={"d-flex"}>
                     <h1>Races</h1>
-                    <span className={"mx-2 fst-italic"}>beta</span>
                 </Col>
                 <Col
                     md={12}
@@ -47,10 +48,21 @@ export const RaceOverview = ({
                 >
                     <CreateRaceButtons />
                     <RaceFaq />
+                    <a
+                        href={"/patron"}
+                        rel={"noreferrer"}
+                        target={"_blank"}
+                        className={"ms-2"}
+                    >
+                        <Button variant={"secondary"}>
+                            Support therun.gg! <PatreonBunnySvg />
+                        </Button>
+                    </a>
                 </Col>
             </Row>
             <Row className={"gx-5 gy-5"}>
                 <Col xl={8} lg={7} md={12}>
+                    <RacesWelcomeMessage />
                     <InProgressRaces races={inProgressRaces} />
                     {/*<h3>Recently Finished Races</h3>*/}
                 </Col>

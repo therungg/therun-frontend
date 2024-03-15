@@ -1,6 +1,11 @@
 import { Post } from "./post";
 
-const posts = ["welcome-to-the-run", "twitch-extension", "the-run-live"];
+const posts = [
+    "welcome-to-the-run",
+    "twitch-extension",
+    "the-run-live",
+    "the-run-racing",
+];
 
 export function generateStaticParams() {
     return posts.map((post) => ({ post }));

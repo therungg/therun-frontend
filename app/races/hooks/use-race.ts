@@ -87,8 +87,12 @@ export const useRace = (race: Race, messages: RaceMessage[]) => {
     useEffect(() => {
         const interval = setInterval(() => {
             const newRace = { ...raceStateRef.current };
-            newRace.participants = sortRaceParticipants(newRace);
-            return setRaceState(newRace);
+            if (newRace.status !== "finished") {
+                newRace.participants = sortRaceParticipants(newRace);
+                return setRaceState(newRace);
+            } else {
+                clearInterval(interval);
+            }
         }, 1000);
         return () => {
             clearInterval(interval);
