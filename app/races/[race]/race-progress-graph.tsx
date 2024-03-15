@@ -27,15 +27,7 @@ export const RaceProgressGraph = ({
     race.participants?.forEach((participant) => {
         if (!participant.liveData) return;
 
-        const values = [
-            {
-                percentage: 0,
-                time: 0,
-                splitName: "",
-            },
-        ];
-
-        participantsMap.set(participant.user, values);
+        participantsMap.set(participant.user, []);
     });
 
     let maxGraphTimeSeconds = 60 * 60;

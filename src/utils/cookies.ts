@@ -1,6 +1,6 @@
 import { getCookie, setCookie } from "cookies-next";
 
-type CookieKey = "scheme" | "session_id";
+type CookieKey = "scheme" | "session_id" | "races-message-read";
 
 export const getCookieKey = async (key: CookieKey, defaultValue?: string) => {
     // The `getCookie` function is not available on the server, imagine that

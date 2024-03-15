@@ -88,15 +88,18 @@ const Topbar = ({
                                 <span className="align-self-center">
                                     Races{" "}
                                     <i>
-                                        <sup>beta</sup>
+                                        <sup
+                                            style={{
+                                                color: "var(--bs-secondary)",
+                                            }}
+                                        >
+                                            new!
+                                        </sup>
                                     </i>
                                 </span>
                             </b>
                         </Nav.Link>
                         <Nav.Link href="/live">Live</Nav.Link>
-                        {/*<Nav.Link href="/races">*/}
-                        {/*    <b>Races</b>*/}
-                        {/*</Nav.Link>*/}
                         <Nav.Link href="/games/">Games</Nav.Link>
                         <Nav.Link href="/patron">
                             Support <PatreonBunnySvgWithoutLink />

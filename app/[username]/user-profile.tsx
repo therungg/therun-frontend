@@ -214,7 +214,17 @@ const User = ({
                                             "justify-content-between d-flex"
                                         }
                                     >
-                                        <h2>Races</h2>
+                                        <div className={"d-flex"}>
+                                            <h2>Races</h2>
+                                            <span
+                                                style={{
+                                                    color: "var(--bs-secondary)",
+                                                }}
+                                                className={"ms-2"}
+                                            >
+                                                New!
+                                            </span>
+                                        </div>
                                         <div
                                             className={
                                                 "d-flex align-items-center"
