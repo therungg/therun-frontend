@@ -5,7 +5,7 @@ import {
 } from "~app/races/races.types";
 import { ResponsiveLine, Serie } from "@nivo/line";
 import { getFormattedString } from "~src/components/util/datetime";
-import { schemeDark2 } from "d3-scale-chromatic";
+import { schemeCategory10 } from "d3";
 
 interface ProgressGraphDataPoint {
     percentage: number;
@@ -27,7 +27,15 @@ export const RaceProgressGraph = ({
     race.participants?.forEach((participant) => {
         if (!participant.liveData) return;
 
-        participantsMap.set(participant.user, []);
+        const values = [
+            {
+                percentage: 0,
+                time: 0,
+                splitName: "",
+            },
+        ];
+
+        participantsMap.set(participant.user, values);
     });
 
     let maxGraphTimeSeconds = 60 * 60;
@@ -194,8 +202,8 @@ export const RaceProgressGraph = ({
     const nivoData = [
         firstNivoData,
         ...Array.from(participantsMap.entries())
+            .slice(0, 10)
             .reverse()
-            .slice(0, 8)
             .map(([username, data]) => {
                 return {
                     id: username,
@@ -232,7 +240,7 @@ const MyResponsiveBump = ({
     data: Serie[];
     ticks: number[];
 }) => {
-    const legendColors = schemeDark2;
+    const legendColors = schemeCategory10;
     return (
         <ResponsiveLine
             theme={{
@@ -257,7 +265,7 @@ const MyResponsiveBump = ({
                 },
             }}
             data={data}
-            colors={{ scheme: "dark2" }}
+            colors={{ scheme: "category10" }}
             lineWidth={0.8}
             pointSize={7}
             pointColor={{ from: "color", modifiers: [] }}
