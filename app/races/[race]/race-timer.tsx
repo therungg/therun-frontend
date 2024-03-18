@@ -88,7 +88,7 @@ export const RaceParticipantTimer = ({
         if (raceParticipant.status === "started") {
             timer.startTimer();
         }
-    }, [raceParticipant.status]);
+    }, [raceParticipant.status, raceParticipant.liveData?.currentSplitIndex]);
 
     useEffect(() => {
         if (
