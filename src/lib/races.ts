@@ -56,7 +56,14 @@ export const getAllActiveRaces = async (): Promise<Race[]> => {
         next: { revalidate: 0 },
     });
 
-    return (await races.json()).result as Race[];
+    return ((await races.json()).result as Race[]).sort((a, b) => {
+        if (a.isFeatured) return -1;
+        if (b.isFeatured) return 1;
+
+        return (
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        );
+    });
 };
 
 export const getRacesByIds = async (ids: string[]): Promise<Race[]> => {
