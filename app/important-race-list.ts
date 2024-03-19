@@ -1,6 +1,8 @@
 const importantRaceMap = new Map([
     ["test", "test1234"],
     ["first-race-ever", "odny"],
+    ["pace-race", "pace-2024"],
+    ["ricky-weekly", "ricky-weekly"],
 ]);
 
 export const getImportantRace = (slug: string): string | undefined => {

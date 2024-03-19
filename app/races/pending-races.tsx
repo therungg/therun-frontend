@@ -3,6 +3,10 @@ import React from "react";
 import { GameImage } from "~src/components/image/gameimage";
 import styles from "../../src/components/css/LiveRun.module.scss";
 import { PersonIcon } from "~src/icons/person-icon";
+import { PencilIcon } from "~src/icons/pencil-icon";
+import { UserLink } from "~src/components/links/links";
+import { FromNow } from "~src/components/util/datetime";
+import { ClockIcon } from "~src/icons/clock-icon";
 
 export const PendingRaces = ({ races }: { races: Race[] }) => {
     return (
@@ -48,7 +52,9 @@ export const PendingRace = ({ race }: { race: Race }) => {
                         </div>
                         <span className={"text-nowrap"}>
                             <span className={"me-1"}>
-                                {race.readyParticipantCount}/
+                                {race.startMethod !== "datetime" && (
+                                    <span>{race.readyParticipantCount}/</span>
+                                )}
                                 {race.participantCount}
                             </span>
                             <PersonIcon />
@@ -58,11 +64,29 @@ export const PendingRace = ({ race }: { race: Race }) => {
                         <div className={"fst-italic"}>
                             {race.displayCategory}
                         </div>
-                        {/*<span>*/}
-                        {/*    <span className={"me-1"}>{race.creator}</span>*/}
-                        {/*    <PencilIcon />*/}
-                        {/*</span>*/}
+                        <span>
+                            <span className={"me-2"}>
+                                <UserLink
+                                    username={race.creator}
+                                    parentIsUrl={true}
+                                    icon={false}
+                                />
+                            </span>
+                            <PencilIcon />
+                        </span>
                     </div>
+                    {race.startMethod === "datetime" && (
+                        <div className={"d-flex justify-content-between"}>
+                            <div></div>
+                            <div>
+                                Starts{" "}
+                                <FromNow
+                                    time={new Date(race.willStartAt as string)}
+                                />
+                                <ClockIcon color={"var(--bs-link-color)"} />
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </a>
