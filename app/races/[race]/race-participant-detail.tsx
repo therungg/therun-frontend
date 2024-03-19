@@ -13,6 +13,9 @@ import { readableRaceParticipantStatus } from "~app/races/[race]/readable-race-s
 import { RaceParticipantTimer } from "~app/races/[race]/race-timer";
 import { getPercentageDoneFromLiverun } from "~app/races/[race]/get-percentage-done-from-liverun";
 import { RaceParticipantRatingDisplay } from "~app/races/components/race-participant-rating-display";
+import { PaginationContextProvider } from "~src/components/pagination/pagination.context-provider";
+import usePagination from "~src/components/pagination/use-pagination";
+import PaginationControl from "~src/components/pagination/pagination-control";
 
 interface RaceParticipantDetailProps {
     race: Race;
@@ -24,6 +27,20 @@ export const RaceParticipantDetail = ({
     race,
     setStream,
 }: RaceParticipantDetailProps) => {
+    return (
+        <PaginationContextProvider>
+            <RaceParticipantDetailPagination
+                race={race}
+                setStream={setStream}
+            />
+        </PaginationContextProvider>
+    );
+};
+
+const RaceParticipantDetailPagination = ({
+    race,
+    setStream,
+}: RaceParticipantDetailProps) => {
     const participants = race.participants as RaceParticipantWithLiveData[];
 
     const [parent] = useAutoAnimate({
@@ -31,10 +48,16 @@ export const RaceParticipantDetail = ({
         easing: "ease-out",
     });
 
+    const pagination = usePagination<RaceParticipantWithLiveData>(
+        participants,
+        undefined,
+        12,
+    );
+
     return (
         <>
             <Row xs={1} sm={2} xxl={3} className={"g-4"} ref={parent}>
-                {participants?.map((participant, i) => {
+                {pagination.data?.map((participant, i) => {
                     return (
                         <Col
                             key={participant.user}
@@ -56,6 +79,11 @@ export const RaceParticipantDetail = ({
                     );
                 })}
             </Row>
+            {pagination.totalPages > 1 && (
+                <div className={"mt-3"}>
+                    <PaginationControl {...pagination} />
+                </div>
+            )}
         </>
     );
 };
