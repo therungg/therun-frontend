@@ -13,6 +13,7 @@ export async function createRace(prevState: any, raceInput: FormData) {
     const input: CreateRaceInput = {
         game: raceInput.get("game") as string,
         category: raceInput.get("category") as string,
+        id: (raceInput.get("id") || "") as string,
         description: raceInput.get("description") as string,
         customName: raceInput.get("customName") as string,
         selfJoin: !!raceInput.get("selfJoin"),
@@ -69,6 +70,7 @@ export const validateInput = (
     const raceSchema: Joi.ObjectSchema<CreateRaceInput> = Joi.object({
         game: Joi.string().required().min(1).max(200),
         category: Joi.string().required().min(1).max(200),
+        id: Joi.string().min(0).max(40).optional(),
         customName: Joi.string().min(0).max(40).optional(),
         description: Joi.string().min(0).max(1000).optional(),
         ranked: Joi.boolean().optional(),

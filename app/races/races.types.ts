@@ -119,6 +119,7 @@ export interface RaceRule {}
 export interface CreateRaceInput {
     game: string;
     category: string;
+    id?: string;
     description?: string;
     selfJoin?: boolean;
     canStartEarly?: boolean;

@@ -15,6 +15,8 @@ import { Metadata } from "next";
 import buildMetadata, { getUserProfilePhoto } from "~src/utils/metadata";
 import { CombinedTournamentPage } from "~app/tournaments/[tournament]/combined-tournament-page";
 import { getUserRaceStats } from "~src/lib/races";
+import { getImportantRace } from "~app/important-race-list";
+import RaceDetailPage from "~app/races/[race]/page";
 
 export const revalidate = 0;
 
@@ -42,6 +44,12 @@ export default async function Page({ params, searchParams }: PageProps) {
                 searchParams,
             });
         }
+    }
+
+    const race = getImportantRace(username);
+
+    if (race) {
+        return RaceDetailPage({ params: { race } });
     }
 
     const runs = await getUserRuns(username);
