@@ -13,7 +13,7 @@ export async function createRace(prevState: any, raceInput: FormData) {
     const input: CreateRaceInput = {
         game: raceInput.get("game") as string,
         category: raceInput.get("category") as string,
-        id: raceInput.get("id") as string,
+        id: (raceInput.get("id") || "") as string,
         description: raceInput.get("description") as string,
         customName: raceInput.get("customName") as string,
         selfJoin: !!raceInput.get("selfJoin"),
