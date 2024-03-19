@@ -13,6 +13,7 @@ import {
 import { UnderlineTooltip } from "~src/components/tooltip";
 import { GameCategoryInput } from "~src/components/form/game-input";
 import { RaceStartMethodType } from "~app/races/races.types";
+import { Can } from "~src/rbac/Can.component";
 
 export default function CreateRace() {
     function getInitialStartDateInput() {
@@ -87,6 +88,21 @@ export default function CreateRace() {
                                         </Form.Group>
                                     </Col>
                                 </Row>
+                                <Can I={"moderate"} a={"race"}>
+                                    <div className={"row g-3 mb-3 d-flex"}>
+                                        <Form.Group controlId={"id"}>
+                                            <Form.Label>ID</Form.Label>
+                                            <Form.Control
+                                                name={"id"}
+                                                type={"text"}
+                                                placeholder={
+                                                    "Enter the custom race ID (therun.gg/races/<id>)"
+                                                }
+                                                required={false}
+                                            />
+                                        </Form.Group>
+                                    </div>
+                                </Can>
                                 <div className={"row g-3 mb-3 d-flex"}>
                                     <Form.Group controlId={"forceStream"}>
                                         <Form.Label>
