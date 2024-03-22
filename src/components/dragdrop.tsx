@@ -80,7 +80,7 @@ export const Dragdrop = ({
             <p>
                 If you install the LiveSplit Component, you will never have to
                 upload manually again!{" "}
-                <a href={"/upload-key"}>Check out how to here. </a>
+                <a href={"/livesplit"}>Check out how to here. </a>
             </p>
 
             {show ? (

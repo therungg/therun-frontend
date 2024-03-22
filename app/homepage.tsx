@@ -37,9 +37,17 @@ export default function Homepage({
                         <Link href={"/about"}>
                             <Button
                                 variant={"primary"}
-                                className="btn-lg px-3 w-160p h-3r fw-medium"
+                                className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
                             >
                                 Learn more
+                            </Button>
+                        </Link>
+                        <Link href={"/livesplit"}>
+                            <Button
+                                variant={"primary"}
+                                className="btn-lg px-3 w-160p h-3r fw-medium"
+                            >
+                                LiveSplit Key
                             </Button>
                         </Link>
                     </div>

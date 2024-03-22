@@ -450,7 +450,7 @@ export const getBlogs = (): BlogInterface[] => {
                     <h2>How does it work?</h2>
                     <p>
                         It is simple! Just follow the instructions on{" "}
-                        <a href={"/upload-key"}>this page</a> and you are done!
+                        <a href={"/livesplit"}>this page</a> and you are done!
                         Forever! Never upload manually again. All your stats
                         will be tracked forever, and you will be featured on the
                         Live page forever!

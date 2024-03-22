@@ -83,7 +83,7 @@ export default function About() {
                 </li>
                 <li>
                     Automatic uploads through a{" "}
-                    <a href={"/upload-key"}>LiveSplit Component </a>
+                    <a href={"/livesplit"}>LiveSplit Component </a>
                 </li>
                 <li>
                     Live Run tracking from the Component on the{" "}

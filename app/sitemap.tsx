@@ -10,7 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         "/blog/[post]/",
         "/[username]/[game]/[run]/",
         "/[username]/",
-        "/upload-key/",
+        "/livesplit/",
         "/change-appearance/",
     ];
 

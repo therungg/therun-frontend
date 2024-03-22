@@ -101,7 +101,7 @@ export const Live = ({
                         </h1>
                     </Col>
                     <Col xs="auto" className="flex-grow-1 text-end">
-                        <a href={"/upload-key"}>
+                        <a href={"/livesplit"}>
                             <Button
                                 variant={"primary"}
                                 className="btn-lg px-3 w-240p h-3r fw-medium"
