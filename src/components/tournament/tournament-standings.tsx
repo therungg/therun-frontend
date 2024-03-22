@@ -15,15 +15,19 @@ export const TournamentStandings = ({
         "/api/tournaments/PACE 2024 Qualifiers 1",
         fetcher,
     );
+    const { data: tournament2Data }: { data: Tournament } = useSWR(
+        "/api/tournaments/PACE 2024 Qualifiers 2",
+        fetcher,
+    );
 
-    if (!tournament1Data) {
+    if (!tournament1Data || !tournament2Data) {
         return <div>Loading data...</div>;
     }
 
     const points = {};
 
     tournament.pointDistribution?.forEach((point, index) => {
-        [tournament1Data].forEach((data) => {
+        [tournament1Data, tournament2Data].forEach((data) => {
             if (data.leaderboards?.pbLeaderboard[index]) {
                 const standing = data.leaderboards?.pbLeaderboard[index];
 
@@ -157,6 +161,28 @@ export const TournamentStandings = ({
 
                     {getLeaderboard(
                         "Points Heat 2",
+                        tournament2Data.leaderboards?.pbLeaderboard,
+                        "",
+                        (stat, key) => {
+                            return (
+                                <div>
+                                    {tournament2Data.pointDistribution[key] ||
+                                        0}{" "}
+                                    (
+                                    <DurationToFormatted
+                                        duration={stat.toString()}
+                                    />
+                                    )
+                                </div>
+                            );
+                        },
+                    )}
+                </Col>
+                <Col>
+                    <h2>Standings Heat 3</h2>
+
+                    {getLeaderboard(
+                        "Points Heat 3",
                         tournament.leaderboards?.pbLeaderboard,
                         "",
                         (stat, key) => {

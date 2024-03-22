@@ -17,6 +17,7 @@ export const EventLeaderboards = ({
     tournamentLeaderboards: any;
 }) => {
     const [leaderboard, setLeaderboard] = useState(gameTime ? "pbIGT" : "pb");
+
     return (
         <Row className="g-3">
             <h3>Event Leaderboards</h3>

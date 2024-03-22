@@ -43,6 +43,8 @@ export interface Tournament {
     category?: string;
     excludedRuns: ExcludedRun[];
     customRuns: CustomRun[];
+
+    raceId?: string;
 }
 
 export interface CustomRun {

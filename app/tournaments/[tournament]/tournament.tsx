@@ -23,18 +23,22 @@ import { EventLeaderboards } from "~app/tournaments/[tournament]/event-leaderboa
 import { Search as SearchIcon } from "react-bootstrap-icons";
 import { TournamentTimer } from "~app/tournaments/[tournament]/tournament-timer";
 import { TournamentStandings } from "~src/components/tournament/tournament-standings";
+import { Race } from "~app/races/races.types";
+import { TournamentRacePanel } from "~app/tournaments/[tournament]/tournament-race-panel";
 
 export const GenericTournament = ({
     liveDataMap,
     session,
     username,
     tournament,
+    race,
     tab,
 }: {
     liveDataMap: LiveDataMap;
     session: any;
     username?: string;
     tournament: Tournament;
+    race?: Race;
     tab: string;
 }) => {
     const gameTime = !!tournament.gameTime;
@@ -127,7 +131,7 @@ export const GenericTournament = ({
                         : "")
                 }
             >
-                <Col xl={10}>
+                <Col xl={race ? 4 : 10}>
                     <h1>{tournament.shortName || tournament.name}</h1>
 
                     {tournamentLeaderboards &&
@@ -162,6 +166,11 @@ export const GenericTournament = ({
                         </div>
                     )}
                 </Col>
+                {race && (
+                    <Col xl={6}>
+                        <TournamentRacePanel race={race} />
+                    </Col>
+                )}
                 <Col xl={2}>
                     <div>
                         {tournament.logoUrl && (

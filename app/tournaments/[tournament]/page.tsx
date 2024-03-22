@@ -8,6 +8,7 @@ import { getSession } from "~src/actions/session.action";
 import { liveRunArrayToMap } from "~app/tournaments/[tournament]/live-run-array-to-map.component";
 import buildMetadata from "~src/utils/metadata";
 import { safeDecodeURI } from "~src/utils/uri";
+import { getRaceByRaceId } from "~src/lib/races";
 
 export const revalidate = 30;
 
@@ -55,6 +56,12 @@ export const TournamentPage = async ({
 
     const session = await getSession();
 
+    let race = undefined;
+
+    if (tournament.raceId) {
+        race = await getRaceByRaceId(tournament.raceId);
+    }
+
     return (
         <GenericTournament
             liveDataMap={liveRunArrayToMap(
@@ -65,6 +72,7 @@ export const TournamentPage = async ({
             session={session}
             tournament={tournament}
             tab={tab}
+            race={race}
         />
     );
 };
