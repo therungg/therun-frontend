@@ -138,8 +138,8 @@ const Topbar = ({
                                 <NavDropdown.Item href={`/${username}`}>
                                     Profile
                                 </NavDropdown.Item>
-                                <NavDropdown.Item href={"/upload-key"}>
-                                    Upload Key
+                                <NavDropdown.Item href={"/livesplit"}>
+                                    LiveSplit Key
                                 </NavDropdown.Item>
                                 <NavDropdown.Item href={"/change-appearance"}>
                                     Name Appearance

@@ -42,7 +42,7 @@ export const RacesWelcomeMessage = () => {
                     <span>
                         By using the
                         <a
-                            href={"/upload-key"}
+                            href={"/livesplit"}
                             rel={"noreferrer"}
                             target={"_blank"}
                             className={"ps-1"}

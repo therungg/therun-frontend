@@ -72,7 +72,7 @@ const RaceFaqBody = () => {
                             it. You are good to go! Just log in with Twitch in
                             the top right corner and you are all set. If you do
                             not use the component yet, checkout{" "}
-                            <a href={"/upload-key"}>this tutorial</a>. It will
+                            <a href={"/livesplit"}>this tutorial</a>. It will
                             take 5 minutes max. Want to test out if it is
                             working? Start your LiveSplit timer and see yourself
                             appear on <a href={"/live"}>the live page!</a>

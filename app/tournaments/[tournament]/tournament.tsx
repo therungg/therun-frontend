@@ -182,13 +182,7 @@ export const GenericTournament = ({
                                 }
                             >
                                 <a
-                                    href={
-                                        tournament.description?.includes(
-                                            "Moist",
-                                        )
-                                            ? "/moist-setup"
-                                            : "/upload-key"
-                                    }
+                                    href={"/livesplit"}
                                     rel={"noreferrer"}
                                     target={"_blank"}
                                 >
