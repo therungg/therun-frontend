@@ -54,6 +54,8 @@ const RaceParticipantDetailPagination = ({
         12,
     );
 
+    const placingOffset = (pagination.page - 1) * pagination.pageSize;
+
     return (
         <>
             <Row xs={1} sm={2} xxl={3} className={"g-4"} ref={parent}>
@@ -71,7 +73,7 @@ const RaceParticipantDetailPagination = ({
                             }}
                         >
                             <RaceParticipantDetailView
-                                placing={i + 1}
+                                placing={placingOffset + i + 1}
                                 participant={participant}
                                 race={race}
                             />

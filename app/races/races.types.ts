@@ -40,6 +40,8 @@ export interface Race {
     participantCount: number;
     readyParticipantCount: number;
     finishedParticipantCount: number;
+    prizepool?: number;
+    prizepoolDistribution?: number[];
     startTime: string | null;
     endTime: string | null;
     firstFinishedParticipantTime: number | null;
