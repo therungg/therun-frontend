@@ -13,9 +13,6 @@ import { readableRaceParticipantStatus } from "~app/races/[race]/readable-race-s
 import { RaceParticipantTimer } from "~app/races/[race]/race-timer";
 import { getPercentageDoneFromLiverun } from "~app/races/[race]/get-percentage-done-from-liverun";
 import { RaceParticipantRatingDisplay } from "~app/races/components/race-participant-rating-display";
-import { PaginationContextProvider } from "~src/components/pagination/pagination.context-provider";
-import usePagination from "~src/components/pagination/use-pagination";
-import PaginationControl from "~src/components/pagination/pagination-control";
 
 interface RaceParticipantDetailProps {
     race: Race;
@@ -28,12 +25,7 @@ export const RaceParticipantDetail = ({
     setStream,
 }: RaceParticipantDetailProps) => {
     return (
-        <PaginationContextProvider>
-            <RaceParticipantDetailPagination
-                race={race}
-                setStream={setStream}
-            />
-        </PaginationContextProvider>
+        <RaceParticipantDetailPagination race={race} setStream={setStream} />
     );
 };
 
@@ -48,18 +40,10 @@ const RaceParticipantDetailPagination = ({
         easing: "ease-out",
     });
 
-    const pagination = usePagination<RaceParticipantWithLiveData>(
-        participants,
-        undefined,
-        12,
-    );
-
-    const placingOffset = (pagination.page - 1) * pagination.pageSize;
-
     return (
         <>
             <Row xs={1} sm={2} xxl={3} className={"g-4"} ref={parent}>
-                {pagination.data?.map((participant, i) => {
+                {participants.map((participant, i) => {
                     return (
                         <Col
                             key={participant.user}
@@ -73,7 +57,7 @@ const RaceParticipantDetailPagination = ({
                             }}
                         >
                             <RaceParticipantDetailView
-                                placing={placingOffset + i + 1}
+                                placing={i + 1}
                                 participant={participant}
                                 race={race}
                             />
@@ -81,11 +65,6 @@ const RaceParticipantDetailPagination = ({
                     );
                 })}
             </Row>
-            {pagination.totalPages > 1 && (
-                <div className={"mt-3"}>
-                    <PaginationControl {...pagination} />
-                </div>
-            )}
         </>
     );
 };
