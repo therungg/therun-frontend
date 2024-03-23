@@ -101,6 +101,8 @@ const Topbar = ({
                         </Nav.Link>
                         <Nav.Link href="/live">Live</Nav.Link>
                         <Nav.Link href="/games/">Games</Nav.Link>
+                        <Nav.Link href="/gsa/">PACE Qualifiers</Nav.Link>
+                        <Nav.Link href="/pace-race/">120 Star Race</Nav.Link>
                         <Nav.Link href="/patron">
                             Support <PatreonBunnySvgWithoutLink />
                         </Nav.Link>
