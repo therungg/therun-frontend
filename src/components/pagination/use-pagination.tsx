@@ -16,13 +16,27 @@ function usePagination<T>(
     debounce?: number,
     params?: any,
 ): PaginationHook<T> {
-    let fullData = initialData;
+    const [fullData, setFullData] = useState(initialData);
+
+    useEffect(() => {
+        let newInitialData = initialData;
+        if (Array.isArray(initialData)) {
+            newInitialData = paginateArray(initialData, pageSize, 1);
+        }
+        setFullData(newInitialData);
+
+        // Reset state based on new initialData
+        setData({ "1-": newInitialData });
+        setCurrentData(newInitialData);
+        // Potentially trigger a new fetch
+        fetchData(1, search);
+    }, [initialData]);
 
     if (Array.isArray(initialData)) {
         initialData = paginateArray(initialData, pageSize, 1);
     } else {
         pageSize = fullData.pageSize;
-        fullData = fullData.items;
+        setFullData(fullData.items);
     }
 
     if (fetchPage === undefined) {
