@@ -6,13 +6,14 @@ import { useStopwatch } from "react-timer-hook";
 export const useSpeedrunTimer = (initialOffset = 0, autoStart = false) => {
     const stopwatchInitialOffset = new Date();
     stopwatchInitialOffset.setSeconds(
-        stopwatchInitialOffset.getSeconds() + initialOffset,
+        stopwatchInitialOffset.getSeconds() + Math.abs(initialOffset),
     );
 
     const { hours, minutes, seconds, start, pause, reset } = useStopwatch({
         autoStart,
         offsetTimestamp: stopwatchInitialOffset,
     });
+
     const formatHours = (value: number): string => {
         if (value === 0) return "";
 
