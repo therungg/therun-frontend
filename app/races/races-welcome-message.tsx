@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 export const RacesWelcomeMessage = () => {
-    const [show, setShow] = useState(true);
+    const [show, setShow] = useState(false);
 
     if (!show) return <></>;
 
