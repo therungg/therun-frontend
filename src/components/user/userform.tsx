@@ -47,7 +47,11 @@ export const Userform = ({ username, session, userData }) => {
     return (
         <div>
             {!editingInfo &&
-                Display({ username, form, showTimezone: !!userData.timezone })}
+                Display({
+                    username: userData.login || username,
+                    form,
+                    showTimezone: !!userData.timezone,
+                })}
             {editingInfo && Edit({ username, form, setForm })}
 
             <Can I={"edit"} this={subject("user", username)}>

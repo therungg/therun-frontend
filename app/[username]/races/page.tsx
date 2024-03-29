@@ -8,13 +8,14 @@ import {
 import { UserRaceProfile } from "~app/[username]/races/user-race-profile";
 import { DetailedUserStats, RaceParticipant } from "~app/races/races.types";
 import { groupCategoryStatsByGame } from "~app/[username]/races/group-category-stats-by-game";
+import { safeDecodeURI } from "~src/utils/uri";
 
 interface PageProps {
     params: { username: string };
 }
 
 export default async function Page({ params }: PageProps) {
-    const { username } = params;
+    const username = safeDecodeURI(params.username);
 
     const promises = [
         getDetailedUserStats(username),
