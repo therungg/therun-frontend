@@ -171,8 +171,13 @@ export const getRaceCategoryStats = async (game: string, category: string) => {
 
 export const getRaceMessages = async (
     raceId: string,
+    initialCall = false,
 ): Promise<RaceMessage[]> => {
-    const url = `${racesApiUrl}/${raceId}/messages`;
+    let url = `${racesApiUrl}/${raceId}/messages`;
+
+    if (initialCall) {
+        url += "?limit=50";
+    }
 
     const messages = await fetch(url, { next: { revalidate: 0 } });
 

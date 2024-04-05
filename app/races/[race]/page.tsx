@@ -22,7 +22,7 @@ export default async function RaceDetailPage({ params }: PageProps) {
     const promises = [
         getRaceByRaceId(raceId),
         getSession(),
-        getRaceMessages(raceId),
+        getRaceMessages(raceId, true),
     ];
 
     const [race, session, messages] = (await Promise.all(promises)) as [
