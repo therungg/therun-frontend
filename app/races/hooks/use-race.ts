@@ -99,7 +99,7 @@ export const useRace = (race: Race, messages: RaceMessage[]) => {
         };
     }, []);
 
-    return { raceState, messagesState };
+    return { raceState, messagesState, setRaceState, setMessagesState };
 };
 
 export const useRaces = (races: Race[]) => {
