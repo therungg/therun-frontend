@@ -7,6 +7,12 @@ export const revalidate = 0;
 export default async function TournamentsPage() {
     const tournaments: Tournament[] = await getTournaments();
 
+    tournaments.sort((a, b) => {
+        return (
+            new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+        );
+    });
+
     const now = new Date().toISOString();
 
     const finishedTournaments = tournaments.filter(
