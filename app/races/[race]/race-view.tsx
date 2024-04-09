@@ -7,7 +7,7 @@ import {
 } from "~app/races/races.types";
 import { User } from "../../../types/session.types";
 import { Col, Row } from "react-bootstrap";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { RaceParticipantOverview } from "~app/races/[race]/race-participant-overview";
 import { RaceParticipantDetail } from "~app/races/[race]/race-participant-detail";
 import { RaceActions } from "~app/races/[race]/race-actions";
@@ -24,6 +24,7 @@ import { RaceAdminActions } from "~app/races/[race]/race-admin-actions";
 import { RaceStartConditionInformation } from "~app/races/[race]/race-start-condition-information";
 import { RaceStats } from "~app/races/[race]/race-stats";
 import { RaceProgressGraph } from "~app/races/[race]/race-progress-graph";
+import { getRaceMessages } from "~src/lib/races";
 
 interface RaceDetailProps {
     race: Race;
@@ -32,13 +33,26 @@ interface RaceDetailProps {
 }
 
 export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
-    const { raceState, messagesState } = useRace(race, messages);
+    const { raceState, messagesState, setMessagesState } = useRace(
+        race,
+        messages,
+    );
     const [stream, setStream] = useState(getInitialRaceStream(raceState));
 
     const breadcrumbs: BreadcrumbItem[] = [
         { content: "Races", href: "/races" },
         { content: race.raceId },
     ];
+
+    useEffect(() => {
+        const fetchRaceMessages = async () => {
+            const res = await getRaceMessages(race.raceId);
+            setMessagesState(res);
+        };
+
+        fetchRaceMessages();
+    }, []);
+
     return (
         <>
             <Breadcrumb breadcrumbs={breadcrumbs} />
