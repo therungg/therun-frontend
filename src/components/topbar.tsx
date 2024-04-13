@@ -83,26 +83,12 @@ const Topbar = ({
                                 </div>
                             </Nav.Link>
                         )}
-                        <Nav.Link href="/races">
-                            <b>
-                                <span className="align-self-center">
-                                    Races{" "}
-                                    <i>
-                                        <sup
-                                            style={{
-                                                color: "var(--bs-secondary)",
-                                            }}
-                                        >
-                                            new!
-                                        </sup>
-                                    </i>
-                                </span>
-                            </b>
-                        </Nav.Link>
+                        <Nav.Link href="/races">Races</Nav.Link>
+                        <Nav.Link href="/tournaments">Tournaments</Nav.Link>
                         <Nav.Link href="/live">Live</Nav.Link>
                         <Nav.Link href="/games/">Games</Nav.Link>
                         <Nav.Link href="/patron">
-                            Support <PatreonBunnySvgWithoutLink />
+                            Support us! <PatreonBunnySvgWithoutLink />
                         </Nav.Link>
                     </Nav>
                     <Nav className="ml-auto mb-2 mb-lg-0 me-lg-2">

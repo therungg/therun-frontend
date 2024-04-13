@@ -176,7 +176,7 @@ export const getRaceMessages = async (
     let url = `${racesApiUrl}/${raceId}/messages`;
 
     if (initialCall) {
-        url += "?limit=50";
+        url += "?limit=20";
     }
 
     const messages = await fetch(url, { next: { revalidate: 0 } });
