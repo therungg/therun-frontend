@@ -193,6 +193,16 @@ export const GenericTournament = ({
                             </div>
                         )}
 
+                        {!tournament.logoUrl && tournament.gameImage && (
+                            <div className="d-flex pt-3 justify-content-end h-100">
+                                <Image
+                                    src={tournament.gameImage}
+                                    alt={"Tournament Logo"}
+                                    height={120}
+                                />
+                            </div>
+                        )}
+
                         {(!tournament.eligibleUsers ||
                             tournament.eligibleUsers.length === 0) && (
                             <div
