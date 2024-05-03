@@ -5,6 +5,10 @@ import { Card, Col, Image, Row } from "react-bootstrap";
 import { FromNow } from "~src/components/util/datetime";
 import { AllTournamentsProps } from "~app/tournaments/all-tournaments.types";
 import { safeEncodeURI } from "~src/utils/uri";
+import { TournamentInfoBox } from "~app/tournaments/tournament-info-box";
+import { UpcomingTournaments } from "~app/tournaments/upcoming-tournaments";
+import { FinishedTournaments } from "~app/tournaments/finished-tournaments";
+import { CurrentTournaments } from "~app/tournaments/current-tournaments";
 
 export function AllTournaments({
     finishedTournaments,
@@ -14,18 +18,17 @@ export function AllTournaments({
     return (
         <div>
             <h1>Tournaments</h1>
-
-            <h2>Ongoing tournaments</h2>
-
-            <ListTournaments tournaments={ongoingTournaments} />
-
-            <h2>Upcoming tournaments</h2>
-
-            <ListTournaments tournaments={upcomingTournaments} />
-
-            <h2>Finished tournaments</h2>
-
-            <ListTournaments tournaments={finishedTournaments} />
+            <Row>
+                <Col xl={8}>
+                    <CurrentTournaments tournaments={ongoingTournaments} />
+                    <hr className={"mt-4"} />
+                    <FinishedTournaments tournaments={finishedTournaments} />
+                </Col>
+                <Col xl={4}>
+                    <TournamentInfoBox />
+                    <UpcomingTournaments tournaments={upcomingTournaments} />
+                </Col>
+            </Row>
         </div>
     );
 }
@@ -57,7 +60,7 @@ export const ListTournaments = ({
                                     <Image
                                         className="w-auto"
                                         alt={"Tournament Logo"}
-                                        src={tournament.logoUrl}
+                                        src={`/${tournament.logoUrl}`}
                                         height={135}
                                         width={135}
                                     />

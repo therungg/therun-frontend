@@ -45,8 +45,8 @@ export interface Tournament {
     customRuns: CustomRun[];
 
     raceId?: string;
-
     gameImage: string;
+    organizer: string;
 }
 
 export interface CustomRun {
