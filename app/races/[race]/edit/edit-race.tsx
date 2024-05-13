@@ -1,9 +1,9 @@
 "use client";
 
-import { Race } from "~app/races/races.types";
-import { User } from "../../../../types/session.types";
 import { Button, Form } from "react-bootstrap";
+import { Race } from "~app/races/races.types";
 import { isRaceModerator } from "~src/rbac/confirm-permission";
+import { User } from "../../../../types/session.types";
 
 // eslint-disable-next-line import/named
 import { useFormState, useFormStatus } from "react-dom";
@@ -12,7 +12,6 @@ import {
     Breadcrumb,
     BreadcrumbItem,
 } from "~src/components/breadcrumbs/breadcrumb";
-import React from "react";
 import { UnderlineTooltip } from "~src/components/tooltip";
 
 export const EditRace = ({ race, user }: { race: Race; user: User }) => {
@@ -42,7 +41,7 @@ export const EditRace = ({ race, user }: { race: Race; user: User }) => {
             <Form action={formAction} className={"row"}>
                 <input hidden name={"raceId"} value={race.raceId} readOnly />
                 <fieldset className={"border py-3 px-4"}>
-                    <legend className={"w-auto mb-0"}>Create a new race</legend>
+                    <legend className={"w-auto mb-0"}>Edit race</legend>
                     <div className={"row g-3 mb-3"}>
                         <Form.Group controlId={"customName"}>
                             <Form.Label>Race Name</Form.Label>
