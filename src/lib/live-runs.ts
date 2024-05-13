@@ -2,11 +2,14 @@ import { safeEncodeURI } from "~src/utils/uri";
 import { Tournament } from "~src/components/tournament/tournament-info";
 import { LiveRun } from "~app/live/live.types";
 
-export const liveRunUrl =
+export const LIVE_RUN_URL =
     "https://pokzhwoycl3uo7n5lzh6iltyoq0iaibq.lambda-url.eu-west-1.on.aws/";
 
-export const getAllLiveRuns = async (game = null, category = null) => {
-    let url = `${liveRunUrl}?minify=true`;
+export const getAllLiveRuns = async (
+    game: string | null = null,
+    category: string | null = null,
+) => {
+    let url = `${LIVE_RUN_URL}?minify=true`;
 
     if (game) {
         url += `&game=${safeEncodeURI(game)}`;
@@ -33,7 +36,7 @@ export const getLiveRunsForGameCategory = async (
     category: string,
 ): Promise<LiveRun[]> => {
     const result = await fetch(
-        `${liveRunUrl}?game=${safeEncodeURI(game)}&category=${safeEncodeURI(
+        `${LIVE_RUN_URL}?game=${safeEncodeURI(game)}&category=${safeEncodeURI(
             category,
         )}`,
     );
@@ -42,7 +45,7 @@ export const getLiveRunsForGameCategory = async (
 };
 
 export const getLiveRunForUser = async (username: string) => {
-    const result = await fetch(`${liveRunUrl}?username=${username}`);
+    const result = await fetch(`${LIVE_RUN_URL}?username=${username}`);
 
     return result.json();
 };

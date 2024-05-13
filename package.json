@@ -8,7 +8,8 @@
     "lint": "next lint",
     "lint-fix": "next lint --fix",
     "prepare": "husky install",
-    "prepush": "next lint --fix"
+    "prepush": "next lint --fix",
+    "typecheck": "tsc --noEmit"
   },
   "overrides": {
     "react": "^18.3.0-canary-f1039be4a-20240107",

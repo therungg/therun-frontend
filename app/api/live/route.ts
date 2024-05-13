@@ -4,13 +4,17 @@ import { apiResponse } from "~app/api/response";
 
 export const revalidate = 0;
 
-export async function GET(request: NextRequest) {
-    const { searchParams } = new URL(request.url);
+export async function GET(
+    _request: NextRequest,
+    {
+        params,
+    }: {
+        params: { game: string; category: string };
+    },
+) {
+    const { game, category } = params;
 
-    const result = await getAllLiveRuns(
-        searchParams.get("game"),
-        searchParams.get("category"),
-    );
+    const result = await getAllLiveRuns(game, category);
 
     return apiResponse({ body: result });
 }

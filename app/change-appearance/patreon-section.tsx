@@ -113,9 +113,7 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                                                         "joeys64"
                                                 ) {
                                                     setColorPreference(
-                                                        parseInt(
-                                                            style.id as string,
-                                                        ),
+                                                        style.id,
                                                     );
                                                 } else {
                                                     alert(
