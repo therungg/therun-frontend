@@ -19,7 +19,7 @@
   ],
   "rules": {
     "@next/next/no-page-custom-font": "off",
-    "react-hooks/exhaustive-deps": "off",
+    "react-hooks/exhaustive-deps": "warn",
     "@next/next/google-font-display": "off",
     "filenames/match-regex": "off",
     "no-irregular-whitespace": "off",

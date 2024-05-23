@@ -11,9 +11,9 @@ import { SendChatMessageForm } from "~app/races/components/forms/send-chat-messa
 import { Form } from "react-bootstrap";
 import { UserLink } from "~src/components/links/links";
 import { DurationToFormatted } from "~src/components/util/datetime";
-import React, { Suspense, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { random } from "nanoid";
-import { NoSSR } from "next/dist/shared/lib/lazy-dynamic/dynamic-no-ssr";
+import dynamic from "next/dynamic";
 import { User } from "../../../types/session.types";
 
 interface FilterOptions {
@@ -22,6 +22,16 @@ interface FilterOptions {
     participants: boolean;
     splits: boolean;
 }
+
+const ChatMessageTime = dynamic(
+    async () => {
+        return (await import("~app/races/[race]/chat-message-time"))
+            .ChatMessageTime;
+    },
+    {
+        ssr: false,
+    },
+);
 
 export const RaceChat = ({
     race,
@@ -160,29 +170,10 @@ const Chatmessage = ({ message }: { message: RaceMessage }) => {
     return (
         <div className={"d-flex"}>
             <span className={"me-2"}>
-                <Suspense fallback={<ChatMessageTime time={message.time} />}>
-                    <NoSSR>
-                        <ChatMessageTime time={message.time} />
-                    </NoSSR>
-                </Suspense>
+                <ChatMessageTime time={message.time} />
             </span>
             <div className={"w-100"}>{getRaceMessage(message)}</div>
         </div>
-    );
-};
-
-const ChatMessageTime = ({ time }: { time: string }) => {
-    return (
-        <small
-            suppressHydrationWarning
-            title={new Date(time).toLocaleTimeString()}
-            className={"text-nowrap"}
-        >
-            {new Date(time).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-            })}
-        </small>
     );
 };
 

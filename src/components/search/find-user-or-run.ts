@@ -15,7 +15,7 @@ interface SearchResults {
     };
     users: {
         [user: string]: RunData[];
-    }
+    };
 }
 
 // Same as API on empty result
@@ -23,7 +23,7 @@ const DEFAULT_SEARCH_RESULTS = {
     categories: {},
     games: {},
     users: {},
-}
+};
 
 export const findUserOrRun = async (term: string): Promise<SearchResults> => {
     if (term.length < 2) return DEFAULT_SEARCH_RESULTS;
