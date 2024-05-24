@@ -87,6 +87,9 @@ const Topbar = ({
                         <Nav.Link href="/tournaments">Tournaments</Nav.Link>
                         <Nav.Link href="/live">Live</Nav.Link>
                         <Nav.Link href="/games/">Games</Nav.Link>
+                        <Nav.Link href="/moist/">
+                            MoistCr1tikal Tournament #5
+                        </Nav.Link>
                         <Nav.Link href="/patron">
                             Support us! <PatreonBunnySvgWithoutLink />
                         </Nav.Link>
