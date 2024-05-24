@@ -37,7 +37,7 @@ export default function PaginationControl<T>({
     };
 
     return (
-        <div>
+        <div className="w-100">
             <Pagination
                 className="justify-content-center"
                 onClick={onPaginationClick}

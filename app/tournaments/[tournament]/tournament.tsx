@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { Button, Col, Image, Row, Tab, Tabs } from "react-bootstrap";
+import React, { useCallback, useEffect, useState } from "react";
+import { Col, Image, Row, Tab, Tabs } from "react-bootstrap";
 import { LiveUserRun } from "~src/components/live/live-user-run";
 import { RecommendedStream } from "~src/components/live/recommended-stream";
 import runStyles from "~src/components/css/LiveRun.module.scss";
@@ -29,6 +29,7 @@ import {
     Breadcrumb,
     BreadcrumbItem,
 } from "~src/components/breadcrumbs/breadcrumb";
+import { CategoryLeaderboard } from "~app/games/[game]/game.types";
 
 export const GenericTournament = ({
     liveDataMap,
@@ -48,13 +49,21 @@ export const GenericTournament = ({
     const gameTime = !!tournament.gameTime;
 
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
-    const [sort, setSort] = useState("personalBest");
+    const [selectedSort, setSelectedSort] = useState("personalBest");
     const [search, setSearch] = useState("");
 
     const recommendedStream = getRecommendedStream(liveDataMap, username);
     const [currentlyViewing, setCurrentlyViewing] = useState(recommendedStream);
 
-    let tournamentLeaderboards = null;
+    const handleSortChange: React.ChangeEventHandler<HTMLSelectElement> =
+        useCallback(
+            (event) => {
+                setSelectedSort(event.target.value);
+            },
+            [setSelectedSort],
+        );
+
+    let tournamentLeaderboards: CategoryLeaderboard | null = null;
     if (tournament.leaderboards) {
         tournamentLeaderboards =
             gameTime && tournament.leaderboards.gameTime
@@ -103,7 +112,7 @@ export const GenericTournament = ({
 
                 newMap = liveRunArrayToMap(
                     Object.values(newMap),
-                    sort,
+                    selectedSort,
                     tournamentLeaderboards,
                 );
 
@@ -118,16 +127,16 @@ export const GenericTournament = ({
         );
         newMap = liveRunArrayToMap(
             Object.values(newMap),
-            sort,
+            selectedSort,
             tournamentLeaderboards,
         );
 
         setUpdatedLiveDataMap(newMap);
-    }, [sort]);
+    }, [selectedSort]);
 
     const breadcrumbs: BreadcrumbItem[] = [
         { content: "Tournaments", href: "/tournaments" },
-        { content: tournament.shortName },
+        { content: tournament.shortName || "" },
     ];
 
     return (
@@ -203,8 +212,7 @@ export const GenericTournament = ({
                             </div>
                         )}
 
-                        {(!tournament.eligibleUsers ||
-                            tournament.eligibleUsers.length === 0) && (
+                        {!tournament.eligibleUsers?.length && (
                             <div
                                 className={
                                     runStyles.tournamentHowDoesThisWorkButton
@@ -214,13 +222,9 @@ export const GenericTournament = ({
                                     href={"/livesplit"}
                                     rel={"noreferrer"}
                                     target={"_blank"}
+                                    className="link-primary text-decoration-underline fs-6"
                                 >
-                                    <Button
-                                        variant={"primary"}
-                                        className="btn-lg px-3 h-3r fw-medium w-240p"
-                                    >
-                                        How does this work?
-                                    </Button>
+                                    How does this work?
                                 </a>
                             </div>
                         )}
@@ -274,101 +278,61 @@ export const GenericTournament = ({
                         </Col>
                         <Col md={12} xl={8}>
                             <h3>Live Runs</h3>
-                            <Row className="mb-3">
-                                <Col>
-                                    <Button
-                                        className={
-                                            runStyles.sortButton +
-                                            (sort === "time"
-                                                ? ` ${runStyles.sortButtonActive}`
-                                                : "")
-                                        }
-                                        onClick={() => {
-                                            setSort("time");
-                                        }}
+                            <Row className="mt-4">
+                                <Col md={4} className="mb-2">
+                                    <select
+                                        className={"form-select"}
+                                        onChange={handleSortChange}
+                                        value={selectedSort}
                                     >
-                                        Sort by Current Time
-                                    </Button>
+                                        <option value="time">
+                                            Sort by Current Time
+                                        </option>
+                                        <option value="pb">
+                                            Sort by Tournament PB
+                                        </option>
+                                        <option value="personalBest">
+                                            Sort By Personal best
+                                        </option>
+                                        <option value="name">
+                                            Sort by Name
+                                        </option>
+                                    </select>
                                 </Col>
                                 <Col>
-                                    <Button
-                                        className={
-                                            runStyles.sortButton +
-                                            (sort === "pb"
-                                                ? ` ${runStyles.sortButtonActive}`
-                                                : "")
-                                        }
-                                        onClick={() => {
-                                            setSort("pb");
-                                        }}
-                                    >
-                                        Sort by Tournament PB
-                                    </Button>
-                                </Col>
-                                <Col>
-                                    <Button
-                                        className={
-                                            runStyles.sortButton +
-                                            (sort === "personalBest"
-                                                ? ` ${runStyles.sortButtonActive}`
-                                                : "")
-                                        }
-                                        onClick={() => {
-                                            setSort("personalBest");
-                                        }}
-                                    >
-                                        Sort by Personal Best
-                                    </Button>
-                                </Col>
-                                <Col>
-                                    <Button
-                                        className={
-                                            runStyles.sortButton +
-                                            (sort === "name"
-                                                ? ` ${runStyles.sortButtonActive}`
-                                                : "")
-                                        }
-                                        onClick={() => {
-                                            setSort("name");
-                                        }}
-                                    >
-                                        Sort by Name
-                                    </Button>
+                                    <div className="d-flex justify-content-center">
+                                        <div className="mb-3 input-group game-filter-mw">
+                                            <span
+                                                className="input-group-text"
+                                                onClick={() => {
+                                                    const searchElement =
+                                                        document.getElementById(
+                                                            "gameSearch",
+                                                        );
+                                                    if (
+                                                        document.activeElement !==
+                                                        searchElement
+                                                    ) {
+                                                        searchElement.focus();
+                                                    }
+                                                }}
+                                            >
+                                                <SearchIcon size={18} />
+                                            </span>
+                                            <input
+                                                type="search"
+                                                className="form-control"
+                                                placeholder="Filter by game/category/user"
+                                                onChange={(e) => {
+                                                    setSearch(e.target.value);
+                                                }}
+                                                value={search}
+                                                id="gameSearch"
+                                            />
+                                        </div>
+                                    </div>
                                 </Col>
                             </Row>
-
-                            <div className="d-flex justify-content-center">
-                                <div className="mb-3 input-group game-filter-mw">
-                                    <span
-                                        className="input-group-text"
-                                        onClick={() => {
-                                            const searchElement =
-                                                document.getElementById(
-                                                    "gameSearch",
-                                                );
-                                            if (
-                                                document.activeElement !==
-                                                searchElement
-                                            ) {
-                                                searchElement.focus();
-                                            }
-                                        }}
-                                    >
-                                        <SearchIcon size={18} />
-                                    </span>
-                                    <input
-                                        type="search"
-                                        className="form-control"
-                                        placeholder="Filter by game/category/user"
-                                        onChange={(e) => {
-                                            setSearch(e.target.value);
-                                        }}
-                                        value={search}
-                                        id="gameSearch"
-                                    />
-                                </div>
-                            </div>
-
                             <Row>
                                 {Object.values(updatedLiveDataMap).length ==
                                     0 && (
