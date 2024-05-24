@@ -7,10 +7,14 @@ import { User } from "../types/session.types";
 import { defineAbilityFor } from "~src/rbac/ability";
 import { AbilityContext } from "~src/rbac/Can.component";
 
+interface ProvidersProps {
+    user: User;
+}
+
 export function Providers({
     children,
     user,
-}: PropsWithChildren<{ user: User }>) {
+}: PropsWithChildren<ProvidersProps>) {
     const ability = defineAbilityFor(user);
 
     return (

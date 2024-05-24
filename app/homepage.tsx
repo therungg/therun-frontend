@@ -10,6 +10,7 @@ import { SkeletonPersonalBests } from "~src/components/skeleton/index/skeleton-p
 import { PopularGames } from "~src/components/game/popular-games";
 import { SkeletonPopularGames } from "~src/components/skeleton/index/skeleton-popular-games";
 import React from "react";
+import { useTranslations } from "next-intl";
 
 export default function Homepage({
     runs,
@@ -18,11 +19,13 @@ export default function Homepage({
     runs: Run[];
     gamestats: Game[];
 }) {
+    const t = useTranslations("homepage");
+
     return (
         <div>
             <div className="px-4 pt-5 mt-3 mb-5 text-center">
-                <h1 className="display-1 fw-medium">The Run</h1>
-                <h2 className="display-6 mb-5">Statistics for speedrunners</h2>
+                <h1 className="display-1 fw-medium">{t("title")}</h1>
+                <h2 className="display-6 mb-5">{t("subtitle")}</h2>
                 <div className="col-lg-6 mx-auto">
                     <p className="lead mb-4"></p>
                     <div className="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
@@ -31,7 +34,7 @@ export default function Homepage({
                                 variant={"secondary"}
                                 className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
                             >
-                                Support <PatreonBunnySvgWithoutLink />
+                                {t("support")} <PatreonBunnySvgWithoutLink />
                             </Button>
                         </Link>
                         <Link href={"/about"}>
@@ -39,7 +42,7 @@ export default function Homepage({
                                 variant={"primary"}
                                 className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
                             >
-                                Learn more
+                                {t("learnMore")}
                             </Button>
                         </Link>
                         <Link href={"/livesplit"}>
@@ -47,7 +50,7 @@ export default function Homepage({
                                 variant={"primary"}
                                 className="btn-lg px-3 w-160p h-3r fw-medium"
                             >
-                                LiveSplit Key
+                                {t("liveSplitKey")}
                             </Button>
                         </Link>
                     </div>
