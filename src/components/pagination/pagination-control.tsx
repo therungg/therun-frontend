@@ -37,9 +37,9 @@ export default function PaginationControl<T>({
     };
 
     return (
-        <div className="w-100">
+        <>
             <Pagination
-                className="justify-content-center"
+                className="w-100 justify-content-center"
                 onClick={onPaginationClick}
                 size="lg"
             >
@@ -50,7 +50,7 @@ export default function PaginationControl<T>({
                 {page * pageSize > totalItems ? totalItems : page * pageSize}{" "}
                 out of {totalItems}
             </div>
-        </div>
+        </>
     );
 }
 
