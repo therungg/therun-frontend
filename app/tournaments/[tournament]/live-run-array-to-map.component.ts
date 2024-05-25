@@ -1,10 +1,11 @@
+import { CategoryLeaderboard } from "~app/games/[game]/game.types";
 import { LiveRun } from "~app/live/live.types";
 import { CombinedLeaderboardStat } from "~app/tournaments/[tournament]/get-combined-tournament-leaderboard.component";
 
 export const liveRunArrayToMap = (
     liveData: LiveRun[],
     sort = "pb",
-    leaderboards = null,
+    leaderboards: CategoryLeaderboard | null = null,
     leaderboardsRta = null,
     seedingTable: CombinedLeaderboardStat[] | null = null,
 ) => {

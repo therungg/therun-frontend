@@ -1,5 +1,5 @@
 import { Count } from "~app/games/[game]/game.types";
-import React, { ReactElement } from "react";
+import React, { memo, useMemo, ReactElement } from "react";
 import { PaginationContextProvider } from "~src/components/pagination/pagination.context-provider";
 import usePagination from "~src/components/pagination/use-pagination";
 import { leaderboardFetcher } from "~src/components/pagination/fetchers/leaderboard-fetcher";
@@ -18,34 +18,42 @@ export interface PaginatedGameLeaderboardProps {
     ) => string | number | ReactElement;
 }
 
-export const PaginatedGameLeaderboard = (
-    props: PaginatedGameLeaderboardProps,
-) => {
-    return (
-        <PaginationContextProvider>
-            <PaginatedGameLeaderboardComponent {...props} />
-        </PaginationContextProvider>
-    );
-};
+export const PaginatedGameLeaderboard = memo(
+    (props: PaginatedGameLeaderboardProps) => {
+        return (
+            <PaginationContextProvider>
+                <PaginatedGameLeaderboardComponent {...props} />
+            </PaginationContextProvider>
+        );
+    },
+);
 
-const PaginatedGameLeaderboardComponent = ({
-    name,
-    leaderboard = [],
-    transform,
-}: PaginatedGameLeaderboardProps) => {
-    const pagination = usePagination<Count>(
-        leaderboard,
-        leaderboardFetcher,
-        15,
-    );
+PaginatedGameLeaderboard.displayName = "PaginatedGameLeaderboard";
 
-    return (
-        <div>
+const PaginatedGameLeaderboardComponent = memo(
+    ({ name, leaderboard = [], transform }: PaginatedGameLeaderboardProps) => {
+        const pagination = usePagination<Count>(
+            leaderboard,
+            leaderboardFetcher,
+            15,
+        );
+
+        const Leaderboard = useMemo(
+            () => getLeaderboard(name, pagination.data, "", transform),
+            [name, pagination.data, transform, getLeaderboard],
+        );
+
+        return (
             <div>
-                <PaginationSearch text={"Search user"} />
+                <div className="mb-2">
+                    <PaginationSearch text={"Search user"} />
+                </div>
+                {Leaderboard}
+                <PaginationControl {...pagination} minimalLayout={true} />
             </div>
-            {getLeaderboard(name, pagination.data, "", transform)}
-            <PaginationControl {...pagination} minimalLayout={true} />
-        </div>
-    );
-};
+        );
+    },
+);
+
+PaginatedGameLeaderboardComponent.displayName =
+    "PaginatedGameLeaderboardComponent";
