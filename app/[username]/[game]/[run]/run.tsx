@@ -62,8 +62,7 @@ export default function RunDetail({
         !!(
             run.hasGameTime &&
             !!run.gameTimeData &&
-            run.gameTimeData.personalBest &&
-            parseInt(run.gameTimeData.personalBest) &&
+            Number.isFinite(parseFloat(run.gameTimeData.personalBest)) &&
             !forceRealTime
         ),
     );
