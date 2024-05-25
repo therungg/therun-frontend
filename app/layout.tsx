@@ -23,13 +23,13 @@ export default async function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
-    let sessionError = null;
+    let sessionError: string | null = null;
     let session!: User;
     try {
         session = await getSession();
     } catch (error) {
         if (error instanceof SessionError) {
-            sessionError = error;
+            sessionError = error.toString();
         }
     }
 
@@ -41,6 +41,7 @@ export default async function RootLayout({
                     <Header
                         username={session?.username}
                         picture={session?.picture}
+                        sessionError={sessionError}
                     />
                     <Content>
                         {sessionError ? <SessionErrorBoundary /> : children}

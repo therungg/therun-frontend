@@ -1,7 +1,7 @@
 "use client";
 import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { TwitchUser } from "./twitch/TwitchUser";
@@ -9,21 +9,27 @@ import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
 import { getColorMode } from "~src/utils/colormode";
 import { Upload } from "react-bootstrap-icons";
 import { AutoCompletion } from "~src/components/search/autocompletion";
+import { resetSession } from "~src/actions/reset-session.action";
 
 const DarkModeSlider = dynamic(() => import("./dark-mode-slider"), {
     ssr: false,
 });
 
-const Topbar = ({
-    username,
-    picture,
-}: {
-    username?: string;
-    picture?: string;
-}) => {
+interface TopbarProps {
+    username: string;
+    picture: string;
+    sessionError: string | null;
+}
+
+const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
     const router = useRouter();
     const [show, setShow] = useState(false);
     const [dark, setDark] = useState(true);
+
+    const handleResetSession = useCallback(async () => {
+        await resetSession();
+        window.location.reload();
+    }, [resetSession]);
 
     useEffect(function () {
         setDark(getColorMode() !== "light");
@@ -134,7 +140,20 @@ const Topbar = ({
                                 </NavDropdown.Item>
                             </NavDropdown>
                         )}
-                        {!username && <TwitchLoginButton url="/api" />}
+                        {sessionError && (
+                            <div className="ms-2">
+                                <button
+                                    className="btn btn-primary"
+                                    type="button"
+                                    onClick={handleResetSession}
+                                >
+                                    Reset session
+                                </button>
+                            </div>
+                        )}
+                        {!username && !sessionError && (
+                            <TwitchLoginButton url="/api" />
+                        )}
                     </Nav>
                 </Navbar.Collapse>
             </Container>

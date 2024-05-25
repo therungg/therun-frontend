@@ -11,12 +11,15 @@ export const SessionErrorBoundary = () => {
         <div>
             <h2>Oops, there was an error configuring the session!</h2>
             <p>
-                You can reset your session by clicking the button below. Or, if
-                you&apos;re already logged in, you can manually logout and back
-                in.
+                Please reset your session by clicking the button below and then
+                login again.
             </p>
-            <button type="button" onClick={handleResetSession}>
-                Reset session?
+            <button
+                className="btn btn-primary"
+                type="button"
+                onClick={handleResetSession}
+            >
+                Reset session
             </button>
         </div>
     );
