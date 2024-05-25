@@ -8,6 +8,9 @@ import { Scripts } from "./scripts";
 import { getSession } from "~src/actions/session.action";
 import buildMetadata from "~src/utils/metadata";
 import { Viewport } from "next";
+import { SessionError } from "~src/common/session.error";
+import { User } from "types/session.types";
+import { SessionErrorBoundary } from "~src/components/errors/session.error-boundary";
 
 export const metadata = buildMetadata();
 export const viewport: Viewport = {
@@ -20,7 +23,16 @@ export default async function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const session = await getSession();
+    let sessionError = null;
+    let session!: User;
+    try {
+        session = await getSession();
+    } catch (error) {
+        if (error instanceof SessionError) {
+            sessionError = error;
+        }
+    }
+
     return (
         <html lang="en" suppressHydrationWarning>
             <body>
@@ -30,7 +42,9 @@ export default async function RootLayout({
                         username={session?.username}
                         picture={session?.picture}
                     />
-                    <Content>{children}</Content>
+                    <Content>
+                        {sessionError ? <SessionErrorBoundary /> : children}
+                    </Content>
                     <Footer />
                 </Providers>
             </body>
