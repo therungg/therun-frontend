@@ -151,7 +151,7 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                                 </button>
                             </div>
                         )}
-                        {!username && !sessionError && (
+                        {!sessionError && !username && (
                             <TwitchLoginButton url="/api" />
                         )}
                     </Nav>
