@@ -6,6 +6,8 @@ import { getBaseUrl } from "./base-url.action";
 import { loginWithTwitch } from "../components/twitch/login-with-twitch";
 import { cookies } from "next/headers";
 import { User } from "../../types/session.types";
+import { SessionError } from "~src/common/session.error";
+import { DEFAULT_SESSION } from "~src/common/constants";
 
 export const createSession = async (code: string) => {
     const baseUrl = getBaseUrl();
@@ -39,15 +41,24 @@ export const createSession = async (code: string) => {
 };
 
 export const getSession = async (): Promise<User> => {
-    const defaultSession = { id: "", username: "", picture: "" };
     const sessionId = cookies().get("session_id")?.value;
+    if (!sessionId || sessionId === "undefined") {
+        return DEFAULT_SESSION;
+    }
+    try {
+        const session = await getExistingSession(sessionId);
+        if (session) {
+            return { id: sessionId, ...session };
+        }
+    } catch (error) {
+        // For now we only want to handle _explicit_ failures when retrieving the session.
+        if (error instanceof SessionError) {
+            // re-raise the error
+            throw error;
+        }
 
-    if (!sessionId || sessionId === "undefined") return defaultSession;
-    const session = await getExistingSession(sessionId);
-
-    if (session) {
-        return { id: sessionId, ...session };
+        return DEFAULT_SESSION;
     }
 
-    return defaultSession;
+    return DEFAULT_SESSION;
 };

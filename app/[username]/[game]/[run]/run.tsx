@@ -1,6 +1,4 @@
 "use client";
-
-import { AppProps } from "next/app";
 import { Run, RunHistory, RunSession, SplitsHistory } from "~src/common/types";
 import { LiveRun } from "~app/live/live.types";
 import React, { useEffect, useState } from "react";
@@ -26,7 +24,7 @@ import { Vod } from "~src/components/run/dashboard/vod";
 import Golds from "~src/components/run/dashboard/golds";
 import { safeEncodeURI } from "~src/utils/uri";
 
-interface RunPageProps extends AppProps {
+interface RunPageProps {
     run: Run;
     username: string;
     game: string;
@@ -61,18 +59,19 @@ export default function RunDetail({
     const forceRealTime = !!globalGameData.forceRealTime;
 
     const [useGameTime, setUseGameTime] = useState(
-        run.hasGameTime &&
+        !!(
+            run.hasGameTime &&
             !!run.gameTimeData &&
-            run.gameTimeData.personalBest &&
-            parseInt(run.gameTimeData.personalBest) &&
-            !forceRealTime,
+            Number.isFinite(parseFloat(run.gameTimeData.personalBest)) &&
+            !forceRealTime
+        ),
     );
     const [gameData, setGameData] = useState(null);
     const [dataLoading, setDataLoading] = useState(false);
 
-    const [realTimeRuns, setRealTimeRuns] = useState(null);
-    const [gameTimeRuns, setGameTimeRuns] = useState(null);
-    const [liveRun, setLiveRun] = useState(liveData);
+    const [realTimeRuns, setRealTimeRuns] = useState<Runs | null>(null);
+    const [gameTimeRuns, setGameTimeRuns] = useState<Runs | null>(null);
+    const [liveRun, setLiveRun] = useState<LiveRun | null>(liveData);
 
     const lastMessage = useLiveRunsWebsocket(username);
 
@@ -83,7 +82,7 @@ export default function RunDetail({
             }
 
             if (lastMessage.type === "DELETE") {
-                setLiveRun([]);
+                setLiveRun(null);
             }
         }
     }, [lastMessage]);
@@ -267,9 +266,9 @@ export default function RunDetail({
                             <RecentRuns
                                 history={runs}
                                 pb={
-                                    useGameTime
+                                    (useGameTime
                                         ? run.gameTimeData?.personalBest
-                                        : run.personalBest
+                                        : run.personalBest) || ""
                                 }
                             />
                             <hr />
