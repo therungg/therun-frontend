@@ -23,7 +23,19 @@ const tournamentEntries: Array<[string, TournamentEntryValue]> = [
     [
         "moist",
         {
-            tournament: "Escape from Lavender Island",
+            tournament: "MoistCr1tikal Tournament 5",
+        },
+    ],
+    [
+        "ludwig",
+        {
+            tournament: "MoistCr1tikal Tournament 5",
+        },
+    ],
+    [
+        "fast50",
+        {
+            tournament: "MoistCr1tikal Tournament 5",
         },
     ],
     ["saesr", { tournament: "NCW Seeding" }],

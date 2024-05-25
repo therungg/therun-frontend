@@ -1,30 +1,35 @@
 "use client";
 import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import Image from "next/image";
 import { TwitchUser } from "./twitch/TwitchUser";
 import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
 import { getColorMode } from "~src/utils/colormode";
 import { Upload } from "react-bootstrap-icons";
 import { AutoCompletion } from "~src/components/search/autocompletion";
+import { resetSession } from "~src/actions/reset-session.action";
 
 const DarkModeSlider = dynamic(() => import("./dark-mode-slider"), {
     ssr: false,
 });
 
-const Topbar = ({
-    username,
-    picture,
-}: {
-    username?: string;
-    picture?: string;
-}) => {
+interface TopbarProps {
+    username: string;
+    picture: string;
+    sessionError: string | null;
+}
+
+const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
     const router = useRouter();
     const [show, setShow] = useState(false);
     const [dark, setDark] = useState(true);
+
+    const handleResetSession = useCallback(async () => {
+        await resetSession();
+        window.location.reload();
+    }, [resetSession]);
 
     useEffect(function () {
         setDark(getColorMode() !== "light");
@@ -87,8 +92,8 @@ const Topbar = ({
                         <Nav.Link href="/tournaments">Tournaments</Nav.Link>
                         <Nav.Link href="/live">Live</Nav.Link>
                         <Nav.Link href="/games/">Games</Nav.Link>
-                        <Nav.Link href="/patron">
-                            Support us! <PatreonBunnySvgWithoutLink />
+                        <Nav.Link href="/moist/">
+                            MoistCr1tikal Challenge
                         </Nav.Link>
                     </Nav>
                     <Nav className="ml-auto mb-2 mb-lg-0 me-lg-2">
@@ -135,7 +140,20 @@ const Topbar = ({
                                 </NavDropdown.Item>
                             </NavDropdown>
                         )}
-                        {!username && <TwitchLoginButton url="/api" />}
+                        {sessionError && (
+                            <div className="ms-2">
+                                <button
+                                    className="btn btn-primary"
+                                    type="button"
+                                    onClick={handleResetSession}
+                                >
+                                    Reset session
+                                </button>
+                            </div>
+                        )}
+                        {!sessionError && !username && (
+                            <TwitchLoginButton url="/api" />
+                        )}
                     </Nav>
                 </Navbar.Collapse>
             </Container>
