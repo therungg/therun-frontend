@@ -3,7 +3,6 @@ import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import Image from "next/image";
 import { TwitchUser } from "./twitch/TwitchUser";
 import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
@@ -83,26 +82,12 @@ const Topbar = ({
                                 </div>
                             </Nav.Link>
                         )}
-                        <Nav.Link href="/races">
-                            <b>
-                                <span className="align-self-center">
-                                    Races{" "}
-                                    <i>
-                                        <sup
-                                            style={{
-                                                color: "var(--bs-secondary)",
-                                            }}
-                                        >
-                                            new!
-                                        </sup>
-                                    </i>
-                                </span>
-                            </b>
-                        </Nav.Link>
+                        <Nav.Link href="/races">Races</Nav.Link>
+                        <Nav.Link href="/tournaments">Tournaments</Nav.Link>
                         <Nav.Link href="/live">Live</Nav.Link>
                         <Nav.Link href="/games/">Games</Nav.Link>
-                        <Nav.Link href="/patron">
-                            Support <PatreonBunnySvgWithoutLink />
+                        <Nav.Link href="/moist/">
+                            MoistCr1tikal Challenge
                         </Nav.Link>
                     </Nav>
                     <Nav className="ml-auto mb-2 mb-lg-0 me-lg-2">

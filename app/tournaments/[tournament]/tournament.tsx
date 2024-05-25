@@ -25,6 +25,10 @@ import { TournamentTimer } from "~app/tournaments/[tournament]/tournament-timer"
 import { TournamentStandings } from "~src/components/tournament/tournament-standings";
 import { Race } from "~app/races/races.types";
 import { TournamentRacePanel } from "~app/tournaments/[tournament]/tournament-race-panel";
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+} from "~src/components/breadcrumbs/breadcrumb";
 
 export const GenericTournament = ({
     liveDataMap,
@@ -121,8 +125,14 @@ export const GenericTournament = ({
         setUpdatedLiveDataMap(newMap);
     }, [sort]);
 
+    const breadcrumbs: BreadcrumbItem[] = [
+        { content: "Tournaments", href: "/tournaments" },
+        { content: tournament.shortName },
+    ];
+
     return (
         <div>
+            <Breadcrumb breadcrumbs={breadcrumbs} />
             <Row
                 className={
                     runStyles.tournamentInfo +
@@ -176,7 +186,17 @@ export const GenericTournament = ({
                         {tournament.logoUrl && (
                             <div className="d-flex pt-3 justify-content-end h-100">
                                 <Image
-                                    src={tournament.logoUrl}
+                                    src={`/${tournament.logoUrl}`}
+                                    alt={"Tournament Logo"}
+                                    height={120}
+                                />
+                            </div>
+                        )}
+
+                        {!tournament.logoUrl && tournament.gameImage && (
+                            <div className="d-flex pt-3 justify-content-end h-100">
+                                <Image
+                                    src={tournament.gameImage}
                                     alt={"Tournament Logo"}
                                     height={120}
                                 />

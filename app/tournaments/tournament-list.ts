@@ -17,13 +17,25 @@ const tournamentEntries: Array<[string, TournamentEntryValue]> = [
         { tournament: "Defeat Ganon No SRM Community Clash Main Event" },
     ],
     ["dirtythirty", { tournament: "Dirty Thirty Sapphire Tourney 2" }],
-    ["gsa", { tournament: "SWRC Season 4: Super Mario Sunshine" }],
+    ["gsa", { tournament: "SWRC Season 4: 70 Star" }],
     ["hgss", { tournament: "HGSS Blitz" }],
     ["lego", { tournament: "Lego Challenge 3" }],
     [
         "moist",
         {
-            tournament: "Escape from Lavender Island",
+            tournament: "MoistCr1tikal Tournament 5",
+        },
+    ],
+    [
+        "ludwig",
+        {
+            tournament: "MoistCr1tikal Tournament 5",
+        },
+    ],
+    [
+        "fast50",
+        {
+            tournament: "MoistCr1tikal Tournament 5",
         },
     ],
     ["saesr", { tournament: "NCW Seeding" }],
@@ -56,6 +68,7 @@ const tournamentEntries: Array<[string, TournamentEntryValue]> = [
             ],
         },
     ],
+    ["rayman", { tournament: "Rayman 1 BTR" }],
 ];
 
 const tournamentMap: Map<string, Tournament | CombinedTournament> = new Map(

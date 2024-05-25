@@ -1,19 +1,25 @@
 "use client";
 
-import { Race, RaceParticipantWithLiveData } from "~app/races/races.types";
 import { Card, Col, Row } from "react-bootstrap";
-import styles from "../../src/components/css/LiveRun.module.scss";
 import { RaceTimer } from "~app/races/[race]/race-timer";
-import { PersonIcon } from "~src/icons/person-icon";
-import { ClockIcon } from "~src/icons/clock-icon";
-import { RacePlacings } from "~app/races/components/race-placings";
 import { RaceParticipantStatusOverview } from "~app/races/components/race-participant-status-overview";
+import { RacePlacings } from "~app/races/components/race-placings";
+import { Race, RaceParticipantWithLiveData } from "~app/races/races.types";
+import { ClockIcon } from "~src/icons/clock-icon";
+import { PersonIcon } from "~src/icons/person-icon";
+import styles from "../../src/components/css/LiveRun.module.scss";
 
 export const InProgressRaces = ({ races }: { races: Race[] }) => {
     if (races.length === 0) {
         return (
             <div className={"flex-center h3"}>
-                No races in progress currently
+                <div className="d-flex flex-column text-center">
+                    <p>No races in progress currently.</p>
+                    <p>
+                        Go check out some <a href="/live">live runs</a> while
+                        you wait!
+                    </p>
+                </div>
             </div>
         );
     }

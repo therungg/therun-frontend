@@ -5,6 +5,8 @@ import buildMetadata, { getGameImage } from "~src/utils/metadata";
 import { getGame } from "~src/components/game/get-game";
 
 export const revalidate = 60;
+// Increase Games Page timeout to 60 seconds since the payloads are gigantic for some games like SM64
+export const maxDuration = 60;
 
 interface PageProps {
     params: { game: string };
