@@ -1,24 +1,34 @@
 "use client";
 import { Alert, Button, Col, Form, Image, Row } from "react-bootstrap";
+import type React from "react";
 import { useState } from "react";
 import axios from "axios";
+
+interface ContactFormData {
+    email: string;
+    subject: string;
+    category: string;
+    text: string;
+}
 
 // TODO:: This should just be some form library, not this custom stuff
 export const Contact = () => {
     const [validated, setValidated] = useState(false);
     const [show, setShow] = useState(false);
-    const [state, setState] = useState({
+    const [state, setState] = useState<ContactFormData>({
         email: "",
         subject: "",
         category: "",
         text: "",
     });
 
-    const submit = async (data) => {
+    const submit = async (data: ContactFormData) => {
         await axios.post("api/form", data);
     };
 
-    const handleSubmit = async (event) => {
+    const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (
+        event,
+    ) => {
         event.preventDefault();
 
         const form = event.currentTarget;
