@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useCallback, useEffect, useState } from "react";
-import { Col, Image, Row, Tab, Tabs } from "react-bootstrap";
+import { Card, Col, Row, Tab, Tabs } from "react-bootstrap";
 import { LiveUserRun } from "~src/components/live/live-user-run";
 import { RecommendedStream } from "~src/components/live/recommended-stream";
-import runStyles from "~src/components/css/LiveRun.module.scss";
 import { DurationToFormatted } from "~src/components/util/datetime";
 import useSWR from "swr";
 import { fetcher } from "~src/utils/fetcher";
@@ -23,8 +22,6 @@ import { EventLeaderboards } from "~app/tournaments/[tournament]/event-leaderboa
 import { Search as SearchIcon } from "react-bootstrap-icons";
 import { TournamentTimer } from "~app/tournaments/[tournament]/tournament-timer";
 import { TournamentStandings } from "~src/components/tournament/tournament-standings";
-import { Race } from "~app/races/races.types";
-import { TournamentRacePanel } from "~app/tournaments/[tournament]/tournament-race-panel";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -36,14 +33,12 @@ export const GenericTournament = ({
     session,
     username,
     tournament,
-    race,
     tab,
 }: {
     liveDataMap: LiveDataMap;
     session: any;
     username?: string;
     tournament: Tournament;
-    race?: Race;
     tab: string;
 }) => {
     const gameTime = !!tournament.gameTime;
@@ -140,100 +135,109 @@ export const GenericTournament = ({
     ];
 
     return (
-        <div>
+        <>
             <Breadcrumb breadcrumbs={breadcrumbs} />
-            <Row
-                className={
-                    runStyles.tournamentInfo +
-                    (tournament.logoUrl
-                        ? ` ${runStyles.tournamentInfoLogo}`
-                        : "")
-                }
-            >
-                <Col xl={race ? 4 : 10}>
-                    <h1>{tournament.shortName || tournament.name}</h1>
-
-                    {tournamentLeaderboards &&
-                        tournamentLeaderboards.pbLeaderboard &&
-                        tournamentLeaderboards.pbLeaderboard.length > 0 && (
-                            <div>
-                                Current record:{" "}
-                                <span className="fs-x-large">
-                                    <DurationToFormatted
-                                        duration={
-                                            tournamentLeaderboards
-                                                .pbLeaderboard[0].stat as string
-                                        }
-                                    />
-                                </span>{" "}
-                                by&nbsp;
-                                {
-                                    tournamentLeaderboards.pbLeaderboard[0]
-                                        .username
-                                }
-                            </div>
-                        )}
-                    <div>
-                        {tournament.game} - {tournament.category}
-                    </div>
-                    {tournament.socials && tournament.socials.twitch && (
-                        <div>
-                            Watch live at{" "}
-                            <a href={tournament.socials.twitch.url}>
-                                {tournament.socials.twitch.urlDisplay}
-                            </a>
-                        </div>
-                    )}
-                </Col>
-                {race && (
-                    <Col xl={6}>
-                        <TournamentRacePanel race={race} />
-                    </Col>
-                )}
-                <Col xl={2}>
-                    <div>
+            {!tournament.eligibleUsers?.length && (
+                <div>
+                    <a
+                        href={"/livesplit"}
+                        rel={"noreferrer"}
+                        target={"_blank"}
+                        className="link-primary text-decoration-underline fs-6"
+                    >
+                        How does this work?
+                    </a>
+                </div>
+            )}
+            <Card className={`game-border h-100`}>
+                <Row style={{ minHeight: "10rem" }}>
+                    <Col xs={4} sm={3} md={"auto"}>
                         {tournament.logoUrl && (
-                            <div className="d-flex pt-3 justify-content-end h-100">
-                                <Image
-                                    src={`/${tournament.logoUrl}`}
-                                    alt={"Tournament Logo"}
-                                    height={120}
-                                />
-                            </div>
-                        )}
-
-                        {!tournament.logoUrl && tournament.gameImage && (
-                            <div className="d-flex pt-3 justify-content-end h-100">
-                                <Image
-                                    src={tournament.gameImage}
-                                    alt={"Tournament Logo"}
-                                    height={120}
-                                />
-                            </div>
-                        )}
-
-                        {!tournament.eligibleUsers?.length && (
-                            <div
+                            <Card.Img
                                 className={
-                                    runStyles.tournamentHowDoesThisWorkButton
+                                    "rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
                                 }
-                            >
-                                <a
-                                    href={"/livesplit"}
-                                    rel={"noreferrer"}
-                                    target={"_blank"}
-                                    className="link-primary text-decoration-underline fs-6"
-                                >
-                                    How does this work?
+                                style={{
+                                    minWidth: "5rem",
+                                    maxHeight: "18rem",
+                                    maxWidth: "10rem",
+                                }}
+                                src={`/${tournament.logoUrl}`}
+                                alt={"Tournament Logo"}
+                                height={100}
+                                width={20}
+                            />
+                        )}
+                        {!tournament.logoUrl && tournament.gameImage && (
+                            <Card.Img
+                                className={
+                                    "rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
+                                }
+                                style={{
+                                    minWidth: "5rem",
+                                    maxHeight: "18rem",
+                                    maxWidth: "10rem",
+                                }}
+                                src={tournament.gameImage}
+                                alt={"Tournament Logo"}
+                                height={100}
+                                width={20}
+                            />
+                        )}
+                    </Col>
+                    <Col className={"p-2 ps-1 pe-4 d-flex flex-column"}>
+                        <div className={"d-flex justify-content-between gap-3"}>
+                            <Card.Title className="m-0 p-0 h5">
+                                <h1>
+                                    {tournament.shortName || tournament.name}
+                                </h1>
+                            </Card.Title>
+                        </div>
+
+                        <div
+                            className={
+                                "d-flex justify-content-between gap-3 mb-0 pb-2 w-100 border-bottom"
+                            }
+                        >
+                            <div className={"pb-0 mb-0 w-100 fst-italic"}>
+                                {tournament.game} - {tournament.category}
+                            </div>
+                        </div>
+
+                        {tournamentLeaderboards &&
+                            tournamentLeaderboards.pbLeaderboard &&
+                            tournamentLeaderboards.pbLeaderboard.length > 0 && (
+                                <div>
+                                    Current record:{" "}
+                                    <span className="fs-x-large">
+                                        <DurationToFormatted
+                                            duration={
+                                                tournamentLeaderboards
+                                                    .pbLeaderboard[0]
+                                                    .stat as string
+                                            }
+                                        />
+                                    </span>{" "}
+                                    by&nbsp;
+                                    {
+                                        tournamentLeaderboards.pbLeaderboard[0]
+                                            .username
+                                    }
+                                </div>
+                            )}
+                        {tournament.socials && tournament.socials.twitch && (
+                            <div>
+                                Watch live at{" "}
+                                <a href={tournament.socials.twitch.url}>
+                                    {tournament.socials.twitch.urlDisplay}
                                 </a>
                             </div>
                         )}
-                    </div>
-                </Col>
-            </Row>
-
-            <div className="d-flex justify-content-center">
-                <h2 className={runStyles.tournamentTimer}>
+                    </Col>
+                </Row>
+            </Card>
+            <div className="d-flex justify-content-center mt-3">
+                <h2>
                     <TournamentTimer tournament={tournament} />
                 </h2>
             </div>
@@ -244,10 +248,10 @@ export const GenericTournament = ({
 
             <Tabs
                 defaultActiveKey={tab}
-                className="position-relative z-0 mb-3 mw-30r"
+                className="position-relative z-0 mb-3 mw-30r tab-box"
             >
                 <Tab title={"Live"} eventKey={"live"}>
-                    <Row className="g-3 my-3">
+                    <Row className="g-3 mb-3">
                         {currentlyViewing &&
                             updatedLiveDataMap[currentlyViewing] && (
                                 <RecommendedStream
@@ -401,6 +405,6 @@ export const GenericTournament = ({
                     />
                 </Tab>
             </Tabs>
-        </div>
+        </>
     );
 };
