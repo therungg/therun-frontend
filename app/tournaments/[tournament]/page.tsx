@@ -1,7 +1,7 @@
 import { Tournament } from "~src/components/tournament/tournament-info";
 import { getTournamentByName } from "~src/components/tournament/getTournaments";
 import { LiveRun } from "~app/live/live.types";
-import { getLiveRunsForTournament } from "~src/lib/live-runs";
+import { getAllLiveRuns } from "~src/lib/live-runs";
 import { isLiveDataEligibleForTournament } from "./is-live-data-eligible-for-tournament.component";
 import { GenericTournament } from "~app/tournaments/[tournament]/tournament";
 import { getSession } from "~src/actions/session.action";
@@ -39,7 +39,10 @@ export const TournamentPage = async ({
     tournament.game = tournament.eligibleRuns[0].game;
     tournament.category = tournament.eligibleRuns[0].category;
 
-    let liveData: LiveRun[] = await getLiveRunsForTournament(tournament);
+    let liveData: LiveRun[] = await getAllLiveRuns(
+        tournament.game,
+        tournament.category,
+    );
 
     liveData = liveData.filter((data) =>
         isLiveDataEligibleForTournament(data, tournament),
