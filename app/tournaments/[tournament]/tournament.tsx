@@ -27,6 +27,7 @@ import {
     BreadcrumbItem,
 } from "~src/components/breadcrumbs/breadcrumb";
 import { CategoryLeaderboard } from "~app/games/[game]/game.types";
+import { GameLink, UserLink } from "~src/components/links/links";
 
 export const GenericTournament = ({
     liveDataMap,
@@ -205,7 +206,8 @@ export const GenericTournament = ({
                             }
                         >
                             <div className={"pb-0 mb-0 w-100 fst-italic"}>
-                                {tournament.game} - {tournament.category}
+                                <GameLink game={tournament.game} /> -{" "}
+                                {tournament.category}
                             </div>
                         </div>
 
@@ -214,17 +216,22 @@ export const GenericTournament = ({
                             tournamentLeaderboards.pbLeaderboard.length > 0 && (
                                 <div className={"flex-grow-1"}>
                                     Current record:{" "}
-                                    <DurationToFormatted
-                                        duration={
-                                            tournamentLeaderboards
-                                                .pbLeaderboard[0].stat as string
-                                        }
-                                    />{" "}
+                                    <span className={"fs-4"}>
+                                        <DurationToFormatted
+                                            duration={
+                                                tournamentLeaderboards
+                                                    .pbLeaderboard[0]
+                                                    .stat as string
+                                            }
+                                        />
+                                    </span>{" "}
                                     by&nbsp;
-                                    {
-                                        tournamentLeaderboards.pbLeaderboard[0]
-                                            .username
-                                    }
+                                    <UserLink
+                                        username={
+                                            tournamentLeaderboards
+                                                .pbLeaderboard[0].username
+                                        }
+                                    />
                                 </div>
                             )}
                         {tournament.socials && tournament.socials.twitch && (
@@ -235,7 +242,7 @@ export const GenericTournament = ({
                                 </a>
                             </div>
                         )}
-                        <div className={"text-end"}>
+                        <div className={"text-end fs-4"}>
                             <TournamentTimer tournament={tournament} />
                         </div>
                     </Col>
@@ -321,7 +328,7 @@ export const GenericTournament = ({
                                         <input
                                             type="search"
                                             className="form-control"
-                                            placeholder="Filter by game/category/user"
+                                            placeholder="Filter by user"
                                             onChange={(e) => {
                                                 setSearch(e.target.value);
                                             }}

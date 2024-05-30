@@ -81,18 +81,6 @@
   }
 }
 
-/* Custom tab that creates a box variant */
-.tab-box {
-  margin: 0 !important;
-  bottom: -1px;
-
-  + .tab-content {
-    border: 1px solid var(--bs-tertiary-bg);
-    border-radius: 0 0 var(--bs-border-radius) var(--bs-border-radius);
-    padding: 1rem;
-  }
-}
-
 legend {
   float: none;
   padding: 1rem;
