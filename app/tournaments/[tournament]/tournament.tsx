@@ -28,6 +28,8 @@ import {
 } from "~src/components/breadcrumbs/breadcrumb";
 import { CategoryLeaderboard } from "~app/games/[game]/game.types";
 import { GameLink, UserLink } from "~src/components/links/links";
+import { getLiveRunForUser } from "~src/lib/live-runs";
+import { SkeletonLiveRun } from "~src/components/skeleton/live/skeleton-live-run";
 
 export const GenericTournament = ({
     liveDataMap,
@@ -50,6 +52,8 @@ export const GenericTournament = ({
 
     const recommendedStream = getRecommendedStream(liveDataMap, username);
     const [currentlyViewing, setCurrentlyViewing] = useState(recommendedStream);
+
+    const [loadingUserData, setLoadingUserData] = useState(true);
 
     const handleSortChange: React.ChangeEventHandler<HTMLSelectElement> =
         useCallback(
@@ -129,6 +133,32 @@ export const GenericTournament = ({
 
         setUpdatedLiveDataMap(newMap);
     }, [selectedSort]);
+
+    useEffect(() => {
+        if (
+            !updatedLiveDataMap[currentlyViewing] ||
+            updatedLiveDataMap[currentlyViewing].isMinified
+        ) {
+            const liveRunFromUser = async (user: string) => {
+                setLoadingUserData(true);
+
+                const newMap: LiveDataMap = JSON.parse(
+                    JSON.stringify(updatedLiveDataMap),
+                );
+
+                newMap[currentlyViewing] = await getLiveRunForUser(user);
+
+                setUpdatedLiveDataMap(
+                    liveRunArrayToMap(Object.values(newMap), selectedSort),
+                );
+                setLoadingUserData(false);
+            };
+
+            liveRunFromUser(currentlyViewing);
+        } else {
+            setLoadingUserData(false);
+        }
+    }, [currentlyViewing]);
 
     const breadcrumbs: BreadcrumbItem[] = [
         { content: "Tournaments", href: "/tournaments" },
@@ -255,7 +285,9 @@ export const GenericTournament = ({
             >
                 <Tab title={"Live"} eventKey={"live"}>
                     <Row className="g-4 mb-4">
-                        {currentlyViewing &&
+                        {loadingUserData && <SkeletonLiveRun />}
+                        {!loadingUserData &&
+                            currentlyViewing &&
                             updatedLiveDataMap[currentlyViewing] && (
                                 <RecommendedStream
                                     stream={
