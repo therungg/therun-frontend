@@ -136,7 +136,7 @@ export const GenericTournament = ({
 
     return (
         <>
-            <div className="g-1 mt-2 mb-4 row">
+            <div className="g-1 mt-2 mb-3 row">
                 <Breadcrumb
                     breadcrumbs={breadcrumbs}
                     className={"flex-grow-1 col-auto"}
@@ -154,7 +154,7 @@ export const GenericTournament = ({
                     </div>
                 )}
             </div>
-            <Card className={`game-border h-100`}>
+            <Card className={`game-border h-100 mb-3`}>
                 <Row style={{ minHeight: "10rem" }}>
                     <Col xs={4} sm={3} md={"auto"}>
                         {tournament.logoUrl && (
@@ -201,7 +201,7 @@ export const GenericTournament = ({
 
                         <div
                             className={
-                                "d-flex justify-content-between gap-3 mb-0 pb-2 w-100 border-bottom"
+                                "d-flex justify-content-between gap-3 mb-0 pb-2 mb-2 w-100 border-bottom"
                             }
                         >
                             <div className={"pb-0 mb-0 w-100 fst-italic"}>
@@ -209,6 +209,24 @@ export const GenericTournament = ({
                             </div>
                         </div>
 
+                        {tournamentLeaderboards &&
+                            tournamentLeaderboards.pbLeaderboard &&
+                            tournamentLeaderboards.pbLeaderboard.length > 0 && (
+                                <div className={"flex-grow-1"}>
+                                    Current record:{" "}
+                                    <DurationToFormatted
+                                        duration={
+                                            tournamentLeaderboards
+                                                .pbLeaderboard[0].stat as string
+                                        }
+                                    />{" "}
+                                    by&nbsp;
+                                    {
+                                        tournamentLeaderboards.pbLeaderboard[0]
+                                            .username
+                                    }
+                                </div>
+                            )}
                         {tournament.socials && tournament.socials.twitch && (
                             <div>
                                 Watch live at{" "}
@@ -217,40 +235,19 @@ export const GenericTournament = ({
                                 </a>
                             </div>
                         )}
+                        <div className={"text-end"}>
+                            <TournamentTimer tournament={tournament} />
+                        </div>
                     </Col>
                 </Row>
             </Card>
-            <div className="text-center mt-5 mb-4">
-                {tournamentLeaderboards &&
-                    tournamentLeaderboards.pbLeaderboard &&
-                    tournamentLeaderboards.pbLeaderboard.length > 0 && (
-                        <h2 className={"text-primary"}>
-                            Current record:{" "}
-                            <DurationToFormatted
-                                duration={
-                                    tournamentLeaderboards.pbLeaderboard[0]
-                                        .stat as string
-                                }
-                            />{" "}
-                            by&nbsp;
-                            {tournamentLeaderboards.pbLeaderboard[0].username}
-                        </h2>
-                    )}
-                <h2>
-                    <TournamentTimer tournament={tournament} />
-                </h2>
-            </div>
-            <Row>
-                <Col sm={7} xs={12}></Col>
-                <Col sm={5} xs={12}></Col>
-            </Row>
 
             <Tabs
                 defaultActiveKey={tab}
                 className="position-relative z-0 mb-3 tab-box"
             >
                 <Tab title={"Live"} eventKey={"live"}>
-                    <Row className="g-3 mb-3">
+                    <Row className="g-4 mb-4">
                         {currentlyViewing &&
                             updatedLiveDataMap[currentlyViewing] && (
                                 <RecommendedStream
@@ -270,7 +267,7 @@ export const GenericTournament = ({
                     {/*        <TwitchEmbed channel={tournament.forceStream} width={'100%'} height={'600px'} muted*/}
                     {/*                     withChat={true}/>*/}
                     {/*    </div>}*/}
-                    <Row>
+                    <Row className="g-4">
                         <Col md={12} xl={4}>
                             <EventLeaderboards
                                 tournament={tournament}
@@ -281,8 +278,8 @@ export const GenericTournament = ({
                         </Col>
                         <Col md={12} xl={8}>
                             <h3>Live Runs</h3>
-                            <Row className="mt-4">
-                                <Col md={4} className="mb-2">
+                            <Row className="mt-3">
+                                <Col md={4} className="mb-4">
                                     <select
                                         className={"form-select"}
                                         onChange={handleSortChange}
@@ -302,37 +299,35 @@ export const GenericTournament = ({
                                         </option>
                                     </select>
                                 </Col>
-                                <Col>
-                                    <div className="d-flex justify-content-center">
-                                        <div className="mb-3 input-group game-filter-mw">
-                                            <span
-                                                className="input-group-text"
-                                                onClick={() => {
-                                                    const searchElement =
-                                                        document.getElementById(
-                                                            "gameSearch",
-                                                        );
-                                                    if (
-                                                        document.activeElement !==
-                                                        searchElement
-                                                    ) {
-                                                        searchElement.focus();
-                                                    }
-                                                }}
-                                            >
-                                                <SearchIcon size={18} />
-                                            </span>
-                                            <input
-                                                type="search"
-                                                className="form-control"
-                                                placeholder="Filter by game/category/user"
-                                                onChange={(e) => {
-                                                    setSearch(e.target.value);
-                                                }}
-                                                value={search}
-                                                id="gameSearch"
-                                            />
-                                        </div>
+                                <Col md={8} className="mb-4">
+                                    <div className="input-group">
+                                        <span
+                                            className="input-group-text"
+                                            onClick={() => {
+                                                const searchElement =
+                                                    document.getElementById(
+                                                        "gameSearch",
+                                                    );
+                                                if (
+                                                    document.activeElement !==
+                                                    searchElement
+                                                ) {
+                                                    searchElement.focus();
+                                                }
+                                            }}
+                                        >
+                                            <SearchIcon size={18} />
+                                        </span>
+                                        <input
+                                            type="search"
+                                            className="form-control"
+                                            placeholder="Filter by game/category/user"
+                                            onChange={(e) => {
+                                                setSearch(e.target.value);
+                                            }}
+                                            value={search}
+                                            id="gameSearch"
+                                        />
                                     </div>
                                 </Col>
                             </Row>

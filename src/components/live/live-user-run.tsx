@@ -97,7 +97,7 @@ export const LiveUserRun = ({
 
     return (
         <div
-            className={`card d-flex flex-row rounded-0 h-110p overflow-hidden w-100 game-border ${
+            className={`card d-flex flex-row rounded-2 h-110p overflow-hidden w-100 game-border ${
                 styles.liveRunContainer
             } ${
                 liveRun.user == currentlyActive
