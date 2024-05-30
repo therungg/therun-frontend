@@ -41,7 +41,7 @@ export const TournamentPage = async ({
     tournament.game = tournament.eligibleRuns[0].game;
     tournament.category = tournament.eligibleRuns[0].category;
 
-    let liveData: LiveRun[] = await getAllLiveRuns();
+    let liveData: LiveRun[] = await getAllLiveRuns(tournament.game);
 
     liveData = liveData.filter((data) =>
         isLiveDataEligibleForTournament(data, tournament),
