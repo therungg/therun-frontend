@@ -82,7 +82,7 @@ export const buildItems = (
     for (let number = begin; number < end; number++) {
         items.push(
             <Pagination.Item
-                className="d-none d-md-block"
+                className="d-none d-md-block d-lg-none d-xxl-block"
                 key={number}
                 active={number == active}
             >

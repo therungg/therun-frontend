@@ -332,7 +332,7 @@ export const CombinedTournament = ({
                             </Row>
 
                             <div className="d-flex justify-content-center">
-                                <div className="mb-3 input-group game-filter-mw">
+                                <div className="mb-3 input-group">
                                     <span
                                         className="input-group-text"
                                         onClick={() => {
