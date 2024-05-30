@@ -11,6 +11,8 @@ import { safeDecodeURI } from "~src/utils/uri";
 import { getRaceByRaceId } from "~src/lib/races";
 
 export const revalidate = 30;
+// Increase Tournament Page timeout to 60 seconds since some endpoints are a touch slow at the moment
+export const maxDuration = 60;
 
 interface PageProps {
     params: { tournament: string };
