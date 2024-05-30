@@ -136,19 +136,24 @@ export const GenericTournament = ({
 
     return (
         <>
-            <Breadcrumb breadcrumbs={breadcrumbs} />
-            {!tournament.eligibleUsers?.length && (
-                <div>
-                    <a
-                        href={"/livesplit"}
-                        rel={"noreferrer"}
-                        target={"_blank"}
-                        className="link-primary text-decoration-underline fs-6"
-                    >
-                        How does this work?
-                    </a>
-                </div>
-            )}
+            <div className="g-1 mt-2 mb-4 row">
+                <Breadcrumb
+                    breadcrumbs={breadcrumbs}
+                    className={"flex-grow-1 col-auto"}
+                />
+                {!tournament.eligibleUsers?.length && (
+                    <div className="flex-grow-1 text-end col-auto">
+                        <a
+                            href={"/livesplit"}
+                            rel={"noreferrer"}
+                            target={"_blank"}
+                            className="link-primary text-decoration-underline fs-6"
+                        >
+                            How does this work?
+                        </a>
+                    </div>
+                )}
+            </div>
             <Card className={`game-border h-100`}>
                 <Row style={{ minHeight: "10rem" }}>
                     <Col xs={4} sm={3} md={"auto"}>
@@ -204,27 +209,6 @@ export const GenericTournament = ({
                             </div>
                         </div>
 
-                        {tournamentLeaderboards &&
-                            tournamentLeaderboards.pbLeaderboard &&
-                            tournamentLeaderboards.pbLeaderboard.length > 0 && (
-                                <div>
-                                    Current record:{" "}
-                                    <span className="fs-x-large">
-                                        <DurationToFormatted
-                                            duration={
-                                                tournamentLeaderboards
-                                                    .pbLeaderboard[0]
-                                                    .stat as string
-                                            }
-                                        />
-                                    </span>{" "}
-                                    by&nbsp;
-                                    {
-                                        tournamentLeaderboards.pbLeaderboard[0]
-                                            .username
-                                    }
-                                </div>
-                            )}
                         {tournament.socials && tournament.socials.twitch && (
                             <div>
                                 Watch live at{" "}
@@ -236,7 +220,22 @@ export const GenericTournament = ({
                     </Col>
                 </Row>
             </Card>
-            <div className="d-flex justify-content-center mt-3">
+            <div className="text-center mt-5 mb-4">
+                {tournamentLeaderboards &&
+                    tournamentLeaderboards.pbLeaderboard &&
+                    tournamentLeaderboards.pbLeaderboard.length > 0 && (
+                        <h2 className={"text-primary"}>
+                            Current record:{" "}
+                            <DurationToFormatted
+                                duration={
+                                    tournamentLeaderboards.pbLeaderboard[0]
+                                        .stat as string
+                                }
+                            />{" "}
+                            by&nbsp;
+                            {tournamentLeaderboards.pbLeaderboard[0].username}
+                        </h2>
+                    )}
                 <h2>
                     <TournamentTimer tournament={tournament} />
                 </h2>
@@ -248,7 +247,7 @@ export const GenericTournament = ({
 
             <Tabs
                 defaultActiveKey={tab}
-                className="position-relative z-0 mb-3 mw-30r tab-box"
+                className="position-relative z-0 mb-3 tab-box"
             >
                 <Tab title={"Live"} eventKey={"live"}>
                     <Row className="g-3 mb-3">
