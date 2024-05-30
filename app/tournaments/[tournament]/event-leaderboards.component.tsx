@@ -19,9 +19,9 @@ export const EventLeaderboards = ({
     const [leaderboard, setLeaderboard] = useState(gameTime ? "pbIGT" : "pb");
 
     return (
-        <Row className="g-3">
+        <Row className="g-4">
             <h3>Event Leaderboards</h3>
-            <div>
+            <div className="mt-2">
                 <select
                     className={"form-select"}
                     onChange={(e) => {
