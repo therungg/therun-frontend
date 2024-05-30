@@ -1,4 +1,6 @@
 import React from "react";
+import { getLocale, getMessages } from "next-intl/server";
+import { NextIntlClientProvider } from "next-intl";
 import "../src/styles/_import.scss";
 import { Header } from "./header";
 import { Footer } from "./footer";
@@ -32,22 +34,27 @@ export default async function RootLayout({
             sessionError = error.toString();
         }
     }
+    const locale = await getLocale();
+    // Providing all messages to the client
+    // side is the easiest way to get started
+    const messages = await getMessages();
 
     return (
-        <html lang="en" suppressHydrationWarning>
+        <html lang={locale} suppressHydrationWarning>
             <body>
-                <Providers user={session}>
-                    <Scripts />
-                    <Header
-                        username={session?.username}
-                        picture={session?.picture}
-                        sessionError={sessionError}
-                    />
-                    <Content>
-                        {sessionError ? <SessionErrorBoundary /> : children}
-                    </Content>
-                    <Footer />
-                </Providers>
+                <NextIntlClientProvider messages={messages}>
+                    <Providers user={session}>
+                        <Scripts />
+                        <Header
+                            username={session?.username}
+                            picture={session?.picture}
+                        />
+                        <Content>
+                            {sessionError ? <SessionErrorBoundary /> : children}
+                        </Content>
+                        <Footer />
+                    </Providers>
+                </NextIntlClientProvider>
             </body>
         </html>
     );
