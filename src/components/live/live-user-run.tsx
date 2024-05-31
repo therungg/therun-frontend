@@ -236,8 +236,9 @@ export const LiveUserRun = ({
 
                     {!showGameCategory &&
                         liveRun.pb &&
-                        liveRun.pb != tournamentPbGameTime &&
-                        liveRun.pb != tournamentPb && (
+                        Math.trunc(liveRun.pb) !=
+                            Math.trunc(tournamentPbGameTime) &&
+                        Math.trunc(liveRun.pb) != Math.trunc(tournamentPb) && (
                             <div className="text-truncate">
                                 Personal Best -{" "}
                                 {<DurationToFormatted duration={liveRun.pb} />}
