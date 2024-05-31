@@ -37,8 +37,10 @@ export const getRunmap = (runs: Run[]): Map<string, Run[]> => {
             }
 
             const count = uniqueVariantCount.get(run.game);
-            count.push(runName);
-            uniqueVariantCount.set(run.game, count);
+            if (count) {
+                count.push(runName);
+                uniqueVariantCount.set(run.game, count);
+            }
         }
 
         if (!runMap.has(runName)) {
@@ -59,11 +61,15 @@ export const getRunmap = (runs: Run[]): Map<string, Run[]> => {
 
         const currentVariantRuns = runMap.get(variantName);
 
-        runMap.get(game).forEach((run) => {
-            currentVariantRuns.push(run);
+        // TODO: Keep this in mind.
+        // Updating TS will likely allow us to remove the optional chaining to correctly have fallthrough types from the previous `.has()` check
+        runMap.get(game)?.forEach((run) => {
+            currentVariantRuns?.push(run);
         });
 
-        runMap.set(variantName, currentVariantRuns);
+        if (currentVariantRuns) {
+            runMap.set(variantName, currentVariantRuns);
+        }
         runMap.delete(game);
     });
 

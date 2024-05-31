@@ -1,4 +1,6 @@
 import React from "react";
+import { getLocale, getMessages } from "next-intl/server";
+import { NextIntlClientProvider } from "next-intl";
 import "../src/styles/_import.scss";
 import { Header } from "./header";
 import { Footer } from "./footer";
@@ -8,6 +10,9 @@ import { Scripts } from "./scripts";
 import { getSession } from "~src/actions/session.action";
 import buildMetadata from "~src/utils/metadata";
 import { Viewport } from "next";
+import { SessionError } from "~src/common/session.error";
+import { User } from "types/session.types";
+import { SessionErrorBoundary } from "~src/components/errors/session.error-boundary";
 
 export const metadata = buildMetadata();
 export const viewport: Viewport = {
@@ -20,19 +25,36 @@ export default async function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const session = await getSession();
+    let sessionError: string | null = null;
+    let session!: User;
+    try {
+        session = await getSession();
+    } catch (error) {
+        if (error instanceof SessionError) {
+            sessionError = error.toString();
+        }
+    }
+    const locale = await getLocale();
+    // Providing all messages to the client
+    // side is the easiest way to get started
+    const messages = await getMessages();
+
     return (
-        <html lang="en" suppressHydrationWarning>
+        <html lang={locale} suppressHydrationWarning>
             <body>
-                <Providers user={session}>
-                    <Scripts />
-                    <Header
-                        username={session?.username}
-                        picture={session?.picture}
-                    />
-                    <Content>{children}</Content>
-                    <Footer />
-                </Providers>
+                <NextIntlClientProvider messages={messages}>
+                    <Providers user={session}>
+                        <Scripts />
+                        <Header
+                            username={session?.username}
+                            picture={session?.picture}
+                        />
+                        <Content>
+                            {sessionError ? <SessionErrorBoundary /> : children}
+                        </Content>
+                        <Footer />
+                    </Providers>
+                </NextIntlClientProvider>
             </body>
         </html>
     );

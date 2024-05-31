@@ -9,11 +9,13 @@ export interface BreadcrumbItem {
 
 export const Breadcrumb = ({
     breadcrumbs,
+    className,
 }: {
     breadcrumbs: BreadcrumbItem[];
+    className?: string;
 }) => {
     return (
-        <BootstrapBreadCrumb>
+        <BootstrapBreadCrumb className={className}>
             {breadcrumbs.map((breadcrumb, i) => {
                 const href = breadcrumb.href || "#";
                 return (

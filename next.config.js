@@ -1,6 +1,8 @@
+const createNextIntlPlugin = require("next-intl/plugin");
+const withNextIntl = createNextIntlPlugin();
+
 /** @type {import('next').NextConfig} */
-// eslint-disable-next-line import/no-commonjs
-module.exports = {
+const nextConfig = {
     typescript: {
         ignoreBuildErrors: true,
     },
@@ -32,3 +34,5 @@ module.exports = {
         ];
     },
 };
+
+module.exports = withNextIntl(nextConfig);

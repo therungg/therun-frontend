@@ -11,11 +11,16 @@ export async function afterLoginRedirect(request: NextRequest, postfix = "") {
     const code = request.nextUrl.searchParams.get("code");
     if (code) {
         const { id } = (await createSession(code)) || {};
+        const headers = new Headers();
+        if (id) {
+            headers.append(
+                "Set-Cookie",
+                `session_id=${id}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${MAX_AGE};`,
+            );
+        }
         const response = NextResponse.redirect(baseUrl, {
             status: 302,
-            headers: {
-                "Set-Cookie": `session_id=${id}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${MAX_AGE};`,
-            },
+            headers,
         });
         revalidatePath(baseUrl);
         return response;

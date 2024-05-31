@@ -37,9 +37,9 @@ export default function PaginationControl<T>({
     };
 
     return (
-        <div>
+        <>
             <Pagination
-                className="justify-content-center"
+                className="w-100 justify-content-center"
                 onClick={onPaginationClick}
                 size="lg"
             >
@@ -50,7 +50,7 @@ export default function PaginationControl<T>({
                 {page * pageSize > totalItems ? totalItems : page * pageSize}{" "}
                 out of {totalItems}
             </div>
-        </div>
+        </>
     );
 }
 
@@ -82,7 +82,7 @@ export const buildItems = (
     for (let number = begin; number < end; number++) {
         items.push(
             <Pagination.Item
-                className="d-none d-md-block"
+                className="d-none d-md-block d-lg-none d-xxl-block"
                 key={number}
                 active={number == active}
             >

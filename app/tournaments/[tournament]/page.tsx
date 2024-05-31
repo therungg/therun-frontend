@@ -1,7 +1,7 @@
 import { Tournament } from "~src/components/tournament/tournament-info";
 import { getTournamentByName } from "~src/components/tournament/getTournaments";
 import { LiveRun } from "~app/live/live.types";
-import { getLiveRunsForTournament } from "~src/lib/live-runs";
+import { getAllLiveRuns } from "~src/lib/live-runs";
 import { isLiveDataEligibleForTournament } from "./is-live-data-eligible-for-tournament.component";
 import { GenericTournament } from "~app/tournaments/[tournament]/tournament";
 import { getSession } from "~src/actions/session.action";
@@ -11,6 +11,8 @@ import { safeDecodeURI } from "~src/utils/uri";
 import { getRaceByRaceId } from "~src/lib/races";
 
 export const revalidate = 30;
+// Increase Tournament Page timeout to 60 seconds since some endpoints are a touch slow at the moment
+export const maxDuration = 60;
 
 interface PageProps {
     params: { tournament: string };
@@ -39,7 +41,7 @@ export const TournamentPage = async ({
     tournament.game = tournament.eligibleRuns[0].game;
     tournament.category = tournament.eligibleRuns[0].category;
 
-    let liveData: LiveRun[] = await getLiveRunsForTournament(tournament);
+    let liveData: LiveRun[] = await getAllLiveRuns(tournament.game);
 
     liveData = liveData.filter((data) =>
         isLiveDataEligibleForTournament(data, tournament),
