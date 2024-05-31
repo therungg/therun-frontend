@@ -47,7 +47,7 @@ export const GenericTournament = ({
     const gameTime = !!tournament.gameTime;
 
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
-    const [selectedSort, setSelectedSort] = useState("personalBest");
+    const [selectedSort, setSelectedSort] = useState("pb");
     const [search, setSearch] = useState("");
 
     const recommendedStream = getRecommendedStream(liveDataMap, username);
@@ -149,7 +149,11 @@ export const GenericTournament = ({
                 newMap[currentlyViewing] = await getLiveRunForUser(user);
 
                 setUpdatedLiveDataMap(
-                    liveRunArrayToMap(Object.values(newMap), selectedSort),
+                    liveRunArrayToMap(
+                        Object.values(newMap),
+                        selectedSort,
+                        tournamentLeaderboards,
+                    ),
                 );
                 setLoadingUserData(false);
             };
