@@ -4,6 +4,7 @@ export interface User {
     picture: string;
     roles?: Role[];
     moderatedGames?: string[];
+    sessionError?: string;
 }
 
 export type Role =

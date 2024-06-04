@@ -1,8 +1,17 @@
 import { getCookie, setCookie } from "cookies-next";
+import { ValuesOf } from "types/utility.types";
 
-type CookieKey = "scheme" | "session_id" | "races-message-read";
+export const COOKIE_KEY = {
+    SCHEME: "scheme",
+    SESSION_ID: "session_id",
+    RACES_MESSAGE_READ: "races-message-read",
+    PAGE_VISITS: "page_visits",
+} as const;
 
-export const getCookieKey = async (key: CookieKey, defaultValue?: string) => {
+export const getCookieKey = async (
+    key: ValuesOf<typeof COOKIE_KEY>,
+    defaultValue?: string,
+) => {
     // The `getCookie` function is not available on the server, imagine that
     // we have to access the scheme while Next.js is rendering the `<RootLayout />`
     // component (this happens server side). We can use the `cookies` function
@@ -15,6 +24,9 @@ export const getCookieKey = async (key: CookieKey, defaultValue?: string) => {
     return getCookie(key, { path: "/" }) ?? defaultValue;
 };
 
-export const setCookieData = (key: CookieKey, value: string) => {
+export const setCookieData = (
+    key: ValuesOf<typeof COOKIE_KEY>,
+    value: string,
+) => {
     setCookie(key, value, { path: "/" });
 };
