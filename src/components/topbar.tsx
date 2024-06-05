@@ -92,9 +92,7 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                         <Nav.Link href="/tournaments">Tournaments</Nav.Link>
                         <Nav.Link href="/live">Live</Nav.Link>
                         <Nav.Link href="/games/">Games</Nav.Link>
-                        <Nav.Link href="/moist/">
-                            MoistCr1tikal Challenge
-                        </Nav.Link>
+                        <Nav.Link href="/gsa/">PACE Summer 2024</Nav.Link>
                     </Nav>
                     <Nav className="ml-auto mb-2 mb-lg-0 me-lg-2">
                         <AutoCompletion />
