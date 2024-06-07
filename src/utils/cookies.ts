@@ -1,4 +1,5 @@
 import { getCookie, setCookie } from "cookies-next";
+import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { ValuesOf } from "types/utility.types";
 
 export const COOKIE_KEY = {
@@ -6,6 +7,7 @@ export const COOKIE_KEY = {
     SESSION_ID: "session_id",
     RACES_MESSAGE_READ: "races-message-read",
     PAGE_VISITS: "page_visits",
+    RECENT_VISITS: "recent_visits",
 } as const;
 
 export const getCookieKey = async (
@@ -29,4 +31,18 @@ export const setCookieData = (
     value: string,
 ) => {
     setCookie(key, value, { path: "/" });
+};
+
+export const parseCookie = (
+    cookieData: RequestCookie | undefined,
+    defaultValue?: unknown,
+) => {
+    if (cookieData) {
+        try {
+            return JSON.parse(cookieData.value);
+        } catch (e) {
+            return defaultValue;
+        }
+    }
+    return defaultValue;
 };

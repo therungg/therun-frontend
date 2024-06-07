@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { COOKIE_KEY } from "~src/utils/cookies";
+import { COOKIE_KEY, parseCookie } from "~src/utils/cookies";
 
 const fileTypes = [
     "png",
@@ -34,20 +34,32 @@ export const routeVisitMiddleware = (
         return;
     }
 
+    const recentVisitsCookie = request.cookies.get(COOKIE_KEY.RECENT_VISITS);
     const visitCookie = request.cookies.get(COOKIE_KEY.PAGE_VISITS);
-    let visits: Record<string, number> = {};
-    if (visitCookie) {
-        try {
-            visits = JSON.parse(visitCookie.value);
-        } catch (e) {
-            // Handle the case where the cookie is not valid JSON
-            visits = {};
-        }
+    const visits: Record<string, number> = parseCookie(visitCookie, {});
+    const recentVisits: string[] = parseCookie(recentVisitsCookie, []);
+
+    // 0-9 visits and it's not in the list
+    if (!recentVisits.includes(visitPath) && recentVisits.length < 10) {
+        recentVisits.push(visitPath);
+        // 10 visits and it's not in the list. shift the first one out.
+    } else if (
+        !recentVisits.includes(visitPath) &&
+        recentVisits.length === 10
+    ) {
+        recentVisits.shift();
+        recentVisits.push(visitPath);
+        // 0-10 visits and it's in the list. remove it and push it to the end.
+    } else if (recentVisits.includes(visitPath) && recentVisits.length <= 10) {
+        recentVisits.splice(recentVisits.indexOf(visitPath), 1);
+        recentVisits.push(visitPath);
     }
 
     // Update visit count
     visits[visitPath] = (visits[visitPath] || 0) + 1;
-    const cookieValue = JSON.stringify(visits);
+    const newVisitCookieValue = JSON.stringify(visits);
+    const recentVisitsCookieValue = JSON.stringify(recentVisits);
     // Set updated visits in cookies
-    response.cookies.set(COOKIE_KEY.PAGE_VISITS, cookieValue);
+    response.cookies.set(COOKIE_KEY.PAGE_VISITS, newVisitCookieValue);
+    response.cookies.set(COOKIE_KEY.RECENT_VISITS, recentVisitsCookieValue);
 };
