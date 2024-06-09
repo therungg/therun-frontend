@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAllTournamentSlugs } from "~app/tournaments/tournament-list";
 
-export function middleware(request: NextRequest) {
+export const redirectTournamentsMiddleware = (
+    request: NextRequest,
+    // eslint-disable-next-line no-unused-vars
+    _response: NextResponse,
+) => {
     const reroutes = getAllTournamentSlugs();
 
     const shouldReroute = (reroute: string, pathname: string): boolean => {
@@ -20,6 +24,4 @@ export function middleware(request: NextRequest) {
             `${request.nextUrl.origin}/${redirect}${request.nextUrl.search}`,
         );
     }
-
-    return NextResponse.next();
-}
+};
