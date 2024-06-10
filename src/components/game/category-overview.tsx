@@ -6,7 +6,7 @@ import {
     UserGameCategoryLink,
     UserLink,
 } from "../links/links";
-import { Dispatch } from "react";
+import { Dispatch, useState } from "react";
 import { InfoTooltip } from "../tooltip";
 
 export const CategoryOverview = ({
@@ -18,6 +18,8 @@ export const CategoryOverview = ({
     game: string;
     setCurrentCategory: Dispatch<any>;
 }) => {
+    const [showAllCategories, setShowAllCategories] = useState(5);
+
     return (
         <Table striped bordered hover responsive>
             <thead>
@@ -46,7 +48,7 @@ export const CategoryOverview = ({
                 </tr>
             </thead>
             <tbody>
-                {categories.map((category) => {
+                {categories.slice(0, showAllCategories).map((category) => {
                     return (
                         category.pbLeaderboard[0] && (
                             <tr key={category.categoryName}>
@@ -117,6 +119,24 @@ export const CategoryOverview = ({
                     );
                 })}
             </tbody>
+            <br />
+            {categories.length > 5 ? (
+                showAllCategories === 5 ? (
+                    <button
+                        name="Show More"
+                        onClick={() => setShowAllCategories(100)}
+                    >
+                        Show More Categories
+                    </button>
+                ) : (
+                    <button
+                        name="Show Less"
+                        onClick={() => setShowAllCategories(5)}
+                    >
+                        Show Less Categories
+                    </button>
+                )
+            ) : null}
         </Table>
     );
 };
