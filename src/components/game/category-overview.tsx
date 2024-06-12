@@ -18,7 +18,7 @@ export const CategoryOverview = ({
     game: string;
     setCurrentCategory: Dispatch<any>;
 }) => {
-    const [showAllCategories, setShowAllCategories] = useState(5);
+    const [categoriesCountLimit, setCategoriesCountLimit] = useState(5);
 
     return (
         <Table striped bordered hover responsive>
@@ -48,7 +48,7 @@ export const CategoryOverview = ({
                 </tr>
             </thead>
             <tbody>
-                {categories.slice(0, showAllCategories).map((category) => {
+                {categories.slice(0, categoriesCountLimit).map((category) => {
                     return (
                         category.pbLeaderboard[0] && (
                             <tr key={category.categoryName}>
@@ -103,6 +103,8 @@ export const CategoryOverview = ({
                                 </td>
                                 <td className="d-none d-md-table-cell text-nowrap">
                                     {category.stats.finishedAttemptCount}/
+                                    {/* {category.stats.finishedAttemptCount.toLocaleString()}/ */}
+                                    {/* {category.stats.attemptCount.toLocaleString()} ( */}
                                     {category.stats.attemptCount} (
                                     {(
                                         (category.stats.finishedAttemptCount /
@@ -112,28 +114,31 @@ export const CategoryOverview = ({
                                     %)
                                 </td>
                                 <td className="d-none d-md-table-cell">
-                                    {category.stats.uploadCount}
+                                    {category.stats.uploadCount.toLocaleString()}
                                 </td>
                             </tr>
                         )
                     );
                 })}
             </tbody>
-            <br />
             {categories.length > 5 ? (
-                showAllCategories === 5 ? (
+                categoriesCountLimit === 5 ? (
                     <button
-                        name="Show More"
-                        onClick={() => setShowAllCategories(100)}
+                        name="Show more categories"
+                        className="mt-2"
+                        onClick={() =>
+                            setCategoriesCountLimit(categories.length)
+                        }
                     >
-                        Show More Categories
+                        Show more categories
                     </button>
                 ) : (
                     <button
-                        name="Show Less"
-                        onClick={() => setShowAllCategories(5)}
+                        name="Show fewer categories"
+                        className="mt-2"
+                        onClick={() => setCategoriesCountLimit(5)}
                     >
-                        Show Less Categories
+                        Show fewer categories
                     </button>
                 )
             ) : null}
