@@ -12,7 +12,8 @@ export async function GET(
         params: { game: string; category: string };
     },
 ) {
-    const { game, category } = params;
+    const game = params?.game;
+    const category = params?.category;
 
     const result = await getAllLiveRuns(game, category);
 
