@@ -19,6 +19,7 @@ export const CategoryOverview = ({
     setCurrentCategory: Dispatch<any>;
 }) => {
     const [categoriesCountLimit, setCategoriesCountLimit] = useState(5);
+    const MINIMUM_CATEGORIES_LIMIT: number = 5;
 
     return (
         <Table striped bordered hover responsive>
@@ -114,15 +115,15 @@ export const CategoryOverview = ({
                                     %)
                                 </td>
                                 <td className="d-none d-md-table-cell">
-                                    {category.stats.uploadCount.toLocaleString()}
+                                    {category.stats.uploadCount}
                                 </td>
                             </tr>
                         )
                     );
                 })}
             </tbody>
-            {categories.length > 5 ? (
-                categoriesCountLimit === 5 ? (
+            {categories.length > MINIMUM_CATEGORIES_LIMIT ? (
+                categoriesCountLimit === MINIMUM_CATEGORIES_LIMIT ? (
                     <button
                         name="Show more categories"
                         className="mt-2"
@@ -136,7 +137,9 @@ export const CategoryOverview = ({
                     <button
                         name="Show fewer categories"
                         className="mt-2"
-                        onClick={() => setCategoriesCountLimit(5)}
+                        onClick={() =>
+                            setCategoriesCountLimit(MINIMUM_CATEGORIES_LIMIT)
+                        }
                     >
                         Show fewer categories
                     </button>
