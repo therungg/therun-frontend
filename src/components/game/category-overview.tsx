@@ -78,7 +78,9 @@ export const CategoryOverview = ({
                                         game={game}
                                     >
                                         <DurationToFormatted
-                                            duration={category.pbLeaderboard[0].stat.toString()}
+                                            duration={
+                                                category.pbLeaderboard[0].stat
+                                            }
                                         />
                                     </UserGameCategoryLink>
                                     &nbsp;(
@@ -103,8 +105,6 @@ export const CategoryOverview = ({
                                 </td>
                                 <td className="d-none d-md-table-cell text-nowrap">
                                     {category.stats.finishedAttemptCount}/
-                                    {/* {category.stats.finishedAttemptCount.toLocaleString()}/ */}
-                                    {/* {category.stats.attemptCount.toLocaleString()} ( */}
                                     {category.stats.attemptCount} (
                                     {(
                                         (category.stats.finishedAttemptCount /
