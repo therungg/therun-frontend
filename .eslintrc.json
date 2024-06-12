@@ -1,47 +1,52 @@
 {
-  "extends": [
-    "next",
-    "next/core-web-vitals",
-    "plugin:github/recommended"
-  ],
-  "plugins": [
-    "react",
-    "github",
-    "import"
-  ],
-  "settings": {
-    "import/resolver": {
-      "typescript": {}
-    }
-  },
-  "ignorePatterns": [
-    "vendor/"
-  ],
-  "rules": {
-    "eslint-comments/no-use": "off",
-    "@next/next/no-page-custom-font": "off",
-    "react-hooks/exhaustive-deps": "warn",
-    "@next/next/google-font-display": "off",
-    "filenames/match-regex": "off",
-    "no-irregular-whitespace": "off",
-    "import/no-named-as-default": "off",
-    "github/array-foreach": "off",
-    "import/no-named-as-default-member": "off",
-    "eqeqeq": "off",
-    "i18n-text/no-en": "off",
-    "prettier/prettier": [
-      "error",
-      {
-        "endOfLine": "auto"
-      }
+    "extends": [
+        "next",
+        "next/core-web-vitals",
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:sonarjs/recommended-legacy",
+        "plugin:prettier/recommended"
+    ],
+    "root": true,
+    "parser": "@typescript-eslint/parser",
+    "plugins": [
+        "@typescript-eslint",
+        "react",
+        "import",
+        "validate-jsx-nesting",
+        "sonarjs"
+    ],
+    "settings": {
+        "import/resolver": {
+            "typescript": {}
+        }
+    },
+    "ignorePatterns": ["vendor/"],
+    "rules": {
+        "eslint-comments/no-use": "off",
+        "@next/next/no-page-custom-font": "off",
+        "react-hooks/exhaustive-deps": "warn",
+        "@next/next/google-font-display": "off",
+        "filenames/match-regex": "off",
+        "no-irregular-whitespace": "off",
+        "import/no-named-as-default": "off",
+        "github/array-foreach": "off",
+        "import/no-named-as-default-member": "off",
+        "eqeqeq": "off",
+        "i18n-text/no-en": "off",
+        "prettier/prettier": [
+            "error",
+            {
+                "endOfLine": "auto"
+            }
+        ]
+    },
+    "overrides": [
+        {
+            "files": ["*.config.js"],
+            "rules": {
+                "import/no-commonjs": "off"
+            }
+        }
     ]
-  },
-  "overrides": [
-      {
-          "files": ["*.config.js"],
-          "rules": {
-              "import/no-commonjs": "off"
-          }
-      }
-  ]
 }
