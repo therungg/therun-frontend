@@ -1,15 +1,16 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Button, Col, Row } from "react-bootstrap";
-import { Game } from "~app/games/games.types";
 import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import { Run } from "~src/common/types";
+import { Game } from "~app/games/games.types";
 import { DataHolder } from "~src/components/frontpage/data-holder";
-import { PopularGames } from "~src/components/game/popular-games";
 import { SkeletonPersonalBests } from "~src/components/skeleton/index/skeleton-personal-bests";
+import { PopularGames } from "~src/components/game/popular-games";
 import { SkeletonPopularGames } from "~src/components/skeleton/index/skeleton-popular-games";
+import React from "react";
+import { useTranslations } from "next-intl";
 
 export default function Homepage({
     runs,
