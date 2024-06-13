@@ -23,29 +23,29 @@ export const EventLeaderboards = ({
             <h3>Event Leaderboards</h3>
             <div className="mt-2">
                 <select
-                    className={"form-select"}
+                    className="form-select"
                     onChange={(e) => {
                         setLeaderboard(e.target.value);
                     }}
                 >
                     {gameTime && (
                         <option
-                            key={"pbIGT"}
-                            title={"Tournament PB (IGT)"}
-                            value={"pbIGT"}
+                            key="pbIGT"
+                            title="Tournament PB (IGT)"
+                            value="pbIGT"
                         >
                             Tournament PB (loadless)
                         </option>
                     )}
 
-                    <option key={"pb"} title={"Tournament PB"} value={"pb"}>
+                    <option key="pb" title="Tournament PB" value="pb">
                         Tournament PB
                     </option>
                     {qualifierData && (
                         <option
-                            key={"qualifier"}
-                            title={"Qualifier Leaderboard"}
-                            value={"qualifier"}
+                            key="qualifier"
+                            title="Qualifier Leaderboard"
+                            value="qualifier"
                         >
                             Qualifier Leaderboard
                         </option>
@@ -53,32 +53,32 @@ export const EventLeaderboards = ({
                     {tournament.pointDistribution &&
                         tournament.pointDistribution.length > 0 && (
                             <option
-                                key={"points"}
-                                title={"Qualification Points"}
-                                value={"points"}
+                                key="points"
+                                title="Qualification Points"
+                                value="points"
                             >
                                 Qualification Points
                             </option>
                         )}
                     <option
-                        key={"attempts"}
-                        title={"Total Attempts"}
-                        value={"attempts"}
+                        key="attempts"
+                        title="Total Attempts"
+                        value="attempts"
                     >
                         Total Attempts
                     </option>
                     <option
-                        key={"finishedAttempts"}
-                        title={"Total Finished Attempts"}
-                        value={"finishedAttempts"}
+                        key="finishedAttempts"
+                        title="Total Finished Attempts"
+                        value="finishedAttempts"
                     >
                         Total Finished Attempts
                     </option>
 
                     <option
-                        key={"playtime"}
-                        title={"Total Playtime"}
-                        value={"playtime"}
+                        key="playtime"
+                        title="Total Playtime"
+                        value="playtime"
                     >
                         Total Playtime
                     </option>

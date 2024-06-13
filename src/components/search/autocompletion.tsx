@@ -107,7 +107,7 @@ export const AutoCompletion = () => {
                         key={value}
                         href={url}
                         title={value}
-                        className={"w-100 h-100"}
+                        className="w-100 h-100"
                         style={{
                             display: "inherit",
                         }}
@@ -125,7 +125,7 @@ export const AutoCompletion = () => {
                     key={result}
                     href={url}
                     title={result}
-                    className={"w-100 h-100"}
+                    className="w-100 h-100"
                     style={{
                         display: "inherit",
                     }}
@@ -145,7 +145,7 @@ export const AutoCompletion = () => {
                         <ul className="m-0 list-unstyled">
                             <Results
                                 results={filteredSuggestions.users}
-                                type={"users"}
+                                type="users"
                             />
                         </ul>
                     </Col>
@@ -154,7 +154,7 @@ export const AutoCompletion = () => {
                         <ul className="m-0 list-unstyled">
                             <Results
                                 results={filteredSuggestions.games}
-                                type={"games"}
+                                type="games"
                             />
                         </ul>
                     </Col>
@@ -166,7 +166,7 @@ export const AutoCompletion = () => {
                         <ul className="m-0 list-unstyled">
                             <Results
                                 results={filteredSuggestions.categories}
-                                type={"runs"}
+                                type="runs"
                             />
                         </ul>
                     </Col>

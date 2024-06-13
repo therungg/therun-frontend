@@ -22,7 +22,7 @@ export const NameAsPatreon = ({ name }) => {
                     name={name}
                     icon={showIcon}
                     color={color}
-                    url={"/"}
+                    url="/"
                 />
             );
         }

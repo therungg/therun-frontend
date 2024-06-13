@@ -12,6 +12,7 @@
     "plugins": [
         "@typescript-eslint",
         "react",
+        "react-compiler",
         "import",
         "validate-jsx-nesting",
         "sonarjs"
@@ -23,6 +24,18 @@
     },
     "ignorePatterns": ["vendor/"],
     "rules": {
+        "@typescript-eslint/no-unused-vars": [
+            "error",
+            {
+                "args": "all",
+                "argsIgnorePattern": "^_",
+                "caughtErrors": "all",
+                "caughtErrorsIgnorePattern": "^_",
+                "destructuredArrayIgnorePattern": "^_",
+                "varsIgnorePattern": "^_",
+                "ignoreRestSiblings": true
+            }
+        ],
         "eslint-comments/no-use": "off",
         "@next/next/no-page-custom-font": "off",
         "react-hooks/exhaustive-deps": "warn",
@@ -39,13 +52,23 @@
             {
                 "endOfLine": "auto"
             }
+        ],
+        "react/jsx-curly-brace-presence": [
+            "error",
+            { "props": "never", "children": "never" }
         ]
     },
     "overrides": [
         {
             "files": ["*.config.js"],
             "rules": {
-                "import/no-commonjs": "off"
+                "@typescript-eslint/no-var-requires": "off"
+            }
+        },
+        {
+            "files": ["*.d.ts"],
+            "rules": {
+                "@typescript-eslint/no-unused-vars": "off"
             }
         }
     ]

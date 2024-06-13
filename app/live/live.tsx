@@ -1,7 +1,7 @@
 "use client";
 
 import { LiveIcon, LiveUserRun } from "~src/components/live/live-user-run";
-import React, { useEffect, useState } from "react";
+import React, { createRef, useEffect, useState } from "react";
 import { Button, Col, Row } from "react-bootstrap";
 import { RecommendedStream } from "~src/components/live/recommended-stream";
 import { useLiveRunsWebsocket } from "~src/components/websocket/use-reconnect-websocket";
@@ -24,6 +24,7 @@ export const Live = ({
     forceCategory = null,
 }: LiveProps) => {
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
+    const searchElementRef = createRef<HTMLInputElement>();
     const [search, setSearch] = useState("");
     const [currentlyViewing, setCurrentlyViewing] = useState(
         getRecommendedStream(liveDataMap, username),
@@ -33,33 +34,28 @@ export const Live = ({
     const lastMessage = useLiveRunsWebsocket();
 
     useEffect(() => {
-        if (lastMessage !== null) {
-            if (
-                isWebsocketDataProcessable(
-                    lastMessage,
-                    forceGame,
-                    forceCategory,
-                )
-            ) {
-                const user = lastMessage.user;
-                const newMap: LiveDataMap = JSON.parse(
-                    JSON.stringify(updatedLiveDataMap),
-                );
+        if (
+            lastMessage !== null &&
+            isWebsocketDataProcessable(lastMessage, forceGame, forceCategory)
+        ) {
+            const user = lastMessage.user;
+            const newMap: LiveDataMap = JSON.parse(
+                JSON.stringify(updatedLiveDataMap),
+            );
 
-                if (lastMessage.type == "UPDATE") {
-                    newMap[user] = lastMessage.run;
-                }
-
-                if (lastMessage.type == "DELETE") {
-                    delete newMap[user];
-
-                    if (currentlyViewing == user) {
-                        setCurrentlyViewing(getRecommendedStream(newMap));
-                    }
-                }
-
-                setUpdatedLiveDataMap(liveRunArrayToMap(Object.values(newMap)));
+            if (lastMessage.type == "UPDATE") {
+                newMap[user] = lastMessage.run;
             }
+
+            if (lastMessage.type == "DELETE") {
+                delete newMap[user];
+
+                if (currentlyViewing == user) {
+                    setCurrentlyViewing(getRecommendedStream(newMap));
+                }
+            }
+
+            setUpdatedLiveDataMap(liveRunArrayToMap(Object.values(newMap)));
         }
     }, [lastMessage]);
 
@@ -101,9 +97,9 @@ export const Live = ({
                         </h1>
                     </Col>
                     <Col xs="auto" className="flex-grow-1 text-end">
-                        <a href={"/livesplit"}>
+                        <a href="/livesplit">
                             <Button
-                                variant={"primary"}
+                                variant="primary"
                                 className="btn-lg px-3 w-240p h-3r fw-medium"
                             >
                                 How does this work?
@@ -127,16 +123,19 @@ export const Live = ({
                     <span
                         className="input-group-text"
                         onClick={() => {
-                            const searchElement =
-                                document.getElementById("gameSearch");
-                            if (document.activeElement !== searchElement) {
-                                searchElement.focus();
+                            if (
+                                searchElementRef.current &&
+                                document.activeElement !==
+                                    searchElementRef.current
+                            ) {
+                                searchElementRef.current.focus();
                             }
                         }}
                     >
                         <SearchIcon size={18} />
                     </span>
                     <input
+                        ref={searchElementRef}
                         type="search"
                         className="form-control"
                         placeholder="Filter by game/category/user"

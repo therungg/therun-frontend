@@ -14,7 +14,7 @@ export const ChatMessageTime = memo<ChatMessageTimeProps>(({ time }) => {
     }, [time]);
 
     return (
-        <small suppressHydrationWarning title={title} className={"text-nowrap"}>
+        <small suppressHydrationWarning title={title} className="text-nowrap">
             {formattedTime}
         </small>
     );

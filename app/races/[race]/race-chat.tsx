@@ -87,7 +87,7 @@ export const RaceChat = ({
             style={{
                 height: "24rem",
             }}
-            className={"rounded-3 px-4 py-2 mb-3 game-border bg-body-secondary"}
+            className="rounded-3 px-4 py-2 mb-3 game-border bg-body-secondary"
         >
             <div style={{ height: "2rem" }}>
                 <ChatFilterOptions
@@ -121,16 +121,16 @@ const ChatFilterOptions = ({
         "splits",
     ];
     return (
-        <div className={"d-flex"}>
+        <div className="d-flex">
             {subjects.map((subject) => {
                 return (
                     <Form
                         key={subject}
-                        className={"me-2 me-sm-4 me-md-3 mg-lg-2 me-xl-4"}
+                        className="me-2 me-sm-4 me-md-3 mg-lg-2 me-xl-4"
                     >
                         <Form.Check
                             name={subject}
-                            type={"checkbox"}
+                            type="checkbox"
                             label={
                                 subject.charAt(0).toUpperCase() +
                                 subject.slice(1)
@@ -154,9 +154,7 @@ const ChatFilterOptions = ({
 const Chat = ({ raceMessages }: { raceMessages: RaceMessage[] }) => {
     return (
         <div
-            className={
-                "d-flex flex-column-reverse overflow-y-scroll overflow-x-hidden px-2 py-1 game-border rounded-3 mb-2"
-            }
+            className="d-flex flex-column-reverse overflow-y-scroll overflow-x-hidden px-2 py-1 game-border rounded-3 mb-2"
             style={{ height: "18rem" }}
         >
             {raceMessages.map((message) => (
@@ -168,11 +166,11 @@ const Chat = ({ raceMessages }: { raceMessages: RaceMessage[] }) => {
 
 const Chatmessage = ({ message }: { message: RaceMessage }) => {
     return (
-        <div className={"d-flex"}>
-            <span className={"me-2"}>
+        <div className="d-flex">
+            <span className="me-2">
                 <ChatMessageTime time={message.time} />
             </span>
-            <div className={"w-100"}>{getRaceMessage(message)}</div>
+            <div className="w-100">{getRaceMessage(message)}</div>
         </div>
     );
 };
@@ -250,15 +248,13 @@ const getRaceMessage = (message: RaceMessage) => {
                 );
             }
             return (
-                <div className={"w-100"}>
-                    <span className={"justify-content-between d-flex w-100"}>
+                <div className="w-100">
+                    <span className="justify-content-between d-flex w-100">
                         <span>
                             <UserLink icon={false} username={user as string} />
                         </span>
                         <small>
-                            <span className={"fst-italic"}>
-                                {data.splitName}
-                            </span>{" "}
+                            <span className="fst-italic">{data.splitName}</span>{" "}
                             | <DurationToFormatted duration={data.time} /> |{" "}
                             {(data.percentage * 100).toFixed(0)}%
                         </small>
@@ -286,7 +282,7 @@ const getRaceMessage = (message: RaceMessage) => {
                 <>
                     <UserLink icon={false} username={user as string} />{" "}
                     commented:{" "}
-                    <span className={"fst-italic"}>
+                    <span className="fst-italic">
                         &quot;{data.comment}&quot;
                     </span>
                 </>
@@ -307,7 +303,7 @@ const getRaceMessage = (message: RaceMessage) => {
                     <UserLink icon={false} username={user as string} /> finished
                     the race{" "}
                     {data.time && (
-                        <span className={"fw-bold"}>
+                        <span className="fw-bold">
                             {" "}
                             - <DurationToFormatted duration={data.time} />
                         </span>
@@ -322,7 +318,7 @@ const getRaceMessage = (message: RaceMessage) => {
                     <UserLink icon={false} username={user as string} />{" "}
                     confirmed their time{" "}
                     {data.time && (
-                        <span className={"fw-bold"}>
+                        <span className="fw-bold">
                             {" "}
                             - <DurationToFormatted duration={data.time} />
                         </span>

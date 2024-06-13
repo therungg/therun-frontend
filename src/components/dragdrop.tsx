@@ -80,7 +80,7 @@ export const Dragdrop = ({
             <p>
                 If you install the LiveSplit Component, you will never have to
                 upload manually again!{" "}
-                <a href={"/livesplit"}>Check out how to here. </a>
+                <a href="/livesplit">Check out how to here. </a>
             </p>
 
             {show ? (
@@ -96,8 +96,8 @@ export const Dragdrop = ({
                     <p>
                         Check back on{" "}
                         <UserLink username={username}>Your profile</UserLink> in
-                        around 1 minute. If your splits don{"'"}t show up or
-                        there seems to be something wrong with them, please{" "}
+                        around 1 minute. If your splits don't show up or there
+                        seems to be something wrong with them, please{" "}
                         <Link href="/contact">Contact me!</Link>
                     </p>
                 </Alert>
@@ -105,7 +105,7 @@ export const Dragdrop = ({
                 <></>
             )}
 
-            <Dropzone onDrop={acceptFiles} multiple={false} accept={".lss"}>
+            <Dropzone onDrop={acceptFiles} multiple={false} accept=".lss">
                 {({ getRootProps, getInputProps }) => (
                     <section>
                         <div

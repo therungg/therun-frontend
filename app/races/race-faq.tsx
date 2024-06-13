@@ -11,14 +11,14 @@ export const RaceFaq = () => {
                 onClick={() => {
                     setShow(true);
                 }}
-                variant={"secondary"}
-                className={"ms-2"}
+                variant="secondary"
+                className="ms-2"
             >
                 View info about therun.gg races
             </Button>
 
             <Modal
-                size={"xl"}
+                size="xl"
                 show={show}
                 onHide={() => {
                     setShow(false);
@@ -37,11 +37,11 @@ export const RaceFaq = () => {
 
 const RaceFaqBody = () => {
     return (
-        <div className={""}>
-            <p className={"flex-center fs-4"}>
+        <div className="">
+            <p className="flex-center fs-4">
                 This is an attempt to modernize speedrun racing.
             </p>
-            <p className={""}>
+            <p className="">
                 It has a modern ELO-based rating system, live tracking of the
                 race with live-standings as the race happens with full LiveSplit
                 Integration. It is extremely easy to start, join and participate
@@ -50,17 +50,13 @@ const RaceFaqBody = () => {
             <p>
                 If you have any further questions, feedback, remarks, insults or
                 compliments, feel free to contact us on{" "}
-                <a
-                    href={"therun.gg/discord"}
-                    target={"_blank"}
-                    rel={"noreferrer"}
-                >
+                <a href="therun.gg/discord" target="_blank" rel="noreferrer">
                     Discord
                 </a>
                 !
             </p>
             <Accordion>
-                <Accordion.Item eventKey={"how-does-it-work"}>
+                <Accordion.Item eventKey="how-does-it-work">
                     <Accordion.Header>
                         How do I create or join a race?
                     </Accordion.Header>
@@ -72,10 +68,10 @@ const RaceFaqBody = () => {
                             it. You are good to go! Just log in with Twitch in
                             the top right corner and you are all set. If you do
                             not use the component yet, checkout{" "}
-                            <a href={"/livesplit"}>this tutorial</a>. It will
-                            take 5 minutes max. Want to test out if it is
-                            working? Start your LiveSplit timer and see yourself
-                            appear on <a href={"/live"}>the live page!</a>
+                            <a href="/livesplit">this tutorial</a>. It will take
+                            5 minutes max. Want to test out if it is working?
+                            Start your LiveSplit timer and see yourself appear
+                            on <a href="/live">the live page!</a>
                         </p>
                         <h5>2. Create or join a race</h5>
                         <p>
@@ -103,7 +99,7 @@ const RaceFaqBody = () => {
                         </p>
                     </Accordion.Body>
                 </Accordion.Item>
-                <Accordion.Item eventKey={"how-to-race"}>
+                <Accordion.Item eventKey="how-to-race">
                     <Accordion.Header>
                         So the race has started. What do I do now?
                     </Accordion.Header>
@@ -142,7 +138,7 @@ const RaceFaqBody = () => {
                         </p>
                     </Accordion.Body>
                 </Accordion.Item>
-                <Accordion.Item eventKey={"race-ending"}>
+                <Accordion.Item eventKey="race-ending">
                     <Accordion.Header>
                         So the race has ended. What happens now?
                     </Accordion.Header>
@@ -166,7 +162,7 @@ const RaceFaqBody = () => {
                         </p>
                     </Accordion.Body>
                 </Accordion.Item>
-                <Accordion.Item eventKey={"do-i-need-livesplits"}>
+                <Accordion.Item eventKey="do-i-need-livesplits">
                     <Accordion.Header>
                         Must I use the therun.gg LiveSplit Component?
                     </Accordion.Header>
@@ -184,7 +180,7 @@ const RaceFaqBody = () => {
                         </p>
                     </Accordion.Body>
                 </Accordion.Item>
-                <Accordion.Item eventKey={"action-overview"}>
+                <Accordion.Item eventKey="action-overview">
                     <Accordion.Header>
                         When can I do which race action? How does that work?
                     </Accordion.Header>
@@ -253,7 +249,7 @@ const RaceFaqBody = () => {
                         </p>
                     </Accordion.Body>
                 </Accordion.Item>
-                <Accordion.Item eventKey={"how-do-ratings work"}>
+                <Accordion.Item eventKey="how-do-ratings work">
                     <Accordion.Header>
                         How the hell does the rating system work?
                     </Accordion.Header>

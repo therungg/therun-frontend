@@ -11,7 +11,7 @@ import { AppContext } from "~src/common/app.context";
 // eslint-disable-next-line import/no-commonjs
 const levenshtein = require("js-levenshtein");
 
-interface UserData {
+interface UserGameData {
     meta: any;
     stats: History;
 }
@@ -88,7 +88,7 @@ export const CompareSplits = ({
                 </Col>
             </Row>
             <select
-                className={"form-select"}
+                className="form-select"
                 style={{ width: "40%", marginBottom: "1rem" }}
                 onChange={async (e) => {
                     const selectedUser = e.currentTarget.value.split(" (")[0];
@@ -103,7 +103,7 @@ export const CompareSplits = ({
                             setLoaded(false);
                             const url = `${baseUrl}/api/users${correctUrl}`;
 
-                            const gamesData: UserData = await (
+                            const gamesData: UserGameData = await (
                                 await fetch(url, {
                                     method: "GET",
                                     headers: {
@@ -154,9 +154,7 @@ export const CompareSplits = ({
                 }}
             >
                 {(currentUser == "no-selection" || !currentUserData) && (
-                    <option key={"no-selection"}>
-                        Select run to compare to
-                    </option>
+                    <option key="no-selection">Select run to compare to</option>
                 )}
                 {catLeaderboard.pbLeaderboard
                     .filter((lb) => lb.username != username)

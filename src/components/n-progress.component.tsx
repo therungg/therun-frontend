@@ -2,12 +2,6 @@
 import React from "react";
 import NProgress from "nprogress";
 
-type PushStateInput = [
-    data: any,
-    unused: string,
-    url?: string | URL | null | undefined,
-];
-
 export function useProgressBar() {
     React.useEffect(() => {
         NProgress.configure({ showSpinner: false });
@@ -35,7 +29,11 @@ export function useProgressBar() {
         mutationObserver.observe(document, { childList: true, subtree: true });
 
         window.history.pushState = new Proxy(window.history.pushState, {
-            apply: (target, thisArg, argArray: PushStateInput) => {
+            apply: (
+                target,
+                thisArg,
+                argArray: Parameters<History["pushState"]>,
+            ) => {
                 NProgress.done();
                 return target.apply(thisArg, argArray);
             },

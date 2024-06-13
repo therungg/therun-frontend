@@ -26,7 +26,7 @@ export const CategoryOverview = ({
                     <th>
                         Best run
                         <InfoTooltip
-                            title={"Best run"}
+                            title="Best run"
                             content={
                                 <div>
                                     This is the best time out of all users of
@@ -56,7 +56,7 @@ export const CategoryOverview = ({
                                         game={game}
                                     >
                                         <a
-                                            href={"#"}
+                                            href="#"
                                             onClick={() => {
                                                 setCurrentCategory(
                                                     category.categoryName,

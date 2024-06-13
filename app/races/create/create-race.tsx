@@ -49,116 +49,102 @@ export default function CreateRace() {
             {/*Todo: make nice flash messages for errors and success*/}
             {state?.message && state.message}
 
-            <Form action={formAction} className={"row"}>
-                <fieldset className={"border py-3 px-4"}>
-                    <legend className={"w-auto mb-0"}>Create a new race</legend>
-                    <GameCategoryInput className={"col-md-6"} />
+            <Form action={formAction} className="row">
+                <fieldset className="border py-3 px-4">
+                    <legend className="w-auto mb-0">Create a new race</legend>
+                    <GameCategoryInput className="col-md-6" />
                     <Accordion>
-                        <Accordion.Item eventKey={"create"}>
+                        <Accordion.Item eventKey="create">
                             <Accordion.Header>
                                 Optional Race Options
                             </Accordion.Header>
                             <Accordion.Body>
-                                <Row className={"g-3 mb-3"}>
+                                <Row className="g-3 mb-3">
                                     <Col xl={6} lg={12}>
-                                        <Form.Group controlId={"customName"}>
+                                        <Form.Group controlId="customName">
                                             <Form.Label>Race Name</Form.Label>
                                             <Form.Control
-                                                name={"customName"}
-                                                type={"text"}
-                                                placeholder={
-                                                    "Enter Custom Name"
-                                                }
+                                                name="customName"
+                                                type="text"
+                                                placeholder="Enter Custom Name"
                                                 required={false}
                                             />
                                         </Form.Group>
                                     </Col>
                                     <Col xl={6} lg={12}>
-                                        <Form.Group controlId={"description"}>
+                                        <Form.Group controlId="description">
                                             <Form.Label>Description</Form.Label>
                                             <Form.Control
-                                                as={"textarea"}
-                                                name={"description"}
-                                                type={"textarea"}
-                                                placeholder={
-                                                    "Description eg. bingo seed or tournament name"
-                                                }
+                                                as="textarea"
+                                                name="description"
+                                                type="textarea"
+                                                placeholder="Description eg. bingo seed or tournament name"
                                                 required={false}
                                             />
                                         </Form.Group>
                                     </Col>
                                 </Row>
-                                <Can I={"moderate"} a={"race"}>
-                                    <div className={"row g-3 mb-3 d-flex"}>
-                                        <Form.Group controlId={"id"}>
+                                <Can I="moderate" a="race">
+                                    <div className="row g-3 mb-3 d-flex">
+                                        <Form.Group controlId="id">
                                             <Form.Label>ID</Form.Label>
                                             <Form.Control
-                                                name={"id"}
-                                                type={"text"}
-                                                placeholder={
-                                                    "Enter the custom race ID (therun.gg/races/<id>)"
-                                                }
+                                                name="id"
+                                                type="text"
+                                                placeholder="Enter the custom race ID (therun.gg/races/<id>)"
                                                 required={false}
                                             />
                                         </Form.Group>
                                     </div>
                                 </Can>
-                                <div className={"row g-3 mb-3 d-flex"}>
-                                    <Form.Group controlId={"forceStream"}>
+                                <div className="row g-3 mb-3 d-flex">
+                                    <Form.Group controlId="forceStream">
                                         <Form.Label>
                                             <UnderlineTooltip
-                                                title={"Twitch Stream"}
+                                                title="Twitch Stream"
                                                 content={
                                                     "Force a specific stream instead of the participant's streams on the race page. Only input the name of the stream, no need to input https://twitch.tv/siglemic, just input siglemic"
                                                 }
-                                                element={"Twitch Stream"}
+                                                element="Twitch Stream"
                                             />
                                         </Form.Label>
                                         <Form.Control
-                                            name={"forceStream"}
-                                            type={"text"}
-                                            placeholder={
-                                                "Enter the name of a stream to show"
-                                            }
+                                            name="forceStream"
+                                            type="text"
+                                            placeholder="Enter the name of a stream to show"
                                             required={false}
                                         />
                                     </Form.Group>
                                 </div>
-                                <div className={"row g-3 mb-4"}>
-                                    <Form.Group controlId={"password"}>
+                                <div className="row g-3 mb-4">
+                                    <Form.Group controlId="password">
                                         <Form.Label>
                                             <UnderlineTooltip
-                                                title={"Password"}
-                                                content={
-                                                    "Sets a password. Participants need to enter this password in order to join the race."
-                                                }
-                                                element={"Password"}
+                                                title="Password"
+                                                content="Sets a password. Participants need to enter this password in order to join the race."
+                                                element="Password"
                                             />
                                         </Form.Label>
                                         <Form.Control
-                                            name={"password"}
-                                            type={"text"}
-                                            placeholder={
-                                                "Enter a Race Password"
-                                            }
+                                            name="password"
+                                            type="text"
+                                            placeholder="Enter a Race Password"
                                             required={false}
                                         />
                                     </Form.Group>
                                 </div>
-                                <div className={"row g-3 mb-4"}>
-                                    <Form.Group controlId={"countdown"}>
+                                <div className="row g-3 mb-4">
+                                    <Form.Group controlId="countdown">
                                         <Form.Label>
                                             <UnderlineTooltip
-                                                title={"Countdown seconds"}
-                                                content={
-                                                    "By default, the countdown when everyone is ready starts at 10 seconds. Customize that here"
-                                                }
-                                                element={"Countdown seconds"}
+                                                title="Countdown seconds"
+                                                content="By default, the countdown when everyone is ready starts at 10 seconds. Customize that here"
+                                                element="Countdown seconds"
                                             />
                                         </Form.Label>
                                         <Form.Control
-                                            name={"countdown"}
-                                            type={"number"}
+                                            name="countdown"
+                                            type="number"
                                             required={false}
                                             min={3}
                                             step={1}
@@ -167,7 +153,7 @@ export default function CreateRace() {
                                         />
                                     </Form.Group>
                                 </div>
-                                <div className={"g-3 mb-3"}>
+                                <div className="g-3 mb-3">
                                     <div>
                                         <Form.Label>Start Condition</Form.Label>
                                     </div>
@@ -191,8 +177,8 @@ export default function CreateRace() {
                                                 key={type}
                                                 inline={false}
                                                 label={labels[type]}
-                                                name={"startMethod"}
-                                                type={"radio"}
+                                                name="startMethod"
+                                                type="radio"
                                                 id={type}
                                                 value={type}
                                                 defaultChecked={
@@ -209,7 +195,7 @@ export default function CreateRace() {
                                     {showStartDate && (
                                         <>
                                             <input
-                                                className={"form-control"}
+                                                className="form-control"
                                                 style={{
                                                     width: "15rem",
                                                 }}
@@ -238,28 +224,28 @@ export default function CreateRace() {
                                         </>
                                     )}
                                 </div>
-                                <div className={"row g-3 mb-3"}>
-                                    <Form.Group controlId={"ranked"}>
+                                <div className="row g-3 mb-3">
+                                    <Form.Group controlId="ranked">
                                         <Form.Check
-                                            name={"ranked"}
-                                            type={"checkbox"}
+                                            name="ranked"
+                                            type="checkbox"
                                             defaultChecked={true}
-                                            label={"Ranked"}
+                                            label="Ranked"
                                         />
                                     </Form.Group>
-                                    <Form.Group controlId={"selfJoin"}>
+                                    <Form.Group controlId="selfJoin">
                                         <Form.Check
-                                            name={"selfJoin"}
-                                            type={"checkbox"}
+                                            name="selfJoin"
+                                            type="checkbox"
                                             defaultChecked={true}
-                                            label={"Self-join"}
+                                            label="Self-join"
                                         />
                                     </Form.Group>
                                 </div>
                             </Accordion.Body>
                         </Accordion.Item>
                     </Accordion>
-                    <div className={"text-end mt-3"}>
+                    <div className="text-end mt-3">
                         <SubmitButton />
                     </div>
                 </fieldset>
@@ -271,7 +257,7 @@ export default function CreateRace() {
 const SubmitButton = () => {
     const { pending } = useFormStatus();
     return (
-        <Button disabled={pending} variant={"primary"} type="submit">
+        <Button disabled={pending} variant="primary" type="submit">
             {!pending ? "Create Race" : "Creating Race..."}
         </Button>
     );

@@ -34,9 +34,9 @@ export const CategoryStatsListDisplay = ({
     );
 
     return (
-        <div className={""}>
-            <PaginationSearch text={"Search for category"} />
-            <div className={"mt-2 mb-4"}>
+        <div className="">
+            <PaginationSearch text="Search for category" />
+            <div className="mt-2 mb-4">
                 {pagination.data.map((gameStats) => {
                     return (
                         <CategoryStatsPanel
@@ -58,16 +58,16 @@ export const CategoryStatsPanel = ({ stats }: { stats: CategoryStats }) => {
             href={`/races/stats/${safeEncodeURI(game)}/${safeEncodeURI(
                 category,
             )}`}
-            className={"text-decoration-none"}
+            className="text-decoration-none"
         >
             <div
                 className={`bg-body-secondary game-border mh-100 h-100 card border-2 mt-2 px-3 py-2 ${styles.liveRunContainer}`}
             >
-                <div className={"justify-content-between d-flex"}>
-                    <span className={"fs-5"}>{category}</span>
+                <div className="justify-content-between d-flex">
+                    <span className="fs-5">{category}</span>
                     <span>{stats.totalRaces} Races</span>
                 </div>
-                <hr className={"my-1 p-0"} />
+                <hr className="my-1 p-0" />
                 <CategoryStatsBody stats={stats} />
             </div>
         </a>
@@ -77,8 +77,8 @@ export const CategoryStatsPanel = ({ stats }: { stats: CategoryStats }) => {
 export const CategoryStatsBody = ({ stats }: { stats: CategoryStats }) => {
     return (
         <Row>
-            <Col lg={4} className={"mb-3 mb-md-1"}>
-                <div className={"fs-5 mb-1"}>Stats</div>
+            <Col lg={4} className="mb-3 mb-md-1">
+                <div className="fs-5 mb-1">Stats</div>
                 <div>
                     Total Time:{" "}
                     <b>
@@ -92,8 +92,8 @@ export const CategoryStatsBody = ({ stats }: { stats: CategoryStats }) => {
                     Races Finished: <b>{stats.totalFinishedParticipations}</b>
                 </div>
             </Col>
-            <Col lg={4} className={"mb-3 mb-md-1"}>
-                <div className={"fs-5 mb-1"}>Top Ratings</div>
+            <Col lg={4} className="mb-3 mb-md-1">
+                <div className="fs-5 mb-1">Top Ratings</div>
                 {stats.bestMmrs.map((stat, i) => {
                     return (
                         <div key={`${stat.user}-mmr`}>
@@ -111,8 +111,8 @@ export const CategoryStatsBody = ({ stats }: { stats: CategoryStats }) => {
                     );
                 })}
             </Col>
-            <Col lg={4} className={"mb-3 mb-xl-1"}>
-                <div className={"fs-5 mb-1"}>Best Ever Times</div>
+            <Col lg={4} className="mb-3 mb-xl-1">
+                <div className="fs-5 mb-1">Best Ever Times</div>
                 {stats.bestTimes.map((stat, i) => {
                     return (
                         <div key={`${stat.user}-time`}>

@@ -135,7 +135,7 @@ export const CompareTimeline = ({
                 <Col className="d-flex justify-content-end">
                     <div className="d-flex justify-content-end align-self-center">
                         <label
-                            htmlFor={"switch"}
+                            htmlFor="switch"
                             style={{
                                 marginRight: "10px",
                                 alignSelf: "center",
@@ -145,7 +145,7 @@ export const CompareTimeline = ({
                             {"Show only PBs"}{" "}
                         </label>
                         <Switch
-                            name={"switch"}
+                            name="switch"
                             onChange={(checked) => {
                                 setPbOnly(checked);
                             }}
@@ -155,7 +155,7 @@ export const CompareTimeline = ({
                 </Col>
             </Row>
             <Col style={{ minWidth: "15rem" }}>
-                <Line data={data} type={"line"} options={options} />
+                <Line data={data} type="line" options={options} />
             </Col>
         </div>
     );

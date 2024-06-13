@@ -98,7 +98,7 @@ export async function getUserProfilePhoto(
     let response: Response;
     try {
         response = await fetch(`${getBaseUrl()}/api/users/${username}/global`);
-    } catch (e) {
+    } catch (_e) {
         return undefined;
     }
 

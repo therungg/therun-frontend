@@ -27,7 +27,7 @@ export default async function GamePage({ params }: PageProps) {
                 Unfortunately, Nobody has uploaded runs for this game yet, or
                 the upload is not processed yet. If you have uploaded runs for
                 the game, but this page still shows, please{" "}
-                <a href={"/contact"}>contact me!</a>
+                <a href="/contact">contact me!</a>
                 {JSON.stringify(data)}
             </>
         );

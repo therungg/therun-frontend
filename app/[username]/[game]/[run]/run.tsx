@@ -66,7 +66,7 @@ export default function RunDetail({
             !forceRealTime
         ),
     );
-    const [gameData, setGameData] = useState(null);
+    const [gameData, setGameData] = useState<StatsData | null>(null);
     const [dataLoading, setDataLoading] = useState(false);
 
     const [realTimeRuns, setRealTimeRuns] = useState<Runs | null>(null);
@@ -102,7 +102,7 @@ export default function RunDetail({
             })
         ).json();
 
-        setGameData(gamesData as any);
+        setGameData(gamesData);
     };
 
     useEffect(() => {
@@ -201,6 +201,7 @@ export default function RunDetail({
                                             break;
                                     }
 
+                                    console.log({ k });
                                     return (
                                         <Col xl={xl} key={k}>
                                             <i>{k}</i>:{" "}
@@ -226,7 +227,7 @@ export default function RunDetail({
                 <div className="mb-3 mw-550p">
                     <h2>
                         Currently Live!&nbsp;
-                        <a href={"/live"}>
+                        <a href="/live">
                             <LiveIcon />
                         </a>
                     </h2>
@@ -308,7 +309,7 @@ export default function RunDetail({
                 <Tab eventKey="timesaves" title="Timesaves">
                     <TimeSaves history={runs} splits={splits} />
                 </Tab>
-                <Tab eventKey="compare" title={"Compare splits"}>
+                <Tab eventKey="compare" title="Compare splits">
                     {gameData ? (
                         <CompareSplits
                             statsData={gameData}
@@ -326,7 +327,7 @@ export default function RunDetail({
                 {run.vod && (
                     <Tab
                         eventKey="vod"
-                        title={"Video"}
+                        title="Video"
                         className="ratio ratio-16x9"
                     >
                         {run.vod && <Vod vod={run.vod} />}

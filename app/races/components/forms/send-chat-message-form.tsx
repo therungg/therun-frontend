@@ -18,7 +18,7 @@ export const SendChatMessageForm = ({
     const [value, setValue] = useState("");
 
     return (
-        <div className={"mb-4"}>
+        <div className="mb-4">
             <Form
                 action={sendChatMessage}
                 onSubmit={() => {
@@ -33,16 +33,16 @@ export const SendChatMessageForm = ({
                     });
                     setValue("");
                 }}
-                className={"d-flex gap-2"}
+                className="d-flex gap-2"
             >
-                <input hidden name={"raceId"} value={raceId} readOnly />
+                <input hidden name="raceId" value={raceId} readOnly />
 
                 <input
                     maxLength={200}
-                    type={"text"}
-                    name={"message"}
-                    className={"form-control"}
-                    autoComplete={"off"}
+                    type="text"
+                    name="message"
+                    className="form-control"
+                    autoComplete="off"
                     placeholder={
                         user?.username
                             ? "Send a chat message"
@@ -58,9 +58,9 @@ export const SendChatMessageForm = ({
                 {user?.username && (
                     <SubmitButton
                         disabled={!user?.username}
-                        className={"text-nowrap"}
-                        innerText={"Send Message"}
-                        pendingText={"Sending message..."}
+                        className="text-nowrap"
+                        innerText="Send Message"
+                        pendingText="Sending message..."
                     />
                 )}
             </Form>

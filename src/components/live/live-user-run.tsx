@@ -133,7 +133,7 @@ export const LiveUserRun = ({
                         <GameImage
                             alt={liveRun.game}
                             src={liveRun.gameImage}
-                            quality={"small"}
+                            quality="small"
                             height={108}
                             width={81}
                             style={
@@ -159,14 +159,14 @@ export const LiveUserRun = ({
                     }}
                 >
                     <Image
-                        alt={"Logo"}
+                        alt="Logo"
                         src={
                             dark
                                 ? "/logo_dark_theme_no_text_transparent.png"
                                 : "/logo_light_theme_no_text_transparent.png"
                         }
-                        width={"75px"}
-                        height={"75px"}
+                        width="75px"
+                        height="75px"
                         className="mt-3"
                     />
                 </div>
@@ -195,7 +195,7 @@ export const LiveUserRun = ({
                         />
                         {liveRun.currentlyStreaming && (
                             <div className="ms-2">
-                                <TwitchIcon height={22} color={"#6441a5"} />
+                                <TwitchIcon height={22} color="#6441a5" />
                             </div>
                         )}
                     </div>
@@ -241,7 +241,7 @@ export const LiveUserRun = ({
                         Math.trunc(liveRun.pb) != Math.trunc(tournamentPb) && (
                             <div className="text-truncate">
                                 Personal Best -{" "}
-                                {<DurationToFormatted duration={liveRun.pb} />}
+                                <DurationToFormatted duration={liveRun.pb} />
                             </div>
                         )}
                 </Col>
@@ -259,7 +259,7 @@ export const LiveUserRun = ({
 export const LiveIcon = ({ height = 16, dark = false }) => {
     return (
         <Image
-            alt={"Live Icon"}
+            alt="Live Icon"
             src={!dark ? "/LiveTR-light.png" : "/LiveTR-dark.png"}
             height={height}
         />
@@ -269,7 +269,7 @@ export const LiveIcon = ({ height = 16, dark = false }) => {
 export const Flag = ({ className = "", height = 16, dark = false }) => {
     return (
         <Image
-            alt={"Flag"}
+            alt="Flag"
             src={
                 !dark
                     ? "/Flag finish greenTR-darktransparant.png"

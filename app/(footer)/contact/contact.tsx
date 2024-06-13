@@ -76,8 +76,8 @@ export const Contact = () => {
             <p>
                 If you want to, I made a
                 <a
-                    rel={"noreferrer"}
-                    target={"_blank"}
+                    rel="noreferrer"
+                    target="_blank"
                     href={process.env.NEXT_PUBLIC_DISCORD_URL}
                 >
                     {" "}
@@ -85,8 +85,8 @@ export const Contact = () => {
                 </a>
                 , you can message me on
                 <a
-                    rel={"noreferrer"}
-                    target={"_blank"}
+                    rel="noreferrer"
+                    target="_blank"
                     href={process.env.NEXT_PUBLIC_TWITTER_URL}
                 >
                     {" "}
@@ -94,9 +94,9 @@ export const Contact = () => {
                 </a>{" "}
                 or send me an email at
                 <a
-                    rel={"noreferrer"}
-                    target={"_blank"}
-                    href={"mailto:info@therun.gg"}
+                    rel="noreferrer"
+                    target="_blank"
+                    href="mailto:info@therun.gg"
                 >
                     {" "}
                     info@therun.gg
@@ -165,22 +165,20 @@ export const Contact = () => {
                                     })
                                 }
                             >
-                                <option value={""}>Select a category</option>
-                                <option value={"bug"}>
+                                <option value="">Select a category</option>
+                                <option value="bug">
                                     I want to report a bug
                                 </option>
-                                <option value={"change"}>
+                                <option value="change">
                                     I want to make a change suggestion
                                 </option>
-                                <option value={"feature"}>
+                                <option value="feature">
                                     I want to request a new feature
                                 </option>
-                                <option value={"question"}>
+                                <option value="question">
                                     I want to ask a question
                                 </option>
-                                <option value={"ask"}>
-                                    I just want to talk
-                                </option>
+                                <option value="ask">I just want to talk</option>
                             </Form.Control>
                         </Form.Group>
                         <Form.Group
@@ -207,8 +205,8 @@ export const Contact = () => {
 
             <div className="d-flex justify-content-end">
                 <Image
-                    src={"/ContactformTR-light.png"}
-                    alt={"Contact"}
+                    src="/ContactformTR-light.png"
+                    alt="Contact"
                     height={220}
                 />
             </div>

@@ -122,7 +122,7 @@ export const BestAchievedGraph = ({
                 <h3>Best ever over time</h3>
             </Row>
             <Row>
-                <Line data={data} type={"line"} options={options} />
+                <Line data={data} type="line" options={options} />
             </Row>
         </>
     );

@@ -7,7 +7,7 @@ interface GameData {
     "category#username": string;
 }
 
-interface UserData {
+interface UserStats {
     [User: string]: string;
 }
 
@@ -24,7 +24,7 @@ export interface StatsData {
 export interface Stats {
     gameLeaderboard: GameLeaderboard;
     categoryLeaderboards: CategoryLeaderboard[];
-    userData: UserData;
+    userData: UserStats;
 }
 
 export interface GameLeaderboard {

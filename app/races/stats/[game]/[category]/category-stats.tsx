@@ -46,7 +46,7 @@ export const CategoryStats = ({
                             {game} - {category} Leaderboards
                         </h2>
                         <CategoryStatsHeader stats={stats} />
-                        <div className={"mt-3"}>
+                        <div className="mt-3">
                             <CategoryUserTable users={users} />
                         </div>
                     </Col>

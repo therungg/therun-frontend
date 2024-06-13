@@ -22,12 +22,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
             .replace(".tsx", "")
             .replace("page", "")
             .replace("/(footer)", "");
-        const page = route === "/" ? "" : path;
-
-        return page;
+        return route === "/" ? "" : path;
     });
 
-    const routes = cleanedPaths
+    return cleanedPaths
         .filter((path) => !ignoredRoutes.includes(path))
         .map((route) => {
             return {
@@ -35,6 +33,4 @@ export default function sitemap(): MetadataRoute.Sitemap {
                 lastModified: new Date().toISOString(),
             };
         });
-
-    return routes;
 }

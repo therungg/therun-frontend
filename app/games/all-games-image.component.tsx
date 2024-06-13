@@ -23,7 +23,7 @@ export const AllGamesImage: React.FunctionComponent<AllGamesImageProps> = ({
                         className="w-auto"
                         alt={game.display}
                         src={game.image}
-                        quality={"medium"}
+                        quality="medium"
                         width={106}
                         height={152}
                     />
@@ -31,7 +31,7 @@ export const AllGamesImage: React.FunctionComponent<AllGamesImageProps> = ({
                 {(!game.image || game.image == "noimage") && (
                     <div className="d-flex align-items-center">
                         <Image
-                            alt={"Game Image"}
+                            alt="Game Image"
                             src={`/logo_${theme}_theme_no_text_transparent.png`}
                             width={106}
                             height={152}

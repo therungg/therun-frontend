@@ -26,7 +26,7 @@ export const AllGamesPaginated: React.FunctionComponent<GamesProps> = ({
 
             <Row className="gy-3 mb-3">
                 <div>
-                    <PaginationSearch text={"Filter by game/category/user"} />
+                    <PaginationSearch text="Filter by game/category/user" />
                 </div>
                 {isLoading && <SkeletonGamesList />}
                 {!isLoading &&

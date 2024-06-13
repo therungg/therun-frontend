@@ -38,59 +38,55 @@ export const EditRace = ({ race, user }: { race: Race; user: User }) => {
             {/*Todo: make nice flash messages for errors and success*/}
             {state?.message && state.message}
 
-            <Form action={formAction} className={"row"}>
-                <input hidden name={"raceId"} value={race.raceId} readOnly />
-                <fieldset className={"border py-3 px-4"}>
-                    <legend className={"w-auto mb-0"}>Edit race</legend>
-                    <div className={"row g-3 mb-3"}>
-                        <Form.Group controlId={"customName"}>
+            <Form action={formAction} className="row">
+                <input hidden name="raceId" value={race.raceId} readOnly />
+                <fieldset className="border py-3 px-4">
+                    <legend className="w-auto mb-0">Edit race</legend>
+                    <div className="row g-3 mb-3">
+                        <Form.Group controlId="customName">
                             <Form.Label>Race Name</Form.Label>
                             <Form.Control
-                                name={"customName"}
-                                type={"text"}
-                                placeholder={"Enter Custom Name"}
+                                name="customName"
+                                type="text"
+                                placeholder="Enter Custom Name"
                                 required={false}
                                 defaultValue={race.customName}
                             />
                         </Form.Group>
                     </div>
-                    <div className={"row g-3 mb-3"}>
-                        <Form.Group controlId={"description"}>
+                    <div className="row g-3 mb-3">
+                        <Form.Group controlId="description">
                             <Form.Label>Description</Form.Label>
                             <Form.Control
-                                as={"textarea"}
-                                name={"description"}
-                                type={"textarea"}
-                                placeholder={
-                                    "Description eg. bingo seed or tournament name"
-                                }
+                                as="textarea"
+                                name="description"
+                                type="textarea"
+                                placeholder="Description eg. bingo seed or tournament name"
                                 required={false}
                                 defaultValue={race.description}
                             />
                         </Form.Group>
                     </div>
-                    <div className={"row g-3 mb-3 d-flex"}>
-                        <Form.Group controlId={"forceStream"}>
+                    <div className="row g-3 mb-3 d-flex">
+                        <Form.Group controlId="forceStream">
                             <Form.Label>
                                 <UnderlineTooltip
-                                    title={"Twitch Stream"}
+                                    title="Twitch Stream"
                                     content={
                                         "Force a specific stream instead of the participant's streams on the race page. Only input the name of the stream, no need to input https://twitch.tv/siglemic, just input siglemic"
                                     }
-                                    element={"Twitch Stream"}
+                                    element="Twitch Stream"
                                 />
                             </Form.Label>
                             <Form.Control
-                                name={"forceStream"}
-                                type={"text"}
-                                placeholder={
-                                    "Enter the name of a stream to show"
-                                }
+                                name="forceStream"
+                                type="text"
+                                placeholder="Enter the name of a stream to show"
                                 required={false}
                                 defaultValue={race.forceStream}
                             />
                         </Form.Group>
-                        <div className={"text-end"}>
+                        <div className="text-end">
                             <SubmitButton />
                         </div>
                     </div>
@@ -103,7 +99,7 @@ export const EditRace = ({ race, user }: { race: Race; user: User }) => {
 const SubmitButton = () => {
     const { pending } = useFormStatus();
     return (
-        <Button disabled={pending} variant={"primary"} type="submit">
+        <Button disabled={pending} variant="primary" type="submit">
             {!pending ? "Edit Race" : "Editing Race..."}
         </Button>
     );

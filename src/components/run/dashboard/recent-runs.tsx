@@ -159,7 +159,7 @@ export const RecentRuns = ({
                         }}
                     >
                         <label
-                            htmlFor={"switch"}
+                            htmlFor="switch"
                             style={{
                                 marginRight: "10px",
                                 alignSelf: "center",
@@ -169,7 +169,7 @@ export const RecentRuns = ({
                             {pbOnly ? "Show only PBs" : "Show only PBs"}{" "}
                         </label>
                         <Switch
-                            name={"switch"}
+                            name="switch"
                             onChange={(checked) => {
                                 setPbOnly(checked);
                             }}
@@ -178,7 +178,7 @@ export const RecentRuns = ({
                     </div>
                 </Col>
             </Row>
-            <Line data={data} type={"line"} options={options} />
+            <Line data={data} type="line" options={options} />
         </div>
     );
 };

@@ -31,7 +31,7 @@ export const SendMarathonDataButton = ({
                 </div>
             )}
             <Button
-                variant={"primary"}
+                variant="primary"
                 className={`w-100 fw-medium d-inline-flex justify-content-center 
                     align-items-center ${description ? "h-3r" : "h-2r"}`}
                 onClick={async () => {

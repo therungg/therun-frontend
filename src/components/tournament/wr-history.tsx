@@ -216,7 +216,7 @@ export const WrHistory = ({
                             return (
                                 <VictoryLine
                                     key={n}
-                                    interpolation={"stepAfter"}
+                                    interpolation="stepAfter"
                                     theme={VictoryTheme.material}
                                     data={victoryDataPoint}
                                     style={{
@@ -272,14 +272,12 @@ export const WrHistory = ({
                         }}
                     >
                         <UnderlineTooltip
-                            title={"Only show last x Records"}
-                            content={
-                                "Allows you to only show the last couple of records. The graph can get unreadable with a large timeframe, so decreasing this number should help."
-                            }
-                            element={"Only show last x Records:"}
+                            title="Only show last x Records"
+                            content="Allows you to only show the last couple of records. The graph can get unreadable with a large timeframe, so decreasing this number should help."
+                            element="Only show last x Records:"
                         />
                         <input
-                            type={"number"}
+                            type="number"
                             className="form-control w-8r ms-2 bg-body-secondary"
                             onChange={(e) => {
                                 let val =

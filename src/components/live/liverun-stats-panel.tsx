@@ -79,8 +79,8 @@ export const LiverunStatsPanel = ({
             <div>
                 <a
                     href={`/${liveRun.gameData.url}`}
-                    target={"_blank"}
-                    rel={"noreferrer"}
+                    target="_blank"
+                    rel="noreferrer"
                 >
                     View full stats
                 </a>
@@ -94,23 +94,19 @@ export const LiverunStatsPanel = ({
                     }}
                 >
                     <option
-                        key={"current-run-detail"}
-                        title={"Current Run Detail"}
-                        value={"current-run-detail"}
+                        key="current-run-detail"
+                        title="Current Run Detail"
+                        value="current-run-detail"
                     >
                         Current Run Details
                     </option>
-                    <option
-                        key={"general"}
-                        title={"General Stats"}
-                        value={"general"}
-                    >
+                    <option key="general" title="General Stats" value="general">
                         General Stats
                     </option>
                     <option
-                        key={"split-detail"}
-                        title={"Split Detail"}
-                        value={"split-detail"}
+                        key="split-detail"
+                        title="Split Detail"
+                        value="split-detail"
                     >
                         Split Times
                     </option>

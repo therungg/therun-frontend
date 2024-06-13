@@ -5,7 +5,7 @@ import {
     IsoToFormatted,
 } from "../../util/datetime";
 import { Accordion, Card, Col, Pagination, Row, Table } from "react-bootstrap";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import moment from "moment/moment";
 import styles from "../../css/Session.module.scss";
 
@@ -137,7 +137,9 @@ export const GameSessions = ({
         setItems(buildItems(active, last));
     }, [active, last]);
 
-    const onPaginationClick = (event): void => {
+    const onPaginationClick: React.MouseEventHandler<HTMLUListElement> = (
+        event,
+    ): void => {
         let target = "";
 
         if (event.target.text) {
@@ -172,7 +174,7 @@ export const GameSessions = ({
                     style={{ display: "flex", justifyContent: "flex-end" }}
                 >
                     <label
-                        htmlFor={"switch"}
+                        htmlFor="switch"
                         style={{
                             marginRight: "1rem",
                             alignSelf: "center",
@@ -184,15 +186,15 @@ export const GameSessions = ({
                     </label>
                     <div style={{ alignSelf: "center" }}>
                         <select
-                            className={"form-select"}
+                            className="form-select"
                             onChange={(e) => {
                                 setRunsPast(e.currentTarget.value);
                             }}
                         >
-                            <option key={"all"} value={"all"}>
+                            <option key="all" value="all">
                                 Show all sessions
                             </option>
-                            <option key={"finished"} value={"finished"}>
+                            <option key="finished" value="finished">
                                 Finished runs only
                             </option>
                             <option disabled>
@@ -200,7 +202,10 @@ export const GameSessions = ({
                             </option>
                             {splits.map((split, k) => {
                                 return (
-                                    <option key={k} value={k}>
+                                    <option
+                                        key={JSON.stringify(split)}
+                                        value={k}
+                                    >
                                         {split.name}
                                     </option>
                                 );
@@ -272,7 +277,7 @@ export const GameSessions = ({
                     .reverse()
                     .slice((active - 1) * 10, active * 10)
                     .map((session) => {
-                        const sessionRuns = runs.filter((run, index) => {
+                        const sessionRuns = runs.filter((_run, index) => {
                             return (
                                 index >= session.runIds.first &&
                                 index <= session.runIds.last
@@ -316,7 +321,7 @@ export const GameSessions = ({
 
                         return (
                             <Accordion.Item
-                                key={session.endedAt}
+                                key={`${session.endedAt}-${totalRuns}`}
                                 eventKey={session.endedAt}
                             >
                                 <Accordion.Header>
@@ -375,9 +380,10 @@ export const GameSessions = ({
                                                     )
                                                     .map((time: string) => {
                                                         return (
-                                                            <>
+                                                            <React.Fragment
+                                                                key={time}
+                                                            >
                                                                 <DurationToFormatted
-                                                                    key={time}
                                                                     duration={
                                                                         time
                                                                     }
@@ -386,7 +392,7 @@ export const GameSessions = ({
                                                                     }
                                                                 />{" "}
                                                                 <br />
-                                                            </>
+                                                            </React.Fragment>
                                                         );
                                                     })}
                                             </Col>
@@ -456,16 +462,16 @@ export const GameSessions = ({
                                                             currentAmount) *
                                                         100;
                                                     currentAmount -= amount;
+                                                    const splitName =
+                                                        index === splits.length
+                                                            ? "Finished!"
+                                                            : splits[index]
+                                                                  .name;
                                                     return (
-                                                        <tr key={index}>
-                                                            <td>
-                                                                {index ===
-                                                                splits.length
-                                                                    ? "Finished!"
-                                                                    : splits[
-                                                                          index
-                                                                      ].name}
-                                                            </td>
+                                                        <tr
+                                                            key={`${amount}-${resetPercent}-${splitName}`}
+                                                        >
+                                                            <td>{splitName}</td>
                                                             <td>
                                                                 {bestTimePerSplit.length <=
                                                                     index ||
@@ -484,9 +490,7 @@ export const GameSessions = ({
                                                                                 duration={bestTimePerSplit[
                                                                                     index
                                                                                 ].toString()}
-                                                                                withMillis={
-                                                                                    true
-                                                                                }
+                                                                                withMillis
                                                                                 gameTime={
                                                                                     gameTime
                                                                                 }
@@ -510,9 +514,7 @@ export const GameSessions = ({
                                                                                 one={bestTimePerSplit[
                                                                                     index
                                                                                 ].toString()}
-                                                                                withMillis={
-                                                                                    true
-                                                                                }
+                                                                                withMillis
                                                                             />
                                                                         </div>
                                                                     </>
@@ -606,8 +608,8 @@ export const buildItems = (active: number, last: number) => {
         items.push(<Pagination.Ellipsis />);
     }
 
-    items.push(<Pagination.Next key={"next"} />);
-    items.push(<Pagination.Last key={"last"} />);
+    items.push(<Pagination.Next key="next" />);
+    items.push(<Pagination.Last key="last" />);
 
     return items;
 };

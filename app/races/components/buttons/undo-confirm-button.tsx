@@ -8,8 +8,8 @@ export const UndoConfirmButton = (props: RaceActionProps) => {
     return (
         <RaceActionButton
             action={undoConfirmRace}
-            innerText={"Undo confirmation"}
-            pendingText={"Undoing confirmation..."}
+            innerText="Undo confirmation"
+            pendingText="Undoing confirmation..."
             {...props}
         />
     );

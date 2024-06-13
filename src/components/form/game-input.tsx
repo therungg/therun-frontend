@@ -75,9 +75,9 @@ export const GameCategoryInput = (props: FormGroupProps) => {
     };
 
     return (
-        <div className={"row g-3 mb-4 pe-0"}>
+        <div className="row g-3 mb-4 pe-0">
             {clickedGame && (
-                <div className={"col-md-6"}>
+                <div className="col-md-6">
                     {!clickedCategory && <span>Game</span>}
                     <div
                         className={`d-flex mt-1 bg-body-secondary game-border rounded-3 p-0 ${styles.liveRunContainer}`}
@@ -90,16 +90,12 @@ export const GameCategoryInput = (props: FormGroupProps) => {
                             src={selectedGameImage ? selectedGameImage : ""}
                             width={60}
                             height={50}
-                            className={"rounded-3"}
-                            quality={"large"}
+                            className="rounded-3"
+                            quality="large"
                         />
-                        <span style={{ height: "5rem" }} className={"d-flex"}>
+                        <span style={{ height: "5rem" }} className="d-flex">
                             <div>
-                                <span
-                                    className={
-                                        "ps-3 h-100 align-items-center d-flex fs-6"
-                                    }
-                                >
+                                <span className="ps-3 h-100 align-items-center d-flex fs-6">
                                     <div>
                                         <span
                                             style={{
@@ -109,7 +105,7 @@ export const GameCategoryInput = (props: FormGroupProps) => {
                                             {inputValue}
                                         </span>
                                         {clickedCategory && (
-                                            <div className={"fst-italic"}>
+                                            <div className="fst-italic">
                                                 {categoryInput}
                                             </div>
                                         )}
@@ -122,20 +118,20 @@ export const GameCategoryInput = (props: FormGroupProps) => {
             )}
             <Form.Group
                 {...props}
-                controlId={"game"}
+                controlId="game"
                 className={`col-md-6${clickedGame ? " d-none" : ""}`}
             >
                 <Form.Label>Game</Form.Label>
                 <Form.Control
-                    autoComplete={"off"}
-                    type={"text"}
-                    placeholder={"Enter Game"}
+                    autoComplete="off"
+                    type="text"
+                    placeholder="Enter Game"
                     value={inputValue}
                     onChange={(e) => {
                         setClickedGame(false);
                         setInputValue(e.target.value);
                     }}
-                    name={"game"}
+                    name="game"
                 />
                 {!clickedGame && inputValue !== search && (
                     <span>Loading suggestions...</span>
@@ -149,14 +145,14 @@ export const GameCategoryInput = (props: FormGroupProps) => {
             </Form.Group>
             <Form.Group
                 className={`col-md-6${clickedCategory ? " d-none" : ""}`}
-                controlId={"category"}
+                controlId="category"
             >
                 <Form.Label>Category</Form.Label>
                 <Form.Control
-                    autoComplete={"off"}
-                    name={"category"}
-                    type={"text"}
-                    placeholder={"Enter Category"}
+                    autoComplete="off"
+                    name="category"
+                    type="text"
+                    placeholder="Enter Category"
                     value={categoryInput}
                     onChange={(e) => {
                         setClickedCategory(false);
@@ -183,8 +179,8 @@ const SuggestedGamesList = ({
     setGame: (game: Game) => void;
 }) => {
     return (
-        <div className={"mt-2"}>
-            <ul className={"p-0"}>
+        <div className="mt-2">
+            <ul className="p-0">
                 {games.map((game, index) => (
                     <li
                         key={index}
@@ -193,7 +189,7 @@ const SuggestedGamesList = ({
                             setGame(game);
                         }}
                     >
-                        <span style={{ height: "5rem" }} className={"d-flex"}>
+                        <span style={{ height: "5rem" }} className="d-flex">
                             <GameImage
                                 src={
                                     game.image && game.image !== "noimage"
@@ -202,14 +198,12 @@ const SuggestedGamesList = ({
                                 }
                                 width={60}
                                 height={50}
-                                className={"rounded-3"}
-                                quality={"large"}
+                                className="rounded-3"
+                                quality="large"
                             />
                             <span
                                 style={{ color: "var(--bs-link-color)" }}
-                                className={
-                                    "ps-3 h-100 align-items-center d-flex fs-6"
-                                }
+                                className="ps-3 h-100 align-items-center d-flex fs-6"
                             >
                                 {game.display}
                             </span>
@@ -230,8 +224,8 @@ const SuggestedCategoryList = ({
     setCategory: (category: Category) => void;
 }) => {
     return (
-        <div className={"mt-2"}>
-            <ul className={"p-0"}>
+        <div className="mt-2">
+            <ul className="p-0">
                 {categories.map((category, index) => (
                     <li
                         key={index}

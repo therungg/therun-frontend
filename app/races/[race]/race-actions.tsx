@@ -71,15 +71,11 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
             1000 * 60 * 10;
 
     return (
-        <div
-            className={
-                "rounded-3 px-4 pt-2 pb-4 mb-3 game-border bg-body-secondary"
-            }
-        >
-            <span className={"h4 w-100 flex-center"}>Race actions</span>
+        <div className="rounded-3 px-4 pt-2 pb-4 mb-3 game-border bg-body-secondary">
+            <span className="h4 w-100 flex-center">Race actions</span>
             <hr />
             {userFinished && (
-                <div className={"d-flex"}>
+                <div className="d-flex">
                     <ConfirmFinalTimeForm
                         raceId={race.raceId}
                         finalTime={
@@ -94,7 +90,7 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
                     <CommentOnRaceForm raceId={race.raceId} />
                 )}
             {raceIsPending && !userParticipates && (
-                <div className={"d-flex"}>
+                <div className="d-flex">
                     <JoinRaceForm race={race} />
                 </div>
             )}
@@ -103,22 +99,22 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
                     {!userIsReady && (
                         <>
                             <ReadyRaceButton
-                                className={"w-100 fs-5"}
+                                className="w-100 fs-5"
                                 raceId={race.raceId}
                             />
 
                             <LeaveRaceButton
-                                className={"w-100 fs-5 mt-2"}
+                                className="w-100 fs-5 mt-2"
                                 raceId={race.raceId}
-                                variant={"danger"}
+                                variant="danger"
                             />
                         </>
                     )}
                     {userIsReady && (
                         <UnreadyRaceButton
-                            className={"w-100 fs-5"}
+                            className="w-100 fs-5"
                             raceId={race.raceId}
-                            variant={"danger"}
+                            variant="danger"
                         />
                     )}
                 </div>
@@ -128,41 +124,41 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
                 !raceWasAbandonedMoreThan10MinutesAgo && (
                     <ResetAbandonedRaceButton
                         raceId={race.raceId}
-                        className={"w-100 fs-5 mb-2"}
+                        className="w-100 fs-5 mb-2"
                     />
                 )}
-            <CreateNextRace race={race} user={user} className={"w-100 fs-5"} />
+            <CreateNextRace race={race} user={user} className="w-100 fs-5" />
             {raceStarted && (userIsReady || userStarted) && (
                 <div>
                     <FinishRaceButton
                         raceId={race.raceId}
-                        className={"w-100 fs-5"}
+                        className="w-100 fs-5"
                     />
                     <AbandonRaceButton
                         raceId={race.raceId}
-                        className={"w-100 fs-5 mt-2"}
-                        variant={"danger"}
+                        className="w-100 fs-5 mt-2"
+                        variant="danger"
                     />
                 </div>
             )}
             {userReset && raceStarted && (
                 <UndoAbandonRaceButton
                     raceId={race.raceId}
-                    className={"w-100 fs-5"}
+                    className="w-100 fs-5"
                 />
             )}
             {userFinished && raceStarted && (
                 <UndoFinishButton
                     raceId={race.raceId}
-                    className={"w-100 fs-5"}
-                    variant={"danger"}
+                    className="w-100 fs-5"
+                    variant="danger"
                 />
             )}
             {userConfirmed && raceStarted && (
                 <UndoConfirmButton
                     raceId={race.raceId}
-                    className={"w-100 fs-5"}
-                    variant={"danger"}
+                    className="w-100 fs-5"
+                    variant="danger"
                 />
             )}
         </div>

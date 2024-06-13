@@ -8,9 +8,9 @@ export const AbandonRaceButton = (props: RaceActionProps) => {
     return (
         <RaceActionButton
             action={leaveRace}
-            innerText={"Abandon Race :("}
-            pendingText={"Abandoning Race..."}
-            variant={"danger"}
+            innerText="Abandon Race :("
+            pendingText="Abandoning Race..."
+            variant="danger"
             {...props}
         />
     );

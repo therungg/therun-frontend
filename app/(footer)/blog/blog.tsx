@@ -69,11 +69,7 @@ export const getBlogs = (): BlogInterface[] => {
                 <>
                     About 2 weeks ago, I launched the first version of The Run,
                     a new speedrun statistics tool. I posted about it on{" "}
-                    <a
-                        href={
-                            "https://www.reddit.com/r/speedrun/comments/veivgh/introducing_therungg_a_new_free_speedrun/"
-                        }
-                    >
+                    <a href="https://www.reddit.com/r/speedrun/comments/veivgh/introducing_therungg_a_new_free_speedrun/">
                         Reddit
                     </a>
                     , and got a bunch of great comments, feedback and bug
@@ -88,11 +84,7 @@ export const getBlogs = (): BlogInterface[] => {
                         About 2 weeks ago, I launched the first version of The
                         Run, a new speedrun statistics tool. I posted about it
                         on{" "}
-                        <a
-                            href={
-                                "https://www.reddit.com/r/speedrun/comments/veivgh/introducing_therungg_a_new_free_speedrun/"
-                            }
-                        >
+                        <a href="https://www.reddit.com/r/speedrun/comments/veivgh/introducing_therungg_a_new_free_speedrun/">
                             Reddit
                         </a>
                         , and got a bunch of great comments, feedback and bug
@@ -103,13 +95,13 @@ export const getBlogs = (): BlogInterface[] => {
                     <p>
                         I am a{" "}
                         <a
-                            href={"https://www.speedrun.com/user/joeys64"}
-                            rel={"noreferrer"}
-                            target={"_blank"}
+                            href="https://www.speedrun.com/user/joeys64"
+                            rel="noreferrer"
+                            target="_blank"
                         >
                             former Super Mario 64 speedrunner{" "}
                         </a>{" "}
-                        turned programmer (if you{"'"}re reading this, good odds
+                        turned programmer (if you're reading this, good odds
                         that you are too!) from the Netherlands who loves to
                         build hobby projects. Since I also watch a bunch of
                         speedrunning streams, I often see people asking
@@ -161,16 +153,16 @@ export const getBlogs = (): BlogInterface[] => {
                         you want to help in other ways, following The Run on{" "}
                         <a
                             href={process.env.NEXT_PUBLIC_TWITTER_URL}
-                            target={"_blank"}
-                            rel={"noreferrer"}
+                            target="_blank"
+                            rel="noreferrer"
                         >
                             Twitter
                         </a>
                         , joining the{" "}
                         <a
                             href={process.env.NEXT_PUBLIC_DISCORD_URL}
-                            target={"_blank"}
-                            rel={"noreferrer"}
+                            target="_blank"
+                            rel="noreferrer"
                         >
                             Discord
                         </a>{" "}
@@ -187,14 +179,14 @@ export const getBlogs = (): BlogInterface[] => {
                         I&apos;ll never put anything on the site behind a
                         paywall!
                     </p>
-                    <h2>What{"'"}s next?</h2>
+                    <h2>What's next?</h2>
                     <p>
                         Now that the tool is pretty much stable (almost no
                         uploads have failed for a couple of weeks now, most bugs
                         are gone), I can start working on the{" "}
-                        <a href={"/roadmap"}>Toadmap</a> (Roadmap, but funny.
-                        Get it? Please laugh) I put together again. Here{"'"}s
-                        what I{"'"}m looking forward to building next:
+                        <a href="/roadmap">Toadmap</a> (Roadmap, but funny. Get
+                        it? Please laugh) I put together again. Here's what I'm
+                        looking forward to building next:
                     </p>
                     <ul>
                         <li>
@@ -207,25 +199,25 @@ export const getBlogs = (): BlogInterface[] => {
                             than just some static tool.
                         </li>
                         <li>
-                            UI work. I{"'"}m mainly a back-end developer, with
-                            not a lot of knowledge about frontend, design, or
-                            UX. And even though I tried my best to make the site
-                            look alright and usable, any experienced developer
-                            will notice that this is not my forte. I know how to
-                            make things work, not how to make them pretty. I
-                            will try to learn and collect as much knowledge and
-                            feedback as possible to take this aspect of the site
-                            to the next level. Also part of this is adding
-                            things like icons, game images and your custom split
-                            images. Everything is mostly text now, that can be
-                            improved a lot.
+                            UI work. I'm mainly a back-end developer, with not a
+                            lot of knowledge about frontend, design, or UX. And
+                            even though I tried my best to make the site look
+                            alright and usable, any experienced developer will
+                            notice that this is not my forte. I know how to make
+                            things work, not how to make them pretty. I will try
+                            to learn and collect as much knowledge and feedback
+                            as possible to take this aspect of the site to the
+                            next level. Also part of this is adding things like
+                            icons, game images and your custom split images.
+                            Everything is mostly text now, that can be improved
+                            a lot.
                         </li>
                         <li>
                             Usability. Most graphs and tables are just that,
                             static graphs and tables. They cannot be customized,
                             filtered or searched through. I will find some ways
-                            to make this more suitable to anyone{"'"}s use case
-                            and needs.
+                            to make this more suitable to anyone's use case and
+                            needs.
                         </li>
                         <li>
                             More features! Right now, I want to build a new tab
@@ -242,15 +234,15 @@ export const getBlogs = (): BlogInterface[] => {
                             :)
                         </li>
                         <li>
-                            Improving existing stuff. Even though I{"'"}m
-                            generally satisfied with the current state of the
-                            tool, a lot of things are still very improvable. The
-                            compare tab is a bit wonky, splits stats are not yet
-                            how I want them to be (consistenty score really does
-                            not help with anything yet), the search function is
-                            okay, but not great and the leaderboards are nothing
-                            to write home about yet, either. So all of that and
-                            much more I will revisit soon.
+                            Improving existing stuff. Even though I'm generally
+                            satisfied with the current state of the tool, a lot
+                            of things are still very improvable. The compare tab
+                            is a bit wonky, splits stats are not yet how I want
+                            them to be (consistenty score really does not help
+                            with anything yet), the search function is okay, but
+                            not great and the leaderboards are nothing to write
+                            home about yet, either. So all of that and much more
+                            I will revisit soon.
                         </li>
                     </ul>
                     <p>
@@ -262,14 +254,13 @@ export const getBlogs = (): BlogInterface[] => {
                     </p>
                     <h2>Conclusion</h2>
                     <p>
-                        I{"'"}m really glad that the first version was received
-                        so well and that so many people are already enjoying it.
+                        I'm really glad that the first version was received so
+                        well and that so many people are already enjoying it.
                         Thanks so much to everyone who uploaded, gave feedback
                         or just checked out the tool. If you have any feedback,
                         remarks or just want to talk, please do not hesitate to{" "}
-                        <a href={"/contact"}>contact me</a>. Let{"'"}s keep
-                        working to make this thing used by many for a long time
-                        to come!
+                        <a href="/contact">contact me</a>. Let's keep working to
+                        make this thing used by many for a long time to come!
                     </p>
                 </div>
             ),
@@ -305,11 +296,9 @@ export const getBlogs = (): BlogInterface[] => {
                         Extensions menu item, and search for The Run. (Or just
                         go{" "}
                         <a
-                            href={
-                                "https://dashboard.twitch.tv/extensions/gl1gra1r6ucnkchrswmdsefomfwxai-0.1.0"
-                            }
-                            target={"_blank"}
-                            rel={"noreferrer"}
+                            href="https://dashboard.twitch.tv/extensions/gl1gra1r6ucnkchrswmdsefomfwxai-0.1.0"
+                            target="_blank"
+                            rel="noreferrer"
                         >
                             here
                         </a>
@@ -338,15 +327,13 @@ export const getBlogs = (): BlogInterface[] => {
                             }}
                         >
                             <a
-                                href={
-                                    "https://dashboard.twitch.tv/extensions/gl1gra1r6ucnkchrswmdsefomfwxai-0.1.0"
-                                }
-                                target={"_blank"}
-                                rel={"noreferrer"}
+                                href="https://dashboard.twitch.tv/extensions/gl1gra1r6ucnkchrswmdsefomfwxai-0.1.0"
+                                target="_blank"
+                                rel="noreferrer"
                             >
                                 <Image
-                                    src={"/media/speedruns.png"}
-                                    alt={"component"}
+                                    src="/media/speedruns.png"
+                                    alt="component"
                                     style={{
                                         maxWidth: "100%",
                                         height: "auto",
@@ -427,7 +414,7 @@ export const getBlogs = (): BlogInterface[] => {
                     Uploading and a The Run Live. All this is is powered by a
                     custom built LiveSplit Component. The component will track
                     your live runs and display them in real time, along with
-                    your stream, on the <a href={"/live"}>Live Page</a>.
+                    your stream, on the <a href="/live">Live Page</a>.
                     Furthermore, it will upload your splits after every reset.
                     You never have to manually upload your runs again!
                 </>
@@ -441,7 +428,7 @@ export const getBlogs = (): BlogInterface[] => {
                         a <b>custom built LiveSplit Component</b>. The component
                         will track your live runs and display them in real time,
                         along with your stream, on the{" "}
-                        <a href={"/live"}>Live Page</a>. Furthermore, it will
+                        <a href="/live">Live Page</a>. Furthermore, it will
                         upload your splits after every reset.{" "}
                         <b>
                             You never have to manually upload your runs again!
@@ -450,7 +437,7 @@ export const getBlogs = (): BlogInterface[] => {
                     <h2>How does it work?</h2>
                     <p>
                         It is simple! Just follow the instructions on{" "}
-                        <a href={"/livesplit"}>this page</a> and you are done!
+                        <a href="/livesplit">this page</a> and you are done!
                         Forever! Never upload manually again. All your stats
                         will be tracked forever, and you will be featured on the
                         Live page forever!
@@ -458,18 +445,16 @@ export const getBlogs = (): BlogInterface[] => {
                     <p>
                         In short, you install the LiveSplit Component{" "}
                         <a
-                            rel={"noreferrer"}
-                            target={"_blank"}
-                            href={
-                                "https://github.com/therungg/LiveSplit.TheRun"
-                            }
+                            rel="noreferrer"
+                            target="_blank"
+                            href="https://github.com/therungg/LiveSplit.TheRun"
                         >
                             from GitHub
                         </a>
                         . Plug the .dll file into your Components folder. Then,
                         get the upload-key from the{" "}
-                        <a href={"/upload-key"}>upload-key page</a> and plug
-                        that into the LiveSplit Layout. Done!
+                        <a href="/upload-key">upload-key page</a> and plug that
+                        into the LiveSplit Layout. Done!
                     </p>
                     <h2>Features</h2>
                     <p>
@@ -483,14 +468,14 @@ export const getBlogs = (): BlogInterface[] => {
                         tracked in real-time. When you are running, your current
                         run will be displayed on your profile, your run detail
                         page, but most importantly: on the{" "}
-                        <a href={"/live"}>Live Page!</a>
+                        <a href="/live">Live Page!</a>
                     </p>
                     <p>
                         The live page was inspired by{" "}
                         <a
-                            rel={"noreferrer"}
-                            target={"_blank"}
-                            href={"https://speedrunslive.com"}
+                            rel="noreferrer"
+                            target="_blank"
+                            href="https://speedrunslive.com"
                         >
                             SRL
                         </a>{" "}
@@ -534,8 +519,8 @@ export const getBlogs = (): BlogInterface[] => {
                         you like (or do not like) something, do not hesitate to
                         contact me on{" "}
                         <a
-                            rel={"noreferrer"}
-                            target={"_blank"}
+                            rel="noreferrer"
+                            target="_blank"
                             href={process.env.NEXT_PUBLIC_DISCORD_URL}
                         >
                             our Discord!
@@ -551,18 +536,18 @@ export const getBlogs = (): BlogInterface[] => {
                         I would like to thank everyone who helped me building
                         this new project, like{" "}
                         <a
-                            rel={"noreferrer"}
-                            target={"_blank"}
-                            href={"https://twitter.com/mini54_"}
+                            rel="noreferrer"
+                            target="_blank"
+                            href="https://twitter.com/mini54_"
                         >
                             Mini
                         </a>{" "}
                         for creating a first skeleton of the LiveSplit
                         Component, and{" "}
                         <a
-                            rel={"noreferrer"}
-                            target={"_blank"}
-                            href={"https://twitter.com/CryZe107"}
+                            rel="noreferrer"
+                            target="_blank"
+                            href="https://twitter.com/CryZe107"
                         >
                             CryZe
                         </a>{" "}
@@ -590,7 +575,7 @@ export const getBlogs = (): BlogInterface[] => {
                 <>
                     <p>
                         tl;dr:{" "}
-                        <a href={"/races"} className={"fst-italic"}>
+                        <a href="/races" className="fst-italic">
                             Race on therun.gg, in real time, with cool stats,
                             graphs. Easy, fun, and fully free.
                         </a>
@@ -614,11 +599,7 @@ export const getBlogs = (): BlogInterface[] => {
                     </p>
                     <p>
                         Thankfully, due to{" "}
-                        <a
-                            href={"/patron"}
-                            target={"_blank"}
-                            rel={"noreferrer"}
-                        >
+                        <a href="/patron" target="_blank" rel="noreferrer">
                             our fantastic supporters
                         </a>
                         , I could easily keep the site running while not doing
@@ -634,9 +615,9 @@ export const getBlogs = (): BlogInterface[] => {
                         It keeps the site running and allows me to build more
                         cool stuff!
                     </p>{" "}
-                    <Link href={"/patron"} className={"w-100 flex-center"}>
+                    <Link href="/patron" className="w-100 flex-center">
                         <Button
-                            variant={"secondary"}
+                            variant="secondary"
                             className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
                         >
                             Support <PatreonBunnySvgWithoutLink />
@@ -745,16 +726,13 @@ export const getBlogs = (): BlogInterface[] => {
                     <h5>With the LiveSplit Component</h5>
                     <p>
                         I recommend using the{" "}
-                        <a href={"/upload-key"}>
-                            therun.gg LiveSplit Component
-                        </a>
-                        , which will allow the site to track you during your
-                        race. You will also appear on the Live page if you
-                        enable it! When you use the component, all of the race
-                        will be done automatically. When you finish your run
-                        your final time will be recorded automatically. If you
-                        reset, you will be abandoned from the race
-                        automatically, etc.
+                        <a href="/upload-key">therun.gg LiveSplit Component</a>,
+                        which will allow the site to track you during your race.
+                        You will also appear on the Live page if you enable it!
+                        When you use the component, all of the race will be done
+                        automatically. When you finish your run your final time
+                        will be recorded automatically. If you reset, you will
+                        be abandoned from the race automatically, etc.
                     </p>
                     <h5>What if something goes wrong?</h5>
                     <p>

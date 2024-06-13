@@ -31,7 +31,7 @@ export async function generateMetadata({
     let response: Response;
     try {
         response = await fetch(`${baseUrl}/api/users/${username}/global`);
-    } catch (e) {
+    } catch (_e) {
         return buildMetadata();
     }
 

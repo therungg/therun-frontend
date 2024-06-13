@@ -33,7 +33,7 @@ export const LocalizedTime = ({ date }: { date: Date }) => {
 
     useEffect(() => {
         setStateDate(date.toLocaleString());
-    }, []);
+    }, [date]);
 
     return <>{stateDate}</>;
 };
@@ -229,20 +229,38 @@ export const timeToMillis = (timeString: string) => {
     return time;
 };
 
-export const DurationToFormatted = ({
+export const DurationToFormatted: React.FunctionComponent<
+    DurationToFormattedProps
+> = ({
     duration,
     withMillis = false,
     padded = false,
     human = true,
     withDays = false,
-}: DurationToFormattedProps) => {
+}) => {
     if (withMillis)
-        return <>{getFormattedString(duration, withMillis, padded, human)}</>;
+        return (
+            <>
+                {getFormattedString(
+                    duration.toString(),
+                    withMillis,
+                    padded,
+                    human,
+                )}
+            </>
+        );
     return (
         <>
-            <abbr title={getFormattedString(duration, true, padded, human)}>
+            <abbr
+                title={getFormattedString(
+                    duration.toString(),
+                    true,
+                    padded,
+                    human,
+                )}
+            >
                 {getFormattedString(
-                    duration,
+                    duration.toString(),
                     withMillis,
                     padded,
                     human,

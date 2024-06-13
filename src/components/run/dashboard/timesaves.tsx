@@ -132,7 +132,7 @@ export const Timesaves = ({
                         offColor={getComputedStyle(
                             document.documentElement,
                         ).getPropertyValue("--bs-tertiary-bg")}
-                        name={"switch"}
+                        name="switch"
                         onChange={(checked) => {
                             setVisual(checked);
                         }}
@@ -144,15 +144,15 @@ export const Timesaves = ({
                 <Col>
                     <div className="d-flex justify-content-end align-items-center mb-2 w-100">
                         <UnderlineTooltip
-                            title={"Sample size"}
+                            title="Sample size"
                             content={
                                 "The sample size limits the amount of recent runs the tool takes into account." +
                                 " This can be useful, because it is often not relevant to see data for a run you did 5 years ago, for example. The default is 500."
                             }
-                            element={"Sample size:"}
+                            element="Sample size:"
                         />
                         <input
-                            type={"number"}
+                            type="number"
                             className="form-control w-8r ms-2 bg-body-secondary"
                             onChange={(e) => {
                                 let val =
@@ -267,7 +267,7 @@ export const Timesaves = ({
                             >
                                 Possible timesave
                                 <InfoTooltip
-                                    title={"Possible timesave"}
+                                    title="Possible timesave"
                                     content={
                                         <div>
                                             This is the difference between your
@@ -290,7 +290,7 @@ export const Timesaves = ({
                             >
                                 Timesave%
                                 <InfoTooltip
-                                    title={"Timesave percentage"}
+                                    title="Timesave percentage"
                                     content={
                                         <div>
                                             The chance that you both complete
@@ -307,7 +307,7 @@ export const Timesaves = ({
                             >
                                 Best 10%
                                 <InfoTooltip
-                                    title={"Top 10% split"}
+                                    title="Top 10% split"
                                     content={
                                         <div>
                                             In 10% of your runs, you save this
@@ -325,7 +325,7 @@ export const Timesaves = ({
                             >
                                 Best 50%
                                 <InfoTooltip
-                                    title={"Top 50% split"}
+                                    title="Top 50% split"
                                     content={
                                         <div>
                                             In 50% of your runs, you save this
@@ -345,7 +345,7 @@ export const Timesaves = ({
                             >
                                 Split#
                                 <InfoTooltip
-                                    title={"Number of splits"}
+                                    title="Number of splits"
                                     content={
                                         <div>
                                             The amount of splits that are

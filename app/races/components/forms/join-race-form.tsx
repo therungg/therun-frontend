@@ -21,25 +21,25 @@ export const JoinRaceForm = ({ race }: { race: Race }) => {
     const askForPassword = requiresPassword && skipPasswordCheck !== "true";
 
     return (
-        <div className={"w-100"}>
+        <div className="w-100">
             {state?.message && (
                 <span style={{ color: "red" }}>{state.message} </span>
             )}
 
             {askForPassword && (
-                <div className={"mb-1"}>
+                <div className="mb-1">
                     Joining this race requires entering a password.
                 </div>
             )}
-            <Form action={formAction} className={"d-flex gap-2 w-100"}>
-                <input hidden name={"raceId"} value={raceId} readOnly />
+            <Form action={formAction} className="d-flex gap-2 w-100">
+                <input hidden name="raceId" value={raceId} readOnly />
 
                 {askForPassword && (
                     <input
                         maxLength={100}
-                        type={"password"}
-                        name={"password"}
-                        className={"form-control"}
+                        type="password"
+                        name="password"
+                        className="form-control"
                         onChange={(e) => {
                             setPasswordInput(e.target.value);
                         }}
@@ -47,9 +47,9 @@ export const JoinRaceForm = ({ race }: { race: Race }) => {
                 )}
 
                 <SubmitButton
-                    className={"text-nowrap w-100 fs-5"}
-                    innerText={"Join Race"}
-                    pendingText={"Joining Race..."}
+                    className="text-nowrap w-100 fs-5"
+                    innerText="Join Race"
+                    pendingText="Joining Race..."
                     disabled={askForPassword && !passwordInput}
                 />
             </Form>

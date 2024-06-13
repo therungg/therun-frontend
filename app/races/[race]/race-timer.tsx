@@ -34,7 +34,7 @@ export const RaceTimer = ({ race }: { race: Race }) => {
                         return (
                             <span
                                 suppressHydrationWarning={true}
-                                className={"text-nowrap"}
+                                className="text-nowrap"
                             >
                                 Starts in {minuteString}
                                 {seconds}...

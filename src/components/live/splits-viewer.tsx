@@ -53,7 +53,7 @@ export const SplitsViewer = ({
                 <Col>
                     <div className="d-flex justify-content-center align-items-center h-100">
                         <select
-                            className={"form-select"}
+                            className="form-select"
                             value={comparison}
                             onChange={(e) => {
                                 setComparison(e.target.value);
@@ -83,7 +83,7 @@ export const SplitsViewer = ({
             </Row>
             <hr className="border-bottom m-0" />
             <div
-                id={"scrollBox"}
+                id="scrollBox"
                 className="bg-body-secondary overflow-y-auto h-55 w-100"
             >
                 <table className="w-100">
@@ -319,7 +319,7 @@ export const SplitsViewer = ({
                             <LiveSplitTimerComponent
                                 liveRun={activeLiveRun}
                                 dark={dark}
-                                className={`d-flex justify-content-end align-items-center h-90`}
+                                className="d-flex justify-content-end align-items-center h-90"
                                 timerClassName="text-end fs-big"
                                 withDiff={false}
                             />
@@ -328,7 +328,7 @@ export const SplitsViewer = ({
                             <LiveSplitTimerComponent
                                 liveRun={activeLiveRun}
                                 dark={dark}
-                                className={`d-flex align-items-center h-100`}
+                                className="d-flex align-items-center h-100"
                                 timerClassName="text-end fs-medium lh-1"
                                 withDiff={false}
                                 splitTime={true}

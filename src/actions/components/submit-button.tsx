@@ -21,7 +21,7 @@ export const SubmitButton = ({
     return (
         <Button
             disabled={pending}
-            type={"submit"}
+            type="submit"
             variant={variant}
             {...buttonProps}
         >

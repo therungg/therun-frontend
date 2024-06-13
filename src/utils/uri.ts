@@ -7,7 +7,7 @@ function isEncoded(uri: string): boolean {
         // We encode the string again. If it matches the original, then it was truly encoded
         // If not, the original string was not encoded
         return uri === encodeURIComponent(decoded);
-    } catch (e) {
+    } catch (_e) {
         // If the decode operation fails, this means the URI was not correctly encoded
         return false;
     }

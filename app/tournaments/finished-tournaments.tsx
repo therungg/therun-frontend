@@ -33,8 +33,8 @@ export const FinishedTournamentsPaginated = ({
     return (
         <div>
             <h3>Finished Tournaments</h3>
-            <PaginationSearch text={"Search for tournament/organizer/game"} />
-            <Table responsive striped bordered hover className={"mt-3"}>
+            <PaginationSearch text="Search for tournament/organizer/game" />
+            <Table responsive striped bordered hover className="mt-3">
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -52,13 +52,13 @@ export const FinishedTournamentsPaginated = ({
                                         href={`/tournaments/${safeEncodeURI(
                                             tournament.name,
                                         )}`}
-                                        className={"text-truncate"}
+                                        className="text-truncate"
                                     >
                                         {tournament.name}
                                     </a>
                                 </td>
                                 <td
-                                    className={"cursor-pointer text-truncate"}
+                                    className="cursor-pointer text-truncate"
                                     onClick={() => {
                                         setSearch(tournament.organizer);
                                     }}
@@ -66,7 +66,7 @@ export const FinishedTournamentsPaginated = ({
                                     {tournament.organizer}
                                 </td>
                                 <td
-                                    className={"cursor-pointer text-truncate"}
+                                    className="cursor-pointer text-truncate"
                                     onClick={() => {
                                         setSearch(
                                             tournament.eligibleRuns[0]
@@ -84,7 +84,7 @@ export const FinishedTournamentsPaginated = ({
                                         ? tournament.eligibleRuns[0].category
                                         : ""}
                                 </td>
-                                <td className={"text-truncate"}>
+                                <td className="text-truncate">
                                     <FromNow time={tournament.endDate} />
                                 </td>
                             </tr>

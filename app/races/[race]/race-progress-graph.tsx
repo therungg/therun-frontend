@@ -276,7 +276,7 @@ const MyResponsiveBump = ({
             useMesh={true}
             enableGridX={false}
             enableGridY={true}
-            curve={"natural"}
+            curve="natural"
             enablePoints={true}
             xScale={{ type: "linear" }}
             yScale={{ type: "linear" }}
@@ -296,9 +296,7 @@ const MyResponsiveBump = ({
                 const splitName = point.data.splitName as string;
 
                 return (
-                    <div
-                        className={"game-border p-3 bg-body-secondary rounded"}
-                    >
+                    <div className="game-border p-3 bg-body-secondary rounded">
                         {user} - {percentage}% - {time} - {splitName}
                     </div>
                 );

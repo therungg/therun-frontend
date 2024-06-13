@@ -63,18 +63,18 @@ const StatsCard = ({
 }) => {
     return (
         <Card
-            className={"bg-body-secondary mb-3 game-border px-4 py-3 rounded-3"}
+            className="bg-body-secondary mb-3 game-border px-4 py-3 rounded-3"
             style={{ minHeight: "8rem" }}
         >
             <Row>
                 {keys.map((key, i) => {
                     const value = values[i];
                     return (
-                        <Col key={key} className={"flex-center"}>
+                        <Col key={key} className="flex-center">
                             <div>
-                                <div className={"flex-center h5"}>{key}</div>
+                                <div className="flex-center h5">{key}</div>
                                 <hr />
-                                <div className={"flex-center h3"}>{value}</div>
+                                <div className="flex-center h3">{value}</div>
                             </div>
                         </Col>
                     );

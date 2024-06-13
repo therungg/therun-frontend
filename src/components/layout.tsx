@@ -92,11 +92,11 @@ export const Layout = ({
                     dangerouslySetInnerHTML={{ __html: themeInitializerScript }}
                 />
                 <Topbar username={username} picture={picture} />
-                <Container className={"mt-4 main-container"}>
+                <Container className="mt-4 main-container">
                     {children}
                 </Container>
 
-                <footer className={"footer"}>
+                <footer className="footer">
                     <div className="scroll-bar">
                         <div
                             style={{
@@ -140,32 +140,30 @@ export const Layout = ({
                             <Row>
                                 <Col>
                                     <h3>General</h3>
-                                    <a href={"/about"}>About</a> <br />
-                                    <a href={"/roadmap"}>Roadmap</a> <br />
-                                    <a href={"/faq"}>FAQ</a> <br />
-                                    <a href={"/live"}>Live</a> <br />
-                                    <a href={"/blog"}>Blog</a> <br />
+                                    <a href="/about">About</a> <br />
+                                    <a href="/roadmap">Roadmap</a> <br />
+                                    <a href="/faq">FAQ</a> <br />
+                                    <a href="/live">Live</a> <br />
+                                    <a href="/blog">Blog</a> <br />
                                 </Col>
                                 <Col>
                                     <h3>Media</h3>
-                                    <a href={"/media"}>Media kit</a> <br />
+                                    <a href="/media">Media kit</a> <br />
                                 </Col>
                                 <Col>
                                     <h3>Privacy and Terms</h3>
-                                    <a href={"/terms"}>
+                                    <a href="/terms">
                                         Terms and conditions
                                     </a>{" "}
                                     <br />
-                                    <a href={"/privacy-policy"}>
-                                        Privacy Policy
-                                    </a>
+                                    <a href="/privacy-policy">Privacy Policy</a>
                                 </Col>
                                 <Col>
                                     <h3>Contact</h3>
-                                    <a href={"/contact"}>Contact form</a> <br />
+                                    <a href="/contact">Contact form</a> <br />
                                     <a
-                                        rel={"noreferrer"}
-                                        target={"_blank"}
+                                        rel="noreferrer"
+                                        target="_blank"
                                         href={
                                             process.env.NEXT_PUBLIC_DISCORD_URL
                                         }
@@ -174,8 +172,8 @@ export const Layout = ({
                                     </a>
                                     <br />
                                     <a
-                                        rel={"noreferrer"}
-                                        target={"_blank"}
+                                        rel="noreferrer"
+                                        target="_blank"
                                         href={
                                             process.env.NEXT_PUBLIC_TWITTER_URL
                                         }
@@ -184,9 +182,9 @@ export const Layout = ({
                                     </a>{" "}
                                     <br />
                                     <a
-                                        rel={"noreferrer"}
-                                        target={"_blank"}
-                                        href={"mailto:info@therun.gg"}
+                                        rel="noreferrer"
+                                        target="_blank"
+                                        href="mailto:info@therun.gg"
                                     >
                                         info@therun.gg
                                     </a>

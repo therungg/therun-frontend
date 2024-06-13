@@ -32,7 +32,7 @@ export const PopularGames: React.FC<PopularGamesProps> = ({ gamestats }) => {
                                                     <GameImage
                                                         alt={game.display}
                                                         src={game.image}
-                                                        quality={"small"}
+                                                        quality="small"
                                                         height={64}
                                                         width={48}
                                                     />

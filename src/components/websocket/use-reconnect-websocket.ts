@@ -32,7 +32,7 @@ export const useUserRaceParticipationsWebsocket = (user: User | undefined) =>
     );
 
 export const useReconnectWebsocket = <T>(
-    type: WebsocketType,
+    type?: WebsocketType,
     value?: string | null,
 ): T => {
     const options: Options = {
@@ -63,7 +63,7 @@ export const useReconnectWebsocket = <T>(
 
             return () => clearInterval(interval);
         }
-    }, [readyState]);
+    }, [readyState, sendMessage]);
 
     return lastJsonMessage;
 };

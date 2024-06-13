@@ -37,8 +37,8 @@ export const RaceOverview = ({
 
     return (
         <>
-            <Row className={"mb-3"}>
-                <Col md={12} lg={7} className={"d-flex"}>
+            <Row className="mb-3">
+                <Col md={12} lg={7} className="d-flex">
                     <h1>Races</h1>
                 </Col>
                 <Col
@@ -49,18 +49,18 @@ export const RaceOverview = ({
                     <CreateRaceButtons />
                     <RaceFaq />
                     <a
-                        href={"/patron"}
-                        rel={"noreferrer"}
-                        target={"_blank"}
-                        className={"ms-2"}
+                        href="/patron"
+                        rel="noreferrer"
+                        target="_blank"
+                        className="ms-2"
                     >
-                        <Button variant={"secondary"}>
+                        <Button variant="secondary">
                             Support therun.gg! <PatreonBunnySvg />
                         </Button>
                     </a>
                 </Col>
             </Row>
-            <Row className={"gx-5 gy-5"}>
+            <Row className="gx-5 gy-5">
                 <Col xl={8} lg={7} md={12}>
                     <RacesWelcomeMessage />
                     <InProgressRaces races={inProgressRaces} />

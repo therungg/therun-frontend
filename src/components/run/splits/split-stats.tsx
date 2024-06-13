@@ -1,3 +1,4 @@
+import React from "react";
 import { RunHistory, SplitsHistory } from "~src/common/types";
 import { Accordion, Card, Col, Row } from "react-bootstrap";
 import { Difference, DurationToFormatted } from "../../util/datetime";
@@ -21,7 +22,7 @@ export const SplitStats = ({
 }) => {
     const [showDifference, setShowDifference] = useState(false);
     const [showTotal, setShowTotal] = useState(false);
-    const [openAccs, setOpenAccs] = useState([]);
+    const [openAccs, setOpenAccs] = useState<boolean[]>([]);
     const [selectedComparison, setSelectedComparison] = useState("Best ever");
 
     const idSplits = splits.map((split, key) => {
@@ -30,7 +31,7 @@ export const SplitStats = ({
         return split;
     });
 
-    const handleAccordionChange = async (event, key: number) => {
+    const handleAccordionChange = async (key: number) => {
         const newOpenAccs = Array.from(openAccs);
         newOpenAccs[key] = !openAccs[key];
         setOpenAccs(newOpenAccs);
@@ -47,7 +48,7 @@ export const SplitStats = ({
                     style={{ display: "flex", justifyContent: "flex-end" }}
                 >
                     <label
-                        htmlFor={"switch"}
+                        htmlFor="switch"
                         style={{
                             marginRight: "10px",
                             alignSelf: "center",
@@ -59,7 +60,7 @@ export const SplitStats = ({
                     </label>
                     <div style={{ alignSelf: "center" }}>
                         <Switch
-                            name={"switch"}
+                            name="switch"
                             onChange={(checked) => {
                                 setShowDifference(checked);
                             }}
@@ -171,9 +172,7 @@ export const SplitStats = ({
                         <Accordion>
                             <Accordion.Item key={key} eventKey={key.toString()}>
                                 <Accordion.Header
-                                    onClick={async (event) =>
-                                        await handleAccordionChange(event, key)
-                                    }
+                                    onClick={() => handleAccordionChange(key)}
                                 >
                                     <div style={{ width: "100%" }}>
                                         <Row>
@@ -248,7 +247,7 @@ export const SplitStats = ({
                                                     }}
                                                 >
                                                     <label
-                                                        htmlFor={"switch"}
+                                                        htmlFor="switch"
                                                         style={{
                                                             marginRight: "10px",
                                                             alignSelf: "center",
@@ -258,16 +257,12 @@ export const SplitStats = ({
                                                     >
                                                         {" "}
                                                         <UnderlineTooltip
-                                                            title={
-                                                                "Total/split time"
-                                                            }
+                                                            title="Total/split time"
                                                             content={
                                                                 "These graphs can be in two forms: Total time or Split time. " +
                                                                 "Total time means it will show you the full split time, including previous splits. Split time will only show the time for this specific segment."
                                                             }
-                                                            element={
-                                                                "Show total time"
-                                                            }
+                                                            element="Show total time"
                                                         />
                                                     </label>
                                                     <div
@@ -276,7 +271,7 @@ export const SplitStats = ({
                                                         }}
                                                     >
                                                         <Switch
-                                                            name={"switch"}
+                                                            name="switch"
                                                             onChange={(
                                                                 checked,
                                                             ) => {
@@ -406,7 +401,7 @@ export const OptionalColumns = ({
     totalSplits,
     consistencyScore,
     history,
-    selected,
+    selected = undefined,
     optional = false,
 }) => {
     const style = optional

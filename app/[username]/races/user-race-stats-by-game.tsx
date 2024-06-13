@@ -1,5 +1,5 @@
-import { UserStats } from "~app/races/races.types";
 import React from "react";
+import { UserStats } from "~app/races/races.types";
 import { DurationToFormatted } from "~src/components/util/datetime";
 import styles from "~src/components/css/LiveRun.module.scss";
 import Image from "next/image";
@@ -22,10 +22,10 @@ const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
         <div>
             <div
                 key={useStat.displayValue}
-                className={`mb-3 rounded-3 w-100 game-border bg-body-secondary`}
+                className="mb-3 rounded-3 w-100 game-border bg-body-secondary"
                 style={{ color: "var(--bs-body-color)" }}
             >
-                <div className={`d-flex`}>
+                <div className="d-flex">
                     <Image
                         alt={`Image for ${useStat.displayValue}`}
                         src={useStat.image}
@@ -37,34 +37,28 @@ const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
                                 : "rounded-3"
                         }`}
                     />
-                    <div className={"w-100"}>
-                        <div className={"px-3 w-100"}>
-                            <div
-                                className={
-                                    "d-flex w-100 h5 pt-2 text-truncate mb-0"
-                                }
-                            >
+                    <div className="w-100">
+                        <div className="px-3 w-100">
+                            <div className="d-flex w-100 h5 pt-2 text-truncate mb-0">
                                 <a href={`/races/stats/${encodeURI(game)}`}>
                                     {game}
                                 </a>
                             </div>
-                            <div className={"fst-italic"}>
-                                {favoriteCategory}
-                            </div>
+                            <div className="fst-italic">{favoriteCategory}</div>
                         </div>
-                        <hr className={"m-0 p-0 mt-1 mb-2"} />
+                        <hr className="m-0 p-0 mt-1 mb-2" />
                         <a
                             href={`/races/stats/${encodeURI(game)}/${encodeURI(
                                 favoriteCategory,
                             )}`}
-                            className={"text-decoration-none"}
+                            className="text-decoration-none"
                             style={{ color: "inherit" }}
                         >
                             <ShowUserCategoryStats category={useStat} />
                         </a>
                     </div>
                 </div>
-                <div className={`h-100`}>
+                <div className="h-100">
                     {stats.slice(1, stats.length).map((category) => {
                         const categoryName =
                             category.displayValue.split("#")[1];
@@ -77,17 +71,13 @@ const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
                                     href={`/races/stats/${encodeURI(
                                         game,
                                     )}/${encodeURI(categoryName)}`}
-                                    className={"text-decoration-none"}
+                                    className="text-decoration-none"
                                     style={{ color: "inherit" }}
                                 >
-                                    <div className={"d-flex h-100"}>
-                                        <div
-                                            className={
-                                                "ps-2 d-flex align-items-center border-end"
-                                            }
-                                        >
+                                    <div className="d-flex h-100">
+                                        <div className="ps-2 d-flex align-items-center border-end">
                                             <span
-                                                className={"text-truncate"}
+                                                className="text-truncate"
                                                 style={{
                                                     width: "6.34rem",
                                                 }}
@@ -139,14 +129,13 @@ export const ShowUserCategoryStats = ({
                 </div>
             </div>
             <div>
-                <div className={"d-flex justify-content-end"}>
-                    Rating:{" "}
-                    <b className={"px-1"}>{category.rankings[0].score}</b> - #
-                    {category.rankings[0].rank + 1}
+                <div className="d-flex justify-content-end">
+                    Rating: <b className="px-1">{category.rankings[0].score}</b>{" "}
+                    - #{category.rankings[0].rank + 1}
                 </div>
-                <div className={"d-flex justify-content-end"}>
+                <div className="d-flex justify-content-end">
                     Best Time:
-                    <b className={"px-1"}>
+                    <b className="px-1">
                         <DurationToFormatted
                             duration={category.rankings[1].score}
                         />
@@ -154,9 +143,9 @@ export const ShowUserCategoryStats = ({
                     - #{category.rankings[1].rank + 1}
                 </div>
                 {category.rankings[2].score && (
-                    <div className={"d-flex justify-content-end"}>
+                    <div className="d-flex justify-content-end">
                         This Month:
-                        <b className={"px-1"}>
+                        <b className="px-1">
                             <DurationToFormatted
                                 duration={category.rankings[2].score}
                             />

@@ -46,7 +46,7 @@ const PaginatedGameLeaderboardComponent = memo(
         return (
             <div>
                 <div className="mb-2">
-                    <PaginationSearch text={"Search user"} />
+                    <PaginationSearch text="Search user" />
                 </div>
                 {Leaderboard}
                 <PaginationControl {...pagination} minimalLayout={true} />

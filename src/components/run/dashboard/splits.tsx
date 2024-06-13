@@ -39,8 +39,8 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                     <h2>Splits {gameTime && "(IGT)"}</h2>
                     {run.splitsFile && (
                         <a
-                            rel={"noreferrer"}
-                            target={"_blank"}
+                            rel="noreferrer"
+                            target="_blank"
                             style={{ marginLeft: "0.5rem" }}
                             href={url}
                             download={`${run.user}_${run.game}_${run.run}.lss`}
@@ -58,7 +58,7 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                         }}
                     >
                         <label
-                            htmlFor={"switch"}
+                            htmlFor="switch"
                             style={{
                                 marginRight: "10px",
                                 alignSelf: "center",
@@ -67,12 +67,12 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                         >
                             {" "}
                             <UnderlineTooltip
-                                title={"Total/split time"}
+                                title="Total/split time"
                                 content={
                                     "This table can show you the splits in two forms: Total time or Split time. " +
                                     "Total time means it will show you the full split time, including previous splits. Split time will only show the time for that specific segment."
                                 }
-                                element={"Show total time"}
+                                element="Show total time"
                             />{" "}
                         </label>
                         <Switch
@@ -82,7 +82,7 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                             offColor={getComputedStyle(
                                 document.documentElement,
                             ).getPropertyValue("--bs-tertiary-bg")}
-                            name={"switch"}
+                            name="switch"
                             onChange={(checked) => {
                                 setTotalTime(checked);
                             }}
@@ -184,35 +184,35 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
 
                                 {selectedComparison == "Best Possible" && (
                                     <TimeCell
-                                        name={"bestPossibleTime"}
+                                        name="bestPossibleTime"
                                         split={split[splitToUse]}
                                     />
                                 )}
                                 {selectedComparison == "Best Achieved" && (
                                     <TimeCell
-                                        name={"bestAchievedTime"}
+                                        name="bestAchievedTime"
                                         split={split[splitToUse]}
                                     />
                                 )}
                                 {selectedComparison == "Average" && (
                                     <TimeCell
-                                        name={"averageTime"}
+                                        name="averageTime"
                                         split={split[splitToUse]}
                                     />
                                 )}
 
                                 <TimeCell
-                                    name={"bestPossibleTime"}
+                                    name="bestPossibleTime"
                                     split={split[splitToUse]}
                                     optional={true}
                                 />
                                 <TimeCell
-                                    name={"bestAchievedTime"}
+                                    name="bestAchievedTime"
                                     split={split[splitToUse]}
                                     optional={true}
                                 />
                                 <TimeCell
-                                    name={"averageTime"}
+                                    name="averageTime"
                                     split={split[splitToUse]}
                                     optional={true}
                                 />

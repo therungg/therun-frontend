@@ -3,7 +3,7 @@ import { safeDecodeURI, safeEncodeURI } from "~src/utils/uri";
 import { apiResponse } from "~app/api/response";
 
 export async function PUT(
-    request: NextRequest,
+    _request: NextRequest,
     {
         params,
     }: {
@@ -19,7 +19,7 @@ export async function PUT(
     return apiResponse({ body: result });
 }
 
-const highlight = async (user, game, category) => {
+const highlight = async (user: string, game: string, category: string) => {
     const url = `${
         process.env.NEXT_PUBLIC_DATA_URL
     }/users/${user}/${safeEncodeURI(game)}/${safeEncodeURI(
