@@ -1,6 +1,6 @@
 // Bootstrap functions and mixins
-@import "bootstrap/scss/functions";
-@import "bootstrap/scss/mixins";
+@import "node_modules/bootstrap/scss/_functions.scss";
+@import "node_modules/bootstrap/scss/_mixins.scss";
 
 // Progress loader
 @import "nprogress/nprogress.css";
