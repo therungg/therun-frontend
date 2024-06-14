@@ -69,6 +69,7 @@ export const Live = ({
 
     useEffect(() => {
         if (
+            currentlyViewing ||
             !updatedLiveDataMap[currentlyViewing] ||
             updatedLiveDataMap[currentlyViewing].isMinified
         ) {
