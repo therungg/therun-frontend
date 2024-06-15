@@ -46,8 +46,9 @@ export const TournamentRuns: React.FunctionComponent<TournamentRunsProps> = ({
     const [search, setSearch] = useState("");
 
     const [active, setActive] = useState(1);
-    const [items, setItems] = useState(null);
+    const [items, setItems] = useState<React.JSX.Element[]>();
 
+    // TODO: FIX THIS
     // eslint-disable-next-line prefer-const
     let [useRuns, setUseRuns] = useState([]);
 
@@ -62,7 +63,7 @@ export const TournamentRuns: React.FunctionComponent<TournamentRunsProps> = ({
             const last = Math.ceil(data.runList.length / 10);
             setItems(buildItems(active, last));
         }
-    }, [data, active]);
+    }, [data, active, items]);
 
     if (search) {
         const accurateSearch = search

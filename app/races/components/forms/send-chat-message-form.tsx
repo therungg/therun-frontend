@@ -12,7 +12,7 @@ export const SendChatMessageForm = ({
 }: {
     raceId: string;
     user?: User;
-    // eslint-disable-next-line no-unused-vars
+
     addMessage: (message: RaceMessage) => void;
 }) => {
     const [value, setValue] = useState("");

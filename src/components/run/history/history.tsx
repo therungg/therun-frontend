@@ -1,3 +1,5 @@
+/* eslint-disable */
+// TODO: REFACTOR
 import { Attempt, RunHistory, SplitsHistory } from "~src/common/types";
 import {
     Difference,
@@ -61,7 +63,7 @@ export const History = ({
     const [displaySplitFilterOne, setDisplaySplitFilterOne] = useState("00:00");
     const [displaySplitFilterTwo, setDisplaySplitFilterTwo] = useState("00:00");
 
-    const startDateFilter = (date) => {
+    const startDateFilter = (date: Date) => {
         return date >= start && date < endDate;
     };
 
@@ -73,18 +75,19 @@ export const History = ({
 
     const totalCount = history.length;
 
-    let currentPb = null;
+    let currentPb: RunHistory | null = null;
 
     history = history.map((h: RunHistory) => {
         h.currentPb = currentPb;
 
         if (
-            h.time &&
-            parseInt(h.time) >= parseInt(splits[splits.length - 1].total.time)
+            (h.time &&
+                parseInt(h.time) >=
+                    parseInt(splits[splits.length - 1].total.time) &&
+                currentPb == null) ||
+            parseInt(h.time) < Number(currentPb?.time)
         ) {
-            if (currentPb == null || parseInt(h.time) < currentPb.time) {
-                currentPb = h;
-            }
+            currentPb = h;
         }
 
         return h;

@@ -5,7 +5,7 @@ import { SubmitButton } from "~src/actions/components/submit-button";
 import { joinRace } from "~src/actions/races/join-race.action";
 import { useState } from "react";
 import { Race } from "~app/races/races.types";
-// eslint-disable-next-line import/named
+
 import { useFormState } from "react-dom";
 import { useSearchParams } from "next/navigation";
 

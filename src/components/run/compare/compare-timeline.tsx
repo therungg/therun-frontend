@@ -5,6 +5,8 @@ import { RunHistory } from "../../../common/types";
 import { getFormattedString } from "../../util/datetime";
 import { Line } from "react-chartjs-2";
 
+type LineProps = React.ComponentProps<typeof Line>;
+
 export const CompareTimeline = ({
     runsOne,
     runsTwo,
@@ -49,15 +51,14 @@ export const CompareTimeline = ({
     const labelRun =
         runToShow.length > runToShowTwo.length ? runToShow : runToShowTwo;
 
-    const data = {
-        labels: labelRun.map((attempt: RunHistory, key: number) => {
+    const data: LineProps["data"] = {
+        labels: labelRun.map((_attempt: RunHistory, key: number) => {
             return `Run #${key + 1}`;
         }),
         datasets: [
             {
                 label: userOne,
                 fill: false,
-                lineTension: 0.1,
                 backgroundColor: "green",
                 borderColor: "green",
                 borderCapStyle: "butt",
@@ -78,7 +79,6 @@ export const CompareTimeline = ({
             {
                 label: userTwo,
                 fill: false,
-                lineTension: 0.1,
                 backgroundColor: "red",
                 borderColor: "red",
                 borderCapStyle: "butt",
@@ -124,7 +124,7 @@ export const CompareTimeline = ({
                 },
             },
         },
-    };
+    } as LineProps["options"];
 
     return (
         <div>
@@ -155,7 +155,7 @@ export const CompareTimeline = ({
                 </Col>
             </Row>
             <Col style={{ minWidth: "15rem" }}>
-                <Line data={data} type="line" options={options} />
+                <Line data={data} options={options} />
             </Col>
         </div>
     );

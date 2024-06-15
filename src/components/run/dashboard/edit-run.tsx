@@ -2,6 +2,7 @@ import { Run } from "~src/common/types";
 import { Button, Form } from "react-bootstrap";
 import styles from "../../../components/css/Userform.module.scss";
 import { useState } from "react";
+import { User } from "types/session.types";
 
 export const EditRun = ({
     run,
@@ -12,9 +13,9 @@ export const EditRun = ({
 }: {
     run: Run;
     abort: () => void;
-    session: any;
+    session: User;
     username: string;
-    // eslint-disable-next-line no-unused-vars
+
     forceUpdate: (newRun: Run) => void;
 }) => {
     const [form, setForm] = useState({

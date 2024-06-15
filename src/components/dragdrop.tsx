@@ -96,8 +96,8 @@ export const Dragdrop = ({
                     <p>
                         Check back on{" "}
                         <UserLink username={username}>Your profile</UserLink> in
-                        around 1 minute. If your splits don't show up or there
-                        seems to be something wrong with them, please{" "}
+                        around 1 minute. If your splits don&apos;t show up or
+                        there seems to be something wrong with them, please{" "}
                         <Link href="/contact">Contact me!</Link>
                     </p>
                 </Alert>

@@ -17,7 +17,6 @@ export function useProgressBar() {
             }
         };
 
-        // eslint-disable-next-line no-undef
         const handleMutation: MutationCallback = () => {
             const anchorElements = document.querySelectorAll("a");
             anchorElements.forEach((anchor) =>

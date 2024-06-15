@@ -3,13 +3,14 @@
 import { getSession } from "~src/actions/session.action";
 import { getBaseUrl } from "~src/actions/base-url.action";
 import { safeEncodeURI } from "~src/utils/uri";
+import type { UserPatreonData } from "~app/change-appearance/patreon-section";
 
 const patreonApiBaseUrl = process.env.NEXT_PUBLIC_PATREON_API_URL;
 
 export const getUserPatreonData = async (query: {
     code?: string;
     scope?: string;
-}) => {
+}): Promise<UserPatreonData | null> => {
     const baseUrl = getBaseUrl();
 
     if (!baseUrl) {

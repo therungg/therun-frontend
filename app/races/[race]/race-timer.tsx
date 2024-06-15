@@ -19,7 +19,7 @@ export const RaceTimer = ({ race }: { race: Race }) => {
         if (race.status === "finished") {
             timer.stopTimer();
         }
-    }, [race.status]);
+    }, [race, race.status, timer]);
 
     if (race.status === "starting" && race.startTime) {
         return (
@@ -64,6 +64,11 @@ export const RaceParticipantTimer = ({
             (new Date().getTime() - raceParticipant.liveData.splitStartedAt) /
                 1000
           : getTimerOffsetForRace(race);
+    const timer = useSpeedrunTimer(
+        initialOffset,
+        raceParticipant.status === "started" ||
+            (raceParticipant.status === "ready" && raceStatus === "progress"),
+    );
 
     useEffect(() => {
         if (
@@ -88,7 +93,14 @@ export const RaceParticipantTimer = ({
         if (raceParticipant.status === "started") {
             timer.startTimer();
         }
-    }, [raceParticipant.status, raceParticipant.liveData?.currentSplitIndex]);
+    }, [
+        raceParticipant.status,
+        raceParticipant.liveData?.currentSplitIndex,
+        raceParticipant.finalTime,
+        raceParticipant.liveData,
+        race,
+        timer,
+    ]);
 
     useEffect(() => {
         if (
@@ -98,13 +110,7 @@ export const RaceParticipantTimer = ({
         ) {
             timer.startTimer();
         }
-    }, [raceStatus]);
-
-    const timer = useSpeedrunTimer(
-        initialOffset,
-        raceParticipant.status === "started" ||
-            (raceParticipant.status === "ready" && raceStatus === "progress"),
-    );
+    }, [raceParticipant.status, raceStatus, timer]);
 
     return timer.render();
 };

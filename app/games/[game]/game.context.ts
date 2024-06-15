@@ -4,7 +4,7 @@ import { CategoryLeaderboard } from "./game.types";
 interface GameContextProps {
     category: string;
     categories: CategoryLeaderboard[];
-    // eslint-disable-next-line no-unused-vars
+
     setCategory: (category: string) => void;
 }
 

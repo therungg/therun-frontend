@@ -5,7 +5,6 @@ export const resetSession = async () => {
         const { cookies } = await import("next/headers");
         cookies().delete("session_id");
     } catch (error) {
-        // eslint-disable-next-line no-console
         console.error(error);
     }
 };

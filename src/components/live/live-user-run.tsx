@@ -11,6 +11,7 @@ import { GameImage } from "~src/components/image/gameimage";
 import { Twitch as TwitchIcon } from "react-bootstrap-icons";
 import { getColorMode } from "~src/utils/colormode";
 import { CombinedLeaderboardStat } from "~app/tournaments/[tournament]/get-combined-tournament-leaderboard.component";
+import { Count } from "~app/games/[game]/game.types";
 
 export const LiveUserRun = ({
     liveRun,
@@ -24,7 +25,7 @@ export const LiveUserRun = ({
     liveRun: LiveRun;
     currentlyActive?: string;
     showGameCategory?: boolean;
-    leaderboard?: any;
+    leaderboard?: Count[] | null;
     leaderboardGameTime?: any;
     isUrl?: boolean;
     seedingTable?: CombinedLeaderboardStat[];
@@ -54,11 +55,12 @@ export const LiveUserRun = ({
                     ? darkStyle.backgroundImage
                     : lightStyle.backgroundImage;
             } else {
+                // TODO: Get rid of this.
                 borderColor = "var(--bs-link-color)";
             }
             setLiveUserStyles({ borderColor, gradient });
         }
-    }, [patreons, isLoading, liveRun.user]);
+    }, [patreons, isLoading, liveRun.user, dark]);
 
     let tournamentPb = null;
     let tournamentPbGameTime = null;
@@ -140,9 +142,7 @@ export const LiveUserRun = ({
                                 liveUserStyles.gradient ||
                                 liveUserStyles.borderColor
                                     ? {
-                                          height: liveUserStyles.gradient
-                                              ? "106px"
-                                              : "106px",
+                                          height: "106px",
                                       }
                                     : {}
                             }

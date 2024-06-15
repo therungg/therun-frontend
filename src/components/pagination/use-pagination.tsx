@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import {
     PaginatedData,
     PaginationFetcher,
@@ -41,13 +41,39 @@ function usePagination<T>(
     const { search, currentPage } = useContext(PaginationContext);
     const debouncedSearch = useDebounce(search, debounce);
 
+    const fetchData = useCallback(
+        async (page: number, query: string) => {
+            setIsLoading(true);
+
+            if (data[`${currentPage}-${query}`]) {
+                setCurrentData(data[`${currentPage}-${query}`]);
+            } else {
+                const result = await fetchPage(
+                    page,
+                    pageSize,
+                    query,
+                    fullData,
+                    params,
+                );
+                setCurrentData(result);
+
+                setData((prevData) => ({
+                    ...prevData,
+                    [`${page}-${query}`]: result,
+                }));
+            }
+            setIsLoading(false);
+        },
+        [currentPage, data, fetchPage, fullData, pageSize, params],
+    );
+
     useEffect(() => {
         fetchData(1, debouncedSearch);
-    }, [debouncedSearch]);
+    }, [debouncedSearch, fetchData]);
 
     useEffect(() => {
         fetchData(currentPage, search);
-    }, [currentPage]);
+    }, [currentPage, fetchData, search]);
 
     useEffect(() => {
         if (data[`${currentPage}-${search}`]) {
@@ -55,30 +81,7 @@ function usePagination<T>(
         } else {
             setIsLoading(true);
         }
-    }, [search]);
-
-    const fetchData = async (page: number, query: string) => {
-        setIsLoading(true);
-
-        if (data[`${currentPage}-${query}`]) {
-            setCurrentData(data[`${currentPage}-${query}`]);
-        } else {
-            const result = await fetchPage(
-                page,
-                pageSize,
-                query,
-                fullData,
-                params,
-            );
-            setCurrentData(result);
-
-            setData((prevData) => ({
-                ...prevData,
-                [`${page}-${query}`]: result,
-            }));
-        }
-        setIsLoading(false);
-    };
+    }, [currentPage, data, fetchData, search]);
 
     return {
         data: currentData.items,

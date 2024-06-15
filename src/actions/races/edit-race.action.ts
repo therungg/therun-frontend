@@ -8,7 +8,7 @@ import { redirect } from "next/navigation";
 
 const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
 
-export async function editRace(prevState: any, raceInput: FormData) {
+export async function editRace(_prevState: unknown, raceInput: FormData) {
     const input: EditRaceInput = {
         description: raceInput.get("description") as string,
         customName: raceInput.get("customName") as string,

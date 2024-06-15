@@ -9,20 +9,19 @@ export interface MarathonEvent {
     username: string;
     game: string;
     category: string;
-    data: any;
+    data: unknown;
 }
 
-export const SendMarathonDataButton = ({
-    description,
-    sessionId,
-    data,
-    buttonText = "Submit Event",
-}: {
+interface SendMarathonDataButtonProps {
     description: string;
     sessionId: string;
     data: MarathonEvent;
     buttonText?: string;
-}) => {
+}
+
+export const SendMarathonDataButton: React.FunctionComponent<
+    SendMarathonDataButtonProps
+> = ({ description, sessionId, data, buttonText = "Submit Event" }) => {
     return (
         <div>
             {description && (
@@ -50,11 +49,10 @@ export const SendMarathonDataButton = ({
     );
 };
 
-const sendMarathonData = async (sessionId: string, data: any) => {
+const sendMarathonData = async (sessionId: string, data: MarathonEvent) => {
     const url = process.env.NEXT_PUBLIC_MARATHON_EVENT_URL as string;
 
     const body = JSON.stringify({
-        // eslint-disable-next-line camelcase
         session_id: sessionId,
         event: data,
     });

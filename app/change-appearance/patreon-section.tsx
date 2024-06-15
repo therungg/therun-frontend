@@ -18,8 +18,13 @@ interface PatreonPreferences {
     colorPreference: number;
 }
 
+export interface UserPatreonData {
+    tier: 1 | 2 | 3;
+    preferences: PatreonPreferences;
+}
+
 interface PatreonSectionProps {
-    userPatreonData: any;
+    userPatreonData: UserPatreonData;
     session: User;
 }
 

@@ -7,6 +7,8 @@ import React, { useEffect, useState } from "react";
 import { LiveRun } from "~app/live/live.types";
 import { LiveSplitTimerComponent } from "~app/live/live-split-timer.component";
 
+const PERSONAL_BEST = "Personal Best";
+
 export const SplitsViewer = ({
     activeLiveRun,
     currentSplitSplitStatus,
@@ -19,20 +21,20 @@ export const SplitsViewer = ({
     setSelectedSplit: any;
 }) => {
     const [comparison, setComparison] = useState(
-        activeLiveRun.currentComparison || "Personal Best",
+        activeLiveRun.currentComparison || PERSONAL_BEST,
     );
     const [manuallyChangedComparison, setManuallyChangedComparison] =
         useState(false);
 
     useEffect(() => {
         if (!manuallyChangedComparison) {
-            setComparison(activeLiveRun.currentComparison || "Personal Best");
+            setComparison(activeLiveRun.currentComparison || PERSONAL_BEST);
         }
-    }, [activeLiveRun.currentComparison]);
+    }, [activeLiveRun.currentComparison, manuallyChangedComparison]);
 
     useEffect(() => {
-        setComparison(activeLiveRun.currentComparison || "Personal Best");
-    }, [activeLiveRun.user]);
+        setComparison(activeLiveRun.currentComparison || PERSONAL_BEST);
+    }, [activeLiveRun.currentComparison, activeLiveRun.user]);
 
     if (!activeLiveRun.splits) return <></>;
 
@@ -65,7 +67,7 @@ export const SplitsViewer = ({
                                     Object.keys(
                                         activeLiveRun.splits[0].comparisons,
                                     ),
-                                ) || ["Personal Best"]
+                                ) || [PERSONAL_BEST]
                             ).map((comp) => {
                                 return (
                                     <option

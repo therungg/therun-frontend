@@ -126,7 +126,7 @@ export async function getGameImage(
         );
     } catch (e) {
         // Allow this one since it's server-side
-        // eslint-disable-next-line no-console
+
         console.error(e);
         return undefined;
     }

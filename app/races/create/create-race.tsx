@@ -1,6 +1,5 @@
 "use client";
 
-// eslint-disable-next-line import/named
 import { useFormState, useFormStatus } from "react-dom";
 
 import { Accordion, Button, Col, Form, Row } from "react-bootstrap";

@@ -93,6 +93,7 @@
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.0.4",
     "eslint-import-resolver-typescript": "^3.6.1",
+    "eslint-plugin-eslint-comments": "^3.2.0",
     "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-prettier": "^5.1.2",
     "eslint-plugin-react-compiler": "^0.0.0-experimental-51a85ea-20240601",

@@ -127,10 +127,9 @@ const RaceParticipantStatus = ({
     participant: RaceParticipantWithLiveData;
     race: Race;
 }) => {
-    // eslint-disable-next-line no-unused-vars
-    const abandonedTime =
-        new Date(participant.abandondedAtDate as string).getTime() -
-        new Date(race.startTime as string).getTime();
+    // const abandonedTime =
+    //     new Date(participant.abandondedAtDate as string).getTime() -
+    //     new Date(race.startTime as string).getTime();
     return (
         <div>
             {(participant.status === "finished" ||

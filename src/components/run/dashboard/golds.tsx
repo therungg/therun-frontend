@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 import { RunHistory, SplitsHistory } from "~src/common/types";
 import {
     GoldHistory,
@@ -357,7 +359,7 @@ export const Golds = ({
                             >
                                 ------------------------------------
                             </option>
-                            {useSplits.map((split, n) => {
+                            {useSplits.map((split) => {
                                 return (
                                     <option
                                         key={JSON.stringify(split)}

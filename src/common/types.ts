@@ -83,6 +83,7 @@ export interface RunHistory {
     duration: string;
     startedAt: string;
     endedAt: string;
+    [key: string]: unknown;
 }
 
 export interface SplitsHistory {
@@ -102,7 +103,7 @@ export interface SplitsHistory {
     mergedSplits?: string[];
 }
 
-interface SplitTimes {
+export interface SplitTimes {
     time: string;
     bestPossibleTime: string;
     bestAchievedTime: string;

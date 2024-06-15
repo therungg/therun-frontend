@@ -6,6 +6,10 @@ import { Table } from "react-bootstrap";
 import { DurationToFormatted } from "../util/datetime";
 import { useEffect, useState } from "react";
 
+const SPLIT_KIND = {
+    PERSONAL_BEST: "Personal Best",
+};
+
 export const SplitDetails = ({
     liveRun,
     splits,
@@ -124,12 +128,14 @@ export const SplitDetails = ({
                     <tr>
                         <td>Segment</td>
                         <td>
-                            {splitStatus?.comparisons["Personal Best"] && (
+                            {splitStatus?.comparisons[
+                                SPLIT_KIND.PERSONAL_BEST
+                            ] && (
                                 <DurationToFormatted
                                     withMillis={true}
                                     duration={
                                         splitStatus?.comparisons[
-                                            "Personal Best"
+                                            SPLIT_KIND.PERSONAL_BEST
                                         ]?.singleTime
                                     }
                                 />

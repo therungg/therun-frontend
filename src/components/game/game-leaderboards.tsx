@@ -10,9 +10,8 @@ export const getLeaderboard = (
     leaderboards: Count[],
     search: string,
     transform?: (
-        // eslint-disable-next-line no-unused-vars
         stat: string | number,
-        // eslint-disable-next-line no-unused-vars
+
         key: number,
     ) => string | number | ReactElement,
 ) => {

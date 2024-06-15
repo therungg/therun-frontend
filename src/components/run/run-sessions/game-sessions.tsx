@@ -54,7 +54,7 @@ export const GameSessions = ({
             );
         } else {
             sessions = sessions.filter((session) => {
-                const sessionRuns = runs.filter((run, index) => {
+                const sessionRuns = runs.filter((_run, index) => {
                     return (
                         index >= session.runIds.first &&
                         index <= session.runIds.last

@@ -59,7 +59,7 @@ export interface Count {
     username: string;
     stat: number | string;
     placing: number;
-    meta?: any;
+    meta?: { [key: string]: unknown } | null;
     game?: string;
     category?: string;
     url?: string;

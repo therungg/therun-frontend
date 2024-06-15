@@ -101,9 +101,9 @@ export const getBlogs = (): BlogInterface[] => {
                         >
                             former Super Mario 64 speedrunner{" "}
                         </a>{" "}
-                        turned programmer (if you're reading this, good odds
-                        that you are too!) from the Netherlands who loves to
-                        build hobby projects. Since I also watch a bunch of
+                        turned programmer (if you&apos;re reading this, good
+                        odds that you are too!) from the Netherlands who loves
+                        to build hobby projects. Since I also watch a bunch of
                         speedrunning streams, I often see people asking
                         {
                             ' "Did you get any good runs today?", "What\'s your best ever X split?", "When did you get your PB?"'
@@ -179,14 +179,14 @@ export const getBlogs = (): BlogInterface[] => {
                         I&apos;ll never put anything on the site behind a
                         paywall!
                     </p>
-                    <h2>What's next?</h2>
+                    <h2>What&apos;s next?</h2>
                     <p>
                         Now that the tool is pretty much stable (almost no
                         uploads have failed for a couple of weeks now, most bugs
                         are gone), I can start working on the{" "}
                         <a href="/roadmap">Toadmap</a> (Roadmap, but funny. Get
-                        it? Please laugh) I put together again. Here's what I'm
-                        looking forward to building next:
+                        it? Please laugh) I put together again. Here&apos;s what
+                        I&apos;m looking forward to building next:
                     </p>
                     <ul>
                         <li>
@@ -199,25 +199,25 @@ export const getBlogs = (): BlogInterface[] => {
                             than just some static tool.
                         </li>
                         <li>
-                            UI work. I'm mainly a back-end developer, with not a
-                            lot of knowledge about frontend, design, or UX. And
-                            even though I tried my best to make the site look
-                            alright and usable, any experienced developer will
-                            notice that this is not my forte. I know how to make
-                            things work, not how to make them pretty. I will try
-                            to learn and collect as much knowledge and feedback
-                            as possible to take this aspect of the site to the
-                            next level. Also part of this is adding things like
-                            icons, game images and your custom split images.
-                            Everything is mostly text now, that can be improved
-                            a lot.
+                            UI work. I&apos;m mainly a back-end developer, with
+                            not a lot of knowledge about frontend, design, or
+                            UX. And even though I tried my best to make the site
+                            look alright and usable, any experienced developer
+                            will notice that this is not my forte. I know how to
+                            make things work, not how to make them pretty. I
+                            will try to learn and collect as much knowledge and
+                            feedback as possible to take this aspect of the site
+                            to the next level. Also part of this is adding
+                            things like icons, game images and your custom split
+                            images. Everything is mostly text now, that can be
+                            improved a lot.
                         </li>
                         <li>
                             Usability. Most graphs and tables are just that,
                             static graphs and tables. They cannot be customized,
                             filtered or searched through. I will find some ways
-                            to make this more suitable to anyone's use case and
-                            needs.
+                            to make this more suitable to anyone&apos;s use case
+                            and needs.
                         </li>
                         <li>
                             More features! Right now, I want to build a new tab
@@ -234,15 +234,15 @@ export const getBlogs = (): BlogInterface[] => {
                             :)
                         </li>
                         <li>
-                            Improving existing stuff. Even though I'm generally
-                            satisfied with the current state of the tool, a lot
-                            of things are still very improvable. The compare tab
-                            is a bit wonky, splits stats are not yet how I want
-                            them to be (consistenty score really does not help
-                            with anything yet), the search function is okay, but
-                            not great and the leaderboards are nothing to write
-                            home about yet, either. So all of that and much more
-                            I will revisit soon.
+                            Improving existing stuff. Even though I&apos;m
+                            generally satisfied with the current state of the
+                            tool, a lot of things are still very improvable. The
+                            compare tab is a bit wonky, splits stats are not yet
+                            how I want them to be (consistenty score really does
+                            not help with anything yet), the search function is
+                            okay, but not great and the leaderboards are nothing
+                            to write home about yet, either. So all of that and
+                            much more I will revisit soon.
                         </li>
                     </ul>
                     <p>
@@ -254,13 +254,14 @@ export const getBlogs = (): BlogInterface[] => {
                     </p>
                     <h2>Conclusion</h2>
                     <p>
-                        I'm really glad that the first version was received so
-                        well and that so many people are already enjoying it.
+                        I&apos;m really glad that the first version was received
+                        so well and that so many people are already enjoying it.
                         Thanks so much to everyone who uploaded, gave feedback
                         or just checked out the tool. If you have any feedback,
                         remarks or just want to talk, please do not hesitate to{" "}
-                        <a href="/contact">contact me</a>. Let's keep working to
-                        make this thing used by many for a long time to come!
+                        <a href="/contact">contact me</a>. Let&apos;s keep
+                        working to make this thing used by many for a long time
+                        to come!
                     </p>
                 </div>
             ),

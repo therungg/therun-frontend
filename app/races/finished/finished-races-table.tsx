@@ -21,7 +21,7 @@ export const FinishedRaceTable = ({
 }: {
     paginatedRaces: PaginatedRaces;
     paginationFunction?: PaginationFetcher<Race>;
-    params?: any;
+    params?: unknown;
 }) => {
     return (
         <PaginationContextProvider>
@@ -41,7 +41,7 @@ const FinishedRaceTableView = ({
 }: {
     paginatedRaces: PaginatedRaces;
     paginationFunction: PaginationFetcher<Race>;
-    params?: any;
+    params?: unknown;
 }) => {
     const pagination = usePagination<Race>(
         paginatedRaces,

@@ -1,4 +1,4 @@
-import { Run, SplitsHistory } from "../../../common/types";
+import { Run, SplitTimes, SplitsHistory } from "../../../common/types";
 import { Difference, DurationToFormatted } from "../../util/datetime";
 import { Col, Row, Table } from "react-bootstrap";
 import { useState } from "react";
@@ -6,12 +6,21 @@ import Switch from "react-switch";
 import styles from "../../css/User.module.scss";
 import { UnderlineTooltip } from "../../tooltip";
 import SplitName from "../../transformers/split-name";
+import { ValueOf } from "next/dist/shared/lib/constants";
 
 interface SplitsProps {
     splits: SplitsHistory[];
     gameTime: boolean;
     run: Run;
 }
+
+const SPLIT_FILTERS = {
+    BEST_POSSIBLE: "Best Possible",
+    BEST_ACHIEVED: "Best Achieved",
+    AVERAGE: "Average",
+} as const;
+
+type SplitFilterValue = ValueOf<typeof SPLIT_FILTERS>;
 
 export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
     const hasAlternatives =
@@ -21,7 +30,7 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
 
     const [totalTime, setTotalTime] = useState(true);
     const [selectedComparison, setSelectedComparison] =
-        useState("Best Possible");
+        useState<SplitFilterValue>(SPLIT_FILTERS.BEST_POSSIBLE);
     const [selectedAlternative, setSelectedAlternative] = useState(
         hasAlternatives ? splits[0].single.alternative[0].name : "",
     );
@@ -105,7 +114,9 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                                 className={`form-select ${styles.hideSelectArrow}`}
                                 value={selectedComparison}
                                 onChange={(e) => {
-                                    setSelectedComparison(e.target.value);
+                                    setSelectedComparison(
+                                        e.target.value as SplitFilterValue,
+                                    );
                                 }}
                             >
                                 {[
@@ -169,6 +180,10 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                 </thead>
                 <tbody>
                     {splits.map((split, key) => {
+                        const alternativeDuration =
+                            split[splitToUse].alternative.find(
+                                (time) => time.name == selectedAlternative,
+                            )?.time || "";
                         return (
                             <tr key={key}>
                                 <td>
@@ -182,19 +197,22 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                                     </strong>
                                 </td>
 
-                                {selectedComparison == "Best Possible" && (
+                                {selectedComparison ===
+                                    SPLIT_FILTERS.BEST_POSSIBLE && (
                                     <TimeCell
                                         name="bestPossibleTime"
                                         split={split[splitToUse]}
                                     />
                                 )}
-                                {selectedComparison == "Best Achieved" && (
+                                {selectedComparison ===
+                                    SPLIT_FILTERS.BEST_ACHIEVED && (
                                     <TimeCell
                                         name="bestAchievedTime"
                                         split={split[splitToUse]}
                                     />
                                 )}
-                                {selectedComparison == "Average" && (
+                                {selectedComparison ===
+                                    SPLIT_FILTERS.AVERAGE && (
                                     <TimeCell
                                         name="averageTime"
                                         split={split[splitToUse]}
@@ -221,15 +239,7 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                                     <td>
                                         <div style={{ float: "left" }}>
                                             <DurationToFormatted
-                                                duration={
-                                                    split[
-                                                        splitToUse
-                                                    ].alternative.find(
-                                                        (time) =>
-                                                            time.name ==
-                                                            selectedAlternative,
-                                                    ).time || ""
-                                                }
+                                                duration={alternativeDuration}
                                                 withMillis={true}
                                             />
                                         </div>
@@ -237,15 +247,7 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                                             {/*<sup>*/}
                                             <Difference
                                                 one={split[splitToUse].time}
-                                                two={
-                                                    split[
-                                                        splitToUse
-                                                    ].alternative.find(
-                                                        (time) =>
-                                                            time.name ==
-                                                            selectedAlternative,
-                                                    ).time
-                                                }
+                                                two={alternativeDuration}
                                                 withMillis={true}
                                             />
                                             {/*</sup>*/}
@@ -261,7 +263,17 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
     );
 };
 
-const TimeCell = ({ name, split, optional = false }) => {
+interface TimeCellProps {
+    name: Exclude<keyof SplitTimes, "alternative">;
+    split: SplitTimes;
+    optional?: boolean;
+}
+
+const TimeCell: React.FunctionComponent<TimeCellProps> = ({
+    name,
+    split,
+    optional = false,
+}) => {
     return (
         <td
             className={

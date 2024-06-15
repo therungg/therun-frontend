@@ -195,6 +195,8 @@ export const PlayTimePerDayOfWeekGraph = ({
                     style={{
                         tickLabels: {
                             fontSize: 11,
+                            // TODO: Get rid of this
+                            // eslint-disable-next-line sonarjs/no-duplicate-string
                             color: "var(--bs-body-color)",
                             fill: "var(--bs-body-color)",
                             angle: 0,

@@ -30,6 +30,7 @@ import { CategoryLeaderboard } from "~app/games/[game]/game.types";
 import { GameLink, UserLink } from "~src/components/links/links";
 import { getLiveRunForUser } from "~src/lib/live-runs";
 import { SkeletonLiveRun } from "~src/components/skeleton/live/skeleton-live-run";
+import { UserData } from "~src/lib/get-session-data";
 
 export const GenericTournament = ({
     liveDataMap,
@@ -39,7 +40,7 @@ export const GenericTournament = ({
     tab,
 }: {
     liveDataMap: LiveDataMap;
-    session: any;
+    session: UserData;
     username?: string;
     tournament: Tournament;
     tab: string;
@@ -54,6 +55,8 @@ export const GenericTournament = ({
     const [currentlyViewing, setCurrentlyViewing] = useState(recommendedStream);
 
     const [loadingUserData, setLoadingUserData] = useState(true);
+
+    const gameSearchRef = createRef<HTMLInputElement>();
 
     const handleSortChange: React.ChangeEventHandler<HTMLSelectElement> =
         useCallback(
@@ -339,21 +342,18 @@ export const GenericTournament = ({
                                         <span
                                             className="input-group-text"
                                             onClick={() => {
-                                                const searchElement =
-                                                    document.getElementById(
-                                                        "gameSearch",
-                                                    );
                                                 if (
                                                     document.activeElement !==
-                                                    searchElement
+                                                    gameSearchRef.current?.focus()
                                                 ) {
-                                                    searchElement.focus();
+                                                    gameSearchRef.current?.focus();
                                                 }
                                             }}
                                         >
                                             <SearchIcon size={18} />
                                         </span>
                                         <input
+                                            ref={gameSearchRef}
                                             type="search"
                                             className="form-control"
                                             placeholder="Filter by user"

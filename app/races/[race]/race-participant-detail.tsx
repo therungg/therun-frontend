@@ -16,7 +16,7 @@ import { RaceParticipantRatingDisplay } from "~app/races/components/race-partici
 
 interface RaceParticipantDetailProps {
     race: Race;
-    // eslint-disable-next-line no-unused-vars
+
     setStream: (user: string) => void;
 }
 

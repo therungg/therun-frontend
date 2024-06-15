@@ -10,8 +10,7 @@ export interface RaceActionProps
 }
 
 interface RaceActionButtonProps extends SubmitButtonProps {
-    // eslint-disable-next-line no-unused-vars
-    action: (raceInput: FormData) => Promise<any>;
+    action: (raceInput: FormData) => Promise<unknown>;
     raceId: string;
 }
 

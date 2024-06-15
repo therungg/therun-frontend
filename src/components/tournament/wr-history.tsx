@@ -157,6 +157,8 @@ export const WrHistory = ({
                             style={{
                                 tickLabels: {
                                     fontSize: 10,
+                                    // TODO: BYE BYE
+                                    // eslint-disable-next-line sonarjs/no-duplicate-string
                                     color: "var(--bs-body-color)",
                                     fill: "var(--bs-body-color)",
                                 },

@@ -5,7 +5,6 @@ import { Race } from "~app/races/races.types";
 import { isRaceModerator } from "~src/rbac/confirm-permission";
 import { User } from "../../../../types/session.types";
 
-// eslint-disable-next-line import/named
 import { useFormState, useFormStatus } from "react-dom";
 import { editRace } from "~src/actions/races/edit-race.action";
 import {

@@ -33,6 +33,8 @@ const ChatMessageTime = dynamic(
     },
 );
 
+const PARTICIPANT_SPLIT = "participant-split";
+
 export const RaceChat = ({
     race,
     raceMessages,
@@ -63,23 +65,20 @@ export const RaceChat = ({
     });
 
     const filteredMessages = stateMessages.filter((message) => {
-        if (!filterOptions.chat) {
-            if (message.type === "chat") return false;
+        if (!filterOptions.chat && message.type === "chat") {
+            return false;
         }
-        if (!filterOptions.race) {
-            if (message.type.startsWith("race-")) return false;
+        if (!filterOptions.race && message.type.startsWith("race-")) {
+            return false;
         }
-        if (!filterOptions.participants) {
-            if (
-                message.type.startsWith("participant") &&
-                message.type !== "participant-split"
-            )
-                return false;
+        if (
+            !filterOptions.participants &&
+            message.type.startsWith("participant") &&
+            message.type !== PARTICIPANT_SPLIT
+        ) {
+            return false;
         }
-        if (!filterOptions.splits) {
-            if (message.type === "participant-split") return false;
-        }
-        return true;
+        return !(!filterOptions.splits && message.type === PARTICIPANT_SPLIT);
     });
 
     return (
@@ -110,7 +109,7 @@ const ChatFilterOptions = ({
     setFilterOptions,
 }: {
     filterOptions: FilterOptions;
-    // eslint-disable-next-line no-unused-vars
+
     setFilterOptions: (_: FilterOptions) => void;
 }) => {
     const rnd = random(1);

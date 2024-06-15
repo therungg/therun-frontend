@@ -50,16 +50,15 @@ export const EventLeaderboards = ({
                             Qualifier Leaderboard
                         </option>
                     )}
-                    {tournament.pointDistribution &&
-                        tournament.pointDistribution.length > 0 && (
-                            <option
-                                key="points"
-                                title="Qualification Points"
-                                value="points"
-                            >
-                                Qualification Points
-                            </option>
-                        )}
+                    {tournament.pointDistribution?.length && (
+                        <option
+                            key="points"
+                            title="Qualification Points"
+                            value="points"
+                        >
+                            Qualification Points
+                        </option>
+                    )}
                     <option
                         key="attempts"
                         title="Total Attempts"
@@ -100,37 +99,39 @@ export const EventLeaderboards = ({
                             }}
                         />
                     )}
-                    {leaderboard == "pb" && (
-                        <PaginatedGameLeaderboard
-                            name="Personal Best"
-                            leaderboard={tournament.leaderboards.pbLeaderboard}
-                            transform={(stat) => {
-                                return (
-                                    <DurationToFormatted
-                                        duration={stat.toString()}
-                                    />
-                                );
-                            }}
-                        />
-                    )}
-                    {tournament.pointDistribution &&
-                        tournament.pointDistribution.length > 0 &&
+                    {leaderboard == "pb" &&
+                        tournament.leaderboards?.pbLeaderboard && (
+                            <PaginatedGameLeaderboard
+                                name="Personal Best"
+                                leaderboard={
+                                    tournament.leaderboards.pbLeaderboard
+                                }
+                                transform={(stat) => {
+                                    return (
+                                        <DurationToFormatted
+                                            duration={stat.toString()}
+                                        />
+                                    );
+                                }}
+                            />
+                        )}
+                    {tournament.pointDistribution?.length &&
                         leaderboard == "points" && (
                             <div>
                                 {getLeaderboard(
                                     "Qualification Points",
                                     tournamentLeaderboards.pbLeaderboard,
                                     "",
-                                    (stat, key) => {
+                                    (_stat, key) => {
                                         if (
-                                            tournament.pointDistribution
+                                            tournament?.pointDistribution
                                                 ?.length -
                                                 1 <
                                             key
                                         )
                                             return null;
 
-                                        return tournament.pointDistribution[
+                                        return tournament?.pointDistribution?.[
                                             key
                                         ];
                                     },

@@ -11,9 +11,7 @@ export interface PaginatedGameLeaderboardProps {
     name: string;
     leaderboard: Count[];
     transform?: (
-        // eslint-disable-next-line no-unused-vars
         stat: string | number,
-        // eslint-disable-next-line no-unused-vars
         key: number,
     ) => string | number | ReactElement;
 }
@@ -40,7 +38,7 @@ const PaginatedGameLeaderboardComponent = memo(
 
         const Leaderboard = useMemo(
             () => getLeaderboard(name, pagination.data, "", transform),
-            [name, pagination.data, transform, getLeaderboard],
+            [name, pagination.data, transform],
         );
 
         return (

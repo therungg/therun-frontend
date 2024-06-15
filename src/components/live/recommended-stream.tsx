@@ -59,7 +59,7 @@ export const RecommendedStream = ({
                 setSelectedSplit(activeLiveRun.currentSplitIndex);
             }
         }
-    }, [activeLiveRun]);
+    }, [activeLiveRun, manuallyChangedSplit, previous]);
 
     useEffect(() => {
         setActiveLiveRun(liveRun);
@@ -94,7 +94,7 @@ export const RecommendedStream = ({
                 gradient,
             });
         }
-    }, [patreons, isLoading, liveRun.user]);
+    }, [patreons, isLoading, liveRun.user, dark]);
 
     if (
         !activeLiveRun ||
@@ -193,7 +193,13 @@ export const getSplitStatus = (liveRun: LiveRun, k: number) => {
     const isSubSplit = name ? name.startsWith("-") : false;
     const isActive = status == "current";
 
-    const newComparisons = {};
+    const newComparisons: {
+        [key: string]: {
+            splitName: string;
+            splitSingleTime: number | null;
+            totalTime: number;
+        };
+    } = {};
 
     Object.entries(split.comparisons).forEach(([splitName, value]) => {
         let splitSingleTime = null;

@@ -16,7 +16,7 @@ export const CategoryOverview = ({
 }: {
     categories: CategoryLeaderboard[];
     game: string;
-    setCurrentCategory: Dispatch<any>;
+    setCurrentCategory: Dispatch<React.SetStateAction<string>>;
 }) => {
     return (
         <Table striped bordered hover responsive>

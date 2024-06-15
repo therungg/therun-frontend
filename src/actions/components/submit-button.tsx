@@ -1,6 +1,5 @@
 "use client";
 
-// eslint-disable-next-line import/named
 import { useFormStatus } from "react-dom";
 import { Button, ButtonProps } from "react-bootstrap";
 import { ButtonVariant } from "react-bootstrap/types";
