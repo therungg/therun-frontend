@@ -1,5 +1,3 @@
-"use client";
-
 import Link from "next/link";
 import { Button, Col, Row } from "react-bootstrap";
 import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";

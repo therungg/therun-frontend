@@ -39,9 +39,15 @@ export default async function RootLayout({
                             username={session?.username}
                             picture={session?.picture}
                         />
-                        <Content>
-                            {sessionError ? <SessionErrorBoundary /> : children}
-                        </Content>
+                        <main className={"my-4 pb-5 main-container container"}>
+                            <Content>
+                                {sessionError ? (
+                                    <SessionErrorBoundary />
+                                ) : (
+                                    children
+                                )}
+                            </Content>
+                        </main>
                         <Footer />
                     </Providers>
                 </NextIntlClientProvider>
