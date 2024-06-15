@@ -1,5 +1,5 @@
-/* eslint-disable */
-
+/* eslint-disable  */
+// TODO: REFACTOR
 import { RunHistory, SplitsHistory } from "~src/common/types";
 import {
     GoldHistory,

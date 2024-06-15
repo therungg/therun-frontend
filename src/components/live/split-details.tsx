@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 
 const SPLIT_KIND = {
     PERSONAL_BEST: "Personal Best",
+    BEST_SEGMENTS: "Best Segments",
 };
 
 export const SplitDetails = ({
@@ -64,7 +65,7 @@ export const SplitDetails = ({
         split.completed = completedSplitRuns.length / reachedSplitRuns.length;
         split.timeSave = savedTimeRuns.length / reachedSplitRuns.length;
 
-        const values = split.values.map((val) => parseInt(val));
+        const values = split.values.map((val) => parseInt(val.toString()));
 
         values.sort((a, b) => a - b);
 
@@ -103,7 +104,11 @@ export const SplitDetails = ({
                     >
                         Current run:&nbsp;
                         <DurationToFormatted
-                            duration={liveRun.splits[selectedSplit].splitTime}
+                            duration={
+                                liveRun.splits[
+                                    selectedSplit
+                                ].splitTime?.toString() || ""
+                            }
                             withMillis={true}
                         />
                     </span>
@@ -136,30 +141,34 @@ export const SplitDetails = ({
                                     duration={
                                         splitStatus?.comparisons[
                                             SPLIT_KIND.PERSONAL_BEST
+                                        ]?.singleTime?.toString() || ""
+                                    }
+                                />
+                            )}
+                        </td>
+                        <td>
+                            {splitStatus?.comparisons[
+                                SPLIT_KIND.BEST_SEGMENTS
+                            ] && (
+                                <DurationToFormatted
+                                    withMillis={true}
+                                    duration={
+                                        splitStatus?.comparisons[
+                                            SPLIT_KIND.BEST_SEGMENTS
                                         ]?.singleTime
                                     }
                                 />
                             )}
                         </td>
                         <td>
-                            {splitStatus?.comparisons["Best Segments"] && (
+                            {splitStatus?.comparisons[
+                                SPLIT_KIND.BEST_SEGMENTS
+                            ] && (
                                 <DurationToFormatted
                                     withMillis={true}
                                     duration={
                                         splitStatus?.comparisons[
-                                            "Best Segments"
-                                        ]?.singleTime
-                                    }
-                                />
-                            )}
-                        </td>
-                        <td>
-                            {splitStatus?.comparisons["Best Segments"] && (
-                                <DurationToFormatted
-                                    withMillis={true}
-                                    duration={
-                                        splitStatus?.comparisons[
-                                            "Best Segments"
+                                            SPLIT_KIND.BEST_SEGMENTS
                                         ]?.singleTime
                                     }
                                 />
@@ -169,36 +178,42 @@ export const SplitDetails = ({
                     <tr>
                         <td>Total</td>
                         <td>
-                            {splitStatus?.comparisons["Personal Best"] && (
+                            {splitStatus?.comparisons[
+                                SPLIT_KIND.PERSONAL_BEST
+                            ] && (
                                 <DurationToFormatted
                                     withMillis={true}
                                     duration={
                                         splitStatus?.comparisons[
-                                            "Personal Best"
+                                            SPLIT_KIND.PERSONAL_BEST
                                         ]?.totalTime
                                     }
                                 />
                             )}
                         </td>
                         <td>
-                            {splitStatus?.comparisons["Best Segments"] && (
+                            {splitStatus?.comparisons[
+                                SPLIT_KIND.BEST_SEGMENTS
+                            ] && (
                                 <DurationToFormatted
                                     withMillis={true}
                                     duration={
                                         splitStatus?.comparisons[
-                                            "Best Segments"
+                                            SPLIT_KIND.BEST_SEGMENTS
                                         ]?.totalTime
                                     }
                                 />
                             )}
                         </td>
                         <td>
-                            {splitStatus?.comparisons["Best Segments"] && (
+                            {splitStatus?.comparisons[
+                                SPLIT_KIND.BEST_SEGMENTS
+                            ] && (
                                 <DurationToFormatted
                                     withMillis={true}
                                     duration={
                                         splitStatus?.comparisons[
-                                            "Best Split Times"
+                                            SPLIT_KIND.BEST_SEGMENTS
                                         ]?.totalTime
                                     }
                                 />

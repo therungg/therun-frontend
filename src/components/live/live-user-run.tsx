@@ -18,7 +18,6 @@ export const LiveUserRun = ({
     currentlyActive,
     showGameCategory = true,
     leaderboard = null,
-    leaderboardGameTime = null,
     isUrl = false,
     seedingTable = [],
 }: {
@@ -26,12 +25,14 @@ export const LiveUserRun = ({
     currentlyActive?: string;
     showGameCategory?: boolean;
     leaderboard?: Count[] | null;
-    leaderboardGameTime?: any;
     isUrl?: boolean;
     seedingTable?: CombinedLeaderboardStat[];
 }) => {
     const [dark, setDark] = useState(true);
-    const [liveUserStyles, setLiveUserStyles] = useState({});
+    const [liveUserStyles, setLiveUserStyles] = useState<{
+        borderColor: string;
+        gradient: string;
+    }>({ borderColor: "", gradient: "" });
     const { data: patreons, isLoading } = usePatreons();
     useEffect(function () {
         setDark(getColorMode() !== "light");
@@ -63,7 +64,6 @@ export const LiveUserRun = ({
     }, [patreons, isLoading, liveRun.user, dark]);
 
     let tournamentPb = null;
-    let tournamentPbGameTime = null;
     let ranking = null;
     let seed = null;
 
@@ -75,17 +75,6 @@ export const LiveUserRun = ({
         if (pbLeaderboardIndex > -1) {
             ranking = pbLeaderboardIndex + 1;
             tournamentPb = leaderboard[pbLeaderboardIndex].stat;
-        }
-    }
-
-    if (leaderboardGameTime) {
-        const pbLeaderboardIndex = leaderboardGameTime.findIndex(
-            (count) => count.username == liveRun.user,
-        );
-
-        if (pbLeaderboardIndex > -1) {
-            ranking = pbLeaderboardIndex + 1;
-            tournamentPbGameTime = leaderboardGameTime[pbLeaderboardIndex].stat;
         }
     }
 
@@ -210,35 +199,19 @@ export const LiveUserRun = ({
                         </div>
                     )}
 
-                    {!showGameCategory && tournamentPbGameTime && (
-                        <div className="text-truncate fs-large">
+                    {!showGameCategory && tournamentPb && (
+                        <div className="text-truncate">
                             Tournament PB -{" "}
-                            {!!tournamentPbGameTime && (
-                                <DurationToFormatted
-                                    duration={tournamentPbGameTime}
-                                />
+                            {!!tournamentPb && (
+                                <DurationToFormatted duration={tournamentPb} />
                             )}
                         </div>
                     )}
 
                     {!showGameCategory &&
-                        tournamentPb &&
-                        !tournamentPbGameTime && (
-                            <div className="text-truncate">
-                                Tournament PB -{" "}
-                                {!!tournamentPb && (
-                                    <DurationToFormatted
-                                        duration={tournamentPb}
-                                    />
-                                )}
-                            </div>
-                        )}
-
-                    {!showGameCategory &&
                         liveRun.pb &&
-                        Math.trunc(liveRun.pb) !=
-                            Math.trunc(tournamentPbGameTime) &&
-                        Math.trunc(liveRun.pb) != Math.trunc(tournamentPb) && (
+                        Math.trunc(liveRun.pb) !==
+                            Math.trunc(Number(tournamentPb)) && (
                             <div className="text-truncate">
                                 Personal Best -{" "}
                                 <DurationToFormatted duration={liveRun.pb} />

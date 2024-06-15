@@ -7,6 +7,8 @@ import patreonStyles from "../patreon/patreon-styles";
 import { usePatreons } from "../patreon/use-patreons";
 import { getColorMode } from "~src/utils/colormode";
 import { TwitchEmbed } from "react-twitch-embed";
+import { Split } from "~src/common/types";
+import { SplitStatus, Status } from "~src/types/splits.types";
 
 export const RecommendedStream = ({
     liveRun,
@@ -26,7 +28,7 @@ export const RecommendedStream = ({
     // Not sure how else to do this, but this works
     const pixelsForSplit = 27.9;
 
-    const usePrevious = <T extends unknown>(value: T): T | undefined => {
+    const usePrevious = <T,>(value: T): T | undefined => {
         const ref = useRef<T>();
         useEffect(() => {
             ref.current = value;
@@ -166,9 +168,12 @@ export const RecommendedStream = ({
     );
 };
 
-type Status = "future" | "current" | "skipped" | "completed";
+const SPLIT_KIND = {
+    PERSONAL_BEST: "Personal Best",
+    BEST_SEGMENTS: "Best Segments",
+};
 
-export const getSplitStatus = (liveRun: LiveRun, k: number) => {
+export const getSplitStatus = (liveRun: LiveRun, k: number): SplitStatus => {
     if (k < 0 || !liveRun.splits || !liveRun.splits[k]) return null;
 
     const split = liveRun.splits[k];
@@ -193,13 +198,7 @@ export const getSplitStatus = (liveRun: LiveRun, k: number) => {
     const isSubSplit = name ? name.startsWith("-") : false;
     const isActive = status == "current";
 
-    const newComparisons: {
-        [key: string]: {
-            splitName: string;
-            splitSingleTime: number | null;
-            totalTime: number;
-        };
-    } = {};
+    const newComparisons: { [key: string]: Split } = {};
 
     Object.entries(split.comparisons).forEach(([splitName, value]) => {
         let splitSingleTime = null;
@@ -222,22 +221,20 @@ export const getSplitStatus = (liveRun: LiveRun, k: number) => {
 
     const isGold =
         status == "completed" &&
-        newComparisons["Best Segments"] &&
+        newComparisons[SPLIT_KIND.BEST_SEGMENTS] &&
         (k == 0 || liveRun.splits[k - 1].splitTime) &&
-        newComparisons["Best Segments"].singleTime &&
-        singleTime < newComparisons["Best Segments"].singleTime;
+        newComparisons[SPLIT_KIND.BEST_SEGMENTS].singleTime &&
+        singleTime < newComparisons[SPLIT_KIND.BEST_SEGMENTS].singleTime;
 
     let possibleTimeSave = null;
 
     if (
-        newComparisons["Personal Best"] &&
-        newComparisons["Personal Best"].singleTime &&
-        newComparisons["Best Segments"] &&
-        newComparisons["Best Segments"].singleTime
+        newComparisons[SPLIT_KIND.PERSONAL_BEST]?.singleTime &&
+        newComparisons[SPLIT_KIND.BEST_SEGMENTS]?.singleTime
     ) {
         possibleTimeSave =
-            newComparisons["Personal Best"].singleTime -
-            newComparisons["Best Segments"].singleTime;
+            newComparisons[SPLIT_KIND.PERSONAL_BEST].singleTime -
+            newComparisons[SPLIT_KIND.BEST_SEGMENTS].singleTime;
     }
 
     return {

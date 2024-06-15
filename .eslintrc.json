@@ -5,8 +5,7 @@
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended",
         "plugin:sonarjs/recommended-legacy",
-        "plugin:eslint-comments/recommended",
-        "plugin:prettier/recommended"
+        "plugin:eslint-comments/recommended"
     ],
     "root": true,
     "parser": "@typescript-eslint/parser",
@@ -26,9 +25,8 @@
             "typescript": {}
         }
     },
-    "ignorePatterns": ["vendor/"],
+    "ignorePatterns": ["vendor/", "public/js/", "next.config.js"],
     "rules": {
-        "eslint-comments/no-unused-disable": "error",
         "@typescript-eslint/no-unused-vars": [
             "error",
             {
@@ -41,7 +39,11 @@
                 "ignoreRestSiblings": true
             }
         ],
+        "sonarjs/no-ignored-return": "off",
         "eslint-comments/no-use": "off",
+        "eslint-comments/no-unused-disable": "error",
+        "eslint-comments/disable-enable-pair": "off",
+        "eslint-comments/no-unlimited-disable": "off",
         "@next/next/no-page-custom-font": "off",
         "react-hooks/exhaustive-deps": "warn",
         "@next/next/google-font-display": "off",
@@ -50,12 +52,6 @@
         "import/no-named-as-default-member": "off",
         "eqeqeq": "off",
         "i18n-text/no-en": "off",
-        "prettier/prettier": [
-            "error",
-            {
-                "endOfLine": "auto"
-            }
-        ],
         "react/jsx-curly-brace-presence": [
             "error",
             { "props": "never", "children": "never" }

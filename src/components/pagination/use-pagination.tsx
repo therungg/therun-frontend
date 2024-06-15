@@ -14,7 +14,7 @@ function usePagination<T>(
     fetchPage?: PaginationFetcher<T>,
     pageSize: number = 10,
     debounce?: number,
-    params?: any,
+    params?: { [key: string]: unknown },
 ): PaginationHook<T> {
     let fullData = initialData;
 

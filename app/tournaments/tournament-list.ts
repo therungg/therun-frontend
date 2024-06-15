@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-duplicate-string */
 // Will just make this DB values in the future (I really will), no time now
 
 type CombinedTournament = {

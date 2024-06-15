@@ -1,4 +1,4 @@
-interface RunData {
+export interface RunData {
     game: string;
     pb: string;
     pbgt: string;
@@ -6,7 +6,7 @@ interface RunData {
     user: string;
 }
 
-interface SearchResults {
+export interface SearchResults {
     categories: {
         [category: string]: RunData[];
     };

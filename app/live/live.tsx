@@ -20,8 +20,8 @@ export const Live = ({
     liveDataMap,
     username,
     showTitle = true,
-    forceGame = null,
-    forceCategory = null,
+    forceGame = "",
+    forceCategory = "",
 }: LiveProps) => {
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
     const searchElementRef = createRef<HTMLInputElement>();
@@ -85,7 +85,7 @@ export const Live = ({
         } else {
             setLoadingUserData(false);
         }
-    }, [currentlyViewing]);
+    }, [currentlyViewing, updatedLiveDataMap]);
 
     return (
         <>

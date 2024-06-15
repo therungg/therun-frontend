@@ -10,7 +10,10 @@ import { AppContext } from "~src/common/app.context";
 import levenshtein from "js-levenshtein";
 
 interface UserGameData {
-    meta: any;
+    meta: {
+        historyFilename: string;
+        hasGameTime: boolean;
+    };
     stats: History;
 }
 

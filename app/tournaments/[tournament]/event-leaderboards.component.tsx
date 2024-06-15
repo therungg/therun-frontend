@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Tournament } from "~src/components/tournament/tournament-info";
 import { PaginatedGameLeaderboard } from "~src/components/game/paginated-game-leaderboard";
 import { Row } from "react-bootstrap";
+import { CategoryLeaderboard } from "~app/games/[game]/game.types";
 
 export const EventLeaderboards = ({
     tournament,
@@ -13,8 +14,10 @@ export const EventLeaderboards = ({
 }: {
     tournament: Tournament;
     gameTime: boolean;
-    qualifierData: any;
-    tournamentLeaderboards: any;
+    // TODO: get the type
+    qualifierData: unknown;
+    // TODO: get the type
+    tournamentLeaderboards: CategoryLeaderboard;
 }) => {
     const [leaderboard, setLeaderboard] = useState(gameTime ? "pbIGT" : "pb");
 
