@@ -40,10 +40,9 @@ export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
                 />
             </Helmet>
             <ProgressBar
-                height="4px"
-                color="#fffd00"
                 options={{ showSpinner: false }}
                 shallowRouting
+                style={`#nprogress{pointer-events:none}#nprogress .bar{background:var(--bs-secondary);position:fixed;z-index:100;top:0;left:0;width:100%;height:2px}`}
             />
             {children}
         </>
