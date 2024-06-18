@@ -144,6 +144,7 @@ export const CombinedTournamentSeedingTable = ({
                                                     duration={
                                                         run.stat as string
                                                     }
+                                                    padded={true}
                                                 />{" "}
                                                 (#{run.placing})
                                             </>

@@ -149,6 +149,7 @@ export const TournamentStandings = ({
                                     (
                                     <DurationToFormatted
                                         duration={stat.toString()}
+                                        padded={true}
                                     />
                                     )
                                 </div>
@@ -171,6 +172,7 @@ export const TournamentStandings = ({
                                     (
                                     <DurationToFormatted
                                         duration={stat.toString()}
+                                        padded={true}
                                     />
                                     )
                                 </div>
@@ -191,6 +193,7 @@ export const TournamentStandings = ({
                                     {tournament.pointDistribution[key] || 0} (
                                     <DurationToFormatted
                                         duration={stat.toString()}
+                                        padded={true}
                                     />
                                     )
                                 </div>

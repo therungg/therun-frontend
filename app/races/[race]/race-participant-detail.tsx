@@ -127,6 +127,7 @@ export const RaceParticipantDetailView = ({
                             <span className={"fw-bold"}>
                                 <DurationToFormatted
                                     duration={participant.pb}
+                                    padded={true}
                                 />
                             </span>
                         </span>
@@ -168,7 +169,10 @@ const RaceParticipantDetailBody = ({
                         <>
                             Abandoned -{" "}
                             <span className={"ps-1"}>
-                                <DurationToFormatted duration={abandonedTime} />
+                                <DurationToFormatted
+                                    duration={abandonedTime}
+                                    padded={true}
+                                />
                             </span>
                         </>
                     )}
@@ -193,6 +197,7 @@ const RaceParticipantDetailBody = ({
                                         participant.liveData
                                             .bestPossibleTime as number
                                     }
+                                    padded={true}
                                 />
                             </span>
                         </span>

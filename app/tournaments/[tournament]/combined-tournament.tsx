@@ -194,6 +194,7 @@ export const CombinedTournament = ({
                                             tournamentLeaderboards
                                                 .pbLeaderboard[0].stat as string
                                         }
+                                        padded={true}
                                     />
                                 </span>{" "}
                                 by&nbsp;

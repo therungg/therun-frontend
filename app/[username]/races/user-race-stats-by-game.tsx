@@ -134,6 +134,7 @@ export const ShowUserCategoryStats = ({
                     <b>
                         <DurationToFormatted
                             duration={category.totalRaceTime}
+                            padded={true}
                         />
                     </b>
                 </div>
@@ -149,6 +150,7 @@ export const ShowUserCategoryStats = ({
                     <b className={"px-1"}>
                         <DurationToFormatted
                             duration={category.rankings[1].score}
+                            padded={true}
                         />
                     </b>
                     - #{category.rankings[1].rank + 1}
@@ -159,6 +161,7 @@ export const ShowUserCategoryStats = ({
                         <b className={"px-1"}>
                             <DurationToFormatted
                                 duration={category.rankings[2].score}
+                                padded={true}
                             />
                         </b>
                         - #{category.rankings[2].rank + 1}

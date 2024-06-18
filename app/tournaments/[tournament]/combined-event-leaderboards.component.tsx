@@ -90,6 +90,7 @@ export const CombinedEventLeaderboards = ({
                             return (
                                 <DurationToFormatted
                                     duration={stat.toString()}
+                                    padded={true}
                                 />
                             );
                         }}
@@ -114,7 +115,10 @@ export const CombinedEventLeaderboards = ({
                     leaderboard={metaLeaderboards.playTimeLeaderboard}
                     transform={(stat) => {
                         return (
-                            <DurationToFormatted duration={stat.toString()} />
+                            <DurationToFormatted
+                                duration={stat.toString()}
+                                padded={true}
+                            />
                         );
                     }}
                 />

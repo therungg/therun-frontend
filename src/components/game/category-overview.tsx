@@ -1,6 +1,6 @@
 import { CategoryLeaderboard } from "~app/games/[game]/game.types";
 import { Table } from "react-bootstrap";
-import { DurationToFormatted } from "../util/datetime";
+import { DigitGrouping, DurationToFormatted } from "../util/datetime";
 import {
     GameCategoryLink,
     UserGameCategoryLink,
@@ -82,6 +82,7 @@ export const CategoryOverview = ({
                                             duration={
                                                 category.pbLeaderboard[0].stat
                                             }
+                                            padded={true}
                                         />
                                     </UserGameCategoryLink>
                                     &nbsp;(
@@ -102,11 +103,16 @@ export const CategoryOverview = ({
                                                 ? category.stats.totalRunTime.toString()
                                                 : ""
                                         }
+                                        padded={true}
                                     />
                                 </td>
                                 <td className="d-none d-md-table-cell text-nowrap">
-                                    {category.stats.finishedAttemptCount}/
-                                    {category.stats.attemptCount} (
+                                    {DigitGrouping(
+                                        category.stats.finishedAttemptCount,
+                                    )}
+                                    /
+                                    {DigitGrouping(category.stats.attemptCount)}{" "}
+                                    (
                                     {(
                                         (category.stats.finishedAttemptCount /
                                             category.stats.attemptCount) *
@@ -115,7 +121,7 @@ export const CategoryOverview = ({
                                     %)
                                 </td>
                                 <td className="d-none d-md-table-cell">
-                                    {category.stats.uploadCount}
+                                    {DigitGrouping(category.stats.uploadCount)}
                                 </td>
                             </tr>
                         )

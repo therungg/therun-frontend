@@ -169,12 +169,14 @@ const CategoryUserTableDisplay = ({
                                     <td>
                                         <DurationToFormatted
                                             duration={user.totalRaceTime}
+                                            padded={true}
                                         />
                                     </td>
                                     <td>
                                         {user.racePb > 0 && (
                                             <DurationToFormatted
                                                 duration={user.racePb}
+                                                padded={true}
                                             />
                                         )}
                                         {!user.racePb && "-"}

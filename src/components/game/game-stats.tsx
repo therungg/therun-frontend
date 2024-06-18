@@ -1,6 +1,6 @@
 import { CumulativeGameStat } from "~app/games/[game]/game.types";
 import { Table } from "react-bootstrap";
-import { DurationToFormatted } from "../util/datetime";
+import { DigitGrouping, DurationToFormatted } from "../util/datetime";
 
 export const GameStats = ({
     stats,
@@ -34,10 +34,11 @@ export const GameStats = ({
                                         ? stats.totalRunTime.toString()
                                         : ""
                                 }
+                                padded={true}
                             />
                         </td>
-                        <td>{stats.attemptCount}</td>
-                        <td>{stats.finishedAttemptCount}</td>
+                        <td>{DigitGrouping(stats.attemptCount)}</td>
+                        <td>{DigitGrouping(stats.finishedAttemptCount)}</td>
                         <td>{(stats.completePercentage * 100).toFixed(2)}</td>
                     </tr>
                 </tbody>
@@ -64,6 +65,7 @@ export const GameStats = ({
                                         ? stats.totalRunTime.toString()
                                         : ""
                                 }
+                                padded={true}
                             />
                         </td>
                     </tr>
@@ -71,13 +73,13 @@ export const GameStats = ({
                         <td>
                             <b>Total Attempts</b>
                         </td>
-                        <td>{stats.attemptCount}</td>
+                        <td>{DigitGrouping(stats.attemptCount)}</td>
                     </tr>
                     <tr>
                         <td>
                             <b>Finished Attempts</b>
                         </td>
-                        <td>{stats.finishedAttemptCount}</td>
+                        <td>{DigitGrouping(stats.finishedAttemptCount)}</td>
                     </tr>
                     <tr>
                         <td>

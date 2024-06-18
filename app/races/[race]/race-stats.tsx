@@ -60,6 +60,7 @@ export const RaceStats = ({ race }: { race: Race }) => {
                                     <b>
                                         <DurationToFormatted
                                             duration={stat.time}
+                                            padded={true}
                                         />
                                     </b>{" "}
                                     -{" "}

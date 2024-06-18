@@ -12,6 +12,7 @@ import { Form } from "react-bootstrap";
 import { UserLink } from "~src/components/links/links";
 import { DurationToFormatted } from "~src/components/util/datetime";
 import React, { useEffect, useState } from "react";
+
 import { random } from "nanoid";
 import dynamic from "next/dynamic";
 import { User } from "../../../types/session.types";
@@ -259,8 +260,12 @@ const getRaceMessage = (message: RaceMessage) => {
                             <span className={"fst-italic"}>
                                 {data.splitName}
                             </span>{" "}
-                            | <DurationToFormatted duration={data.time} /> |{" "}
-                            {(data.percentage * 100).toFixed(0)}%
+                            |{" "}
+                            <DurationToFormatted
+                                duration={data.time}
+                                padded={true}
+                            />{" "}
+                            | {(data.percentage * 100).toFixed(0)}%
                         </small>
                     </span>
                 </div>
@@ -309,7 +314,11 @@ const getRaceMessage = (message: RaceMessage) => {
                     {data.time && (
                         <span className={"fw-bold"}>
                             {" "}
-                            - <DurationToFormatted duration={data.time} />
+                            -{" "}
+                            <DurationToFormatted
+                                duration={data.time}
+                                padded={true}
+                            />
                         </span>
                     )}
                 </>
@@ -324,7 +333,11 @@ const getRaceMessage = (message: RaceMessage) => {
                     {data.time && (
                         <span className={"fw-bold"}>
                             {" "}
-                            - <DurationToFormatted duration={data.time} />
+                            -{" "}
+                            <DurationToFormatted
+                                duration={data.time}
+                                padded={true}
+                            />
                         </span>
                     )}
                 </>

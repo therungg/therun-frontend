@@ -21,7 +21,10 @@ export const AllGamesCardHeader: React.FunctionComponent<
                 </a>
                 <div className="float-end">
                     <i className="align-self-center">
-                        <DurationToFormatted duration={game.sort.toString()} />
+                        <DurationToFormatted
+                            duration={game.sort.toString()}
+                            padded={true}
+                        />
                     </i>
                 </div>
             </div>

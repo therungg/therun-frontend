@@ -1,7 +1,10 @@
 import { GameStats, GlobalStats } from "~app/races/races.types";
 import { Col, Row } from "react-bootstrap";
 import React, { ReactElement } from "react";
-import { DurationToFormatted } from "~src/components/util/datetime";
+import {
+    DigitGrouping,
+    DurationToFormatted,
+} from "~src/components/util/datetime";
 import { GameImage } from "~src/components/image/gameimage";
 import styles from "~src/components/css/LiveRun.module.scss";
 import { safeEncodeURI } from "~src/utils/uri";
@@ -27,16 +30,22 @@ export const GlobalRaceStats = ({
             </div>
             <hr />
             <div>
-                <ShowStat stat={"Finished Races"} value={stats.totalRaces} />
+                <ShowStat
+                    stat={"Finished Races"}
+                    value={DigitGrouping(stats.totalRaces)}
+                />
                 <ShowStat
                     stat={"Total Playtime"}
                     value={
-                        <DurationToFormatted duration={stats.totalRaceTime} />
+                        <DurationToFormatted
+                            duration={stats.totalRaceTime}
+                            padded={true}
+                        />
                     }
                 />
                 <ShowStat
                     stat={"Total Participants"}
-                    value={stats.totalParticipations}
+                    value={DigitGrouping(stats.totalParticipations)}
                 />
                 <ShowStat
                     stat={"Finish %"}
@@ -121,7 +130,10 @@ const ShowGameStat = ({ gameStat }: { gameStat: GameStats }) => {
                 </div>
                 <div className={"d-flex justify-content-between"}>
                     {gameStat.totalRaces} races
-                    <DurationToFormatted duration={gameStat.totalRaceTime} />
+                    <DurationToFormatted
+                        duration={gameStat.totalRaceTime}
+                        padded={true}
+                    />
                 </div>
             </div>
         </div>

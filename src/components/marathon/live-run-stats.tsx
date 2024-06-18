@@ -65,7 +65,10 @@ export const LiveRunStats = ({
                     <tr>
                         <td>Personal Best</td>
                         <td>
-                            <DurationToFormatted duration={liveRun.pb} />
+                            <DurationToFormatted
+                                duration={liveRun.pb}
+                                padded={true}
+                            />
                         </td>
                         <td>
                             <SendMarathonDataButton
@@ -81,6 +84,7 @@ export const LiveRunStats = ({
                         <td>
                             <DurationToFormatted
                                 duration={liveRun.currentPrediction}
+                                padded={true}
                             />
                         </td>
                         <td>
@@ -117,6 +121,7 @@ export const LiveRunStats = ({
                         <td>
                             <DurationToFormatted
                                 duration={liveRun.bestPossible}
+                                padded={true}
                             />
                         </td>
                         <td>
@@ -131,7 +136,10 @@ export const LiveRunStats = ({
                     <tr>
                         <td>Sum of bests</td>
                         <td>
-                            <DurationToFormatted duration={liveRun.sob} />
+                            <DurationToFormatted
+                                duration={liveRun.sob}
+                                padded={true}
+                            />
                         </td>
                         <td>
                             <SendMarathonDataButton
