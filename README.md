@@ -1,4 +1,4 @@
-# [The Run](therun.gg): The Free Speedrun Statistics Site
+# [The Run](https://therun.gg/): The Free Speedrun Statistics Site
 
 _Therun_ is a free speedrun statistics website. It provides live data and advanced statistics for participating
 speedrunners.
