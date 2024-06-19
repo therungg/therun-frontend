@@ -1,11 +1,7 @@
 import { Run } from "../../../common/types";
 import { Col, Image, Row, Table } from "react-bootstrap";
 import React, { useEffect, useReducer, useState } from "react";
-import {
-    DigitGrouping,
-    DurationToFormatted,
-    IsoToFormatted,
-} from "../../util/datetime";
+import { DurationToFormatted, IsoToFormatted } from "../../util/datetime";
 import { GameLink, UserGameCategoryLink } from "../../links/links";
 import { EditRun } from "../dashboard/edit-run";
 import { GlobalGameData } from "~app/[username]/[game]/[run]/run";
@@ -255,14 +251,12 @@ export const UserOverview = ({
                                                     "(IGT)"}
                                             </td>
                                             <td style={{ width: "13%" }}>
-                                                {DigitGrouping(
-                                                    run.attemptCount,
-                                                )}
+                                                {run.attemptCount.toLocaleString()}
                                             </td>
                                             <td style={{ width: "13%" }}>
                                                 <DurationToFormatted
                                                     duration={run.totalRunTime}
-                                                    padded={true}
+                                                    padded
                                                 />
                                             </td>
                                             <td style={{ width: "29%" }}>

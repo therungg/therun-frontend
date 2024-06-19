@@ -7,10 +7,7 @@ import React from "react";
 import PaginationControl from "~src/components/pagination/pagination-control";
 import { PaginationContextProvider } from "~src/components/pagination/pagination.context-provider";
 import { Card, Col, Row } from "react-bootstrap";
-import {
-    DigitGrouping,
-    DurationToFormatted,
-} from "~src/components/util/datetime";
+import { DurationToFormatted } from "~src/components/util/datetime";
 import styles from "~src/components/css/LiveRun.module.scss";
 import { safeEncodeURI } from "~src/utils/uri";
 
@@ -119,7 +116,7 @@ const StatsPerGameXxl = ({
                                 {stats.displayValue.split("#")[0]}
                             </span>
                             <span className={"fs-5"}>
-                                {DigitGrouping(stats.totalRaces)} Races
+                                {stats.totalRaces.toLocaleString()} Races
                             </span>
                         </div>
                         {hasCategory && (
@@ -184,7 +181,7 @@ const StatsPerGameSmallScreen = ({
                                 {stats.displayValue}
                             </span>
                             <span className={"fs-5"}>
-                                {DigitGrouping(stats.totalRaces)}
+                                {stats.totalRaces.toLocaleString()}
                             </span>
                         </div>
                         <hr className={"m-0"} />
@@ -224,7 +221,7 @@ const StatsBodyXxl = ({ stats }: { stats: GameStats }) => {
                 >
                     <DurationToFormatted
                         duration={stats.totalRaceTime}
-                        padded={true}
+                        padded
                     />
                 </span>
             </Col>
@@ -235,7 +232,7 @@ const StatsBodyXxl = ({ stats }: { stats: GameStats }) => {
                     className={"fw-bold flex-center"}
                     style={{ fontSize: "large" }}
                 >
-                    {DigitGrouping(stats.totalParticipations)}
+                    {stats.totalParticipations.toLocaleString()}
                 </span>
             </Col>
             <Col md={3}>
@@ -245,7 +242,7 @@ const StatsBodyXxl = ({ stats }: { stats: GameStats }) => {
                     className={"fw-bold flex-center"}
                     style={{ fontSize: "large" }}
                 >
-                    {DigitGrouping(stats.totalFinishedParticipations)}
+                    {stats.totalFinishedParticipations.toLocaleString()}
                 </span>
             </Col>
             <Col md={3}>
@@ -270,17 +267,19 @@ const StatsBodySmallScreen = ({ stats }: { stats: GameStats }) => {
                 <span>
                     <DurationToFormatted
                         duration={stats.totalRaceTime}
-                        padded={true}
+                        padded
                     />
                 </span>
             </span>
             <span className={"justify-content-between d-flex"}>
                 <span>Races Joined</span>
-                <span>{DigitGrouping(stats.totalParticipations)}</span>
+                <span>{stats.totalParticipations.toLocaleString()}</span>
             </span>
             <span className={"justify-content-between d-flex"}>
                 <span>Races Finished</span>
-                <span>{DigitGrouping(stats.totalFinishedParticipations)}</span>
+                <span>
+                    {stats.totalFinishedParticipations.toLocaleString()}
+                </span>
             </span>
             <span className={"justify-content-between d-flex"}>
                 <span>Finish %</span>

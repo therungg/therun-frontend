@@ -51,7 +51,7 @@ const RacePlacingsFinishedRace = ({ race, amount = 1 }: RacePlacingsProps) => {
                             <b>
                                 <DurationToFormatted
                                     duration={result.finalTime as number}
-                                    padded={true}
+                                    padded
                                 />
                             </b>
                         )}
@@ -79,7 +79,7 @@ const RacePlacingsProgressRace = ({ race }: RacePlacingsProps) => {
                 <TrophyIcon />
                 <DurationToFormatted
                     duration={firstPlace.finalTime as number}
-                    padded={true}
+                    padded
                 />{" "}
                 - <UserLink username={firstPlace.user} parentIsUrl={true} />
             </>

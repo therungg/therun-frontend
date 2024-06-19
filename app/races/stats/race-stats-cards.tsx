@@ -1,11 +1,6 @@
-"use client";
-
 import { GlobalStats } from "~app/races/races.types";
 import { Card, Col, Row } from "react-bootstrap";
-import {
-    DigitGrouping,
-    DurationToFormatted,
-} from "~src/components/util/datetime";
+import { DurationToFormatted } from "~src/components/util/datetime";
 import React, { ReactElement } from "react";
 
 export const RaceStatsCards = ({
@@ -21,20 +16,20 @@ export const RaceStatsCards = ({
                     values={[
                         // eslint-disable-next-line react/jsx-key
                         <span>
-                            {DigitGrouping(globalRaceStats.totalRaces)}
+                            {globalRaceStats.totalRaces.toLocaleString()}
                         </span>,
                         // eslint-disable-next-line react/jsx-key
                         <span>
                             <DurationToFormatted
                                 duration={globalRaceStats.totalRaceTime}
-                                padded={true}
+                                padded
                             />
                         </span>,
                         // eslint-disable-next-line react/jsx-key
                         <span>
                             <DurationToFormatted
                                 duration={globalRaceStats.averageRaceTime}
-                                padded={true}
+                                padded
                             />
                         </span>,
                     ]}
@@ -46,13 +41,11 @@ export const RaceStatsCards = ({
                     values={[
                         // eslint-disable-next-line react/jsx-key
                         <span>
-                            {DigitGrouping(globalRaceStats.totalParticipations)}
+                            {globalRaceStats.totalParticipations.toLocaleString()}
                         </span>,
                         // eslint-disable-next-line react/jsx-key
                         <span>
-                            {DigitGrouping(
-                                globalRaceStats.totalFinishedParticipations,
-                            )}
+                            {globalRaceStats.totalFinishedParticipations.toLocaleString()}
                         </span>,
                         // eslint-disable-next-line react/jsx-key
                         <span>

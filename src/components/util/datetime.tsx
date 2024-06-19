@@ -2,7 +2,6 @@
 
 import moment from "moment/moment";
 import { useEffect, useState } from "react";
-import { useFormatter } from "next-intl";
 
 interface IsoToFormattedProps {
     iso: string | Date;
@@ -271,9 +270,4 @@ export const FromNow = ({ time }: { time: string | Date }) => {
             {moment(time).fromNow()}
         </abbr>
     );
-};
-
-export const DigitGrouping = (num: number) => {
-    const format = useFormatter();
-    return format.number(num);
 };

@@ -95,7 +95,7 @@ export const EventLeaderboards = ({
                                 return (
                                     <DurationToFormatted
                                         duration={stat.toString()}
-                                        padded={true}
+                                        padded
                                     />
                                 );
                             }}
@@ -109,7 +109,7 @@ export const EventLeaderboards = ({
                                 return (
                                     <DurationToFormatted
                                         duration={stat.toString()}
-                                        padded={true}
+                                        padded
                                     />
                                 );
                             }}
@@ -171,7 +171,7 @@ export const EventLeaderboards = ({
                                 return (
                                     <DurationToFormatted
                                         duration={stat.toString()}
-                                        padded={true}
+                                        padded
                                     />
                                 );
                             }}
@@ -209,7 +209,7 @@ export const EventLeaderboards = ({
                                 return (
                                     <DurationToFormatted
                                         duration={stat.toString()}
-                                        padded={true}
+                                        padded
                                     />
                                 );
                             }}

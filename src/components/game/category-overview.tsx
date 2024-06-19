@@ -1,6 +1,6 @@
 import { CategoryLeaderboard } from "~app/games/[game]/game.types";
 import { Table } from "react-bootstrap";
-import { DigitGrouping, DurationToFormatted } from "../util/datetime";
+import { DurationToFormatted } from "../util/datetime";
 import {
     GameCategoryLink,
     UserGameCategoryLink,
@@ -82,7 +82,7 @@ export const CategoryOverview = ({
                                             duration={
                                                 category.pbLeaderboard[0].stat
                                             }
-                                            padded={true}
+                                            padded
                                         />
                                     </UserGameCategoryLink>
                                     &nbsp;(
@@ -103,16 +103,14 @@ export const CategoryOverview = ({
                                                 ? category.stats.totalRunTime.toString()
                                                 : ""
                                         }
-                                        padded={true}
+                                        padded
                                     />
                                 </td>
                                 <td className="d-none d-md-table-cell text-nowrap">
-                                    {DigitGrouping(
-                                        category.stats.finishedAttemptCount,
-                                    )}
+                                    {category.stats.finishedAttemptCount.toLocaleString()}
                                     /
-                                    {DigitGrouping(category.stats.attemptCount)}{" "}
-                                    (
+                                    {category.stats.attemptCount.toLocaleString()}
+                                    &nbsp; (
                                     {(
                                         (category.stats.finishedAttemptCount /
                                             category.stats.attemptCount) *
@@ -121,7 +119,7 @@ export const CategoryOverview = ({
                                     %)
                                 </td>
                                 <td className="d-none d-md-table-cell">
-                                    {DigitGrouping(category.stats.uploadCount)}
+                                    {category.stats.uploadCount.toLocaleString()}
                                 </td>
                             </tr>
                         )

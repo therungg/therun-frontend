@@ -142,7 +142,7 @@ const RaceParticipantStatus = ({
                 <span className={"fst-italic"}>
                     <DurationToFormatted
                         duration={participant.finalTime?.toString() as string}
-                        padded={true}
+                        padded
                     />
                 </span>
             )}

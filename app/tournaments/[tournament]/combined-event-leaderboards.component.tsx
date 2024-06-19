@@ -90,7 +90,7 @@ export const CombinedEventLeaderboards = ({
                             return (
                                 <DurationToFormatted
                                     duration={stat.toString()}
-                                    padded={true}
+                                    padded
                                 />
                             );
                         }}
@@ -117,7 +117,7 @@ export const CombinedEventLeaderboards = ({
                         return (
                             <DurationToFormatted
                                 duration={stat.toString()}
-                                padded={true}
+                                padded
                             />
                         );
                     }}

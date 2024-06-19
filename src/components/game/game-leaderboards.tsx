@@ -138,7 +138,7 @@ export const GameLeaderboards = ({
             return (
                 <DurationToFormatted
                     duration={stat ? stat.toString() : ""}
-                    padded={true}
+                    padded
                 />
             );
         },

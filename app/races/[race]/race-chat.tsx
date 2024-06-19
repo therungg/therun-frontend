@@ -259,13 +259,10 @@ const getRaceMessage = (message: RaceMessage) => {
                         <small>
                             <span className={"fst-italic"}>
                                 {data.splitName}
-                            </span>{" "}
-                            |{" "}
-                            <DurationToFormatted
-                                duration={data.time}
-                                padded={true}
-                            />{" "}
-                            | {(data.percentage * 100).toFixed(0)}%
+                            </span>
+                            &nbsp; |&nbsp;
+                            <DurationToFormatted duration={data.time} padded />
+                            &nbsp; | {(data.percentage * 100).toFixed(2)}%
                         </small>
                     </span>
                 </div>
@@ -315,10 +312,7 @@ const getRaceMessage = (message: RaceMessage) => {
                         <span className={"fw-bold"}>
                             {" "}
                             -{" "}
-                            <DurationToFormatted
-                                duration={data.time}
-                                padded={true}
-                            />
+                            <DurationToFormatted duration={data.time} padded />
                         </span>
                     )}
                 </>
@@ -332,12 +326,8 @@ const getRaceMessage = (message: RaceMessage) => {
                     confirmed their time{" "}
                     {data.time && (
                         <span className={"fw-bold"}>
-                            {" "}
-                            -{" "}
-                            <DurationToFormatted
-                                duration={data.time}
-                                padded={true}
-                            />
+                            &nbsp; -&nbsp;
+                            <DurationToFormatted duration={data.time} padded />
                         </span>
                     )}
                 </>

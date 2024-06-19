@@ -28,7 +28,7 @@ export const AllGamesCardBody: React.FunctionComponent<AllGamesBodyProps> = ({
                                             ? (category.gameTimePb as string)
                                             : category.bestTime
                                     }
-                                    padded={true}
+                                    padded
                                 />{" "}
                                 {category.gameTime && "(IGT)"}
                             </div>

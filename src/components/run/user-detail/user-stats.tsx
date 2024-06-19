@@ -1,10 +1,6 @@
 import { Table } from "react-bootstrap";
 import { Run } from "../../../common/types";
-import {
-    DurationToFormatted,
-    IsoToFormatted,
-    DigitGrouping,
-} from "../../util/datetime";
+import { DurationToFormatted, IsoToFormatted } from "../../util/datetime";
 
 export const UserStats = ({ runs }: { runs: Run[] }) => {
     const totalPlayTime = runs
@@ -40,26 +36,28 @@ export const UserStats = ({ runs }: { runs: Run[] }) => {
                     <tr>
                         <td>Total Games</td>
                         <td style={{ textAlign: "right" }}>
-                            {DigitGrouping(games)}
+                            {games.toLocaleString()}
                         </td>
                     </tr>
                     <tr>
                         <td>Total Categories</td>
-                        <td style={{ textAlign: "right" }}>{runs.length}</td>
+                        <td style={{ textAlign: "right" }}>
+                            {runs.length.toLocaleString()}
+                        </td>
                     </tr>
                     <tr>
                         <td>Total time played</td>
                         <td style={{ textAlign: "right" }}>
                             <DurationToFormatted
                                 duration={totalPlayTime}
-                                padded={true}
+                                padded
                             />
                         </td>
                     </tr>
                     <tr>
                         <td>Total attempts</td>
                         <td style={{ textAlign: "right" }}>
-                            {DigitGrouping(totalAttempts)}
+                            {totalAttempts.toLocaleString()}
                         </td>
                     </tr>
                     <tr>

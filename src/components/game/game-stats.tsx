@@ -1,6 +1,6 @@
 import { CumulativeGameStat } from "~app/games/[game]/game.types";
 import { Table } from "react-bootstrap";
-import { DigitGrouping, DurationToFormatted } from "../util/datetime";
+import { DurationToFormatted } from "../util/datetime";
 
 export const GameStats = ({
     stats,
@@ -34,11 +34,11 @@ export const GameStats = ({
                                         ? stats.totalRunTime.toString()
                                         : ""
                                 }
-                                padded={true}
+                                padded
                             />
                         </td>
-                        <td>{DigitGrouping(stats.attemptCount)}</td>
-                        <td>{DigitGrouping(stats.finishedAttemptCount)}</td>
+                        <td>{stats.attemptCount.toLocaleString()}</td>
+                        <td>{stats.finishedAttemptCount.toLocaleString()}</td>
                         <td>{(stats.completePercentage * 100).toFixed(2)}</td>
                     </tr>
                 </tbody>
@@ -65,7 +65,7 @@ export const GameStats = ({
                                         ? stats.totalRunTime.toString()
                                         : ""
                                 }
-                                padded={true}
+                                padded
                             />
                         </td>
                     </tr>
@@ -73,13 +73,13 @@ export const GameStats = ({
                         <td>
                             <b>Total Attempts</b>
                         </td>
-                        <td>{DigitGrouping(stats.attemptCount)}</td>
+                        <td>{stats.attemptCount.toLocaleString()}</td>
                     </tr>
                     <tr>
                         <td>
                             <b>Finished Attempts</b>
                         </td>
-                        <td>{DigitGrouping(stats.finishedAttemptCount)}</td>
+                        <td>{stats.finishedAttemptCount.toLocaleString()}</td>
                     </tr>
                     <tr>
                         <td>

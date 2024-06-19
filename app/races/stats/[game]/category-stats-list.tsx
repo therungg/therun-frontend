@@ -10,10 +10,7 @@ import React from "react";
 import { genericFetcher } from "~src/components/pagination/fetchers/generic-fetcher";
 import { safeEncodeURI } from "~src/utils/uri";
 import { TrophyIcon } from "~src/icons/trophy-icon";
-import {
-    DigitGrouping,
-    DurationToFormatted,
-} from "~src/components/util/datetime";
+import { DurationToFormatted } from "~src/components/util/datetime";
 import { Col, Row } from "react-bootstrap";
 
 export const CategoryStatsList = ({ stats }: { stats: CategoryStats[] }) => {
@@ -83,21 +80,21 @@ export const CategoryStatsBody = ({ stats }: { stats: CategoryStats }) => {
             <Col lg={4} className={"mb-3 mb-md-1"}>
                 <div className={"fs-5 mb-1"}>Stats</div>
                 <div>
-                    Total Time:{" "}
+                    Total Time:&nbsp;
                     <b>
                         <DurationToFormatted
                             duration={stats.totalRaceTime}
-                            padded={true}
+                            padded
                         />
                     </b>
                 </div>
                 <div>
-                    Races Joined:{" "}
-                    <b>{DigitGrouping(stats.totalParticipations)}</b>
+                    Races Joined:&nbsp;
+                    <b>{stats.totalParticipations.toLocaleString()}</b>
                 </div>
                 <div>
-                    Races Finished:{" "}
-                    <b>{DigitGrouping(stats.totalFinishedParticipations)}</b>
+                    Races Finished:&nbsp;
+                    <b>{stats.totalFinishedParticipations.toLocaleString()}</b>
                 </div>
             </Col>
             <Col lg={4} className={"mb-3 mb-md-1"}>
@@ -136,7 +133,7 @@ export const CategoryStatsBody = ({ stats }: { stats: CategoryStats }) => {
                             <b>
                                 <DurationToFormatted
                                     duration={stat.time}
-                                    padded={true}
+                                    padded
                                 />
                             </b>{" "}
                             - {stat.user}

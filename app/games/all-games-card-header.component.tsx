@@ -23,7 +23,7 @@ export const AllGamesCardHeader: React.FunctionComponent<
                     <i className="align-self-center">
                         <DurationToFormatted
                             duration={game.sort.toString()}
-                            padded={true}
+                            padded
                         />
                     </i>
                 </div>

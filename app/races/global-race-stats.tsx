@@ -1,10 +1,7 @@
 import { GameStats, GlobalStats } from "~app/races/races.types";
 import { Col, Row } from "react-bootstrap";
 import React, { ReactElement } from "react";
-import {
-    DigitGrouping,
-    DurationToFormatted,
-} from "~src/components/util/datetime";
+import { DurationToFormatted } from "~src/components/util/datetime";
 import { GameImage } from "~src/components/image/gameimage";
 import styles from "~src/components/css/LiveRun.module.scss";
 import { safeEncodeURI } from "~src/utils/uri";
@@ -32,20 +29,20 @@ export const GlobalRaceStats = ({
             <div>
                 <ShowStat
                     stat={"Finished Races"}
-                    value={DigitGrouping(stats.totalRaces)}
+                    value={stats.totalRaces.toLocaleString()}
                 />
                 <ShowStat
                     stat={"Total Playtime"}
                     value={
                         <DurationToFormatted
                             duration={stats.totalRaceTime}
-                            padded={true}
+                            padded
                         />
                     }
                 />
                 <ShowStat
                     stat={"Total Participants"}
-                    value={DigitGrouping(stats.totalParticipations)}
+                    value={stats.totalParticipations.toLocaleString()}
                 />
                 <ShowStat
                     stat={"Finish %"}
@@ -132,7 +129,7 @@ const ShowGameStat = ({ gameStat }: { gameStat: GameStats }) => {
                     {gameStat.totalRaces} races
                     <DurationToFormatted
                         duration={gameStat.totalRaceTime}
-                        padded={true}
+                        padded
                     />
                 </div>
             </div>

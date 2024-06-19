@@ -1,9 +1,6 @@
 import { UserStats } from "~app/races/races.types";
 import { Table } from "react-bootstrap";
-import {
-    DigitGrouping,
-    DurationToFormatted,
-} from "~src/components/util/datetime";
+import { DurationToFormatted } from "~src/components/util/datetime";
 
 export const UserRaceStatsTable = ({ raceStats }: { raceStats: UserStats }) => {
     return (
@@ -19,13 +16,13 @@ export const UserRaceStatsTable = ({ raceStats }: { raceStats: UserStats }) => {
                     <tr>
                         <td>Total Races</td>
                         <td style={{ textAlign: "right" }}>
-                            {DigitGrouping(raceStats.totalRaces)}
+                            {raceStats.totalRaces}
                         </td>
                     </tr>
                     <tr>
                         <td>Finished Races</td>
                         <td style={{ textAlign: "right" }}>
-                            {DigitGrouping(raceStats.totalFinishedRaces)}
+                            {raceStats.totalFinishedRaces}
                         </td>
                     </tr>
                     <tr>
@@ -44,7 +41,7 @@ export const UserRaceStatsTable = ({ raceStats }: { raceStats: UserStats }) => {
                         <td style={{ textAlign: "right" }}>
                             <DurationToFormatted
                                 duration={raceStats.totalRaceTime}
-                                padded={true}
+                                padded
                             />
                         </td>
                     </tr>

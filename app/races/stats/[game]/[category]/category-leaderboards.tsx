@@ -93,7 +93,7 @@ export const CategoryLeaderboards = ({
                                         ) : (
                                             <DurationToFormatted
                                                 duration={leaderboard.time}
-                                                padded={true}
+                                                padded
                                             />
                                         )}
                                     </td>
