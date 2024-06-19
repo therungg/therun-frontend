@@ -107,9 +107,8 @@ export const CategoryOverview = ({
                                     />
                                 </td>
                                 <td className="d-none d-md-table-cell text-nowrap">
-                                    {category.stats.finishedAttemptCount.toLocaleString()}
-                                    /
-                                    {category.stats.attemptCount.toLocaleString()}
+                                    {category.stats.finishedAttemptCount}/
+                                    {category.stats.attemptCount}
                                     &nbsp; (
                                     {(
                                         (category.stats.finishedAttemptCount /
