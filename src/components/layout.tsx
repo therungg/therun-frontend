@@ -184,9 +184,9 @@ export const Layout = ({
                                     <a
                                         rel="noreferrer"
                                         target="_blank"
-                                        href="mailto:info@therun.gg"
+                                        href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL}`}
                                     >
-                                        info@therun.gg
+                                        {process.env.NEXT_PUBLIC_CONTACT_EMAIL}
                                     </a>
                                 </Col>
                             </Row>

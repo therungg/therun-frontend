@@ -74,32 +74,29 @@ export const Contact = () => {
                 suggestions, tips or remarks.
             </p>
             <p>
-                If you want to, I made a
+                If you want to, I made a&nbsp;
                 <a
                     rel="noreferrer"
                     target="_blank"
                     href={process.env.NEXT_PUBLIC_DISCORD_URL}
                 >
-                    {" "}
                     Discord
                 </a>
-                , you can message me on
+                , you can message me on&nbsp;
                 <a
                     rel="noreferrer"
                     target="_blank"
                     href={process.env.NEXT_PUBLIC_TWITTER_URL}
                 >
-                    {" "}
                     Twitter
                 </a>{" "}
-                or send me an email at
+                or send me an email at&nbsp;
                 <a
                     rel="noreferrer"
                     target="_blank"
-                    href="mailto:info@therun.gg"
+                    href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL}`}
                 >
-                    {" "}
-                    info@therun.gg
+                    {process.env.NEXT_PUBLIC_CONTACT_EMAIL}
                 </a>
                 . Alternatively, just fill in this form!
             </p>

@@ -201,7 +201,6 @@ export default function RunDetail({
                                             break;
                                     }
 
-                                    console.log({ k });
                                     return (
                                         <Col xl={xl} key={k}>
                                             <i>{k}</i>:{" "}

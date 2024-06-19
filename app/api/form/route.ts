@@ -1,8 +1,6 @@
 import nodemailer from "nodemailer";
 import { apiResponse } from "~app/api/response";
 
-const EMAIL_ADDRESS = "info@therun.gg";
-
 export async function POST(request: Request) {
     const body = await request.json();
 
@@ -10,7 +8,7 @@ export async function POST(request: Request) {
         host: process.env.SMTP_HOST,
         port: 587,
         auth: {
-            user: EMAIL_ADDRESS,
+            user: process.env.NEXT_PUBLIC_CONTACT_EMAIL,
             pass: process.env.SMTP_PASSWORD,
         },
     });
@@ -18,8 +16,8 @@ export async function POST(request: Request) {
     const response = await new Promise((resolve, reject) => {
         transporter.sendMail(
             {
-                from: EMAIL_ADDRESS,
-                to: EMAIL_ADDRESS,
+                from: process.env.NEXT_PUBLIC_CONTACT_EMAIL,
+                to: process.env.NEXT_PUBLIC_CONTACT_EMAIL,
                 subject: `${body.category}: ${body.subject} (${body.email})`,
                 text: body.text,
             },

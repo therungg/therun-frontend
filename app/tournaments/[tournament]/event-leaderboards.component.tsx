@@ -16,7 +16,6 @@ export const EventLeaderboards = ({
     gameTime: boolean;
     // TODO: get the type
     qualifierData: unknown;
-    // TODO: get the type
     tournamentLeaderboards: CategoryLeaderboard;
 }) => {
     const [leaderboard, setLeaderboard] = useState(gameTime ? "pbIGT" : "pb");

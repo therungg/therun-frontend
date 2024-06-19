@@ -46,7 +46,7 @@ export const TournamentRuns: React.FunctionComponent<TournamentRunsProps> = ({
     const [search, setSearch] = useState("");
 
     const [active, setActive] = useState(1);
-    const [items, setItems] = useState<React.JSX.Element[]>();
+    const [items, setItems] = useState<React.ReactNode[]>();
 
     // TODO: FIX THIS
     // eslint-disable-next-line prefer-const

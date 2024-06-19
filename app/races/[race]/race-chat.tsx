@@ -33,7 +33,10 @@ const ChatMessageTime = dynamic(
     },
 );
 
-const PARTICIPANT_SPLIT = "participant-split";
+const MESSAGE_TYPE = {
+    CHAT: "chat",
+    PARTICIPANT_SPLIT: "participant-split",
+} as const;
 
 export const RaceChat = ({
     race,
@@ -65,7 +68,7 @@ export const RaceChat = ({
     });
 
     const filteredMessages = stateMessages.filter((message) => {
-        if (!filterOptions.chat && message.type === "chat") {
+        if (!filterOptions.chat && message.type === MESSAGE_TYPE.CHAT) {
             return false;
         }
         if (!filterOptions.race && message.type.startsWith("race-")) {
@@ -74,11 +77,14 @@ export const RaceChat = ({
         if (
             !filterOptions.participants &&
             message.type.startsWith("participant") &&
-            message.type !== PARTICIPANT_SPLIT
+            message.type !== MESSAGE_TYPE.PARTICIPANT_SPLIT
         ) {
             return false;
         }
-        return !(!filterOptions.splits && message.type === PARTICIPANT_SPLIT);
+        return !(
+            !filterOptions.splits &&
+            message.type === MESSAGE_TYPE.PARTICIPANT_SPLIT
+        );
     });
 
     return (

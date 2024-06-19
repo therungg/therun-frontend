@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { createRef, useCallback, useEffect, useState } from "react";
 import { Card, Col, Row, Tab, Tabs } from "react-bootstrap";
 import { LiveUserRun } from "~src/components/live/live-user-run";
 import { RecommendedStream } from "~src/components/live/recommended-stream";
@@ -30,7 +30,7 @@ import { CategoryLeaderboard } from "~app/games/[game]/game.types";
 import { GameLink, UserLink } from "~src/components/links/links";
 import { getLiveRunForUser } from "~src/lib/live-runs";
 import { SkeletonLiveRun } from "~src/components/skeleton/live/skeleton-live-run";
-import { UserData } from "~src/lib/get-session-data";
+import { User } from "types/session.types";
 
 export const GenericTournament = ({
     liveDataMap,
@@ -40,7 +40,7 @@ export const GenericTournament = ({
     tab,
 }: {
     liveDataMap: LiveDataMap;
-    session: UserData;
+    session: User;
     username?: string;
     tournament: Tournament;
     tab: string;
@@ -343,10 +343,11 @@ export const GenericTournament = ({
                                             className="input-group-text"
                                             onClick={() => {
                                                 if (
+                                                    gameSearchRef.current &&
                                                     document.activeElement !==
-                                                    gameSearchRef.current?.focus()
+                                                        gameSearchRef.current
                                                 ) {
-                                                    gameSearchRef.current?.focus();
+                                                    gameSearchRef.current.focus();
                                                 }
                                             }}
                                         >

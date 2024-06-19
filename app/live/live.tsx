@@ -85,7 +85,7 @@ export const Live = ({
         } else {
             setLoadingUserData(false);
         }
-    }, [currentlyViewing, updatedLiveDataMap]);
+    }, [currentlyViewing]);
 
     return (
         <>

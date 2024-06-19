@@ -65,7 +65,6 @@ export const CombinedTournament = ({
 
     useEffect(() => {
         if (data) {
-            console.log({ data });
             const fullRunList = [];
             data.forEach((runs, key) => {
                 if (!runs) return;

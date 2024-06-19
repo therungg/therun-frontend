@@ -9,6 +9,7 @@ export interface MarathonEvent {
     username: string;
     game: string;
     category: string;
+    // TODO: get the type for this
     data: unknown;
 }
 
