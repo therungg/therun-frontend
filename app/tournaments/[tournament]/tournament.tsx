@@ -139,8 +139,9 @@ export const GenericTournament = ({
 
     useEffect(() => {
         if (
-            !updatedLiveDataMap[currentlyViewing] ||
-            updatedLiveDataMap[currentlyViewing].isMinified
+            currentlyViewing &&
+            (!updatedLiveDataMap[currentlyViewing] ||
+                updatedLiveDataMap[currentlyViewing].isMinified)
         ) {
             const liveRunFromUser = async (user: string) => {
                 setLoadingUserData(true);

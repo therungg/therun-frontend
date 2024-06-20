@@ -49,3 +49,15 @@ export const getLiveRunForUser = async (username: string) => {
 
     return result.json();
 };
+
+export const getTopNLiveRuns = async (n = 5) => {
+    const result = await fetch(`${LIVE_RUN_URL}?limit=${n}`);
+
+    return result.json();
+};
+
+export const getRandomTopLiveRun = async () => {
+    const result = await fetch(`${LIVE_RUN_URL}?random=true`);
+
+    return result.json();
+};
