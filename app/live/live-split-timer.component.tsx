@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useId, useState } from "react";
+import React, { useEffect, useState } from "react";
 import runStyles from "~src/components/css/LiveRun.module.scss";
 import { getSplitStatus } from "~src/components/live/recommended-stream";
 import {
@@ -37,7 +37,10 @@ export const LiveSplitTimerComponent: React.FunctionComponent<
         setTimerStart(time + (!splitTime ? liveRun.currentTime : 0));
     }, [liveRun.insertedAt, splitTime]);
 
-    const id = useId();
+    const [id, setId] = useState(0);
+    useEffect(() => {
+        setId(id + 1);
+    }, [liveRun.currentSplitIndex]);
 
     const formatHours = (value: number): string => {
         if (value < 0) return "-00";

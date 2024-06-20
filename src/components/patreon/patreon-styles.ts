@@ -164,8 +164,8 @@ export const patreonStyles = () => {
                         backgroundImage: `-webkit-linear-gradient(left, ${darkModeString})`,
                         WebkitBackgroundClip: "text",
                         backgroundClip: "text",
-                        WebkitTextFillColor: "transparent",
                         color: "transparent",
+                        WebkitTextFillColor: "transparent",
                     },
                     {
                         backgroundImage: `-webkit-linear-gradient(left, ${lightModeString})`,
@@ -181,24 +181,8 @@ export const patreonStyles = () => {
             tier: patreonColorData.tier,
             id: patreonColorData.id,
             style: [
-                {
-                    color: patreonColorData.colorset1 as string,
-                    backgroundImage: `-webkit-linear-gradient(left, ${
-                        patreonColorData.colorset1 as string
-                    })`,
-                    WebkitBackgroundClip: "text",
-                    backgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                },
-                {
-                    color: patreonColorData.colorset2 as string,
-                    backgroundImage: `-webkit-linear-gradient(left, ${
-                        patreonColorData.colorset2 as string
-                    })`,
-                    WebkitBackgroundClip: "text",
-                    backgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                },
+                { color: patreonColorData.colorset1 as string },
+                { color: patreonColorData.colorset2 as string },
             ],
         };
     });

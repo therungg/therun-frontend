@@ -1,5 +1,5 @@
 import { Form, FormGroupProps } from "react-bootstrap";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDebounce } from "usehooks-ts";
 import { Category, Game, PaginatedGameResult } from "~app/games/games.types";
 import styles from "~src/components/css/LiveRun.module.scss";
@@ -18,30 +18,6 @@ export const GameCategoryInput = (props: FormGroupProps) => {
 
     const search = useDebounce(inputValue, 300);
 
-    const fetchSuggestions = useCallback(
-        async (query: string) => {
-            if (query.length < 3) {
-                setSuggestions([]);
-                return;
-            }
-            const response = await fetch(
-                `/api/games?query=${encodeURIComponent(query)}&pageSize=3`,
-            );
-            const data = (await response.json()) as PaginatedGameResult;
-            setSuggestions(data.items || []);
-            const foundGame = data.items.find((game) => {
-                return game.game === search.toLowerCase().replace(/\s/g, "");
-            });
-            if (foundGame) {
-                setSuggestedGame(foundGame);
-            } else {
-                setClickedGame(false);
-                setCategorySuggesions([]);
-            }
-        },
-        [search],
-    );
-
     useEffect(() => {
         if (!clickedGame) {
             fetchSuggestions(search);
@@ -59,6 +35,27 @@ export const GameCategoryInput = (props: FormGroupProps) => {
             setSuggestedCategory(foundCategory);
         }
     }, [categoryInput]);
+
+    const fetchSuggestions = async (query: string) => {
+        if (query.length < 3) {
+            setSuggestions([]);
+            return;
+        }
+        const response = await fetch(
+            `/api/games?query=${encodeURIComponent(query)}&pageSize=3`,
+        );
+        const data = (await response.json()) as PaginatedGameResult;
+        setSuggestions(data.items || []);
+        const foundGame = data.items.find((game) => {
+            return game.game === search.toLowerCase().replace(/\s/g, "");
+        });
+        if (foundGame) {
+            setSuggestedGame(foundGame);
+        } else {
+            setClickedGame(false);
+            setCategorySuggesions([]);
+        }
+    };
 
     const setSuggestedGame = (game: Game) => {
         setClickedGame(true);
@@ -178,7 +175,6 @@ const SuggestedGamesList = ({
     setGame,
 }: {
     games: Game[];
-
     setGame: (game: Game) => void;
 }) => {
     return (
@@ -223,7 +219,6 @@ const SuggestedCategoryList = ({
     setCategory,
 }: {
     categories: Category[];
-
     setCategory: (category: Category) => void;
 }) => {
     return (

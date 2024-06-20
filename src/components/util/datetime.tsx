@@ -1,7 +1,7 @@
 "use client";
 
 import moment from "moment/moment";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface IsoToFormattedProps {
     iso: string | Date;
@@ -238,11 +238,14 @@ export const DurationToFormatted: React.FunctionComponent<
     human = true,
     withDays = false,
 }) => {
+    const timeDuration = useMemo(() => {
+        return duration ?? 0;
+    }, [duration]);
     if (withMillis)
         return (
             <>
                 {getFormattedString(
-                    duration.toString(),
+                    timeDuration.toString(),
                     withMillis,
                     padded,
                     human,
@@ -253,14 +256,14 @@ export const DurationToFormatted: React.FunctionComponent<
         <>
             <abbr
                 title={getFormattedString(
-                    duration.toString(),
+                    timeDuration.toString(),
                     true,
                     padded,
                     human,
                 )}
             >
                 {getFormattedString(
-                    duration.toString(),
+                    timeDuration.toString(),
                     withMillis,
                     padded,
                     human,
