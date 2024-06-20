@@ -61,7 +61,7 @@ export const RecommendedStream = ({
                 setSelectedSplit(activeLiveRun.currentSplitIndex);
             }
         }
-    }, [activeLiveRun, manuallyChangedSplit, previous]);
+    }, [activeLiveRun]);
 
     useEffect(() => {
         setActiveLiveRun(liveRun);
@@ -96,7 +96,7 @@ export const RecommendedStream = ({
                 gradient,
             });
         }
-    }, [patreons, isLoading, liveRun.user, dark]);
+    }, [patreons, isLoading, liveRun.user]);
 
     if (
         !activeLiveRun ||

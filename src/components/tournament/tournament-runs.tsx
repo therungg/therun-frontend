@@ -63,7 +63,7 @@ export const TournamentRuns: React.FunctionComponent<TournamentRunsProps> = ({
             const last = Math.ceil(data.runList.length / 10);
             setItems(buildItems(active, last));
         }
-    }, [data, active, items]);
+    }, [data, active]);
 
     if (search) {
         const accurateSearch = search

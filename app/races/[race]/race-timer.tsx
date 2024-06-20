@@ -19,7 +19,7 @@ export const RaceTimer = ({ race }: { race: Race }) => {
         if (race.status === "finished") {
             timer.stopTimer();
         }
-    }, [race, race.status, timer]);
+    }, [race.status]);
 
     if (race.status === "starting" && race.startTime) {
         return (
@@ -93,14 +93,7 @@ export const RaceParticipantTimer = ({
         if (raceParticipant.status === "started") {
             timer.startTimer();
         }
-    }, [
-        raceParticipant.status,
-        raceParticipant.liveData?.currentSplitIndex,
-        raceParticipant.finalTime,
-        raceParticipant.liveData,
-        race,
-        timer,
-    ]);
+    }, [raceParticipant.status, raceParticipant.liveData?.currentSplitIndex]);
 
     useEffect(() => {
         if (
@@ -110,7 +103,7 @@ export const RaceParticipantTimer = ({
         ) {
             timer.startTimer();
         }
-    }, [raceParticipant.status, raceStatus, timer]);
+    }, [raceStatus]);
 
     return timer.render();
 };

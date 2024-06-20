@@ -64,7 +64,7 @@ export const useReconnectWebsocket = <T>(
 
             return () => clearInterval(interval);
         }
-    }, [readyState, sendMessage]);
+    }, [readyState]);
 
     return lastJsonMessage;
 };

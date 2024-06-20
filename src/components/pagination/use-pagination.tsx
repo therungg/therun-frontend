@@ -69,11 +69,11 @@ function usePagination<T>(
 
     useEffect(() => {
         fetchData(1, debouncedSearch);
-    }, [debouncedSearch, fetchData]);
+    }, [debouncedSearch]);
 
     useEffect(() => {
         fetchData(currentPage, search);
-    }, [currentPage, fetchData, search]);
+    }, [currentPage]);
 
     useEffect(() => {
         if (data[`${currentPage}-${search}`]) {
@@ -81,7 +81,7 @@ function usePagination<T>(
         } else {
             setIsLoading(true);
         }
-    }, [currentPage, data, fetchData, search]);
+    }, [search]);
 
     return {
         data: currentData.items,

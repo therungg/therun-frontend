@@ -46,7 +46,7 @@ export const GameCategoryInput = (props: FormGroupProps) => {
         if (!clickedGame) {
             fetchSuggestions(search);
         }
-    }, [clickedGame, fetchSuggestions, search]);
+    }, [search]);
 
     useEffect(() => {
         const foundCategory = categorySuggestions.find((category) => {
@@ -58,7 +58,7 @@ export const GameCategoryInput = (props: FormGroupProps) => {
         if (foundCategory) {
             setSuggestedCategory(foundCategory);
         }
-    }, [categoryInput, categorySuggestions]);
+    }, [categoryInput]);
 
     const setSuggestedGame = (game: Game) => {
         setClickedGame(true);

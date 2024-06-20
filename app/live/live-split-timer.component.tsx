@@ -35,7 +35,7 @@ export const LiveSplitTimerComponent: React.FunctionComponent<
         const time =
             new Date().getTime() - new Date(liveRun.insertedAt).getTime() + 400;
         setTimerStart(time + (!splitTime ? liveRun.currentTime : 0));
-    }, [liveRun.currentTime, liveRun.insertedAt, splitTime]);
+    }, [liveRun.insertedAt, splitTime]);
 
     const id = useId();
 

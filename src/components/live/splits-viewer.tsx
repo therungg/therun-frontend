@@ -31,11 +31,11 @@ export const SplitsViewer = ({
         if (!manuallyChangedComparison) {
             setComparison(activeLiveRun.currentComparison || PERSONAL_BEST);
         }
-    }, [activeLiveRun.currentComparison, manuallyChangedComparison]);
+    }, [activeLiveRun.currentComparison]);
 
     useEffect(() => {
         setComparison(activeLiveRun.currentComparison || PERSONAL_BEST);
-    }, [activeLiveRun.currentComparison, activeLiveRun.user]);
+    }, [activeLiveRun.user]);
 
     if (!activeLiveRun.splits) return <></>;
 

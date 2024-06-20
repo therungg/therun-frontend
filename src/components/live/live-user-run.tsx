@@ -61,7 +61,7 @@ export const LiveUserRun = ({
             }
             setLiveUserStyles({ borderColor, gradient });
         }
-    }, [patreons, isLoading, liveRun.user, dark]);
+    }, [patreons, isLoading, liveRun.user]);
 
     let tournamentPb = null;
     let ranking = null;

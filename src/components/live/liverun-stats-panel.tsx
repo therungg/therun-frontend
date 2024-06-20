@@ -50,7 +50,7 @@ export const LiverunStatsPanel: React.FunctionComponent<
                     setUseGameTime(!useGameTime);
                 });
         }
-    }, [data, dataLoading, gameData, liveRun, useGameTime]);
+    }, [dataLoading, gameData, liveRun]);
 
     if (!liveRun.gameData) {
         return <div>Could not load game data.. Sorry!</div>;

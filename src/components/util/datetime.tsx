@@ -33,7 +33,7 @@ export const LocalizedTime = ({ date }: { date: Date }) => {
 
     useEffect(() => {
         setStateDate(date.toLocaleString());
-    }, [date]);
+    }, []);
 
     return <>{stateDate}</>;
 };

@@ -51,7 +51,7 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
         };
 
         fetchRaceMessages();
-    }, [race.raceId, setMessagesState]);
+    }, []);
 
     return (
         <>
