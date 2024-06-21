@@ -115,7 +115,6 @@ const ChatFilterOptions = ({
     setFilterOptions,
 }: {
     filterOptions: FilterOptions;
-
     setFilterOptions: (_: FilterOptions) => void;
 }) => {
     const rnd = random(1);

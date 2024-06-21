@@ -16,7 +16,6 @@ import { RaceParticipantRatingDisplay } from "~app/races/components/race-partici
 
 interface RaceParticipantDetailProps {
     race: Race;
-
     setStream: (user: string) => void;
 }
 

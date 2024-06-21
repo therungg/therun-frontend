@@ -11,7 +11,6 @@ export const getLeaderboard = (
     search: string,
     transform?: (
         stat: string | number,
-
         key: number,
     ) => string | number | ReactElement,
 ) => {

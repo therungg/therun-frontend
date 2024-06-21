@@ -126,7 +126,6 @@ export async function getGameImage(
         );
     } catch (e) {
         // Allow this one since it's server-side
-
         console.error(e);
         return undefined;
     }

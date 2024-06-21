@@ -3,7 +3,6 @@ import { getAllTournamentSlugs } from "~app/tournaments/tournament-list";
 
 export const redirectTournamentsMiddleware = (
     request: NextRequest,
-
     _response: NextResponse,
 ) => {
     const reroutes = getAllTournamentSlugs();

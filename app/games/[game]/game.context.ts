@@ -4,7 +4,6 @@ import { CategoryLeaderboard } from "./game.types";
 interface GameContextProps {
     category: string;
     categories: CategoryLeaderboard[];
-
     setCategory: (category: string) => void;
 }
 

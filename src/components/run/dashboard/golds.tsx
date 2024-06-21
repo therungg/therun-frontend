@@ -475,7 +475,9 @@ export const Golds = ({
                                     return (
                                         <tr
                                             key={
-                                                best?.split + n + best.totalTime
+                                                (best?.split ?? 0) +
+                                                n +
+                                                best.totalTime
                                             }
                                         >
                                             <td style={{ display: "flex" }}>

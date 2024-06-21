@@ -35,19 +35,18 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
         setDark(getColorMode() !== "light");
     }, []);
 
-    const handleDarkModeClick: React.MouseEventHandler<HTMLElement> =
-        useCallback(
-            (e) => {
-                const { target } = e;
-                if (
-                    target instanceof HTMLElement &&
-                    target.className.includes("input")
-                ) {
-                    setDark(!dark);
-                }
-            },
-            [dark],
-        );
+    const handleColorMode: React.MouseEventHandler<HTMLElement> = useCallback(
+        (e) => {
+            const { target } = e;
+            if (
+                target instanceof HTMLElement &&
+                target.className.includes("input")
+            ) {
+                setDark(!dark);
+            }
+        },
+        [dark],
+    );
 
     const showDropdown = () => {
         setShow(true);
@@ -110,7 +109,7 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                     <Nav className="ml-auto mb-2 mb-lg-0 me-lg-2">
                         <AutoCompletion />
                     </Nav>
-                    <Nav className="ml-auto" onClick={handleDarkModeClick}>
+                    <Nav className="ml-auto" onClick={handleColorMode}>
                         {" "}
                         <DarkModeSlider />
                     </Nav>

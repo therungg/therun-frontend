@@ -41,7 +41,6 @@ export const createAppAbility = createMongoAbility as CreateAbility<AppAbility>;
 
 type DefinePermissions = (
     user: User,
-
     builder: AbilityBuilder<AppAbility>,
 ) => void;
 

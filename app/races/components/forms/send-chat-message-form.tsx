@@ -5,16 +5,15 @@ import { useState } from "react";
 import { RaceMessage } from "~app/races/races.types";
 import { User } from "../../../../types/session.types";
 
-export const SendChatMessageForm = ({
-    raceId,
-    user,
-    addMessage,
-}: {
+interface SendChatMessageFormProps {
     raceId: string;
     user?: User;
-
     addMessage: (message: RaceMessage) => void;
-}) => {
+}
+
+export const SendChatMessageForm: React.FunctionComponent<
+    SendChatMessageFormProps
+> = ({ raceId, user, addMessage }) => {
     const [value, setValue] = useState("");
 
     return (

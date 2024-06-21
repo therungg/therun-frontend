@@ -15,7 +15,6 @@ export const EditRun = ({
     abort: () => void;
     session: User;
     username: string;
-
     forceUpdate: (newRun: Run) => void;
 }) => {
     const [form, setForm] = useState({

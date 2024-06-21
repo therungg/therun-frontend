@@ -83,7 +83,6 @@ export interface RunHistory {
     duration: string;
     startedAt: string;
     endedAt: string;
-    [key: string]: unknown;
 }
 
 export interface SplitsHistory {

@@ -13,7 +13,7 @@ interface ProgressGraphDataPoint {
     splitName: string;
 }
 
-const isRaceParticipantMessage = (
+const isRaceParticipantSplitMessage = (
     message: RaceMessage,
 ): message is RaceMessage<RaceMessageParticipantSplitData> =>
     message.type === "participant-split" ||
@@ -104,7 +104,7 @@ export const RaceProgressGraph = ({
 
     // Todo:: these messages include when someone undoes a split, or finishes on accident. Also, if a race resets, the messages still include it. We should filter them out.
     messages
-        .filter(isRaceParticipantMessage)
+        .filter(isRaceParticipantSplitMessage)
         .reverse()
         .forEach((message) => {
             if (!message.data || !message.data.time || !message.data.percentage)

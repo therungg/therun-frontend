@@ -35,12 +35,9 @@ export const loginWithTwitch = async (
             },
             body: JSON.stringify({
                 client_id: clientId,
-
                 client_secret: clientSecret,
                 code,
-
                 grant_type: "authorization_code",
-
                 redirect_uri: baseUrl,
             }),
         })
