@@ -213,7 +213,7 @@ const Edit = ({ username, form, setForm }) => {
                                         })
                                     }
                                 >
-                                    <option value="">Show no country</option>
+                                    <option>Show no country</option>
                                     {Array.from(
                                         Object.entries(countries()),
                                     ).map(([key, value]) => {
