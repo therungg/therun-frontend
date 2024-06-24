@@ -37,11 +37,11 @@ export const RaceFaq = () => {
 
 const RaceFaqBody = () => {
     return (
-        <div className="">
+        <div>
             <p className="flex-center fs-4">
                 This is an attempt to modernize speedrun racing.
             </p>
-            <p className="">
+            <p>
                 It has a modern ELO-based rating system, live tracking of the
                 race with live-standings as the race happens with full LiveSplit
                 Integration. It is extremely easy to start, join and participate
