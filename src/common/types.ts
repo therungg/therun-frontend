@@ -102,7 +102,7 @@ export interface SplitsHistory {
     mergedSplits?: string[];
 }
 
-interface SplitTimes {
+export interface SplitTimes {
     time: string;
     bestPossibleTime: string;
     bestAchievedTime: string;

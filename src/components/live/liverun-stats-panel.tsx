@@ -8,15 +8,16 @@ import { GeneralStats } from "./general-stats";
 import { SplitDetails } from "./split-details";
 import { CurrentRunDetails } from "./current-run-details";
 
-export const LiverunStatsPanel = ({
-    liveRun,
-    selectedSplit,
-}: {
+interface LiverunStatsPanelProps {
     liveRun: LiveRun;
     selectedSplit: number;
-}) => {
+}
+
+export const LiverunStatsPanel: React.FunctionComponent<
+    LiverunStatsPanelProps
+> = ({ liveRun, selectedSplit }) => {
     const [useGameTime, setUseGameTime] = useState(liveRun.gameTime);
-    const [gameData, setGameData] = useState({});
+    const [gameData, setGameData] = useState<{ [user: string]: Runs }>({});
     const [dataLoading, setDataLoading] = useState(false);
     const [selectedStats, setSelectedStats] = useState("current-run-detail");
 
@@ -34,10 +35,8 @@ export const LiverunStatsPanel = ({
             fetch(getSplitsHistoryUrl(data.historyFilename, useGameTime), {
                 mode: "cors",
             })
-                // eslint-disable-next-line github/no-then
                 .then((res) => res.json())
-                // eslint-disable-next-line github/no-then
-                .then((newData) => {
+                .then((newData: Runs) => {
                     const currentGameData = gameData;
                     currentGameData[liveRun.user] = newData;
 
@@ -45,7 +44,6 @@ export const LiverunStatsPanel = ({
 
                     setDataLoading(false);
                 })
-                // eslint-disable-next-line github/no-then
                 .catch(() => {
                     setDataLoading(false);
                     liveRun.gameTime = !useGameTime;
@@ -79,8 +77,8 @@ export const LiverunStatsPanel = ({
             <div>
                 <a
                     href={`/${liveRun.gameData.url}`}
-                    target={"_blank"}
-                    rel={"noreferrer"}
+                    target="_blank"
+                    rel="noreferrer"
                 >
                     View full stats
                 </a>
@@ -94,23 +92,19 @@ export const LiverunStatsPanel = ({
                     }}
                 >
                     <option
-                        key={"current-run-detail"}
-                        title={"Current Run Detail"}
-                        value={"current-run-detail"}
+                        key="current-run-detail"
+                        title="Current Run Detail"
+                        value="current-run-detail"
                     >
                         Current Run Details
                     </option>
-                    <option
-                        key={"general"}
-                        title={"General Stats"}
-                        value={"general"}
-                    >
+                    <option key="general" title="General Stats" value="general">
                         General Stats
                     </option>
                     <option
-                        key={"split-detail"}
-                        title={"Split Detail"}
-                        value={"split-detail"}
+                        key="split-detail"
+                        title="Split Detail"
+                        value="split-detail"
                     >
                         Split Times
                     </option>
@@ -135,11 +129,7 @@ export const LiverunStatsPanel = ({
                 />
             )}
             {selectedStats == "current-run-detail" && (
-                <CurrentRunDetails
-                    liveRun={liveRun}
-                    splits={splits}
-                    history={runs}
-                />
+                <CurrentRunDetails liveRun={liveRun} />
             )}
         </>
     );

@@ -7,16 +7,12 @@ import { DurationToFormatted, FromNow } from "~src/components/util/datetime";
 export const TournamentRacePanel = ({ race }: { race: Race }) => {
     if (race.status === "pending") {
         return (
-            <div
-                className={
-                    "game-border bg-body-secondary px-4 py-3 border border-secondary rounded-3 my-3 d-inline-flex"
-                }
-            >
+            <div className="game-border bg-body-secondary px-4 py-3 border border-secondary rounded-3 my-3 d-inline-flex">
                 <div>
                     <div>
                         A Race
                         {race.prizepool && (
-                            <span className={"mx-1"}>
+                            <span className="mx-1">
                                 with a prize pool of $
                                 {(race.prizepool / 100).toFixed(2)}{" "}
                             </span>
@@ -40,10 +36,10 @@ export const TournamentRacePanel = ({ race }: { race: Race }) => {
                         If you finish the race, your time will count toward the
                         LTA as well.
                     </div>
-                    <div className={"flex-center mt-3"}>
-                        <Link href={`/races/${race.raceId}`} target={"_blank"}>
+                    <div className="flex-center mt-3">
+                        <Link href={`/races/${race.raceId}`} target="_blank">
                             <Button
-                                variant={"secondary"}
+                                variant="secondary"
                                 className="btn-lg px-3 w-160p h-3r fw-medium"
                             >
                                 Join the Race!
@@ -57,16 +53,12 @@ export const TournamentRacePanel = ({ race }: { race: Race }) => {
 
     if (race.status === "progress") {
         return (
-            <div
-                className={
-                    "game-border bg-body-secondary px-4 py-3 border border-secondary rounded-3 my-3 d-inline-flex"
-                }
-            >
+            <div className="game-border bg-body-secondary px-4 py-3 border border-secondary rounded-3 my-3 d-inline-flex">
                 <div>
                     <div>
                         A Race
                         {race.prizepool && (
-                            <span className={"mx-1"}>
+                            <span className="mx-1">
                                 with a prize pool of $
                                 {(race.prizepool / 100).toFixed(2)}{" "}
                             </span>
@@ -82,10 +74,10 @@ export const TournamentRacePanel = ({ race }: { race: Race }) => {
                             </span>
                         )}
                     </div>
-                    <div className={"flex-center mt-3"}>
-                        <Link href={`/races/${race.raceId}`} target={"_blank"}>
+                    <div className="flex-center mt-3">
+                        <Link href={`/races/${race.raceId}`} target="_blank">
                             <Button
-                                variant={"secondary"}
+                                variant="secondary"
                                 className="btn-lg px-3 w-160p h-3r fw-medium"
                             >
                                 View the race!

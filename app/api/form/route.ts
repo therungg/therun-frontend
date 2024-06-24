@@ -8,7 +8,7 @@ export async function POST(request: Request) {
         host: process.env.SMTP_HOST,
         port: 587,
         auth: {
-            user: "info@therun.gg",
+            user: process.env.NEXT_PUBLIC_CONTACT_EMAIL,
             pass: process.env.SMTP_PASSWORD,
         },
     });
@@ -16,8 +16,8 @@ export async function POST(request: Request) {
     const response = await new Promise((resolve, reject) => {
         transporter.sendMail(
             {
-                from: "info@therun.gg",
-                to: "info@therun.gg",
+                from: process.env.NEXT_PUBLIC_CONTACT_EMAIL,
+                to: process.env.NEXT_PUBLIC_CONTACT_EMAIL,
                 subject: `${body.category}: ${body.subject} (${body.email})`,
                 text: body.text,
             },

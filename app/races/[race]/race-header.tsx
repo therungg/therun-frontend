@@ -10,16 +10,14 @@ import { safeEncodeURI } from "~src/utils/uri";
 export const RaceHeader = ({ race }: { race: Race }) => {
     return (
         <div
-            className={"bg-body-secondary mh-100 game-border card border-0"}
+            className="bg-body-secondary mh-100 game-border card border-0"
             style={{ borderColor: race.status === "aborted" ? "red" : "" }}
         >
-            <Card className={`game-border h-100`}>
+            <Card className="game-border h-100">
                 <Row style={{ minHeight: "10rem" }}>
                     <Col xs={4} sm={2}>
                         <Card.Img
-                            className={
-                                "rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
-                            }
+                            className="rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
                             style={{
                                 minWidth: "5rem",
                                 maxHeight: "18rem",
@@ -37,9 +35,9 @@ export const RaceHeader = ({ race }: { race: Race }) => {
                     <Col
                         xs={8}
                         sm={10}
-                        className={"p-2 ps-1 pe-4 d-flex flex-column"}
+                        className="p-2 ps-1 pe-4 d-flex flex-column"
                     >
-                        <div className={"d-flex justify-content-between gap-3"}>
+                        <div className="d-flex justify-content-between gap-3">
                             <Card.Title
                                 className="m-0 p-0 h5 text-truncate"
                                 style={{
@@ -54,58 +52,46 @@ export const RaceHeader = ({ race }: { race: Race }) => {
                                     {race.displayGame}
                                 </a>
                             </Card.Title>
-                            <span className={"text-nowrap"}>
-                                <span className={"me-1"}>
+                            <span className="text-nowrap">
+                                <span className="me-1">
                                     {race.participantCount}
                                 </span>
                                 <PersonIcon />
                             </span>
                         </div>
 
-                        <div
-                            className={
-                                "d-flex justify-content-between gap-3 mb-0 pb-2 w-100 border-bottom"
-                            }
-                        >
-                            <div
-                                className={
-                                    "pb-0 mb-0 w-100 fst-italic text-truncate"
-                                }
-                            >
+                        <div className="d-flex justify-content-between gap-3 mb-0 pb-2 w-100 border-bottom">
+                            <div className="pb-0 mb-0 w-100 fst-italic text-truncate">
                                 {race.displayCategory}
                             </div>
                             {race.status === "aborted" && (
                                 <div
-                                    className={"text-nowrap"}
+                                    className="text-nowrap"
                                     style={{ color: "red" }}
                                 >
                                     Race was aborted
                                 </div>
                             )}
                             {race.status !== "aborted" && !race.ranked && (
-                                <div className={"text-nowrap fst-italic"}>
+                                <div className="text-nowrap fst-italic">
                                     Unranked
                                 </div>
                             )}
                         </div>
 
                         {race.customName && (
-                            <div className={"pt-1 pb-2"}>
-                                <Card.Text className={"text-truncate"}>
+                            <div className="pt-1 pb-2">
+                                <Card.Text className="text-truncate">
                                     {race.customName}
                                 </Card.Text>
                             </div>
                         )}
-                        <div className={"pt-1"}>
-                            <Card.Text className={"text-truncate"}>
+                        <div className="pt-1">
+                            <Card.Text className="text-truncate">
                                 {race.description}
                             </Card.Text>
                         </div>
-                        <div
-                            className={
-                                "h-100 d-flex align-items-end justify-content-between"
-                            }
-                        >
+                        <div className="h-100 d-flex align-items-end justify-content-between">
                             <div>
                                 <RaceParticipantStatusOverview
                                     participants={
@@ -114,11 +100,7 @@ export const RaceHeader = ({ race }: { race: Race }) => {
                                 />
                             </div>
 
-                            <div
-                                className={
-                                    "d-flex align-items-end text-truncate"
-                                }
-                            >
+                            <div className="d-flex align-items-end text-truncate">
                                 {race.status === "pending" &&
                                     race.willStartAt &&
                                     race.startMethod === "datetime" && (

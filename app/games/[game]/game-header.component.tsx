@@ -22,7 +22,7 @@ export const GameHeader: React.FunctionComponent<GameHeaderProps> = ({
                     <GameImage
                         alt={global.display}
                         src={global.image}
-                        quality={"small"}
+                        quality="small"
                         height={80}
                         width={60}
                     />
@@ -34,7 +34,7 @@ export const GameHeader: React.FunctionComponent<GameHeaderProps> = ({
                         data.data.game.display
                     ) : (
                         <a
-                            href={"#"}
+                            href="#"
                             onClick={() => {
                                 setCategory("*");
                             }}

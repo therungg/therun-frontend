@@ -40,7 +40,7 @@ export const parseCookie = (
     if (cookieData) {
         try {
             return JSON.parse(cookieData.value);
-        } catch (e) {
+        } catch (_e) {
             return defaultValue;
         }
     }

@@ -11,8 +11,9 @@ import { User } from "../../../types/session.types";
 
 type WebsocketType = "liveRun" | "race";
 
-export const useLiveRunsWebsocket = (username?: string) =>
-    useReconnectWebsocket<WebsocketLiveRunMessage>("liveRun", username);
+export const useLiveRunsWebsocket = <Message = WebsocketLiveRunMessage>(
+    username?: string,
+) => useReconnectWebsocket<Message>("liveRun", username);
 
 export const useAllRacesWebsocket = () =>
     useReconnectWebsocket<WebsocketRaceMessage<Race | RaceParticipant>>(
@@ -32,7 +33,7 @@ export const useUserRaceParticipationsWebsocket = (user: User | undefined) =>
     );
 
 export const useReconnectWebsocket = <T>(
-    type: WebsocketType,
+    type?: WebsocketType,
     value?: string | null,
 ): T => {
     const options: Options = {

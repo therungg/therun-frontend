@@ -74,32 +74,29 @@ export const Contact = () => {
                 suggestions, tips or remarks.
             </p>
             <p>
-                If you want to, I made a
+                If you want to, I made a&nbsp;
                 <a
-                    rel={"noreferrer"}
-                    target={"_blank"}
+                    rel="noreferrer"
+                    target="_blank"
                     href={process.env.NEXT_PUBLIC_DISCORD_URL}
                 >
-                    {" "}
                     Discord
                 </a>
-                , you can message me on
+                , you can message me on&nbsp;
                 <a
-                    rel={"noreferrer"}
-                    target={"_blank"}
+                    rel="noreferrer"
+                    target="_blank"
                     href={process.env.NEXT_PUBLIC_TWITTER_URL}
                 >
-                    {" "}
                     Twitter
                 </a>{" "}
-                or send me an email at
+                or send me an email at&nbsp;
                 <a
-                    rel={"noreferrer"}
-                    target={"_blank"}
-                    href={"mailto:info@therun.gg"}
+                    rel="noreferrer"
+                    target="_blank"
+                    href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL}`}
                 >
-                    {" "}
-                    info@therun.gg
+                    {process.env.NEXT_PUBLIC_CONTACT_EMAIL}
                 </a>
                 . Alternatively, just fill in this form!
             </p>
@@ -165,22 +162,20 @@ export const Contact = () => {
                                     })
                                 }
                             >
-                                <option value={""}>Select a category</option>
-                                <option value={"bug"}>
+                                <option value="">Select a category</option>
+                                <option value="bug">
                                     I want to report a bug
                                 </option>
-                                <option value={"change"}>
+                                <option value="change">
                                     I want to make a change suggestion
                                 </option>
-                                <option value={"feature"}>
+                                <option value="feature">
                                     I want to request a new feature
                                 </option>
-                                <option value={"question"}>
+                                <option value="question">
                                     I want to ask a question
                                 </option>
-                                <option value={"ask"}>
-                                    I just want to talk
-                                </option>
+                                <option value="ask">I just want to talk</option>
                             </Form.Control>
                         </Form.Group>
                         <Form.Group
@@ -207,8 +202,8 @@ export const Contact = () => {
 
             <div className="d-flex justify-content-end">
                 <Image
-                    src={"/ContactformTR-light.png"}
-                    alt={"Contact"}
+                    src="/ContactformTR-light.png"
+                    alt="Contact"
                     height={220}
                 />
             </div>

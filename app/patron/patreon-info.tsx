@@ -22,9 +22,9 @@ export function PatreonInfo({ session }: { session: { username: string } }) {
                             unlock!
                         </p>
                         <a
-                            target={"_blank"}
-                            rel={"noreferrer"}
-                            href={"https://patreon.com/therungg"}
+                            target="_blank"
+                            rel="noreferrer"
+                            href="https://patreon.com/therungg"
                         >
                             <Button className="btn btn-secondary btn-lg border-2 px-3 h-3r fw-medium w-240p h-4r fs-large mw-100">
                                 Go to Patreon
@@ -40,8 +40,8 @@ export function PatreonInfo({ session }: { session: { username: string } }) {
                             with Stripe
                         </p>
                         <a
-                            target={"_blank"}
-                            rel={"noreferrer"}
+                            target="_blank"
+                            rel="noreferrer"
                             href={stripePaymentButton}
                         >
                             <Button className="btn btn-primary btn-lg border-2 px-3 h-3r fw-medium w-240p h-4r fs-large mw-100">
@@ -77,7 +77,7 @@ export function PatreonInfo({ session }: { session: { username: string } }) {
                     {session.username && (
                         <p>
                             To claim your benefits,&nbsp;
-                            <a href={"/change-appearance"}>click here!</a>
+                            <a href="/change-appearance">click here!</a>
                         </p>
                     )}
 
@@ -324,16 +324,20 @@ export const PatreonBunnySvg = ({ size = 20, url = "/patron" }) => {
     return (
         <a
             href={url}
-            target={"_blank"}
-            rel={"noreferrer"}
+            target="_blank"
+            rel="noreferrer"
             style={{ marginBottom: "4%" }}
         >
-            <PatreonBunnySvgWithoutLink size={size} url={url} />
+            <PatreonBunnySvgWithoutLink size={size} />
         </a>
     );
 };
 
-export const PatreonBunnySvgWithoutLink = ({ size = 20 }) => {
+export const PatreonBunnySvgWithoutLink = ({
+    size = 20,
+}: {
+    size?: number;
+}) => {
     return (
         <svg
             id="Layer_1"
@@ -343,6 +347,8 @@ export const PatreonBunnySvgWithoutLink = ({ size = 20 }) => {
             className="mb-1"
         >
             <path
+                // FIXME: Remove
+                // eslint-disable-next-line sonarjs/no-duplicate-string
                 style={{ fill: "var(--bs-secondary)" }}
                 d="M103.51,473.8l2.36-3.44c-.37-4.54-1.06-9.06-2.14-13.49-32.19-131.96,197.53-172.35,277.76-106.65,6.68,5.11,16.31,3.34,20.44-3.93l13.36-22.2c-54.41-32.73-68.58-59.52-77.11-70.73-18.57-24.43-19.34-44.31,49.85-16.62,25.44,10.18,38.92,12.46,75.01,55.12,21.22,25.15,56,4.13,78.2,25.54,100.41,97.26-42.64,76.04-90.78,140.49-.43,.57-.78,1.42-1.04,2.44-1.9,7.4,2.52,14.99,9.81,17.29,46.56,14.66,72.89,58.42,28.96,68.6-14.64,3.39-30.05,1.36-43.49-5.36-33.33-16.66-67.47-27.26-99.51-44.39-9.43-5.04-25.73-12.25-36.16-14.6-33.33-7.49-70.05-6.03-96.79,0-12.66,2.86-28.94,6.71-38.41,15.58-29.34,28.85-97.41,118.26-104.63,39.71-2.4-26.13,15.9-44.67,34.32-63.37Z"
             />
@@ -359,8 +365,8 @@ export const PatreonBunnySvgMarioPipe = ({ size = 20, url = "/patron" }) => {
     return (
         <a
             href={url}
-            target={"_blank"}
-            rel={"noreferrer"}
+            target="_blank"
+            rel="noreferrer"
             style={{ marginBottom: "4%" }}
         >
             <svg
@@ -416,8 +422,8 @@ export const PatreonBunnySvgChristmas = ({ size = 30, url = "/patron" }) => {
     return (
         <a
             href={url}
-            target={"_blank"}
-            rel={"noreferrer"}
+            target="_blank"
+            rel="noreferrer"
             style={{ marginBottom: "4%" }}
         >
             <svg

@@ -12,7 +12,7 @@ import styles from "../../src/components/css/LiveRun.module.scss";
 export const InProgressRaces = ({ races }: { races: Race[] }) => {
     if (races.length === 0) {
         return (
-            <div className={"flex-center h3"}>
+            <div className="flex-center h3">
                 <div className="d-flex flex-column text-center">
                     <p>No races in progress currently.</p>
                     <p>
@@ -24,23 +24,21 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
         );
     }
     return (
-        <Row className={"gy-3 gx-3"}>
+        <Row className="gy-3 gx-3">
             {races.map((race) => {
                 return (
                     <Col key={race.raceId} xl={6} lg={12} xs={12}>
                         <a
                             href={`/races/${race.raceId}`}
-                            className={"text-decoration-none"}
+                            className="text-decoration-none"
                         >
                             <Card
                                 className={`${styles.liveRunContainer} game-border h-100`}
                             >
-                                <Row className={"flex-grow-1"}>
+                                <Row className="flex-grow-1">
                                     <Col xs={4}>
                                         <Card.Img
-                                            className={
-                                                "rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
-                                            }
+                                            className="rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
                                             src={
                                                 race.gameImage &&
                                                 race.gameImage !== "noimage"
@@ -53,15 +51,9 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
                                     </Col>
                                     <Col
                                         xs={8}
-                                        className={
-                                            "p-2 ps-1 pe-4 d-flex flex-column"
-                                        }
+                                        className="p-2 ps-1 pe-4 d-flex flex-column"
                                     >
-                                        <div
-                                            className={
-                                                "d-flex justify-content-between gap-3"
-                                            }
-                                        >
+                                        <div className="d-flex justify-content-between gap-3">
                                             <Card.Title
                                                 className="m-0 p-0 h5 text-truncate"
                                                 style={{
@@ -70,31 +62,19 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
                                             >
                                                 {race.displayGame}
                                             </Card.Title>
-                                            <span className={"text-nowrap"}>
-                                                <span className={"me-1"}>
+                                            <span className="text-nowrap">
+                                                <span className="me-1">
                                                     {race.participantCount}
                                                 </span>
                                                 <PersonIcon />
                                             </span>
                                         </div>
 
-                                        <div
-                                            className={
-                                                "d-flex justify-content-between gap-3 mb-0 pb-2 w-100 border-bottom"
-                                            }
-                                        >
-                                            <div
-                                                className={
-                                                    "pb-0 mb-0 w-100 fst-italic text-truncate"
-                                                }
-                                            >
+                                        <div className="d-flex justify-content-between gap-3 mb-0 pb-2 w-100 border-bottom">
+                                            <div className="pb-0 mb-0 w-100 fst-italic text-truncate">
                                                 {race.displayCategory}
                                             </div>
-                                            <span
-                                                className={
-                                                    "d-flex justify-content-center align-items-end text-center"
-                                                }
-                                            >
+                                            <span className="d-flex justify-content-center align-items-end text-center">
                                                 <span>
                                                     <RaceTimer race={race} />
                                                 </span>
@@ -102,18 +82,12 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
                                             </span>
                                         </div>
 
-                                        <div className={"pt-1"}>
-                                            <Card.Text
-                                                className={"text-truncate"}
-                                            >
+                                        <div className="pt-1">
+                                            <Card.Text className="text-truncate">
                                                 {race.customName}
                                             </Card.Text>
                                         </div>
-                                        <div
-                                            className={
-                                                "h-100 d-flex align-items-end justify-content-between"
-                                            }
-                                        >
+                                        <div className="h-100 d-flex align-items-end justify-content-between">
                                             <div>
                                                 <RaceParticipantStatusOverview
                                                     participants={
@@ -122,11 +96,7 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
                                                 />
                                             </div>
 
-                                            <div
-                                                className={
-                                                    "d-flex align-items-end text-truncate"
-                                                }
-                                            >
+                                            <div className="d-flex align-items-end text-truncate">
                                                 <Card.Text>
                                                     <RacePlacings race={race} />
                                                 </Card.Text>

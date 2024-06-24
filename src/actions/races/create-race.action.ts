@@ -9,7 +9,7 @@ import { redirect } from "next/navigation";
 
 const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
 
-export async function createRace(prevState: any, raceInput: FormData) {
+export async function createRace(_prevState: unknown, raceInput: FormData) {
     const input: CreateRaceInput = {
         game: raceInput.get("game") as string,
         category: raceInput.get("category") as string,

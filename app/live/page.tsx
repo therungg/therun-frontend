@@ -9,7 +9,6 @@ export const revalidate = 30;
 export default async function LivePage() {
     const liveData: LiveRun[] = await getAllLiveRuns();
     const liveDataMap = liveRunArrayToMap(liveData);
-
     return <Live liveDataMap={liveDataMap} />;
 }
 

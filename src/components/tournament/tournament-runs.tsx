@@ -16,18 +16,20 @@ import { SubmitButton } from "~src/actions/components/submit-button";
 import { excludeRun } from "~src/actions/tournaments/exclude-run.action";
 import { addTime } from "~src/actions/tournaments/add-time.action";
 
-export const TournamentRuns = ({
-    data,
-    user,
-    tournament,
-    showGame = false,
-}: {
+interface TournamentRunsProps {
     data: {
         runList: unknown[];
     };
     user: User;
     tournament: Tournament;
     showGame?: boolean;
+}
+
+export const TournamentRuns: React.FunctionComponent<TournamentRunsProps> = ({
+    data,
+    user,
+    tournament,
+    showGame = false,
 }) => {
     const finalTime = 0;
     const [confirmedFinalTime, setConfirmedFinalTime] = useState(finalTime);
@@ -44,8 +46,9 @@ export const TournamentRuns = ({
     const [search, setSearch] = useState("");
 
     const [active, setActive] = useState(1);
-    const [items, setItems] = useState(null);
+    const [items, setItems] = useState<React.ReactNode[]>();
 
+    // TODO: FIX THIS
     // eslint-disable-next-line prefer-const
     let [useRuns, setUseRuns] = useState([]);
 
@@ -206,43 +209,39 @@ export const TournamentRuns = ({
                 </div>
             </div>
             {isAdmin && (
-                <div className={"mb-3"}>
+                <div className="mb-3">
                     <Form action={addTime}>
-                        <fieldset
-                            className={
-                                "d-flex border border-tertiary pt-0 pb-3 px-3"
-                            }
-                        >
+                        <fieldset className="d-flex border border-tertiary pt-0 pb-3 px-3">
                             <legend className="w-auto mb-0">
                                 Add Custom Run
                             </legend>
                             <input
                                 hidden
-                                name={"tournament"}
+                                name="tournament"
                                 value={tournament.name}
                                 readOnly
                             />
                             <input
                                 hidden
-                                name={"date"}
+                                name="date"
                                 value={tournament.eligiblePeriods[0].startDate}
                                 readOnly
                             />
-                            <span className={"d-flex align-items-center me-1"}>
+                            <span className="d-flex align-items-center me-1">
                                 User:
                             </span>
                             <input
-                                name={"user"}
-                                type={"text"}
-                                className={"form-control w-25 h-25 me-3"}
+                                name="user"
+                                type="text"
+                                className="form-control w-25 h-25 me-3"
                             />
-                            <span className={"d-flex align-items-center me-1"}>
+                            <span className="d-flex align-items-center me-1">
                                 Time:
                             </span>
                             <input
-                                type={"text"}
-                                name={"finalTimeInput"}
-                                className={"form-control w-25 h-25 me-3"}
+                                type="text"
+                                name="finalTimeInput"
+                                className="form-control w-25 h-25 me-3"
                                 value={finalTimeInput}
                                 onChange={(event) => {
                                     setFinalTimeInput(event.target.value);
@@ -250,13 +249,13 @@ export const TournamentRuns = ({
                             />
                             <input
                                 hidden
-                                name={"time"}
+                                name="time"
                                 value={confirmedFinalTime}
                                 readOnly
                             />
                             <SubmitButton
-                                innerText={"Add Run"}
-                                pendingText={"Adding Run"}
+                                innerText="Add Run"
+                                pendingText="Adding Run"
                             />
                         </fieldset>
                     </Form>
@@ -317,29 +316,27 @@ export const TournamentRuns = ({
                                             <Form action={excludeRun}>
                                                 <input
                                                     hidden
-                                                    name={"tournament"}
+                                                    name="tournament"
                                                     value={tournament.name}
                                                     readOnly
                                                 />
 
                                                 <input
                                                     hidden
-                                                    name={"date"}
+                                                    name="date"
                                                     value={run.endedAt}
                                                     readOnly
                                                 />
 
                                                 <input
                                                     hidden
-                                                    name={"user"}
+                                                    name="user"
                                                     value={run.user}
                                                     readOnly
                                                 />
                                                 <SubmitButton
-                                                    innerText={"Exclude Run"}
-                                                    pendingText={
-                                                        "Excluding Run..."
-                                                    }
+                                                    innerText="Exclude Run"
+                                                    pendingText="Excluding Run..."
                                                 />
                                             </Form>
                                         </td>

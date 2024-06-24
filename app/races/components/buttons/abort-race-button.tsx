@@ -8,8 +8,8 @@ export const AbortRaceButton = (props: RaceActionProps) => {
     return (
         <RaceActionButton
             action={abortRace}
-            innerText={"Abort Race"}
-            pendingText={"Aborting Race..."}
+            innerText="Abort Race"
+            pendingText="Aborting Race..."
             {...props}
         />
     );

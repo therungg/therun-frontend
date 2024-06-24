@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Tournament } from "~src/components/tournament/tournament-info";
 import { PaginatedGameLeaderboard } from "~src/components/game/paginated-game-leaderboard";
 import { Row } from "react-bootstrap";
+import { CategoryLeaderboard } from "~app/games/[game]/game.types";
 
 export const EventLeaderboards = ({
     tournament,
@@ -13,8 +14,9 @@ export const EventLeaderboards = ({
 }: {
     tournament: Tournament;
     gameTime: boolean;
-    qualifierData: any;
-    tournamentLeaderboards: any;
+    // TODO: get the type
+    qualifierData: unknown;
+    tournamentLeaderboards: CategoryLeaderboard;
 }) => {
     const [leaderboard, setLeaderboard] = useState(gameTime ? "pbIGT" : "pb");
 
@@ -23,62 +25,61 @@ export const EventLeaderboards = ({
             <h3>Event Leaderboards</h3>
             <div className="mt-2">
                 <select
-                    className={"form-select"}
+                    className="form-select"
                     onChange={(e) => {
                         setLeaderboard(e.target.value);
                     }}
                 >
                     {gameTime && (
                         <option
-                            key={"pbIGT"}
-                            title={"Tournament PB (IGT)"}
-                            value={"pbIGT"}
+                            key="pbIGT"
+                            title="Tournament PB (IGT)"
+                            value="pbIGT"
                         >
                             Tournament PB (loadless)
                         </option>
                     )}
 
-                    <option key={"pb"} title={"Tournament PB"} value={"pb"}>
+                    <option key="pb" title="Tournament PB" value="pb">
                         Tournament PB
                     </option>
                     {qualifierData && (
                         <option
-                            key={"qualifier"}
-                            title={"Qualifier Leaderboard"}
-                            value={"qualifier"}
+                            key="qualifier"
+                            title="Qualifier Leaderboard"
+                            value="qualifier"
                         >
                             Qualifier Leaderboard
                         </option>
                     )}
-                    {tournament.pointDistribution &&
-                        tournament.pointDistribution.length > 0 && (
-                            <option
-                                key={"points"}
-                                title={"Qualification Points"}
-                                value={"points"}
-                            >
-                                Qualification Points
-                            </option>
-                        )}
+                    {tournament.pointDistribution?.length && (
+                        <option
+                            key="points"
+                            title="Qualification Points"
+                            value="points"
+                        >
+                            Qualification Points
+                        </option>
+                    )}
                     <option
-                        key={"attempts"}
-                        title={"Total Attempts"}
-                        value={"attempts"}
+                        key="attempts"
+                        title="Total Attempts"
+                        value="attempts"
                     >
                         Total Attempts
                     </option>
                     <option
-                        key={"finishedAttempts"}
-                        title={"Total Finished Attempts"}
-                        value={"finishedAttempts"}
+                        key="finishedAttempts"
+                        title="Total Finished Attempts"
+                        value="finishedAttempts"
                     >
                         Total Finished Attempts
                     </option>
 
                     <option
-                        key={"playtime"}
-                        title={"Total Playtime"}
-                        value={"playtime"}
+                        key="playtime"
+                        title="Total Playtime"
+                        value="playtime"
                     >
                         Total Playtime
                     </option>
@@ -100,37 +101,39 @@ export const EventLeaderboards = ({
                             }}
                         />
                     )}
-                    {leaderboard == "pb" && (
-                        <PaginatedGameLeaderboard
-                            name="Personal Best"
-                            leaderboard={tournament.leaderboards.pbLeaderboard}
-                            transform={(stat) => {
-                                return (
-                                    <DurationToFormatted
-                                        duration={stat.toString()}
-                                    />
-                                );
-                            }}
-                        />
-                    )}
-                    {tournament.pointDistribution &&
-                        tournament.pointDistribution.length > 0 &&
+                    {leaderboard == "pb" &&
+                        tournament.leaderboards?.pbLeaderboard && (
+                            <PaginatedGameLeaderboard
+                                name="Personal Best"
+                                leaderboard={
+                                    tournament.leaderboards.pbLeaderboard
+                                }
+                                transform={(stat) => {
+                                    return (
+                                        <DurationToFormatted
+                                            duration={stat.toString()}
+                                        />
+                                    );
+                                }}
+                            />
+                        )}
+                    {tournament.pointDistribution?.length &&
                         leaderboard == "points" && (
                             <div>
                                 {getLeaderboard(
                                     "Qualification Points",
                                     tournamentLeaderboards.pbLeaderboard,
                                     "",
-                                    (stat, key) => {
+                                    (_stat, key) => {
                                         if (
-                                            tournament.pointDistribution
+                                            tournament?.pointDistribution
                                                 ?.length -
                                                 1 <
                                             key
                                         )
                                             return null;
 
-                                        return tournament.pointDistribution[
+                                        return tournament?.pointDistribution?.[
                                             key
                                         ];
                                     },

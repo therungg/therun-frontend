@@ -29,11 +29,24 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
     const handleResetSession = useCallback(async () => {
         await resetSession();
         window.location.reload();
-    }, [resetSession]);
+    }, []);
 
     useEffect(function () {
         setDark(getColorMode() !== "light");
     }, []);
+
+    const handleColorMode: React.MouseEventHandler<HTMLElement> = useCallback(
+        (e) => {
+            const { target } = e;
+            if (
+                target instanceof HTMLElement &&
+                target.className.includes("input")
+            ) {
+                setDark(!dark);
+            }
+        },
+        [dark],
+    );
 
     const showDropdown = () => {
         setShow(true);
@@ -59,12 +72,12 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
             <Container>
                 <Navbar.Brand href="/" className="d-flex">
                     <Image
-                        alt={"TheRun"}
+                        alt="TheRun"
                         src={`/logo_${
                             dark ? "dark" : "light"
                         }_theme_no_text_transparent.png`}
-                        height={"44"}
-                        width={"44"}
+                        height="44"
+                        width="44"
                         className="img-fluid align-self-start me-2"
                     />
                     <span className="align-self-center">
@@ -96,14 +109,7 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                     <Nav className="ml-auto mb-2 mb-lg-0 me-lg-2">
                         <AutoCompletion />
                     </Nav>
-                    <Nav
-                        className="ml-auto"
-                        onClick={(e) => {
-                            if (e.target.className.includes("input")) {
-                                setDark(!dark);
-                            }
-                        }}
-                    >
+                    <Nav className="ml-auto" onClick={handleColorMode}>
                         {" "}
                         <DarkModeSlider />
                     </Nav>
@@ -126,10 +132,10 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                                 <NavDropdown.Item href={`/${username}`}>
                                     Profile
                                 </NavDropdown.Item>
-                                <NavDropdown.Item href={"/livesplit"}>
+                                <NavDropdown.Item href="/livesplit">
                                     LiveSplit Key
                                 </NavDropdown.Item>
-                                <NavDropdown.Item href={"/change-appearance"}>
+                                <NavDropdown.Item href="/change-appearance">
                                     Name Appearance
                                 </NavDropdown.Item>
                                 <NavDropdown.Item onClick={() => logout()}>

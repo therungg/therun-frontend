@@ -8,8 +8,8 @@ export const ReadyRaceButton = (props: RaceActionProps) => {
     return (
         <RaceActionButton
             action={readyRace}
-            innerText={"Ready!"}
-            pendingText={"Readying up..."}
+            innerText="Ready!"
+            pendingText="Readying up..."
             {...props}
         />
     );

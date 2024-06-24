@@ -34,14 +34,10 @@ export const loginWithTwitch = async (
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                // eslint-disable-next-line camelcase
                 client_id: clientId,
-                // eslint-disable-next-line camelcase
                 client_secret: clientSecret,
                 code,
-                // eslint-disable-next-line camelcase
                 grant_type: "authorization_code",
-                // eslint-disable-next-line camelcase
                 redirect_uri: baseUrl,
             }),
         })

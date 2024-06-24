@@ -17,7 +17,7 @@ export default function About() {
             <ul>
                 <li>
                     Each user has their own{" "}
-                    <a href={"/KallyNui"} target={"_blank"} rel={"noreferrer"}>
+                    <a href="/KallyNui" target="_blank" rel="noreferrer">
                         {" "}
                         profile
                     </a>
@@ -27,9 +27,9 @@ export default function About() {
                 <li>
                     For each category a detailed{" "}
                     <a
-                        href={"AverageTrey/Super Mario Sunshine/Any%25"}
-                        target={"_blank"}
-                        rel={"noreferrer"}
+                        href="AverageTrey/Super Mario Sunshine/Any%25"
+                        target="_blank"
+                        rel="noreferrer"
                     >
                         dive into their splits
                     </a>
@@ -62,7 +62,7 @@ export default function About() {
             <ul>
                 <li>
                     An overview of
-                    <a href={"/games"} target={"_blank"} rel={"noreferrer"}>
+                    <a href="/games" target="_blank" rel="noreferrer">
                         {" "}
                         Games
                     </a>
@@ -71,9 +71,9 @@ export default function About() {
                 <li>
                     A detailed{" "}
                     <a
-                        href={"/games/Super Mario 64"}
-                        target={"_blank"}
-                        rel={"noreferrer"}
+                        href="/games/Super Mario 64"
+                        target="_blank"
+                        rel="noreferrer"
                     >
                         {" "}
                         Game Page
@@ -83,20 +83,18 @@ export default function About() {
                 </li>
                 <li>
                     Automatic uploads through a{" "}
-                    <a href={"/livesplit"}>LiveSplit Component </a>
+                    <a href="/livesplit">LiveSplit Component </a>
                 </li>
                 <li>
                     Live Run tracking from the Component on the{" "}
-                    <a href={"/live"}>Runs page</a>
+                    <a href="/live">Runs page</a>
                 </li>
                 <li>
                     A{" "}
                     <a
-                        href={
-                            "https://dashboard.twitch.tv/extensions/gl1gra1r6ucnkchrswmdsefomfwxai-0.1.0"
-                        }
-                        target={"_blank"}
-                        rel={"noreferrer"}
+                        href="https://dashboard.twitch.tv/extensions/gl1gra1r6ucnkchrswmdsefomfwxai-0.1.0"
+                        target="_blank"
+                        rel="noreferrer"
                     >
                         Twitch Extension{" "}
                     </a>
@@ -107,7 +105,7 @@ export default function About() {
                 <li>Handy search option which finds Users or Games.</li>
                 <li>Dark mode (use the topbar button, I worked hard on it)</li>
                 <li>
-                    <a href={"/roadmap"} target={"_blank"} rel={"noreferrer"}>
+                    <a href="/roadmap" target="_blank" rel="noreferrer">
                         Many more features{" "}
                     </a>{" "}
                     to come in the future!
@@ -124,7 +122,7 @@ export default function About() {
                     </li>
                     <li>
                         Upload your .lss file by going to the{" "}
-                        <a href={"/upload"}>Upload</a> page.
+                        <a href="/upload">Upload</a> page.
                     </li>
                     <li>
                         Wait for 10 to 30 seconds for your splits to be

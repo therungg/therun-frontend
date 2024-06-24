@@ -6,7 +6,7 @@ export const SessionErrorBoundary = () => {
     const handleResetSession = useCallback(async () => {
         await resetSession();
         window.location.reload();
-    }, [resetSession]);
+    }, []);
     return (
         <div>
             <h2>Oops, there was an error configuring the session!</h2>

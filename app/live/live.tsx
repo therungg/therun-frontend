@@ -1,5 +1,5 @@
+/* eslint-disable */
 "use client";
-
 import { LiveIcon, LiveUserRun } from "~src/components/live/live-user-run";
 import React, { useEffect, useState } from "react";
 import { Button, Col, Row } from "react-bootstrap";

@@ -16,8 +16,8 @@ export const InfoTooltip = ({
     );
 
     return (
-        <OverlayTrigger key={"timesave"} placement={"top"} overlay={popover}>
-            <div className={"question-tooltip"}>
+        <OverlayTrigger key="timesave" placement="top" overlay={popover}>
+            <div className="question-tooltip">
                 <QuestionMark />
             </div>
         </OverlayTrigger>
@@ -41,7 +41,7 @@ export const UnderlineTooltip = ({
     );
 
     return (
-        <OverlayTrigger key={"timesave"} placement={"top"} overlay={popover}>
+        <OverlayTrigger key="timesave" placement="top" overlay={popover}>
             <div
                 style={{
                     textDecoration: "underline",

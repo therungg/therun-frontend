@@ -10,8 +10,7 @@ export interface RaceActionProps
 }
 
 interface RaceActionButtonProps extends SubmitButtonProps {
-    // eslint-disable-next-line no-unused-vars
-    action: (raceInput: FormData) => Promise<any>;
+    action: (raceInput: FormData) => Promise<unknown>;
     raceId: string;
 }
 
@@ -19,7 +18,7 @@ export const RaceActionButton = (props: RaceActionButtonProps) => {
     const { action, raceId, ...buttonProps } = props;
     return (
         <Form action={action} className={buttonProps.className}>
-            <input hidden name={"raceId"} value={raceId} readOnly />
+            <input hidden name="raceId" value={raceId} readOnly />
             <SubmitButton {...buttonProps} />
         </Form>
     );

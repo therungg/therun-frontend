@@ -4,7 +4,6 @@ import { Col } from "react-bootstrap";
 import { LiveUserRun } from "~src/components/live/live-user-run";
 
 interface LiveRunListProps {
-    // eslint-disable-next-line no-unused-vars
     onClick: (_liveRun: LiveRun) => void;
     liveData: LiveRun[];
     currentlyViewing: string;

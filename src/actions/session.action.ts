@@ -48,7 +48,7 @@ export const getSession = async (): Promise<User> => {
     try {
         const session = await getExistingSession(sessionId);
         if (session) {
-            return { id: sessionId, ...session };
+            return { id: sessionId, ...session } as User;
         }
     } catch (error) {
         // For now we only want to handle _explicit_ failures when retrieving the session.

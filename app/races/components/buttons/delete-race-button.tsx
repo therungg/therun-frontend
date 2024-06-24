@@ -8,8 +8,8 @@ export const DeleteRaceButton = (props: RaceActionProps) => {
     return (
         <RaceActionButton
             action={deleteRace}
-            innerText={"Delete Race"}
-            pendingText={"Deleting Race"}
+            innerText="Delete Race"
+            pendingText="Deleting Race"
             {...props}
         />
     );

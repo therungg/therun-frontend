@@ -1,3 +1,5 @@
+/* eslint-disable */
+// TODO: REFACTOR
 import { Attempt, RunHistory, SplitsHistory } from "~src/common/types";
 import {
     Difference,
@@ -61,7 +63,7 @@ export const History = ({
     const [displaySplitFilterOne, setDisplaySplitFilterOne] = useState("00:00");
     const [displaySplitFilterTwo, setDisplaySplitFilterTwo] = useState("00:00");
 
-    const startDateFilter = (date) => {
+    const startDateFilter = (date: Date) => {
         return date >= start && date < endDate;
     };
 
@@ -73,18 +75,19 @@ export const History = ({
 
     const totalCount = history.length;
 
-    let currentPb = null;
+    let currentPb: RunHistory | null = null;
 
     history = history.map((h: RunHistory) => {
         h.currentPb = currentPb;
 
         if (
-            h.time &&
-            parseInt(h.time) >= parseInt(splits[splits.length - 1].total.time)
+            (h.time &&
+                parseInt(h.time) >=
+                    parseInt(splits[splits.length - 1].total.time) &&
+                currentPb == null) ||
+            parseInt(h.time) < Number(currentPb?.time)
         ) {
-            if (currentPb == null || parseInt(h.time) < currentPb.time) {
-                currentPb = h;
-            }
+            currentPb = h;
         }
 
         return h;
@@ -553,7 +556,7 @@ export const History = ({
                                     }}
                                 >
                                     <label
-                                        htmlFor={"switch"}
+                                        htmlFor="switch"
                                         style={{
                                             marginRight: "0.5rem",
                                             alignSelf: "center",
@@ -566,7 +569,7 @@ export const History = ({
 
                                     <div style={{ alignSelf: "center" }}>
                                         <select
-                                            className={"form-select"}
+                                            className="form-select"
                                             onChange={(e) => {
                                                 setSplitFilter(
                                                     e.currentTarget.value,
@@ -593,18 +596,18 @@ export const History = ({
                                             }}
                                             value={splitFilter}
                                         >
-                                            <option key={"none"} value={"none"}>
+                                            <option key="none" value="none">
                                                 No filter!
                                             </option>
                                             <option
-                                                key={"finalsplit"}
-                                                value={"full"}
+                                                key="finalsplit"
+                                                value="full"
                                             >
                                                 Full run
                                             </option>
                                             <option
-                                                key={"duration"}
-                                                value={"duration"}
+                                                key="duration"
+                                                value="duration"
                                             >
                                                 Run Duration
                                             </option>
@@ -614,7 +617,9 @@ export const History = ({
                                             {splits.map((split, k) => {
                                                 return (
                                                     <option
-                                                        key={`split${k}`}
+                                                        key={JSON.stringify(
+                                                            split,
+                                                        )}
                                                         value={k}
                                                     >
                                                         {split.name}
@@ -656,7 +661,7 @@ export const History = ({
                                             }}
                                         >
                                             <label
-                                                htmlFor={"switch"}
+                                                htmlFor="switch"
                                                 style={{
                                                     marginRight: "10px",
                                                     alignSelf: "center",
@@ -670,10 +675,10 @@ export const History = ({
                                                 style={{ alignSelf: "center" }}
                                             >
                                                 <Switch
-                                                    className={"normal-switch"}
+                                                    className="normal-switch"
                                                     checkedIcon={false}
                                                     uncheckedIcon={false}
-                                                    name={"switch"}
+                                                    name="switch"
                                                     onChange={(checked) => {
                                                         setTotalTime(checked);
                                                         updateSplitFilters(
@@ -685,7 +690,7 @@ export const History = ({
                                                 />
                                             </div>
                                             <label
-                                                htmlFor={"switch"}
+                                                htmlFor="switch"
                                                 style={{
                                                     marginLeft: "10px",
                                                     alignSelf: "center",
@@ -705,7 +710,7 @@ export const History = ({
                                         }}
                                     >
                                         <label
-                                            htmlFor={"switch"}
+                                            htmlFor="switch"
                                             style={{
                                                 marginRight: "0.5rem",
                                                 alignSelf: "center",
@@ -716,7 +721,7 @@ export const History = ({
                                             {"Time "}
                                         </label>
                                         <select
-                                            className={"form-select"}
+                                            className="form-select"
                                             value={splitFilterType}
                                             style={{ width: "8rem" }}
                                             onChange={(e) => {
@@ -742,7 +747,7 @@ export const History = ({
                                         {(splitFilterType === "between" ||
                                             splitFilterType === "over") && (
                                             <input
-                                                type={"text"}
+                                                type="text"
                                                 className={runStyles.datePicker}
                                                 style={{
                                                     cursor: "revert",
@@ -773,7 +778,7 @@ export const History = ({
                                                     "between" && "and"}
 
                                                 <input
-                                                    type={"text"}
+                                                    type="text"
                                                     className={
                                                         runStyles.datePicker
                                                     }
@@ -823,7 +828,7 @@ export const History = ({
                                     }}
                                 >
                                     <label
-                                        htmlFor={"switch"}
+                                        htmlFor="switch"
                                         style={{
                                             marginRight: "0.5rem",
                                             alignSelf: "center",
@@ -831,7 +836,7 @@ export const History = ({
                                         }}
                                     >
                                         {" "}
-                                        {"Started between:"}
+                                        Started between:
                                     </label>
                                     <div style={{ alignSelf: "center" }}>
                                         <DatePicker
@@ -874,7 +879,7 @@ export const History = ({
                                 >
                                     Only show the last
                                     <input
-                                        type={"number"}
+                                        type="number"
                                         className={runStyles.datePicker}
                                         style={{
                                             cursor: "revert",
@@ -910,7 +915,7 @@ export const History = ({
                                     }}
                                 >
                                     <label
-                                        htmlFor={"switch"}
+                                        htmlFor="switch"
                                         style={{
                                             marginRight: "0.5rem",
                                             alignSelf: "center",
@@ -922,7 +927,7 @@ export const History = ({
                                     </label>
                                     <div style={{ alignSelf: "center" }}>
                                         <select
-                                            className={"form-select"}
+                                            className="form-select"
                                             onChange={(e) => {
                                                 setRunsPast(
                                                     e.currentTarget.value,
@@ -930,16 +935,16 @@ export const History = ({
                                             }}
                                             value={runsPast}
                                         >
-                                            <option key={"all"} value={"all"}>
+                                            <option key="all" value="all">
                                                 Show all runs
                                             </option>
                                             <option
-                                                key={"finished"}
-                                                value={"finished"}
+                                                key="finished"
+                                                value="finished"
                                             >
                                                 Show finished runs only
                                             </option>
-                                            <option key={"pb"} value={"pb"}>
+                                            <option key="pb" value="pb">
                                                 Show personal bests only
                                             </option>
                                             <option disabled>
@@ -1551,8 +1556,8 @@ const buildItems = (active: number, last: number) => {
         items.push(<Pagination.Ellipsis />);
     }
 
-    items.push(<Pagination.Next key={"next"} />);
-    items.push(<Pagination.Last key={"last"} />);
+    items.push(<Pagination.Next key="next" />);
+    items.push(<Pagination.Last key="last" />);
 
     return items;
 };

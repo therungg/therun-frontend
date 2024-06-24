@@ -114,8 +114,9 @@ export default function PrivacyPolicy() {
             </p>
             <p>
                 The Run will keep your data for an indefinite amount of time.
-                You may always contact us by mailing at info@therun.gg to have
-                all your data erased.
+                You may always contact us by mailing at{" "}
+                {process.env.NEXT_PUBLIC_CONTACT_EMAIL} to have all your data
+                erased.
             </p>
             <p>What are your data protection rights?</p>
             <p>
@@ -137,8 +138,8 @@ export default function PrivacyPolicy() {
                 that The Run restrict the processing of your personal data,
                 under certain conditions. <br />
                 The right to object to processing – You have the right to object
-                to The Run’s processing of your personal data, under certain
-                conditions. <br />
+                to The Run&apos;s processing of your personal data, under
+                certain conditions. <br />
                 The right to data portability – You have the right to request
                 that The Run transfer the data that we have collected to another
                 organization, or directly to you, under certain conditions.{" "}
@@ -147,7 +148,7 @@ export default function PrivacyPolicy() {
             <p>
                 If you make a request, we have one month to respond to you. If
                 you would like to exercise any of these rights, please contact
-                us at our email: info@therun.gg
+                us at our email: {process.env.NEXT_PUBLIC_CONTACT_EMAIL}
             </p>
             <p>Cookies</p>
             <p>
@@ -196,27 +197,28 @@ export default function PrivacyPolicy() {
             </p>
             <p>How to contact us</p>
             <p>
-                If you have any questions about The Run’s privacy policy, the
-                data we hold on you, or you would like to exercise one of your
-                data protection rights, please do not hesitate to contact us.
+                If you have any questions about The Run&apos;s privacy policy,
+                the data we hold on you, or you would like to exercise one of
+                your data protection rights, please do not hesitate to contact
+                us.
                 <br />
-                Email us at: info@therun.gg
+                Email us at: {process.env.NEXT_PUBLIC_CONTACT_EMAIL}
             </p>
             <p></p>
-            If you have any questions about The Run’s privacy policy, the data
-            we hold on you, or you would like to exercise one of your data
+            If you have any questions about The Run&apos;s privacy policy, the
+            data we hold on you, or you would like to exercise one of your data
             protection rights, please do not hesitate to contact us.
             <br />
-            Email us at: info@therun.gg
+            Email us at: {process.env.NEXT_PUBLIC_CONTACT_EMAIL}
             <br />
             <br />
             How to contact the appropriate authority
             <br />
             Should you wish to report a complaint or if you feel that The Run
             has not addressed your concern in a satisfactory manner, you may
-            contact the Information Commissioner’s Office.
+            contact the Information Commissioner&apos;s Office.
             <br />
-            Email: info@therun.gg
+            Email: {process.env.NEXT_PUBLIC_CONTACT_EMAIL}
         </div>
     );
 }

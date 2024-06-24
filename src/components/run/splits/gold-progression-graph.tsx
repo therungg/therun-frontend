@@ -142,7 +142,7 @@ export const GoldProgressionGraph = ({
                 <h3>Gold split over time</h3>
             </Row>
             <Row>
-                <Line data={data} type={"line"} options={options} />
+                <Line data={data} type="line" options={options} />
             </Row>
         </>
     );

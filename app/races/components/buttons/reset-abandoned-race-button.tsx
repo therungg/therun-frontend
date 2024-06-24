@@ -8,8 +8,8 @@ export const ResetAbandonedRaceButton = (props: RaceActionProps) => {
     return (
         <RaceActionButton
             action={resetAbandonedRace}
-            innerText={"Reset Current Race"}
-            pendingText={"Resetting Race"}
+            innerText="Reset Current Race"
+            pendingText="Resetting Race"
             {...props}
         />
     );

@@ -37,8 +37,8 @@ export const getPaginatedFinishedRaces: PaginationFetcher<Race> = async (
 export const getPaginatedFinishedRacesByGame: PaginationFetcher<Race> = async (
     page = 1,
     pageSize = paginationPageSize,
-    query,
-    initialData,
+    _query,
+    _initialData,
     params,
 ): Promise<PaginatedRaces> => {
     const races = await fetch(

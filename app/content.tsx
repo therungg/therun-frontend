@@ -14,7 +14,7 @@ export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
     const prefix = systemTheme === "dark" ? "" : "/lightmode";
 
     return (
-        <Container className={"my-4 pb-5 main-container"}>
+        <Container className="my-4 pb-5 main-container">
             <Helmet>
                 <link rel="icon" href={`${prefix}/favicon.ico`} />
                 <link

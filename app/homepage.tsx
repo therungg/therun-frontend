@@ -29,25 +29,25 @@ export default function Homepage({
                 <div className="col-lg-6 mx-auto">
                     <p className="lead mb-4"></p>
                     <div className="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
-                        <Link href={"/patron"}>
+                        <Link href="/patron">
                             <Button
-                                variant={"secondary"}
+                                variant="secondary"
                                 className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
                             >
                                 {t("support")} <PatreonBunnySvgWithoutLink />
                             </Button>
                         </Link>
-                        <Link href={"/about"}>
+                        <Link href="/about">
                             <Button
-                                variant={"primary"}
+                                variant="primary"
                                 className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
                             >
                                 {t("learnMore")}
                             </Button>
                         </Link>
-                        <Link href={"/livesplit"}>
+                        <Link href="/livesplit">
                             <Button
-                                variant={"primary"}
+                                variant="primary"
                                 className="btn-lg px-3 w-160p h-3r fw-medium"
                             >
                                 {t("liveSplitKey")}

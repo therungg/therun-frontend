@@ -11,8 +11,7 @@ type Translations = [
  * This is some magic. Add the locale file import type to the Translations list and it'll spit out a type error if the interfaces don't match the `en` locale
  * TODO: Add specific locale in the message.
  */
-// eslint-disable-next-line no-unused-vars
-type ValidLocales = Expect<AreLocalesValid<Translations>>;
+type _ValidLocales = Expect<AreLocalesValid<Translations>>;
 
 const SUPPORTED_LOCALES = ["en", "fr"];
 const DEFAULT_LOCALE = "en";

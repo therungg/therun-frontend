@@ -35,7 +35,7 @@ export const GameStats = ({
                     <Col xs={12} lg={8}>
                         <h2>{stats.stats.displayValue} Races</h2>
                         <StatsPerGame stats={stats.stats} isLink={false} />
-                        <h2 className={"mt-4"}>Categories</h2>
+                        <h2 className="mt-4">Categories</h2>
                         <CategoryStatsList stats={stats.categories} />
                     </Col>
                     <Col xs={12} lg={4}>

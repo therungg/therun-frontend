@@ -30,9 +30,8 @@ type AllowedSubjects = (typeof subjects)[number];
 type AppAbilities = [
     AllowedActions,
     (
-        | (typeof subjects)[number]
-        | ForcedSubject<(typeof subjects)[number]>
-        // eslint-disable-next-line no-unused-vars
+        | AllowedSubjects
+        | ForcedSubject<AllowedSubjects>
         | ForcedSubject<{ [key in AllowedSubjects]?: string }>
     ),
 ];
@@ -41,42 +40,40 @@ export type AppAbility = MongoAbility<AppAbilities>;
 export const createAppAbility = createMongoAbility as CreateAbility<AppAbility>;
 
 type DefinePermissions = (
-    // eslint-disable-next-line no-unused-vars
     user: User,
-    // eslint-disable-next-line no-unused-vars
     builder: AbilityBuilder<AppAbility>,
 ) => void;
 
 const rolePermissions: Record<Role, DefinePermissions> = {
-    admin(user, { can }) {
+    admin(_user, { can }) {
         actions.forEach((action) => {
             subjects.forEach((subject) => {
                 can(action, subject);
             });
         });
     },
-    patreon1(user, { can }) {
+    patreon1(_user, { can }) {
         can("style", "user");
     },
-    patreon2(user, { can }) {
+    patreon2(_user, { can }) {
         can("style", "user");
     },
-    patreon3(user, { can }) {
+    patreon3(_user, { can }) {
         can("style", "user");
     },
-    moderator(user, { can }) {
+    moderator(_user, { can }) {
         can("ban", "user");
         can("ban", "run");
         can("edit", "run");
     },
-    "board-admin": function (user, { can }) {
+    "board-admin": function (_user, { can }) {
         can("edit", "leaderboard");
         can("edit", "moderators");
     },
-    "board-moderator": function (user, { can }) {
+    "board-moderator": function (_user, { can }) {
         can("edit", "leaderboard");
     },
-    "race-admin": function (user, { can }) {
+    "race-admin": function (_user, { can }) {
         can("edit", "race");
         can("delete", "race");
         can("moderate", "race");

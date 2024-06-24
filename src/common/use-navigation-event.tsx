@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
 
-// eslint-disable-next-line no-undef
 export function useNavigationEvent(callback: MutationCallback) {
     const observerRef = useRef<MutationObserver>();
 

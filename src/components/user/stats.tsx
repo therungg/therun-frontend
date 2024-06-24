@@ -42,6 +42,7 @@ interface CategoryStat {
     total: number;
 }
 
+// TODO: Localize numbers and dates
 export const Stats = ({ username }: { username: string }) => {
     const { data, error } = useSWR(`/api/users/${username}/advanced`, fetcher);
 
@@ -61,7 +62,7 @@ export const Stats = ({ username }: { username: string }) => {
                 </Col>
             </Row>
             <div
-                className={"playtime-graph"}
+                className="playtime-graph"
                 style={{ marginTop: "1rem", marginBottom: "2rem" }}
             >
                 <PlayTimeTable
@@ -132,7 +133,7 @@ export const PlayTimeTable = ({
                 <div style={{ marginLeft: currentYear ? "2rem" : "" }}>
                     Total playtime:{" "}
                     <span style={{ fontSize: "larger" }}>
-                        {getFormattedString(total)}
+                        {getFormattedString(total.toString())}
                     </span>
                 </div>
                 {!!currentYear &&
@@ -142,7 +143,9 @@ export const PlayTimeTable = ({
                             Playtime in {currentYear}:{" "}
                             <span style={{ fontSize: "larger" }}>
                                 {getFormattedString(
-                                    playtimePerYear[currentYear].total,
+                                    playtimePerYear[
+                                        currentYear
+                                    ].total.toString(),
                                 )}
                             </span>
                         </div>
@@ -192,6 +195,8 @@ export const PlayTimePerDayOfWeekGraph = ({
                     style={{
                         tickLabels: {
                             fontSize: 11,
+                            // TODO: Get rid of this
+                            // eslint-disable-next-line sonarjs/no-duplicate-string
                             color: "var(--bs-body-color)",
                             fill: "var(--bs-body-color)",
                             angle: 0,
@@ -230,12 +235,11 @@ export const PlayTimePerDayOfWeekGraph = ({
                     style={{
                         data: {
                             fill: (d) => {
-                                const res = color(
-                                    d.data
-                                        ? d.data[d.index]._y
+                                return color(
+                                    d.data && d.index
+                                        ? d.data[d.index as number]._y
                                         : "var(--bs-link-color)",
                                 );
-                                return res;
                             },
                         },
                     }}
@@ -340,7 +344,11 @@ export const PlaytimePerHourGraph = ({
                     style={{
                         data: {
                             fill: (d) => {
-                                return color(d.data[d.index]._y);
+                                if (d.data && d.index) {
+                                    return color(d.data[d.index as number]._y);
+                                } else {
+                                    return 0;
+                                }
                             },
                         },
                     }}
@@ -364,7 +372,7 @@ export const PlaytimePerHourGraph = ({
 };
 
 const tooltip = (data: TotalStat): string => {
-    return getFormattedString(data.total);
+    return getFormattedString(data.total.toString());
 };
 
 export default Stats;

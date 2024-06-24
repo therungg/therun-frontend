@@ -98,7 +98,7 @@ export async function getUserProfilePhoto(
     let response: Response;
     try {
         response = await fetch(`${getBaseUrl()}/api/users/${username}/global`);
-    } catch (e) {
+    } catch (_e) {
         return undefined;
     }
 
@@ -126,7 +126,6 @@ export async function getGameImage(
         );
     } catch (e) {
         // Allow this one since it's server-side
-        // eslint-disable-next-line no-console
         console.error(e);
         return undefined;
     }
