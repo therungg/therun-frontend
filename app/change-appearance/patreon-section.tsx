@@ -18,8 +18,13 @@ interface PatreonPreferences {
     colorPreference: number;
 }
 
+export interface UserPatreonData {
+    tier: 1 | 2 | 3;
+    preferences: PatreonPreferences;
+}
+
 interface PatreonSectionProps {
-    userPatreonData: any;
+    userPatreonData: UserPatreonData;
     session: User;
 }
 
@@ -166,13 +171,13 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                 <h3 className="mb-4">Display preferences</h3>
                 <div className="d-flex justify-content-start align-items-center mb-3">
                     <Switch
-                        name={"switch"}
+                        name="switch"
                         onChange={(checked) => {
                             setHide(!checked);
                         }}
                         checked={!hide}
                     />
-                    <label htmlFor={"switch"} className="ms-2">
+                    <label htmlFor="switch" className="ms-2">
                         Display me as Patreon{" "}
                         <span className="d-none d-lg-inline">
                             (overrides all other settings when switched off)
@@ -181,25 +186,25 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                 </div>
                 <div className="d-flex justify-content-start align-items-center mb-3">
                     <Switch
-                        name={"switch"}
+                        name="switch"
                         onChange={(checked) => {
                             setShowIcon(checked);
                         }}
                         checked={showIcon}
                     />
-                    <label htmlFor={"switch"} className="ms-2 text-nowrap">
+                    <label htmlFor="switch" className="ms-2 text-nowrap">
                         Show the <PatreonBunnySvg /> next to my name
                     </label>
                 </div>
                 <div className="d-flex justify-content-start align-items-center mb-3">
                     <Switch
-                        name={"switch"}
+                        name="switch"
                         onChange={(checked) => {
                             setFeatureOnOverview(checked);
                         }}
                         checked={featureOnOverview}
                     />
-                    <label htmlFor={"switch"} className="ms-2 text-nowrap">
+                    <label htmlFor="switch" className="ms-2 text-nowrap">
                         Display my name on the Support page
                     </label>
                 </div>
@@ -207,13 +212,13 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                     session.username == "joeys64") && (
                     <div className="d-flex justify-content-start align-items-center mb-3">
                         <Switch
-                            name={"switch"}
+                            name="switch"
                             onChange={(checked) => {
                                 setFeatureInScrollbar(checked);
                             }}
                             checked={featureInScrollbar}
                         />
-                        <label htmlFor={"switch"} className="ms-2 text-nowrap">
+                        <label htmlFor="switch" className="ms-2 text-nowrap">
                             Display my name in the scrolling bar
                         </label>
                     </div>

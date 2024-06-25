@@ -59,21 +59,21 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
             <Row>
                 <Col xxl={8} lg={7} xs={12}>
                     <RaceHeader race={raceState} />
-                    <Col className={"flex-center justify-content-between py-2"}>
+                    <Col className="flex-center justify-content-between py-2">
                         {raceState.status !== "pending" && (
-                            <div className={"fs-1 align-self-center"}>
+                            <div className="fs-1 align-self-center">
                                 <RaceTimer race={raceState} />
                             </div>
                         )}
                         {raceState.status === "pending" && (
-                            <div className={"fs-3 align-self-center"}>
+                            <div className="fs-3 align-self-center">
                                 <RaceStartConditionInformation
                                     race={raceState}
                                 />
                             </div>
                         )}
                     </Col>
-                    <div className={"d-lg-none"}>
+                    <div className="d-lg-none">
                         <RaceParticipantOverview race={raceState} />
                         <RaceActions race={raceState} user={user} />
                         <RaceChat
@@ -83,20 +83,20 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
                         />
                         <RaceStats race={race} />
                     </div>
-                    <div className={"pb-4"}>
+                    <div className="pb-4">
                         <RaceParticipantDetail
                             race={raceState}
                             setStream={setStream}
                         />
                     </div>
-                    <div className={"pb-4 d-none d-sm-block"}>
+                    <div className="pb-4 d-none d-sm-block">
                         <RaceProgressGraph
                             race={raceState}
                             messages={messagesState}
                         />
                     </div>
                 </Col>
-                <Col xxl={4} lg={5} className={"d-none d-lg-block"}>
+                <Col xxl={4} lg={5} className="d-none d-lg-block">
                     <RaceParticipantOverview race={raceState} />
                     <RaceActions race={raceState} user={user} />
                     <RaceAdminActions race={raceState} user={user} />

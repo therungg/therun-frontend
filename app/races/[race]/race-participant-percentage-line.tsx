@@ -9,5 +9,5 @@ export const RaceParticipantPercentageLine = ({
     participant: RaceParticipantWithLiveData;
 }) => {
     const percentage = getPercentageDoneFromLiverun(participant);
-    return <Line className={"w-100"} percent={percentage} />;
+    return <Line className="w-100" percent={percentage} />;
 };

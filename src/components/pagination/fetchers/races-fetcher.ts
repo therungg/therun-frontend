@@ -8,8 +8,8 @@ import { getRacesByIds } from "~src/lib/races";
 export const racesFetcher: PaginationFetcher<Race> = async (
     page: number,
     pageSize: number,
-    query?: string,
-    initialData?: Race[],
+    _query?: string,
+    _initialData?: Race[],
     params?: RaceParticipant[],
 ): Promise<PaginatedData<Race>> => {
     const newRaceIds = params?.slice(

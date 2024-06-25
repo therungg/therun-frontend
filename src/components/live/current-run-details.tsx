@@ -11,7 +11,9 @@ type CurrentRunDetailsProps = {
     liveRun: LiveRun;
 };
 
-export const CurrentRunDetails = ({ liveRun }: CurrentRunDetailsProps) => {
+export const CurrentRunDetails: React.FunctionComponent<
+    CurrentRunDetailsProps
+> = ({ liveRun }) => {
     const { currentSplitIndex, currentSplitName, pb, bestPossible, splits } =
         liveRun;
 
@@ -62,8 +64,16 @@ export const CurrentRunDetails = ({ liveRun }: CurrentRunDetailsProps) => {
                     &nbsp;
                     {currentSplitIndex > 0 && splits[currentSplitIndex - 1] ? (
                         <Difference
-                            one={splits[currentSplitIndex - 1].splitTime}
-                            two={splits[currentSplitIndex - 1].pbSplitTime}
+                            one={
+                                splits[
+                                    currentSplitIndex - 1
+                                ].splitTime?.toString() || ""
+                            }
+                            two={
+                                splits[
+                                    currentSplitIndex - 1
+                                ].pbSplitTime?.toString() || ""
+                            }
                         />
                     ) : (
                         <DifferenceFromOne diff={0} />
@@ -78,7 +88,10 @@ export const CurrentRunDetails = ({ liveRun }: CurrentRunDetailsProps) => {
                 >
                     <DurationToFormatted duration={bestPossible} />
                     &nbsp;
-                    <Difference one={bestPossible} two={pb} />
+                    <Difference
+                        one={bestPossible.toString()}
+                        two={pb.toString()}
+                    />
                 </Col>
             </Row>
             <Row>

@@ -1,22 +1,23 @@
 "use client";
 
-import { LiveDataMap } from "~app/live/live.types";
+import { LiveDataMap, LiveRun } from "~app/live/live.types";
 import { useEffect, useState } from "react";
 import { useLiveRunsWebsocket } from "~src/components/websocket/use-reconnect-websocket";
 import { liveRunArrayToMap } from "~app/live/utilities";
 import MarathonRun from "~src/components/marathon/marathon-run";
 import { Col, Row } from "react-bootstrap";
+import { User } from "types/session.types";
 
 export default function ShowMarathon({
     liveDataMap,
     session,
 }: {
     liveDataMap: LiveDataMap;
-    session: any;
+    session: User;
 }) {
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
     const [selectedUser, setSelectedUser] = useState("");
-    const [currentUserData, setCurrentUserData] = useState();
+    const [currentUserData, setCurrentUserData] = useState<LiveRun>();
 
     const lastMessage = useLiveRunsWebsocket();
 
@@ -96,41 +97,50 @@ export default function ShowMarathon({
                 updatedLiveDataMap={updatedLiveDataMap}
             />
             <hr />
-            {currentUserData.gameData && (
+            {currentUserData?.gameData && (
                 <MarathonRun runData={currentUserData} session={session} />
             )}
         </>
     );
 }
 
-const BasePage = ({ selectedUser, setSelectedUser, updatedLiveDataMap }) => {
+interface BasePageProps {
+    selectedUser: string;
+    setSelectedUser: React.Dispatch<React.SetStateAction<string>>;
+    updatedLiveDataMap: LiveDataMap;
+}
+const BasePage: React.FunctionComponent<BasePageProps> = ({
+    selectedUser,
+    setSelectedUser,
+    updatedLiveDataMap,
+}) => {
     return (
         <div className="text-center">
             <h1>Marathon Dashboard</h1>
             <Row>
                 <Col md={6} className="mb-3 m-md-0">
-                    <label htmlFor={"selectMarathonUser"}>Select a user:</label>
+                    <label htmlFor="selectMarathonUser">Select a user:</label>
                     <select
                         className="form-select"
                         value={selectedUser}
-                        id={"selectMarathonUser"}
+                        id="selectMarathonUser"
                         onChange={(e) => {
                             setSelectedUser(e.target.value);
                         }}
                     >
-                        <option key={""}>Select a user</option>
+                        <option>Select a user</option>
                         {Object.keys(updatedLiveDataMap).map((key) => {
                             return <option key={key}>{key}</option>;
                         })}
                     </select>
                 </Col>
                 <Col md={6}>
-                    <label htmlFor={"searchBox"}>Or poll for user:</label>
+                    <label htmlFor="searchBox">Or poll for user:</label>
                     <input
                         type="search"
                         className="form-control"
                         placeholder="Poll for a user"
-                        onChange={async (e) => {
+                        onChange={(e) => {
                             setSelectedUser(e.target.value);
                         }}
                         value={selectedUser}

@@ -71,7 +71,7 @@ export const Media = () => {
             <div className="my-3">
                 <a href={`${cfBaseUrl}therun-media.zip`}>
                     <Button
-                        variant={"primary"}
+                        variant="primary"
                         className="btn-lg px-3 h-3r fw-medium"
                     >
                         Download full kit
@@ -97,21 +97,25 @@ export const Media = () => {
                                             onColor={getComputedStyle(
                                                 document.documentElement,
                                             ).getPropertyValue(
+                                                // FIXME: Remove this
+                                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                                 "--bs-link-color",
                                             )}
                                             offColor={getComputedStyle(
                                                 document.documentElement,
                                             ).getPropertyValue(
+                                                // FIXME: Remove this
+                                                // eslint-disable-next-line sonarjs/no-duplicate-string
                                                 "--bs-tertiary-bg",
                                             )}
-                                            name={"switch"}
+                                            name="switch"
                                             onChange={(checked) => {
                                                 setLogoTransparent(checked);
                                             }}
                                             checked={logoTransparent}
                                         />
                                         <label
-                                            htmlFor={"switch"}
+                                            htmlFor="switch"
                                             className="ms-2 align-self-center text-nowrap"
                                         >
                                             {" "}
@@ -130,14 +134,14 @@ export const Media = () => {
                                             ).getPropertyValue(
                                                 "--bs-tertiary-bg",
                                             )}
-                                            name={"switch"}
+                                            name="switch"
                                             onChange={(checked) => {
                                                 setLogoDark(checked);
                                             }}
                                             checked={logoDark}
                                         />
                                         <label
-                                            htmlFor={"switch"}
+                                            htmlFor="switch"
                                             className="ms-2 align-self-center text-nowrap"
                                         >
                                             {" "}
@@ -156,14 +160,14 @@ export const Media = () => {
                                             ).getPropertyValue(
                                                 "--bs-tertiary-bg",
                                             )}
-                                            name={"switch"}
+                                            name="switch"
                                             onChange={(checked) => {
                                                 setLogoCropped(checked);
                                             }}
                                             checked={logoCropped}
                                         />
                                         <label
-                                            htmlFor={"switch"}
+                                            htmlFor="switch"
                                             className="ms-2 align-self-center text-nowrap"
                                         >
                                             {" "}
@@ -182,14 +186,14 @@ export const Media = () => {
                                             ).getPropertyValue(
                                                 "--bs-tertiary-bg",
                                             )}
-                                            name={"switch"}
+                                            name="switch"
                                             onChange={(checked) => {
                                                 setLogoUrl(checked);
                                             }}
                                             checked={logoUrl}
                                         />
                                         <label
-                                            htmlFor={"switch"}
+                                            htmlFor="switch"
                                             className="ms-2 align-self-center text-nowrap"
                                         >
                                             {" "}
@@ -201,14 +205,14 @@ export const Media = () => {
                                     <Image
                                         src={`/${logoPath}`}
                                         height={130}
-                                        alt={"The Run Logo"}
+                                        alt="The Run Logo"
                                     />
                                 </Col>
                             </Row>
                             <div>
                                 <a href={logoCfUrl}>
                                     <Button
-                                        variant={"primary"}
+                                        variant="primary"
                                         className="btn-lg px-3 h-3r fw-medium"
                                     >
                                         Download logo
@@ -233,14 +237,14 @@ export const Media = () => {
                                             ).getPropertyValue(
                                                 "--bs-tertiary-bg",
                                             )}
-                                            name={"switch"}
+                                            name="switch"
                                             onChange={(checked) => {
                                                 setBannerTransparent(checked);
                                             }}
                                             checked={bannerTransparent}
                                         />
                                         <label
-                                            htmlFor={"switch"}
+                                            htmlFor="switch"
                                             className="ms-2 align-self-center text-nowrap"
                                         >
                                             {" "}
@@ -259,14 +263,14 @@ export const Media = () => {
                                             ).getPropertyValue(
                                                 "--bs-tertiary-bg",
                                             )}
-                                            name={"switch"}
+                                            name="switch"
                                             onChange={(checked) => {
                                                 setBannerDark(checked);
                                             }}
                                             checked={bannerDark}
                                         />
                                         <label
-                                            htmlFor={"switch"}
+                                            htmlFor="switch"
                                             className="ms-2 align-self-center text-nowrap"
                                         >
                                             {" "}
@@ -285,14 +289,14 @@ export const Media = () => {
                                             ).getPropertyValue(
                                                 "--bs-tertiary-bg",
                                             )}
-                                            name={"switch"}
+                                            name="switch"
                                             onChange={(checked) => {
                                                 setBannerWithLogo(checked);
                                             }}
                                             checked={bannerWithLogo}
                                         />
                                         <label
-                                            htmlFor={"switch"}
+                                            htmlFor="switch"
                                             className="ms-2 align-self-center text-nowrap"
                                         >
                                             {" "}
@@ -304,7 +308,7 @@ export const Media = () => {
                                     <Image
                                         src={`/${bannerPath}`}
                                         height={130}
-                                        alt={"The Run Logo"}
+                                        alt="The Run Logo"
                                     />
                                 </Col>
                             </Row>
@@ -312,7 +316,7 @@ export const Media = () => {
                             <div className="align-self-end">
                                 <a href={bannerCfUrl}>
                                     <Button
-                                        variant={"primary"}
+                                        variant="primary"
                                         className="btn-lg px-3 h-3r fw-medium"
                                     >
                                         Download banner

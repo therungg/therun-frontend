@@ -19,7 +19,7 @@ export const LoginWithPatreon = ({
                 <Row className="justify-content-center mt-3 g-3">
                     To connect your Patreon account, login with Twitch first.
                     <p className="d-flex justify-content-center">
-                        <TwitchLoginButton url={"/api/change-appearance"} />
+                        <TwitchLoginButton url="/api/change-appearance" />
                     </p>
                 </Row>
             </Container>

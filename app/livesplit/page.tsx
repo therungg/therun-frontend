@@ -39,7 +39,7 @@ export default async function Livesplit() {
                     automatically updated after every run.
                 </p>
                 <p className="mb-4">
-                    Check out the <a href={"/live"}>Live page</a> to see runs in
+                    Check out the <a href="/live">Live page</a> to see runs in
                     progress!
                 </p>
                 <p>
@@ -67,17 +67,17 @@ export default async function Livesplit() {
                 <p className="mb-4">
                     Now, you will never have to upload your runs again! In
                     addition, your live runs will show up in real time on your
-                    profile, and on the dedicated{" "}
-                    <a href={"/live"}>Live page</a>! It also allows you to join
-                    Tournaments, or to participate in Races!
+                    profile, and on the dedicated <a href="/live">Live page</a>!
+                    It also allows you to join Tournaments, or to participate in
+                    Races!
                 </p>
 
                 <p>
                     The code for the component is freely available on{" "}
                     <a
-                        target={"_blank"}
-                        rel={"noreferrer"}
-                        href={"https://github.com/therungg/LiveSplit.TheRun"}
+                        target="_blank"
+                        rel="noreferrer"
+                        href="https://github.com/therungg/LiveSplit.TheRun"
                     >
                         GitHub
                     </a>

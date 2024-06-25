@@ -7,7 +7,7 @@ interface GameData {
     "category#username": string;
 }
 
-interface UserData {
+interface UserStats {
     [User: string]: string;
 }
 
@@ -24,7 +24,7 @@ export interface StatsData {
 export interface Stats {
     gameLeaderboard: GameLeaderboard;
     categoryLeaderboards: CategoryLeaderboard[];
-    userData: UserData;
+    userData: UserStats;
 }
 
 export interface GameLeaderboard {
@@ -59,7 +59,7 @@ export interface Count {
     username: string;
     stat: number | string;
     placing: number;
-    meta?: any;
+    meta?: { [key: string]: unknown } | null;
     game?: string;
     category?: string;
     url?: string;

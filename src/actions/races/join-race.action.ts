@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 
 const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
 
-export async function joinRace(prevState: any, raceInput: FormData) {
+export async function joinRace(_prevState: unknown, raceInput: FormData) {
     const raceId = raceInput.get("raceId") as string;
     const password = raceInput.get("password") as string;
     const session = await getSession();

@@ -1,27 +1,28 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Col, Row } from "react-bootstrap";
 import { getFormattedString } from "../util/datetime";
 import styles from "../css/Search.module.scss";
 import { safeEncodeURI } from "~src/utils/uri";
 import { Search as SearchIcon } from "react-bootstrap-icons";
+import { RunData, SearchResults } from "./find-user-or-run";
 
 // This page was one of the first I ever wrote for the site and is fully outdated and terrible.
 // The entire search view needs to be refactored
 //TODO:: FIX
 export const AutoCompletion = () => {
-    const [filteredSuggestions, setFilteredSuggestions] = useState({
-        users: {},
-        games: {},
-        categories: {},
-    });
-    const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
+    const [filteredSuggestions, setFilteredSuggestions] =
+        useState<SearchResults>({
+            users: {},
+            games: {},
+            categories: {},
+        });
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
+    const searchRef = React.createRef<HTMLInputElement>();
+    let suggestions = { users: {}, games: {}, categories: {} } as SearchResults;
 
-    let suggestions = { users: {}, games: {}, categories: {} };
-
-    const onChange = async (e) => {
+    const onChange: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
         e.preventDefault();
         const userInput = e.target.value;
         setInput(userInput);
@@ -37,36 +38,16 @@ export const AutoCompletion = () => {
         setLoading(false);
 
         setFilteredSuggestions(suggestions);
-        setActiveSuggestionIndex(0);
         setShowSuggestions(true);
     };
 
-    const onKeyDown = (e) => {
-        // User pressed the enter key
-        if (e.keyCode === 13) {
-            setInput(filteredSuggestions.user[0]);
-            setActiveSuggestionIndex(0);
-            setShowSuggestions(false);
-        }
-        // User pressed the up arrow
-        else if (e.keyCode === 38) {
-            if (activeSuggestionIndex === 0) {
-                return;
-            }
-
-            setActiveSuggestionIndex(activeSuggestionIndex - 1);
-        }
-        // User pressed the down arrow
-        else if (e.keyCode === 40) {
-            if (activeSuggestionIndex - 1 === filteredSuggestions.length) {
-                return;
-            }
-
-            setActiveSuggestionIndex(activeSuggestionIndex + 1);
-        }
-    };
-
-    const Results = ({ results, type }) => {
+    const Results = ({
+        results,
+        type,
+    }: {
+        results: { [key: string]: RunData[] };
+        type: string;
+    }) => {
         return (
             <>
                 {Object.keys(results)
@@ -83,7 +64,11 @@ export const AutoCompletion = () => {
         );
     };
 
-    const transformResult = (type: string, result: string, results: any) => {
+    const transformResult = (
+        type: string,
+        result: string,
+        results: RunData,
+    ) => {
         if (type == "runs") {
             const split = result.split("//");
 
@@ -107,7 +92,7 @@ export const AutoCompletion = () => {
                         key={value}
                         href={url}
                         title={value}
-                        className={"w-100 h-100"}
+                        className="w-100 h-100"
                         style={{
                             display: "inherit",
                         }}
@@ -125,7 +110,7 @@ export const AutoCompletion = () => {
                     key={result}
                     href={url}
                     title={result}
-                    className={"w-100 h-100"}
+                    className="w-100 h-100"
                     style={{
                         display: "inherit",
                     }}
@@ -145,7 +130,7 @@ export const AutoCompletion = () => {
                         <ul className="m-0 list-unstyled">
                             <Results
                                 results={filteredSuggestions.users}
-                                type={"users"}
+                                type="users"
                             />
                         </ul>
                     </Col>
@@ -154,7 +139,7 @@ export const AutoCompletion = () => {
                         <ul className="m-0 list-unstyled">
                             <Results
                                 results={filteredSuggestions.games}
-                                type={"games"}
+                                type="games"
                             />
                         </ul>
                     </Col>
@@ -166,7 +151,7 @@ export const AutoCompletion = () => {
                         <ul className="m-0 list-unstyled">
                             <Results
                                 results={filteredSuggestions.categories}
-                                type={"runs"}
+                                type="runs"
                             />
                         </ul>
                     </Col>
@@ -224,20 +209,22 @@ export const AutoCompletion = () => {
                 <span
                     className="input-group-text"
                     onClick={() => {
-                        const search = document.getElementById("searchBox");
-                        if (document.activeElement !== search) {
-                            search.focus();
+                        if (
+                            searchRef.current &&
+                            document.activeElement !== searchRef.current
+                        ) {
+                            searchRef.current.focus();
                         }
                     }}
                 >
                     <SearchIcon size={18} />
                 </span>
                 <input
+                    ref={searchRef}
                     type="search"
                     className="form-control"
                     placeholder="Find a User or Game"
                     onChange={async (e) => await onChange(e)}
-                    onKeyDown={onKeyDown}
                     value={input}
                     id="searchBox"
                 />

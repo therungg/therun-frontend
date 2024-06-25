@@ -13,6 +13,12 @@ interface ProgressGraphDataPoint {
     splitName: string;
 }
 
+const isRaceParticipantSplitMessage = (
+    message: RaceMessage,
+): message is RaceMessage<RaceMessageParticipantSplitData> =>
+    message.type === "participant-split" ||
+    message.type === "participant-finish";
+
 export const RaceProgressGraph = ({
     race,
     messages,
@@ -98,19 +104,10 @@ export const RaceProgressGraph = ({
 
     // Todo:: these messages include when someone undoes a split, or finishes on accident. Also, if a race resets, the messages still include it. We should filter them out.
     messages
-        .filter(
-            (message) =>
-                message.type === "participant-split" ||
-                message.type === "participant-finish",
-        )
+        .filter(isRaceParticipantSplitMessage)
         .reverse()
-        // @ts-ignore
-        .forEach((message: RaceMessage<RaceMessageParticipantSplitData>) => {
-            if (
-                !message.data ||
-                message.data.time === 0 ||
-                message.data?.percentage === 0
-            )
+        .forEach((message) => {
+            if (!message.data || !message.data.time || !message.data.percentage)
                 return;
             const current = participantsMap.get(message.data.user);
             if (!current) return;
@@ -134,13 +131,10 @@ export const RaceProgressGraph = ({
                     time,
                     splitName: message.data.splitName,
                 });
-            } else if (message.type === "participant-finish") {
-                current?.push({
-                    percentage: 100,
-                    time,
-                    splitName: "Finish",
-                });
-            } else if (message.type === "participant-confirm") {
+            } else if (
+                message.type === "participant-finish" ||
+                message.type === "participant-confirm"
+            ) {
                 current?.push({
                     percentage: 100,
                     time,
@@ -246,6 +240,8 @@ const MyResponsiveBump = ({
             theme={{
                 text: {
                     fontSize: 16,
+                    // TODO: Delete this
+                    // eslint-disable-next-line sonarjs/no-duplicate-string
                     fill: "var(--bs-body-color)",
                     color: "var(--bs-body-color)",
                 },
@@ -276,7 +272,7 @@ const MyResponsiveBump = ({
             useMesh={true}
             enableGridX={false}
             enableGridY={true}
-            curve={"natural"}
+            curve="natural"
             enablePoints={true}
             xScale={{ type: "linear" }}
             yScale={{ type: "linear" }}
@@ -292,13 +288,11 @@ const MyResponsiveBump = ({
                     ((point.data.x as number) * 1000).toString(),
                 );
 
-                // @ts-ignore
+                // @ts-expect-error this is either a bug or the 3rd party component is incorrectly typed
                 const splitName = point.data.splitName as string;
 
                 return (
-                    <div
-                        className={"game-border p-3 bg-body-secondary rounded"}
-                    >
+                    <div className="game-border p-3 bg-body-secondary rounded">
                         {user} - {percentage}% - {time} - {splitName}
                     </div>
                 );

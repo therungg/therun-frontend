@@ -6,6 +6,9 @@ import { getSplitStatus } from "./recommended-stream";
 import React, { useEffect, useState } from "react";
 import { LiveRun } from "~app/live/live.types";
 import { LiveSplitTimerComponent } from "~app/live/live-split-timer.component";
+import { SplitStatus } from "~src/types/splits.types";
+
+const PERSONAL_BEST = "Personal Best";
 
 export const SplitsViewer = ({
     activeLiveRun,
@@ -14,24 +17,24 @@ export const SplitsViewer = ({
     setSelectedSplit,
 }: {
     activeLiveRun: LiveRun;
-    currentSplitSplitStatus: any;
+    currentSplitSplitStatus: SplitStatus;
     dark: boolean;
-    setSelectedSplit: any;
+    setSelectedSplit: (splitIndex: number) => void;
 }) => {
     const [comparison, setComparison] = useState(
-        activeLiveRun.currentComparison || "Personal Best",
+        activeLiveRun.currentComparison || PERSONAL_BEST,
     );
     const [manuallyChangedComparison, setManuallyChangedComparison] =
         useState(false);
 
     useEffect(() => {
         if (!manuallyChangedComparison) {
-            setComparison(activeLiveRun.currentComparison || "Personal Best");
+            setComparison(activeLiveRun.currentComparison || PERSONAL_BEST);
         }
     }, [activeLiveRun.currentComparison]);
 
     useEffect(() => {
-        setComparison(activeLiveRun.currentComparison || "Personal Best");
+        setComparison(activeLiveRun.currentComparison || PERSONAL_BEST);
     }, [activeLiveRun.user]);
 
     if (!activeLiveRun.splits) return <></>;
@@ -53,7 +56,7 @@ export const SplitsViewer = ({
                 <Col>
                     <div className="d-flex justify-content-center align-items-center h-100">
                         <select
-                            className={"form-select"}
+                            className="form-select"
                             value={comparison}
                             onChange={(e) => {
                                 setComparison(e.target.value);
@@ -65,7 +68,7 @@ export const SplitsViewer = ({
                                     Object.keys(
                                         activeLiveRun.splits[0].comparisons,
                                     ),
-                                ) || ["Personal Best"]
+                                ) || [PERSONAL_BEST]
                             ).map((comp) => {
                                 return (
                                     <option
@@ -83,7 +86,7 @@ export const SplitsViewer = ({
             </Row>
             <hr className="border-bottom m-0" />
             <div
-                id={"scrollBox"}
+                id="scrollBox"
                 className="bg-body-secondary overflow-y-auto h-55 w-100"
             >
                 <table className="w-100">
@@ -120,11 +123,14 @@ export const SplitsViewer = ({
                                             {splitStatus.status ==
                                             "completed" ? (
                                                 <Difference
-                                                    one={split.splitTime}
+                                                    one={
+                                                        split.splitTime?.toString() ||
+                                                        ""
+                                                    }
                                                     two={
                                                         split.comparisons[
                                                             comparison
-                                                        ]
+                                                        ]?.toString() || ""
                                                     }
                                                     withMillis={false}
                                                     isGold={splitStatus.isGold}
@@ -144,7 +150,7 @@ export const SplitsViewer = ({
                                                 <DurationToFormatted
                                                     withMillis={false}
                                                     duration={
-                                                        k == 0
+                                                        k === 0
                                                             ? activeLiveRun
                                                                   .splits[0]
                                                                   .comparisons[
@@ -175,7 +181,8 @@ export const SplitsViewer = ({
                                                     <DurationToFormatted
                                                         human={false}
                                                         duration={
-                                                            split.splitTime
+                                                            split.splitTime?.toString() ||
+                                                            ""
                                                         }
                                                         withMillis={false}
                                                     />
@@ -235,13 +242,15 @@ export const SplitsViewer = ({
                                                 activeLiveRun.splits[
                                                     activeLiveRun.splits
                                                         .length - 1
-                                                ].splitTime
+                                                ].splitTime?.toString() || ""
                                             }
                                             two={
                                                 activeLiveRun.splits[
                                                     activeLiveRun.splits
                                                         .length - 1
-                                                ].comparisons[comparison]
+                                                ].comparisons[
+                                                    comparison
+                                                ]?.toString() || ""
                                             }
                                         />
                                     ) : activeLiveRun.splits.length < 2 ? (
@@ -305,7 +314,8 @@ export const SplitsViewer = ({
                                     ) : (
                                         <DurationToFormatted
                                             duration={
-                                                currentSplitSplitStatus?.possibleTimeSave
+                                                currentSplitSplitStatus?.possibleTimeSave?.toString() ||
+                                                ""
                                             }
                                             withMillis={true}
                                         />
@@ -319,7 +329,7 @@ export const SplitsViewer = ({
                             <LiveSplitTimerComponent
                                 liveRun={activeLiveRun}
                                 dark={dark}
-                                className={`d-flex justify-content-end align-items-center h-90`}
+                                className="d-flex justify-content-end align-items-center h-90"
                                 timerClassName="text-end fs-big"
                                 withDiff={false}
                             />
@@ -328,7 +338,7 @@ export const SplitsViewer = ({
                             <LiveSplitTimerComponent
                                 liveRun={activeLiveRun}
                                 dark={dark}
-                                className={`d-flex align-items-center h-100`}
+                                className="d-flex align-items-center h-100"
                                 timerClassName="text-end fs-medium lh-1"
                                 withDiff={false}
                                 splitTime={true}

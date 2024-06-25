@@ -56,9 +56,9 @@ export const GameImage = (props: GameImageProps) => {
             <Image
                 width={width}
                 height={height}
-                loading={"lazy"}
+                loading="lazy"
                 className={className}
-                src={`/logo_dark_theme_no_text_transparent.png`}
+                src="/logo_dark_theme_no_text_transparent.png"
                 alt={alt}
             ></Image>
         );
@@ -70,7 +70,7 @@ export const GameImage = (props: GameImageProps) => {
             className={className}
             src={`https://images.igdb.com/igdb/image/upload/t_${qualityMap[quality]}${file}`}
             alt={alt}
-            loading={"lazy"}
+            loading="lazy"
             width={width}
             height={height}
             style={style}

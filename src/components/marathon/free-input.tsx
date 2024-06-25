@@ -31,10 +31,10 @@ export const FreeInput = ({
                 }}
             />
             <SendMarathonDataButton
-                description={"Send Free Input to ESA"}
+                description="Send Free Input to ESA"
                 sessionId={sessionId}
                 data={freeInputEvent(liveRun, input)}
-                buttonText={"Send Free Input"}
+                buttonText="Send Free Input"
             />
         </div>
     );

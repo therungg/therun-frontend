@@ -86,18 +86,12 @@ const CategoryUserTableDisplay = ({
 
     return (
         <div>
-            <div className={"mb-3"}>
-                <PaginationSearch text={"Search player"} />
+            <div className="mb-3">
+                <PaginationSearch text="Search player" />
             </div>
             {data.length === 0 && "No results"}
             {data.length > 0 && (
-                <Table
-                    responsive
-                    hover
-                    bordered
-                    striped
-                    className={"rounded-3"}
-                >
+                <Table responsive hover bordered striped className="rounded-3">
                     <thead>
                         <tr>
                             <th style={{ width: "2rem" }}>#</th>

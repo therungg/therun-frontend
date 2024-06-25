@@ -26,16 +26,16 @@ export const ConfirmFinalTimeForm = ({
     }, [finalTimeInput]);
 
     return (
-        <div className={"mb-4"}>
+        <div className="mb-4">
             Please confirm your final time:
             <Form action={confirmFinalTime}>
-                <input hidden name={"raceId"} value={raceId} readOnly />
+                <input hidden name="raceId" value={raceId} readOnly />
 
-                <div className={"d-flex gap-2"}>
+                <div className="d-flex gap-2">
                     <input
-                        type={"text"}
-                        name={"finalTimeInput"}
-                        className={"form-control"}
+                        type="text"
+                        name="finalTimeInput"
+                        className="form-control"
                         value={finalTimeInput}
                         onChange={(event) => {
                             setFinalTimeInput(event.target.value);
@@ -43,14 +43,14 @@ export const ConfirmFinalTimeForm = ({
                     />
                     <input
                         hidden
-                        name={"finalTime"}
+                        name="finalTime"
                         value={confirmedFinalTime}
                         readOnly
                     />
                     <SubmitButton
-                        className={"text-nowrap"}
-                        innerText={"Confirm time"}
-                        pendingText={"Confirming time..."}
+                        className="text-nowrap"
+                        innerText="Confirm time"
+                        pendingText="Confirming time..."
                     />
                 </div>
             </Form>

@@ -16,14 +16,9 @@ export interface PaginationHook<T> {
 }
 
 export type PaginationFetcher<T> = (
-    // eslint-disable-next-line no-unused-vars
     page: number,
-    // eslint-disable-next-line no-unused-vars
     pageSize: number,
-    // eslint-disable-next-line no-unused-vars
     query?: string,
-    // eslint-disable-next-line no-unused-vars
     initialData?: T[],
-    // eslint-disable-next-line no-unused-vars
-    params?: any,
+    params?: { [key: string]: unknown },
 ) => Promise<PaginatedData<T>>;

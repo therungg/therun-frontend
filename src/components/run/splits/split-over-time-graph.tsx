@@ -155,7 +155,7 @@ export const SplitOverTimeGraph = ({
                 <h3>Average time per day</h3>
             </Row>
             <Row>
-                <Line data={data} type={"line"} options={options} />
+                <Line data={data} type="line" options={options} />
             </Row>
         </>
     );

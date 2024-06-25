@@ -27,23 +27,19 @@ export const RaceParticipantOverview = ({
     );
 
     return (
-        <div className={"px-4 pt-2 pb-3 mb-3 card game-border mh-100"}>
-            <span className={"h4 flex-center mb-0"}>Standings</span>
+        <div className="px-4 pt-2 pb-3 mb-3 card game-border mh-100">
+            <span className="h4 flex-center mb-0">Standings</span>
             <hr />
-            <table className={"w-100 text-end"}>
+            <table className="w-100 text-end">
                 <thead>
                     <tr>
-                        <th className={"py-1 text-start"}>#</th>
-                        <th
-                            className={
-                                "py-1 d-flex justify-self-end flex-grow-1"
-                            }
-                        >
+                        <th className="py-1 text-start">#</th>
+                        <th className="py-1 d-flex justify-self-end flex-grow-1">
                             Username
                         </th>
-                        <th className={"py-1"}>Rating</th>
-                        <th className={"py-1"}>%</th>
-                        <th className={"py-1"}>Status</th>
+                        <th className="py-1">Rating</th>
+                        <th className="py-1">%</th>
+                        <th className="py-1">Status</th>
                     </tr>
                 </thead>
                 <tbody ref={parent}>
@@ -80,17 +76,17 @@ export const RaceParticipantItem = ({
     return (
         <>
             <tr>
-                <td className={"text-start"}>
+                <td className="text-start">
                     {participant.status !== "abandoned" && `${placing}.`}
                     {participant.status == "abandoned" && `-`}
                 </td>
-                <td className={"d-flex justify-self-end flex-grow-1"}>
+                <td className="d-flex justify-self-end flex-grow-1">
                     <UserLink
                         username={participant.user}
                         url={`/${participant.user}/races`}
                     />
                     {placing === 1 && participant.status === "confirmed" && (
-                        <span className={"ms-1"}>
+                        <span className="ms-1">
                             <TrophyIcon />
                         </span>
                     )}
@@ -104,7 +100,7 @@ export const RaceParticipantItem = ({
                     {percentage > 0 && `${percentage.toFixed(0)}%`}
                     {percentage === 0 && "-"}
                 </td>
-                <td className={"text-nowrap"}>
+                <td className="text-nowrap">
                     <RaceParticipantStatus
                         race={race}
                         participant={participant}
@@ -131,15 +127,14 @@ const RaceParticipantStatus = ({
     participant: RaceParticipantWithLiveData;
     race: Race;
 }) => {
-    // eslint-disable-next-line no-unused-vars
-    const abandonedTime =
-        new Date(participant.abandondedAtDate as string).getTime() -
-        new Date(race.startTime as string).getTime();
+    // const abandonedTime =
+    //     new Date(participant.abandondedAtDate as string).getTime() -
+    //     new Date(race.startTime as string).getTime();
     return (
         <div>
             {(participant.status === "finished" ||
                 participant.status === "confirmed") && (
-                <span className={"fst-italic"}>
+                <span className="fst-italic">
                     <DurationToFormatted
                         duration={participant.finalTime?.toString() as string}
                     />

@@ -2,6 +2,7 @@ import { Run } from "~src/common/types";
 import { Button, Form } from "react-bootstrap";
 import styles from "../../../components/css/Userform.module.scss";
 import { useState } from "react";
+import { User } from "types/session.types";
 
 export const EditRun = ({
     run,
@@ -12,9 +13,8 @@ export const EditRun = ({
 }: {
     run: Run;
     abort: () => void;
-    session: any;
+    session: User;
     username: string;
-    // eslint-disable-next-line no-unused-vars
     forceUpdate: (newRun: Run) => void;
 }) => {
     const [form, setForm] = useState({
@@ -31,11 +31,11 @@ export const EditRun = ({
         <div style={{ marginBottom: "2rem" }}>
             <Form>
                 <fieldset className={`border p ${styles.fieldset}`}>
-                    <legend className={"w-auto"}>
+                    <legend className="w-auto">
                         Editing {run.game} - {run.run}
                     </legend>
 
-                    <Form.Group className={"mb-3"} controlId={"alias"}>
+                    <Form.Group className="mb-3" controlId="alias">
                         <Form.Label>
                             VOD url (Twitch or youtube only, insert full url)
                         </Form.Label>
@@ -57,7 +57,7 @@ export const EditRun = ({
                         )}
                     </Form.Group>
 
-                    <Form.Group className={"mb-3"} controlId={"bio"}>
+                    <Form.Group className="mb-3" controlId="bio">
                         <Form.Label>
                             Description (max. 250 characters)
                         </Form.Label>
@@ -89,7 +89,7 @@ export const EditRun = ({
                             therun.gg/{username}/
                         </div>
 
-                        <Form.Group className={"mb-3"} controlId={"customUrl"}>
+                        <Form.Group className="mb-3" controlId="customUrl">
                             <Form.Label>
                                 Custom URL (max. 50 characters)
                             </Form.Label>
@@ -111,7 +111,7 @@ export const EditRun = ({
                 </fieldset>
                 <div style={{ marginTop: "1rem" }}>
                     <Button
-                        variant={"primary"}
+                        variant="primary"
                         className={styles.editInfoButton}
                         onClick={async () => {
                             const userIdentifier = `${session.id}-${username}`;
@@ -139,7 +139,7 @@ export const EditRun = ({
                         Submit
                     </Button>
                     <Button
-                        variant={"secondary"}
+                        variant="secondary"
                         className={styles.cancelButton}
                         onClick={() => {
                             abort();

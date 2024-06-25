@@ -16,7 +16,7 @@ export const CategoryOverview = ({
 }: {
     categories: CategoryLeaderboard[];
     game: string;
-    setCurrentCategory: Dispatch<any>;
+    setCurrentCategory: Dispatch<React.SetStateAction<string>>;
 }) => {
     const [categoriesCountLimit, setCategoriesCountLimit] = useState(5);
     const MINIMUM_CATEGORIES_LIMIT: number = 5;
@@ -29,7 +29,7 @@ export const CategoryOverview = ({
                     <th>
                         Best run
                         <InfoTooltip
-                            title={"Best run"}
+                            title="Best run"
                             content={
                                 <div>
                                     This is the best time out of all users of
@@ -59,7 +59,7 @@ export const CategoryOverview = ({
                                         game={game}
                                     >
                                         <a
-                                            href={"#"}
+                                            href="#"
                                             onClick={() => {
                                                 setCurrentCategory(
                                                     category.categoryName,

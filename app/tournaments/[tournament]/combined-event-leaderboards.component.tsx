@@ -20,12 +20,12 @@ export const CombinedEventLeaderboards = ({
             <h3>Event Leaderboards</h3>
             <div style={{ marginBottom: "1rem" }}>
                 <select
-                    className={"form-select"}
+                    className="form-select"
                     onChange={(e) => {
                         setLeaderboard(e.target.value);
                     }}
                 >
-                    <option key={"Seed"} title={"Seed"} value={"Seed"}>
+                    <option key="Seed" title="Seed" value="Seed">
                         Provisional Seed
                     </option>
                     {tournaments.map((tournament) => {
@@ -39,24 +39,16 @@ export const CombinedEventLeaderboards = ({
                             </option>
                         );
                     })}
-                    <option
-                        key={"Playtime"}
-                        title={"Playtime"}
-                        value={"Playtime"}
-                    >
+                    <option key="Playtime" title="Playtime" value="Playtime">
                         Playtime
                     </option>
-                    <option
-                        key={"Attempts"}
-                        title={"Attempts"}
-                        value={"Attempts"}
-                    >
+                    <option key="Attempts" title="Attempts" value="Attempts">
                         Attempts
                     </option>
                     <option
-                        key={"Finished Attempts"}
-                        title={"Finished Attempts"}
-                        value={"Finished Attempts"}
+                        key="Finished Attempts"
+                        title="Finished Attempts"
+                        value="Finished Attempts"
                     >
                         Finished Attempts
                     </option>
@@ -64,7 +56,7 @@ export const CombinedEventLeaderboards = ({
             </div>
             {leaderboard === "Seed" && (
                 <PaginatedGameLeaderboard
-                    name={"Completed Games"}
+                    name="Completed Games"
                     leaderboard={seedingTable.map((seed) => {
                         return {
                             username: seed.username,
@@ -98,19 +90,19 @@ export const CombinedEventLeaderboards = ({
             })}
             {leaderboard === "Attempts" && (
                 <PaginatedGameLeaderboard
-                    name={"Attempts"}
+                    name="Attempts"
                     leaderboard={metaLeaderboards.attemptsLeaderboard}
                 />
             )}
             {leaderboard === "Finished Attempts" && (
                 <PaginatedGameLeaderboard
-                    name={"Finished Attempts"}
+                    name="Finished Attempts"
                     leaderboard={metaLeaderboards.finishedAttemptsLeaderboard}
                 />
             )}
             {leaderboard === "Playtime" && (
                 <PaginatedGameLeaderboard
-                    name={"Playtime"}
+                    name="Playtime"
                     leaderboard={metaLeaderboards.playTimeLeaderboard}
                     transform={(stat) => {
                         return (

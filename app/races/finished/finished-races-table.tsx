@@ -21,7 +21,7 @@ export const FinishedRaceTable = ({
 }: {
     paginatedRaces: PaginatedRaces;
     paginationFunction?: PaginationFetcher<Race>;
-    params?: any;
+    params?: unknown;
 }) => {
     return (
         <PaginationContextProvider>
@@ -41,7 +41,7 @@ const FinishedRaceTableView = ({
 }: {
     paginatedRaces: PaginatedRaces;
     paginationFunction: PaginationFetcher<Race>;
-    params?: any;
+    params?: unknown;
 }) => {
     const pagination = usePagination<Race>(
         paginatedRaces,
@@ -56,7 +56,7 @@ const FinishedRaceTableView = ({
 
     return (
         <div>
-            <div className={"mb-4"}>
+            <div className="mb-4">
                 <FinishedRaces races={data} />
             </div>
             <PaginationControl {...pagination} minimalLayout={true} />
@@ -80,30 +80,24 @@ const FinishedRaces = ({ races }: { races: Race[] }) => {
 
 export const FinishedRaceWithCategory = ({ races }: { races: Race[] }) => {
     return (
-        <Row className={"g-2"}>
+        <Row className="g-2">
             {races.map((race) => {
                 return (
                     <Col xs={12} key={race.raceId}>
                         <a
                             href={`/races/${race.raceId}`}
-                            className={"text-decoration-none"}
+                            className="text-decoration-none"
                         >
-                            <div
-                                className={`bg-body-secondary game-border mh-100 h-100 card game-border`}
-                            >
+                            <div className="bg-body-secondary game-border mh-100 h-100 card game-border">
                                 <Card
                                     className={`h-100 game-border px-3 py-2 ${styles.liveRunContainer}`}
                                     style={{
                                         minHeight: "8rem",
                                     }}
                                 >
-                                    <div className={"w-100 h-100"}>
-                                        <div
-                                            className={
-                                                "d-flex justify-content-between gap-2"
-                                            }
-                                        >
-                                            <span className={"fst-italic"}>
+                                    <div className="w-100 h-100">
+                                        <div className="d-flex justify-content-between gap-2">
+                                            <span className="fst-italic">
                                                 {race.displayCategory}
                                             </span>
 
@@ -115,18 +109,14 @@ export const FinishedRaceWithCategory = ({ races }: { races: Race[] }) => {
                                                 />
                                             </span>
                                             <span>
-                                                <span className={"me-1"}>
+                                                <span className="me-1">
                                                     {race.participantCount}
                                                 </span>
                                                 <PersonIcon />
                                             </span>
                                         </div>
-                                        <div
-                                            className={
-                                                "d-flex justify-content-between"
-                                            }
-                                        ></div>
-                                        <hr className={"my-1 p-0"} />
+                                        <div className="d-flex justify-content-between"></div>
+                                        <hr className="my-1 p-0" />
                                         <div>
                                             <RacePlacings
                                                 race={race}
@@ -146,31 +136,22 @@ export const FinishedRaceWithCategory = ({ races }: { races: Race[] }) => {
 
 export const FinishedRaceWithGameCategory = ({ races }: { races: Race[] }) => {
     return (
-        <Row className={"my-1 mb-3 g-4"}>
+        <Row className="my-1 mb-3 g-4">
             {races.map((race) => {
                 return (
-                    <Col
-                        xxl={4}
-                        md={6}
-                        key={race.raceId}
-                        className={"mt-1 mb-4"}
-                    >
+                    <Col xxl={4} md={6} key={race.raceId} className="mt-1 mb-4">
                         <a
                             href={`/races/${race.raceId}`}
-                            className={"text-decoration-none"}
+                            className="text-decoration-none"
                         >
-                            <div
-                                className={`bg-body-secondary game-border mh-100 h-100 card game-border`}
-                            >
+                            <div className="bg-body-secondary game-border mh-100 h-100 card game-border">
                                 <Card
                                     className={`h-100 game-border ${styles.liveRunContainer}`}
                                 >
-                                    <Row className={"h-100"}>
+                                    <Row className="h-100">
                                         <Col lg={3} md={4} xs={3}>
                                             <Card.Img
-                                                className={
-                                                    "rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
-                                                }
+                                                className="rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
                                                 src={
                                                     race.gameImage &&
                                                     race.gameImage !== "noimage"
@@ -185,34 +166,20 @@ export const FinishedRaceWithGameCategory = ({ races }: { races: Race[] }) => {
                                             lg={9}
                                             md={8}
                                             xs={9}
-                                            className={
-                                                "p-2 ps-1 pe-4 d-flex flex-column"
-                                            }
+                                            className="p-2 ps-1 pe-4 d-flex flex-column"
                                         >
-                                            <div className={"w-100 h-100"}>
-                                                <div
-                                                    className={
-                                                        "d-flex justify-content-between gap-2"
-                                                    }
-                                                >
+                                            <div className="w-100 h-100">
+                                                <div className="d-flex justify-content-between gap-2">
                                                     <div
-                                                        className={
-                                                            "h5 m-0 p-0 text-truncate"
-                                                        }
+                                                        className="h5 m-0 p-0 text-truncate"
                                                         style={{
                                                             color: "var(--bs-link-color)",
                                                         }}
                                                     >
                                                         {race.displayGame}
                                                     </div>
-                                                    <span
-                                                        className={
-                                                            "text-nowrap"
-                                                        }
-                                                    >
-                                                        <span
-                                                            className={"me-1"}
-                                                        >
+                                                    <span className="text-nowrap">
+                                                        <span className="me-1">
                                                             {
                                                                 race.participantCount
                                                             }
@@ -220,14 +187,8 @@ export const FinishedRaceWithGameCategory = ({ races }: { races: Race[] }) => {
                                                         <PersonIcon />
                                                     </span>
                                                 </div>
-                                                <div
-                                                    className={
-                                                        "d-flex justify-content-between"
-                                                    }
-                                                >
-                                                    <div
-                                                        className={"fst-italic"}
-                                                    >
+                                                <div className="d-flex justify-content-between">
+                                                    <div className="fst-italic">
                                                         {race.displayCategory}
                                                     </div>
                                                     <span>
@@ -238,7 +199,7 @@ export const FinishedRaceWithGameCategory = ({ races }: { races: Race[] }) => {
                                                         />
                                                     </span>
                                                 </div>
-                                                <hr className={"my-1 p-0"} />
+                                                <hr className="my-1 p-0" />
                                                 <div>
                                                     <RacePlacings
                                                         race={race}

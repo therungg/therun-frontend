@@ -6,9 +6,7 @@ import { routeVisitMiddleware } from "./src/middlewares/route-visit.middleware";
 const middlewareList = [routeVisitMiddleware, redirectTournamentsMiddleware];
 
 type MiddlewareFn = (
-    // eslint-disable-next-line no-unused-vars
     request: NextRequest,
-    // eslint-disable-next-line no-unused-vars
     response: NextResponse,
 ) => NextResponse | void;
 

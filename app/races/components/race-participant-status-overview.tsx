@@ -22,12 +22,12 @@ export const RaceParticipantStatusOverview = ({
     ).length;
 
     return (
-        <span className={"text-nowrap"}>
-            <span className={"border-right pe-3"}>
+        <span className="text-nowrap">
+            <span className="border-right pe-3">
                 {abandonded}
                 <LogoutIcon />
             </span>
-            <span className={"border-right pe-3"}>
+            <span className="border-right pe-3">
                 {progress}
                 <HourglassIcon />
             </span>
