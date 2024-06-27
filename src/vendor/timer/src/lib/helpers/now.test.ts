@@ -1,3 +1,4 @@
+// @ts-nocheck
 import now from './now';
 
 declare const global;
