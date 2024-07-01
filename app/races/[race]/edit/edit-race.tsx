@@ -12,6 +12,7 @@ import {
     BreadcrumbItem,
 } from "~src/components/breadcrumbs/breadcrumb";
 import { UnderlineTooltip } from "~src/components/tooltip";
+import React from "react";
 
 export const EditRace = ({ race, user }: { race: Race; user: User }) => {
     const [state, formAction] = useFormState(editRace, { message: "" });
@@ -83,6 +84,21 @@ export const EditRace = ({ race, user }: { race: Race; user: User }) => {
                                 placeholder="Enter the name of a stream to show"
                                 required={false}
                                 defaultValue={race.forceStream}
+                            />
+                        </Form.Group>
+                        <Form.Group controlId="password">
+                            <Form.Label>
+                                <UnderlineTooltip
+                                    title="Password"
+                                    content="Sets a password. Participants need to enter this password in order to join the race."
+                                    element="Password"
+                                />
+                            </Form.Label>
+                            <Form.Control
+                                name="password"
+                                type="text"
+                                placeholder="Enter a Race Password"
+                                required={false}
                             />
                         </Form.Group>
                         <div className="text-end">
