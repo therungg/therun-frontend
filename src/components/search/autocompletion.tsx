@@ -19,7 +19,6 @@ export const AutoCompletion = () => {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
-    const searchRef = React.createRef<HTMLInputElement>();
     let suggestions = { users: {}, games: {}, categories: {} } as SearchResults;
 
     const onChange: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
@@ -206,21 +205,10 @@ export const AutoCompletion = () => {
             }}
         >
             <div className="input-group">
-                <span
-                    className="input-group-text"
-                    onClick={() => {
-                        if (
-                            searchRef.current &&
-                            document.activeElement !== searchRef.current
-                        ) {
-                            searchRef.current.focus();
-                        }
-                    }}
-                >
+                <label className="input-group-text" htmlFor="searchBox">
                     <SearchIcon size={18} />
-                </span>
+                </label>
                 <input
-                    ref={searchRef}
                     type="search"
                     className="form-control"
                     placeholder="Find a User or Game"
