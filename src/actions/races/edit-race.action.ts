@@ -13,6 +13,7 @@ export async function editRace(_prevState: unknown, raceInput: FormData) {
         description: raceInput.get("description") as string,
         customName: raceInput.get("customName") as string,
         forceStream: raceInput.get("forceStream") as string,
+        password: raceInput.get("password") as string,
     };
 
     const raceId = raceInput.get("raceId") as string;
@@ -54,6 +55,7 @@ export const validateInput = (
         customName: Joi.string().min(0).max(40).optional(),
         description: Joi.string().min(0).max(1000).optional(),
         forceStream: Joi.string().min(0).max(100).optional(),
+        password: Joi.string().min(0).max(40).optional(),
     });
 
     return raceSchema.validate(input);
