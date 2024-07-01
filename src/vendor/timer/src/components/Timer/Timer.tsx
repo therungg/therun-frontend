@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import React from 'react';
 import { TimerStateValues, TimeParts, Unit } from '../../types';
 
