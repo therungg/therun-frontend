@@ -11,6 +11,7 @@ import { getSession } from "~src/actions/session.action";
 import buildMetadata from "~src/utils/metadata";
 import { Viewport } from "next";
 import { SessionErrorBoundary } from "~src/components/errors/session.error-boundary";
+import { Navigation } from "~src/components/navigation";
 
 export const metadata = buildMetadata();
 export const viewport: Viewport = {
@@ -41,9 +42,20 @@ export default async function RootLayout({
                             username={session?.username}
                             picture={session?.picture}
                         />
-                        <Content>
-                            {sessionError ? <SessionErrorBoundary /> : children}
-                        </Content>
+                        <div className="d-flex">
+                            <aside className="col-md-2 bg-body-tertiary">
+                                <Navigation username="test" />
+                            </aside>
+                            <main className="col-md-10 main-container container">
+                                <Content>
+                                    {sessionError ? (
+                                        <SessionErrorBoundary />
+                                    ) : (
+                                        children
+                                    )}
+                                </Content>
+                            </main>
+                        </div>
                         <Footer />
                     </Providers>
                 </NextIntlClientProvider>
