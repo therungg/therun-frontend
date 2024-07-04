@@ -7,7 +7,6 @@ import Image from "next/image";
 import { TwitchUser } from "./twitch/TwitchUser";
 import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
 import { getColorMode } from "~src/utils/colormode";
-import { Upload } from "react-bootstrap-icons";
 import { AutoCompletion } from "~src/components/search/autocompletion";
 import { resetSession } from "~src/actions/reset-session.action";
 
@@ -69,7 +68,7 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
             onMouseLeave={hideDropdown}
             data-bs-theme={dark ? "dark" : "light"}
         >
-            <Container>
+            <Container className="d-flex justify-space-between">
                 <Navbar.Brand href="/" className="d-flex">
                     <Image
                         alt="TheRun"
@@ -87,29 +86,14 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                         </i>
                     </span>
                 </Navbar.Brand>
-                <Navbar.Toggle aria-controls="basic-navbar-nav" />
-                <Navbar.Collapse id="basic-navbar-nav">
-                    <Nav className="me-auto">
-                        {username && (
-                            <Nav.Link className="mh-2r" href="/upload">
-                                <div className="d-flex">
-                                    <b>Upload</b>
-
-                                    <span className="ms-2">
-                                        <Upload size={18} />
-                                    </span>
-                                </div>
-                            </Nav.Link>
-                        )}
-                        <Nav.Link href="/races">Races</Nav.Link>
-                        <Nav.Link href="/tournaments">Tournaments</Nav.Link>
-                        <Nav.Link href="/live">Live</Nav.Link>
-                        <Nav.Link href="/games/">Games</Nav.Link>
-                    </Nav>
-                    <Nav className="ml-auto mb-2 mb-lg-0 me-lg-2">
-                        <AutoCompletion />
-                    </Nav>
-                    <Nav className="ml-auto" onClick={handleColorMode}>
+                <Nav className="col-md-4 ml-auto mb-2 mb-lg-0 me-lg-2">
+                    <AutoCompletion />
+                </Nav>
+                <div className="d-flex">
+                    <Nav
+                        className="align-self-center ml-auto"
+                        onClick={handleColorMode}
+                    >
                         {" "}
                         <DarkModeSlider />
                     </Nav>
@@ -158,7 +142,7 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                             <TwitchLoginButton url="/api" />
                         )}
                     </Nav>
-                </Navbar.Collapse>
+                </div>
             </Container>
         </Navbar>
     );

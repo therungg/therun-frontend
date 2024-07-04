@@ -197,7 +197,7 @@ export const AutoCompletion = () => {
 
     return (
         <div
-            className="dropdown"
+            className="col-md-12"
             tabIndex={-1}
             onKeyDown={(e) => {
                 if (e.code === "Escape") {
@@ -205,7 +205,7 @@ export const AutoCompletion = () => {
                 }
             }}
         >
-            <div className="input-group">
+            <div className="input-group input-group-lg">
                 <span
                     className="input-group-text"
                     onClick={() => {
@@ -217,7 +217,7 @@ export const AutoCompletion = () => {
                         }
                     }}
                 >
-                    <SearchIcon size={18} />
+                    <SearchIcon fill="currentcolor" size={18} />
                 </span>
                 <input
                     ref={searchRef}

@@ -11,6 +11,7 @@ export const Footer = () => {
     const patronCount = Object.keys(patreonData || {}).length;
     const animationDuration =
         Math.floor(patronCount * 0.5) + DEFAULT_ANIMATION_DURATION;
+    // TODO: Remove the routes and move the patreon banner
     return (
         <footer className="bg-body-secondary">
             <div className="patreon-scroll-bar bg-body-tertiary">
