@@ -24,7 +24,7 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
         );
     }
     return (
-        <Row className="gy-3 gx-3">
+        <Row>
             {races.map((race) => {
                 return (
                     <Col key={race.raceId} xl={6} lg={12} xs={12}>
