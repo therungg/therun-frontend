@@ -129,38 +129,30 @@ export const GlobalSearch = () => {
             {query && !isSearchEmpty && isResultsPanelOpen ? (
                 <div
                     ref={resultsPanelRef}
-                    className="position-absolute start-0 mt-1 w-100 border rounded"
-                    style={{
-                        zIndex: 1000,
-                        maxHeight: "400px",
-                        overflowY: "auto",
-                    }}
+                    className="dropdown-menu d-block text-center mt-2 py-0 overflow-y-auto w-100 mh-400p"
                 >
-                    <ul className="list-group">
+                    <dl className="list-group">
                         {Object.entries(filteredResults)
                             .slice(0, MAX_SEARCH_RESULTS)
                             .map(([type, results], index) => (
                                 <React.Fragment key={index}>
-                                    <li className="list-group-item active px-2 fw-bold">
+                                    <dt className="mt-2 pe-none">
                                         {toTitleCase(type)}
-                                    </li>
+                                    </dt>
                                     {results.map((result, index) => {
                                         const url =
                                             result.type === "user"
                                                 ? `/${result.key}`
                                                 : `/games/${result.key}`;
                                         return (
-                                            <li
+                                            <dd
                                                 key={index}
-                                                className="list-group-item list-group-item-action"
+                                                className="list-group-item-action m-0"
                                             >
                                                 <Link
                                                     href={url}
                                                     title={result.key}
-                                                    className="text-decoration-none d-block p-1 rounded hover-bg-light"
-                                                    style={{
-                                                        display: "inherit",
-                                                    }}
+                                                    className="d-block text-decoration-none px-2 py-1 text-truncate"
                                                 >
                                                     <FuzzyMatchHighlight
                                                         result={result.key}
@@ -169,24 +161,24 @@ export const GlobalSearch = () => {
                                                         }
                                                     />
                                                 </Link>
-                                            </li>
+                                            </dd>
                                         );
                                     })}
                                 </React.Fragment>
                             ))}
                         {resultsLength > MAX_SEARCH_RESULTS && (
-                            <li className="list-group-item list-group-item-primary">
+                            <li className="list-group-item-action border-top mt-1">
                                 <Link
                                     href={`/search?q=${encodeURIComponent(
                                         query,
                                     )}`}
-                                    className="btn btn-link"
+                                    className="d-block text-decoration-none px-2 py-1"
                                 >
                                     View all results
                                 </Link>
                             </li>
                         )}
-                    </ul>
+                    </dl>
                 </div>
             ) : null}
         </div>
