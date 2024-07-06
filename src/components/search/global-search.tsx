@@ -134,42 +134,47 @@ export const GlobalSearch = () => {
                     ref={resultsPanelRef}
                     className="dropdown-menu d-block text-center mt-2 py-0 overflow-y-auto w-100 mh-400p"
                 >
-                    <dl className="list-group">
-                        {Object.entries(filteredResults)
-                            .slice(0, MAX_SEARCH_RESULTS)
-                            .map(([type, results], index) => (
-                                <React.Fragment key={index}>
-                                    <dt className="mt-2 pe-none">
-                                        {toTitleCase(type)}
-                                    </dt>
-                                    {results.map((result, index) => {
-                                        const url =
-                                            result.type === "user"
-                                                ? `/${result.key}`
-                                                : `/games/${result.key}`;
-                                        return (
-                                            <dd
-                                                key={index}
-                                                className="list-group-item-action m-0"
-                                            >
-                                                <Link
-                                                    href={url}
-                                                    title={result.key}
-                                                    className="d-block text-decoration-none px-2 py-1 text-truncate"
+                    <dl className="list-group mb-1">
+                        {Object.entries(filteredResults).length > 0 ?
+                            Object.entries(filteredResults)
+                                .slice(0, MAX_SEARCH_RESULTS)
+                                .map(([type, results], index) => (
+                                    <React.Fragment key={index}>
+                                        <dt className="mt-2 pe-none">
+                                            {toTitleCase(type)}
+                                        </dt>
+                                        {results.map((result, index) => {
+                                            const url =
+                                                result.type === "user"
+                                                    ? `/${result.key}`
+                                                    : `/games/${result.key}`;
+                                            return (
+                                                <dd
+                                                    key={index}
+                                                    className="list-group-item-action m-0"
                                                 >
-                                                    <FuzzyMatchHighlight
-                                                        result={result.key}
-                                                        highlights={
-                                                            result.matches
-                                                        }
-                                                    />
-                                                </Link>
-                                            </dd>
-                                        );
-                                    })}
-                                </React.Fragment>
-                            ))}
-                        {resultsLength > MAX_SEARCH_RESULTS && (
+                                                    <Link
+                                                        href={url}
+                                                        title={result.key}
+                                                        className="d-block text-decoration-none px-2 py-1 text-truncate"
+                                                    >
+                                                        <FuzzyMatchHighlight
+                                                            result={result.key}
+                                                            highlights={
+                                                                result.matches
+                                                            }
+                                                        />
+                                                    </Link>
+                                                </dd>
+                                            );
+                                        })}
+                                    </React.Fragment>
+                                )) : (
+                                <dt className="m-2 text-truncate">No results for
+                                    <dd className="bg-info bg-opacity-25 fw-bold m-0 rounded">{query}</dd>
+                                </dt>
+                            )}
+                        {/*{resultsLength > MAX_SEARCH_RESULTS && (
                             <li className="list-group-item-action border-top mt-1">
                                 <Link
                                     href={`/search?q=${encodeURIComponent(
@@ -180,7 +185,7 @@ export const GlobalSearch = () => {
                                     View all results
                                 </Link>
                             </li>
-                        )}
+                        )}*/}
                     </dl>
                 </div>
             ) : null}
