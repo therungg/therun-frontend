@@ -1,24 +1,15 @@
-"use client";
-
 import Link from "next/link";
-import { Button, Col, Row } from "react-bootstrap";
+import { Button } from "react-bootstrap";
 import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
-import { Run } from "~src/common/types";
-import { Game } from "~app/games/games.types";
+import React from "react";
+import { Col, Row } from "react-bootstrap";
 import { DataHolder } from "~src/components/frontpage/data-holder";
 import { SkeletonPersonalBests } from "~src/components/skeleton/index/skeleton-personal-bests";
 import { PopularGames } from "~src/components/game/popular-games";
 import { SkeletonPopularGames } from "~src/components/skeleton/index/skeleton-popular-games";
-import React from "react";
 import { useTranslations } from "next-intl";
 
-export default function Homepage({
-    runs,
-    gamestats,
-}: {
-    runs: Run[];
-    gamestats: Game[];
-}) {
+export const Homepage = () => {
     const t = useTranslations("homepage");
 
     return (
@@ -57,32 +48,22 @@ export default function Homepage({
                 </div>
             </div>
 
-            <DataSection runs={runs} gamestats={gamestats} />
-        </div>
-    );
-}
-
-const DataSection = ({
-    runs,
-    gamestats,
-}: {
-    runs: Run[];
-    gamestats: Game[];
-}) => {
-    return (
-        <div>
-            <Row className="text-center">
-                <Col xl={6} lg={12} className="mt-4">
-                    <h2>Recent Personal Bests</h2>
-                    {runs && <DataHolder runs={runs} />}
-                    {!runs && <SkeletonPersonalBests />}
-                </Col>
-                <Col xl={6} lg={12} className="mt-4">
-                    <h2>Popular Games</h2>
-                    {gamestats && <PopularGames gamestats={gamestats} />}
-                    {!gamestats && <SkeletonPopularGames />}
-                </Col>
-            </Row>
+            <div>
+                <Row className="text-center">
+                    <Col xl={6} lg={12} className="mt-4">
+                        <h2>Recent Personal Bests</h2>
+                        <React.Suspense fallback={<SkeletonPersonalBests />}>
+                            <DataHolder />
+                        </React.Suspense>
+                    </Col>
+                    <Col xl={6} lg={12} className="mt-4">
+                        <h2>Popular Games</h2>
+                        <React.Suspense fallback={<SkeletonPopularGames />}>
+                            <PopularGames />
+                        </React.Suspense>
+                    </Col>
+                </Row>
+            </div>
         </div>
     );
 };

@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useState } from "react";
 import patreonStyles from "./patreon-styles";
 import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
