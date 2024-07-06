@@ -73,8 +73,7 @@ export const GlobalSearch = () => {
 
     const fuse = useFuseSearch(aggregatedResults);
     const filteredResults = useFilteredFuzzySearch(fuse, debouncedQuery);
-    // @ts-expect-error private type
-    const resultsLength = fuse._docs?.length;
+    //const resultsLength = fuse._docs?.length; Unsure about this right now
     const onChange: React.ChangeEventHandler<HTMLInputElement> =
         React.useCallback((e) => {
             e.preventDefault();
@@ -135,7 +134,7 @@ export const GlobalSearch = () => {
                     className="dropdown-menu d-block text-center mt-2 py-0 overflow-y-auto w-100 mh-400p"
                 >
                     <dl className="list-group mb-1">
-                        {Object.entries(filteredResults).length > 0 ?
+                        {Object.entries(filteredResults).length > 0 ? (
                             Object.entries(filteredResults)
                                 .slice(0, MAX_SEARCH_RESULTS)
                                 .map(([type, results], index) => (
@@ -169,11 +168,15 @@ export const GlobalSearch = () => {
                                             );
                                         })}
                                     </React.Fragment>
-                                )) : (
-                                <dt className="m-2 text-truncate">No results for
-                                    <dd className="bg-info bg-opacity-25 fw-bold m-0 rounded">{query}</dd>
-                                </dt>
-                            )}
+                                ))
+                        ) : (
+                            <dt className="m-2 text-truncate">
+                                No results for
+                                <dd className="bg-info bg-opacity-25 fw-bold m-0 rounded">
+                                    {query}
+                                </dd>
+                            </dt>
+                        )}
                         {/*{resultsLength > MAX_SEARCH_RESULTS && (
                             <li className="list-group-item-action border-top mt-1">
                                 <Link
