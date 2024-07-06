@@ -104,7 +104,10 @@ export const GlobalSearch = () => {
     return (
         <div className="position-relative">
             <div className="input-group">
-                <label htmlFor="global-search" className="input-group-text">
+                <label
+                    htmlFor="global-search"
+                    className="input-group-text w-42p"
+                >
                     {isLoading ? (
                         <div
                             className="spinner-border spinner-border-sm"
