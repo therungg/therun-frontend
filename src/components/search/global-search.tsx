@@ -38,7 +38,9 @@ export const GlobalSearch = () => {
     } = useSWR<SearchResults>(
         debouncedQuery ? `/api/search?q=${debouncedQuery}` : null,
         fetcher,
-        { dedupingInterval: 500 }, // Optional: Reduce the frequency of calls
+        // This avoids duplicate searches for the same key
+        // _but_ won't act as a debounce.
+        { dedupingInterval: 500 },
     );
     const aggregatedResults = useAggregatedResults(searchResults);
     React.useEffect(() => {
@@ -151,19 +153,18 @@ export const GlobalSearch = () => {
                     className="dropdown-menu d-block mt-2 py-0 overflow-y-auto w-100 mh-400p"
                 >
                     <dl className="list-group mb-1">
-                        {!searchResultEntries.length &&
-                            // This _should_ make sure that the search from the API comes back with no results
-                            !isSearching && (
-                                <dt className="m-2 fw-semibold text-truncate">
-                                    <span className=" fs-smaller">
-                                        No results for
-                                    </span>
-                                    <div className="text-primary m-0">
-                                        {query}
-                                    </div>
-                                </dt>
-                            )}
-                        {/* Keep this one rendered whether or not we're searching since we can keep the previous results that way */}
+                        {!searchResultEntries.length && !isSearching && (
+                            <dt className="m-2 fw-semibold text-truncate">
+                                <span className="fs-smaller">
+                                    No results found
+                                </span>
+                            </dt>
+                        )}
+                        {isSearching && !searchResultEntries.length && (
+                            <dt className="m-2 fw-semibold">
+                                <span className="fs-smaller">Searching...</span>
+                            </dt>
+                        )}
                         {!!searchResultEntries.length &&
                             searchResultEntries
                                 .slice(0, MAX_SEARCH_RESULTS)
