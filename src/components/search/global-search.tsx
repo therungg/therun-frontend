@@ -41,11 +41,6 @@ export const GlobalSearch = () => {
         { dedupingInterval: 500 }, // Optional: Reduce the frequency of calls
     );
     const aggregatedResults = useAggregatedResults(searchResults);
-    const isSearchEmpty = React.useMemo(() => {
-        const searchKinds = Object.values(aggregatedResults);
-        return searchKinds.every((kind) => !Object.values(kind).length);
-    }, [aggregatedResults]);
-
     React.useEffect(() => {
         const params = new URLSearchParams(searchParams.toString());
         if (!query) {
@@ -104,6 +99,24 @@ export const GlobalSearch = () => {
         };
     }, []);
 
+    const isSearching = React.useMemo(() => {
+        if (!query) return false;
+        /*
+            If the query is different from the debounced query then we know
+            that when they match that it'll trigger a new API call with useSWR.
+            In other words, this is a signal that a search is _coming_.
+        */
+        if (query !== debouncedQuery) return true;
+        /*
+            If isLoading from SWR then we know we have a network request in flight.
+            We are quite literally searching.
+        */
+        // eslint-disable-next-line sonarjs/prefer-single-boolean-return
+        if (isLoading) return true;
+
+        return false;
+    }, [debouncedQuery, isLoading, query]);
+
     return (
         <div className="position-relative">
             <div className="input-group">
@@ -132,23 +145,25 @@ export const GlobalSearch = () => {
                     id="global-search"
                 />
             </div>
-            {query && !isSearchEmpty && isResultsPanelOpen ? (
+            {query && isResultsPanelOpen ? (
                 <div
                     ref={resultsPanelRef}
                     className="dropdown-menu d-block text-center mt-2 py-0 overflow-y-auto w-100 mh-400p"
                 >
                     <dl className="list-group mb-1">
                         {!searchResultEntries.length &&
-                        // This _should_ make sure that the search from the API comes back with no results
-                        query === debouncedQuery ? (
-                            <dt className="m-2 text-truncate">
-                                No results for
-                                <dd className="bg-info bg-opacity-25 fw-bold m-0 rounded">
-                                    {query}
-                                </dd>
-                            </dt>
-                        ) : (
-                            Object.entries(filteredResults)
+                            // This _should_ make sure that the search from the API comes back with no results
+                            !isSearching && (
+                                <dt className="m-2 text-truncate">
+                                    No results for
+                                    <dd className="bg-info bg-opacity-25 fw-bold m-0 rounded">
+                                        {query}
+                                    </dd>
+                                </dt>
+                            )}
+                        {/* Keep this one rendered whether or not we're searching since we can keep the previous results that way */}
+                        {!!searchResultEntries.length &&
+                            searchResultEntries
                                 .slice(0, MAX_SEARCH_RESULTS)
                                 .map(([type, results], index) => (
                                     <React.Fragment key={index}>
@@ -181,8 +196,7 @@ export const GlobalSearch = () => {
                                             );
                                         })}
                                     </React.Fragment>
-                                ))
-                        )}
+                                ))}
                         {/*{resultsLength > MAX_SEARCH_RESULTS && (
                             <li className="list-group-item-action border-top mt-1">
                                 <Link
