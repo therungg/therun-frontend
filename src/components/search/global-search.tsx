@@ -148,17 +148,19 @@ export const GlobalSearch = () => {
             {query && isResultsPanelOpen ? (
                 <div
                     ref={resultsPanelRef}
-                    className="dropdown-menu d-block text-center mt-2 py-0 overflow-y-auto w-100 mh-400p"
+                    className="dropdown-menu d-block mt-2 py-0 overflow-y-auto w-100 mh-400p"
                 >
                     <dl className="list-group mb-1">
                         {!searchResultEntries.length &&
                             // This _should_ make sure that the search from the API comes back with no results
                             !isSearching && (
-                                <dt className="m-2 text-truncate">
-                                    No results for
-                                    <dd className="bg-info bg-opacity-25 fw-bold m-0 rounded">
+                                <dt className="m-2 fw-semibold text-truncate">
+                                    <span className=" fs-smaller">
+                                        No results for
+                                    </span>
+                                    <div className="text-primary m-0">
                                         {query}
-                                    </dd>
+                                    </div>
                                 </dt>
                             )}
                         {/* Keep this one rendered whether or not we're searching since we can keep the previous results that way */}
@@ -167,7 +169,12 @@ export const GlobalSearch = () => {
                                 .slice(0, MAX_SEARCH_RESULTS)
                                 .map(([type, results], index) => (
                                     <React.Fragment key={index}>
-                                        <dt className="mt-2 pe-none">
+                                        <dt
+                                            className={`${
+                                                0 !== index &&
+                                                "pt-1 mt-1 border-top"
+                                            } py-1 px-2 fw-semibold border-bottom text-truncate pe-none fs-smaller`}
+                                        >
                                             {toTitleCase(type)}
                                         </dt>
                                         {results.map((result, index) => {
@@ -183,7 +190,7 @@ export const GlobalSearch = () => {
                                                     <Link
                                                         href={url}
                                                         title={result.key}
-                                                        className="d-block text-decoration-none px-2 py-1 text-truncate"
+                                                        className="d-block text-decoration-none px-3 py-1 text-truncate text-body lh-sm"
                                                     >
                                                         <FuzzyMatchHighlight
                                                             result={result.key}

@@ -59,7 +59,7 @@ const HighlightCharacter = ({
     key: string;
     character: string;
 }) => (
-    <span key={key} className="bg-info bg-opacity-25 fw-bold">
+    <span key={key} className="text-primary">
         {character}
     </span>
 );
