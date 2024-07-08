@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import { SearchResults } from "./find-user-or-run";
 

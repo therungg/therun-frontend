@@ -126,7 +126,7 @@ export const GlobalSearch = () => {
                     htmlFor="global-search"
                     className="input-group-text w-42p"
                 >
-                    {isLoading ? (
+                    {isSearching ? (
                         <div
                             className="spinner-border spinner-border-sm"
                             role="status"
@@ -152,17 +152,15 @@ export const GlobalSearch = () => {
                     ref={resultsPanelRef}
                     className="dropdown-menu d-block mt-2 py-0 overflow-y-auto w-100 mh-400p"
                 >
-                    <dl className="list-group mb-1">
+                    <dl className="list-group">
                         {!searchResultEntries.length && !isSearching && (
-                            <dt className="m-2 fw-semibold text-truncate">
-                                <span className="fs-smaller">
-                                    No results found
-                                </span>
+                            <dt className="m-2 fw-semibold text-truncate fs-smaller">
+                                No results found
                             </dt>
                         )}
                         {isSearching && !searchResultEntries.length && (
-                            <dt className="m-2 fw-semibold">
-                                <span className="fs-smaller">Searching...</span>
+                            <dt className="m-2 fw-semibold fs-smaller">
+                                Searching...
                             </dt>
                         )}
                         {!!searchResultEntries.length &&
