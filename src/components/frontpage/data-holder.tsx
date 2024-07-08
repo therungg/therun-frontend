@@ -1,11 +1,11 @@
-"use client";
-
 import { Col, Row, Table } from "react-bootstrap";
 import { RunPreview } from "./run-preview";
 import React from "react";
 import { type Run } from "../../common/types";
+import { getPersonalBestRuns } from "~src/lib/get-personal-best-runs";
 
-export const DataHolder = ({ runs }: { runs: Run[] }) => {
+export const DataHolder = async () => {
+    const runs = await getPersonalBestRuns();
     return (
         <Row>
             <Col>

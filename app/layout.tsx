@@ -23,12 +23,14 @@ export default async function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const session = await getSession();
+    const [
+        session,
+        locale,
+        // Providing all messages to the client
+        // side is the easiest way to get started
+        messages,
+    ] = await Promise.all([getSession(), getLocale(), getMessages()]);
     const sessionError = session.sessionError;
-    const locale = await getLocale();
-    // Providing all messages to the client
-    // side is the easiest way to get started
-    const messages = await getMessages();
     return (
         <html lang={locale} suppressHydrationWarning>
             <body>

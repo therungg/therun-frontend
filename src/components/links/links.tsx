@@ -1,3 +1,4 @@
+"use client";
 import Link from "next/link";
 import { ReactNode } from "react";
 import { usePatreons } from "../patreon/use-patreons";
