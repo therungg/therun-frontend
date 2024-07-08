@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { Button } from "react-bootstrap";
 import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import React from "react";
-import { Col, Row } from "react-bootstrap";
+import { Col, Row, Button } from "react-bootstrap";
 import { DataHolder } from "~src/components/frontpage/data-holder";
 import { SkeletonPersonalBests } from "~src/components/skeleton/index/skeleton-personal-bests";
 import { PopularGames } from "~src/components/game/popular-games";
@@ -50,13 +49,13 @@ export const Homepage = () => {
 
             <div>
                 <Row className="text-center">
-                    <Col xl={6} lg={12} className="mt-4">
+                    <Col xl={6} className="mt-4">
                         <h2>Recent Personal Bests</h2>
                         <React.Suspense fallback={<SkeletonPersonalBests />}>
                             <DataHolder />
                         </React.Suspense>
                     </Col>
-                    <Col xl={6} lg={12} className="mt-4">
+                    <Col xl={6} className="mt-4">
                         <h2>Popular Games</h2>
                         <React.Suspense fallback={<SkeletonPopularGames />}>
                             <PopularGames />
