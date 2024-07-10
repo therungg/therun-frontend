@@ -140,6 +140,7 @@ export interface EditRaceInput {
     description?: string;
     customName?: string;
     forceStream?: string;
+    password?: string;
 }
 
 export type WebsocketRaceMessageType =

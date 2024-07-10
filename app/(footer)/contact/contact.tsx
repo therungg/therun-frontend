@@ -162,7 +162,7 @@ export const Contact = () => {
                                     })
                                 }
                             >
-                                <option value="">Select a category</option>
+                                <option>Select a category</option>
                                 <option value="bug">
                                     I want to report a bug
                                 </option>

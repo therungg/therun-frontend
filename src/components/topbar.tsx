@@ -8,7 +8,7 @@ import { TwitchUser } from "./twitch/TwitchUser";
 import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
 import { getColorMode } from "~src/utils/colormode";
 import { Upload } from "react-bootstrap-icons";
-import { AutoCompletion } from "~src/components/search/autocompletion";
+import { GlobalSearch } from "~src/components/search/global-search";
 import { resetSession } from "~src/actions/reset-session.action";
 
 const DarkModeSlider = dynamic(() => import("./dark-mode-slider"), {
@@ -107,7 +107,7 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                         <Nav.Link href="/games/">Games</Nav.Link>
                     </Nav>
                     <Nav className="ml-auto mb-2 mb-lg-0 me-lg-2">
-                        <AutoCompletion />
+                        <GlobalSearch />
                     </Nav>
                     <Nav className="ml-auto" onClick={handleColorMode}>
                         {" "}

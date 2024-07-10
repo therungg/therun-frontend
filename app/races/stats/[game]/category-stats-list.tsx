@@ -34,7 +34,7 @@ export const CategoryStatsListDisplay = ({
     );
 
     return (
-        <div className="">
+        <div>
             <PaginationSearch text="Search for category" />
             <div className="mt-2 mb-4">
                 {pagination.data.map((gameStats) => {

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import getTimeParts from '../helpers/getTimeParts';
 import now from '../helpers/now';
 

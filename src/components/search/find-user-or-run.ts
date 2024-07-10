@@ -19,7 +19,7 @@ export interface SearchResults {
 }
 
 // Same as API on empty result
-const DEFAULT_SEARCH_RESULTS = {
+export const DEFAULT_SEARCH_RESULTS = {
     categories: {},
     games: {},
     users: {},

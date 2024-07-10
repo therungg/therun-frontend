@@ -128,7 +128,7 @@ const BasePage: React.FunctionComponent<BasePageProps> = ({
                             setSelectedUser(e.target.value);
                         }}
                     >
-                        <option key="">Select a user</option>
+                        <option>Select a user</option>
                         {Object.keys(updatedLiveDataMap).map((key) => {
                             return <option key={key}>{key}</option>;
                         })}
