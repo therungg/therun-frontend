@@ -3,7 +3,7 @@ import React from "react";
 import { AggregatedResults } from "./use-aggregated-results";
 import { RunData } from "./find-user-or-run";
 
-interface SearchItem {
+export interface SearchItem {
     key: string;
     type: "user" | "game";
     data: RunData[];
