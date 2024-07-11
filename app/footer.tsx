@@ -1,53 +1,11 @@
-"use client";
 import React from "react";
 import { Col, Row } from "react-bootstrap";
-import { usePatreons } from "~src/components/patreon/use-patreons";
-import { UserLink } from "~src/components/links/links";
+import { PatreonBar } from "./patreon/patreon-bar.component";
 
-const DEFAULT_ANIMATION_DURATION = 30;
-
-export const Footer = () => {
-    const { data: patreonData } = usePatreons();
-    const patronCount = Object.keys(patreonData || {}).length;
-    const animationDuration =
-        Math.floor(patronCount * 0.5) + DEFAULT_ANIMATION_DURATION;
+export const Footer: React.FunctionComponent = () => {
     return (
         <footer className="bg-body-secondary">
-            <div className="patreon-scroll-bar bg-body-tertiary">
-                <div
-                    style={{
-                        animationDuration: `${animationDuration}s`,
-                    }}
-                >
-                    <div className="d-flex">
-                        <span className="me-4">
-                            A special thanks to our Tier 3 Patrons:
-                        </span>
-
-                        {Object.entries(patreonData || {})
-                            .sort(() => Math.random() - 0.5)
-                            .filter(([, v]) => {
-                                if (!v.tier || v.tier < 3) return false;
-
-                                return (
-                                    !v.preferences ||
-                                    v.preferences.featureInScrollbar
-                                );
-                            })
-                            .map(([k]) => {
-                                return (
-                                    <div className="me-4" key={`${k}patron`}>
-                                        <UserLink
-                                            key={`${k}patron`}
-                                            username={k}
-                                        />
-                                    </div>
-                                );
-                            })}
-                    </div>
-                </div>
-            </div>
-
+            <PatreonBar />
             <div className="container">
                 <Row sm={2} md={4} className="pb-3 text-center row-cols-1">
                     <Col className="mt-3">
