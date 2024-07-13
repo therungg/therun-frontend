@@ -88,10 +88,12 @@ export const CurrentRunDetails: React.FunctionComponent<
                 >
                     <DurationToFormatted duration={bestPossible} />
                     &nbsp;
+                    {pb && bestPossible && 
                     <Difference
                         one={bestPossible.toString()}
                         two={pb.toString()}
                     />
+                    }
                 </Col>
             </Row>
             <Row>
