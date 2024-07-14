@@ -27,23 +27,23 @@ export const TournamentStandings = ({
     const points = {};
 
     tournament.pointDistribution?.forEach((point, index) => {
-        [tournament1Data, tournament2Data].forEach((data) => {
-            if (data.leaderboards?.pbLeaderboard[index]) {
-                const standing = data.leaderboards?.pbLeaderboard[index];
+        // [tournament1Data, tournament2Data].forEach((data) => {
+        //     if (data.leaderboards?.pbLeaderboard[index]) {
+        //         const standing = data.leaderboards?.pbLeaderboard[index];
 
-                const user = standing.username;
+        //         const user = standing.username;
 
-                if (!points[user]) {
-                    points[user] = {
-                        stat: 0,
-                        username: user,
-                        url: standing.url,
-                    };
-                }
+        //         if (!points[user]) {
+        //             points[user] = {
+        //                 stat: 0,
+        //                 username: user,
+        //                 url: standing.url,
+        //             };
+        //         }
 
-                points[user].stat += point;
-            }
-        });
+        //         points[user].stat += point;
+        //     }
+        // });
 
         if (
             tournament.leaderboards &&
@@ -134,7 +134,7 @@ export const TournamentStandings = ({
                 {/*        },*/}
                 {/*    )}*/}
                 {/*</Col>*/}
-                <Col>
+{/*                 <Col>
                     <h2>Standings Heat 1</h2>
 
                     {getLeaderboard(
@@ -177,12 +177,12 @@ export const TournamentStandings = ({
                             );
                         },
                     )}
-                </Col>
+                </Col> */}
                 <Col>
-                    <h2>Standings Heat 3</h2>
+                    <h2>Standings Heat 1</h2>
 
                     {getLeaderboard(
-                        "Points Heat 3",
+                        "Points Heat 1",
                         tournament.leaderboards?.pbLeaderboard,
                         "",
                         (stat, key) => {
