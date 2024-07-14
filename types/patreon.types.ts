@@ -11,6 +11,6 @@ export interface Patron {
     tier: number;
 }
 
-export interface PatronList {
+export interface PatronMap {
     [PatronName: string]: Patron;
 }
