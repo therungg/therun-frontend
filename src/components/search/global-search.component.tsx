@@ -42,13 +42,14 @@ export const GlobalSearch = React.memo(() => {
     const aggregatedResults = useAggregatedResults(searchResults);
     React.useEffect(() => {
         const params = new URLSearchParams(searchParams.toString());
-        let url = `${pathname}`;
         if (!query) {
             params.delete("q");
         } else {
             params.set("q", encodeURIComponent(query));
-            url += `?${params.toString()}`;
         }
+        const url =
+            `${pathname}` + (params.size ? `?${params.toString()}` : "");
+
         window.history.replaceState(
             { ...window.history.state, as: url, url },
             "",
