@@ -47,8 +47,9 @@ export const GlobalSearch = React.memo(() => {
         } else {
             params.set("q", encodeURIComponent(query));
         }
-        //
-        const url = `${pathname}?${params.toString()}`;
+        const url =
+            `${pathname}` + (params.size ? `?${params.toString()}` : "");
+
         window.history.replaceState(
             { ...window.history.state, as: url, url },
             "",
