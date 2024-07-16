@@ -3,7 +3,6 @@ import { getLocale, getMessages } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 import "../src/styles/_import.scss";
 import { Header } from "./header";
-import { Footer } from "./footer";
 import { Content } from "./content";
 import { Providers } from "./providers";
 import { Scripts } from "./scripts";
@@ -12,6 +11,7 @@ import buildMetadata from "~src/utils/metadata";
 import { Viewport } from "next";
 import { SessionErrorBoundary } from "~src/components/errors/session.error-boundary";
 import { Navigation } from "~src/components/navigation";
+import { getCookieKey } from "~src/utils/cookies";
 
 export const metadata = buildMetadata();
 export const viewport: Viewport = {
@@ -27,36 +27,42 @@ export default async function RootLayout({
     const [
         session,
         locale,
-        // Providing all messages to the client
-        // side is the easiest way to get started
+        // Providing all messages to the client side is the easiest way to get started
         messages,
-    ] = await Promise.all([getSession(), getLocale(), getMessages()]);
+        defaultTheme = "system",
+    ] = await Promise.all([
+        getSession(),
+        getLocale(),
+        getMessages(),
+        getCookieKey("theme"),
+    ]);
     const sessionError = session.sessionError;
     return (
         <html lang={locale} suppressHydrationWarning>
             <body>
                 <NextIntlClientProvider messages={messages}>
-                    <Providers user={session}>
+                    <Providers defaultTheme={defaultTheme} user={session}>
                         <Scripts />
-                        <Header
-                            username={session?.username}
-                            picture={session?.picture}
-                        />
                         <div className="d-flex">
-                            <aside className="col-md-2 bg-body-tertiary">
-                                <Navigation username="test" />
+                            <aside className="col-md-auto bg-body-tertiary">
+                                <Navigation username={session?.username} />
                             </aside>
-                            <main className="col-md-10 main-container container">
-                                <Content>
-                                    {sessionError ? (
-                                        <SessionErrorBoundary />
-                                    ) : (
-                                        children
-                                    )}
-                                </Content>
-                            </main>
+                            <div className="flex-column">
+                                <Header
+                                    username={session?.username}
+                                    picture={session?.picture}
+                                />
+                                <main className="col-md-10 main-container container">
+                                    <Content>
+                                        {sessionError ? (
+                                            <SessionErrorBoundary />
+                                        ) : (
+                                            children
+                                        )}
+                                    </Content>
+                                </main>
+                            </div>
                         </div>
-                        <Footer />
                     </Providers>
                 </NextIntlClientProvider>
             </body>
