@@ -43,25 +43,23 @@ export default async function RootLayout({
                 <NextIntlClientProvider messages={messages}>
                     <Providers defaultTheme={defaultTheme} user={session}>
                         <Scripts />
+                        <Header
+                            username={session?.username}
+                            picture={session?.picture}
+                        />
                         <div className="d-flex">
                             <aside className="col-md-auto bg-body-tertiary">
                                 <Navigation username={session?.username} />
                             </aside>
-                            <div className="flex-column">
-                                <Header
-                                    username={session?.username}
-                                    picture={session?.picture}
-                                />
-                                <main className="col-md-10 main-container container">
-                                    <Content>
-                                        {sessionError ? (
-                                            <SessionErrorBoundary />
-                                        ) : (
-                                            children
-                                        )}
-                                    </Content>
-                                </main>
-                            </div>
+                            <main className="col-md-10 main-container container">
+                                <Content>
+                                    {sessionError ? (
+                                        <SessionErrorBoundary />
+                                    ) : (
+                                        children
+                                    )}
+                                </Content>
+                            </main>
                         </div>
                     </Providers>
                 </NextIntlClientProvider>
