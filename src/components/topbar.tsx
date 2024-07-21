@@ -35,7 +35,6 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
     const router = useRouter();
     const [show, setShow] = useState(false);
     const { theme } = useTheme();
-
     const handleResetSession = useCallback(async () => {
         await resetSession();
         window.location.reload();

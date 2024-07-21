@@ -3,7 +3,6 @@ import { getLocale, getMessages } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 import "../src/styles/_import.scss";
 import { Header } from "./header";
-import { Footer } from "./footer";
 import { Content } from "./content";
 import { Providers } from "./providers";
 import { Scripts } from "./scripts";
@@ -11,6 +10,8 @@ import { getSession } from "~src/actions/session.action";
 import buildMetadata from "~src/utils/metadata";
 import { Viewport } from "next";
 import { SessionErrorBoundary } from "~src/components/errors/session.error-boundary";
+import { getCookieKey } from "~src/utils/cookies";
+import { Footer } from "./footer";
 
 export const metadata = buildMetadata();
 export const viewport: Viewport = {
@@ -26,16 +27,21 @@ export default async function RootLayout({
     const [
         session,
         locale,
-        // Providing all messages to the client
-        // side is the easiest way to get started
+        // Providing all messages to the client side is the easiest way to get started
         messages,
-    ] = await Promise.all([getSession(), getLocale(), getMessages()]);
+        defaultTheme = "dark",
+    ] = await Promise.all([
+        getSession(),
+        getLocale(),
+        getMessages(),
+        getCookieKey("theme"),
+    ]);
     const sessionError = session.sessionError;
     return (
         <html lang={locale} suppressHydrationWarning>
             <body>
                 <NextIntlClientProvider messages={messages}>
-                    <Providers user={session}>
+                    <Providers defaultTheme={defaultTheme} user={session}>
                         <Scripts />
                         <Header
                             username={session?.username}

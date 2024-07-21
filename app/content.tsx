@@ -8,9 +8,9 @@ import { useProgressBar } from "~src/components/n-progress.component";
 export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
     children,
 }) => {
-    const { systemTheme } = useTheme();
+    const { theme } = useTheme();
     useProgressBar();
-    const prefix = systemTheme === "dark" ? "" : "/lightmode";
+    const prefix = theme === "dark" ? "" : "/lightmode";
 
     return (
         <Container className="my-4 pb-5 main-container">

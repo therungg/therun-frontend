@@ -1,10 +1,10 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import patreonStyles from "./patreon-styles";
 import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import { usePatreons } from "./use-patreons";
-import { getColorMode } from "~src/utils/colormode";
 import { safeDecodeURI } from "~src/utils/uri";
+import { useTheme } from "next-themes";
 
 interface NameAsPatreonProps {
     name: string;
@@ -46,18 +46,15 @@ export const PatreonName: React.FunctionComponent<PatreonNameProps> = ({
     icon = true,
     size = 20,
 }) => {
-    const [dark, setDark] = useState(true);
-    useEffect(function () {
-        setDark(getColorMode() !== "light");
-    }, []);
-
+    const { theme } = useTheme();
+    const isDark = useMemo(() => theme === "dark", [theme]);
     const colors = patreonStyles();
 
     let style = colors.find((val) => val.id == color);
 
     if (!style) style = colors[0];
 
-    style = dark ? style.style[0] : style.style[1];
+    style = isDark ? style.style[0] : style.style[1];
 
     return (
         <>

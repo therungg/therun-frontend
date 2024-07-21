@@ -4,11 +4,11 @@ import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { ValuesOf } from "types/utility.types";
 
 export const COOKIE_KEY = {
-    SCHEME: "scheme",
     SESSION_ID: "session_id",
     RACES_MESSAGE_READ: "races-message-read",
     PAGE_VISITS: "page_visits",
     RECENT_VISITS: "recent_visits",
+    THEME: "theme",
 } as const;
 
 export const getCookieKey = async (
@@ -16,7 +16,7 @@ export const getCookieKey = async (
     defaultValue?: string,
 ) => {
     // The `getCookie` function is not available on the server, imagine that
-    // we have to access the scheme while Next.js is rendering the `<RootLayout />`
+    // we have to access the theme while Next.js is rendering the `<RootLayout />`
     // component (this happens server side). We can use the `cookies` function
     // from the `next/headers` package to access the cookies from the request headers.
     if (typeof window === "undefined") {

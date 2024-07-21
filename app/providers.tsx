@@ -1,26 +1,40 @@
 "use client";
-
-import { ThemeProvider } from "next-themes";
-import { PropsWithChildren } from "react";
+import { ThemeProvider, useTheme } from "next-themes";
+import { PropsWithChildren, useEffect } from "react";
 import { User } from "../types/session.types";
 import { defineAbilityFor } from "~src/rbac/ability";
 import { AbilityContext } from "~src/rbac/Can.component";
 
 interface ProvidersProps {
     user: User;
+    defaultTheme: string;
 }
 
 export function Providers({
     children,
     user,
+    defaultTheme,
 }: PropsWithChildren<ProvidersProps>) {
     const ability = defineAbilityFor(user);
 
     return (
-        <ThemeProvider attribute="data-bs-theme">
+        <ThemeProvider defaultTheme={defaultTheme} attribute="data-bs-theme">
             <AbilityContext.Provider value={ability}>
+                <ThemeInitializer defaultTheme={defaultTheme} />
                 {children}
             </AbilityContext.Provider>
         </ThemeProvider>
     );
 }
+
+// Kind of a hack that lets us set the theme using next-themes `setTheme`
+// It can't be done in the Providers component because it has to be within `<ThemeProvider>`
+const ThemeInitializer = ({ defaultTheme = "dark" }) => {
+    const { setTheme } = useTheme();
+
+    useEffect(() => {
+        setTheme(defaultTheme);
+    }, [defaultTheme, setTheme]);
+
+    return <></>;
+};
