@@ -1,14 +1,14 @@
 import { Run } from "../../../common/types";
 import { Col, Image, Row, Table } from "react-bootstrap";
-import React, { useEffect, useReducer, useState } from "react";
+import React, { useReducer, useState } from "react";
 import { DurationToFormatted, IsoToFormatted } from "../../util/datetime";
 import { GameLink, UserGameCategoryLink } from "../../links/links";
 import { EditRun } from "../dashboard/edit-run";
 import { GlobalGameData } from "~app/[username]/[game]/[run]/run";
 import styles from "../../css/User.module.scss";
 import { GameImage } from "~src/components/image/gameimage";
-import { getColorMode } from "~src/utils/colormode";
 import { Can, subject } from "~src/rbac/Can.component";
+import { useTheme } from "next-themes";
 
 export const UserOverview = ({
     runs,
@@ -27,11 +27,7 @@ export const UserOverview = ({
 }) => {
     const [, forceUpdate] = useReducer((x) => x + 1, 0);
     const [openedEdit, setOpenedEdit] = useState([]);
-    const [dark, setDark] = useState(true);
-
-    useEffect(function () {
-        setDark(getColorMode() !== "light");
-    }, []);
+    const { theme } = useTheme();
 
     const images = Array.from(runs).filter(([game]) => {
         game = game.split("#")[0];
@@ -120,11 +116,7 @@ export const UserOverview = ({
                                             globalData.image == "noimage") && (
                                             <Image
                                                 alt="Logo"
-                                                src={
-                                                    dark
-                                                        ? "/logo_dark_theme_no_text_transparent.png"
-                                                        : "/logo_light_theme_no_text_transparent.png"
-                                                }
+                                                src={`/logo_${theme}_theme_no_text_transparent.png`}
                                                 height={0}
                                                 width={0}
                                             />

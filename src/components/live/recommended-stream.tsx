@@ -1,14 +1,14 @@
 import { LiveRun } from "~app/live/live.types";
 import { Col } from "react-bootstrap";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { LiverunStatsPanel } from "./liverun-stats-panel";
 import { SplitsViewer } from "./splits-viewer";
 import patreonStyles from "../patreon/patreon-styles";
 import { usePatreons } from "../patreon/use-patreons";
-import { getColorMode } from "~src/utils/colormode";
 import { TwitchEmbed } from "react-twitch-embed";
 import { Split } from "~src/common/types";
 import { SplitStatus, Status } from "~src/types/splits.types";
+import { useTheme } from "next-themes";
 
 export const RecommendedStream = ({
     liveRun,
@@ -17,7 +17,8 @@ export const RecommendedStream = ({
     liveRun: LiveRun;
     stream?: string | null;
 }) => {
-    const [dark, setDark] = useState(true);
+    const { theme } = useTheme();
+    const isDark = useMemo(() => theme === "dark", [theme]);
     const [activeLiveRun, setActiveLiveRun] = useState(liveRun);
     const [selectedSplit, setSelectedSplit] = useState(
         liveRun.currentSplitIndex,
@@ -37,10 +38,6 @@ export const RecommendedStream = ({
     };
 
     const previous = usePrevious({ activeLiveRun });
-
-    useEffect(function () {
-        setDark(getColorMode() !== "light");
-    }, []);
 
     useEffect(() => {
         const scrollDistance = activeLiveRun.currentSplitIndex * pixelsForSplit;
@@ -81,7 +78,7 @@ export const RecommendedStream = ({
                 let style =
                     colors.find((val) => val.id == colorPreference) ||
                     colors[0];
-                style = dark ? style.style[0] : style.style[1];
+                style = isDark ? style.style[0] : style.style[1];
 
                 if (style.color != "transparent") {
                     borderColor = style.color;
@@ -96,7 +93,7 @@ export const RecommendedStream = ({
                 gradient,
             });
         }
-    }, [patreons, isLoading, liveRun.user]);
+    }, [patreons, isLoading, liveRun.user, isDark]);
 
     if (
         !activeLiveRun ||
@@ -119,7 +116,6 @@ export const RecommendedStream = ({
                 <SplitsViewer
                     activeLiveRun={activeLiveRun}
                     currentSplitSplitStatus={currentSplitSplitStatus}
-                    dark={dark}
                     setSelectedSplit={(e) => {
                         setSelectedSplit(e);
 

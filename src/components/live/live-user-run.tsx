@@ -1,6 +1,7 @@
+"use client";
 import { Col, Image, Row } from "react-bootstrap";
 import styles from "../css/LiveRun.module.scss";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { UserLink } from "../links/links";
 import { usePatreons } from "../patreon/use-patreons";
 import patreonStyles from "../patreon/patreon-styles";
@@ -9,9 +10,9 @@ import { LiveRun } from "~app/live/live.types";
 import { LiveSplitTimerComponent } from "~app/live/live-split-timer.component";
 import { GameImage } from "~src/components/image/gameimage";
 import { Twitch as TwitchIcon } from "react-bootstrap-icons";
-import { getColorMode } from "~src/utils/colormode";
 import { CombinedLeaderboardStat } from "~app/tournaments/[tournament]/get-combined-tournament-leaderboard.component";
 import { Count } from "~app/games/[game]/game.types";
+import { useTheme } from "next-themes";
 
 export const LiveUserRun = ({
     liveRun,
@@ -28,16 +29,13 @@ export const LiveUserRun = ({
     isUrl?: boolean;
     seedingTable?: CombinedLeaderboardStat[];
 }) => {
-    const [dark, setDark] = useState(true);
-    const [liveUserStyles, setLiveUserStyles] = useState<{
+    const { theme } = useTheme();
+    const [liveUserStyles, setLiveUserStyles] = React.useState<{
         borderColor: string;
         gradient: string;
     }>({ borderColor: "", gradient: "" });
     const { data: patreons, isLoading } = usePatreons();
-    useEffect(function () {
-        setDark(getColorMode() !== "light");
-    }, []);
-
+    const isDark = React.useMemo(() => theme === "dark", [theme]);
     useEffect(() => {
         if (!isLoading && patreons && patreons[liveRun.user]) {
             const patreonData = patreons[liveRun.user];
@@ -51,8 +49,8 @@ export const LiveUserRun = ({
                 const style =
                     colors.find((val) => val.id === color) ?? colors[0];
                 const [darkStyle, lightStyle] = style.style;
-                borderColor = dark ? darkStyle.color : lightStyle.color;
-                gradient = dark
+                borderColor = isDark ? darkStyle.color : lightStyle.color;
+                gradient = isDark
                     ? darkStyle.backgroundImage
                     : lightStyle.backgroundImage;
             } else {
@@ -61,7 +59,7 @@ export const LiveUserRun = ({
             }
             setLiveUserStyles({ borderColor, gradient });
         }
-    }, [patreons, isLoading, liveRun.user]);
+    }, [patreons, isLoading, liveRun.user, isDark]);
 
     let tournamentPb = null;
     let ranking = null;
@@ -150,7 +148,7 @@ export const LiveUserRun = ({
                     <Image
                         alt="Logo"
                         src={
-                            dark
+                            isDark
                                 ? "/logo_dark_theme_no_text_transparent.png"
                                 : "/logo_light_theme_no_text_transparent.png"
                         }
@@ -222,29 +220,28 @@ export const LiveUserRun = ({
                     xs={5}
                     className="d-flex justify-content-end align-items-center"
                 >
-                    <LiveSplitTimerComponent liveRun={liveRun} dark={dark} />
+                    <LiveSplitTimerComponent liveRun={liveRun} />
                 </Col>
             </Row>
         </div>
     );
 };
 
-export const LiveIcon = ({ height = 16, dark = false }) => {
+export const LiveIcon = ({ height = 16 }) => {
+    const { theme } = useTheme();
     return (
-        <Image
-            alt="Live Icon"
-            src={!dark ? "/LiveTR-light.png" : "/LiveTR-dark.png"}
-            height={height}
-        />
+        <Image alt="Live Icon" src={`/LiveTR-${theme}.png`} height={height} />
     );
 };
 
-export const Flag = ({ className = "", height = 16, dark = false }) => {
+export const Flag = ({ className = "", height = 16 }) => {
+    const { theme } = useTheme();
+    const isDark = React.useMemo(() => theme === "dark", [theme]);
     return (
         <Image
             alt="Flag"
             src={
-                !dark
+                !isDark
                     ? "/Flag finish greenTR-darktransparant.png"
                     : "/Flag finish greenTR-lighttransparant(1).png"
             }

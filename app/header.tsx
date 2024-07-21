@@ -1,4 +1,8 @@
-import Topbar from "~src/components/topbar";
+import dynamic from "next/dynamic";
+
+const Topbar = dynamic(() => import("~src/components/topbar"), {
+    ssr: false,
+});
 
 interface HeaderProps {
     username: string;

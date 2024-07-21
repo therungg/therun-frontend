@@ -13,12 +13,10 @@ const PERSONAL_BEST = "Personal Best";
 export const SplitsViewer = ({
     activeLiveRun,
     currentSplitSplitStatus,
-    dark,
     setSelectedSplit,
 }: {
     activeLiveRun: LiveRun;
     currentSplitSplitStatus: SplitStatus;
-    dark: boolean;
     setSelectedSplit: (splitIndex: number) => void;
 }) => {
     const [comparison, setComparison] = useState(
@@ -328,7 +326,6 @@ export const SplitsViewer = ({
                         <Row>
                             <LiveSplitTimerComponent
                                 liveRun={activeLiveRun}
-                                dark={dark}
                                 className="d-flex justify-content-end align-items-center h-90"
                                 timerClassName="text-end fs-big"
                                 withDiff={false}
@@ -337,7 +334,6 @@ export const SplitsViewer = ({
                         <Row>
                             <LiveSplitTimerComponent
                                 liveRun={activeLiveRun}
-                                dark={dark}
                                 className="d-flex align-items-center h-100"
                                 timerClassName="text-end fs-medium lh-1"
                                 withDiff={false}

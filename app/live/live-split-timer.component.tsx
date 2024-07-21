@@ -13,7 +13,6 @@ import { LiveRun } from "./live.types";
 
 interface LiveSplitTimerComponentProps {
     liveRun: LiveRun;
-    dark: boolean;
     withDiff?: boolean;
     className?: string | null;
     timerClassName?: string | null;
@@ -24,7 +23,6 @@ export const LiveSplitTimerComponent: React.FunctionComponent<
     LiveSplitTimerComponentProps
 > = ({
     liveRun,
-    dark,
     withDiff = true,
     className = null,
     timerClassName = null,
@@ -99,11 +97,7 @@ export const LiveSplitTimerComponent: React.FunctionComponent<
                         {!splitTime && (
                             <div className="d-flex justify-content-end">
                                 <div className="d-flex">
-                                    <Flag
-                                        className="me-2"
-                                        height={30}
-                                        dark={dark}
-                                    />
+                                    <Flag className="me-2" height={30} />
                                 </div>
                                 <div>
                                     <div
