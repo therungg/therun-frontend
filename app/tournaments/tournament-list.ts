@@ -20,7 +20,7 @@ const tournamentEntries: Array<[string, TournamentEntryValue]> = [
     ["dirtythirty", { tournament: "Dirty Thirty Sapphire Tourney 2" }],
     ["gsa", { tournament: "PACE Fall 2024 Qualifiers 2" }],
     ["hgss", { tournament: "HGSS Blitz" }],
-    ["lego", { tournament: "Lego Challenge 3" }],
+    ["lego", { tournament: "LEGO Star Wars BTR" }],
     [
         "moist",
         {
@@ -51,7 +51,7 @@ const tournamentEntries: Array<[string, TournamentEntryValue]> = [
         { tournament: "Hazeblade Invitational Qualifiers ft. Resident Evil 4" },
     ],
     ["basementcup", { tournament: "Ultimate Basement Cup 2023" }],
-    ["tcs", { tournament: "TCS Community BTR" }],
+    ["tcs", { tournament: "LEGO Star Wars BTR" }],
     ["nitro_cup", { tournament: "Nitro Cup SMO" }],
     ["nitro_tournament", { tournament: "Nitro Tournament VI" }],
     ["knuckles", { tournament: "Knuckles Story Eclipse the Record" }],
