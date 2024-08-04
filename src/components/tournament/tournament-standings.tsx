@@ -98,25 +98,30 @@ export const TournamentStandings = () => {
 
                             {getLeaderboard(
                                 "Points Heat " + (tournamentIndex + 1),
-                                (data.pointDistribution as number[]).map(
-                                    (_, index) => {
-                                        if (
-                                            data.leaderboards &&
-                                            data.leaderboards?.pbLeaderboard &&
-                                            data.leaderboards?.pbLeaderboard[
-                                                index
-                                            ]
-                                        ) {
-                                            return data.leaderboards
-                                                ?.pbLeaderboard[index];
-                                        }
-                                        return {
-                                            username: "",
-                                            stat: 0,
-                                            placing: index + 1,
-                                        };
-                                    },
-                                ),
+                                data.leaderboards &&
+                                    data.leaderboards.pbLeaderboard &&
+                                    data.leaderboards.pbLeaderboard.length >
+                                        data.pointDistribution.length
+                                    ? data.leaderboards.pbLeaderboard
+                                    : (data.pointDistribution as number[]).map(
+                                          (_, index) => {
+                                              if (
+                                                  data.leaderboards &&
+                                                  data.leaderboards
+                                                      ?.pbLeaderboard &&
+                                                  data.leaderboards
+                                                      ?.pbLeaderboard[index]
+                                              ) {
+                                                  return data.leaderboards
+                                                      ?.pbLeaderboard[index];
+                                              }
+                                              return {
+                                                  username: "",
+                                                  stat: 0,
+                                                  placing: index + 1,
+                                              };
+                                          },
+                                      ),
                                 "",
                                 (stat, key) => {
                                     return (
@@ -125,9 +130,13 @@ export const TournamentStandings = () => {
                                                 data.pointDistribution as number[]
                                             )[key] || 0}{" "}
                                             {stat > 0 && (
-                                                <DurationToFormatted
-                                                    duration={stat.toString()}
-                                                />
+                                                <span>
+                                                    (
+                                                    <DurationToFormatted
+                                                        duration={stat.toString()}
+                                                    />
+                                                    )
+                                                </span>
                                             )}
                                         </div>
                                     );
