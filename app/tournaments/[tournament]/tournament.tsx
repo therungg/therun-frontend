@@ -425,7 +425,7 @@ export const GenericTournament = ({
                 </Tab>
                 {tournament.pointDistribution && (
                     <Tab title="Standings" eventKey="standings">
-                        <TournamentStandings tournament={tournament} />
+                        <TournamentStandings />
                     </Tab>
                 )}
                 <Tab title="Stats" eventKey="stats">
