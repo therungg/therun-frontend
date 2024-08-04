@@ -28,11 +28,19 @@ export const IsoToFormatted = ({ iso }: IsoToFormattedProps) => {
     return <>{moment(iso).format("L LT")}</>;
 };
 
-export const LocalizedTime = ({ date }: { date: Date }) => {
+export const LocalizedTime = ({
+    date,
+    asDate = false,
+}: {
+    date: Date;
+    asDate?: boolean;
+}) => {
     const [stateDate, setStateDate] = useState(date.toString());
 
     useEffect(() => {
-        setStateDate(date.toLocaleString());
+        setStateDate(
+            asDate ? date.toLocaleDateString() : date.toLocaleString(),
+        );
     }, []);
 
     return <>{stateDate}</>;
