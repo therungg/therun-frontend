@@ -23,6 +23,7 @@ export interface Tournament {
     eligiblePeriods: DateRange[];
     eligibleUsers: string[] | null;
     eligibleRuns: GameCategory[];
+    ineligibleUsersForPoints: string[] | null;
     ineligibleUsers: string[] | null;
     moderators: string[] | null;
     url: string;

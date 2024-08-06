@@ -29,26 +29,41 @@ export const TournamentStandings = () => {
     const allTournaments = [tournament1Data, tournament2Data, tournament3Data];
 
     allTournaments.forEach((data) => {
-        data.pointDistribution?.forEach((point, index) => {
+        let i = 0;
+
+        if (
+            !data.leaderboards ||
+            !data.leaderboards.pbLeaderboard ||
+            !data.pointDistribution
+        )
+            return;
+
+        data.leaderboards.pbLeaderboard.forEach((standing) => {
+            const pointDistribution = data.pointDistribution as number[];
+
+            if (i > (pointDistribution as number[]).length) return;
+
+            const user = standing.username;
+            const point = pointDistribution[i];
+
             if (
-                data.leaderboards &&
-                data.leaderboards.pbLeaderboard &&
-                data.leaderboards?.pbLeaderboard[index]
+                data.ineligibleUsersForPoints &&
+                data.ineligibleUsersForPoints.includes(user)
             ) {
-                const standing = data.leaderboards?.pbLeaderboard[index];
-
-                const user = standing.username;
-
-                if (!points[user]) {
-                    points[user] = {
-                        stat: 0,
-                        username: user,
-                        url: standing.url,
-                    };
-                }
-
-                points[user].stat += point;
+                return;
             }
+
+            if (!points[user]) {
+                points[user] = {
+                    stat: 0,
+                    username: user,
+                    url: standing.url,
+                };
+            }
+
+            points[user].stat += point;
+
+            i++;
         });
     });
 
@@ -81,6 +96,20 @@ export const TournamentStandings = () => {
                     )}
                 </Col>
                 {allTournaments.map((data, tournamentIndex) => {
+                    const leaderboard =
+                        data.leaderboards && data.leaderboards.pbLeaderboard
+                            ? data.leaderboards.pbLeaderboard.filter(
+                                  (standing) =>
+                                      !(
+                                          data.ineligibleUsersForPoints &&
+                                          data.ineligibleUsersForPoints.includes(
+                                              standing.username,
+                                          )
+                                      ),
+                              )
+                            : null;
+                    const pointDistribution =
+                        data.pointDistribution as number[];
                     return (
                         <Col key={data.name}>
                             <div className="d-flex justify-content-between align-items-center">
@@ -98,30 +127,23 @@ export const TournamentStandings = () => {
 
                             {getLeaderboard(
                                 "Points Heat " + (tournamentIndex + 1),
-                                data.leaderboards &&
-                                    data.leaderboards.pbLeaderboard &&
-                                    data.leaderboards.pbLeaderboard.length >
-                                        data.pointDistribution.length
-                                    ? data.leaderboards.pbLeaderboard
-                                    : (data.pointDistribution as number[]).map(
-                                          (_, index) => {
-                                              if (
-                                                  data.leaderboards &&
-                                                  data.leaderboards
-                                                      ?.pbLeaderboard &&
-                                                  data.leaderboards
-                                                      ?.pbLeaderboard[index]
-                                              ) {
-                                                  return data.leaderboards
-                                                      ?.pbLeaderboard[index];
-                                              }
-                                              return {
-                                                  username: "",
-                                                  stat: 0,
-                                                  placing: index + 1,
-                                              };
-                                          },
-                                      ),
+                                leaderboard &&
+                                    leaderboard.length >
+                                        pointDistribution.length
+                                    ? leaderboard
+                                    : pointDistribution.map((_, index) => {
+                                          if (
+                                              leaderboard !== null &&
+                                              leaderboard[index]
+                                          ) {
+                                              return leaderboard[index];
+                                          }
+                                          return {
+                                              username: "",
+                                              stat: 0,
+                                              placing: index + 1,
+                                          };
+                                      }),
                                 "",
                                 (stat, key) => {
                                     return (
