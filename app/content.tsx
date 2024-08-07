@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
-import { Container } from "react-bootstrap";
 import { Helmet } from "react-helmet-async";
 import { useTheme } from "next-themes";
 import { useProgressBar } from "~src/components/n-progress.component";
@@ -9,12 +8,12 @@ import { useProgressBar } from "~src/components/n-progress.component";
 export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
     children,
 }) => {
-    const { systemTheme } = useTheme();
+    const { theme } = useTheme();
     useProgressBar();
-    const prefix = systemTheme === "dark" ? "" : "/lightmode";
+    const prefix = theme === "dark" ? "" : "/lightmode";
 
     return (
-        <Container className="my-4 pb-5 main-container">
+        <>
             <Helmet>
                 <link rel="icon" href={`${prefix}/favicon.ico`} />
                 <link
@@ -47,6 +46,6 @@ export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
                 shallowRouting
             />
             {children}
-        </Container>
+        </>
     );
 };
