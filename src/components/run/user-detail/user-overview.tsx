@@ -305,7 +305,7 @@ export const UserOverview = ({
                                                                 );
 
                                                                 delete runs.get(
-                                                                    game,
+                                                                    originalGame,
                                                                 )[runKey];
 
                                                                 forceUpdate();
