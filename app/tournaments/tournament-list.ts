@@ -18,7 +18,7 @@ const tournamentEntries: Array<[string, TournamentEntryValue]> = [
         { tournament: "Defeat Ganon No SRM Community Clash Main Event" },
     ],
     ["dirtythirty", { tournament: "Dirty Thirty Sapphire Tourney 2" }],
-    ["gsa", { tournament: "PACE Fall 2024 Qualifiers 2" }],
+    ["gsa", { tournament: "PACE Fall 2024 Qualifiers 3" }],
     ["hgss", { tournament: "HGSS Blitz" }],
     ["lego", { tournament: "LEGO Star Wars BTR" }],
     [
