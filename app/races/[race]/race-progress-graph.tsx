@@ -17,7 +17,8 @@ const isRaceParticipantSplitMessage = (
     message: RaceMessage,
 ): message is RaceMessage<RaceMessageParticipantSplitData> =>
     message.type === "participant-split" ||
-    message.type === "participant-finish";
+    message.type === "participant-finish" ||
+    message.type === "participant-confirm";
 
 export const RaceProgressGraph = ({
     race,
@@ -107,8 +108,7 @@ export const RaceProgressGraph = ({
         .filter(isRaceParticipantSplitMessage)
         .reverse()
         .forEach((message) => {
-            if (!message.data || !message.data.time || !message.data.percentage)
-                return;
+            if (!message.data || !message.data.time) return;
             const current = participantsMap.get(message.data.user);
             if (!current) return;
 
