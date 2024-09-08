@@ -125,18 +125,9 @@ export const Live = ({
                 )}
             <Row className="g-3 my-3">
                 <div className="input-group mw-search">
-                    <span
-                        className="input-group-text"
-                        onClick={() => {
-                            const searchElement =
-                                document.getElementById("gameSearch");
-                            if (document.activeElement !== searchElement) {
-                                searchElement.focus();
-                            }
-                        }}
-                    >
+                    <label className="input-group-text" htmlFor="gameSearch">
                         <SearchIcon size={18} />
-                    </span>
+                    </label>
                     <input
                         type="search"
                         className="form-control"
