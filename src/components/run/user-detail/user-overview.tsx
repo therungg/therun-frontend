@@ -305,7 +305,7 @@ export const UserOverview = ({
                                                                 );
 
                                                                 delete runs.get(
-                                                                    game,
+                                                                    originalGame,
                                                                 )[runKey];
 
                                                                 forceUpdate();
@@ -381,7 +381,9 @@ export const UserOverview = ({
                                                                 const str =
                                                                     await result.json();
 
-                                                                runs.get(game)[
+                                                                runs.get(
+                                                                    originalGame,
+                                                                )[
                                                                     runKey
                                                                 ].highlighted =
                                                                     str.result.highlighted;
