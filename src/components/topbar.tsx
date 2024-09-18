@@ -8,13 +8,21 @@ import { TwitchUser } from "./twitch/TwitchUser";
 import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
 import { getColorMode } from "~src/utils/colormode";
 import { Upload } from "react-bootstrap-icons";
-import { GlobalSearch } from "~src/components/search/global-search.component";
 import { resetSession } from "~src/actions/reset-session.action";
 
 const DarkModeSlider = dynamic(() => import("./dark-mode-slider"), {
     ssr: false,
 });
 
+const GlobalSearch = dynamic(
+    () =>
+        import("~src/components/search/global-search.component").then(
+            (mod) => mod.GlobalSearch,
+        ),
+    {
+        ssr: false,
+    },
+);
 interface TopbarProps {
     username: string;
     picture: string;
