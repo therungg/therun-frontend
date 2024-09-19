@@ -135,7 +135,11 @@ export const RecommendedStream = ({
             </Col>
             <Col xl={4} lg={7} md={12} className="h-340p">
                 <TwitchEmbed
-                    channel={stream ? stream : activeLiveRun.user}
+                    channel={
+                        stream
+                            ? stream
+                            : activeLiveRun.login || activeLiveRun.user
+                    }
                     width="100%"
                     height="100%"
                     muted

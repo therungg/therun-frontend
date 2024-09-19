@@ -3,6 +3,7 @@ import { MarathonEvent } from "~src/components/marathon/send-marathon-data-butto
 
 export interface LiveRun {
     user: string;
+    login: string;
     currentSplitIndex: number;
     currentSplitName: string;
     currentTime: number;
