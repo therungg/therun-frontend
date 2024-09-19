@@ -17,6 +17,7 @@ namespace NodeJS {
         NEXT_PUBLIC_TWITCH_OAUTH_CLIENT_ID: string;
         NEXT_PUBLIC_CONTACT_EMAIL: string;
         NEXT_PUBLIC_RACE_API_URL: string;
+        NEXT_PUBLIC_STORIES_API_URL: string;
         DEV_API_KEY: string;
         PROD_API_KEY: string;
         TWITCH_OAUTH_SECRET: string;

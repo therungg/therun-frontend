@@ -9,12 +9,16 @@ import { getColorMode } from "~src/utils/colormode";
 import { TwitchEmbed } from "react-twitch-embed";
 import { Split } from "~src/common/types";
 import { SplitStatus, Status } from "~src/types/splits.types";
+import { StoryWithSplitsStories } from "~app/live/story.types";
+import { ShowRunStory } from "~app/live/stories/show-run-story";
 
 export const RecommendedStream = ({
     liveRun,
+    story = null,
     stream = null,
 }: {
     liveRun: LiveRun;
+    story?: StoryWithSplitsStories | null;
     stream?: string | null;
 }) => {
     const [dark, setDark] = useState(true);
@@ -129,7 +133,7 @@ export const RecommendedStream = ({
                     }}
                 />
             </Col>
-            <Col xl={5} lg={7} md={12} className="h-340p">
+            <Col xl={4} lg={7} md={12} className="h-340p">
                 <TwitchEmbed
                     channel={stream ? stream : activeLiveRun.user}
                     width="100%"
@@ -138,7 +142,7 @@ export const RecommendedStream = ({
                     withChat={false}
                 />
             </Col>
-            <Col xl={4} className="h-340p">
+            <Col xl={5} className="h-340p">
                 <div
                     className="bg-body-secondary h-100 px-3 py-2 game-border"
                     style={
@@ -158,10 +162,14 @@ export const RecommendedStream = ({
                               }
                     }
                 >
-                    <LiverunStatsPanel
-                        liveRun={liveRun}
-                        selectedSplit={selectedSplit}
-                    />
+                    {story ? (
+                        <ShowRunStory story={story} />
+                    ) : (
+                        <LiverunStatsPanel
+                            liveRun={liveRun}
+                            selectedSplit={selectedSplit}
+                        />
+                    )}
                 </div>
             </Col>
         </>
