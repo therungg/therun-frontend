@@ -1,8 +1,20 @@
 "use client";
 
-import { StoryWithSplitsStories } from "~app/live/story.types";
+import { useStory } from "~app/live/stories/use-story";
 
-export const ShowRunStory = ({ story }: { story: StoryWithSplitsStories }) => {
+export const ShowRunStory = ({ user }: { user: string }) => {
+    const { story, isLoaded } = useStory(user);
+
+    if (!isLoaded) return <>Loading story...</>;
+
+    if (!story)
+        return (
+            <>
+                This use has no story yet. This happens when they have not done
+                50 runs yet.
+            </>
+        );
+
     return (
         <div className="h-100 overflow-auto border p-2">
             {story.stories.map((storyElement) => {

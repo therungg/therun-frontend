@@ -15,8 +15,6 @@ import { LiveDataMap, LiveProps } from "~app/live/live.types";
 import { getLiveRunForUser } from "~src/lib/live-runs";
 import { SkeletonLiveRun } from "~src/components/skeleton/live/skeleton-live-run";
 import { Search as SearchIcon } from "react-bootstrap-icons";
-import { StoryWithSplitsStories } from "~app/live/story.types";
-import { getStoryByUser } from "~src/lib/stories";
 
 export const Live = ({
     liveDataMap,
@@ -33,7 +31,6 @@ export const Live = ({
 
     const [loadingUserData, setLoadingUserData] = useState(true);
     const lastMessage = useLiveRunsWebsocket();
-    const [story, setStory] = useState<StoryWithSplitsStories | null>(null);
 
     useEffect(() => {
         if (lastMessage !== null) {
@@ -83,10 +80,8 @@ export const Live = ({
                     JSON.stringify(updatedLiveDataMap),
                 );
 
-                const storyResponse = await getStoryByUser(user);
                 newMap[currentlyViewing] = await getLiveRunForUser(user);
 
-                setStory(storyResponse);
                 setUpdatedLiveDataMap(liveRunArrayToMap(Object.values(newMap)));
                 setLoadingUserData(false);
             };
@@ -125,7 +120,6 @@ export const Live = ({
                     <Row className="g-3">
                         <RecommendedStream
                             liveRun={updatedLiveDataMap[currentlyViewing]}
-                            story={story}
                         />
                     </Row>
                 )}
