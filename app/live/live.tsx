@@ -149,7 +149,6 @@ export const Live = ({
                     />
                 </div>
             </Row>
-
             <Row xs={1} lg={2} xl={3} className="g-3">
                 {Object.values(updatedLiveDataMap).length == 0 && (
                     <div>Unfortunately, nobody is running live now...</div>

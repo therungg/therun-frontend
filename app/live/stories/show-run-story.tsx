@@ -15,6 +15,7 @@ export const ShowRunStory = ({ user }: { user: string }) => {
             </>
         );
 
+    // This is a concept to show that it works and monitor the stories
     return (
         <div className="h-100 overflow-auto border p-2">
             {story.stories.map((storyElement) => {
