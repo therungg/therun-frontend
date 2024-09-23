@@ -10,7 +10,7 @@ export const ShowRunStory = ({ user }: { user: string }) => {
     if (!story)
         return (
             <>
-                This use has no story yet. This happens when they have not done
+                This user has no story yet. This happens when they have not done
                 50 runs yet.
             </>
         );
