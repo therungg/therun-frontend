@@ -22,7 +22,8 @@ body {
 
 .input-group,
 .form-select,
-.cursor-pointer {
+.cursor-pointer,
+label.input-group-text {
   cursor: pointer;
 }
 

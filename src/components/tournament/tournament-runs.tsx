@@ -182,18 +182,12 @@ export const TournamentRuns: React.FunctionComponent<TournamentRunsProps> = ({
             <h2>Tournament runs</h2>
             <div className="d-flex justify-content-start mb-1">
                 <div className="mb-3 input-group game-filter-mw">
-                    <span
+                    <label
                         className="input-group-text"
-                        onClick={() => {
-                            const searchElement =
-                                document.getElementById("gameSearch");
-                            if (document.activeElement !== search) {
-                                searchElement.focus();
-                            }
-                        }}
+                        htmlFor="tournamentRunSearch"
                     >
                         <SearchIcon size={18} />
-                    </span>
+                    </label>
                     <input
                         type="search"
                         className="form-control"
