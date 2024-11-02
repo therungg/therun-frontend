@@ -22,7 +22,7 @@ export const Homepage = () => {
                         <Link href="/patron">
                             <Button
                                 variant="secondary"
-                                className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
+                                className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium hover:text-white"
                             >
                                 {t("support")} <PatreonBunnySvgWithoutLink />
                             </Button>
