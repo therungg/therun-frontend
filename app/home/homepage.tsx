@@ -27,7 +27,7 @@ export const Homepage = () => {
                                 {t("support")} <PatreonBunnySvgWithoutLink />
                             </Button>
                         </Link>
-                        <Link href="/about">
+                        <Link href="/abougt">
                             <Button
                                 variant="primary"
                                 className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
