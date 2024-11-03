@@ -23,7 +23,7 @@ export function PatreonInfo({ session }: { session: { username: string } }) {
                         </p>
                         <a
                             target="_blank"
-                            rel="noopener"
+                            rel="noreferrer"
                             href="https://patreon.com/therungg"
                         >
                             <Button className="btn btn-secondary btn-lg border-2 px-3 h-3r fw-medium w-240p h-4r fs-large mw-100">
@@ -324,7 +324,7 @@ export const PatreonBunnySvg = ({ size = 20, url = "/patron" }) => {
     return (
         <a
             href={url}
-            className="text-white bg-white"
+            className="text-white"
             target="_blank"
             rel="noreferrer"
             style={{ marginBottom: "4%" }}
@@ -349,7 +349,7 @@ export const PatreonBunnySvgWithoutLink = ({
         >
             <path
                 // FIXME: Remove
-                 
+
                 style={{ fill: "var(--bs-primary)" }}
                 d="M103.51,473.8l2.36-3.44c-.37-4.54-1.06-9.06-2.14-13.49-32.19-131.96,197.53-172.35,277.76-106.65,6.68,5.11,16.31,3.34,20.44-3.93l13.36-22.2c-54.41-32.73-68.58-59.52-77.11-70.73-18.57-24.43-19.34-44.31,49.85-16.62,25.44,10.18,38.92,12.46,75.01,55.12,21.22,25.15,56,4.13,78.2,25.54,100.41,97.26-42.64,76.04-90.78,140.49-.43,.57-.78,1.42-1.04,2.44-1.9,7.4,2.52,14.99,9.81,17.29,46.56,14.66,72.89,58.42,28.96,68.6-14.64,3.39-30.05,1.36-43.49-5.36-33.33-16.66-67.47-27.26-99.51-44.39-9.43-5.04-25.73-12.25-36.16-14.6-33.33-7.49-70.05-6.03-96.79,0-12.66,2.86-28.94,6.71-38.41,15.58-29.34,28.85-97.41,118.26-104.63,39.71-2.4-26.13,15.9-44.67,34.32-63.37Z"
             />
