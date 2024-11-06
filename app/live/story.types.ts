@@ -16,12 +16,17 @@ export interface Story {
     raceId?: string;
     tournament?: string;
     runMetadata: Run;
-    selectedStoryTypes: string[];
+    selectedStoryTypes: SelectedStoryTypes[];
 }
 
 export interface StoryWithSplitsStories extends Story {
     stories: SplitStory[];
 }
+
+export type SelectedStoryTypes = {
+    type: StoryElementType;
+    timestamp: number;
+};
 
 export interface SplitStory {
     user: string;

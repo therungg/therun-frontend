@@ -142,7 +142,7 @@ export const RecommendedStream = ({
             </Col>
             <Col xl={5} className="h-340p">
                 <div
-                    className="bg-body-secondary h-100 px-3 py-2 game-border"
+                    className="bg-body-secondary h-100 px-3 py-2"
                     style={
                         recommendedStyles.gradient
                             ? {
@@ -160,7 +160,7 @@ export const RecommendedStream = ({
                               }
                     }
                 >
-                    <ShowRunStory user={liveRun.user} />
+                    <ShowRunStory liveRun={liveRun} />
                 </div>
             </Col>
         </>

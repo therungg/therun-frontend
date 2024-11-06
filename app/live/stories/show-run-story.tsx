@@ -1,9 +1,12 @@
 "use client";
 
 import { useStory } from "~app/live/stories/use-story";
+import { UserLink } from "~src/components/links/links";
+import React from "react";
+import { LiveRun } from "~app/live/live.types";
 
-export const ShowRunStory = ({ user }: { user: string }) => {
-    const { story, isLoaded } = useStory(user);
+export const ShowRunStory = ({ liveRun }: { liveRun: LiveRun }) => {
+    const { story, isLoaded } = useStory(liveRun.user);
 
     if (!isLoaded) return <>Loading story...</>;
 
@@ -17,29 +20,51 @@ export const ShowRunStory = ({ user }: { user: string }) => {
 
     // This is a concept to show that it works and monitor the stories
     return (
-        <div className="h-100 overflow-auto border p-2">
-            {story.stories.map((storyElement) => {
-                const showStories = storyElement.storyElements.filter(
-                    (el) => el.selected,
-                );
+        <div className="h-100 mh-100">
+            <div className="text-truncate fs-big">
+                <UserLink username={liveRun.user} /> - {liveRun.game}
+            </div>
+            {liveRun.gameData && (
+                <div>
+                    <a
+                        href={`/${liveRun.gameData?.url}`}
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        Go to {liveRun.user}&apos;s stats
+                    </a>
+                </div>
+            )}
+            <hr />
+            <div className="h-75">
+                <div className="p-2 mt-2 h-75 overflow-auto ">
+                    {story.stories.reverse().map((storyElement) => {
+                        const showStories = storyElement.storyElements.filter(
+                            (el) => el.selected,
+                        );
 
-                return (
-                    <div key={"story-" + storyElement.splitIndex}>
-                        <span className="fs-large fw-bold">
-                            {storyElement.splitName}
-                        </span>
-                        {showStories.map((showStory) => {
-                            return (
-                                <div
-                                    key={showStory.id + storyElement.splitIndex}
-                                >
-                                    {showStory.text}
-                                </div>
-                            );
-                        })}
-                    </div>
-                );
-            })}
+                        return (
+                            <div key={"story-" + storyElement.splitIndex}>
+                                <span className="fs-large fw-bold">
+                                    {storyElement.splitName}
+                                </span>
+                                {showStories.map((showStory) => {
+                                    return (
+                                        <div
+                                            key={
+                                                showStory.id +
+                                                storyElement.splitIndex
+                                            }
+                                        >
+                                            {showStory.text}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
         </div>
     );
 };
