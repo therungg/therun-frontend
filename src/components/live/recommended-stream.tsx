@@ -1,7 +1,6 @@
 import { LiveRun } from "~app/live/live.types";
 import { Col } from "react-bootstrap";
 import { useEffect, useRef, useState } from "react";
-import { LiverunStatsPanel } from "./liverun-stats-panel";
 import { SplitsViewer } from "./splits-viewer";
 import patreonStyles from "../patreon/patreon-styles";
 import { usePatreons } from "../patreon/use-patreons";
@@ -9,6 +8,7 @@ import { getColorMode } from "~src/utils/colormode";
 import { TwitchEmbed } from "react-twitch-embed";
 import { Split } from "~src/common/types";
 import { SplitStatus, Status } from "~src/types/splits.types";
+import { ShowRunStory } from "~app/live/stories/show-run-story";
 
 export const RecommendedStream = ({
     liveRun,
@@ -19,9 +19,7 @@ export const RecommendedStream = ({
 }) => {
     const [dark, setDark] = useState(true);
     const [activeLiveRun, setActiveLiveRun] = useState(liveRun);
-    const [selectedSplit, setSelectedSplit] = useState(
-        liveRun.currentSplitIndex,
-    );
+    const [, setSelectedSplit] = useState(liveRun.currentSplitIndex);
     const [recommendedStyles, setRecommendedStyles] = useState({});
     const [manuallyChangedSplit, setManuallyChangedSplit] = useState(false);
 
@@ -129,7 +127,7 @@ export const RecommendedStream = ({
                     }}
                 />
             </Col>
-            <Col xl={5} lg={7} md={12} className="h-340p">
+            <Col xl={4} lg={7} md={12} className="h-340p">
                 <TwitchEmbed
                     channel={
                         stream
@@ -142,9 +140,9 @@ export const RecommendedStream = ({
                     withChat={false}
                 />
             </Col>
-            <Col xl={4} className="h-340p">
+            <Col xl={5} className="h-340p">
                 <div
-                    className="bg-body-secondary h-100 px-3 py-2 game-border"
+                    className="bg-body-secondary h-100 px-3 py-2"
                     style={
                         recommendedStyles.gradient
                             ? {
@@ -162,10 +160,7 @@ export const RecommendedStream = ({
                               }
                     }
                 >
-                    <LiverunStatsPanel
-                        liveRun={liveRun}
-                        selectedSplit={selectedSplit}
-                    />
+                    <ShowRunStory liveRun={liveRun} />
                 </div>
             </Col>
         </>
