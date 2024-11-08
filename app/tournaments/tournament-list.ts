@@ -53,7 +53,7 @@ const tournamentEntries: Array<[string, TournamentEntryValue]> = [
     ["basementcup", { tournament: "Ultimate Basement Cup 2023" }],
     ["tcs", { tournament: "LEGO Star Wars BTR" }],
     ["nitro_cup", { tournament: "Nitro Cup SMO" }],
-    ["nitro_tournament", { tournament: "Nitro Tournament VI" }],
+    ["nitro_tournament", { tournament: "Nitro Tournament - TMA" }],
     ["knuckles", { tournament: "Knuckles Story Eclipse the Record" }],
     [
         "3dmm",
