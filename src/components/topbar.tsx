@@ -23,6 +23,7 @@ const GlobalSearch = dynamic(
         ssr: false,
     },
 );
+
 interface TopbarProps {
     username: string;
     picture: string;
@@ -145,6 +146,9 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                                 </NavDropdown.Item>
                                 <NavDropdown.Item href="/change-appearance">
                                     Name Appearance
+                                </NavDropdown.Item>
+                                <NavDropdown.Item href="/stories/manage">
+                                    Story Preferences
                                 </NavDropdown.Item>
                                 <NavDropdown.Item onClick={() => logout()}>
                                     Logout

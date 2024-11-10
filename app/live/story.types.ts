@@ -135,3 +135,7 @@ export interface PaginatedStories {
     totalPages: number;
     items: Story[];
 }
+
+export interface StoryPreferences {
+    enabled: boolean;
+}

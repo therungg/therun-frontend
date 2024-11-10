@@ -19,13 +19,19 @@ export const useStory = (user: string) => {
         null,
     );
 
+    const [hasStories, setHasStories] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
 
     const lastMessage = useStoryWebsocket(user);
 
     useEffect(() => {
         const fetchInitialStory = async () => {
-            setStoryState(await getStoryByUser(user));
+            try {
+                setStoryState(await getStoryByUser(user));
+                setHasStories(true);
+            } catch (_) {
+                setHasStories(false);
+            }
             setIsLoaded(true);
         };
 
@@ -56,8 +62,14 @@ export const useStory = (user: string) => {
                 };
                 setStoryState(newStory);
             }
+            setHasStories(true);
+            setIsLoaded(true);
         }
     }, [lastMessage]);
 
-    return { story: storyState, isLoaded };
+    return {
+        story: storyState,
+        isLoaded,
+        hasStories,
+    };
 };

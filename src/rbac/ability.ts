@@ -24,6 +24,7 @@ export const subjects = [
     "game",
     "leaderboard",
     "moderators",
+    "stories",
 ] as const;
 type AllowedActions = (typeof actions)[number];
 type AllowedSubjects = (typeof subjects)[number];
@@ -87,6 +88,7 @@ const defaultPermissions: DefinePermissions = (user, { can }) => {
             can(action, "leaderboard", { game });
         });
         can(action, "user", { user: user.username });
+        can(action, "stories", { user: user.username });
         can(action, "run", { run: user.username });
         can("edit", "race", { creator: user.username });
         can("create", "race");
