@@ -54,25 +54,29 @@ const rolePermissions: Record<Role, DefinePermissions> = {
             });
         });
     },
-    patreon1(_user, { can }) {
+    patreon1(user, { can }) {
         can("style", "user");
         can("view-restricted", "stories");
+        can("edit", "stories", { user: user.username });
     },
-    patreon2(_user, { can }) {
+    patreon2(user, { can }) {
         can("style", "user");
         can("view-restricted", "stories");
+        can("edit", "stories", { user: user.username });
     },
-    patreon3(_user, { can }) {
+    patreon3(user, { can }) {
         can("style", "user");
         can("view-restricted", "stories");
+        can("edit", "stories", { user: user.username });
     },
     moderator(_user, { can }) {
         can("ban", "user");
         can("ban", "run");
         can("edit", "run");
     },
-    "story-beta-user": function (_user, { can }) {
+    "story-beta-user": function (user, { can }) {
         can("view-restricted", "stories");
+        can("edit", "stories", { user: user.username });
     },
     "board-admin": function (_user, { can }) {
         can("edit", "leaderboard");
@@ -97,7 +101,6 @@ const defaultPermissions: DefinePermissions = (user, { can }) => {
         can(action, "user", { user: user.username });
         can(action, "run", { run: user.username });
         can("edit", "race", { creator: user.username });
-        can("edit", "stories", { user: user.username });
         can("create", "race");
         can("join", "race");
     });
