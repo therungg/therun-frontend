@@ -15,6 +15,17 @@ export async function setStoryPreferencesAction(
 ) {
     const input: StoryPreferences = {
         enabled: !!raceInput.get("enabled"),
+        disableNegativeStories: !!raceInput.get("disableNegativeStories"),
+        disableWelcomeStories: !!raceInput.get("disableWelcomeStories"),
+        allowAIRephrase: !!raceInput.get("allowAIRephrase"),
+        globalStoryCooldown: raceInput.get("globalStoryCooldown"),
+        allowGlobalStoryCooldownOverride: !!raceInput.get(
+            "allowGlobalStoryCooldownOverride",
+        ),
+        nameOverride: raceInput.get("nameOverride"),
+        pronounOverrideThey: raceInput.get("pronounOverrideThey"),
+        pronounOverrideThem: raceInput.get("pronounOverrideThem"),
+        pronounOverrideTheir: raceInput.get("pronounOverrideTheir"),
     };
 
     const { error } = validateInput(input);
@@ -55,6 +66,15 @@ export async function setStoryPreferencesAction(
 const validateInput = (input: StoryPreferences) => {
     const schema: Joi.ObjectSchema<StoryPreferences> = Joi.object({
         enabled: Joi.boolean(),
+        disableNegativeStories: Joi.boolean(),
+        disableWelcomeStories: Joi.boolean(),
+        allowAIRephrase: Joi.boolean(),
+        globalStoryCooldown: Joi.number().optional(),
+        allowGlobalStoryCooldownOverride: Joi.boolean(),
+        nameOverride: Joi.string().optional(),
+        pronounOverrideThey: Joi.string().optional(),
+        pronounOverrideThem: Joi.string().optional(),
+        pronounOverrideTheir: Joi.string().optional(),
     });
 
     return schema.validate(input);

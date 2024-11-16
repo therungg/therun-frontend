@@ -15,6 +15,8 @@ import { LiveDataMap, LiveProps } from "~app/live/live.types";
 import { getLiveRunForUser } from "~src/lib/live-runs";
 import { SkeletonLiveRun } from "~src/components/skeleton/live/skeleton-live-run";
 import { Search as SearchIcon } from "react-bootstrap-icons";
+import { RunStoryView } from "~app/live/stories/run-story-view";
+import { Can } from "~src/rbac/Can.component";
 
 export const Live = ({
     liveDataMap,
@@ -117,11 +119,18 @@ export const Live = ({
             {!loadingUserData &&
                 currentlyViewing &&
                 updatedLiveDataMap[currentlyViewing] && (
-                    <Row className="g-3">
-                        <RecommendedStream
-                            liveRun={updatedLiveDataMap[currentlyViewing]}
-                        />
-                    </Row>
+                    <>
+                        <Row className="g-3 mb-3">
+                            <RecommendedStream
+                                liveRun={updatedLiveDataMap[currentlyViewing]}
+                            />
+                        </Row>
+                        <Can I={"view-restricted"} a={"stories"}>
+                            <RunStoryView
+                                liveRun={updatedLiveDataMap[currentlyViewing]}
+                            />
+                        </Can>
+                    </>
                 )}
             <Row className="g-3 my-3">
                 <div className="input-group mw-search">

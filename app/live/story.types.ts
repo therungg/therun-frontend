@@ -138,4 +138,15 @@ export interface PaginatedStories {
 
 export interface StoryPreferences {
     enabled: boolean;
+    disableNegativeStories: boolean;
+    disableWelcomeStories: boolean;
+    allowAIRephrase: boolean;
+    globalStoryCooldown: number;
+    allowGlobalStoryCooldownOverride: boolean;
+    useLastNRuns: number;
+
+    nameOverride?: string;
+    pronounOverrideThey?: string;
+    pronounOverrideTheir?: string;
+    pronounOverrideThem?: string;
 }

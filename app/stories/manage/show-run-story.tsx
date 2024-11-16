@@ -1,19 +1,38 @@
 "use client";
 
-import { useStory } from "~app/live/stories/use-story";
+import { LiveRun } from "~app/live/live.types";
+import React, { useEffect, useState } from "react";
+import { useLiveRunsWebsocket } from "~src/components/websocket/use-reconnect-websocket";
+import { RunStoryView } from "~app/live/stories/run-story-view";
 
-const ShowRunStory = ({ username }: { username: string }) => {
-    const { story, isLoaded, hasStories } = useStory(username);
+const ShowRunStory = ({
+    username,
+    liveData,
+}: {
+    username: string;
+    liveData: LiveRun;
+}) => {
+    const [liveRun, setLiveRun] = useState(liveData);
 
-    if (!isLoaded) {
-        return <>Loading stories...</>;
+    const lastMessage = useLiveRunsWebsocket(username);
+
+    useEffect(() => {
+        if (lastMessage !== null) {
+            if (lastMessage.type === "UPDATE") {
+                setLiveRun(lastMessage.run);
+            }
+
+            if (lastMessage.type === "DELETE") {
+                setLiveRun(undefined);
+            }
+        }
+    }, [lastMessage]);
+
+    if (liveRun === undefined) {
+        return <>No live run available</>;
     }
 
-    if (!hasStories) {
-        return <>No recent stories for user!</>;
-    }
-
-    return <div>{story!.user}</div>;
+    return <RunStoryView liveRun={liveRun} />;
 };
 
 export default ShowRunStory;

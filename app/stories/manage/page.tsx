@@ -1,8 +1,12 @@
 import { getSession } from "~src/actions/session.action";
 import ManageStories from "~app/stories/manage/manage-stories";
+import { confirmPermission } from "~src/rbac/confirm-permission";
 
 const ManageStoriesPage = async () => {
     const session = await getSession();
+
+    confirmPermission(session, "view-restricted", "stories");
+    confirmPermission(session, "edit", "stories");
 
     if (!session.id) {
         return (

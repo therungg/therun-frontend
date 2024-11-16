@@ -64,7 +64,7 @@ interface SplitDefault {
     comparisons: Comparisons;
 }
 
-type Split = Comparisons & SplitDefault;
+export type Split = Comparisons & SplitDefault;
 export type LiveDataMap = {
     [user: string]: LiveRun;
 };

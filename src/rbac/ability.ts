@@ -14,6 +14,7 @@ export const actions = [
     "delete",
     "ban",
     "style",
+    // eslint-disable-next-line sonarjs/no-duplicate-string
     "view-restricted",
     "moderate",
 ] as const;
@@ -55,17 +56,23 @@ const rolePermissions: Record<Role, DefinePermissions> = {
     },
     patreon1(_user, { can }) {
         can("style", "user");
+        can("view-restricted", "stories");
     },
     patreon2(_user, { can }) {
         can("style", "user");
+        can("view-restricted", "stories");
     },
     patreon3(_user, { can }) {
         can("style", "user");
+        can("view-restricted", "stories");
     },
     moderator(_user, { can }) {
         can("ban", "user");
         can("ban", "run");
         can("edit", "run");
+    },
+    "story-beta-user": function (_user, { can }) {
+        can("view-restricted", "stories");
     },
     "board-admin": function (_user, { can }) {
         can("edit", "leaderboard");
@@ -88,9 +95,9 @@ const defaultPermissions: DefinePermissions = (user, { can }) => {
             can(action, "leaderboard", { game });
         });
         can(action, "user", { user: user.username });
-        can(action, "stories", { user: user.username });
         can(action, "run", { run: user.username });
         can("edit", "race", { creator: user.username });
+        can("edit", "stories", { user: user.username });
         can("create", "race");
         can("join", "race");
     });

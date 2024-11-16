@@ -9,6 +9,7 @@ import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
 import { getColorMode } from "~src/utils/colormode";
 import { Upload } from "react-bootstrap-icons";
 import { resetSession } from "~src/actions/reset-session.action";
+import { Can } from "~src/rbac/Can.component";
 
 const DarkModeSlider = dynamic(() => import("./dark-mode-slider"), {
     ssr: false,
@@ -147,9 +148,11 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                                 <NavDropdown.Item href="/change-appearance">
                                     Name Appearance
                                 </NavDropdown.Item>
-                                <NavDropdown.Item href="/stories/manage">
-                                    Story Preferences
-                                </NavDropdown.Item>
+                                <Can I="view-restricted" a="stories">
+                                    <NavDropdown.Item href="/stories/manage">
+                                        Story Preferences
+                                    </NavDropdown.Item>
+                                </Can>
                                 <NavDropdown.Item onClick={() => logout()}>
                                     Logout
                                 </NavDropdown.Item>
