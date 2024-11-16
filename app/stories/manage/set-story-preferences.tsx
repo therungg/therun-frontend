@@ -47,7 +47,6 @@ export const SetStoryPreferences = ({
             />
             <Form action={formAction} className="row">
                 <fieldset className="border py-3 px-4">
-                    {state?.message && state.message}
                     <legend className="w-auto mb-0">
                         Manage Story Preferences
                     </legend>
