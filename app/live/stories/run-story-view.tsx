@@ -12,7 +12,14 @@ export const RunStoryView = ({ liveRun }: { liveRun: LiveRun }) => {
 
     if (!isLoaded) return <>Loading story...</>;
 
-    if (!story) return <>No story currently available</>;
+    if (!story)
+        return (
+            <>
+                No story currently available. Stories only get generated when
+                you have finished at least 3 runs, and started at least 20.
+                Otherwise there is not enough data to generate stories from.{" "}
+            </>
+        );
 
     const reversedStories = [...story.stories].reverse();
 

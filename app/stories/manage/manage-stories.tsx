@@ -1,5 +1,3 @@
-"use server";
-
 import ShowRunStory from "~app/stories/manage/show-run-story";
 import { getSession } from "~src/actions/session.action";
 import { SetStoryPreferences } from "~app/stories/manage/set-story-preferences";

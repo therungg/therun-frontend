@@ -5,7 +5,6 @@ import Joi from "joi";
 import { getSession } from "~src/actions/session.action";
 import { getApiKey } from "~src/actions/api-key.action";
 import { confirmPermission } from "~src/rbac/confirm-permission";
-import { redirect } from "next/navigation";
 
 const apiUrl = process.env.NEXT_PUBLIC_STORIES_API_URL as string;
 
@@ -57,10 +56,13 @@ export async function setStoryPreferencesAction(
 
     if (result.status !== 200) {
         const response = await result.text();
-        return { message: response };
+        return { message: response, type: "error" };
     }
 
-    redirect(`/stories/manage`);
+    return {
+        message: "Story preferences succesfully updated!",
+        type: "success",
+    };
 }
 
 const validateInput = (input: StoryPreferences) => {

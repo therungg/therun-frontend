@@ -64,6 +64,7 @@
     "react-switch": "^7.0.0",
     "react-timer-hook": "^3.0.7",
     "react-timezone-select": "^3.1.0",
+    "react-toastify": "^10.0.6",
     "react-twitch-embed": "^3.0.2",
     "react-use-websocket": "^4.5.0",
     "styled-components": "^6.1.8",

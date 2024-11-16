@@ -47,7 +47,11 @@ export const getLiveRunsForGameCategory = async (
 export const getLiveRunForUser = async (username: string) => {
     const result = await fetch(`${LIVE_RUN_URL}?username=${username}`);
 
-    return result.json();
+    const resolved = await result.json();
+
+    if (Array.isArray(resolved) && resolved.length === 0) return undefined;
+
+    return resolved;
 };
 
 export const getTopNLiveRuns = async (n = 5) => {

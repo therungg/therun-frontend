@@ -12,7 +12,7 @@ const ShowRunStory = ({
     username: string;
     liveData: LiveRun;
 }) => {
-    const [liveRun, setLiveRun] = useState(liveData);
+    const [liveRun, setLiveRun] = useState<LiveRun | undefined>(liveData);
 
     const lastMessage = useLiveRunsWebsocket(username);
 
@@ -28,8 +28,8 @@ const ShowRunStory = ({
         }
     }, [lastMessage]);
 
-    if (liveRun === undefined) {
-        return <>No live run available</>;
+    if (!liveRun) {
+        return <>No live run found for user {username}</>;
     }
 
     return <RunStoryView liveRun={liveRun} />;
