@@ -5,12 +5,14 @@ export interface User {
     roles?: Role[];
     moderatedGames?: string[];
     sessionError?: string;
+    pronouns?: string;
 }
 
 export type Role =
     | "admin"
     | "patreon3"
     | "moderator"
+    | "story-beta-user"
     | "board-admin"
     | "board-moderator"
     | "race-admin"

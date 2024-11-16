@@ -14,6 +14,7 @@ export const actions = [
     "delete",
     "ban",
     "style",
+    // eslint-disable-next-line sonarjs/no-duplicate-string
     "view-restricted",
     "moderate",
 ] as const;
@@ -24,6 +25,7 @@ export const subjects = [
     "game",
     "leaderboard",
     "moderators",
+    "stories",
 ] as const;
 type AllowedActions = (typeof actions)[number];
 type AllowedSubjects = (typeof subjects)[number];
@@ -52,19 +54,29 @@ const rolePermissions: Record<Role, DefinePermissions> = {
             });
         });
     },
-    patreon1(_user, { can }) {
+    patreon1(user, { can }) {
         can("style", "user");
+        can("view-restricted", "stories");
+        can("edit", "stories", { user: user.username });
     },
-    patreon2(_user, { can }) {
+    patreon2(user, { can }) {
         can("style", "user");
+        can("view-restricted", "stories");
+        can("edit", "stories", { user: user.username });
     },
-    patreon3(_user, { can }) {
+    patreon3(user, { can }) {
         can("style", "user");
+        can("view-restricted", "stories");
+        can("edit", "stories", { user: user.username });
     },
     moderator(_user, { can }) {
         can("ban", "user");
         can("ban", "run");
         can("edit", "run");
+    },
+    "story-beta-user": function (user, { can }) {
+        can("view-restricted", "stories");
+        can("edit", "stories", { user: user.username });
     },
     "board-admin": function (_user, { can }) {
         can("edit", "leaderboard");

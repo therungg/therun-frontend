@@ -1,7 +1,6 @@
 import { LiveRun } from "~app/live/live.types";
 import { Col } from "react-bootstrap";
 import { useEffect, useRef, useState } from "react";
-import { LiverunStatsPanel } from "./liverun-stats-panel";
 import { SplitsViewer } from "./splits-viewer";
 import patreonStyles from "../patreon/patreon-styles";
 import { usePatreons } from "../patreon/use-patreons";
@@ -9,6 +8,7 @@ import { getColorMode } from "~src/utils/colormode";
 import { TwitchEmbed } from "react-twitch-embed";
 import { Split } from "~src/common/types";
 import { SplitStatus, Status } from "~src/types/splits.types";
+import { LiverunStatsPanel } from "~src/components/live/liverun-stats-panel";
 
 export const RecommendedStream = ({
     liveRun,
@@ -144,7 +144,7 @@ export const RecommendedStream = ({
             </Col>
             <Col xl={4} className="h-340p">
                 <div
-                    className="bg-body-secondary h-100 px-3 py-2 game-border"
+                    className="bg-body-secondary h-100 px-3 py-2"
                     style={
                         recommendedStyles.gradient
                             ? {
