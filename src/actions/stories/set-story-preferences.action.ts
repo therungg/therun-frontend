@@ -12,11 +12,13 @@ export async function setStoryPreferencesAction(
     _prevState: unknown,
     raceInput: FormData,
 ) {
+    console.log(raceInput.get("translateLanguage"));
     const input: StoryPreferences = {
         enabled: !!raceInput.get("enabled"),
         disableNegativeStories: !!raceInput.get("disableNegativeStories"),
         disableWelcomeStories: !!raceInput.get("disableWelcomeStories"),
         allowAIRephrase: !!raceInput.get("allowAIRephrase"),
+        translateLanguage: raceInput.get("translateLanguage") || "",
         globalStoryCooldown: raceInput.get("globalStoryCooldown"),
         allowGlobalStoryCooldownOverride: !!raceInput.get(
             "allowGlobalStoryCooldownOverride",
@@ -30,8 +32,10 @@ export async function setStoryPreferencesAction(
     const { error } = validateInput(input);
 
     if (error) {
+        console.error("here!!");
         return {
             message: error.message,
+            type: "error",
         };
     }
 
@@ -71,6 +75,7 @@ const validateInput = (input: StoryPreferences) => {
         disableNegativeStories: Joi.boolean(),
         disableWelcomeStories: Joi.boolean(),
         allowAIRephrase: Joi.boolean(),
+        translateLanguage: Joi.optional(),
         globalStoryCooldown: Joi.number().optional(),
         allowGlobalStoryCooldownOverride: Joi.boolean(),
         nameOverride: Joi.string().optional(),

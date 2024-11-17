@@ -136,11 +136,22 @@ export interface PaginatedStories {
     items: Story[];
 }
 
+type StoryAITranslateLanguage =
+    | null
+    | ""
+    | "French"
+    | "Spanish"
+    | "Japanese"
+    | "German"
+    | "Dutch"
+    | "Portuguese";
+
 export interface StoryPreferences {
     enabled: boolean;
     disableNegativeStories: boolean;
     disableWelcomeStories: boolean;
     allowAIRephrase: boolean;
+    translateLanguage: StoryAITranslateLanguage;
     globalStoryCooldown: number;
     allowGlobalStoryCooldownOverride: boolean;
     useLastNRuns: number;

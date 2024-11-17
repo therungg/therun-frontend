@@ -20,6 +20,7 @@ export const SetStoryPreferences = ({
 }) => {
     const [state, formAction] = useFormState(setStoryPreferencesAction, {
         message: "",
+        type: "",
     });
 
     const defaultPronouns = getPronounsFromString(user.pronouns);
@@ -88,6 +89,40 @@ export const SetStoryPreferences = ({
                                 }
                                 label="Allow AI to rephrase the text, to create some variety. AI will not generate new stories, only rephrase the current hand-written ones."
                             />
+                        </Form.Group>
+                        <Form.Group
+                            controlId="translateLanguage"
+                            className="w-25"
+                        >
+                            <Form.Label column="sm">
+                                <UnderlineTooltip
+                                    title="Translate story to different language"
+                                    content="This translation will be done by AI. Results may vary."
+                                    element="Translate story to different language"
+                                />
+                            </Form.Label>
+                            <Form.Select name="translateLanguage">
+                                <option value="">Keep it in English</option>
+                                <option value="Dutch">
+                                    Dutch (Nederlands)
+                                </option>
+                                <option value="French">
+                                    French (Français)
+                                </option>
+                                <option value="German">German (Deutch)</option>
+                                <option value="Italian">
+                                    Italian (Italiano)
+                                </option>
+                                <option value="Japanese">
+                                    Japanese (日本語)
+                                </option>
+                                <option value="Spanish">
+                                    Spanish (Español)
+                                </option>
+                                <option value="Portuguese">
+                                    Portuguese (Português)
+                                </option>
+                            </Form.Select>
                         </Form.Group>
                     </div>
                     <div className="row g-2 mb-4">

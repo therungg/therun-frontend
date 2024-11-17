@@ -42,6 +42,7 @@ export const getStoryPreferencesByUser = async (user: User) => {
             disableNegativeStories: false,
             disableWelcomeStories: false,
             allowAIRephrase: false,
+            translateLanguage: null,
             globalStoryCooldown: 0,
             allowGlobalStoryCooldownOverride: false,
             nameOverride: user.username,
