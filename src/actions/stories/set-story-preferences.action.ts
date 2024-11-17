@@ -17,7 +17,7 @@ export async function setStoryPreferencesAction(
         enabled: !!raceInput.get("enabled"),
         disableNegativeStories: !!raceInput.get("disableNegativeStories"),
         disableWelcomeStories: !!raceInput.get("disableWelcomeStories"),
-        allowAIRephrase: !!raceInput.get("allowAIRephrase"),
+        allowAIRephrase: false,
         translateLanguage: raceInput.get("translateLanguage") || "",
         globalStoryCooldown: raceInput.get("globalStoryCooldown"),
         allowGlobalStoryCooldownOverride: !!raceInput.get(

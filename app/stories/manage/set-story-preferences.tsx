@@ -80,16 +80,16 @@ export const SetStoryPreferences = ({
                                 label="Disable all 'welcome' stories that show up at the start of your run"
                             />
                         </Form.Group>
-                        <Form.Group controlId="allowAIRephrase">
-                            <Form.Check
-                                name="allowAIRephrase"
-                                type="checkbox"
-                                defaultChecked={
-                                    storyPreferences.allowAIRephrase
-                                }
-                                label="Allow AI to rephrase the text, to create some variety. AI will not generate new stories, only rephrase the current hand-written ones."
-                            />
-                        </Form.Group>
+                        {/*<Form.Group controlId="allowAIRephrase">*/}
+                        {/*    <Form.Check*/}
+                        {/*        name="allowAIRephrase"*/}
+                        {/*        type="checkbox"*/}
+                        {/*        defaultChecked={*/}
+                        {/*            storyPreferences.allowAIRephrase*/}
+                        {/*        }*/}
+                        {/*        label="Allow AI to rephrase the text, to create some variety. AI will not generate new stories, only rephrase the current hand-written ones."*/}
+                        {/*    />*/}
+                        {/*</Form.Group>*/}
                         <Form.Group
                             controlId="translateLanguage"
                             className="w-25"

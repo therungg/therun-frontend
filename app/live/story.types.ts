@@ -143,6 +143,7 @@ type StoryAITranslateLanguage =
     | "Spanish"
     | "Japanese"
     | "German"
+    | "Italian"
     | "Dutch"
     | "Portuguese";
 
