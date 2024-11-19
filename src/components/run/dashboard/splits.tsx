@@ -1,4 +1,4 @@
-import { Run, SplitTimes, SplitsHistory } from "../../../common/types";
+import { Run, SplitsHistory, SplitTimes } from "../../../common/types";
 import { Difference, DurationToFormatted } from "../../util/datetime";
 import { Col, Row, Table } from "react-bootstrap";
 import { useState } from "react";
@@ -38,7 +38,9 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
     const splitToUse = totalTime ? "total" : "single";
     const splitsFile = decodeURIComponent(run.splitsFile as string)
         .replaceAll("%", "%25")
-        .replaceAll("++", "%2B+");
+        .replaceAll("++", "%2B+")
+        .replaceAll("NG+", "NG%2B");
+
     const url = `${process.env.NEXT_PUBLIC_SPLITS_CLOUDFRONT_URL}/${splitsFile}`;
 
     return (
