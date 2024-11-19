@@ -6,6 +6,7 @@ import { LiveRun, Split } from "~app/live/live.types";
 import { Col, Row } from "react-bootstrap";
 import { SplitStory } from "~app/live/story.types";
 import { Difference, DurationToFormatted } from "~src/components/util/datetime";
+import { Twitch as TwitchIcon } from "react-bootstrap-icons";
 
 export const RunStoryView = ({ liveRun }: { liveRun: LiveRun }) => {
     const { story, isLoaded } = useStory(liveRun.user);
@@ -126,7 +127,15 @@ const RenderSplitsStory = ({
                                 className="overflow-x-hidden"
                                 key={showStory.id + storyElement.splitIndex}
                             >
-                                {showStory.text}
+                                {showStory.text}{" "}
+                                {showStory.wasSentToTwitch && (
+                                    <span className="ms-1">
+                                        <TwitchIcon
+                                            height={22}
+                                            color="#6441a5"
+                                        />
+                                    </span>
+                                )}
                             </div>
                         );
                     })}

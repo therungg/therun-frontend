@@ -16,15 +16,28 @@ export interface Story {
     raceId?: string;
     tournament?: string;
     runMetadata: Run;
+    selectedStoryCategories: SelectedStoryCategories[];
     selectedStoryTypes: SelectedStoryTypes[];
+    selectedStoryIds: SelectedStoryIds[];
+    twitchStoryIds: SelectedStoryIds[];
 }
 
 export interface StoryWithSplitsStories extends Story {
     stories: SplitStory[];
 }
 
+export type SelectedStoryCategories = {
+    category: StoryElementCategory;
+    timestamp: number;
+};
+
 export type SelectedStoryTypes = {
     type: StoryElementType;
+    timestamp: number;
+};
+
+export type SelectedStoryIds = {
+    id: string;
     timestamp: number;
 };
 
@@ -58,13 +71,33 @@ export type StoryElementCategory =
     | "finished"
     | "reset";
 
+export enum StoryElementCooldown {
+    NONE = 0,
+    VERY_SHORT = 4,
+    SHORT = 13,
+    MEDIUM = 24,
+    LONG = 40,
+    VERY_LONG = 70,
+    LONGEST = 120,
+}
+
 export interface StoryElement {
     id: string;
     type: StoryElementType;
     category: StoryElementCategory;
     text: string;
-    weight: number;
     rarity: StoryElementRarity;
+    priority?: boolean;
+    minutesCooldown?: StoryElementCooldown;
+    disableForTwitch?: boolean;
+    declinedReason?: string;
+    isNegative?: boolean;
+    engagementScore: number;
+    runRelevancyScore: number;
+    usedRandomness?: number;
+    finalScore?: number;
+    metadata?: object;
+    wasSentToTwitch?: boolean;
 }
 
 export interface StoryElementWithSelected extends StoryElement {
