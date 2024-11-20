@@ -109,7 +109,7 @@ export const SetStoryPreferences = ({
                                 <option value="French">
                                     French (Français)
                                 </option>
-                                <option value="German">German (Deutch)</option>
+                                <option value="German">German (Deutsch)</option>
                                 <option value="Italian">
                                     Italian (Italiano)
                                 </option>
