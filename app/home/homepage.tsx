@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import React from "react";
-import { Col, Row, Button } from "react-bootstrap";
+import { Button, Col, Row } from "react-bootstrap";
 import { DataHolder } from "~src/components/frontpage/data-holder";
 import { SkeletonPersonalBests } from "~src/components/skeleton/index/skeleton-personal-bests";
 import { PopularGames } from "~src/components/game/popular-games";
 import { SkeletonPopularGames } from "~src/components/skeleton/index/skeleton-popular-games";
 import { useTranslations } from "next-intl";
+import { StoryModeInfoPanel } from "~app/story-mode-info-panel";
 
 export const Homepage = () => {
     const t = useTranslations("homepage");
@@ -46,7 +47,7 @@ export const Homepage = () => {
                     </div>
                 </div>
             </div>
-
+            <StoryModeInfoPanel />
             <div>
                 <Row className="text-center">
                     <Col xl={6} className="mt-4">

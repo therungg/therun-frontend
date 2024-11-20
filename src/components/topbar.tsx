@@ -111,6 +111,11 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                                 </div>
                             </Nav.Link>
                         )}
+                        <Can I="view-restricted" a="stories">
+                            <Nav.Link href="/stories/manage">
+                                Story Mode
+                            </Nav.Link>
+                        </Can>
                         <Nav.Link href="/races">Races</Nav.Link>
                         <Nav.Link href="/tournaments">Tournaments</Nav.Link>
                         <Nav.Link href="/live">Live</Nav.Link>

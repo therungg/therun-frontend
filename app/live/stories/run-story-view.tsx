@@ -1,7 +1,7 @@
 "use client";
 
 import { useStory } from "~app/live/stories/use-story";
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { LiveRun, Split } from "~app/live/live.types";
 import { Col, Row } from "react-bootstrap";
 import { SplitStory } from "~app/live/story.types";
@@ -10,7 +10,13 @@ import { Twitch as TwitchIcon } from "react-bootstrap-icons";
 
 export const RunStoryView = ({ liveRun }: { liveRun: LiveRun }) => {
     const { story, isLoaded } = useStory(liveRun.user);
-
+    const storyContainerRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if (storyContainerRef.current) {
+            storyContainerRef.current.scrollTop =
+                storyContainerRef.current.scrollHeight;
+        }
+    }, [story?.stories]);
     if (!isLoaded) return <>Loading story...</>;
 
     if (!story)
@@ -21,8 +27,6 @@ export const RunStoryView = ({ liveRun }: { liveRun: LiveRun }) => {
                 Otherwise there is not enough data to generate stories from.{" "}
             </>
         );
-
-    const reversedStories = [...story.stories].reverse();
 
     // This is a concept to show that it works and monitor the stories
     return (
@@ -58,8 +62,11 @@ export const RunStoryView = ({ liveRun }: { liveRun: LiveRun }) => {
                         className="h-100 py-1"
                         style={{ minHeight: "15rem", maxHeight: "15rem" }}
                     >
-                        <div className="h-100 overflow-auto">
-                            {reversedStories.map((storyElement) => {
+                        <div
+                            ref={storyContainerRef}
+                            className="h-100 overflow-auto"
+                        >
+                            {story.stories.map((storyElement) => {
                                 return (
                                     <RenderSplitsStory
                                         key={

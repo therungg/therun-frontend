@@ -29,7 +29,7 @@ const ShowRunStory = ({
     }, [lastMessage]);
 
     if (!liveRun) {
-        return <>No live run found for user {username}</>;
+        return <></>;
     }
 
     return <RunStoryView liveRun={liveRun} />;
