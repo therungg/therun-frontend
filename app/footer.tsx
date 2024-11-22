@@ -47,6 +47,14 @@ export const Footer: React.FunctionComponent = () => {
                         <a
                             rel="noreferrer"
                             target="_blank"
+                            href={process.env.NEXT_PUBLIC_BLUESKY_URL}
+                        >
+                            Bluesky
+                        </a>{" "}
+                        <br />
+                        <a
+                            rel="noreferrer"
+                            target="_blank"
                             href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL}`}
                         >
                             {process.env.NEXT_PUBLIC_CONTACT_EMAIL}

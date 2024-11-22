@@ -12,6 +12,7 @@ import {
     Youtube as YoutubeIcon,
 } from "react-bootstrap-icons";
 import { Can, subject } from "~src/rbac/Can.component";
+import { BlueskyIcon } from "~src/icons/bluesky-icon";
 
 //TODO:: Would be better to use some form lib, not sure why i built it this way
 export const Userform = ({ username, session, userData }) => {
@@ -130,6 +131,15 @@ const Display = ({ username, form, showTimezone = false }) => {
                         rel="noreferrer"
                     >
                         <TwitterIcon size={24} color="#1DA1F2" />
+                    </a>
+                )}
+                {form.socials && form.socials.bluesky && (
+                    <a
+                        href={`https://bsky.app/profile/${form.socials.bluesky}`}
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        <BlueskyIcon />
                     </a>
                 )}
             </div>
@@ -318,6 +328,34 @@ const Edit = ({ username, form, setForm }) => {
                                             socials: {
                                                 ...form.socials,
                                                 twitter: e.target.value,
+                                            },
+                                        })
+                                    }
+                                />
+                            </Form.Group>
+
+                            <Form.Group
+                                className="col-12 col-md-6 col-lg-12 col-xl-6"
+                                controlId="bluesky"
+                            >
+                                <Form.Label>
+                                    Bluesky <BlueskyIcon />
+                                </Form.Label>
+                                <Form.Control
+                                    maxLength={100}
+                                    type="text"
+                                    defaultValue={
+                                        form.socials && form.socials.bluesky
+                                            ? form.socials.bluesky
+                                            : ""
+                                    }
+                                    placeholder="bsky.app/profile/..."
+                                    onChange={(e) =>
+                                        setForm({
+                                            ...form,
+                                            socials: {
+                                                ...form.socials,
+                                                bluesky: e.target.value,
                                             },
                                         })
                                     }
