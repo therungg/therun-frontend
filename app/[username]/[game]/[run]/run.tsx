@@ -113,6 +113,8 @@ export default function RunDetail({
                 const res = await fetch(url, { mode: "cors" });
                 const data = await res.json();
 
+                console.log(data);
+
                 if (gameTime) {
                     setGameTimeRuns(data);
                     setDataLoading(false);
