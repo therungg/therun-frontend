@@ -1,12 +1,14 @@
 import { Run, SplitsHistory, SplitTimes } from "../../../common/types";
 import { Difference, DurationToFormatted } from "../../util/datetime";
 import { Col, Row, Table } from "react-bootstrap";
-import { useState } from "react";
+import React, { useState } from "react";
 import Switch from "react-switch";
 import styles from "../../css/User.module.scss";
 import { UnderlineTooltip } from "../../tooltip";
 import SplitName from "../../transformers/split-name";
 import { ValueOf } from "next/dist/shared/lib/constants";
+import { Bounce, toast, ToastContainer } from "react-toastify";
+import { useTheme } from "next-themes";
 
 interface SplitsProps {
     splits: SplitsHistory[];
@@ -28,6 +30,8 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
         splits[0].single.alternative &&
         splits[0].single.alternative.length > 0;
 
+    console.log(splits);
+
     const [totalTime, setTotalTime] = useState(true);
     const [selectedComparison, setSelectedComparison] =
         useState<SplitFilterValue>(SPLIT_FILTERS.BEST_POSSIBLE);
@@ -43,8 +47,21 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
 
     const url = `${process.env.NEXT_PUBLIC_SPLITS_CLOUDFRONT_URL}/${splitsFile}`;
 
+    const theme = useTheme();
+
     return (
         <div>
+            <ToastContainer
+                position="top-center"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                draggable
+                pauseOnHover
+                transition={Bounce}
+                theme={theme.theme || "dark"}
+            />
             <Row>
                 <Col xl={9} style={{ whiteSpace: "nowrap", display: "flex" }}>
                     <h2>Splits {gameTime && "(IGT)"}</h2>
@@ -55,6 +72,11 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                             style={{ marginLeft: "0.5rem" }}
                             href={url}
                             download={`${run.user}_${run.game}_${run.run}.lss`}
+                            onClick={() => {
+                                toast.info(
+                                    `If you want to remove the run history on these splits, use 'Edit Splits' -> 'Other...' -> 'Clear History' from within LiveSplit.`,
+                                );
+                            }}
                         >
                             <DownloadIcon />
                         </a>
