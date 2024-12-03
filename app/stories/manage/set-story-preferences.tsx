@@ -279,6 +279,7 @@ const ManageStories = ({
     const categoryMap = new Map<StoryElementCategory, string>([
         ["generic", "Stories not specific to the current run, fun facts"],
         ["previous", "Stories about the previous split"],
+        ["next", "Stories about the upcoming split"],
     ]);
     return (
         <div className="mb-3">
@@ -288,7 +289,7 @@ const ManageStories = ({
                 );
 
                 return (
-                    <Fragment key={k}>
+                    <div className="mb-3" key={k}>
                         <h2>{v}</h2>
                         {specificOptions.map((option, index) => {
                             const id = `stories.${option.type}.enabled`;
@@ -322,7 +323,7 @@ const ManageStories = ({
                                 </Form.Group>
                             );
                         })}
-                    </Fragment>
+                    </div>
                 );
             })}
         </div>
