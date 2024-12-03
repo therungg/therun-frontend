@@ -190,6 +190,8 @@ export interface StoryPreferences {
     allowGlobalStoryCooldownOverride: boolean;
     useLastNRuns: number;
 
+    changeGoldToRainbow: boolean;
+
     nameOverride?: string;
     pronounOverrideThey?: string;
     pronounOverrideTheir?: string;

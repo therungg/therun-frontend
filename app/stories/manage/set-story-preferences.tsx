@@ -80,6 +80,16 @@ export const SetStoryPreferences = ({
                                 label="Disable all 'welcome' stories that show up at the start of your run"
                             />
                         </Form.Group>
+                        <Form.Group controlId="changeGoldToRainbow">
+                            <Form.Check
+                                name="changeGoldToRainbow"
+                                type="checkbox"
+                                defaultChecked={
+                                    storyPreferences.changeGoldToRainbow
+                                }
+                                label="Change the word Gold to Rainbow"
+                            />
+                        </Form.Group>
                         {/*<Form.Group controlId="allowAIRephrase">*/}
                         {/*    <Form.Check*/}
                         {/*        name="allowAIRephrase"*/}
