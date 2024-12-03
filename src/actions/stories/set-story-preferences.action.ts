@@ -34,6 +34,7 @@ export async function setStoryPreferencesAction(
         allowGlobalStoryCooldownOverride: !!raceInput.get(
             "allowGlobalStoryCooldownOverride",
         ),
+        changeGoldToRainbow: !!raceInput.get("changeGoldToRainbow"),
         nameOverride: raceInput.get("nameOverride"),
         pronounOverrideThey: raceInput.get("pronounOverrideThey"),
         pronounOverrideThem: raceInput.get("pronounOverrideThem"),
@@ -92,6 +93,7 @@ const validateInput = (input: StoryPreferences) => {
         translateLanguage: Joi.optional(),
         globalStoryCooldown: Joi.number().optional(),
         allowGlobalStoryCooldownOverride: Joi.boolean(),
+        changeGoldToRainbow: Joi.boolean(),
         nameOverride: Joi.string().optional(),
         pronounOverrideThey: Joi.string().optional(),
         pronounOverrideThem: Joi.string().optional(),

@@ -125,6 +125,14 @@ const BasicFormFields = ({
                         label="Disable all 'welcome' stories that show up at the start of your run"
                     />
                 </Form.Group>
+                <Form.Group controlId="changeGoldToRainbow">
+                    <Form.Check
+                        name="changeGoldToRainbow"
+                        type="checkbox"
+                        defaultChecked={storyPreferences.changeGoldToRainbow}
+                        label="Change the word Gold to Rainbow"
+                    />
+                </Form.Group>
                 {/*<Form.Group controlId="allowAIRephrase">*/}
                 {/*    <Form.Check*/}
                 {/*        name="allowAIRephrase"*/}
@@ -269,6 +277,7 @@ const ManageStories = ({
     storyOptions: StoryOption[];
 }) => {
     const categoryMap = new Map<StoryElementCategory, string>([
+        ["generic", "Stories not specific to the current run, fun facts"],
         ["previous", "Stories about the previous split"],
     ]);
     return (
