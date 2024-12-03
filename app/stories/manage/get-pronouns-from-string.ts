@@ -1,5 +1,3 @@
-"use server";
-
 export const getPronounsFromString = (
     pronouns: string | undefined,
 ): [string, string, string] => {

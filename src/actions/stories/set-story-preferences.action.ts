@@ -1,6 +1,6 @@
 "use server";
 
-import { StoryPreferences } from "~app/live/story.types";
+import { StoryElementType, StoryPreferences } from "~app/live/story.types";
 import Joi from "joi";
 import { getSession } from "~src/actions/session.action";
 import { getApiKey } from "~src/actions/api-key.action";
@@ -12,7 +12,18 @@ export async function setStoryPreferencesAction(
     _prevState: unknown,
     raceInput: FormData,
 ) {
-    console.log(raceInput.get("translateLanguage"));
+    const entries = Array.from(raceInput.entries());
+
+    const rawStories: StoryElementType[] = entries
+        .filter(([key, _]) => key.startsWith("stories"))
+        .map(([key, _]) => key.split(".")[1] as StoryElementType);
+
+    const disabledStories = rawStories.filter(
+        (item) => rawStories.indexOf(item) === rawStories.lastIndexOf(item),
+    );
+
+    console.log(rawStories);
+
     const input: StoryPreferences = {
         enabled: !!raceInput.get("enabled"),
         disableNegativeStories: !!raceInput.get("disableNegativeStories"),
@@ -27,6 +38,7 @@ export async function setStoryPreferencesAction(
         pronounOverrideThey: raceInput.get("pronounOverrideThey"),
         pronounOverrideThem: raceInput.get("pronounOverrideThem"),
         pronounOverrideTheir: raceInput.get("pronounOverrideTheir"),
+        disabledStories,
     };
 
     const { error } = validateInput(input);
@@ -58,6 +70,8 @@ export async function setStoryPreferencesAction(
         },
     );
 
+    console.log(JSON.stringify(input));
+
     if (result.status !== 200) {
         const response = await result.text();
         return { message: response, type: "error" };
@@ -82,6 +96,7 @@ const validateInput = (input: StoryPreferences) => {
         pronounOverrideThey: Joi.string().optional(),
         pronounOverrideThem: Joi.string().optional(),
         pronounOverrideTheir: Joi.string().optional(),
+        disabledStories: Joi.array().optional(),
     });
 
     return schema.validate(input);

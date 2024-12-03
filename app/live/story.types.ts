@@ -149,6 +149,7 @@ export type StoryElementAfterSplitType =
     | "run_after_split_behind_now"
     | "run_after_split_gold"
     | "run_after_split_top_n_percent_split"
+    | "run_after_split_bottom_n_percent_split"
     | "run_after_split_top_n_percent_run"
     | "run_after_split_close_to_gold"
     | "run_after_split_multiple_saves"
@@ -194,4 +195,14 @@ export interface StoryPreferences {
     pronounOverrideThey?: string;
     pronounOverrideTheir?: string;
     pronounOverrideThem?: string;
+
+    disabledStories: StoryElementType[];
+}
+
+export interface StoryOption {
+    category: StoryElementCategory;
+    type: StoryElementType;
+    isNegative?: boolean;
+    example: string;
+    cooldown: StoryElementCooldown;
 }

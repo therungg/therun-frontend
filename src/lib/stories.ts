@@ -1,6 +1,7 @@
 "use server";
 
 import {
+    StoryOption,
     StoryPreferences,
     StoryWithSplitsStories,
 } from "~app/live/story.types";
@@ -17,6 +18,18 @@ export const getStoryByUser = async (username: string) => {
     });
 
     return (await story.json()).result as StoryWithSplitsStories;
+};
+
+export const getStoryOptions = async () => {
+    const storyApiUrl = process.env.NEXT_PUBLIC_STORIES_API_URL as string;
+
+    const url = storyApiUrl + "/story-options";
+
+    const options = await fetch(url, {
+        method: "GET",
+    });
+
+    return (await options.json()).result as StoryOption[];
 };
 
 export const getStoryPreferencesByUser = async (user: User) => {

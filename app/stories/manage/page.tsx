@@ -1,3 +1,5 @@
+"use server";
+
 import { getSession } from "~src/actions/session.action";
 import ManageStories from "~app/stories/manage/manage-stories";
 import { confirmPermission } from "~src/rbac/confirm-permission";
