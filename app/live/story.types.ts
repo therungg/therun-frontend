@@ -199,6 +199,7 @@ export interface StoryPreferences {
     pronounOverrideThem?: string;
 
     disabledStories: StoryElementType[];
+    customCooldowns: Partial<Record<StoryElementType, number>>;
 }
 
 export interface StoryOption {

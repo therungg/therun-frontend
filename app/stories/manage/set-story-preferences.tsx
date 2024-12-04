@@ -1,7 +1,7 @@
 "use client";
 
 import React, { Fragment, useEffect } from "react";
-import { Button, Col, Form, Row, Tab, Tabs } from "react-bootstrap";
+import { Button, Col, Form, Row, Tab, Table, Tabs } from "react-bootstrap";
 import { useFormState, useFormStatus } from "react-dom";
 import { setStoryPreferencesAction } from "~src/actions/stories/set-story-preferences.action";
 import {
@@ -291,38 +291,83 @@ const ManageStories = ({
                 return (
                     <div className="mb-3" key={k}>
                         <h2>{v}</h2>
-                        {specificOptions.map((option, index) => {
-                            const id = `stories.${option.type}.enabled`;
+                        <Table bordered striped hover responsive>
+                            <thead>
+                                <tr>
+                                    <th>Enabled</th>
+                                    <th>Cooldown</th>
+                                    <th>Text</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {specificOptions.map((option, index) => {
+                                    const id = `stories.${option.type}.enabled`;
+                                    const idCooldown = `stories.${option.type}.cooldown`;
 
-                            const checked = !(
-                                storyPreferences.disabledStories || []
-                            ).includes(option.type);
+                                    const checked = !(
+                                        storyPreferences.disabledStories || []
+                                    ).includes(option.type);
 
-                            const uncheckBecauseNegative =
-                                option.isNegative &&
-                                storyPreferences.disableNegativeStories;
+                                    const uncheckBecauseNegative =
+                                        option.isNegative &&
+                                        storyPreferences.disableNegativeStories;
 
-                            return (
-                                <Form.Group controlId={id} key={id + index}>
-                                    <input type="hidden" value={0} name={id} />
-                                    <Form.Check
-                                        type="switch"
-                                        id={id}
-                                        name={id}
-                                        disabled={uncheckBecauseNegative}
-                                        defaultChecked={
-                                            checked && !uncheckBecauseNegative
-                                        }
-                                        value={1}
-                                        label={showExampleStory(
-                                            option.example,
-                                            user,
-                                            storyPreferences,
-                                        )}
-                                    />
-                                </Form.Group>
-                            );
-                        })}
+                                    return (
+                                        <tr key={id + index}>
+                                            <td>
+                                                <input
+                                                    type="hidden"
+                                                    value={0}
+                                                    name={id}
+                                                />
+                                                <Form.Check
+                                                    type="switch"
+                                                    id={id}
+                                                    name={id}
+                                                    disabled={
+                                                        uncheckBecauseNegative
+                                                    }
+                                                    defaultChecked={
+                                                        checked &&
+                                                        !uncheckBecauseNegative
+                                                    }
+                                                    value={1}
+                                                />
+                                            </td>
+                                            <td>
+                                                <Form.Control
+                                                    className="h-50"
+                                                    name={idCooldown}
+                                                    id={idCooldown}
+                                                    type="number"
+                                                    required={false}
+                                                    min={0}
+                                                    step={1}
+                                                    max={60 * 24}
+                                                    defaultValue={
+                                                        (storyPreferences.customCooldowns ||
+                                                            {})[option.type] ??
+                                                        option.cooldown
+                                                    }
+                                                    onKeyDown={
+                                                        numberInputKeyDown
+                                                    }
+                                                />
+                                            </td>
+                                            <td>
+                                                <Form.Label htmlFor={id}>
+                                                    {showExampleStory(
+                                                        option.example,
+                                                        user,
+                                                        storyPreferences,
+                                                    )}
+                                                </Form.Label>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </Table>
                     </div>
                 );
             })}
@@ -359,6 +404,7 @@ const numberInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
                 eventCode.includes("home") ||
                 eventCode.includes("end") ||
                 eventCode.includes("backspace") ||
+                eventCode.includes("tab") ||
                 (eventCode.includes("numpad") && eventCode.length === 7))
         )
     ) {

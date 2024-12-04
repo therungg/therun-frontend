@@ -15,14 +15,26 @@ export async function setStoryPreferencesAction(
     const entries = Array.from(raceInput.entries());
 
     const rawStories: StoryElementType[] = entries
-        .filter(([key, _]) => key.startsWith("stories"))
+        .filter(
+            ([key, _]) =>
+                key.startsWith("stories.") && key.endsWith(".enabled"),
+        )
         .map(([key, _]) => key.split(".")[1] as StoryElementType);
 
     const disabledStories = rawStories.filter(
         (item) => rawStories.indexOf(item) === rawStories.lastIndexOf(item),
     );
 
-    console.log(rawStories);
+    const cooldowns: Partial<Record<StoryElementType, number>> = {};
+
+    entries
+        .filter(
+            ([key, _]) =>
+                key.startsWith("stories.") && key.endsWith(".cooldown"),
+        )
+        .forEach(([key, value]) => {
+            cooldowns[key.split(".")[1] as StoryElementType] = Number(value);
+        });
 
     const input: StoryPreferences = {
         enabled: !!raceInput.get("enabled"),
@@ -40,12 +52,12 @@ export async function setStoryPreferencesAction(
         pronounOverrideThem: raceInput.get("pronounOverrideThem"),
         pronounOverrideTheir: raceInput.get("pronounOverrideTheir"),
         disabledStories,
+        customCooldowns: cooldowns,
     };
 
     const { error } = validateInput(input);
 
     if (error) {
-        console.error("here!!");
         return {
             message: error.message,
             type: "error",
@@ -99,6 +111,7 @@ const validateInput = (input: StoryPreferences) => {
         pronounOverrideThem: Joi.string().optional(),
         pronounOverrideTheir: Joi.string().optional(),
         disabledStories: Joi.array().optional(),
+        customCooldowns: Joi.object().optional(),
     });
 
     return schema.validate(input);
