@@ -134,7 +134,11 @@ export const RecommendedStream = ({
                     channel={
                         stream
                             ? stream
-                            : activeLiveRun.login || activeLiveRun.user
+                            : activeLiveRun.login &&
+                                activeLiveRun.login.toLowerCase() !==
+                                    activeLiveRun.user.toLowerCase()
+                              ? activeLiveRun.login
+                              : activeLiveRun.user
                     }
                     width="100%"
                     height="100%"

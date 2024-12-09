@@ -21,7 +21,13 @@ export const SessionOverview = ({ sessions }: { sessions: RunSession[] }) => {
             <tbody>
                 {sessions.map((session) => {
                     return (
-                        <tr key={session.game + session.startedAt}>
+                        <tr
+                            key={
+                                session.game +
+                                session.startedAt +
+                                JSON.stringify(session.finishedRuns)
+                            }
+                        >
                             <td>{session.game}</td>
                             <td className={styles.sessionOptional}>
                                 <IsoToFormatted iso={session.startedAt} />

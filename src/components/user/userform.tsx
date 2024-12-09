@@ -49,7 +49,11 @@ export const Userform = ({ username, session, userData }) => {
         <div>
             {!editingInfo &&
                 Display({
-                    username: userData.login || username,
+                    username:
+                        userData.login &&
+                        userData.login.toLowerCase() !== username.toLowerCase()
+                            ? userData.login
+                            : username,
                     form,
                     showTimezone: !!userData.timezone,
                 })}
