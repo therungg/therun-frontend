@@ -13,6 +13,7 @@ interface LayoutInput {
     picture?: string;
 }
 
+// TODO: Move this to `scripts.tsx`
 const themeInitializerScript = `
        (function () {
          document.documentElement.dataset.bsTheme = window.localStorage.getItem("theme") || "light";
