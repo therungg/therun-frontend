@@ -70,6 +70,7 @@ const tournamentEntries: Array<[string, TournamentEntryValue]> = [
         },
     ],
     ["rayman", { tournament: "Rayman 1 BTR" }],
+    ["kakarikoclassic2024", { tournament: "Kakariko Classic 2024" }],
 ];
 
 const tournamentMap: Map<string, Tournament | CombinedTournament> = new Map(
