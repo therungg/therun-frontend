@@ -7,8 +7,7 @@ export interface Wrapped {
     processedAt?: number;
 }
 
-export type WrappedWithData = Wrapped & WrappedData;
-export type WrappedData = Partial<WrappedDataPoints>;
+export type WrappedWithData = Wrapped & WrappedDataPoints;
 
 interface WrappedDataPoints {
     hasEnoughRuns: boolean;
