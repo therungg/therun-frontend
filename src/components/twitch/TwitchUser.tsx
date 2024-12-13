@@ -1,6 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { Nav } from "react-bootstrap";
+import { NameAsPatreon } from "~src/components/patreon/patreon-name";
 
 interface TwitchUserProps {
     username: string;
@@ -27,7 +28,9 @@ export const TwitchUser: React.FunctionComponent<TwitchUserProps> = ({
                         }}
                     />
                 </div>
-                <div className="ms-2 ">{username}</div>
+                <div className="ms-2 ">
+                    <NameAsPatreon name={username} />
+                </div>
             </Nav.Item>
         </div>
     );
