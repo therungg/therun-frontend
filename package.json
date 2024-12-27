@@ -57,6 +57,7 @@
     "react-content-loader": "^6.2.1",
     "react-cookie": "^7.0.1",
     "react-countdown": "^2.3.5",
+    "react-countup": "^6.5.3",
     "react-datepicker": "^4.25.0",
     "react-dom": "^18.3.0-canary-f1039be4a-20240107",
     "react-dropzone": "^14.2.3",

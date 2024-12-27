@@ -1,6 +1,6 @@
 "use client";
 
-import { Wrapped } from "~app/[username]/wrapped/wrapped-types";
+import { WrappedWithData } from "~app/[username]/wrapped/wrapped-types";
 import { User } from "../../../types/session.types";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -8,7 +8,7 @@ import { RenderFinishedWrapped } from "~app/[username]/wrapped/render-finished-w
 
 interface DisplayWrappedProps {
     user: string;
-    wrapped: Wrapped;
+    wrapped: WrappedWithData;
     loggedinUser: User;
 }
 

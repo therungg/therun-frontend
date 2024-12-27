@@ -1,3 +1,5 @@
+import { PlaytimeStats } from "~src/components/user/stats";
+
 export interface Wrapped {
     user: string;
     "start#end": string;
@@ -15,4 +17,18 @@ interface WrappedDataPoints {
     totalRuns: number;
     totalFinishedRuns: number;
     totalResets: number;
+    totalSplits: number;
+    timeResetFirstSplit: number;
+    countResetFirstSplit: number;
+    streak: {
+        length: number;
+        start: string;
+        end: string;
+    };
+    playtimeData: PlaytimeStats;
+    gamesData: {
+        image: string;
+        game: string;
+        display: string;
+    }[];
 }

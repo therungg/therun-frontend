@@ -7,7 +7,7 @@ import { Col, Row } from "react-bootstrap";
 import CalendarHeatmap from "../../../public/js/calendar-heatmap.component";
 import { scaleLinear } from "d3";
 
-interface PlaytimeStats {
+export interface PlaytimeStats {
     total: number;
     playtimePerDayMap: StatMap;
     playtimePerDayOfWeekMap: StatMap;
