@@ -32,9 +32,14 @@ export const DisplayWrapped = ({ user, wrapped }: DisplayWrappedProps) => {
 
     if (wrapped.status === 0) {
         return (
-            <div>
-                Your Wrapped is being generated. It will appear automatically in
-                a moment. Hang in there!
+            <div className="h-400p text-center flex-center flex-column align-items-center gap-4">
+                <div className="spinner-grow text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                </div>
+                <h2>
+                    Your Wrapped is being generated. It will appear
+                    automatically in a moment. Hang in there!
+                </h2>
             </div>
         );
     }
