@@ -50,6 +50,12 @@ export const sortRaceParticipants = (
             }
 
             if (race.category.includes("602")) {
+                if (
+                    a.liveData.totalSplits < 400 &&
+                    b.liveData.totalSplits < 400
+                ) {
+                    return a.user < b.user ? -1 : 1;
+                }
                 if (a.liveData.totalSplits < 400) {
                     return 1;
                 }
