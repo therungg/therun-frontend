@@ -176,7 +176,7 @@ const RenderWrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                 Your longest daily streak for runs was{" "}
                 <CountUp end={streakInDays} duration={4} /> days!
             </h2>
-            <div className="flex-center align-items-center min-vh-100">
+            <div className="flex-center align-items-center min-vh-100 overflow-x-hidden">
                 <div className="d-flex align-items-center display-4">
                     <>
                         <p className="flex-center display-6 mb-5">

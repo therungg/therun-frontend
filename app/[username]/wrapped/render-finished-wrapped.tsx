@@ -30,7 +30,7 @@ export const RenderFinishedWrapped = ({
         const sections = gsap.utils.toArray(".animated-section");
 
         ScrollTrigger.defaults({
-            markers: true,
+            //markers: true,
             pin: true,
             scrub: 0.5,
         });
@@ -60,7 +60,7 @@ export const RenderFinishedWrapped = ({
 
     return (
         <div ref={containerRef}>
-            <section className="flex-center flex-column min-vh-100-no-header text-center">
+            <section className="flex-center flex-column min-vh-100-no-header mesh-bg text-center">
                 <p className="display-2 mb-0">You had a great 2024!</p>
                 <WrappedTitle user={user} />
                 <p className="display-6 mb-5">
