@@ -60,7 +60,8 @@ interface WrappedDataPoints {
         // Total time playing this game this year in ms. Can also get from playtimeData.
         totalRunTime: number;
 
-        // Finished runs this year
+        // Finished runs this year. Can use to show a graph of finished runs or something.
+        // Or heatmap when runs are finished throughout the year.
         runs: {
             startedAt: string;
             finishedAt: string;
