@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { WrappedWithData } from "../wrapped-types";
 import CountUp from "react-countup";
 import { GameImage } from "~src/components/image/gameimage";
+import gsap from "gsap";
 
 const RenderWrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
     const streakInDays = wrapped.streak.length;
