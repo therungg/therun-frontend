@@ -171,51 +171,56 @@ const RenderWrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
     }, [mostPlayedGame]);
 
     return (
-        <div>
-            <p className="flex-center display-4 mb-2">
-                <span>
-                    Your longest daily streak for runs was{" "}
-                    <CountUp end={streakInDays} duration={4} /> days!
-                </span>
-            </p>
-            <p className="flex-center display-6 mb-5">
-                {getStreakMessage(streakInDays)}
-            </p>
-            <div className="row justify-content-center">
-                <div className="col-auto position-relative">
-                    <div
-                        ref={sparkContainerRef}
-                        className="position-absolute w-100 h-100"
-                        style={{ pointerEvents: "none", zIndex: 1 }}
-                    />
-                    <div
-                        ref={cardRef}
-                        className="d-flex flex-column bg-warning bg-opacity-75 rounded-3 overflow-hidden"
-                    >
-                        <div className="game-image">
-                            {gameData &&
-                                gameData.image &&
-                                gameData.image !== "noimage" && (
-                                    <GameImage
-                                        alt={gameData.display}
-                                        src={gameData.image}
-                                        quality="hd"
-                                        height={132 * 4.5}
-                                        width={99 * 4.5}
-                                    />
-                                )}
+        <>
+            <h2 className="mb-4">
+                Your longest daily streak for runs was{" "}
+                <CountUp end={streakInDays} duration={4} /> days!
+            </h2>
+            <div className="flex-center align-items-center min-vh-100">
+                <div className="d-flex align-items-center display-4">
+                    <>
+                        <p className="flex-center display-6 mb-5">
+                            {getStreakMessage(streakInDays)}
+                        </p>
+                        <div className="row justify-content-center">
+                            <div className="col-auto position-relative">
+                                <div
+                                    ref={sparkContainerRef}
+                                    className="position-absolute w-100 h-100"
+                                    style={{ pointerEvents: "none", zIndex: 1 }}
+                                />
+                                <div
+                                    ref={cardRef}
+                                    className="d-flex flex-column bg-warning bg-opacity-75 rounded-3 overflow-hidden"
+                                >
+                                    <div className="game-image">
+                                        {gameData &&
+                                            gameData.image &&
+                                            gameData.image !== "noimage" && (
+                                                <GameImage
+                                                    alt={gameData.display}
+                                                    src={gameData.image}
+                                                    quality="hd"
+                                                    height={132 * 4.5}
+                                                    width={99 * 4.5}
+                                                />
+                                            )}
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="col-auto">
+                                <p className="display-6">{mostPlayedGame}</p>
+                                <p className="lead">
+                                    was your favourite game during this streak
+                                    period.
+                                </p>
+                                <p className="fs-small">cringe</p>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div className="col-auto">
-                    <p className="display-6">{mostPlayedGame}</p>
-                    <p className="lead">
-                        was your favourite game during this streak period.
-                    </p>
-                    <p className="fs-small">cringe</p>
+                    </>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 

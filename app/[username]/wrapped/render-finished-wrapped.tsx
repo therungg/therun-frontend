@@ -60,48 +60,36 @@ export const RenderFinishedWrapped = ({
 
     return (
         <div ref={containerRef}>
-            <section>
-                <div className="flex-center flex-column align-items-center min-vh-100">
-                    <p className="text-center flex-center align-items-center display-2 mb-0">
-                        You had a great 2024!
-                    </p>
-                    <WrappedTitle user={user} />
-                    <p className="text-center display-6 mb-5">
-                        Let's see your stats for this year!
-                    </p>
-                    <ScrollDown />
-                </div>
+            <section className="flex-center flex-column min-vh-100-no-header text-center">
+                <p className="display-2 mb-0">You had a great 2024!</p>
+                <WrappedTitle user={user} />
+                <p className="display-6 mb-5">
+                    Let's see your stats for this year!
+                </p>
+                <ScrollDown />
             </section>
 
-            <section className="animated-section">
-                <div className="flex-center flex-column align-items-start min-vh-100">
-                    <RenderTotalStatsCompliment wrapped={wrapped} />
-                </div>
+            <section className="animated-section text-center flex-center align-items-center min-vh-100">
+                <RenderTotalStatsCompliment wrapped={wrapped} />
             </section>
 
-            <section className="animated-section">
-                <div className="flex-center flex-column align-items-center min-vh-100">
-                    <RenderWrappedStreak wrapped={wrapped} />
-                </div>
+            <section className="animated-section flex-center flex-column align-items-center min-vh-100">
+                <RenderWrappedStreak wrapped={wrapped} />
             </section>
 
-            <section className="animated-section">
-                <div className="text-center min-vh-100">
-                    <RenderTopGames wrapped={wrapped} />
-                </div>
+            <section className="animated-section text-center min-vh-100">
+                <RenderTopGames wrapped={wrapped} />
             </section>
 
-            <section className="animated-section">
-                <div className="flex-center flex-column align-items-center min-vh-100">
-                    <p className="text-center flex-center align-items-center display-2 mb-4">
-                        That's a wrap on 2024!
-                    </p>
-                    <p className="text-center display-6 mb-5">
-                        Thanks for spending it with The Run. We can't wait to
-                        see what you do in 2025!
-                    </p>
-                    <RenderWrappedSocialImages wrapped={wrapped} />
-                </div>
+            <section className="animated-section flex-center flex-column align-items-center min-vh-100">
+                <p className="text-center flex-center align-items-center display-2 mb-4">
+                    That's a wrap on 2024!
+                </p>
+                <p className="text-center display-6 mb-5">
+                    Thanks for spending it with The Run. We can't wait to see
+                    what you do in 2025!
+                </p>
+                <RenderWrappedSocialImages wrapped={wrapped} />
             </section>
         </div>
     );
@@ -230,7 +218,7 @@ const RenderTopGames = ({ wrapped }: { wrapped: WrappedWithData }) => {
                     </p>
                 </>
             )}
-            <Row className="row-cols-1 row-cols-md-2 row-cols-xl-3 mw-80 mx-auto pt-5 gx-3 gy-5 g-md-5">
+            <Row className="row-cols-1 row-cols-md-2 row-cols-xl-3 mx-auto pt-5 gx-3 gy-5 g-md-5">
                 {top3Games.map(({ game, total }, i) => {
                     const gameData = wrapped.gamesData.find(
                         (gameData) => gameData.display === game,
@@ -247,8 +235,8 @@ const RenderTopGames = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                                 alt={gameData.display}
                                                 src={gameData.image}
                                                 quality="hd"
-                                                height={132 * 4.5}
-                                                width={99 * 4.5}
+                                                height={132 * 5}
+                                                width={99 * 5}
                                             />
                                         )}
                                 </div>
