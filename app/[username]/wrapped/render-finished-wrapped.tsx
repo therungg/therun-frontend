@@ -16,7 +16,6 @@ interface RenderFinishedWrappedProps {
     wrapped: WrappedWithData;
 }
 
-// Todo:: actually render this shit
 export const RenderFinishedWrapped = ({
     wrapped,
     user,
@@ -29,14 +28,14 @@ export const RenderFinishedWrapped = ({
         const sections = gsap.utils.toArray(".animated-section");
 
         ScrollTrigger.defaults({
-            //markers: true,
+            markers: true,
+            pin: true,
+            scrub: 0.5,
         });
 
         sections.forEach((section, _) => {
             ScrollTrigger.create({
                 trigger: section,
-                pin: true,
-                scrub: 0.5,
             });
         });
 
@@ -73,7 +72,7 @@ export const RenderFinishedWrapped = ({
             </section>
 
             <section className="animated-section">
-                <div className="flex-center flex-column align-items-center min-vh-100">
+                <div className="flex-center flex-column align-items-start min-vh-100">
                     <RenderTotalStatsCompliment wrapped={wrapped} />
                 </div>
             </section>
