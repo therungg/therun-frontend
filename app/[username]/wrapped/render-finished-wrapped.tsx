@@ -26,18 +26,17 @@ export const RenderFinishedWrapped = ({
     useEffect(() => {
         if (!wrapped.hasEnoughRuns) return;
 
-        const sections = gsap.utils.toArray(".section");
+        const sections = gsap.utils.toArray(".animated-section");
 
         ScrollTrigger.defaults({
-            pinSpacing: true,
+            //markers: true,
         });
 
         sections.forEach((section, _) => {
             ScrollTrigger.create({
                 trigger: section,
-                start: "top top",
                 pin: true,
-                pinSpacing: true,
+                scrub: 0.5,
             });
         });
 
@@ -60,7 +59,7 @@ export const RenderFinishedWrapped = ({
 
     return (
         <div ref={containerRef}>
-            <div className="section">
+            <section>
                 <div className="flex-center flex-column align-items-center min-vh-100">
                     <p className="text-center flex-center align-items-center display-2 mb-0">
                         You had a great 2024!
@@ -71,27 +70,27 @@ export const RenderFinishedWrapped = ({
                     </p>
                     <ScrollDown />
                 </div>
-            </div>
+            </section>
 
-            <div className="section">
+            <section className="animated-section">
                 <div className="flex-center flex-column align-items-center min-vh-100">
                     <RenderTotalStatsCompliment wrapped={wrapped} />
                 </div>
-            </div>
+            </section>
 
-            <div className="section">
-                <div className="flex-center flex-column align-items-center min-vh-100">
+            <section className="animated-section">
+                <div className="text-center min-vh-100">
                     <RenderTopGames wrapped={wrapped} />
                 </div>
-            </div>
+            </section>
 
-            <div className="section">
+            <section className="animated-section">
                 <div className="flex-center flex-column align-items-center min-vh-100">
                     <RenderStreak wrapped={wrapped} />
                 </div>
-            </div>
+            </section>
 
-            <div className="section">
+            <section className="animated-section">
                 <div className="flex-center flex-column align-items-center min-vh-100">
                     <p className="text-center flex-center align-items-center display-2 mb-4">
                         That's a wrap on 2024!
@@ -102,7 +101,7 @@ export const RenderFinishedWrapped = ({
                     </p>
                     <RenderSocialImages wrapped={wrapped} />
                 </div>
-            </div>
+            </section>
         </div>
     );
 };
@@ -342,6 +341,10 @@ const RenderStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
     );
 
     let mostPlayedGame: string | undefined = undefined;
+
+    if (sortedGameFrequencyMap.length === 1) {
+        mostPlayedGame = sortedGameFrequencyMap[0][0];
+    }
 
     if (sortedGameFrequencyMap.length > 1) {
         // Grab the first indexed game, and compare its playcount against the next index.
