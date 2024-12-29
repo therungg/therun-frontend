@@ -44,10 +44,22 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
         { content: race.raceId },
     ];
 
+    const hasManyParticipants = race.participants?.filter(
+        (participant) => !!participant.liveData,
+    );
+    const participantHasManySplits = race.participants?.find(
+        (participant) =>
+            participant.liveData && participant.liveData.totalSplits > 200,
+    );
+
+    const shouldSkipFetching = hasManyParticipants && participantHasManySplits;
+
     useEffect(() => {
         const fetchRaceMessages = async () => {
-            const res = await getRaceMessages(race.raceId);
-            setMessagesState(res);
+            if (!shouldSkipFetching) {
+                const res = await getRaceMessages(race.raceId);
+                setMessagesState(res);
+            }
         };
 
         fetchRaceMessages();
