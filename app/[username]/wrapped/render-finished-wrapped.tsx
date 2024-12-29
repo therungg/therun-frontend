@@ -78,14 +78,14 @@ export const RenderFinishedWrapped = ({
             </section>
 
             <section className="animated-section">
-                <div className="text-center min-vh-100">
-                    <RenderTopGames wrapped={wrapped} />
+                <div className="flex-center flex-column align-items-center min-vh-100">
+                    <RenderStreak wrapped={wrapped} />
                 </div>
             </section>
 
             <section className="animated-section">
-                <div className="flex-center flex-column align-items-center min-vh-100">
-                    <RenderStreak wrapped={wrapped} />
+                <div className="text-center min-vh-100">
+                    <RenderTopGames wrapped={wrapped} />
                 </div>
             </section>
 
