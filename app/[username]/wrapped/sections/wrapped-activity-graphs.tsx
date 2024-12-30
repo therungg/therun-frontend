@@ -8,7 +8,7 @@ import {
     PlaytimePerMonthGraph,
 } from "~src/components/user/stats";
 
-export const RenderWrappedActivityGraphs = ({
+export const WrappedActivityGraphs = ({
     wrapped,
 }: {
     wrapped: WrappedWithData;

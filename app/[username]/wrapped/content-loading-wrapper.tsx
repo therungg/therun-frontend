@@ -4,15 +4,18 @@ import { WrappedWithData } from "~app/[username]/wrapped/wrapped-types";
 import { User } from "../../../types/session.types";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { RenderFinishedWrapped } from "~app/[username]/wrapped/render-finished-wrapped";
+import { TheRunWrapped } from "~app/[username]/wrapped/the-run-wrapped";
 
-interface DisplayWrappedProps {
+interface ContentLoadingWrapperProps {
     user: string;
     wrapped: WrappedWithData;
     loggedinUser: User;
 }
 
-export const DisplayWrapped = ({ user, wrapped }: DisplayWrappedProps) => {
+export const ContentLoadingWrapper = ({
+    user,
+    wrapped,
+}: ContentLoadingWrapperProps) => {
     const router = useRouter();
     const [status, setStatus] = useState(wrapped.status);
 
@@ -44,5 +47,15 @@ export const DisplayWrapped = ({ user, wrapped }: DisplayWrappedProps) => {
         );
     }
 
-    return <RenderFinishedWrapped wrapped={wrapped} user={user} />;
+    if (!wrapped?.hasEnoughRuns) {
+        return (
+            <div className="h-400p text-center flex-center flex-column align-items-center gap-4">
+                Unfortunately, there is not enough data on your account to
+                generate a Wrapped. If you think this is incorrect, please
+                contact us on Discord.
+            </div>
+        );
+    }
+
+    return <TheRunWrapped wrapped={wrapped} user={user} />;
 };
