@@ -58,7 +58,7 @@ export const RenderWrappedActivityGraphs = ({
                             <CalendarHeatmap data={data} setter={() => {}} />
                         </div>
                     </div>
-                    <div className="d-flex align-items-center display-4">
+                    <div className="d-flex align-items-center display-4 mt-5">
                         <Row className="w-100">
                             <Col>
                                 <PlaytimePerMonthGraph
