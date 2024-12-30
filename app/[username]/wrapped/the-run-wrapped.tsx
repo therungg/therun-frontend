@@ -10,6 +10,8 @@ import { WrappedSocialImages } from "./sections/wrapped-social-images";
 import { WrappedTopGames } from "./sections/wrapped-top-games";
 import { WrappedTotalStatsCompliment } from "./sections/wrapped-total-stats-compliment";
 import { WrappedActivityGraphs } from "~app/[username]/wrapped/sections/wrapped-activity-graphs";
+import { Button } from "react-bootstrap";
+import { ArrowDownCircleFill, ArrowUpCircleFill } from "react-bootstrap-icons";
 
 gsap.registerPlugin(useGSAP);
 gsap.registerPlugin(ScrollTrigger);
@@ -19,9 +21,14 @@ interface TheRunWrappedProps {
     wrapped: WrappedWithData;
 }
 
+const FOOTER_HEIGHT = 25;
+
 export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
     const [sectionIndex, setSectionIndex] = useState(-1);
     const containerRef = useRef(null);
+    const nextRef = useRef(null);
+    const previousRef = useRef(null);
+
     // https://gsap.com/resources/React/
     useGSAP(
         () => {
@@ -110,10 +117,28 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                 <ScrollDown />
             </section>
             {sections}
+            <div style={{ bottom: FOOTER_HEIGHT }} className="sticky-bottom">
+                <Button
+                    disabled={sectionIndex + 1 === 0}
+                    variant="outline-secondary mx-2"
+                    aria-description="previous"
+                    ref={previousRef}
+                >
+                    <ArrowUpCircleFill />
+                </Button>
+                <Button
+                    disabled={sectionIndex + 1 === sections.length}
+                    variant="outline-secondary"
+                    aria-description="next"
+                    ref={nextRef}
+                >
+                    <ArrowDownCircleFill />
+                </Button>
+            </div>
             {sectionIndex + 1 === 0 ||
             sectionIndex + 1 === sections.length ? null : (
                 <h2
-                    style={{ bottom: 25, opacity: 0.66 }}
+                    style={{ bottom: FOOTER_HEIGHT, opacity: 0.66 }}
                     className="sticky-bottom text-end"
                 >
                     {sectionIndex + 1} / {sections.length - 1}
