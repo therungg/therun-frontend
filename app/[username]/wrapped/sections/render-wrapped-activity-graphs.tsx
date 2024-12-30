@@ -5,6 +5,7 @@ import { Col, Row } from "react-bootstrap";
 import {
     PlayTimePerDayOfWeekGraph,
     PlaytimePerHourGraph,
+    PlaytimePerMonthGraph,
 } from "~src/components/user/stats";
 
 export const RenderWrappedActivityGraphs = ({
@@ -39,11 +40,13 @@ export const RenderWrappedActivityGraphs = ({
             </p>
             <p className="mt-3">
                 <span className="display-6">
-                    Also, we added some cool graphs
+                    Also, we added some cool graphs. Try hovering over them!
                 </span>
             </p>
             <p className="mt-1 opacity-25">
-                <span className="fs-small">You like that, don't you?</span>
+                <span className="fs-small">
+                    I bet you like that, don't you?
+                </span>
             </p>
             <div className="flex-center min-vh-100 overflow-x-hidden">
                 <div>
@@ -57,6 +60,13 @@ export const RenderWrappedActivityGraphs = ({
                     </div>
                     <div className="d-flex align-items-center display-4">
                         <Row className="w-100">
+                            <Col>
+                                <PlaytimePerMonthGraph
+                                    playtimePerMonthMap={
+                                        wrapped.playtimeData.playtimePerMonthMap
+                                    }
+                                />
+                            </Col>
                             <Col>
                                 <PlayTimePerDayOfWeekGraph
                                     playtimePerDayOfWeekMap={
