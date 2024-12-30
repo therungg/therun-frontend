@@ -1,11 +1,9 @@
 import { WrappedWithData } from "../wrapped-types";
 
-const RenderWrappedSocialImages = ({
+export const WrappedSocialImages = ({
     wrapped,
 }: {
     wrapped: WrappedWithData;
 }) => {
     return <>{wrapped.user}</>;
 };
-
-export default RenderWrappedSocialImages;

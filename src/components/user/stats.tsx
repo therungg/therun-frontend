@@ -20,7 +20,7 @@ interface StatMap {
     [key: string]: TotalStat;
 }
 
-interface TotalStat {
+export interface TotalStat {
     total: number;
     perGame: PerGameStat;
 }

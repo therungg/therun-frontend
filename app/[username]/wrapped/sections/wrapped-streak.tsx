@@ -1,17 +1,14 @@
-import { useEffect, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { WrappedWithData } from "../wrapped-types";
 import CountUp from "react-countup";
 import { GameImage } from "~src/components/image/gameimage";
-import gsap from "gsap";
+import { TotalStat } from "~src/components/user/stats";
+import { useSparksAnimation } from "../use-sparks-animation.hook";
 
-const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
+export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
     const streakInDays = wrapped.streak.length;
-    const streakStart = wrapped.streak.start;
-    const streakEnd = wrapped.streak.end;
-    const sparkContainerRef = useRef(null);
-    const cardRef = useRef(null);
-
-    console.log(streakInDays, streakStart, streakEnd);
+    const sparkContainerRef = useRef<HTMLElement>(null);
+    const cardRef = useRef<HTMLElement>(null);
 
     function getDatesInRange(startDate: string, endDate: string): string[] {
         const dates: string[] = [];
@@ -26,64 +23,60 @@ const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
         return dates;
     }
 
-    function getStreakPlaytimes(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        playtimePerDayMap: any,
-        streakStart: string,
-        streakEnd: string,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ): any {
+    const streakPlaytimes = useMemo(() => {
+        const playtimePerDayMap = wrapped.playtimeData.playtimePerDayMap;
+        const { start: streakStart, end: streakEnd } = wrapped.streak;
+
         const streakDates = getDatesInRange(streakStart, streakEnd);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const streakPlaytimes: any[] = [];
 
-        streakDates.forEach((date) => {
+        return streakDates.reduce<TotalStat[]>((result, date) => {
             if (playtimePerDayMap[date]) {
-                streakPlaytimes.push(playtimePerDayMap[date]);
+                result.push(playtimePerDayMap[date]);
             }
-        });
 
-        return streakPlaytimes;
-    }
+            return result;
+        }, []);
+    }, [wrapped.playtimeData.playtimePerDayMap, wrapped.streak]);
 
-    const streakPlaytimes = getStreakPlaytimes(
-        wrapped.playtimeData.playtimePerDayMap,
-        wrapped.streak.start,
-        wrapped.streak.end,
+    const gameFrequencyMap = useMemo(() => {
+        return streakPlaytimes.reduce<Record<string, number>>(
+            (result, totalStat) => {
+                const games = Object.keys(totalStat.perGame);
+
+                for (const game of games) {
+                    if (!result[game]) result[game] = 0;
+                    else result[game]++;
+                }
+                return result;
+            },
+            {},
+        );
+    }, [streakPlaytimes]);
+
+    const sortedGameFrequencyMap = useMemo(
+        () => Object.entries(gameFrequencyMap).sort((a, b) => b[1] - a[1]),
+        [gameFrequencyMap],
     );
 
-    console.log(streakPlaytimes);
-
-    const gameFrequencyMap: { [game: string]: number } = {};
-    //let totalGamesPlayed = 0;
-
-    Object.values(streakPlaytimes).forEach((day) => {
-        Object.keys(day.perGame).forEach((game) => {
-            gameFrequencyMap[game] = (gameFrequencyMap[game] || 0) + 1;
-            //totalGamesPlayed++;
-        });
-    });
-
-    const sortedGameFrequencyMap = Object.entries(gameFrequencyMap).sort(
-        (a, b) => b[1] - a[1],
-    );
-
-    let mostPlayedGame: string | undefined = undefined;
-
-    if (sortedGameFrequencyMap.length === 1) {
-        mostPlayedGame = sortedGameFrequencyMap[0][0];
-    }
-
-    if (sortedGameFrequencyMap.length > 1) {
-        // Grab the first indexed game, and compare its playcount against the next index.
-        // If both match, we can assume there is no top game. If not, there is a top game.
-        const [topGame, topGameCount] = sortedGameFrequencyMap[0];
-        const [_, compareGameCount] = sortedGameFrequencyMap[1];
-
-        if (topGameCount > compareGameCount) {
-            mostPlayedGame = topGame;
+    const mostPlayedGame = useMemo(() => {
+        if (sortedGameFrequencyMap.length === 1) {
+            // first entry in the sortedGameFrequencyMap and then pull the key from the entry
+            return sortedGameFrequencyMap[0][0];
         }
-    }
+
+        if (sortedGameFrequencyMap.length > 1) {
+            // Grab the first indexed game, and compare its playcount against the next index.
+            // If both match, we can assume there is no top game. If not, there is a top game.
+            const [topGame, topGameCount] = sortedGameFrequencyMap[0];
+            const [_, compareGameCount] = sortedGameFrequencyMap[1];
+
+            if (topGameCount >= compareGameCount) {
+                return topGame;
+            }
+        }
+
+        return "";
+    }, [sortedGameFrequencyMap]);
 
     const getStreakMessage = (streakInDays: number) => {
         if (streakInDays >= 2 && streakInDays <= 7) {
@@ -95,80 +88,19 @@ const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
         }
     };
 
-    const gameData = wrapped.gamesData.find(
-        (gameData) => gameData.display === mostPlayedGame,
+    const gameData = useMemo(
+        () =>
+            wrapped.gamesData.find(
+                (gameData) => gameData.display === mostPlayedGame,
+            ),
+        [mostPlayedGame, wrapped.gamesData],
     );
 
-    useEffect(() => {
-        if (mostPlayedGame && sparkContainerRef.current && cardRef.current) {
-            const createSpark = () => {
-                const spark = document.createElement("div");
-                spark.className = "position-absolute";
-
-                // Randomize ember sizes
-                const size = 2 + Math.random() * 3;
-                spark.style.width = `${size}px`;
-                spark.style.height = `${size}px`;
-
-                // Create ember-like colors
-                const colors = [
-                    "#FF4500",
-                    "#FF6B00",
-                    "#FF8C00",
-                    "#FFD700",
-                    "#FFFFE0",
-                    "#FFF5E1",
-                ];
-                const color = colors[Math.floor(Math.random() * colors.length)];
-                spark.style.backgroundColor = color;
-                spark.style.borderRadius = "50%";
-                spark.style.boxShadow = `0 0 ${size * 2}px ${color}`;
-                sparkContainerRef.current.appendChild(spark);
-
-                const rect = cardRef.current.getBoundingClientRect();
-                const startX = Math.random() * rect.width;
-                const startY = rect.height;
-
-                gsap.set(spark, { x: startX, y: startY });
-
-                gsap.to(spark, {
-                    x: startX + (Math.random() - 0.5) * 200, // Increase horizontal randomness
-                    y: startY - 300 - Math.random() * 300,
-                    rotation: Math.random() * 360, // Optional rotation for dynamic movement
-                    scale: Math.random() * 0.8 + 0.3,
-                    opacity: 0,
-                    duration: 2 + Math.random() * 1,
-                    ease: "sine.inOut",
-                    onComplete: () => {
-                        spark.remove();
-                    },
-                });
-            };
-
-            const glowAnimation = gsap.fromTo(
-                cardRef.current,
-                { boxShadow: "0 0 20px #FF6B00" },
-                {
-                    boxShadow: "0 0 30px #FF4500",
-                    repeat: -1,
-                    yoyo: true,
-                    duration: 1.5,
-                    ease: "sine.inOut",
-                },
-            );
-
-            const interval = setInterval(() => {
-                for (let i = 0; i < 3; i++) {
-                    createSpark();
-                }
-            }, 50);
-
-            return () => {
-                clearInterval(interval);
-                glowAnimation.kill();
-            };
-        }
-    }, [mostPlayedGame]);
+    useSparksAnimation({
+        sparkRef: sparkContainerRef,
+        containerRef: cardRef,
+        shouldShowSparks: Boolean(mostPlayedGame),
+    });
 
     return (
         <>
@@ -185,11 +117,13 @@ const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                         <div className="row justify-content-center">
                             <div className="col-auto position-relative">
                                 <div
+                                    // @ts-expect-error Legacy type issue with Refs that's resolved in React 19
                                     ref={sparkContainerRef}
                                     className="position-absolute w-100 h-100"
                                     style={{ pointerEvents: "none", zIndex: 1 }}
                                 />
                                 <div
+                                    // @ts-expect-error Legacy type issue with Refs that's resolved in React 19
                                     ref={cardRef}
                                     className="d-flex flex-column bg-warning bg-opacity-75 rounded-3 overflow-hidden"
                                 >
@@ -223,5 +157,3 @@ const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
         </>
     );
 };
-
-export default WrappedStreak;

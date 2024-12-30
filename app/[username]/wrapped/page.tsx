@@ -1,6 +1,6 @@
 import { getWrappedForUser } from "~src/lib/wrapped";
 import { getSession } from "~src/actions/session.action";
-import { DisplayWrapped } from "~app/[username]/wrapped/display-wrapped";
+import { ContentLoadingWrapper } from "~app/[username]/wrapped/content-loading-wrapper";
 import { TimezoneWarning } from "~app/[username]/wrapped/timezone-warning";
 import { UserData } from "~src/lib/get-session-data";
 
@@ -28,7 +28,7 @@ export default async function Page({ params, searchParams }: PageProps) {
     const wrapped = await getWrappedForUser(username);
 
     return (
-        <DisplayWrapped
+        <ContentLoadingWrapper
             user={username}
             loggedinUser={session}
             wrapped={wrapped}
