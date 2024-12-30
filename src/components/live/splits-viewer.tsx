@@ -86,6 +86,7 @@ export const SplitsViewer = ({
             </Row>
             <hr className="border-bottom m-0" />
             <div
+                // TODO: expose this via forwardRef
                 id="scrollBox"
                 className="bg-body-secondary overflow-y-auto h-55 w-100"
             >
