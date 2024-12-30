@@ -25,6 +25,7 @@ interface WrappedDataPoints {
     totalResets: number;
     // Total times the player has completed a split
     totalSplits: number;
+    totalGolds: number;
     // How much time the player spent resetting on the first split
     timeResetFirstSplit: number;
     // How often the player reset on the first split
@@ -75,13 +76,7 @@ interface WrappedDataPoints {
         category: string;
         // The pb before the year started. Use to show how much PB improved
         timeBefore: number;
-        golds: {
-            // Split name
-            name: string;
-            // What was the gold before the year started. Use to show how much gold improved
-            goldBefore: number;
-            golds: number[];
-        }[];
+        totalGolds: number;
         pbs: {
             // When they got the pb
             startedAt: string;
