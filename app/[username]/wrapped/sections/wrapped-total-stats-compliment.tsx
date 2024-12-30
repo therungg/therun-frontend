@@ -1,7 +1,7 @@
 import { memo } from "react";
-import { WrappedWithData } from "../wrapped-types";
 import { Col, Row } from "react-bootstrap";
-import CountUp from "react-countup/build/CountUp";
+import CountUp from "react-countup";
+import { WrappedWithData } from "../wrapped-types";
 
 interface WrappedTotalStatsComplimentProps {
     wrapped: WrappedWithData;
