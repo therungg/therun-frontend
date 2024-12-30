@@ -4,17 +4,48 @@ import { Col, Row } from "react-bootstrap";
 import CountUp from "react-countup";
 import { DurationToFormatted } from "~src/components/util/datetime";
 import { GameImage } from "~src/components/image/gameimage";
+import { ScrollDown } from "~src/components/scroll-down";
+import { useEffect, useRef } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import RenderWrappedStreak from "./sections/render-wrapped-streak";
+import RenderWrappedSocialImages from "./sections/render-wrapped-social-images";
+
+gsap.registerPlugin(ScrollTrigger);
 
 interface RenderFinishedWrappedProps {
     user: string;
     wrapped: WrappedWithData;
 }
 
-// Todo:: actually render this shit
 export const RenderFinishedWrapped = ({
     wrapped,
     user,
 }: RenderFinishedWrappedProps) => {
+    const containerRef = useRef(null);
+
+    useEffect(() => {
+        if (!wrapped.hasEnoughRuns) return;
+
+        const sections = gsap.utils.toArray(".animated-section");
+
+        ScrollTrigger.defaults({
+            //markers: true,
+            pin: true,
+            scrub: 0.5,
+        });
+
+        sections.forEach((section, _) => {
+            ScrollTrigger.create({
+                trigger: section,
+            });
+        });
+
+        return () => {
+            ScrollTrigger.getAll().forEach((st) => st.kill());
+        };
+    }, [wrapped.hasEnoughRuns]);
+
     if (!wrapped.hasEnoughRuns) {
         return (
             <div>
@@ -25,17 +56,41 @@ export const RenderFinishedWrapped = ({
         );
     }
 
+    console.log(wrapped.playtimeData);
+
     return (
-        <div>
-            <WrappedTitle user={user} />
-            <p className="flex-center display-4 mb-2">You had a great 2024.</p>
-            <p className="flex-center display-6 mb-5">
-                Let's see your stats for this year!
-            </p>
-            <hr className="mb-5" />
-            <RenderTotalStatsCompliment wrapped={wrapped} />
-            <hr className="mb-5" />
-            <RenderTopGames wrapped={wrapped} />
+        <div ref={containerRef}>
+            <section className="flex-center flex-column min-vh-100-no-header mesh-bg text-center">
+                <p className="display-2 mb-0">You had a great 2024!</p>
+                <WrappedTitle user={user} />
+                <p className="display-6 mb-5">
+                    Let's see your stats for this year!
+                </p>
+                <ScrollDown />
+            </section>
+
+            <section className="animated-section text-center flex-center align-items-center min-vh-100">
+                <RenderTotalStatsCompliment wrapped={wrapped} />
+            </section>
+
+            <section className="animated-section flex-center flex-column align-items-center min-vh-100">
+                <RenderWrappedStreak wrapped={wrapped} />
+            </section>
+
+            <section className="animated-section text-center min-vh-100">
+                <RenderTopGames wrapped={wrapped} />
+            </section>
+
+            <section className="animated-section flex-center flex-column align-items-center min-vh-100">
+                <p className="text-center flex-center align-items-center display-2 mb-4">
+                    That's a wrap on 2024!
+                </p>
+                <p className="text-center display-6 mb-5">
+                    Thanks for spending it with The Run. We can't wait to see
+                    what you do in 2025!
+                </p>
+                <RenderWrappedSocialImages wrapped={wrapped} />
+            </section>
         </div>
     );
 };
@@ -163,35 +218,44 @@ const RenderTopGames = ({ wrapped }: { wrapped: WrappedWithData }) => {
                     </p>
                 </>
             )}
-            <Row>
+            <Row className="row-cols-1 row-cols-md-2 row-cols-xl-3 mx-auto pt-5 gx-3 gy-5 g-md-5">
                 {top3Games.map(({ game, total }, i) => {
                     const gameData = wrapped.gamesData.find(
                         (gameData) => gameData.display === game,
                     );
 
                     return (
-                        <Col className="flex-center" key={i}>
-                            <div>
-                                <div className="flex-center h4 mb-3">
-                                    <span>
-                                        #{i + 1} - {game} (
-                                        <DurationToFormatted duration={total} />
-                                        )
-                                    </span>
-                                </div>
-                                {gameData &&
-                                    gameData.image &&
-                                    gameData.image !== "noimage" && (
-                                        <div className="flex-center">
+                        <Col key={i}>
+                            <div className="d-flex flex-column bg-body-secondary bg-opacity-50 h-100 gap-3 justify-content-between rounded-3 overflow-hidden">
+                                <div className="game-image flex-fill bg-body-secondary">
+                                    {gameData &&
+                                        gameData.image &&
+                                        gameData.image !== "noimage" && (
                                             <GameImage
                                                 alt={gameData.display}
                                                 src={gameData.image}
                                                 quality="hd"
-                                                height={132 * 2.5}
-                                                width={99 * 2.5}
+                                                height={132 * 5}
+                                                width={99 * 5}
                                             />
-                                        </div>
-                                    )}
+                                        )}
+                                </div>
+                                <div className="h4 text-center m-0 px-2 pt-1 pb-4">
+                                    <div className="mb-3 fs-xx-large">
+                                        #{i + 1}
+                                    </div>
+                                    <div className="mb-2">{game}</div>
+                                    <div
+                                        className={
+                                            `fs-smaller ` +
+                                            (i === 0
+                                                ? `text-secondary`
+                                                : `text-primary`)
+                                        }
+                                    >
+                                        <DurationToFormatted duration={total} />
+                                    </div>
+                                </div>
                             </div>
                         </Col>
                     );
