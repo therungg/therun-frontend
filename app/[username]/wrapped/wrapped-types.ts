@@ -1,4 +1,5 @@
 import { PlaytimeStats } from "~src/components/user/stats";
+import { DetailedUserStats } from "~app/races/races.types";
 
 export interface Wrapped {
     user: string;
@@ -84,4 +85,9 @@ interface WrappedDataPoints {
             time: number;
         }[];
     }[];
+
+    // This has a BUNCH of stats about the user's races.
+    // The key `globalStats` has aggregate stats, and `categoryStats` has is per category that the user runs.
+    // Check out the users race profile for what it feeds right now for inspiration
+    raceData: DetailedUserStats;
 }
