@@ -10,6 +10,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import RenderWrappedStreak from "./sections/render-wrapped-streak";
 import RenderWrappedSocialImages from "./sections/render-wrapped-social-images";
+import { RenderWrappedActivityGraphs } from "~app/[username]/wrapped/sections/render-wrapped-activity-graphs";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -56,8 +57,6 @@ export const RenderFinishedWrapped = ({
         );
     }
 
-    console.log(wrapped.playtimeData);
-
     return (
         <div ref={containerRef}>
             <section className="flex-center flex-column min-vh-100-no-header mesh-bg text-center">
@@ -71,6 +70,10 @@ export const RenderFinishedWrapped = ({
 
             <section className="animated-section text-center flex-center align-items-center min-vh-100">
                 <RenderTotalStatsCompliment wrapped={wrapped} />
+            </section>
+
+            <section className="animated-section text-center flex-center align-items-center min-vh-100">
+                <RenderWrappedActivityGraphs wrapped={wrapped} />
             </section>
 
             <section className="animated-section flex-center flex-column align-items-center min-vh-100">
