@@ -4,7 +4,7 @@ import CountUp from "react-countup";
 import { GameImage } from "~src/components/image/gameimage";
 import gsap from "gsap";
 
-const RenderWrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
+const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
     const streakInDays = wrapped.streak.length;
     const streakStart = wrapped.streak.start;
     const streakEnd = wrapped.streak.end;
@@ -224,4 +224,4 @@ const RenderWrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
     );
 };
 
-export default RenderWrappedStreak;
+export default WrappedStreak;

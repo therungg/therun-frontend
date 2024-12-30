@@ -8,7 +8,7 @@ import { ScrollDown } from "~src/components/scroll-down";
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import RenderWrappedStreak from "./sections/render-wrapped-streak";
+import WrappedStreak from "./sections/wrapped-streak";
 import RenderWrappedSocialImages from "./sections/render-wrapped-social-images";
 import { RenderWrappedActivityGraphs } from "~app/[username]/wrapped/sections/render-wrapped-activity-graphs";
 
@@ -77,7 +77,7 @@ export const RenderFinishedWrapped = ({
             </section>
 
             <section className="animated-section flex-center flex-column align-items-center min-vh-100">
-                <RenderWrappedStreak wrapped={wrapped} />
+                <WrappedStreak wrapped={wrapped} />
             </section>
 
             <section className="animated-section text-center min-vh-100">
