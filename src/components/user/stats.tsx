@@ -169,6 +169,16 @@ export const PlaytimePerMonthGraph = ({
 }) => {
     let max = 0;
 
+    const currentYear = new Date().getFullYear();
+    for (let month = 1; month <= 12; month++) {
+        const monthKey = `${currentYear}-${String(month).padStart(2, "0")}`;
+        if (
+            !Object.prototype.hasOwnProperty.call(playtimePerMonthMap, monthKey)
+        ) {
+            playtimePerMonthMap[monthKey] = { total: 0, perGame: {} };
+        }
+    }
+
     const victoryData = Object.entries(playtimePerMonthMap)
         .map(([day, stat]) => {
             if (stat.total > max) max = stat.total;
@@ -259,11 +269,13 @@ export const PlaytimePerMonthGraph = ({
                     }}
                     data={victoryData}
                     labels={({ index }) => {
+                        console.log(index);
                         const key =
                             new Date().getFullYear() +
                             "-" +
                             String(index + 1).padStart(2, "0");
 
+                        console.log(key);
                         const target: TotalStat = playtimePerMonthMap[key];
 
                         return tooltip(target);
@@ -496,6 +508,7 @@ export const PlaytimePerHourGraph = ({
 };
 
 const tooltip = (data: TotalStat): string => {
+    if (!data) return "No time";
     return getFormattedString(data.total.toString());
 };
 
