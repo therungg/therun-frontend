@@ -1,6 +1,6 @@
 import { Form, FormGroupProps } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
-import { useDebounce } from "usehooks-ts";
+import { useDebounceValue } from "usehooks-ts";
 import { Category, Game, PaginatedGameResult } from "~app/games/games.types";
 import styles from "~src/components/css/LiveRun.module.scss";
 import { GameImage } from "~src/components/image/gameimage";
@@ -16,7 +16,7 @@ export const GameCategoryInput = (props: FormGroupProps) => {
     const [clickedCategory, setClickedCategory] = useState(false);
     const [selectedGameImage, setSelectedGameImage] = useState("");
 
-    const search = useDebounce(inputValue, 300);
+    const [search] = useDebounceValue(inputValue, 300);
 
     useEffect(() => {
         if (!clickedGame) {
