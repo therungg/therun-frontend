@@ -5,6 +5,7 @@ import { ScrollDown } from "~src/components/scroll-down";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { WrappedStreak } from "./sections/wrapped-streak";
 import { WrappedSocialImages } from "./sections/wrapped-social-images";
 import { WrappedTopGames } from "./sections/wrapped-top-games";
@@ -16,6 +17,7 @@ import { WrappedRaceStats } from "./sections/wrapped-race-stats";
 
 gsap.registerPlugin(useGSAP);
 gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollToPlugin);
 
 interface TheRunWrappedProps {
     user: string;
@@ -31,12 +33,12 @@ const hasRaceData = (wrapped: WrappedWithData) => {
 export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
     const [sectionIndex, setSectionIndex] = useState(-1);
     const containerRef = useRef(null);
-    const nextRef = useRef(null);
-    const previousRef = useRef(null);
+    const nextRef = useRef<HTMLButtonElement>(null);
+    const previousRef = useRef<HTMLButtonElement>(null);
 
     // https://gsap.com/resources/React/
     useGSAP(
-        () => {
+        (_, contextSafe) => {
             if (!wrapped.hasEnoughRuns) return;
 
             const sections: gsap.DOMTarget[] =
@@ -48,16 +50,68 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
             });
 
             sections.forEach((section, index) => {
-                console.log({ section, index });
                 ScrollTrigger.create({
                     trigger: section,
                     onEnter: () => setSectionIndex(index),
                     onLeaveBack: () => setSectionIndex(index - 1),
                 });
             });
+            if (!nextRef.current || !previousRef.current || !contextSafe)
+                return;
+            const getVisibleScrollTriggerIndex = () => {
+                return sections.findIndex((section) =>
+                    ScrollTrigger.isInViewport(section as Element, 0.5),
+                );
+            };
+            const onClickNext = contextSafe(() => {
+                const nextIndex = getVisibleScrollTriggerIndex() + 1;
+                const nextSection = sections[nextIndex] as Element;
+
+                // sort of jank occasionally fucks up
+                gsap.to(window, {
+                    duration: 1,
+                    ease: "power2.inOut",
+                    scrollTo: nextSection ?? "#wrapped-outro",
+                    onComplete: () => {
+                        console.log("DONE???");
+                        // ScrollTrigger.getAll().forEach((st) => st.enable());
+                        setSectionIndex((index) =>
+                            index === sections.length - 1 ? index : nextIndex,
+                        );
+                    },
+                });
+            });
+            const onClickPrevious = contextSafe(() => {
+                const prevIndex = getVisibleScrollTriggerIndex() - 1;
+                const prevSection = sections[prevIndex] as Element;
+                // sort of jank occasionally fucks up
+                gsap.to(window, {
+                    duration: 1,
+                    ease: "power2.inOut",
+                    scrollTo: prevSection ?? "#wrapped-intro",
+                    onComplete: () => {
+                        setSectionIndex((index) =>
+                            index === -1 ? index : prevIndex,
+                        );
+                    },
+                });
+            });
+            nextRef.current.addEventListener("click", onClickNext);
+            previousRef.current.addEventListener("click", onClickPrevious);
+            return () => {
+                if (nextRef.current) {
+                    nextRef.current.removeEventListener("click", onClickNext);
+                }
+                if (previousRef.current) {
+                    previousRef.current.removeEventListener(
+                        "click",
+                        onClickPrevious,
+                    );
+                }
+            };
         },
         {
-            dependencies: [wrapped.hasEnoughRuns],
+            dependencies: [wrapped.hasEnoughRuns, sectionIndex],
             scope: containerRef,
             revertOnUpdate: true,
         },
@@ -105,6 +159,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
 
             <section
                 key="wrapped-outro"
+                id="wrapped-outro"
                 className="animated-section flex-center flex-column align-items-center min-vh-100"
             >
                 <p className="text-center flex-center align-items-center display-2 mb-4">
@@ -122,7 +177,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
     return (
         <div ref={containerRef}>
             <section
-                key="wrapped-intro"
+                id="wrapped-intro"
                 className="flex-center flex-column min-vh-100-no-header mesh-bg text-center"
             >
                 <p className="display-2 mb-0">You had a great 2024!</p>
@@ -133,6 +188,15 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                 <ScrollDown />
             </section>
             {sections}
+            {sectionIndex + 1 === 0 ||
+            sectionIndex + 1 === sections.length ? null : (
+                <h2
+                    style={{ bottom: FOOTER_HEIGHT, opacity: 0.66 }}
+                    className="sticky-bottom text-end"
+                >
+                    {sectionIndex + 1} / {sections.length - 1}
+                </h2>
+            )}
             <div style={{ bottom: FOOTER_HEIGHT }} className="sticky-bottom">
                 <Button
                     disabled={sectionIndex + 1 === 0}
@@ -151,15 +215,6 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                     <ArrowDownCircleFill />
                 </Button>
             </div>
-            {sectionIndex + 1 === 0 ||
-            sectionIndex + 1 === sections.length ? null : (
-                <h2
-                    style={{ bottom: FOOTER_HEIGHT, opacity: 0.66 }}
-                    className="sticky-bottom text-end"
-                >
-                    {sectionIndex + 1} / {sections.length - 1}
-                </h2>
-            )}
         </div>
     );
 };
