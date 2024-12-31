@@ -12,6 +12,7 @@ import { WrappedTotalStatsCompliment } from "./sections/wrapped-total-stats-comp
 import { WrappedActivityGraphs } from "~app/[username]/wrapped/sections/wrapped-activity-graphs";
 import { Button } from "react-bootstrap";
 import { ArrowDownCircleFill, ArrowUpCircleFill } from "react-bootstrap-icons";
+import { WrappedRaceStats } from "./sections/wrapped-race-stats";
 
 gsap.registerPlugin(useGSAP);
 gsap.registerPlugin(ScrollTrigger);
@@ -22,6 +23,10 @@ interface TheRunWrappedProps {
 }
 
 const FOOTER_HEIGHT = 25;
+
+const hasRaceData = (wrapped: WrappedWithData) => {
+    return wrapped.raceData?.categoryStats?.length > 0;
+};
 
 export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
     const [sectionIndex, setSectionIndex] = useState(-1);
@@ -57,6 +62,8 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
             revertOnUpdate: true,
         },
     );
+
+    console.log({ wrapped });
     const sections = useMemo(() => {
         return [
             <section
@@ -87,6 +94,15 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                 <WrappedTopGames wrapped={wrapped} />
             </section>,
 
+            hasRaceData(wrapped) ? (
+                <section
+                    key="wrapped-race-stats"
+                    className="animated-section text-center flex-center align-items-center min-vh-100"
+                >
+                    <WrappedRaceStats wrapped={wrapped} />
+                </section>
+            ) : null,
+
             <section
                 key="wrapped-outro"
                 className="animated-section flex-center flex-column align-items-center min-vh-100"
@@ -100,7 +116,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                 </p>
                 <WrappedSocialImages wrapped={wrapped} />
             </section>,
-        ];
+        ].filter(Boolean);
     }, [wrapped]);
 
     return (

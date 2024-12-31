@@ -1,9 +1,9 @@
 import { memo, useMemo } from "react";
-import CountUp from "react-countup";
 import { DurationToFormatted } from "~src/components/util/datetime";
 import { GameImage } from "~src/components/image/gameimage";
 import { Col, Row } from "react-bootstrap";
 import { WrappedWithData } from "../wrapped-types";
+import { WrappedCounter } from "../wrapped-counter";
 
 interface WrappedTopGamesProps {
     wrapped: WrappedWithData;
@@ -33,7 +33,10 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
                     <p className="flex-center display-4 mb-2">
                         <span>
                             This year, you did runs for{" "}
-                            <CountUp end={gameEntries.length} duration={4} />{" "}
+                            <WrappedCounter
+                                id="game-entries-count"
+                                end={gameEntries.length}
+                            />{" "}
                             games.
                         </span>
                     </p>

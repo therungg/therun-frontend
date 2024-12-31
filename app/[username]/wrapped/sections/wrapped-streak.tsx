@@ -1,9 +1,9 @@
 import { useMemo, useRef } from "react";
 import { WrappedWithData } from "../wrapped-types";
-import CountUp from "react-countup";
 import { GameImage } from "~src/components/image/gameimage";
 import { TotalStat } from "~src/components/user/stats";
 import { useSparksAnimation } from "../use-sparks-animation.hook";
+import { WrappedCounter } from "../wrapped-counter";
 
 export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
     const streakInDays = wrapped.streak.length;
@@ -106,7 +106,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
         <>
             <h2 className="mb-4">
                 Your longest daily streak for runs was{" "}
-                <CountUp end={streakInDays} duration={4} /> days!
+                <WrappedCounter id="streak-in-days" end={streakInDays} /> days!
             </h2>
             <div className="flex-center align-items-center min-vh-100 overflow-x-hidden">
                 <div className="d-flex align-items-center display-4">

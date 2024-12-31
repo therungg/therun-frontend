@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Col, Row } from "react-bootstrap";
-import CountUp from "react-countup";
 import { WrappedWithData } from "../wrapped-types";
+import { WrappedCounter } from "../wrapped-counter";
 
 interface WrappedTotalStatsComplimentProps {
     wrapped: WrappedWithData;
@@ -15,7 +15,10 @@ export const WrappedTotalStatsCompliment =
                     <Col>
                         <div className="flex-center bg-body-secondary mb-3 game-border border-secondary px-4 py-5 rounded-3">
                             <span className="display-1 fw-semibold text-decoration-underline">
-                                <CountUp end={wrapped.totalRuns} duration={4} />
+                                <WrappedCounter
+                                    id="total-runs-count"
+                                    end={wrapped.totalRuns}
+                                />
                             </span>
                         </div>
                         <div className="flex-center h4">
@@ -28,9 +31,9 @@ export const WrappedTotalStatsCompliment =
                     <Col>
                         <div className="flex-center bg-body-secondary mb-3 game-border border-secondary px-4 py-5 rounded-3">
                             <span className="display-1 fw-semibold text-decoration-underline">
-                                <CountUp
+                                <WrappedCounter
+                                    id="total-finished-runs-count"
                                     end={wrapped.totalFinishedRuns}
-                                    duration={4}
                                 />
                             </span>
                         </div>
@@ -44,7 +47,8 @@ export const WrappedTotalStatsCompliment =
                     <Col>
                         <div className="flex-center bg-body-secondary mb-3 game-border border-secondary px-4 py-5 rounded-3">
                             <span className="display-1 fw-semibold text-decoration-underline">
-                                <CountUp
+                                <WrappedCounter
+                                    id="total-finished-runs-percentage"
                                     end={
                                         (wrapped.totalFinishedRuns /
                                             wrapped.totalRuns) *

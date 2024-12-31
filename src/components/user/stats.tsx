@@ -224,7 +224,6 @@ export const PlaytimePerMonthGraph = ({
                     }}
                     data={victoryData}
                     tickFormat={(a) => {
-                        console.log(a);
                         switch (a) {
                             case "01":
                                 return "Jan";
