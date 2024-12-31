@@ -9,10 +9,14 @@ class CalendarHeatmap extends React.Component {
     constructor(props) {
         super(props);
 
+        console.log("calendar heatmap width", props.width);
         this.settings = {
             gutter: 6,
             item_gutter: 1,
-            width: 1616,
+            width:
+                Number.isInteger(props.width) && props.width > 0
+                    ? props.width
+                    : 1616,
             height: 200,
             item_size: 1111,
             label_padding: 45,
@@ -90,8 +94,8 @@ class CalendarHeatmap extends React.Component {
         let numWeeks = colIndex + 1;
 
         this.settings.width =
-            this.container.offsetWidth < 1616
-                ? 1616
+            this.container.offsetWidth < this.settings.width
+                ? this.settings.width
                 : this.container.offsetWidth;
         this.settings.item_size =
             (this.settings.width - this.settings.label_padding) / numWeeks -

@@ -1,5 +1,5 @@
 import { WrappedWithData } from "~app/[username]/wrapped/wrapped-types";
-import React from "react";
+import React, { useRef } from "react";
 import CalendarHeatmap from "../../../../public/js/calendar-heatmap.component";
 import { Col, Row } from "react-bootstrap";
 import {
@@ -7,12 +7,15 @@ import {
     PlaytimePerHourGraph,
     PlaytimePerMonthGraph,
 } from "~src/components/user/stats";
+import { useResizeObserver } from "../use-resize-observer";
 
 export const WrappedActivityGraphs = ({
     wrapped,
 }: {
     wrapped: WrappedWithData;
 }) => {
+    const activityGraphRef = useRef(null);
+    const activityGraphSize = useResizeObserver(activityGraphRef);
     const data = Object.entries(wrapped.playtimeData.playtimePerDayMap).map(
         ([date, stat]) => {
             return {
@@ -32,7 +35,7 @@ export const WrappedActivityGraphs = ({
     );
 
     return (
-        <div>
+        <div ref={activityGraphRef} className="w-100">
             <p className="pt-5">
                 <span className="display-4">
                     Here's your heatmap for this year.
@@ -48,14 +51,18 @@ export const WrappedActivityGraphs = ({
                     I bet you like that, don't you?
                 </span>
             </p>
-            <div className="flex-center min-vh-100 overflow-x-hidden">
-                <div>
+            <div className="flex-center w-100 min-vh-100">
+                <div className="w-100">
                     <div className="d-flex align-items-center display-4">
                         <div
-                            className="playtime-graph"
+                            className="w-100 playtime-graph"
                             style={{ marginTop: "1rem", marginBottom: "2rem" }}
                         >
-                            <CalendarHeatmap data={data} setter={() => {}} />
+                            <CalendarHeatmap
+                                width={activityGraphSize.width}
+                                data={data}
+                                setter={() => {}}
+                            />
                         </div>
                     </div>
                     <div className="d-flex align-items-center display-4 mt-5">
