@@ -9,7 +9,7 @@ import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { WrappedStreak } from "./sections/wrapped-streak";
 import { WrappedSocialImages } from "./sections/wrapped-social-images";
 import { WrappedTopGames } from "./sections/wrapped-top-games";
-import { WrappedTotalStatsCompliment } from "./sections/wrapped-total-stats-compliment";
+import { WrappedStatsOverview } from "./sections/wrapped-stats-overview";
 import { WrappedActivityGraphs } from "~app/[username]/wrapped/sections/wrapped-activity-graphs";
 import { Button } from "react-bootstrap";
 import { ArrowDownCircleFill, ArrowUpCircleFill } from "react-bootstrap-icons";
@@ -124,7 +124,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                 key="wrapped-total-stats-compliment"
                 className="animated-section text-center flex-center align-items-center min-vh-100"
             >
-                <WrappedTotalStatsCompliment wrapped={wrapped} />
+                <WrappedStatsOverview wrapped={wrapped} />
             </section>,
 
             <section

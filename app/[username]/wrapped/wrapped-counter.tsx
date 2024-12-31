@@ -6,7 +6,7 @@ interface WrappedCounterProps extends CountUpProps {
     end: number;
 }
 export const WrappedCounter = memo<WrappedCounterProps>(
-    ({ id, end, duration, formattingFn }) => {
+    ({ id, end, duration, formattingFn, style }) => {
         useCountUp({
             ref: id,
             end,
@@ -15,7 +15,7 @@ export const WrappedCounter = memo<WrappedCounterProps>(
             duration: duration ?? 4,
             formattingFn,
         });
-        return <span id={id} />;
+        return <span style={style} id={id} />;
     },
 );
 WrappedCounter.displayName = "WrappedCounter";
