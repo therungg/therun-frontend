@@ -1,7 +1,6 @@
 import { memo, useMemo } from "react";
-import { Col, Row } from "react-bootstrap";
+import { Row } from "react-bootstrap";
 import { WrappedWithData } from "../wrapped-types";
-import { WrappedCounter } from "../wrapped-counter";
 import { SectionTitle } from "./section-title";
 import { SectionWrapper } from "./section-wrapper";
 import { SectionStatsCard } from "./section-stats-card";
@@ -69,44 +68,30 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                         />
                     </Row>
                     <Row className="mb-5">
-                        <Col>
-                            <div className="flex-center bg-body-secondary mb-3 game-border border-secondary px-4 py-5 rounded-3">
-                                <span className="display-1 fw-semibold text-decoration-underline">
-                                    <WrappedCounter
-                                        id="total-golds-count"
-                                        end={wrapped.totalGolds}
-                                        style={{
-                                            background:
-                                                "linear-gradient(to right, #d19e1d, #ffd86e, #e3a812)",
-                                            color: "transparent",
-                                            backgroundClip: "text",
-                                        }}
-                                    />
-                                </span>
-                            </div>
-                            <div className="flex-center h4">
-                                <div>
+                        <SectionStatsCard
+                            stat={wrapped.totalGolds}
+                            statDescription={
+                                <>
                                     Wow! You got <b>{wrapped.totalGolds}</b>{" "}
                                     gold splits this year!
-                                </div>
-                            </div>
-                        </Col>
-                        <Col>
-                            <div className="flex-center bg-body-secondary mb-3 game-border border-secondary px-4 py-5 rounded-3">
-                                <span className="display-1 fw-semibold text-decoration-underline">
-                                    <WrappedCounter
-                                        id="total-pbs-count"
-                                        end={personalBestCount}
-                                    />
-                                </span>
-                            </div>
-                            <div className="flex-center h4">
-                                <div>
+                                </>
+                            }
+                            style={{
+                                background:
+                                    "linear-gradient(to right, #d19e1d, #ffd86e, #e3a812)",
+                                color: "transparent",
+                                backgroundClip: "text",
+                            }}
+                        />
+                        <SectionStatsCard
+                            stat={personalBestCount}
+                            statDescription={
+                                <>
                                     You managed to get {personalBestCount}{" "}
                                     personal bests!
-                                </div>
-                            </div>
-                        </Col>
+                                </>
+                            }
+                        />
                     </Row>
                 </div>
             </SectionWrapper>

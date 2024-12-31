@@ -1,15 +1,16 @@
 import { Col } from "react-bootstrap";
 import { WrappedCounter } from "../wrapped-counter";
-import { memo } from "react";
+import { CSSProperties, memo } from "react";
 import { UseCountUpProps } from "react-countup/build/useCountUp";
 
 interface SectionStatsCardProps {
     stat: number;
     statDescription: React.ReactNode;
     statFormatter?: UseCountUpProps["formattingFn"];
+    style?: CSSProperties;
 }
 export const SectionStatsCard = memo<SectionStatsCardProps>(
-    ({ stat, statDescription, statFormatter }) => {
+    ({ stat, statDescription, statFormatter, style }) => {
         return (
             <Col>
                 <div className="flex-center bg-body-secondary mb-3 game-border border-secondary px-4 py-5 rounded-3">
@@ -18,6 +19,7 @@ export const SectionStatsCard = memo<SectionStatsCardProps>(
                             id="total-runs-count"
                             end={stat}
                             formattingFn={statFormatter}
+                            style={style}
                         />
                     </span>
                 </div>
