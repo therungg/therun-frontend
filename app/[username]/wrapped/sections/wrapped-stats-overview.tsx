@@ -2,6 +2,9 @@ import { memo, useMemo } from "react";
 import { Col, Row } from "react-bootstrap";
 import { WrappedWithData } from "../wrapped-types";
 import { WrappedCounter } from "../wrapped-counter";
+import { SectionTitle } from "./section-title";
+import { SectionWrapper } from "./section-wrapper";
+import { SectionStatsCard } from "./section-stats-card";
 
 interface WrappedStatsOverviewProps {
     wrapped: WrappedWithData;
@@ -15,67 +18,42 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
             }, 0);
         }, [wrapped.pbsAndGolds]);
         return (
-            <div className="h-100">
-                <Row className="mt-5">
-                    <h2>Stats Overview</h2>
-                </Row>
+            <SectionWrapper>
+                <SectionTitle>Stats Overview</SectionTitle>
                 <div className="h-100 d-flex flex-column justify-content-center ">
                     <Row className="mb-5">
-                        <Col>
-                            <div className="flex-center bg-body-secondary mb-3 game-border border-secondary px-4 py-5 rounded-3">
-                                <span className="display-1 fw-semibold text-decoration-underline">
-                                    <WrappedCounter
-                                        id="total-runs-count"
-                                        end={wrapped.totalRuns}
-                                    />
-                                </span>
-                            </div>
-                            <div className="flex-center h4">
-                                <div>
+                        <SectionStatsCard
+                            stat={wrapped.totalRuns}
+                            statDescription={
+                                <>
                                     This year, you started a total of{" "}
                                     <b>{wrapped.totalRuns}</b> runs!
-                                </div>
-                            </div>
-                        </Col>
-                        <Col>
-                            <div className="flex-center bg-body-secondary mb-3 game-border border-secondary px-4 py-5 rounded-3">
-                                <span className="display-1 fw-semibold text-decoration-underline">
-                                    <WrappedCounter
-                                        id="total-finished-runs-count"
-                                        end={wrapped.totalFinishedRuns}
-                                    />
-                                </span>
-                            </div>
-                            <div className="flex-center h4">
-                                <div>
+                                </>
+                            }
+                        />
+                        <SectionStatsCard
+                            stat={wrapped.totalFinishedRuns}
+                            statDescription={
+                                <>
                                     Of these <b>{wrapped.totalRuns}</b> runs,
                                     you finished{" "}
                                     <b>{wrapped.totalFinishedRuns}</b>
-                                </div>
-                            </div>
-                        </Col>
-                        <Col>
-                            <div className="flex-center bg-body-secondary mb-3 game-border border-secondary px-4 py-5 rounded-3">
-                                <span className="display-1 fw-semibold text-decoration-underline">
-                                    <WrappedCounter
-                                        id="total-finished-runs-percentage"
-                                        end={
-                                            (wrapped.totalFinishedRuns /
-                                                wrapped.totalRuns) *
-                                            100 *
-                                            100
-                                        }
-                                        duration={2}
-                                        formattingFn={(value: number) => {
-                                            return (
-                                                (value / 100).toFixed(2) + "%"
-                                            );
-                                        }}
-                                    />
-                                </span>
-                            </div>
-                            <div className="flex-center h4">
-                                <div>
+                                </>
+                            }
+                        />
+                        <SectionStatsCard
+                            stat={
+                                (wrapped.totalFinishedRuns /
+                                    wrapped.totalRuns) *
+                                100 *
+                                100
+                            }
+                            statFormatter={(value: number) => {
+                                return (value / 100).toFixed(2) + "%";
+                            }}
+                            statDescription={
+                                <>
+                                    {" "}
                                     That gives you a finish percentage of{" "}
                                     <b>
                                         {" "}
@@ -86,9 +64,9 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                                         ).toFixed(2)}
                                         %
                                     </b>
-                                </div>
-                            </div>
-                        </Col>
+                                </>
+                            }
+                        />
                     </Row>
                     <Row className="mb-5">
                         <Col>
@@ -131,7 +109,7 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                         </Col>
                     </Row>
                 </div>
-            </div>
+            </SectionWrapper>
         );
     },
 );

@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useRef } from "react";
 import { CountUpProps, useCountUp } from "react-countup";
 
 interface WrappedCounterProps extends CountUpProps {
@@ -6,16 +6,17 @@ interface WrappedCounterProps extends CountUpProps {
     end: number;
 }
 export const WrappedCounter = memo<WrappedCounterProps>(
-    ({ id, end, duration, formattingFn, style }) => {
+    ({ end, duration, formattingFn, style }) => {
+        const countRef = useRef(null);
         useCountUp({
-            ref: id,
+            ref: countRef,
             end,
             enableScrollSpy: true,
             scrollSpyOnce: true,
             duration: duration ?? 4,
             formattingFn,
         });
-        return <span style={style} id={id} />;
+        return <span ref={countRef} style={style} />;
     },
 );
 WrappedCounter.displayName = "WrappedCounter";
