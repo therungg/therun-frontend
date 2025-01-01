@@ -77,6 +77,7 @@ export const WrappedActivityGraphs = memo<WrappedActivityGraphsProps>(
                             <Row className="w-100">
                                 <Col>
                                     <PlaytimePerMonthGraph
+                                        year={wrapped.year}
                                         playtimePerMonthMap={
                                             wrapped.playtimeData
                                                 .playtimePerMonthMap

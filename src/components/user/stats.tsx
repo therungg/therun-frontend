@@ -164,12 +164,14 @@ export const PlayTimeTable = ({
 
 export const PlaytimePerMonthGraph = ({
     playtimePerMonthMap,
+    year,
 }: {
     playtimePerMonthMap: StatMap;
+    year: number;
 }) => {
     let max = 0;
 
-    const currentYear = new Date().getFullYear();
+    const currentYear = year;
     for (let month = 1; month <= 12; month++) {
         const monthKey = `${currentYear}-${String(month).padStart(2, "0")}`;
         if (
@@ -232,6 +234,8 @@ export const PlaytimePerMonthGraph = ({
                             case "03":
                                 return "Mar";
                             case "04":
+                                return "Apr";
+                            case "05":
                                 return "May";
                             case "06":
                                 return "June";
@@ -268,11 +272,8 @@ export const PlaytimePerMonthGraph = ({
                     }}
                     data={victoryData}
                     labels={({ index }) => {
-                        console.log(index);
                         const key =
-                            new Date().getFullYear() +
-                            "-" +
-                            String(index + 1).padStart(2, "0");
+                            year + "-" + String(index + 1).padStart(2, "0");
 
                         console.log(key);
                         const target: TotalStat = playtimePerMonthMap[key];
