@@ -12,6 +12,7 @@ import {
 interface WrappedActivityGraphsProps {
     wrapped: WrappedWithData;
 }
+
 export const WrappedActivityGraphs = memo<WrappedActivityGraphsProps>(
     ({ wrapped }) => {
         const activityGraphRef = useRef(null);
@@ -68,6 +69,7 @@ export const WrappedActivityGraphs = memo<WrappedActivityGraphsProps>(
                                     width={width}
                                     data={data}
                                     setter={() => {}}
+                                    overview="year"
                                 />
                             </div>
                         </div>

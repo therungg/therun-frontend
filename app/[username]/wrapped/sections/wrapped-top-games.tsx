@@ -8,11 +8,11 @@ import { WrappedCounter } from "../wrapped-counter";
 interface WrappedTopGamesProps {
     wrapped: WrappedWithData;
 }
+
 export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
     const topGames = useMemo(() => {
-        return wrapped.playtimeData.playtimePerYearMap[new Date().getFullYear()]
-            .perGame;
-    }, [wrapped.playtimeData.playtimePerYearMap]);
+        return wrapped.playtimeData.playtimePerYearMap[wrapped.year].perGame;
+    }, [wrapped.playtimeData.playtimePerYearMap, wrapped.year]);
 
     console.log(topGames);
 

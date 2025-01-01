@@ -11,6 +11,7 @@ export interface Wrapped {
     processedAt?: number;
     // Error is there when status === -1
     error?: string;
+    year: number;
 }
 
 export type WrappedWithData = Wrapped & WrappedDataPoints;
@@ -18,7 +19,7 @@ export type WrappedWithData = Wrapped & WrappedDataPoints;
 interface WrappedDataPoints {
     // Check if the user has enough runs
     hasEnoughRuns: boolean;
-    // Total playtime in milliseconds this year
+    // Total playtime in hours (!!!) this year
     totalPlaytime: number;
     // Total started runs
     totalRuns: number;
