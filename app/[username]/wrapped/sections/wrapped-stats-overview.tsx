@@ -1,9 +1,10 @@
-import { memo, useMemo } from "react";
+import { memo } from "react";
 import { Row } from "react-bootstrap";
 import { WrappedWithData } from "../wrapped-types";
 import { SectionTitle } from "./section-title";
 import { SectionWrapper } from "./section-wrapper";
 import { SectionStatsCard } from "./section-stats-card";
+import { SectionBody } from "~app/[username]/wrapped/sections/section-body";
 
 interface WrappedStatsOverviewProps {
     wrapped: WrappedWithData;
@@ -11,69 +12,86 @@ interface WrappedStatsOverviewProps {
 
 export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
     ({ wrapped }) => {
-        const personalBestCount = useMemo(() => {
-            return wrapped.pbsAndGolds.reduce((result, entry) => {
-                return result + (entry.pbs.length ?? 0);
-            }, 0);
-        }, [wrapped.pbsAndGolds]);
+        const personalBestCount = wrapped.totalPbs;
         return (
             <SectionWrapper>
-                <SectionTitle>Stats Overview</SectionTitle>
-                <div className="h-100 d-flex flex-column justify-content-center ">
-                    <Row className="mb-5">
+                <SectionTitle
+                    title="We know you love stats. Let's get right into it!"
+                    extraRemark="We couldn't decide which stats to put here -- so we put them all"
+                />
+                <SectionBody>
+                    <Row className="mb-4">
                         <SectionStatsCard
                             stat={wrapped.totalRuns}
                             statDescription={
-                                <>
-                                    This year, you started a total of{" "}
-                                    <b>{wrapped.totalRuns}</b> runs!
-                                </>
+                                <span>
+                                    You started <b>{wrapped.totalRuns}</b> runs
+                                </span>
                             }
                         />
                         <SectionStatsCard
                             stat={wrapped.totalFinishedRuns}
                             statDescription={
                                 <>
-                                    Of these <b>{wrapped.totalRuns}</b> runs,
-                                    you finished{" "}
-                                    <b>{wrapped.totalFinishedRuns}</b>
-                                </>
-                            }
-                        />
-                        <SectionStatsCard
-                            stat={
-                                (wrapped.totalFinishedRuns /
-                                    wrapped.totalRuns) *
-                                100 *
-                                100
-                            }
-                            statFormatter={(value: number) => {
-                                return (value / 100).toFixed(2) + "%";
-                            }}
-                            statDescription={
-                                <>
-                                    {" "}
-                                    That gives you a finish percentage of{" "}
+                                    You finished{" "}
+                                    <b>{wrapped.totalFinishedRuns}</b> (or{" "}
                                     <b>
-                                        {" "}
                                         {(
                                             (wrapped.totalFinishedRuns /
                                                 wrapped.totalRuns) *
                                             100
                                         ).toFixed(2)}
-                                        %
-                                    </b>
+                                        %)
+                                    </b>{" "}
+                                    of them
                                 </>
                             }
                         />
+                        <SectionStatsCard
+                            stat={personalBestCount}
+                            statDescription={
+                                <>And you got a PB {personalBestCount} times!</>
+                            }
+                            style={{
+                                background:
+                                    "linear-gradient(to right, #80FF72, #7EE8FA)",
+                                color: "transparent",
+                                backgroundClip: "text",
+                            }}
+                        />
                     </Row>
-                    <Row className="mb-5">
+                    <Row className="mb-4">
+                        <SectionStatsCard
+                            stat={wrapped.totalSplits}
+                            statDescription={
+                                <>
+                                    You hit your split hotkey{" "}
+                                    <b>{wrapped.totalSplits}</b> times!
+                                </>
+                            }
+                        />
+                        <SectionStatsCard
+                            stat={wrapped.countResetFirstSplit}
+                            statDescription={
+                                <>
+                                    Forced to reset on the first split{" "}
+                                    <b>{wrapped.countResetFirstSplit}</b>{" "}
+                                    times...
+                                </>
+                            }
+                            style={{
+                                background:
+                                    "linear-gradient(to right, #E01C34, #CCABB0)",
+                                color: "transparent",
+                                backgroundClip: "text",
+                            }}
+                        />
                         <SectionStatsCard
                             stat={wrapped.totalGolds}
                             statDescription={
                                 <>
-                                    Wow! You got <b>{wrapped.totalGolds}</b>{" "}
-                                    gold splits this year!
+                                    You got <b>{wrapped.totalGolds}</b> gold
+                                    splits this year!
                                 </>
                             }
                             style={{
@@ -83,17 +101,29 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                                 backgroundClip: "text",
                             }}
                         />
+                    </Row>
+                    <Row className="mb-4">
                         <SectionStatsCard
-                            stat={personalBestCount}
+                            stat={wrapped.totalGames}
                             statDescription={
                                 <>
-                                    You managed to get {personalBestCount}{" "}
-                                    personal bests!
+                                    You ran <b>{wrapped.totalGames}</b> games,{" "}
+                                    <b>{wrapped.newGames.length}</b> of them for
+                                    the first time!
+                                </>
+                            }
+                        />
+                        <SectionStatsCard
+                            stat={wrapped.totalCategories}
+                            statDescription={
+                                <>
+                                    You did runs for a total of{" "}
+                                    <b>{wrapped.totalCategories}</b> categories!
                                 </>
                             }
                         />
                     </Row>
-                </div>
+                </SectionBody>
             </SectionWrapper>
         );
     },

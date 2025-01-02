@@ -14,6 +14,7 @@ import { WrappedActivityGraphs } from "~app/[username]/wrapped/sections/wrapped-
 import { Button } from "react-bootstrap";
 import { ArrowDownCircleFill, ArrowUpCircleFill } from "react-bootstrap-icons";
 import { WrappedRaceStats } from "./sections/wrapped-race-stats";
+import { WrappedRunsAndPbs } from "~app/[username]/wrapped/sections/wrapped-runs-and-pbs";
 
 gsap.registerPlugin(useGSAP);
 gsap.registerPlugin(ScrollTrigger);
@@ -117,7 +118,6 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
         },
     );
 
-    console.log({ wrapped });
     const sections = useMemo(() => {
         return [
             <section
@@ -135,6 +135,13 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
             </section>,
 
             <section
+                key="wrapped-pbs-and-golds"
+                className="animated-section text-center flex-center align-items-center min-vh-100"
+            >
+                <WrappedRunsAndPbs wrapped={wrapped} />
+            </section>,
+
+            <section
                 key="wrapped-streak"
                 className="animated-section flex-center flex-column align-items-center min-vh-100"
             >
@@ -143,7 +150,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
 
             <section
                 key="wrapped-top-games"
-                className="animated-section text-center min-vh-100"
+                className="animated-section flex-center flex-column align-items-center min-vh-100"
             >
                 <WrappedTopGames wrapped={wrapped} />
             </section>,
@@ -183,7 +190,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                 <p className="display-2 mb-0">You had a great 2024!</p>
                 <WrappedTitle user={user} />
                 <p className="display-6 mb-5">
-                    Let's see your stats for this year!
+                    Let's see your stats for this year. Start scrolling!
                 </p>
                 <ScrollDown />
             </section>

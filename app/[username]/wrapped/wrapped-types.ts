@@ -25,9 +25,14 @@ interface WrappedDataPoints {
     totalRuns: number;
     totalFinishedRuns: number;
     totalResets: number;
+    totalGames: number;
+    totalCategories: number;
     // Total times the player has completed a split
     totalSplits: number;
     totalGolds: number;
+    totalPbs: number;
+    // List of games that the user had not run before
+    newGames: string[];
     // How much time the player spent resetting on the first split
     timeResetFirstSplit: number;
     // How often the player reset on the first split

@@ -9,12 +9,16 @@ interface SectionStatsCardProps {
     statFormatter?: UseCountUpProps["formattingFn"];
     style?: CSSProperties;
 }
+
 export const SectionStatsCard = memo<SectionStatsCardProps>(
     ({ stat, statDescription, statFormatter, style }) => {
         return (
             <Col>
-                <div className="flex-center bg-body-secondary mb-3 game-border border-secondary px-4 py-5 rounded-3">
-                    <span className="display-1 fw-semibold text-decoration-underline">
+                <h4 className="flex-center h4 mb-3">
+                    <div>{statDescription}</div>
+                </h4>
+                <div className="flex-center bg-body-secondary mb-3 game-border border-secondary px-3 py-5 rounded-3">
+                    <span className="display-2 fw-semibold text-decoration-underline">
                         <WrappedCounter
                             id="total-runs-count"
                             end={stat}
@@ -22,9 +26,6 @@ export const SectionStatsCard = memo<SectionStatsCardProps>(
                             style={style}
                         />
                     </span>
-                </div>
-                <div className="flex-center h4">
-                    <div>{statDescription}</div>
                 </div>
             </Col>
         );

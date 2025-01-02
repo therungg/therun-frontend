@@ -8,6 +8,8 @@ import {
     PlaytimePerHourGraph,
     PlaytimePerMonthGraph,
 } from "~src/components/user/stats";
+import { SectionTitle } from "~app/[username]/wrapped/sections/section-title";
+import { SectionBody } from "~app/[username]/wrapped/sections/section-body";
 
 interface WrappedActivityGraphsProps {
     wrapped: WrappedWithData;
@@ -19,7 +21,6 @@ export const WrappedActivityGraphs = memo<WrappedActivityGraphsProps>(
         const { width = 0 } = useResizeObserver({
             ref: activityGraphRef,
         });
-        console.log({ width });
         const data = Object.entries(wrapped.playtimeData.playtimePerDayMap).map(
             ([date, stat]) => {
                 return {
@@ -40,22 +41,12 @@ export const WrappedActivityGraphs = memo<WrappedActivityGraphsProps>(
 
         return (
             <div ref={activityGraphRef} className="w-100">
-                <p className="pt-5">
-                    <span className="display-4">
-                        Here's your heatmap for this year.
-                    </span>
-                </p>
-                <p className="mt-3">
-                    <span className="display-6">
-                        Also, we added some cool graphs. Try hovering over them!
-                    </span>
-                </p>
-                <p className="mt-1 opacity-25">
-                    <span className="fs-small">
-                        I bet you like that, don't you?
-                    </span>
-                </p>
-                <div className="flex-center w-100 min-vh-100">
+                <SectionTitle
+                    title={"Here's your heatmap for this year."}
+                    subtitle="Also, we added some cool graphs. Try hovering over them!"
+                    extraRemark={"I bet you like that, don't you?"}
+                />
+                <SectionBody>
                     <div className="w-100">
                         <div className="d-flex align-items-center display-4">
                             <div
@@ -103,7 +94,7 @@ export const WrappedActivityGraphs = memo<WrappedActivityGraphsProps>(
                             </Row>
                         </div>
                     </div>
-                </div>
+                </SectionBody>
             </div>
         );
     },
