@@ -10,6 +10,7 @@ import {
 } from "~src/components/user/stats";
 import { SectionTitle } from "~app/[username]/wrapped/sections/section-title";
 import { SectionBody } from "~app/[username]/wrapped/sections/section-body";
+import { SectionWrapper } from "./section-wrapper";
 
 interface WrappedActivityGraphsProps {
     wrapped: WrappedWithData;
@@ -44,7 +45,7 @@ export const WrappedActivityGraphs = memo<WrappedActivityGraphsProps>(
         );
 
         return (
-            <div ref={activityGraphRef} className="w-100">
+            <SectionWrapper ref={activityGraphRef}>
                 <SectionTitle
                     title={"Here's your heatmap for this year."}
                     subtitle="Also, we added some cool graphs. Try hovering over them!"
@@ -99,7 +100,7 @@ export const WrappedActivityGraphs = memo<WrappedActivityGraphsProps>(
                         </div>
                     </div>
                 </SectionBody>
-            </div>
+            </SectionWrapper>
         );
     },
 );

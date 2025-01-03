@@ -2,6 +2,7 @@ import { memo } from "react";
 import { WrappedWithData } from "../wrapped-types";
 import { WrappedCounter } from "../wrapped-counter";
 import { Row } from "react-bootstrap";
+import { SectionWrapper } from "./section-wrapper";
 
 interface WrappedRaceStatsProps {
     wrapped: WrappedWithData;
@@ -9,7 +10,7 @@ interface WrappedRaceStatsProps {
 export const WrappedRaceStats = memo<WrappedRaceStatsProps>(({ wrapped }) => {
     const raceData = wrapped.raceData;
     return (
-        <div>
+        <SectionWrapper>
             <Row>
                 {raceData.globalStats.totalRaces === 1 ? (
                     <>
@@ -33,7 +34,7 @@ export const WrappedRaceStats = memo<WrappedRaceStatsProps>(({ wrapped }) => {
                 )}
             </Row>
             <Row></Row>
-        </div>
+        </SectionWrapper>
     );
 });
 WrappedRaceStats.displayName = "WrappedRaceStats";

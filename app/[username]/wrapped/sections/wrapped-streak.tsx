@@ -11,7 +11,6 @@ import {
     DurationToFormatted,
     getDateAsMonthDay,
 } from "~src/components/util/datetime";
-import { Col, Row } from "react-bootstrap";
 
 export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
     const streakInDays = wrapped.streak.length;
@@ -136,44 +135,6 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                 subtitle={getStreakMessage(streakInDays)}
             />
             <SectionBody>
-                <StreakStatItem
-                    stat={<DurationToFormatted duration={totalPlaytime} />}
-                    explanation={
-                        <>
-                            You played for a total of{" "}
-                            <DurationToFormatted duration={totalPlaytime} />{" "}
-                            during this streak.
-                        </>
-                    }
-                />
-                <StreakStatItem
-                    stat={
-                        <DurationToFormatted
-                            duration={totalPlaytime / wrapped.streak.length}
-                        />
-                    }
-                    explanation={
-                        <>
-                            That means you ran{" "}
-                            <DurationToFormatted
-                                duration={totalPlaytime / wrapped.streak.length}
-                            />{" "}
-                            on average per day.
-                        </>
-                    }
-                />
-                <StreakStatItem
-                    stat={getDateAsMonthDay(new Date(wrapped.streak.start))}
-                    explanation="Was when you started your epic streak."
-                />
-                <StreakStatItem
-                    stat={getDateAsMonthDay(new Date(wrapped.streak.end))}
-                    explanation="Was when your streak unfortunately came to an end."
-                />
-                <StreakStatItem
-                    stat={mostPlayedGame}
-                    explanation="Was your favorite game while you were grinding."
-                />
                 <div className="flex-center align-items-center">
                     <div className="d-flex align-items-center display-4">
                         <div className="row justify-content-center">
@@ -207,6 +168,67 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                         </div>
                     </div>
                 </div>
+                <div className="table-responsive mt-4">
+                    <table className="table">
+                        <tbody>
+                            <StreakStatItem
+                                stat={mostPlayedGame}
+                                explanation="Was your favorite game while you were grinding."
+                            />
+
+                            <StreakStatItem
+                                stat={
+                                    <DurationToFormatted
+                                        duration={totalPlaytime}
+                                    />
+                                }
+                                explanation={
+                                    <>
+                                        You played for a total of{" "}
+                                        <DurationToFormatted
+                                            duration={totalPlaytime}
+                                        />{" "}
+                                        during this streak.
+                                    </>
+                                }
+                            />
+                            <StreakStatItem
+                                stat={
+                                    <DurationToFormatted
+                                        duration={
+                                            totalPlaytime /
+                                            wrapped.streak.length
+                                        }
+                                    />
+                                }
+                                explanation={
+                                    <>
+                                        That means you ran{" "}
+                                        <DurationToFormatted
+                                            duration={
+                                                totalPlaytime /
+                                                wrapped.streak.length
+                                            }
+                                        />{" "}
+                                        on average per day.
+                                    </>
+                                }
+                            />
+                            <StreakStatItem
+                                stat={getDateAsMonthDay(
+                                    new Date(wrapped.streak.start),
+                                )}
+                                explanation="Was when you started your epic streak."
+                            />
+                            <StreakStatItem
+                                stat={getDateAsMonthDay(
+                                    new Date(wrapped.streak.end),
+                                )}
+                                explanation="Was when your streak unfortunately came to an end."
+                            />
+                        </tbody>
+                    </table>
+                </div>
             </SectionBody>
         </SectionWrapper>
     );
@@ -220,16 +242,9 @@ const StreakStatItem = ({
     explanation: ReactNode;
 }) => {
     return (
-        <Row className="mb-3">
-            <Col className="h3" style={{ textAlign: "end" }}>
-                <b>{stat}</b>
-            </Col>
-            <Col
-                className="h5"
-                style={{ textAlign: "start", marginTop: "1rem" }}
-            >
-                {explanation}
-            </Col>
-        </Row>
+        <tr>
+            <td className="display-6">{stat}</td>
+            <td className="align-bottom">{explanation}</td>
+        </tr>
     );
 };

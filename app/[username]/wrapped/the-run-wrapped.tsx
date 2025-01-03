@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { PropsWithChildren, useMemo, useRef, useState } from "react";
 import { WrappedWithData } from "~app/[username]/wrapped/wrapped-types";
 import { WrappedTitle } from "~app/[username]/wrapped/wrapped-title";
 import { ScrollDown } from "~src/components/scroll-down";
@@ -29,6 +29,23 @@ const FOOTER_HEIGHT = 25;
 
 const hasRaceData = (wrapped: WrappedWithData) => {
     return wrapped.raceData?.categoryStats?.length > 0;
+};
+
+interface WrappedSectionProps {
+    id?: string;
+}
+const WrappedSection: React.FC<PropsWithChildren<WrappedSectionProps>> = ({
+    children,
+    id = "",
+}) => {
+    return (
+        <section
+            id={id}
+            className="animated-section text-center flex-center align-items-center min-vh-100"
+        >
+            {children}
+        </section>
+    );
 };
 
 export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
@@ -120,55 +137,33 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
 
     const sections = useMemo(() => {
         return [
-            <section
-                key="wrapped-total-stats-compliment"
-                className="animated-section text-center flex-center align-items-center min-vh-100"
-            >
+            <WrappedSection key="wrapped-total-stats-compliment">
                 <WrappedStatsOverview wrapped={wrapped} />
-            </section>,
+            </WrappedSection>,
 
-            <section
-                key="wrapped-activity-graphs"
-                className="animated-section text-center flex-center align-items-center min-vh-100"
-            >
+            <WrappedSection key="wrapped-activity-graphs">
                 <WrappedActivityGraphs wrapped={wrapped} />
-            </section>,
+            </WrappedSection>,
 
-            <section
-                key="wrapped-streak"
-                className="animated-section text-center flex-center align-items-center min-vh-100"
-            >
+            <WrappedSection key="wrapped-streak">
                 <WrappedStreak wrapped={wrapped} />
-            </section>,
+            </WrappedSection>,
 
-            <section
-                key="wrapped-top-games"
-                className="animated-section flex-center flex-column align-items-center min-vh-100"
-            >
+            <WrappedSection key="wrapped-top-games">
                 <WrappedTopGames wrapped={wrapped} />
-            </section>,
+            </WrappedSection>,
 
-            <section
-                key="wrapped-pbs-and-golds"
-                className="animated-section text-center flex-center align-items-center min-vh-100"
-            >
+            <WrappedSection key="wrapped-pbs-and-golds">
                 <WrappedRunsAndPbs wrapped={wrapped} />
-            </section>,
+            </WrappedSection>,
 
             hasRaceData(wrapped) ? (
-                <section
-                    key="wrapped-race-stats"
-                    className="animated-section text-center flex-center align-items-center min-vh-100"
-                >
+                <WrappedSection key="wrapped-race-stats">
                     <WrappedRaceStats wrapped={wrapped} />
-                </section>
+                </WrappedSection>
             ) : null,
 
-            <section
-                key="wrapped-outro"
-                id="wrapped-outro"
-                className="animated-section flex-center flex-column align-items-center min-vh-100"
-            >
+            <WrappedSection key="wrapped-outro" id="wrapped-outro">
                 <p className="text-center flex-center align-items-center display-2 mb-4">
                     That's a wrap on 2024!
                 </p>
@@ -177,7 +172,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                     what you do in 2025!
                 </p>
                 <WrappedSocialImages wrapped={wrapped} />
-            </section>,
+            </WrappedSection>,
         ].filter(Boolean);
     }, [wrapped]);
 
