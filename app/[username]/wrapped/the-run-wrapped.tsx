@@ -121,6 +121,12 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
     const sections = useMemo(() => {
         return [
             <section
+                key="wrapped-pbs-and-golds"
+                className="animated-section text-center flex-center align-items-center min-vh-100"
+            >
+                <WrappedRunsAndPbs wrapped={wrapped} />
+            </section>,
+            <section
                 key="wrapped-total-stats-compliment"
                 className="animated-section text-center flex-center align-items-center min-vh-100"
             >
@@ -132,13 +138,6 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                 className="animated-section text-center flex-center align-items-center min-vh-100"
             >
                 <WrappedActivityGraphs wrapped={wrapped} />
-            </section>,
-
-            <section
-                key="wrapped-pbs-and-golds"
-                className="animated-section text-center flex-center align-items-center min-vh-100"
-            >
-                <WrappedRunsAndPbs wrapped={wrapped} />
             </section>,
 
             <section

@@ -86,8 +86,8 @@ interface WrappedDataPoints {
         totalGolds: number;
         pbs: {
             // When they got the pb
-            startedAt: string;
-            endedAt: string;
+            startedAt: number;
+            endedAt: number;
             time: number;
         }[];
     }[];

@@ -52,12 +52,14 @@ export const Difference = ({
     withMillis = false,
     isGold = false,
     human = true,
+    inline = false,
 }: {
     one: string;
     two: string;
     withMillis?: boolean;
     isGold?: boolean;
     human?: boolean;
+    inline?: boolean;
 }) => {
     const diff = parseInt(one) - parseInt(two);
 
@@ -83,17 +85,33 @@ export const Difference = ({
                 false,
             )}`}
         >
-            <div
-                style={{
-                    color: isGold
-                        ? "var(--bs-secondary)"
-                        : diff <= 0
-                          ? "var(--bs-link-color)"
-                          : "var(--bs-red)",
-                }}
-            >
-                {formatted}
-            </div>
+            {inline ? (
+                <span
+                    style={{
+                        color: isGold
+                            ? "var(--bs-secondary)"
+                            : diff <= 0
+                              ? // eslint-disable-next-line sonarjs/no-duplicate-string
+                                "var(--bs-link-color)"
+                              : // eslint-disable-next-line sonarjs/no-duplicate-string
+                                "var(--bs-red)",
+                    }}
+                >
+                    {formatted}
+                </span>
+            ) : (
+                <div
+                    style={{
+                        color: isGold
+                            ? "var(--bs-secondary)"
+                            : diff <= 0
+                              ? "var(--bs-link-color)"
+                              : "var(--bs-red)",
+                    }}
+                >
+                    {formatted}
+                </div>
+            )}
         </abbr>
     );
 };

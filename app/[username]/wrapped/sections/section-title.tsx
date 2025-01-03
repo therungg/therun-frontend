@@ -1,12 +1,10 @@
 import React, { ReactNode } from "react";
 import { Row } from "react-bootstrap";
 
-type NodeOrString = ReactNode | string;
-
 interface SectionTitleProps {
-    title: NodeOrString;
-    subtitle?: NodeOrString;
-    extraRemark?: NodeOrString;
+    title: ReactNode;
+    subtitle?: ReactNode;
+    extraRemark?: ReactNode;
 }
 
 export const SectionTitle: React.FC<SectionTitleProps> = ({

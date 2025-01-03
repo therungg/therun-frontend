@@ -1,4 +1,3 @@
-import { Col } from "react-bootstrap";
 import { WrappedCounter } from "../wrapped-counter";
 import { CSSProperties, memo } from "react";
 import { UseCountUpProps } from "react-countup/build/useCountUp";
@@ -13,7 +12,7 @@ interface SectionStatsCardProps {
 export const SectionStatsCard = memo<SectionStatsCardProps>(
     ({ stat, statDescription, statFormatter, style }) => {
         return (
-            <Col>
+            <>
                 <h4 className="flex-center h4 mb-3">
                     <div>{statDescription}</div>
                 </h4>
@@ -27,7 +26,7 @@ export const SectionStatsCard = memo<SectionStatsCardProps>(
                         />
                     </span>
                 </div>
-            </Col>
+            </>
         );
     },
 );
