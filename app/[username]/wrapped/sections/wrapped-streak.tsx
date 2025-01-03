@@ -11,6 +11,7 @@ import {
     DurationToFormatted,
     getDateAsMonthDay,
 } from "~src/components/util/datetime";
+import { Col, Row } from "react-bootstrap";
 
 export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
     const streakInDays = wrapped.streak.length;
@@ -135,100 +136,108 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                 subtitle={getStreakMessage(streakInDays)}
             />
             <SectionBody>
-                <div className="flex-center align-items-center">
-                    <div className="d-flex align-items-center display-4">
-                        <div className="row justify-content-center">
-                            <div className="col-auto position-relative">
-                                <div
-                                    // @ts-expect-error Legacy type issue with Refs that's resolved in React 19
-                                    ref={sparkContainerRef}
-                                    className="position-absolute w-100 h-100"
-                                    style={{ pointerEvents: "none", zIndex: 1 }}
-                                />
-                                <div
-                                    // @ts-expect-error Legacy type issue with Refs that's resolved in React 19
-                                    ref={cardRef}
-                                    className="d-flex flex-column bg-warning bg-opacity-75 rounded-3 overflow-hidden"
-                                >
-                                    <div className="game-image">
-                                        {gameData &&
-                                            gameData.image &&
-                                            gameData.image !== "noimage" && (
-                                                <GameImage
-                                                    alt={gameData.display}
-                                                    src={gameData.image}
-                                                    quality="sd"
-                                                    height={132 * 4.5}
-                                                    width={99 * 4.5}
-                                                />
-                                            )}
+                <Row>
+                    <Col>
+                        <div className="flex-center align-items-center">
+                            <div className="row justify-content-center">
+                                <div className="col-auto position-relative">
+                                    <div
+                                        // @ts-expect-error Legacy type issue with Refs that's resolved in React 19
+                                        ref={sparkContainerRef}
+                                        className="position-absolute w-100 h-100"
+                                        style={{
+                                            pointerEvents: "none",
+                                            zIndex: 1,
+                                        }}
+                                    />
+                                    <div
+                                        // @ts-expect-error Legacy type issue with Refs that's resolved in React 19
+                                        ref={cardRef}
+                                        className="d-flex flex-column bg-warning bg-opacity-75 rounded-3 overflow-hidden"
+                                    >
+                                        <div className="game-image">
+                                            {gameData &&
+                                                gameData.image &&
+                                                gameData.image !==
+                                                    "noimage" && (
+                                                    <GameImage
+                                                        alt={gameData.display}
+                                                        src={gameData.image}
+                                                        quality="sd"
+                                                        height={132 * 4.5}
+                                                        width={99 * 4.5}
+                                                    />
+                                                )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                <div className="table-responsive mt-4">
-                    <table className="table">
-                        <tbody>
-                            <StreakStatItem
-                                stat={mostPlayedGame}
-                                explanation="Was your favorite game while you were grinding."
-                            />
-
-                            <StreakStatItem
-                                stat={
-                                    <DurationToFormatted
-                                        duration={totalPlaytime}
+                    </Col>
+                    <Col>
+                        <div className="table-responsive mt-4">
+                            <table className="table">
+                                <tbody>
+                                    <StreakStatItem
+                                        stat={mostPlayedGame}
+                                        explanation="Was your favorite game while you were grinding."
                                     />
-                                }
-                                explanation={
-                                    <>
-                                        You played for a total of{" "}
-                                        <DurationToFormatted
-                                            duration={totalPlaytime}
-                                        />{" "}
-                                        during this streak.
-                                    </>
-                                }
-                            />
-                            <StreakStatItem
-                                stat={
-                                    <DurationToFormatted
-                                        duration={
-                                            totalPlaytime /
-                                            wrapped.streak.length
+
+                                    <StreakStatItem
+                                        stat={
+                                            <DurationToFormatted
+                                                duration={totalPlaytime}
+                                            />
+                                        }
+                                        explanation={
+                                            <>
+                                                You played for a total of{" "}
+                                                <DurationToFormatted
+                                                    duration={totalPlaytime}
+                                                />{" "}
+                                                during this streak.
+                                            </>
                                         }
                                     />
-                                }
-                                explanation={
-                                    <>
-                                        That means you ran{" "}
-                                        <DurationToFormatted
-                                            duration={
-                                                totalPlaytime /
-                                                wrapped.streak.length
-                                            }
-                                        />{" "}
-                                        on average per day.
-                                    </>
-                                }
-                            />
-                            <StreakStatItem
-                                stat={getDateAsMonthDay(
-                                    new Date(wrapped.streak.start),
-                                )}
-                                explanation="Was when you started your epic streak."
-                            />
-                            <StreakStatItem
-                                stat={getDateAsMonthDay(
-                                    new Date(wrapped.streak.end),
-                                )}
-                                explanation="Was when your streak unfortunately came to an end."
-                            />
-                        </tbody>
-                    </table>
-                </div>
+                                    <StreakStatItem
+                                        stat={
+                                            <DurationToFormatted
+                                                duration={
+                                                    totalPlaytime /
+                                                    wrapped.streak.length
+                                                }
+                                            />
+                                        }
+                                        explanation={
+                                            <>
+                                                That means you ran{" "}
+                                                <DurationToFormatted
+                                                    duration={
+                                                        totalPlaytime /
+                                                        wrapped.streak.length
+                                                    }
+                                                />{" "}
+                                                on average per day.
+                                            </>
+                                        }
+                                    />
+                                    <StreakStatItem
+                                        stat={getDateAsMonthDay(
+                                            new Date(wrapped.streak.start),
+                                        )}
+                                        explanation="Was when you started your epic streak."
+                                    />
+                                    <StreakStatItem
+                                        stat={getDateAsMonthDay(
+                                            new Date(wrapped.streak.end),
+                                        )}
+                                        explanation="Was when your streak unfortunately came to an end."
+                                    />
+                                </tbody>
+                            </table>
+                        </div>
+                    </Col>
+                </Row>
             </SectionBody>
         </SectionWrapper>
     );
