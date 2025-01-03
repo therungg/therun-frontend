@@ -33,11 +33,10 @@ export const WrappedRaceStats = memo<WrappedRaceStatsProps>(({ wrapped }) => {
             };
         }, {});
         return Object.entries(gameRaceCounts)
-            .sort(([, a], [, b]) => a - b)
+            .sort(([, a], [, b]) => b - a)
             .map(([key]) => racesByGameAndCategory[key])
             .slice(0, 3);
     }, [raceData, racesByGameAndCategory]);
-    console.log({ top3MostRacedGames });
     return (
         <SectionWrapper>
             <SectionBody>
