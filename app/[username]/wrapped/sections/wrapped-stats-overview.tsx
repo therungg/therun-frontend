@@ -76,7 +76,7 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                                 stat={wrapped.totalSplits}
                                 statDescription={
                                     <>
-                                        You hit your split hotkey{" "}
+                                        You completed a split{" "}
                                         <b>{wrapped.totalSplits}</b> times!
                                     </>
                                 }

@@ -1,5 +1,5 @@
 import { WrappedWithData } from "~app/[username]/wrapped/wrapped-types";
-import React from "react";
+import React, { useMemo } from "react";
 import { SectionWrapper } from "~app/[username]/wrapped/sections/section-wrapper";
 import { SectionTitle } from "~app/[username]/wrapped/sections/section-title";
 import { SectionBody } from "~app/[username]/wrapped/sections/section-body";
@@ -28,33 +28,37 @@ export const WrappedRunsAndPbs = ({
         };
     }
 
-    const allPbs: PB[] = [];
+    const allPbs: PB[] = useMemo(() => {
+        const allPbs: PB[] = [];
 
-    wrapped.pbsAndGolds.forEach((run) => {
-        run.pbs.forEach((pb, index) => {
-            const previousPb =
-                index === 0 ? run.timeBefore : run.pbs[index - 1].time;
+        wrapped.pbsAndGolds.forEach((run) => {
+            run.pbs.forEach((pb, index) => {
+                const previousPb =
+                    index === 0 ? run.timeBefore : run.pbs[index - 1].time;
 
-            const pbObject: PB = {
-                previousPb,
-                game: run.game,
-                category: run.category,
-                pb,
-            };
-            allPbs.push(pbObject);
+                const pbObject: PB = {
+                    previousPb,
+                    game: run.game,
+                    category: run.category,
+                    pb,
+                };
+                allPbs.push(pbObject);
+            });
         });
-    });
 
-    allPbs.sort((a, b) => {
-        if (a.game !== b.game) {
-            return a.game.localeCompare(b.game);
-        }
-        if (a.category !== b.category) {
-            return a.category.localeCompare(b.category);
-        }
+        allPbs.sort((a, b) => {
+            if (a.game !== b.game) {
+                return a.game.localeCompare(b.game);
+            }
+            if (a.category !== b.category) {
+                return a.category.localeCompare(b.category);
+            }
 
-        return a.pb.startedAt - b.pb.startedAt;
-    });
+            return a.pb.startedAt - b.pb.startedAt;
+        });
+
+        return allPbs;
+    }, [wrapped.pbsAndGolds]);
 
     return (
         <SectionWrapper>

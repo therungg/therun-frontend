@@ -110,11 +110,15 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
         shouldShowSparks: Boolean(mostPlayedGame),
     });
 
-    let totalPlaytime = 0;
+    const totalPlaytime = useMemo(() => {
+        let totalPlaytime = 0;
 
-    streakPlaytimes.forEach((playtime) => {
-        totalPlaytime += playtime.total;
-    });
+        streakPlaytimes.forEach((playtime) => {
+            totalPlaytime += playtime.total;
+        });
+
+        return totalPlaytime;
+    }, [streakPlaytimes]);
 
     return (
         <SectionWrapper>

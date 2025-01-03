@@ -1,4 +1,4 @@
-import React, { memo, useRef } from "react";
+import React, { memo, useMemo, useRef } from "react";
 import { WrappedWithData } from "~app/[username]/wrapped/wrapped-types";
 import { useResizeObserver } from "usehooks-ts";
 import CalendarHeatmap from "../../../../public/js/calendar-heatmap.component";
@@ -21,22 +21,26 @@ export const WrappedActivityGraphs = memo<WrappedActivityGraphsProps>(
         const { width = 0 } = useResizeObserver({
             ref: activityGraphRef,
         });
-        const data = Object.entries(wrapped.playtimeData.playtimePerDayMap).map(
-            ([date, stat]) => {
-                return {
-                    date,
-                    total: stat.total / 1000,
-                    details: Object.entries(stat.perGame).map(
-                        ([game, gameStat]) => {
-                            return {
-                                name: game,
-                                date,
-                                value: gameStat.total / 1000,
-                            };
-                        },
-                    ),
-                };
-            },
+        const data = useMemo(
+            () =>
+                Object.entries(wrapped.playtimeData.playtimePerDayMap).map(
+                    ([date, stat]) => {
+                        return {
+                            date,
+                            total: stat.total / 1000,
+                            details: Object.entries(stat.perGame).map(
+                                ([game, gameStat]) => {
+                                    return {
+                                        name: game,
+                                        date,
+                                        value: gameStat.total / 1000,
+                                    };
+                                },
+                            ),
+                        };
+                    },
+                ),
+            [wrapped.playtimeData.playtimePerDayMap],
         );
 
         return (
