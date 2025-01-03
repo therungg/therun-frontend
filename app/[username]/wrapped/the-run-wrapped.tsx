@@ -15,6 +15,8 @@ import { Button } from "react-bootstrap";
 import { ArrowDownCircleFill, ArrowUpCircleFill } from "react-bootstrap-icons";
 import { WrappedRaceStats } from "./sections/wrapped-race-stats";
 import { WrappedRunsAndPbs } from "~app/[username]/wrapped/sections/wrapped-runs-and-pbs";
+import { SectionWrapper } from "./sections/section-wrapper";
+import { SectionBody } from "./sections/section-body";
 
 gsap.registerPlugin(useGSAP);
 gsap.registerPlugin(ScrollTrigger);
@@ -164,14 +166,18 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
             ) : null,
 
             <WrappedSection key="wrapped-outro" id="wrapped-outro">
-                <p className="text-center flex-center align-items-center display-2 mb-4">
-                    That's a wrap on 2024!
-                </p>
-                <p className="text-center display-6 mb-5">
-                    Thanks for spending it with The Run. We can't wait to see
-                    what you do in 2025!
-                </p>
-                <WrappedSocialImages wrapped={wrapped} />
+                <SectionWrapper>
+                    <SectionBody>
+                        <p className="text-center flex-center align-items-center display-2 mb-4">
+                            That's a wrap on 2024!
+                        </p>
+                        <p className="text-center display-6 mb-5">
+                            Thanks for spending it with The Run. We can't wait
+                            to see what you do in 2025!
+                        </p>
+                        <WrappedSocialImages wrapped={wrapped} />
+                    </SectionBody>
+                </SectionWrapper>
             </WrappedSection>,
         ].filter(Boolean);
     }, [wrapped]);
