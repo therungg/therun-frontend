@@ -15,6 +15,25 @@ interface DurationToFormattedProps {
     human?: boolean;
 }
 
+const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+];
+
+export const getDateAsMonthDay = (date: Date) => {
+    return monthNames[date.getMonth()] + " " + date.getDate();
+};
+
 export const getFullDate = (iso: string | Date) => {
     return moment(iso).format("YYYY-MM-DD hh:mm:ss");
 };

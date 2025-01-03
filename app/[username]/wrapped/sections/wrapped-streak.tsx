@@ -1,9 +1,17 @@
-import { useMemo, useRef } from "react";
+import { ReactNode, useMemo, useRef } from "react";
 import { WrappedWithData } from "../wrapped-types";
 import { GameImage } from "~src/components/image/gameimage";
 import { TotalStat } from "~src/components/user/stats";
 import { useSparksAnimation } from "../use-sparks-animation.hook";
 import { WrappedCounter } from "../wrapped-counter";
+import { SectionTitle } from "~app/[username]/wrapped/sections/section-title";
+import { SectionWrapper } from "~app/[username]/wrapped/sections/section-wrapper";
+import { SectionBody } from "~app/[username]/wrapped/sections/section-body";
+import {
+    DurationToFormatted,
+    getDateAsMonthDay,
+} from "~src/components/util/datetime";
+import { Col, Row } from "react-bootstrap";
 
 export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
     const streakInDays = wrapped.streak.length;
@@ -102,18 +110,68 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
         shouldShowSparks: Boolean(mostPlayedGame),
     });
 
+    let totalPlaytime = 0;
+
+    streakPlaytimes.forEach((playtime) => {
+        totalPlaytime += playtime.total;
+    });
+
     return (
-        <>
-            <h2 className="mb-4">
-                Your longest daily streak for runs was{" "}
-                <WrappedCounter id="streak-in-days" end={streakInDays} /> days!
-            </h2>
-            <div className="flex-center align-items-center min-vh-100 overflow-x-hidden">
-                <div className="d-flex align-items-center display-4">
+        <SectionWrapper>
+            <SectionTitle
+                title={
                     <>
-                        <p className="flex-center display-6 mb-5">
-                            {getStreakMessage(streakInDays)}
-                        </p>
+                        Your longest daily streak for runs was{" "}
+                        <WrappedCounter
+                            id="streak-in-days"
+                            end={streakInDays}
+                        />{" "}
+                        days
+                    </>
+                }
+                subtitle={getStreakMessage(streakInDays)}
+            />
+            <SectionBody>
+                <StreakStatItem
+                    stat={<DurationToFormatted duration={totalPlaytime} />}
+                    explanation={
+                        <>
+                            You played for a total of{" "}
+                            <DurationToFormatted duration={totalPlaytime} />{" "}
+                            during this streak.
+                        </>
+                    }
+                />
+                <StreakStatItem
+                    stat={
+                        <DurationToFormatted
+                            duration={totalPlaytime / wrapped.streak.length}
+                        />
+                    }
+                    explanation={
+                        <>
+                            That means you ran{" "}
+                            <DurationToFormatted
+                                duration={totalPlaytime / wrapped.streak.length}
+                            />{" "}
+                            on average per day.
+                        </>
+                    }
+                />
+                <StreakStatItem
+                    stat={getDateAsMonthDay(new Date(wrapped.streak.start))}
+                    explanation="Was when you started your epic streak."
+                />
+                <StreakStatItem
+                    stat={getDateAsMonthDay(new Date(wrapped.streak.end))}
+                    explanation="Was when your streak unfortunately came to an end."
+                />
+                <StreakStatItem
+                    stat={mostPlayedGame}
+                    explanation="Was your favorite game while you were grinding."
+                />
+                <div className="flex-center align-items-center">
+                    <div className="d-flex align-items-center display-4">
                         <div className="row justify-content-center">
                             <div className="col-auto position-relative">
                                 <div
@@ -134,7 +192,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                                 <GameImage
                                                     alt={gameData.display}
                                                     src={gameData.image}
-                                                    quality="hd"
+                                                    quality="sd"
                                                     height={132 * 4.5}
                                                     width={99 * 4.5}
                                                 />
@@ -142,18 +200,32 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="col-auto">
-                                <p className="display-6">{mostPlayedGame}</p>
-                                <p className="lead">
-                                    was your favourite game during this streak
-                                    period.
-                                </p>
-                                <p className="fs-small">cringe</p>
-                            </div>
                         </div>
-                    </>
+                    </div>
                 </div>
-            </div>
-        </>
+            </SectionBody>
+        </SectionWrapper>
+    );
+};
+
+const StreakStatItem = ({
+    stat,
+    explanation,
+}: {
+    stat: ReactNode;
+    explanation: ReactNode;
+}) => {
+    return (
+        <Row className="mb-3">
+            <Col className="h3" style={{ textAlign: "end" }}>
+                <b>{stat}</b>
+            </Col>
+            <Col
+                className="h5"
+                style={{ textAlign: "start", marginTop: "1rem" }}
+            >
+                {explanation}
+            </Col>
+        </Row>
     );
 };

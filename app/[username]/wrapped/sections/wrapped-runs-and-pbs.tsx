@@ -3,7 +3,11 @@ import React from "react";
 import { SectionWrapper } from "~app/[username]/wrapped/sections/section-wrapper";
 import { SectionTitle } from "~app/[username]/wrapped/sections/section-title";
 import { SectionBody } from "~app/[username]/wrapped/sections/section-body";
-import { Difference, DurationToFormatted } from "~src/components/util/datetime";
+import {
+    Difference,
+    DurationToFormatted,
+    getDateAsMonthDay,
+} from "~src/components/util/datetime";
 import { Col, Row } from "react-bootstrap";
 
 export const WrappedRunsAndPbs = ({
@@ -51,21 +55,6 @@ export const WrappedRunsAndPbs = ({
 
         return a.pb.startedAt - b.pb.startedAt;
     });
-
-    const monthNames = [
-        "January",
-        "February",
-        "March",
-        "April",
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-    ];
 
     return (
         <SectionWrapper>
@@ -138,8 +127,7 @@ export const WrappedRunsAndPbs = ({
                                                 whiteSpace: "nowrap",
                                             }}
                                         >
-                                            {monthNames[endedAt.getMonth()]}{" "}
-                                            {endedAt.getDate()}
+                                            {getDateAsMonthDay(endedAt)}
                                         </i>
                                     </Col>
                                     <Col

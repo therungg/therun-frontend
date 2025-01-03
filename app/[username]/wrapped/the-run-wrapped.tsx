@@ -121,12 +121,6 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
     const sections = useMemo(() => {
         return [
             <section
-                key="wrapped-pbs-and-golds"
-                className="animated-section text-center flex-center align-items-center min-vh-100"
-            >
-                <WrappedRunsAndPbs wrapped={wrapped} />
-            </section>,
-            <section
                 key="wrapped-total-stats-compliment"
                 className="animated-section text-center flex-center align-items-center min-vh-100"
             >
@@ -142,7 +136,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
 
             <section
                 key="wrapped-streak"
-                className="animated-section flex-center flex-column align-items-center min-vh-100"
+                className="animated-section text-center flex-center align-items-center min-vh-100"
             >
                 <WrappedStreak wrapped={wrapped} />
             </section>,
@@ -152,6 +146,13 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                 className="animated-section flex-center flex-column align-items-center min-vh-100"
             >
                 <WrappedTopGames wrapped={wrapped} />
+            </section>,
+
+            <section
+                key="wrapped-pbs-and-golds"
+                className="animated-section text-center flex-center align-items-center min-vh-100"
+            >
+                <WrappedRunsAndPbs wrapped={wrapped} />
             </section>,
 
             hasRaceData(wrapped) ? (
