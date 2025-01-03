@@ -17,6 +17,7 @@ import { WrappedRaceStats } from "./sections/wrapped-race-stats";
 import { WrappedRunsAndPbs } from "~app/[username]/wrapped/sections/wrapped-runs-and-pbs";
 import { SectionWrapper } from "./sections/section-wrapper";
 import { SectionBody } from "./sections/section-body";
+import { isDefined } from "~src/utils/isDefined";
 
 gsap.registerPlugin(useGSAP);
 gsap.registerPlugin(ScrollTrigger);
@@ -53,89 +54,6 @@ const WrappedSection: React.FC<PropsWithChildren<WrappedSectionProps>> = ({
 export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
     const [sectionIndex, setSectionIndex] = useState(-1);
     const containerRef = useRef(null);
-    const nextRef = useRef<HTMLButtonElement>(null);
-    const previousRef = useRef<HTMLButtonElement>(null);
-
-    // https://gsap.com/resources/React/
-    useGSAP(
-        (_, contextSafe) => {
-            if (!wrapped.hasEnoughRuns) return;
-
-            const sections: gsap.DOMTarget[] =
-                gsap.utils.toArray(".animated-section");
-
-            ScrollTrigger.defaults({
-                pin: true,
-                scrub: 0.5,
-            });
-
-            sections.forEach((section, index) => {
-                ScrollTrigger.create({
-                    trigger: section,
-                    onEnter: () => setSectionIndex(index),
-                    onLeaveBack: () => setSectionIndex(index - 1),
-                });
-            });
-            if (!nextRef.current || !previousRef.current || !contextSafe)
-                return;
-            const getVisibleScrollTriggerIndex = () => {
-                return sections.findIndex((section) =>
-                    ScrollTrigger.isInViewport(section as Element, 0.5),
-                );
-            };
-            const onClickNext = contextSafe(() => {
-                const nextIndex = getVisibleScrollTriggerIndex() + 1;
-                const nextSection = sections[nextIndex] as Element;
-
-                // sort of jank occasionally fucks up
-                gsap.to(window, {
-                    duration: 1,
-                    ease: "power2.inOut",
-                    scrollTo: nextSection ?? "#wrapped-outro",
-                    onComplete: () => {
-                        console.log("DONE???");
-                        // ScrollTrigger.getAll().forEach((st) => st.enable());
-                        setSectionIndex((index) =>
-                            index === sections.length - 1 ? index : nextIndex,
-                        );
-                    },
-                });
-            });
-            const onClickPrevious = contextSafe(() => {
-                const prevIndex = getVisibleScrollTriggerIndex() - 1;
-                const prevSection = sections[prevIndex] as Element;
-                // sort of jank occasionally fucks up
-                gsap.to(window, {
-                    duration: 1,
-                    ease: "power2.inOut",
-                    scrollTo: prevSection ?? "#wrapped-intro",
-                    onComplete: () => {
-                        setSectionIndex((index) =>
-                            index === -1 ? index : prevIndex,
-                        );
-                    },
-                });
-            });
-            nextRef.current.addEventListener("click", onClickNext);
-            previousRef.current.addEventListener("click", onClickPrevious);
-            return () => {
-                if (nextRef.current) {
-                    nextRef.current.removeEventListener("click", onClickNext);
-                }
-                if (previousRef.current) {
-                    previousRef.current.removeEventListener(
-                        "click",
-                        onClickPrevious,
-                    );
-                }
-            };
-        },
-        {
-            dependencies: [wrapped.hasEnoughRuns, sectionIndex],
-            scope: containerRef,
-            revertOnUpdate: true,
-        },
-    );
 
     const sections = useMemo(() => {
         return [
@@ -179,9 +97,65 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                     </SectionBody>
                 </SectionWrapper>
             </WrappedSection>,
-        ].filter(Boolean);
+        ].filter(isDefined);
     }, [wrapped]);
 
+    // https://gsap.com/resources/React/
+    useGSAP(
+        () => {
+            if (!wrapped.hasEnoughRuns) return;
+
+            const sections: gsap.DOMTarget[] =
+                gsap.utils.toArray(".animated-section");
+
+            ScrollTrigger.defaults({
+                pin: true,
+                scrub: 0.5,
+            });
+
+            sections.forEach((section, index) => {
+                ScrollTrigger.create({
+                    trigger: section,
+                    onEnter: () => setSectionIndex(index),
+                    onLeaveBack: () => setSectionIndex(index - 1),
+                });
+            });
+        },
+        {
+            dependencies: [wrapped.hasEnoughRuns],
+            scope: containerRef,
+            revertOnUpdate: true,
+        },
+    );
+    const { contextSafe } = useGSAP({ scope: containerRef });
+
+    const scrollToSection = contextSafe((index: number) => {
+        const animatedSections: gsap.DOMTarget[] =
+            gsap.utils.toArray(".animated-section");
+        let targetSection = animatedSections[index];
+        // TODO: There's a bug where it won't scroll back to the intro
+        if (!targetSection && index === -1) targetSection = "#wrapped-intro";
+        // console.log({ targetSection, index });
+        gsap.to(window, {
+            scrollTo: (targetSection || animatedSections[0]) as Element,
+            onComplete: () => {
+                console.log("complete??");
+                setSectionIndex(index);
+            },
+        });
+    });
+
+    const onClickNext = contextSafe(() => {
+        const nextIndex = Math.min(sectionIndex + 1, sections.length - 1);
+        scrollToSection(nextIndex);
+        setSectionIndex(nextIndex);
+    });
+
+    const onClickPrevious = contextSafe(() => {
+        let prevIndex = sectionIndex - 1;
+        if (prevIndex < -1) prevIndex = -1;
+        scrollToSection(prevIndex);
+    });
     return (
         <div ref={containerRef}>
             <section
@@ -210,7 +184,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                     disabled={sectionIndex + 1 === 0}
                     variant="outline-secondary mx-2"
                     aria-description="previous"
-                    ref={previousRef}
+                    onClick={onClickPrevious}
                 >
                     <ArrowUpCircleFill />
                 </Button>
@@ -218,7 +192,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                     disabled={sectionIndex + 1 === sections.length}
                     variant="outline-secondary"
                     aria-description="next"
-                    ref={nextRef}
+                    onClick={onClickNext}
                 >
                     <ArrowDownCircleFill />
                 </Button>

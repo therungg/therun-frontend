@@ -38,7 +38,6 @@ class CalendarHeatmap extends React.Component {
     }
 
     UNSAFE_componentWillUpdate(nextProps) {
-        console.log(nextProps);
         if (nextProps.width !== this.props.width) {
             this.calcDimensions(nextProps.width);
         }
@@ -111,7 +110,6 @@ class CalendarHeatmap extends React.Component {
                     ? 1616
                     : this.container.offsetWidth;
         } else {
-            console.log("updating width?", updatedWidth);
             this.settings.width = updatedWidth;
         }
         this.settings.item_size =

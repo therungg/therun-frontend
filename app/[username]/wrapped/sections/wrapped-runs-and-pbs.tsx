@@ -10,43 +10,46 @@ import {
 } from "~src/components/util/datetime";
 import { Col, Row } from "react-bootstrap";
 
-export const WrappedRunsAndPbs = ({
-    wrapped,
+const getPbUniqueKey = ({
+    game,
+    category,
+    pb,
 }: {
+    category: WrappedWithData["pbsAndGolds"][number]["category"];
+    game: WrappedWithData["pbsAndGolds"][number]["game"];
+    pb: WrappedWithData["pbsAndGolds"][number]["pbs"][number];
+}) => `${game}|${category}|${pb.startedAt}|${pb.endedAt}|${pb.time}`;
+
+interface WrappedRunsAndPbsProps {
     wrapped: WrappedWithData;
+}
+export const WrappedRunsAndPbs: React.FC<WrappedRunsAndPbsProps> = ({
+    wrapped,
 }) => {
     const pbPercentage = (wrapped.totalPbs / wrapped.totalFinishedRuns) * 100;
 
-    interface PB {
-        previousPb: number | null;
-        game: string;
-        category: string;
-        pb: {
-            startedAt: number;
-            endedAt: number;
-            time: number;
-        };
-    }
-
-    const allPbs: PB[] = useMemo(() => {
-        const allPbs: PB[] = [];
-
-        wrapped.pbsAndGolds.forEach((run) => {
-            run.pbs.forEach((pb, index) => {
+    const allPbs = useMemo(() => {
+        const pbs = wrapped.pbsAndGolds.flatMap((run) => {
+            return run.pbs.map((pb, index) => {
                 const previousPb =
                     index === 0 ? run.timeBefore : run.pbs[index - 1].time;
-
-                const pbObject: PB = {
+                return {
                     previousPb,
                     game: run.game,
                     category: run.category,
                     pb,
                 };
-                allPbs.push(pbObject);
             });
         });
 
-        allPbs.sort((a, b) => {
+        const uniquePbs = pbs
+            .reduce<Map<string, (typeof pbs)[number]>>((result, entry) => {
+                const key = getPbUniqueKey(entry);
+                result.set(key, entry);
+                return result;
+            }, new Map())
+            .values();
+        return [...uniquePbs].sort((a, b) => {
             if (a.game !== b.game) {
                 return a.game.localeCompare(b.game);
             }
@@ -56,10 +59,9 @@ export const WrappedRunsAndPbs = ({
 
             return a.pb.startedAt - b.pb.startedAt;
         });
-
-        return allPbs;
     }, [wrapped.pbsAndGolds]);
 
+    console.log({ allPbs });
     return (
         <SectionWrapper>
             <SectionTitle
@@ -99,7 +101,7 @@ export const WrappedRunsAndPbs = ({
 
                         return (
                             <div
-                                key={pb.pb.startedAt}
+                                key={`${pb.game}-${pb.category}-${pb.pb.endedAt}-${pb.pb.startedAt}`}
                                 style={{
                                     marginBottom:
                                         nextRun && nextRun.game !== pb.game
