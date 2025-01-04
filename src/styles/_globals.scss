@@ -264,6 +264,11 @@ body {
   }
 }
 
+// Heights
+.min-vh-100-no-header {
+  min-height: calc(100vh - 70px) !important;
+}
+
 // Filters
 div.game-filter {
 

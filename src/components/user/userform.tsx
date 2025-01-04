@@ -1,3 +1,5 @@
+"use client";
+
 import { Title } from "../title";
 import React, { useState } from "react";
 import { Button, Form } from "react-bootstrap";
@@ -15,8 +17,8 @@ import { Can, subject } from "~src/rbac/Can.component";
 import { BlueskyIcon } from "~src/icons/bluesky-icon";
 
 //TODO:: Would be better to use some form lib, not sure why i built it this way
-export const Userform = ({ username, session, userData }) => {
-    const [editingInfo, setEditingInfo] = useState(false);
+export const Userform = ({ username, session, userData, editInfo = false }) => {
+    const [editingInfo, setEditingInfo] = useState(editInfo);
 
     if (userData.socials) {
         if (userData.socials.twitter) {
@@ -167,7 +169,9 @@ const Display = ({ username, form, showTimezone = false }) => {
 const Edit = ({ username, form, setForm }) => {
     return (
         <>
-            <Title>{username}</Title>
+            <Title>
+                <NameAsPatreon name={username} />
+            </Title>
             <Form className="row g-3">
                 <div className="col col-12 col-lg-6">
                     <fieldset className="border py-3 px-4">

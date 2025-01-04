@@ -5,7 +5,7 @@ import {
     PaginationHook,
 } from "~src/components/pagination/pagination.types";
 import { PaginationContext } from "~src/components/pagination/pagination.context";
-import { useDebounce } from "usehooks-ts";
+import { useDebounceValue } from "usehooks-ts";
 import { paginateArray } from "~src/components/pagination/paginate-array";
 import { genericFetcher } from "~src/components/pagination/fetchers/generic-fetcher";
 
@@ -39,7 +39,7 @@ function usePagination<T>(
     const [isLoading, setIsLoading] = useState(false);
 
     const { search, currentPage } = useContext(PaginationContext);
-    const debouncedSearch = useDebounce(search, debounce);
+    const [debouncedSearch] = useDebounceValue(search, debounce);
 
     const fetchData = useCallback(
         async (page: number, query: string) => {
