@@ -1,4 +1,4 @@
-import { PropsWithChildren, useMemo, useRef, useState } from "react";
+import { PropsWithChildren, useEffect, useMemo, useRef, useState } from "react";
 import { WrappedWithData } from "~app/[username]/wrapped/wrapped-types";
 import { WrappedTitle } from "~app/[username]/wrapped/wrapped-title";
 import { ScrollDown } from "~src/components/scroll-down";
@@ -18,6 +18,7 @@ import { WrappedRunsAndPbs } from "~app/[username]/wrapped/sections/wrapped-runs
 import { SectionWrapper } from "./sections/section-wrapper";
 import { SectionBody } from "./sections/section-body";
 import { isDefined } from "~src/utils/isDefined";
+import styles from "./mesh-background.module.scss";
 
 gsap.registerPlugin(useGSAP);
 gsap.registerPlugin(ScrollTrigger);
@@ -53,7 +54,26 @@ const WrappedSection: React.FC<PropsWithChildren<WrappedSectionProps>> = ({
 
 export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
     const [sectionIndex, setSectionIndex] = useState(-1);
-    const containerRef = useRef(null);
+    const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!containerRef.current) return;
+        const observer = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                setContainerSize({
+                    width: entry.contentRect.width,
+                    height: entry.contentRect.height,
+                });
+            }
+        });
+
+        observer.observe(containerRef.current);
+
+        return () => {
+            observer.disconnect();
+        };
+    }, []);
 
     const sections = useMemo(() => {
         return [
@@ -158,9 +178,13 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
     });
     return (
         <div ref={containerRef}>
+            <div
+                className={styles.meshBg}
+                style={{ height: containerSize.height }}
+            ></div>
             <section
                 id="wrapped-intro"
-                className="flex-center flex-column min-vh-100-no-header mesh-bg text-center"
+                className="flex-center flex-column min-vh-100-no-header text-center"
             >
                 <p className="display-2 mb-0">You had a great 2024!</p>
                 <WrappedTitle user={user} />
