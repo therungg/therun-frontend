@@ -71,7 +71,7 @@ export const WrappedActivityGraphs = memo<WrappedActivityGraphsProps>(
                         </div>
                         <div className="d-flex align-items-center display-4 mt-5">
                             <Row className="w-100">
-                                <Col>
+                                <Col xl={4} lg={12}>
                                     <PlaytimePerMonthGraph
                                         year={wrapped.year}
                                         playtimePerMonthMap={
@@ -80,7 +80,7 @@ export const WrappedActivityGraphs = memo<WrappedActivityGraphsProps>(
                                         }
                                     />
                                 </Col>
-                                <Col>
+                                <Col xl={4} lg={12}>
                                     <PlayTimePerDayOfWeekGraph
                                         playtimePerDayOfWeekMap={
                                             wrapped.playtimeData
@@ -88,7 +88,7 @@ export const WrappedActivityGraphs = memo<WrappedActivityGraphsProps>(
                                         }
                                     />
                                 </Col>
-                                <Col>
+                                <Col xl={4} lg={12}>
                                     <PlaytimePerHourGraph
                                         playtimePerHourMap={
                                             wrapped.playtimeData

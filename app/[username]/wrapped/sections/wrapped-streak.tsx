@@ -120,6 +120,68 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
         return totalPlaytime;
     }, [streakPlaytimes]);
 
+    const finishedRunsDuringStreak = useMemo(() => {
+        const runs: {
+            game: string;
+            category: string;
+            endedAt: string;
+            time: number;
+        }[] = [];
+
+        wrapped.runData.forEach((run) => {
+            run.runs.forEach((finishedRun) => {
+                const endedAt = finishedRun.endedAt.split("T")[0];
+
+                if (
+                    endedAt >= wrapped.streak.start &&
+                    endedAt <= wrapped.streak.end
+                ) {
+                    runs.push({
+                        endedAt,
+                        time: parseInt(finishedRun.time),
+                        game: run.game,
+                        category: run.category,
+                    });
+                }
+            });
+        });
+
+        return runs;
+    }, [wrapped.runData, wrapped.streak]);
+
+    const pbsDuringStreak = useMemo(() => {
+        const runs: {
+            game: string;
+            category: string;
+            endedAt: string;
+            time: number;
+        }[] = [];
+
+        wrapped.pbsAndGolds.forEach((run) => {
+            run.pbs.forEach((finishedRun) => {
+                const endedAt = new Date(finishedRun.endedAt)
+                    .toISOString()
+                    .split("T")[0];
+
+                if (
+                    endedAt >= wrapped.streak.start &&
+                    endedAt <= wrapped.streak.end
+                ) {
+                    runs.push({
+                        endedAt,
+                        time: finishedRun.time,
+                        game: run.game,
+                        category: run.category,
+                    });
+                }
+            });
+        });
+
+        return runs;
+    }, [wrapped.pbsAndGolds, wrapped.streak.end, wrapped.streak.start]);
+
+    console.log(pbsDuringStreak, finishedRunsDuringStreak);
+
     return (
         <SectionWrapper>
             <SectionTitle
@@ -137,7 +199,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
             />
             <SectionBody>
                 <Row>
-                    <Col>
+                    <Col xl={4}>
                         <div className="flex-center align-items-center">
                             <div className="row justify-content-center">
                                 <div className="col-auto position-relative">
@@ -174,10 +236,21 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                             </div>
                         </div>
                     </Col>
-                    <Col>
+                    <Col xl={8}>
                         <div className="table-responsive mt-4">
                             <table className="table">
                                 <tbody>
+                                    <StreakStatItem
+                                        stat={
+                                            finishedRunsDuringStreak.length +
+                                            " Finished Runs"
+                                        }
+                                        explanation={`You finished ${finishedRunsDuringStreak.length} runs during your streak.`}
+                                    />
+                                    <StreakStatItem
+                                        stat={pbsDuringStreak.length + " PB's"}
+                                        explanation={`You got ${pbsDuringStreak.length} PB's during your streak.`}
+                                    />
                                     <StreakStatItem
                                         stat={mostPlayedGame}
                                         explanation="Was your favorite game while you were grinding."
@@ -252,8 +325,10 @@ const StreakStatItem = ({
 }) => {
     return (
         <tr>
-            <td className="display-6">{stat}</td>
-            <td className="align-bottom">{explanation}</td>
+            <td className="display-6">
+                <b>{stat}</b>
+            </td>
+            <td className="align-bottom h5">{explanation}</td>
         </tr>
     );
 };
