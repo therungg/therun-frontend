@@ -122,8 +122,6 @@ export const WrappedRunsAndPbs: React.FC<WrappedRunsAndPbsProps> = ({
         return gameCategoryMap;
     }, [wrapped.runData, wrapped.pbsAndGolds]);
 
-    console.log(groupedData);
-
     return (
         <SectionWrapper>
             <SectionTitle

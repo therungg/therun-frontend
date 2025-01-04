@@ -5,6 +5,7 @@ import { Col, Row } from "react-bootstrap";
 import { SectionWrapper } from "./section-wrapper";
 import { SectionBody } from "./section-body";
 import { GameImage } from "~src/components/image/gameimage";
+import { SectionTitle } from "./section-title";
 
 interface WrappedRaceStatsProps {
     wrapped: WrappedWithData;
@@ -37,47 +38,72 @@ export const WrappedRaceStats = memo<WrappedRaceStatsProps>(({ wrapped }) => {
             .map(([key]) => racesByGameAndCategory[key])
             .slice(0, 3);
     }, [raceData, racesByGameAndCategory]);
+    const { title, subtitle, extraRemark } = useMemo(() => {
+        if (raceData.globalStats.totalRaces === 1) {
+            return {
+                title: "This year you only participated in 1 race!",
+                subtitle: "Maybe we'll do more next year!",
+                extraRemark: "Let's dive a bit deeper into it.",
+            };
+        }
+
+        return {
+            title: (
+                <>
+                    This year you participated in{" "}
+                    <WrappedCounter
+                        id="total-races-count"
+                        end={raceData.globalStats.totalRaces}
+                    />{" "}
+                    races!
+                </>
+            ),
+            subtitle: "TODO? joey write something here",
+            extraRemark: "other todo? please add something here joey i beg you",
+        };
+    }, [raceData.globalStats.totalRaces]);
     return (
         <SectionWrapper>
+            <SectionTitle
+                title={title}
+                subtitle={subtitle}
+                extraRemark={extraRemark}
+            />
             <SectionBody>
+                Your top{" "}
+                {top3MostRacedGames.length === 1
+                    ? "most raced game and category"
+                    : `${top3MostRacedGames.length} most raced games and categories`}{" "}
+                were
                 <Row>
-                    {raceData.globalStats.totalRaces === 1 ? (
-                        <>
-                            <p>
-                                This year you only participated in 1 race! Maybe
-                                we'll do more next year!
-                            </p>
-                            <p>Let's dive a bit deeper into it.</p>
-                        </>
-                    ) : (
-                        <p className="flex-center display-4">
-                            <span>
-                                This year you participated in{" "}
-                                <WrappedCounter
-                                    id="total-races-count"
-                                    end={raceData.globalStats.totalRaces}
-                                />{" "}
-                                races!
-                            </span>
-                        </p>
-                    )}
-                </Row>
-                <Row>
-                    Your top 3 most raced games and categories were
-                    {top3MostRacedGames.map((race) => {
+                    {top3MostRacedGames.map((race, index) => {
+                        const [game, category] = race.displayValue.split("#");
                         return (
-                            <Col key={race.displayValue} className="game-image">
-                                {race &&
-                                    race.image &&
-                                    race.image !== "noimage" && (
-                                        <GameImage
-                                            alt={race.displayValue}
-                                            src={race.image}
-                                            quality="hd"
-                                            height={132 * 5}
-                                            width={99 * 5}
-                                        />
-                                    )}
+                            <Col key={race.displayValue}>
+                                <div className="card">
+                                    <div className="card-header d-flex align-items-center justify-content-between">
+                                        <span className="h4 mb-0">
+                                            #{index + 1}
+                                        </span>
+                                        <span>
+                                            {race.totalRaces === 1
+                                                ? "1 race"
+                                                : `${race.totalRaces} races`}
+                                        </span>
+                                    </div>
+                                    <GameImage
+                                        alt={race.displayValue}
+                                        src={race.image}
+                                        quality="hd"
+                                        className="card-img-top"
+                                        autosize
+                                    />
+                                    <div className="card-body">
+                                        <h5 className="card-title">
+                                            {game} - {category}
+                                        </h5>
+                                    </div>
+                                </div>
                             </Col>
                         );
                     })}

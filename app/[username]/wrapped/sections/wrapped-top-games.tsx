@@ -56,6 +56,7 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
         };
     }, [gameEntries]);
 
+    console.log({ wrapped: wrapped.gamesData });
     return (
         <SectionWrapper>
             <SectionTitle
@@ -71,38 +72,23 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
                         );
 
                         return (
-                            <Col key={i}>
-                                <div className="d-flex flex-column bg-body-secondary bg-opacity-50 h-100 gap-3 justify-content-between rounded-3 overflow-hidden">
-                                    <div className="game-image flex-fill bg-body-secondary">
-                                        {gameData &&
-                                            gameData.image &&
-                                            gameData.image !== "noimage" && (
-                                                <GameImage
-                                                    alt={gameData.display}
-                                                    src={gameData.image}
-                                                    quality="hd"
-                                                    height={132 * 5}
-                                                    width={99 * 5}
-                                                />
-                                            )}
-                                    </div>
-                                    <div className="h4 text-center m-0 px-2 pt-1 pb-4">
-                                        <div className="mb-3 fs-xx-large">
+                            <Col key={`${gameData?.display}-${i}`}>
+                                <div className="card">
+                                    <div className="card-header d-flex align-items-center justify-content-between">
+                                        <span className="h4 mb-0">
                                             #{i + 1}
-                                        </div>
-                                        <div className="mb-2">{game}</div>
-                                        <div
-                                            className={
-                                                `fs-smaller ` +
-                                                (i === 0
-                                                    ? `text-secondary`
-                                                    : `text-primary`)
-                                            }
-                                        >
-                                            <DurationToFormatted
-                                                duration={total}
-                                            />
-                                        </div>
+                                        </span>
+                                        <DurationToFormatted duration={total} />
+                                    </div>
+                                    <GameImage
+                                        alt={gameData?.display}
+                                        src={gameData?.image || ""}
+                                        quality="hd"
+                                        className="card-img-top"
+                                        autosize
+                                    />
+                                    <div className="card-body">
+                                        <div className="card-title">{game}</div>
                                     </div>
                                 </div>
                             </Col>
