@@ -97,7 +97,7 @@ interface WrappedDataPoints {
         }[];
     }[];
 
-    // We can use this to show the PB's and Golds the user got. They're all grouped by game-category.
+    // We can use this to show the PBs and Golds the user got. They're all grouped by game-category.
     pbsAndGolds: {
         game: string;
         category: string;

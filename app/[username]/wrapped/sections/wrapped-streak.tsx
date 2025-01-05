@@ -248,8 +248,8 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                         explanation={`You finished ${finishedRunsDuringStreak.length} runs during your streak.`}
                                     />
                                     <StreakStatItem
-                                        stat={pbsDuringStreak.length + " PB's"}
-                                        explanation={`You got ${pbsDuringStreak.length} PB's during your streak.`}
+                                        stat={pbsDuringStreak.length + " PBs"}
+                                        explanation={`You got ${pbsDuringStreak.length} PBs during your streak.`}
                                     />
                                     <StreakStatItem
                                         stat={mostPlayedGame}

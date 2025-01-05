@@ -218,9 +218,7 @@ const GameOverview: React.FC<
                                             </div>
                                             <div className="d-flex justify-content-between me-3">
                                                 <div>
-                                                    <i>
-                                                        Attempts/Finished/PB's
-                                                    </i>
+                                                    <i>Attempts/Finished/PBs</i>
                                                 </div>
                                                 <div>
                                                     <b>
@@ -356,7 +354,7 @@ const ShowGame: React.FC<
                                 </tr>
                                 <tr>
                                     <td>
-                                        <b>You got {gameData.pbCount} PB's</b>
+                                        <b>You got {gameData.pbCount} PBs</b>
                                     </td>
                                 </tr>
                                 <tr>
@@ -413,7 +411,7 @@ const ShowGame: React.FC<
                                     </div>
                                     <div className="d-flex justify-content-between px-3">
                                         <div>
-                                            <i>Attempts/Finished/PB's</i>
+                                            <i>Attempts/Finished/PBs</i>
                                         </div>
                                         <div>
                                             <b>
@@ -636,7 +634,7 @@ const ShowCategory: FC<
                                             >
                                                 {categoryData.pbCount}
                                             </span>{" "}
-                                            PB's
+                                            PBs
                                         </b>
                                     </td>
                                 </tr>
