@@ -16,8 +16,9 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
     const topGames = useMemo(() => {
         return wrapped.playtimeData.playtimePerYearMap[wrapped.year].perGame;
     }, [wrapped.playtimeData.playtimePerYearMap, wrapped.year]);
-
-    console.log(topGames);
+    const gameMap = useMemo(() => {
+        return new Map(wrapped.gamesData.map((game) => [game.display, game]));
+    }, [wrapped.gamesData]);
 
     const gameEntries = useMemo(() => {
         return Object.entries(topGames)
@@ -27,7 +28,14 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
             .sort((a, b) => b.total - a.total);
     }, [topGames]);
 
-    const top3Games = gameEntries.slice(0, 3);
+    const top3Games = useMemo(
+        () =>
+            gameEntries.slice(0, 3).map((entry) => ({
+                ...gameMap.get(entry.game),
+                total: entry.total,
+            })),
+        [gameEntries, gameMap],
+    );
     const { title, subtitle, extraRemark } = useMemo(() => {
         if (gameEntries.length > 1) {
             return {
@@ -56,7 +64,6 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
         };
     }, [gameEntries]);
 
-    console.log({ wrapped: wrapped.gamesData });
     return (
         <SectionWrapper>
             <SectionTitle
@@ -66,13 +73,9 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
             />
             <SectionBody>
                 <Row className="row-cols-1 row-cols-md-2 row-cols-xl-3 mx-auto pt-5 gx-3 gy-5 g-md-5">
-                    {top3Games.map(({ game, total }, i) => {
-                        const gameData = wrapped.gamesData.find(
-                            (gameData) => gameData.display === game,
-                        );
-
+                    {top3Games.map(({ display, total = 0, image }, i) => {
                         return (
-                            <Col key={`${gameData?.display}-${i}`}>
+                            <Col key={`${display}-${i}`}>
                                 <div className="card h-100">
                                     <div className="card-header d-flex align-items-center justify-content-between">
                                         <span className="h4 mb-0">
@@ -81,14 +84,14 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
                                         <DurationToFormatted duration={total} />
                                     </div>
                                     <GameImage
-                                        alt={gameData?.display}
-                                        src={gameData?.image || ""}
+                                        alt={display}
+                                        src={image || ""}
                                         quality="hd"
                                         className="card-img-top h-100"
                                         autosize
                                     />
                                     <div className="card-footer fw-bold">
-                                        {game}
+                                        {display}
                                     </div>
                                 </div>
                             </Col>
