@@ -77,7 +77,7 @@ export const GameImage = (props: GameImageProps) => {
                 loading="lazy"
                 className={className}
                 src="/logo_dark_theme_no_text_transparent.png"
-                alt={alt}
+                alt="The Run logo. Game image missing placeholder."
                 {...autosizeProps}
             ></Image>
         );

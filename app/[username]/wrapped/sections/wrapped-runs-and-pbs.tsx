@@ -172,7 +172,7 @@ const GameOverview: React.FC<
             <div className="mb-2">
                 Click on a game to view detailed data about that game!
             </div>
-            <Row>
+            <Row lg={3} md={2} sm={1}>
                 {Array.from(groupedData)
                     .sort(
                         ([, aValue], [, bValue]) =>
@@ -183,16 +183,19 @@ const GameOverview: React.FC<
                             (gameData) => gameData.display === key,
                         );
                         return (
-                            <Col key={key} xl={3} lg={4} md={6}>
+                            <Col key={key}>
                                 <div
                                     className={`mb-3 bg-body-secondary game-border border-secondary py-2 rounded-3 ${styles.liveRunContainer}`}
                                     onClick={() => {
                                         setSelectedGame(key);
                                     }}
                                 >
-                                    <Row className="m0">
-                                        <Col xs={3} className="gap-0">
-                                            <div className="game-image flex-fill bg-body-secondary rounded-3">
+                                    <Row className="d-flex flex-row flex-wrap">
+                                        <Col
+                                            xs={3}
+                                            className="px-0 align-self-center"
+                                        >
+                                            <div className="">
                                                 {gameData && (
                                                     <GameImage
                                                         className="rounded-3"
@@ -206,7 +209,7 @@ const GameOverview: React.FC<
                                             </div>
                                         </Col>
                                         <Col xs={9}>
-                                            <div className="h5 fw-bold text-truncate">
+                                            <div className="text-start h5 fw-bold text-truncate pe-3">
                                                 {key}
                                             </div>
                                             <div className="d-flex justify-content-between me-3">
@@ -280,7 +283,7 @@ const ShowGame: React.FC<
     }
 
     return (
-        <div className="mb-5">
+        <div className="h-100 mb-5">
             <div className="mb-4">
                 <h2>{selectedGame}</h2>
                 <span
@@ -365,9 +368,9 @@ const ShowGame: React.FC<
                     </div>
                 </Col>
                 <Col
-                    className="overflow-y-auto"
+                    className="overflow-y-scroll"
                     style={{
-                        maxHeight: "60vh",
+                        maxHeight: "50vh",
                     }}
                 >
                     {Array.from(gameData.categories).map(
@@ -380,7 +383,7 @@ const ShowGame: React.FC<
                                         setSelectedCategory(category);
                                     }}
                                 >
-                                    <div className="h5 fw-bold text-truncate">
+                                    <div className="text-start px-3 h5 fw-bold text-truncate">
                                         {category} -{" "}
                                         <DurationToFormatted
                                             duration={categoryData.pb}
@@ -400,7 +403,7 @@ const ShowGame: React.FC<
                                                 </span>
                                             )}
                                     </div>
-                                    <div className="d-flex justify-content-between mx-5">
+                                    <div className="d-flex justify-content-between px-3">
                                         <div>
                                             <i>Attempts/Finished/PB's</i>
                                         </div>
@@ -414,7 +417,7 @@ const ShowGame: React.FC<
                                             </b>
                                         </div>
                                     </div>
-                                    <div className="d-flex justify-content-between mx-5">
+                                    <div className="d-flex justify-content-between px-3">
                                         <div>
                                             <i>Total playtime</i>
                                         </div>
@@ -450,7 +453,7 @@ const ShowCategory: FC<
         (gameData) => gameData.display === game,
     )?.image as string;
     return (
-        <div className="mb-5">
+        <div className="h-100 mb-5">
             <div className="mb-4">
                 <h2>
                     {game} - {category}
@@ -480,7 +483,7 @@ const ShowCategory: FC<
                 <Col>
                     <div className="table-responsive mt-4">
                         <Table className="table table_custom h5">
-                            <tbody>
+                            <tbody className="text-start">
                                 <tr>
                                     <td>
                                         <b>
@@ -498,7 +501,7 @@ const ShowCategory: FC<
                                             {!categoryData.timeBefore && (
                                                 <>
                                                     This year was the first time
-                                                    you ran {category}
+                                                    you ran this category!
                                                 </>
                                             )}
                                         </b>
@@ -577,7 +580,20 @@ const ShowCategory: FC<
                                     <td>
                                         <b>
                                             You finished{" "}
-                                            {categoryData.finishedAttemptCount}{" "}
+                                            <span
+                                                style={{
+                                                    color:
+                                                        categoryData.finishedAttemptCount <=
+                                                        0
+                                                            ? "red"
+                                                            : "green",
+                                                }}
+                                                className="fw-bold"
+                                            >
+                                                {
+                                                    categoryData.finishedAttemptCount
+                                                }
+                                            </span>{" "}
                                             attempts
                                         </b>
                                     </td>
@@ -585,16 +601,38 @@ const ShowCategory: FC<
                                 <tr>
                                     <td>
                                         <b>
-                                            You got {categoryData.pbCount} PB's
+                                            You got{" "}
+                                            <span
+                                                style={{
+                                                    color:
+                                                        categoryData.pbCount <=
+                                                        0
+                                                            ? "red"
+                                                            : "green",
+                                                }}
+                                                className="fw-bold"
+                                            >
+                                                {categoryData.pbCount}
+                                            </span>{" "}
+                                            PB's
                                         </b>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>
-                                        <b>
-                                            While doing so, you golded{" "}
-                                            {categoryData.totalGolds} times
-                                        </b>
+                                        While doing so, you golded{" "}
+                                        <span
+                                            style={{
+                                                color:
+                                                    categoryData.totalGolds <= 0
+                                                        ? "red"
+                                                        : "gold",
+                                            }}
+                                            className="fw-bold"
+                                        >
+                                            {categoryData.totalGolds}
+                                        </span>{" "}
+                                        times
                                     </td>
                                 </tr>
                             </tbody>
@@ -607,7 +645,7 @@ const ShowCategory: FC<
                         maxHeight: "60vh",
                     }}
                 >
-                    <Table className="table table_custom mt-4">
+                    <Table className="table table_custom mt-4 text-start">
                         <thead>
                             <tr>
                                 <th>Date</th>
