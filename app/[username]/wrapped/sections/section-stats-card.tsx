@@ -16,7 +16,7 @@ export const SectionStatsCard = memo<SectionStatsCardProps>(
                 <h4 className=" h-100 flex-center h4 mb-3">
                     <div>{statDescription}</div>
                 </h4>
-                <div className="flex-center bg-body-secondary mb-3 game-border border-secondary px-3 py-5 rounded-3">
+                <div className="flex-center bg-body-secondary mb-3 game-border border-secondary py-3 rounded-3">
                     <span className="display-2 fw-semibold text-decoration-underline">
                         <WrappedCounter
                             id="total-runs-count"
