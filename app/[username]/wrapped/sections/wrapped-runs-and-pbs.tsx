@@ -364,7 +364,12 @@ const ShowGame: React.FC<
                         </Table>
                     </div>
                 </Col>
-                <Col>
+                <Col
+                    className="overflow-y-auto"
+                    style={{
+                        maxHeight: "60vh",
+                    }}
+                >
                     {Array.from(gameData.categories).map(
                         ([category, categoryData]) => {
                             return (
@@ -381,6 +386,7 @@ const ShowGame: React.FC<
                                             duration={categoryData.pb}
                                         />{" "}
                                         {categoryData.timeBefore &&
+                                            categoryData.pb &&
                                             categoryData.timeBefore !==
                                                 categoryData.pb && (
                                                 <span className="h6">
@@ -595,7 +601,12 @@ const ShowCategory: FC<
                         </Table>
                     </div>
                 </Col>
-                <Col>
+                <Col
+                    className="overflow-y-auto"
+                    style={{
+                        maxHeight: "60vh",
+                    }}
+                >
                     <Table className="table table_custom mt-4">
                         <thead>
                             <tr>
