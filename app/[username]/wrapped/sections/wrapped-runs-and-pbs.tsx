@@ -4,8 +4,9 @@ import { SectionWrapper } from "~app/[username]/wrapped/sections/section-wrapper
 import { SectionTitle } from "~app/[username]/wrapped/sections/section-title";
 import { SectionBody } from "~app/[username]/wrapped/sections/section-body";
 import { Col, Row } from "react-bootstrap";
-import { GameImage } from "~src/components/image/gameimage";
 import { DurationToFormatted } from "~src/components/util/datetime";
+import styles from "~src/components/css/LiveRun.module.scss";
+import { GameImage } from "~src/components/image/gameimage";
 
 interface WrappedRunsAndPbsProps {
     wrapped: WrappedWithData;
@@ -144,9 +145,11 @@ export const WrappedRunsAndPbs: React.FC<WrappedRunsAndPbsProps> = ({
                             );
                             return (
                                 <Col key={key} xl={3} lg={4} md={6}>
-                                    <div className="mb-3 bg-body-secondary game-border border-secondary py-2 rounded-3">
-                                        <Row>
-                                            <Col xs={3}>
+                                    <div
+                                        className={`mb-3 bg-body-secondary game-border border-secondary py-2 rounded-3 ${styles.liveRunContainer}`}
+                                    >
+                                        <Row className="m0">
+                                            <Col xs={3} className="gap-0">
                                                 <div className="game-image flex-fill bg-body-secondary rounded-3">
                                                     {gameData &&
                                                         gameData.image &&
@@ -170,22 +173,39 @@ export const WrappedRunsAndPbs: React.FC<WrappedRunsAndPbsProps> = ({
                                                 </div>
                                             </Col>
                                             <Col xs={9}>
-                                                <div className="h5 fw-bold">
+                                                <div className="h5 fw-bold text-truncate">
                                                     {key}
                                                 </div>
-                                                <div>
-                                                    Attempts/Finished/PB's:{" "}
-                                                    {value.attemptCount}/
-                                                    {value.finishedAttemptCount}
-                                                    /{value.pbCount}
+                                                <div className="d-flex justify-content-between me-3">
+                                                    <div>
+                                                        <i>
+                                                            Attempts/Finished/PB's
+                                                        </i>
+                                                    </div>
+                                                    <div>
+                                                        <b>
+                                                            {value.attemptCount}
+                                                            /
+                                                            {
+                                                                value.finishedAttemptCount
+                                                            }
+                                                            /{value.pbCount}
+                                                        </b>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    Total playtime:{" "}
-                                                    <DurationToFormatted
-                                                        duration={
-                                                            value.totalRunTime
-                                                        }
-                                                    />
+                                                <div className="d-flex justify-content-between me-3">
+                                                    <div>
+                                                        <i>Total playtime</i>
+                                                    </div>
+                                                    <div>
+                                                        <b>
+                                                            <DurationToFormatted
+                                                                duration={
+                                                                    value.totalRunTime
+                                                                }
+                                                            />
+                                                        </b>
+                                                    </div>
                                                 </div>
                                             </Col>
                                         </Row>

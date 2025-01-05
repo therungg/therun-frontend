@@ -88,7 +88,9 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
                                         autosize
                                     />
                                     <div className="card-body">
-                                        <div className="card-title">{game}</div>
+                                        <div className="card-title h2 fw-bold">
+                                            {game}
+                                        </div>
                                     </div>
                                 </div>
                             </Col>

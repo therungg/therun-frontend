@@ -11,7 +11,7 @@ import {
     DurationToFormatted,
     getDateAsMonthDay,
 } from "~src/components/util/datetime";
-import { Col, Row } from "react-bootstrap";
+import { Col, Row, Table } from "react-bootstrap";
 
 export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
     const streakInDays = wrapped.streak.length;
@@ -238,7 +238,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                     </Col>
                     <Col xl={8}>
                         <div className="table-responsive mt-4">
-                            <table className="table">
+                            <Table className="table table_custom">
                                 <tbody>
                                     <StreakStatItem
                                         stat={
@@ -307,7 +307,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                         explanation="Was when your streak unfortunately came to an end."
                                     />
                                 </tbody>
-                            </table>
+                            </Table>
                         </div>
                     </Col>
                 </Row>
@@ -325,10 +325,10 @@ const StreakStatItem = ({
 }) => {
     return (
         <tr>
-            <td className="display-6">
+            <td className="h3 text-truncate">
                 <b>{stat}</b>
             </td>
-            <td className="align-bottom h5">{explanation}</td>
+            <td className="align-bottom h6">{explanation}</td>
         </tr>
     );
 };

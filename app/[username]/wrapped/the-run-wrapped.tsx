@@ -38,6 +38,7 @@ const hasRaceData = (wrapped: WrappedWithData) => {
 interface WrappedSectionProps {
     id?: string;
 }
+
 const WrappedSection: React.FC<PropsWithChildren<WrappedSectionProps>> = ({
     children,
     id = "",
@@ -197,13 +198,20 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
             {sectionIndex + 1 === 0 ||
             sectionIndex + 1 === sections.length ? null : (
                 <h2
-                    style={{ bottom: FOOTER_HEIGHT, opacity: 0.66 }}
-                    className="sticky-bottom text-end"
+                    style={{
+                        bottom: FOOTER_HEIGHT,
+                        opacity: 0.66,
+                        marginRight: "-8rem",
+                    }}
+                    className="sticky-bottom text-end end-0 me-4 position-fixed d-none d-md-flex"
                 >
                     {sectionIndex + 1} / {sections.length - 1}
                 </h2>
             )}
-            <div style={{ bottom: FOOTER_HEIGHT }} className="sticky-bottom">
+            <div
+                style={{ bottom: FOOTER_HEIGHT }}
+                className="sticky-bottom start-0 ms-4 position-fixed d-none d-md-flex"
+            >
                 <Button
                     disabled={sectionIndex + 1 === 0}
                     variant="outline-secondary mx-2"

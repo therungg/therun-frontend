@@ -45,6 +45,10 @@ body {
   }
 }
 
+.table_custom {
+  --bs-table-bg: transparent !important;
+}
+
 // Custom button styles
 button {
 
