@@ -7,7 +7,6 @@ import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { WrappedStreak } from "./sections/wrapped-streak";
-import { WrappedSocialImages } from "./sections/wrapped-social-images";
 import { WrappedTopGames } from "./sections/wrapped-top-games";
 import { WrappedStatsOverview } from "./sections/wrapped-stats-overview";
 import { WrappedActivityGraphs } from "~app/[username]/wrapped/sections/wrapped-activity-graphs";
@@ -15,10 +14,9 @@ import { Button } from "react-bootstrap";
 import { ArrowDownCircleFill, ArrowUpCircleFill } from "react-bootstrap-icons";
 import { WrappedRaceStats } from "./sections/wrapped-race-stats";
 import { WrappedRunsAndPbs } from "~app/[username]/wrapped/sections/wrapped-runs-and-pbs";
-import { SectionWrapper } from "./sections/section-wrapper";
-import { SectionBody } from "./sections/section-body";
 import { isDefined } from "~src/utils/isDefined";
 import styles from "./mesh-background.module.scss";
+import { WrappedOutroThanks } from "./sections/wrapped-outro-thanks";
 
 gsap.registerPlugin(useGSAP);
 gsap.registerPlugin(ScrollTrigger);
@@ -105,18 +103,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
             ) : null,
 
             <WrappedSection key="wrapped-outro" id="wrapped-outro">
-                <SectionWrapper>
-                    <SectionBody>
-                        <p className="text-center flex-center align-items-center display-2 mb-4">
-                            That's a wrap on 2024!
-                        </p>
-                        <p className="text-center display-6 mb-5">
-                            Thanks for spending it with The Run. We can't wait
-                            to see what you do in 2025!
-                        </p>
-                        <WrappedSocialImages wrapped={wrapped} />
-                    </SectionBody>
-                </SectionWrapper>
+                <WrappedOutroThanks wrapped={wrapped} />
             </WrappedSection>,
         ].filter(isDefined);
     }, [wrapped]);
