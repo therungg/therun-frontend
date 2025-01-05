@@ -215,21 +215,23 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                     <div
                                         // @ts-expect-error Legacy type issue with Refs that's resolved in React 19
                                         ref={cardRef}
-                                        className="d-flex flex-column bg-warning bg-opacity-75 rounded-3 overflow-hidden"
+                                        className="card h-100"
                                     >
+                                        <div className="card-header">
+                                            Most Played Game
+                                        </div>
                                         <div className="game-image">
-                                            {gameData &&
-                                                gameData.image &&
-                                                gameData.image !==
-                                                    "noimage" && (
-                                                    <GameImage
-                                                        alt={gameData.display}
-                                                        src={gameData.image}
-                                                        quality="sd"
-                                                        height={132 * 4.5}
-                                                        width={99 * 4.5}
-                                                    />
-                                                )}
+                                            {gameData && "noimage" && (
+                                                <GameImage
+                                                    alt={gameData.display}
+                                                    src={gameData.image}
+                                                    quality="sd"
+                                                    autosize
+                                                />
+                                            )}
+                                        </div>
+                                        <div className="card-footer">
+                                            {mostPlayedGame}
                                         </div>
                                     </div>
                                 </div>
@@ -237,7 +239,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                         </div>
                     </Col>
                     <Col xl={8}>
-                        <div className="table-responsive mt-4">
+                        <div className="table-responsive">
                             <Table className="table table_custom">
                                 <tbody>
                                     <StreakStatItem
@@ -251,11 +253,6 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                         stat={pbsDuringStreak.length + " PBs"}
                                         explanation={`You got ${pbsDuringStreak.length} PBs during your streak.`}
                                     />
-                                    <StreakStatItem
-                                        stat={mostPlayedGame}
-                                        explanation="Was your favorite game while you were grinding."
-                                    />
-
                                     <StreakStatItem
                                         stat={
                                             <DurationToFormatted

@@ -73,7 +73,7 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
 
                         return (
                             <Col key={`${gameData?.display}-${i}`}>
-                                <div className="card">
+                                <div className="card h-100">
                                     <div className="card-header d-flex align-items-center justify-content-between">
                                         <span className="h4 mb-0">
                                             #{i + 1}
@@ -84,13 +84,11 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
                                         alt={gameData?.display}
                                         src={gameData?.image || ""}
                                         quality="hd"
-                                        className="card-img-top"
+                                        className="card-img-top h-100"
                                         autosize
                                     />
-                                    <div className="card-body">
-                                        <div className="card-title h2 fw-bold">
-                                            {game}
-                                        </div>
+                                    <div className="card-footer fw-bold">
+                                        {game}
                                     </div>
                                 </div>
                             </Col>
