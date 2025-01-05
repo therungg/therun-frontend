@@ -275,7 +275,6 @@ export const PlaytimePerMonthGraph = ({
                         const key =
                             year + "-" + String(index + 1).padStart(2, "0");
 
-                        console.log(key);
                         const target: TotalStat = playtimePerMonthMap[key];
 
                         return tooltip(target);

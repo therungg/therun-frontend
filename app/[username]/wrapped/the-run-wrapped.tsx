@@ -147,7 +147,6 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
         gsap.to(window, {
             scrollTo: (targetSection || animatedSections[0]) as Element,
             onComplete: () => {
-                console.log("complete??");
                 setSectionIndex(index);
             },
         });
