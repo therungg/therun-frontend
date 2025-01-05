@@ -30,7 +30,8 @@ interface GroupedGameData {
 interface CategoryData {
     category: string;
     pb: number;
-    timeBefore: number;
+    sob: number;
+    timeBefore?: number | null;
     attemptCount: number;
     finishedAttemptCount: number;
     pbCount: number;
@@ -65,7 +66,9 @@ export const WrappedRunsAndPbs: React.FC<WrappedRunsAndPbsProps> = ({
                 finishedAttemptCount,
                 totalRunTime,
                 runs,
+                sob,
             } = run;
+
             const { timeBefore, totalGolds, pbs } = correspondingPbs;
 
             if (!gameCategoryMap.has(game)) {
@@ -99,6 +102,7 @@ export const WrappedRunsAndPbs: React.FC<WrappedRunsAndPbsProps> = ({
                     totalRunTime: parseInt(totalRunTime),
                     totalGolds: totalGolds,
                     pbs,
+                    sob,
                     runs: runs.map((run) => {
                         const pbIndex = pbs.findIndex(
                             (pb) => pb.time === parseInt(run.time),
@@ -373,6 +377,10 @@ const ShowGame: React.FC<
                         maxHeight: "50vh",
                     }}
                 >
+                    <div className="mb-2">
+                        Click on a category to view more info about that
+                        category!
+                    </div>
                     {Array.from(gameData.categories).map(
                         ([category, categoryData]) => {
                             return (
@@ -468,7 +476,11 @@ const ShowCategory: FC<
                 </span>
             </div>
             <Row>
-                <Col>
+                <Col
+                    className="d-lg-none d-md-none d-sm-none d-xs-none d-xl-flex"
+                    lg={0}
+                    xl={3}
+                >
                     <div className="game-image flex-fill rounded-3">
                         <GameImage
                             className="rounded-3"
@@ -480,7 +492,7 @@ const ShowCategory: FC<
                         />
                     </div>
                 </Col>
-                <Col>
+                <Col md={12} lg={7} xl={5}>
                     <div className="table-responsive mt-4">
                         <Table className="table table_custom h5">
                             <tbody className="text-start">
@@ -555,6 +567,16 @@ const ShowCategory: FC<
                                             </td>
                                         </tr>
                                     )}
+                                <tr>
+                                    <td>
+                                        <b>
+                                            Your SOB is{" "}
+                                            <DurationToFormatted
+                                                duration={categoryData.sob}
+                                            />
+                                        </b>
+                                    </td>
+                                </tr>
                                 <tr>
                                     <td>
                                         <b>
@@ -644,6 +666,9 @@ const ShowCategory: FC<
                     style={{
                         maxHeight: "60vh",
                     }}
+                    md={12}
+                    lg={5}
+                    xl={4}
                 >
                     <Table className="table table_custom mt-4 text-start">
                         <thead>

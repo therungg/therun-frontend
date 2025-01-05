@@ -76,6 +76,26 @@ interface WrappedDataPoints {
             time: string;
         }[];
     }[];
+    runDataBeforePeriod: {
+        attemptCount: number;
+        finishedAttemptCount: number;
+        pb: number;
+        // When they got the pb
+        pbTime: string;
+        sob: number;
+        game: string;
+        category: string;
+        // Total time playing this game this year in ms. Can also get from playtimeData.
+        totalRunTime: string;
+
+        // Finished runs this year. Can use to show a graph of finished runs or something.
+        // Or heatmap when runs are finished throughout the year.
+        runs: {
+            startedAt: string;
+            endedAt: string;
+            time: string;
+        }[];
+    }[];
 
     // We can use this to show the PB's and Golds the user got. They're all grouped by game-category.
     pbsAndGolds: {
