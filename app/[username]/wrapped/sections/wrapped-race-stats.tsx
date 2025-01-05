@@ -70,17 +70,19 @@ export const WrappedRaceStats = memo<WrappedRaceStatsProps>(({ wrapped }) => {
                 extraRemark={extraRemark}
             />
             <SectionBody>
-                Your top{" "}
-                {top3MostRacedGames.length === 1
-                    ? "most raced game and category"
-                    : `${top3MostRacedGames.length} most raced games and categories`}{" "}
-                were
+                <p className="h4">
+                    Your top{" "}
+                    {top3MostRacedGames.length === 1
+                        ? "most raced game and category"
+                        : `${top3MostRacedGames.length} most raced games and categories`}{" "}
+                    were
+                </p>
                 <Row>
                     {top3MostRacedGames.map((race, index) => {
                         const [game, category] = race.displayValue.split("#");
                         return (
-                            <Col key={race.displayValue}>
-                                <div className="card">
+                            <Col xs={4} key={race.displayValue}>
+                                <div className="h-100 card">
                                     <div className="card-header d-flex align-items-center justify-content-between">
                                         <span className="h4 mb-0">
                                             #{index + 1}
@@ -95,13 +97,15 @@ export const WrappedRaceStats = memo<WrappedRaceStatsProps>(({ wrapped }) => {
                                         alt={race.displayValue}
                                         src={race.image}
                                         quality="hd"
-                                        className="card-img-top"
                                         autosize
                                     />
-                                    <div className="card-body">
-                                        <h5 className="card-title">
-                                            {game} - {category}
-                                        </h5>
+                                    <div className="card-body text-start">
+                                        <p className="h4 card-title text-truncate">
+                                            {game}
+                                        </p>
+                                        <p className="h5 card-text text-truncate">
+                                            {category}
+                                        </p>
                                     </div>
                                 </div>
                             </Col>
