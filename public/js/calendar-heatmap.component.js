@@ -109,7 +109,7 @@ class CalendarHeatmap extends React.Component {
                 this.container.offsetWidth < 1616
                     ? 1616
                     : this.container.offsetWidth;
-        } else {
+        } else if (typeof updatedWidth === "number") {
             this.settings.width = updatedWidth;
         }
         this.settings.item_size =
