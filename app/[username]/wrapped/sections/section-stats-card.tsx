@@ -12,8 +12,8 @@ interface SectionStatsCardProps {
 export const SectionStatsCard = memo<SectionStatsCardProps>(
     ({ stat, statDescription, statFormatter, style }) => {
         return (
-            <>
-                <h4 className="flex-center h4 mb-3">
+            <div className="h-100 d-flex flex-column">
+                <h4 className=" h-100 flex-center h4 mb-3">
                     <div>{statDescription}</div>
                 </h4>
                 <div className="flex-center bg-body-secondary mb-3 game-border border-secondary px-3 py-5 rounded-3">
@@ -26,7 +26,7 @@ export const SectionStatsCard = memo<SectionStatsCardProps>(
                         />
                     </span>
                 </div>
-            </>
+            </div>
         );
     },
 );
