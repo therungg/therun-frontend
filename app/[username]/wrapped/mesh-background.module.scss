@@ -10,7 +10,7 @@ body:has(div.meshBg) {
 }
 
 .meshBg {
-    opacity: 0.15;
+    opacity: 0.5;
     z-index: -5;
     position: absolute;
     top: 0;
@@ -44,7 +44,7 @@ body:has(div.meshBg) {
 }
 
 [data-bs-theme="dark"] .meshBg {
-    opacity: 0.2;
+    opacity: 0.35;
     background: radial-gradient(
             at 85.99706141639729% 25.09457755359395%,
             #3074c2 0px,
