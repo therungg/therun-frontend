@@ -1,10 +1,15 @@
 import { WrappedWithData } from "~app/[username]/wrapped/wrapped-types";
-import React, { Dispatch, SetStateAction, useMemo, useState } from "react";
+import React, { Dispatch, FC, SetStateAction, useMemo, useState } from "react";
 import { SectionWrapper } from "~app/[username]/wrapped/sections/section-wrapper";
 import { SectionTitle } from "~app/[username]/wrapped/sections/section-title";
 import { SectionBody } from "~app/[username]/wrapped/sections/section-body";
 import { Col, Row, Table } from "react-bootstrap";
-import { DurationToFormatted } from "~src/components/util/datetime";
+import {
+    Difference,
+    DifferenceFromOne,
+    DurationToFormatted,
+    getDateAsMonthDay,
+} from "~src/components/util/datetime";
 import styles from "~src/components/css/LiveRun.module.scss";
 import { GameImage } from "~src/components/image/gameimage";
 
@@ -38,7 +43,7 @@ interface CategoryData {
         time: string;
         isPb: boolean;
         timeSave: number | null;
-    };
+    }[];
 }
 
 export const WrappedRunsAndPbs: React.FC<WrappedRunsAndPbsProps> = ({
@@ -188,21 +193,16 @@ const GameOverview: React.FC<
                                     <Row className="m0">
                                         <Col xs={3} className="gap-0">
                                             <div className="game-image flex-fill bg-body-secondary rounded-3">
-                                                {gameData &&
-                                                    gameData.image &&
-                                                    gameData.image !==
-                                                        "noimage" && (
-                                                        <GameImage
-                                                            className="rounded-3"
-                                                            alt={
-                                                                gameData.display
-                                                            }
-                                                            src={gameData.image}
-                                                            quality="small"
-                                                            height={132 * 0.7}
-                                                            width={99 * 0.6}
-                                                        />
-                                                    )}
+                                                {gameData && (
+                                                    <GameImage
+                                                        className="rounded-3"
+                                                        alt={gameData.display}
+                                                        src={gameData.image}
+                                                        quality="small"
+                                                        height={132 * 0.7}
+                                                        width={99 * 0.6}
+                                                    />
+                                                )}
                                             </div>
                                         </Col>
                                         <Col xs={9}>
@@ -261,19 +261,34 @@ const ShowGame: React.FC<
         null,
     );
 
-    console.log(selectedCategory);
-
     const gameImage = wrapped.gamesData.find(
         (gameData) => gameData.display === selectedGame,
     )?.image as string;
 
+    if (selectedCategory !== null) {
+        return (
+            <ShowCategory
+                wrapped={wrapped}
+                game={selectedGame}
+                category={selectedCategory}
+                categoryData={
+                    gameData.categories.get(selectedCategory) as CategoryData
+                }
+                returnToGame={() => setSelectedCategory(null)}
+            />
+        );
+    }
+
     return (
-        <div>
+        <div className="mb-5">
             <div className="mb-4">
                 <h2>{selectedGame}</h2>
                 <span
                     className="text-decoration-underline cursor-pointer link-underline-opacity-50-hover"
-                    onClick={returnToOverview}
+                    onClick={() => {
+                        setSelectedCategory(null);
+                        returnToOverview();
+                    }}
                 >
                     {"< Back to games"}
                 </span>
@@ -281,16 +296,14 @@ const ShowGame: React.FC<
             <Row>
                 <Col>
                     <div className="game-image flex-fill rounded-3">
-                        {gameImage && gameImage !== "noimage" && (
-                            <GameImage
-                                className="rounded-3"
-                                alt={selectedGame}
-                                src={gameImage}
-                                quality="sd"
-                                height={132 * 4}
-                                width={99 * 4}
-                            />
-                        )}
+                        <GameImage
+                            className="rounded-3"
+                            alt={selectedGame}
+                            src={gameImage}
+                            quality="sd"
+                            height={132 * 4}
+                            width={99 * 4}
+                        />
                     </div>
                 </Col>
                 <Col>
@@ -363,7 +376,23 @@ const ShowGame: React.FC<
                                     }}
                                 >
                                     <div className="h5 fw-bold text-truncate">
-                                        {category}
+                                        {category} -{" "}
+                                        <DurationToFormatted
+                                            duration={categoryData.pb}
+                                        />{" "}
+                                        {categoryData.timeBefore &&
+                                            categoryData.timeBefore !==
+                                                categoryData.pb && (
+                                                <span className="h6">
+                                                    (
+                                                    <Difference
+                                                        two={categoryData.timeBefore.toString()}
+                                                        one={categoryData.pb.toString()}
+                                                        inline={true}
+                                                    />{" "}
+                                                    this year)
+                                                </span>
+                                            )}
                                     </div>
                                     <div className="d-flex justify-content-between mx-5">
                                         <div>
@@ -397,6 +426,231 @@ const ShowGame: React.FC<
                             );
                         },
                     )}
+                </Col>
+            </Row>
+        </div>
+    );
+};
+
+const ShowCategory: FC<
+    WrappedRunsAndPbsProps & {
+        game: string;
+        category: string;
+        categoryData: CategoryData;
+        returnToGame: () => void;
+    }
+> = ({ wrapped, game, category, categoryData, returnToGame }) => {
+    const gameImage = wrapped.gamesData.find(
+        (gameData) => gameData.display === game,
+    )?.image as string;
+    return (
+        <div className="mb-5">
+            <div className="mb-4">
+                <h2>
+                    {game} - {category}
+                </h2>
+                <span
+                    className="text-decoration-underline cursor-pointer link-underline-opacity-50-hover"
+                    onClick={() => {
+                        returnToGame();
+                    }}
+                >
+                    {"< Back to " + game}
+                </span>
+            </div>
+            <Row>
+                <Col>
+                    <div className="game-image flex-fill rounded-3">
+                        <GameImage
+                            className="rounded-3"
+                            alt={game}
+                            src={gameImage}
+                            quality="sd"
+                            height={132 * 4}
+                            width={99 * 4}
+                        />
+                    </div>
+                </Col>
+                <Col>
+                    <div className="table-responsive mt-4">
+                        <Table className="table table_custom h5">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <b>
+                                            {categoryData.timeBefore && (
+                                                <>
+                                                    You started the year off
+                                                    with a PB of{" "}
+                                                    <DurationToFormatted
+                                                        duration={
+                                                            categoryData.timeBefore
+                                                        }
+                                                    />
+                                                </>
+                                            )}
+                                            {!categoryData.timeBefore && (
+                                                <>
+                                                    This year was the first time
+                                                    you ran {category}
+                                                </>
+                                            )}
+                                        </b>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <b>
+                                            Your best time this year was a{" "}
+                                            <DurationToFormatted
+                                                duration={categoryData.pb}
+                                            />
+                                        </b>
+                                    </td>
+                                </tr>
+                                {categoryData.timeBefore &&
+                                    categoryData.timeBefore >
+                                        categoryData.pb && (
+                                        <tr>
+                                            <td>
+                                                <b>
+                                                    <span>
+                                                        So you shaved off{" "}
+                                                        <Difference
+                                                            two={categoryData.timeBefore.toString()}
+                                                            one={categoryData.pb.toString()}
+                                                            inline={true}
+                                                        />{" "}
+                                                        this year!
+                                                    </span>
+                                                </b>
+                                            </td>
+                                        </tr>
+                                    )}
+                                {categoryData.timeBefore &&
+                                    categoryData.timeBefore <=
+                                        categoryData.pb && (
+                                        <tr>
+                                            <td>
+                                                <b>
+                                                    <span>
+                                                        You were only{" "}
+                                                        <Difference
+                                                            two={categoryData.timeBefore.toString()}
+                                                            one={categoryData.pb.toString()}
+                                                            inline={true}
+                                                        />{" "}
+                                                        off your PB this year!
+                                                    </span>
+                                                </b>
+                                            </td>
+                                        </tr>
+                                    )}
+                                <tr>
+                                    <td>
+                                        <b>
+                                            You spent{" "}
+                                            <DurationToFormatted
+                                                duration={
+                                                    categoryData.totalRunTime
+                                                }
+                                            />{" "}
+                                            playing this category
+                                        </b>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <b>
+                                            You started{" "}
+                                            {categoryData.attemptCount} attempts
+                                        </b>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <b>
+                                            You finished{" "}
+                                            {categoryData.finishedAttemptCount}{" "}
+                                            attempts
+                                        </b>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <b>
+                                            You got {categoryData.pbCount} PB's
+                                        </b>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <b>
+                                            While doing so, you golded{" "}
+                                            {categoryData.totalGolds} times
+                                        </b>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </Table>
+                    </div>
+                </Col>
+                <Col>
+                    <Table className="table table_custom mt-4">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Was PB</th>
+                                <th>Timesave</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {categoryData.timeBefore && (
+                                <tr>
+                                    <td>Before {wrapped.year}</td>
+                                    <td>
+                                        <DurationToFormatted
+                                            duration={categoryData.timeBefore}
+                                        />
+                                    </td>
+                                    <td></td>
+                                    <td></td>
+                                </tr>
+                            )}
+                            {categoryData.runs.map((run) => {
+                                return (
+                                    <tr key={run.startedAt}>
+                                        <td>
+                                            {getDateAsMonthDay(
+                                                new Date(run.endedAt),
+                                            )}
+                                        </td>
+                                        <td>
+                                            <DurationToFormatted
+                                                duration={run.time}
+                                            />
+                                        </td>
+                                        <td>
+                                            {run.isPb
+                                                ? run.timeSave
+                                                    ? "Yes!"
+                                                    : "First Run"
+                                                : "No"}
+                                        </td>
+                                        <td>
+                                            {run.isPb && run.timeSave && (
+                                                <DifferenceFromOne
+                                                    className=""
+                                                    diff={run.timeSave}
+                                                />
+                                            )}
+                                        </td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </Table>
                 </Col>
             </Row>
         </div>
