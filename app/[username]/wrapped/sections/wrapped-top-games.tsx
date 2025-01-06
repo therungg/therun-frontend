@@ -72,16 +72,23 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
                 extraRemark={extraRemark}
             />
             <SectionBody>
-                <Row className="row-cols-1 row-cols-md-2 row-cols-xl-3 mx-auto pt-5 gx-3 gy-5 g-md-5">
+                <Row className="row-cols-1 row-cols-md-2 row-cols-xl-3 mx-auto pt-5 gx-3 gy-5 g-md-5 w-75">
                     {top3Games.map(({ display, total = 0, image }, i) => {
                         return (
-                            <Col key={`${display}-${i}`}>
+                            <Col key={`${display}-${i}`} xs={12}>
                                 <div className="card h-100">
                                     <div className="card-header d-flex align-items-center justify-content-between">
-                                        <span className="h4 mb-0">
+                                        <span className="h3 mb-0 fw-bold">
                                             #{i + 1}
                                         </span>
-                                        <DurationToFormatted duration={total} />
+                                        <div>
+                                            Total playtime:{" "}
+                                            <b>
+                                                <DurationToFormatted
+                                                    duration={total}
+                                                />
+                                            </b>
+                                        </div>
                                     </div>
                                     <GameImage
                                         alt={display}
@@ -91,7 +98,9 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
                                         autosize
                                     />
                                     <div className="card-footer fw-bold">
-                                        {display}
+                                        <h3 className="text-truncate">
+                                            {display}
+                                        </h3>
                                     </div>
                                 </div>
                             </Col>

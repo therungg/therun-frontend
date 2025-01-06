@@ -1,4 +1,4 @@
-import { ReactNode, useMemo, useRef } from "react";
+import React, { ReactNode, useMemo, useRef } from "react";
 import { WrappedWithData } from "../wrapped-types";
 import { GameImage } from "~src/components/image/gameimage";
 import { TotalStat } from "~src/components/user/stats";
@@ -96,6 +96,16 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
         }
     };
 
+    const getExtraRemark = (streakInDays: number) => {
+        if (streakInDays >= 2 && streakInDays <= 7) {
+            return "(those are rookie numbers)";
+        } else if (streakInDays > 7 && streakInDays <= 14) {
+            return "(but i want to see a higher number next year)";
+        } else if (streakInDays >= 15) {
+            return "(addict)";
+        }
+    };
+
     const gameData = useMemo(
         () =>
             wrapped.gamesData.find(
@@ -180,8 +190,6 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
         return runs;
     }, [wrapped.pbsAndGolds, wrapped.streak.end, wrapped.streak.start]);
 
-    console.log(pbsDuringStreak, finishedRunsDuringStreak);
-
     return (
         <SectionWrapper>
             <SectionTitle
@@ -196,10 +204,15 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                     </>
                 }
                 subtitle={getStreakMessage(streakInDays)}
+                extraRemark={getExtraRemark(streakInDays)}
             />
             <SectionBody>
                 <Row>
-                    <Col xl={4}>
+                    <Col
+                        xl={3}
+                        lg={0}
+                        className="d-none d-sm-none d-md-none d-lg-none d-xl-flex"
+                    >
                         <div className="flex-center align-items-center">
                             <div className="row justify-content-center">
                                 <div className="col-auto position-relative">
@@ -218,40 +231,71 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                         className="card h-100"
                                     >
                                         <div className="card-header">
-                                            Most Played Game
+                                            Your most played game during your
+                                            streak...
                                         </div>
                                         <div className="game-image">
                                             {gameData && "noimage" && (
                                                 <GameImage
                                                     alt={gameData.display}
                                                     src={gameData.image}
-                                                    quality="sd"
+                                                    quality="hd"
                                                     autosize
                                                 />
                                             )}
                                         </div>
                                         <div className="card-footer">
-                                            {mostPlayedGame}
+                                            <h3 className="fw-bold seconda">
+                                                {mostPlayedGame}
+                                            </h3>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </Col>
-                    <Col xl={8}>
+                    <Col xl={5}>
+                        Some really awesome cool stats
                         <div className="table-responsive">
                             <Table className="table table_custom">
                                 <tbody>
                                     <StreakStatItem
                                         stat={
                                             finishedRunsDuringStreak.length +
-                                            " Finished Runs"
+                                            " finished runs"
                                         }
-                                        explanation={`You finished ${finishedRunsDuringStreak.length} runs during your streak.`}
+                                        explanation={
+                                            <>
+                                                You finished{" "}
+                                                <span
+                                                    style={{
+                                                        color: "var(--bs-link-color)",
+                                                    }}
+                                                >
+                                                    {
+                                                        finishedRunsDuringStreak.length
+                                                    }{" "}
+                                                    runs
+                                                </span>{" "}
+                                                during your streak.
+                                            </>
+                                        }
                                     />
                                     <StreakStatItem
                                         stat={pbsDuringStreak.length + " PBs"}
-                                        explanation={`You got ${pbsDuringStreak.length} PBs during your streak.`}
+                                        explanation={
+                                            <>
+                                                You got{" "}
+                                                <span
+                                                    style={{
+                                                        color: "var(--bs-secondary)",
+                                                    }}
+                                                >
+                                                    {pbsDuringStreak.length} PBs
+                                                </span>{" "}
+                                                during your streak.
+                                            </>
+                                        }
                                     />
                                     <StreakStatItem
                                         stat={
@@ -307,6 +351,59 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                             </Table>
                         </div>
                     </Col>
+                    <Col
+                        xl={4}
+                        className="overflow-y-scroll"
+                        style={{
+                            maxHeight: "60vh",
+                        }}
+                    >
+                        Finished runs during your sick streak below
+                        <Table className="table table_custom text-start">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Run</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {finishedRunsDuringStreak.map((run) => {
+                                    return (
+                                        <tr key={run.endedAt}>
+                                            <td>
+                                                <div className="h5">
+                                                    {getDateAsMonthDay(
+                                                        new Date(run.endedAt),
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div
+                                                    className="h5 mb-1 mt-0"
+                                                    style={{
+                                                        color: "var(--bs-link-color)",
+                                                    }}
+                                                >
+                                                    {run.game}
+                                                </div>
+                                                <div className="fst-italic">
+                                                    {run.category}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className="h5">
+                                                    <DurationToFormatted
+                                                        duration={run.time}
+                                                    />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </Table>
+                    </Col>
                 </Row>
             </SectionBody>
         </SectionWrapper>
@@ -322,7 +419,7 @@ const StreakStatItem = ({
 }) => {
     return (
         <tr>
-            <td className="h3 text-truncate">
+            <td className="h4 text-truncate">
                 <b>{stat}</b>
             </td>
             <td className="align-bottom h6">{explanation}</td>

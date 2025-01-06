@@ -299,7 +299,11 @@ const ShowGame: React.FC<
                 </span>
             </div>
             <Row>
-                <Col>
+                <Col
+                    xl={3}
+                    lg={0}
+                    className="d-none d-sm-none d-md-none d-lg-none d-xl-flex"
+                >
                     <div className="game-image flex-fill rounded-3">
                         <GameImage
                             className="rounded-3"
@@ -311,7 +315,7 @@ const ShowGame: React.FC<
                         />
                     </div>
                 </Col>
-                <Col>
+                <Col xl={5} lg={6} md={12}>
                     <div className="table-responsive mt-4">
                         <Table className="table table_custom h5">
                             <tbody>
@@ -370,6 +374,9 @@ const ShowGame: React.FC<
                     </div>
                 </Col>
                 <Col
+                    xl={4}
+                    lg={6}
+                    md={12}
                     className="overflow-y-scroll"
                     style={{
                         maxHeight: "50vh",
@@ -379,8 +386,12 @@ const ShowGame: React.FC<
                         Click on a category to view more info about that
                         category!
                     </div>
-                    {Array.from(gameData.categories).map(
-                        ([category, categoryData]) => {
+                    {Array.from(gameData.categories)
+                        .sort(
+                            ([, aValue], [, bValue]) =>
+                                bValue.totalRunTime - aValue.totalRunTime,
+                        )
+                        .map(([category, categoryData]) => {
                             return (
                                 <div
                                     key={category}
@@ -439,8 +450,7 @@ const ShowGame: React.FC<
                                     </div>
                                 </div>
                             );
-                        },
-                    )}
+                        })}
                 </Col>
             </Row>
         </div>
@@ -475,7 +485,7 @@ const ShowCategory: FC<
             </div>
             <Row>
                 <Col
-                    className="d-lg-none d-md-none d-sm-none d-xs-none d-xl-flex"
+                    className="d-lg-none d-md-none d-sm-none d-none d-xl-flex"
                     lg={0}
                     xl={3}
                 >
@@ -493,7 +503,7 @@ const ShowCategory: FC<
                 <Col md={12} lg={7} xl={5}>
                     <div className="table-responsive mt-4">
                         <Table className="table table_custom h5">
-                            <tbody className="text-start">
+                            <tbody>
                                 <tr>
                                     <td>
                                         <b>
@@ -606,7 +616,7 @@ const ShowCategory: FC<
                                                         categoryData.finishedAttemptCount <=
                                                         0
                                                             ? "red"
-                                                            : "green",
+                                                            : "var(--bs-link-color)",
                                                 }}
                                                 className="fw-bold"
                                             >
@@ -628,7 +638,7 @@ const ShowCategory: FC<
                                                         categoryData.pbCount <=
                                                         0
                                                             ? "red"
-                                                            : "green",
+                                                            : "var(--bs-link-color)",
                                                 }}
                                                 className="fw-bold"
                                             >

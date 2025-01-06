@@ -84,16 +84,16 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                 <WrappedActivityGraphs wrapped={wrapped} />
             </WrappedSection>,
 
-            <WrappedSection key="wrapped-streak">
-                <WrappedStreak wrapped={wrapped} />
-            </WrappedSection>,
-
             <WrappedSection key="wrapped-top-games">
                 <WrappedTopGames wrapped={wrapped} />
             </WrappedSection>,
 
             <WrappedSection key="wrapped-pbs-and-golds">
                 <WrappedRunsAndPbs wrapped={wrapped} />
+            </WrappedSection>,
+
+            <WrappedSection key="wrapped-streak">
+                <WrappedStreak wrapped={wrapped} />
             </WrappedSection>,
 
             hasRaceData(wrapped) ? (
@@ -143,7 +143,6 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
         let targetSection = animatedSections[index];
         // TODO: There's a bug where it won't scroll back to the intro
         if (!targetSection && index === -1) targetSection = "#wrapped-intro";
-        // console.log({ targetSection, index });
         gsap.to(window, {
             scrollTo: (targetSection || animatedSections[0]) as Element,
             onComplete: () => {

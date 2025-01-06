@@ -14,7 +14,26 @@ export const UserRaceStatsByGame = ({ stats }: { stats: UserStats[][] }) => {
     );
 };
 
-const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
+export const UserRaceStatsByGameWithoutUrls = ({
+    stats,
+}: {
+    stats: UserStats[][];
+}) => {
+    return (
+        <div>
+            {stats.map((categories, i) => {
+                return (
+                    <UserRaceStatsForGameWithoutUrls
+                        key={i}
+                        stats={categories}
+                    />
+                );
+            })}
+        </div>
+    );
+};
+
+export const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
     const useStat = stats[0];
     const game = useStat.displayValue.split("#")[0];
     const favoriteCategory = useStat.displayValue.split("#")[1];
@@ -26,17 +45,19 @@ const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
                 style={{ color: "var(--bs-body-color)" }}
             >
                 <div className="d-flex">
-                    <Image
-                        alt={`Image for ${useStat.displayValue}`}
-                        src={useStat.image}
-                        height={64 * 2.3}
-                        width={48 * 2.3}
-                        className={`${
-                            stats.length > 1
-                                ? "rounded-top-3 rounded-end-0"
-                                : "rounded-3"
-                        }`}
-                    />
+                    {useStat.image && useStat.image !== "noimage" && (
+                        <Image
+                            alt={`Image for ${useStat.displayValue}`}
+                            src={useStat.image}
+                            height={64 * 2.3}
+                            width={48 * 2.3}
+                            className={`${
+                                stats.length > 1
+                                    ? "rounded-top-3 rounded-end-0"
+                                    : "rounded-3"
+                            }`}
+                        />
+                    )}
                     <div className="w-100">
                         <div className="px-3 w-100">
                             <div className="d-flex w-100 h5 pt-2 text-truncate mb-0">
@@ -94,6 +115,79 @@ const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
                                         </div>
                                     </div>
                                 </a>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const UserRaceStatsForGameWithoutUrls = ({ stats }: { stats: UserStats[] }) => {
+    const useStat = stats[0];
+    const game = useStat.displayValue.split("#")[0];
+    const favoriteCategory = useStat.displayValue.split("#")[1];
+    return (
+        <div>
+            <div
+                key={useStat.displayValue}
+                className="mb-3 rounded-3 w-100 game-border border-secondary bg-body-secondary"
+                style={{ color: "var(--bs-body-color)" }}
+            >
+                <div className="d-flex">
+                    {useStat.image && useStat.image !== "noimage" && (
+                        <Image
+                            alt={`Image for ${useStat.displayValue}`}
+                            src={useStat.image}
+                            height={64 * 2.3}
+                            width={48 * 2.3}
+                            className={`${
+                                stats.length > 1
+                                    ? "rounded-top-3 rounded-end-0"
+                                    : "rounded-3"
+                            }`}
+                        />
+                    )}
+                    <div className="w-100">
+                        <div className="px-3 w-100">
+                            <div className="d-flex w-100 h5 pt-2 text-truncate mb-0">
+                                {game}
+                            </div>
+                            <div className="fst-italic">{favoriteCategory}</div>
+                        </div>
+                        <hr className="m-0 p-0 mt-1 mb-2" />
+                        <ShowUserCategoryStats category={useStat} />
+                    </div>
+                </div>
+                <div className="h-100">
+                    {stats.slice(1, stats.length).map((category) => {
+                        const categoryName =
+                            category.displayValue.split("#")[1];
+                        return (
+                            <div
+                                key={game + category.displayValue}
+                                className="border-top h-100"
+                            >
+                                <div className="d-flex h-100">
+                                    <div className="ps-2 d-flex align-items-center border-end">
+                                        <span
+                                            className="text-truncate"
+                                            style={{
+                                                width: "6.34rem",
+                                            }}
+                                        >
+                                            {categoryName}
+                                        </span>
+                                    </div>
+                                    <div
+                                        className={`w-100 ${styles.liveRunContainer}`}
+                                    >
+                                        <ShowUserCategoryStats
+                                            category={category}
+                                        />
+                                    </div>
+                                </div>
                             </div>
                         );
                     })}
