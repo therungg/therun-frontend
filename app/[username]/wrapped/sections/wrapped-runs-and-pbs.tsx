@@ -12,6 +12,7 @@ import {
 } from "~src/components/util/datetime";
 import styles from "~src/components/css/LiveRun.module.scss";
 import { GameImage } from "~src/components/image/gameimage";
+import { TrophyIcon } from "~src/icons/trophy-icon";
 
 interface WrappedRunsAndPbsProps {
     wrapped: WrappedWithData;
@@ -182,7 +183,7 @@ const GameOverview: React.FC<
                         ([, aValue], [, bValue]) =>
                             bValue.totalRunTime - aValue.totalRunTime,
                     )
-                    .map(([key, value]) => {
+                    .map(([key, value], i) => {
                         const gameData = wrapped.gamesData.find(
                             (gameData) => gameData.display === key,
                         );
@@ -213,8 +214,29 @@ const GameOverview: React.FC<
                                             </div>
                                         </Col>
                                         <Col xs={9}>
-                                            <div className="text-start h5 fw-bold text-truncate pe-3">
-                                                {key}
+                                            <div
+                                                className="text-start h5 fw-bold text-truncate pe-3"
+                                                style={{
+                                                    textDecoration: "underline",
+                                                    textDecorationColor:
+                                                        "var(--bs-secondary)",
+                                                }}
+                                            >
+                                                <span className="me-2">
+                                                    {key}
+                                                </span>
+                                                {i < 3 && (
+                                                    <TrophyIcon
+                                                        size={24}
+                                                        trophyColor={
+                                                            i === 0
+                                                                ? "gold"
+                                                                : i === 1
+                                                                  ? "silver"
+                                                                  : "bronze"
+                                                        }
+                                                    />
+                                                )}
                                             </div>
                                             <div className="d-flex justify-content-between me-3">
                                                 <div>

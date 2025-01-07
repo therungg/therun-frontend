@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import React, { memo, useMemo } from "react";
 import { DurationToFormatted } from "~src/components/util/datetime";
 import { GameImage } from "~src/components/image/gameimage";
 import { Col, Row } from "react-bootstrap";
@@ -7,6 +7,7 @@ import { WrappedCounter } from "../wrapped-counter";
 import { SectionWrapper } from "./section-wrapper";
 import { SectionBody } from "./section-body";
 import { SectionTitle } from "./section-title";
+import { TrophyIcon } from "~src/icons/trophy-icon";
 
 interface WrappedTopGamesProps {
     wrapped: WrappedWithData;
@@ -79,7 +80,19 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
                                 <div className="card h-100">
                                     <div className="card-header d-flex align-items-center justify-content-between">
                                         <span className="h3 mb-0 fw-bold">
-                                            #{i + 1}
+                                            <span className="me-2">
+                                                #{i + 1}
+                                            </span>
+                                            <TrophyIcon
+                                                size={34}
+                                                trophyColor={
+                                                    i === 0
+                                                        ? "gold"
+                                                        : i === 1
+                                                          ? "silver"
+                                                          : "bronze"
+                                                }
+                                            />
                                         </span>
                                         <div>
                                             Total playtime:{" "}
