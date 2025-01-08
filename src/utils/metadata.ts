@@ -99,7 +99,9 @@ export async function getUserProfilePhoto(
 ): Promise<OpenGraphImage[] | undefined> {
     let response: Response;
     try {
-        response = await fetch(`${getBaseUrl()}/api/users/${username}/global`);
+        response = await fetch(
+            `${await getBaseUrl()}/api/users/${username}/global`,
+        );
     } catch (_e) {
         return undefined;
     }

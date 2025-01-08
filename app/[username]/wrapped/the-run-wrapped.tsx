@@ -17,6 +17,7 @@ import { WrappedRunsAndPbs } from "~app/[username]/wrapped/sections/wrapped-runs
 import { isDefined } from "~src/utils/isDefined";
 import styles from "./mesh-background.module.scss";
 import { WrappedOutroThanks } from "./sections/wrapped-outro-thanks";
+import { WrappedSocialCard } from "./sections/wrapped-social-card";
 
 gsap.registerPlugin(useGSAP);
 gsap.registerPlugin(ScrollTrigger);
@@ -101,7 +102,12 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                     <WrappedRaceStats wrapped={wrapped} />
                 </WrappedSection>
             ) : null,
-
+            <WrappedSection
+                key="wrapped-social-share"
+                id="wrapped-social-share"
+            >
+                <WrappedSocialCard wrapped={wrapped} />
+            </WrappedSection>,
             <WrappedSection key="wrapped-outro" id="wrapped-outro">
                 <WrappedOutroThanks wrapped={wrapped} />
             </WrappedSection>,
