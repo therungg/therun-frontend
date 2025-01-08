@@ -195,7 +195,7 @@ export const WrappedRaceStats = memo<WrappedRaceStatsProps>(({ wrapped }) => {
                             These are all the games you raced!
                         </div>
                         <div
-                            className="overflow-y-scroll"
+                            className="overflow-y-auto"
                             style={{
                                 maxHeight: "50vh",
                             }}

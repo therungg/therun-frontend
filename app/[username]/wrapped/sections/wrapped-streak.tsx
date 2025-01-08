@@ -353,7 +353,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                     </Col>
                     <Col
                         xl={4}
-                        className="overflow-y-scroll"
+                        className="overflow-y-auto"
                         style={{
                             maxHeight: "60vh",
                         }}

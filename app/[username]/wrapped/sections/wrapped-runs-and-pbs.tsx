@@ -399,7 +399,7 @@ const ShowGame: React.FC<
                     xl={4}
                     lg={6}
                     md={12}
-                    className="overflow-y-scroll"
+                    className="overflow-y-auto"
                     style={{
                         maxHeight: "50vh",
                     }}
