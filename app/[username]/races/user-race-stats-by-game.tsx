@@ -20,7 +20,7 @@ export const UserRaceStatsByGameWithoutUrls = ({
     stats: UserStats[][];
 }) => {
     return (
-        <div>
+        <>
             {stats.map((categories, i) => {
                 return (
                     <UserRaceStatsForGameWithoutUrls
@@ -29,7 +29,7 @@ export const UserRaceStatsByGameWithoutUrls = ({
                     />
                 );
             })}
-        </div>
+        </>
     );
 };
 
@@ -129,10 +129,10 @@ const UserRaceStatsForGameWithoutUrls = ({ stats }: { stats: UserStats[] }) => {
     const game = useStat.displayValue.split("#")[0];
     const favoriteCategory = useStat.displayValue.split("#")[1];
     return (
-        <div>
+        <>
             <div
                 key={useStat.displayValue}
-                className="mb-3 rounded-3 w-100 game-border border-secondary bg-body-secondary"
+                className="mb-3 rounded-3 w-100 game-border border-secondary bg-body-secondary overflow-hidden"
                 style={{ color: "var(--bs-body-color)" }}
             >
                 <div className="d-flex">
@@ -149,9 +149,9 @@ const UserRaceStatsForGameWithoutUrls = ({ stats }: { stats: UserStats[] }) => {
                             }`}
                         />
                     )}
-                    <div className="w-100">
-                        <div className="px-3 w-100">
-                            <div className="d-flex w-100 h5 pt-2 text-truncate mb-0">
+                    <div className="flex-grow-1">
+                        <div className="px-3">
+                            <div className="h5 pt-2 text-truncate mb-0">
                                 {game}
                             </div>
                             <div className="fst-italic">{favoriteCategory}</div>
@@ -193,7 +193,7 @@ const UserRaceStatsForGameWithoutUrls = ({ stats }: { stats: UserStats[] }) => {
                     })}
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 
