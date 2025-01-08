@@ -1,8 +1,12 @@
-import { ReactElement, useMemo, useRef, useState } from "react";
+import { ReactElement, useEffect, useMemo, useRef, useState } from "react";
 import { WrappedWithData } from "~app/[username]/wrapped/wrapped-types";
 import html2canvas from "html2canvas";
 import { getUserProfilePhoto } from "~src/utils/metadata";
 import { Bangers } from "next/font/google";
+import { SectionWrapper } from "./section-wrapper";
+import { SectionTitle } from "./section-title";
+import { SectionBody } from "./section-body";
+import { Button } from "react-bootstrap";
 
 const bangers = Bangers({
     weight: "400",
@@ -17,7 +21,6 @@ export function WrappedSocialCard({
 }): ReactElement {
     const cardRef = useRef<HTMLDivElement>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-    const [isGenerating, setIsGenerating] = useState(false);
     const [profilePhoto, setProfilePhoto] = useState<string | undefined>(
         undefined,
     );
@@ -61,9 +64,12 @@ export function WrappedSocialCard({
 
     const belovedGameImageUrl: string | undefined = getBelovedGameImageUrl();
 
+    useEffect(() => {
+        generateImage();
+    }, []);
+
     const generateImage = async () => {
         if (!cardRef.current) return;
-        setIsGenerating(true);
 
         const photo = await getUserProfilePhoto(wrapped.user);
 
@@ -127,8 +133,6 @@ export function WrappedSocialCard({
             setPreviewUrl(url);
         } catch (error) {
             console.error("Error generating image:", error);
-        } finally {
-            setIsGenerating(false);
         }
     };
 
@@ -136,7 +140,7 @@ export function WrappedSocialCard({
         if (!previewUrl) return;
         const link = document.createElement("a");
         link.href = previewUrl;
-        link.download = `wrapped-${wrapped.year}.jpg`;
+        link.download = `TheRun-Recap-${wrapped.year}-${wrapped.user}.jpg`;
         link.click();
     };
 
@@ -281,7 +285,14 @@ export function WrappedSocialCard({
                                 justifyContent: "center",
                             }}
                         >
-                            <h2 style={{ fontSize: "72px" }}>I...</h2>
+                            <h2
+                                style={{
+                                    fontSize: "72px",
+                                    letterSpacing: "0.02em",
+                                }}
+                            >
+                                I...
+                            </h2>
                             <p>
                                 ...reset{" "}
                                 <span
@@ -294,7 +305,11 @@ export function WrappedSocialCard({
                                 >
                                     {wrapped.countResetFirstSplit.toLocaleString()}
                                 </span>{" "}
-                                times on the first split
+                                {pluralise(
+                                    wrapped.countResetFirstSplit,
+                                    "time",
+                                )}{" "}
+                                on the first split
                             </p>
                             {wrapped.raceData?.globalStats?.totalRaces > 0 && (
                                 <p>
@@ -314,7 +329,11 @@ export function WrappedSocialCard({
                                                 .totalRaces
                                         }
                                     </span>{" "}
-                                    races, finishing{" "}
+                                    {pluralise(
+                                        wrapped.raceData.globalStats.totalRaces,
+                                        "race",
+                                    )}
+                                    , finishing{" "}
                                     <span
                                         style={{
                                             letterSpacing: "0.02em",
@@ -347,12 +366,15 @@ export function WrappedSocialCard({
                                     >
                                         {wrapped.newGames.length}
                                     </span>{" "}
-                                    new games
+                                    new{" "}
+                                    {pluralise(wrapped.newGames.length, "game")}
                                 </p>
                             )}
 
                             <h2 style={{ fontSize: "64px", marginTop: "48px" }}>
-                                My favorite games were
+                                My favorite{" "}
+                                {pluralise(top3Games.length, "game")}{" "}
+                                {pluralise(top3Games.length, "was", "were")}
                             </h2>
                             {top3Games.map((game, index) => (
                                 <p
@@ -409,57 +431,62 @@ export function WrappedSocialCard({
                 </div>
             </div>
 
-            {/* Controls and Preview */}
-            <div className="flex flex-col items-center gap-4">
-                <button
-                    onClick={generateImage}
-                    disabled={isGenerating}
-                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors disabled:bg-blue-300"
-                >
-                    {isGenerating ? "Generating..." : "Generate Image"}
-                </button>
-
-                {previewUrl && (
-                    <div className="flex flex-col items-center gap-4">
-                        <img
-                            src={previewUrl}
-                            alt="Preview"
-                            className="max-w-full h-auto"
-                            style={{ maxHeight: "80vh" }}
-                        />
-                        <button
-                            onClick={handleDownload}
-                            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
-                        >
-                            Download Image
-                        </button>
-                    </div>
-                )}
-            </div>
+            <SectionWrapper>
+                <SectionTitle
+                    title="Here's your image to share with others"
+                    subtitle="But please don't leave until we properly thank you below!"
+                    extraRemark={
+                        "(you can either click the button to download it, or right click and copy it. whatever you'd like!)"
+                    }
+                />
+                <SectionBody>
+                    {previewUrl && (
+                        <div className="d-flex flex-column align-items-center gap-4">
+                            <img
+                                src={previewUrl}
+                                alt={`${wrapped.user}'s 2024 The Run Recap summary image`}
+                                style={{ maxHeight: "640px" }}
+                            />
+                            <Button
+                                onClick={handleDownload}
+                                className="px-4 py-2"
+                            >
+                                Download
+                            </Button>
+                        </div>
+                    )}
+                </SectionBody>
+            </SectionWrapper>
         </div>
     );
 }
 
 const LayeredStats = ({ wrapped }: { wrapped: WrappedWithData }) => {
     const stats = [
-        { value: wrapped.totalRuns, label: "RUNS", color: "#4f46e5" },
+        { value: wrapped.totalRuns, label: "RUN", color: "#4f46e5" },
         {
             value: wrapped.totalFinishedRuns,
-            label: "FINISHED RUNS",
+            label: "FINISHED RUN",
             color: "#f97316",
         },
-        { value: wrapped.totalPlaytime, label: "HOURS", color: "#06b6d4" },
-        { value: wrapped.streak.length, label: "DAY STREAK", color: "#d73600" },
-        { value: wrapped.totalPbs, label: "PBs", color: "#22c55e" },
-        { value: wrapped.totalGolds, label: "GOLDS", color: "#eab308" },
-        { value: wrapped.totalGames, label: "GAMES", color: "#8b5cf6" },
+        { value: wrapped.totalPlaytime, label: "HOUR", color: "#06b6d4" },
+        {
+            value: wrapped.streak.length,
+            label: "DAY STREAK",
+            plural: "DAY STREAK",
+            color: "#d73600",
+        },
+        { value: wrapped.totalPbs, label: "PB", color: "#22c55e" },
+        { value: wrapped.totalGolds, label: "GOLD", color: "#eab308" },
+        { value: wrapped.totalGames, label: "GAME", color: "#8b5cf6" },
         {
             value: wrapped.totalCategories,
-            label: "CATEGORIES",
+            label: "CATEGORY",
+            plural: "CATEGORIES",
             color: "#c154c1",
         },
-        { value: wrapped.totalResets, label: "RESETS", color: "#df1349" },
-        { value: wrapped.totalSplits, label: "SPLITS", color: "#27A11B" },
+        { value: wrapped.totalResets, label: "RESET", color: "#df1349" },
+        { value: wrapped.totalSplits, label: "SPLIT", color: "#27A11B" },
     ];
 
     return (
@@ -503,7 +530,9 @@ const LayeredStats = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                 textTransform: "uppercase",
                             }}
                         >
-                            {stat.label}
+                            {stat.plural
+                                ? pluralise(stat.value, stat.label, stat.plural)
+                                : pluralise(stat.value, stat.label)}
                         </span>
                     </div>
                 </div>
@@ -525,3 +554,6 @@ const getEnhancedTextShadow = (color: string) => {
       0 4px 8px ${shadowColor}
     `;
 };
+
+const pluralise = (value: number, singular: string, plural?: string) =>
+    value === 1 ? singular : plural || `${singular}s`;
