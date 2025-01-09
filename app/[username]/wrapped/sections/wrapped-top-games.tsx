@@ -73,7 +73,7 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
                 extraRemark={extraRemark}
             />
             <SectionBody>
-                <Row className="row-cols-1 row-cols-md-2 row-cols-xl-3 mx-auto pt-5 gx-3 gy-5 g-md-5 w-75">
+                <Row className="row-cols-1 row-cols-md-2 row-cols-xl-3 mx-auto pt-5 gx-3 gy-5 g-md-5 w-75 justify-content-center">
                     {top3Games.map(({ display, total = 0, image }, i) => {
                         return (
                             <Col key={`${display}-${i}`} xs={12}>
