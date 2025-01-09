@@ -2,7 +2,7 @@ import React, { ReactNode, useMemo, useRef } from "react";
 import { WrappedWithData } from "../wrapped-types";
 import { GameImage } from "~src/components/image/gameimage";
 import { TotalStat } from "~src/components/user/stats";
-import { useSparksAnimation } from "../use-sparks-animation.hook";
+// import { useHeartsAnimation } from "../use-hearts-animation.hook";
 import { WrappedCounter } from "../wrapped-counter";
 import { SectionTitle } from "~app/[username]/wrapped/sections/section-title";
 import { SectionWrapper } from "~app/[username]/wrapped/sections/section-wrapper";
@@ -12,10 +12,11 @@ import {
     getDateAsMonthDay,
 } from "~src/components/util/datetime";
 import { Col, Row, Table } from "react-bootstrap";
+import styles from "../hearts.module.scss";
 
 export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
     const streakInDays = wrapped.streak.length;
-    const sparkContainerRef = useRef<HTMLElement>(null);
+    const heartContainerRef = useRef<HTMLElement>(null);
     const cardRef = useRef<HTMLElement>(null);
 
     function getDatesInRange(startDate: string, endDate: string): string[] {
@@ -114,11 +115,11 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
         [mostPlayedGame, wrapped.gamesData],
     );
 
-    useSparksAnimation({
-        sparkRef: sparkContainerRef,
-        containerRef: cardRef,
-        shouldShowSparks: Boolean(mostPlayedGame),
-    });
+    // useHeartsAnimation({
+    //     heartRef: heartContainerRef,
+    //     containerRef: cardRef,
+    //     shouldShowHearts: Boolean(mostPlayedGame),
+    // });
 
     const totalPlaytime = useMemo(() => {
         let totalPlaytime = 0;
@@ -218,7 +219,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                 <div className="col-auto position-relative">
                                     <div
                                         // @ts-expect-error Legacy type issue with Refs that's resolved in React 19
-                                        ref={sparkContainerRef}
+                                        ref={heartContainerRef}
                                         className="position-absolute w-100 h-100"
                                         style={{
                                             pointerEvents: "none",
@@ -228,7 +229,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                     <div
                                         // @ts-expect-error Legacy type issue with Refs that's resolved in React 19
                                         ref={cardRef}
-                                        className="card h-100"
+                                        className={`card h-100 ${styles.heartbeatContainer}`}
                                     >
                                         <div className="card-header">
                                             Your most played game during your

@@ -4,7 +4,8 @@ import { SectionBody } from "./section-body";
 import { SectionTitle } from "./section-title";
 import { SectionWrapper } from "./section-wrapper";
 import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
-import { useSparksAnimation } from "../use-sparks-animation.hook";
+// import { useHeartsAnimation } from "../use-hearts-animation.hook";
+import styles from "../hearts.module.scss";
 
 interface WrappedOutroThanksProps {
     wrapped: WrappedWithData;
@@ -12,22 +13,22 @@ interface WrappedOutroThanksProps {
 export const WrappedOutroThanks = memo<WrappedOutroThanksProps>(
     ({ wrapped }) => {
         const containerRef = useRef<HTMLDivElement>(null);
-        const sparkRef = useRef<HTMLDivElement>(null);
-        useSparksAnimation({
-            containerRef,
-            sparkRef,
-            shouldShowSparks: true,
-        });
+        const heartRef = useRef<HTMLDivElement>(null);
+        // useHeartsAnimation({
+        //     containerRef,
+        //     heartRef,
+        //     shouldShowHearts: true,
+        // });
         return (
             <SectionWrapper>
                 <SectionTitle
                     title="That's a wrap on 2024!"
                     subtitle="Thanks for spending it with The Run. We can't wait to see what you do in 2025!"
                 />
-                <SectionBody ref={sparkRef}>
+                <SectionBody ref={heartRef}>
                     <div
                         ref={containerRef}
-                        className="w-75 mx-auto p-8 rounded-lg shadow-md"
+                        className={`w-75 align-items-center p-8 rounded-lg shadow-md ${styles.heartbeatContainer}`}
                     >
                         <div className="text-center">
                             <h2 className="text-3xl font-semibold">
