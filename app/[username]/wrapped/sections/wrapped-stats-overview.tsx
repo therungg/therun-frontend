@@ -57,8 +57,8 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                                 stat={personalBestCount}
                                 statDescription={
                                     <>
-                                        And you got a PB {personalBestCount}{" "}
-                                        times!
+                                        And you got a PB{" "}
+                                        <b>{personalBestCount}</b> times!
                                     </>
                                 }
                                 style={{

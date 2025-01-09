@@ -151,7 +151,12 @@ const UserRaceStatsForGameWithoutUrls = ({ stats }: { stats: UserStats[] }) => {
                     )}
                     <div className="flex-grow-1">
                         <div className="px-3">
-                            <div className="h5 pt-2 text-truncate mb-0">
+                            <div
+                                className="h5 pt-2 text-truncate mb-0"
+                                style={{
+                                    color: "var(--bs-link-color)",
+                                }}
+                            >
                                 {game}
                             </div>
                             <div className="fst-italic">{favoriteCategory}</div>

@@ -3,6 +3,7 @@ import { getSession } from "~src/actions/session.action";
 import { ContentLoadingWrapper } from "~app/[username]/wrapped/content-loading-wrapper";
 import { TimezoneWarning } from "~app/[username]/wrapped/timezone-warning";
 import { UserData } from "~src/lib/get-session-data";
+import { safeDecodeURI } from "~src/utils/uri";
 
 export const revalidate = 0;
 
@@ -27,9 +28,13 @@ export default async function Page({ params, searchParams }: PageProps) {
 
     const wrapped = await getWrappedForUser(username);
 
+    const decodedUser = safeDecodeURI(username);
+
+    wrapped.user = decodedUser;
+
     return (
         <ContentLoadingWrapper
-            user={username}
+            user={decodedUser}
             loggedinUser={session}
             wrapped={wrapped}
         />

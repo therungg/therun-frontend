@@ -231,7 +231,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                         ref={cardRef}
                                         className={`card h-100 ${styles.heartbeatContainer}`}
                                     >
-                                        <div className="card-header">
+                                        <div className="card-header fw-bold">
                                             Your most played game during your
                                             streak...
                                         </div>
@@ -246,7 +246,16 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                             )}
                                         </div>
                                         <div className="card-footer">
-                                            <h3 className="fw-bold seconda">
+                                            <h3
+                                                className="fw-bold"
+                                                style={{
+                                                    // eslint-disable-next-line sonarjs/no-duplicate-string
+                                                    color: "var(--bs-link-color)",
+                                                    textDecoration: "underline",
+                                                    textDecorationColor:
+                                                        "var(--bs-secondary)",
+                                                }}
+                                            >
                                                 {mostPlayedGame}
                                             </h3>
                                         </div>
@@ -256,7 +265,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                         </div>
                     </Col>
                     <Col xl={5}>
-                        Some really awesome cool stats
+                        <i>Some really awesome cool stats</i>
                         <div className="table-responsive">
                             <Table className="table table_custom">
                                 <tbody>
@@ -359,7 +368,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                             maxHeight: "60vh",
                         }}
                     >
-                        Finished runs during your sick streak below
+                        <i>Finished runs during your sick streak below</i>
                         <Table className="table table_custom text-start">
                             <thead>
                                 <tr>
