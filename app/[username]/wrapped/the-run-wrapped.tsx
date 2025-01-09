@@ -1,6 +1,8 @@
 import {
     MutableRefObject,
     PropsWithChildren,
+    Suspense,
+    lazy,
     useEffect,
     useMemo,
     useRef,
@@ -13,24 +15,64 @@ import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
-import { WrappedStreak } from "./sections/wrapped-streak";
-import { WrappedTopGames } from "./sections/wrapped-top-games";
-import { WrappedStatsOverview } from "./sections/wrapped-stats-overview";
-import { WrappedActivityGraphs } from "~app/[username]/wrapped/sections/wrapped-activity-graphs";
-import { Button } from "react-bootstrap";
+import { Button, Spinner } from "react-bootstrap";
 import { ArrowDownCircleFill, ArrowUpCircleFill } from "react-bootstrap-icons";
-import { WrappedRaceStats } from "./sections/wrapped-race-stats";
-import { WrappedRunsAndPbs } from "~app/[username]/wrapped/sections/wrapped-runs-and-pbs";
 import { isDefined } from "~src/utils/isDefined";
 import styles from "./mesh-background.module.scss";
 import wrappedStyles from "./wrapped.module.scss";
-import { WrappedOutroThanks } from "./sections/wrapped-outro-thanks";
-import { WrappedSocialCard } from "./sections/wrapped-social-card";
-import { useResizeObserver } from "~src/common/use-resize-observer.hook";
+import { useResizeObserver } from "usehooks-ts";
 
 gsap.registerPlugin(useGSAP);
 gsap.registerPlugin(ScrollTrigger);
 gsap.registerPlugin(ScrollToPlugin);
+
+const WrappedStreak = lazy(() =>
+    import("./sections/wrapped-streak").then((module) => ({
+        default: module.WrappedStreak,
+    })),
+);
+const WrappedTopGames = lazy(() =>
+    import("./sections/wrapped-top-games").then((module) => ({
+        default: module.WrappedTopGames,
+    })),
+);
+const WrappedOutroThanks = lazy(() =>
+    import("./sections/wrapped-outro-thanks").then((module) => ({
+        default: module.WrappedOutroThanks,
+    })),
+);
+
+const WrappedSocialCard = lazy(() =>
+    import("./sections/wrapped-social-card").then((module) => ({
+        default: module.WrappedSocialCard,
+    })),
+);
+
+const WrappedStatsOverview = lazy(() =>
+    import("./sections/wrapped-stats-overview").then((module) => ({
+        default: module.WrappedStatsOverview,
+    })),
+);
+
+const WrappedActivityGraphs = lazy(() =>
+    import("~app/[username]/wrapped/sections/wrapped-activity-graphs").then(
+        (module) => ({ default: module.WrappedActivityGraphs }),
+    ),
+);
+
+const WrappedRaceStats = lazy(() =>
+    import("./sections/wrapped-race-stats").then((module) => ({
+        default: module.WrappedRaceStats,
+    })),
+);
+
+const WrappedRunsAndPbs = lazy(() =>
+    import("~app/[username]/wrapped/sections/wrapped-runs-and-pbs").then(
+        (module) => ({
+            default: module.WrappedRunsAndPbs,
+        }),
+    ),
+);
 
 interface TheRunWrappedProps {
     user: string;
@@ -50,18 +92,24 @@ const MOBILE_BREAKPOINT = 768;
 
 interface WrappedSectionProps {
     id?: string;
+    ready?: boolean;
 }
 
 const WrappedSection: React.FC<PropsWithChildren<WrappedSectionProps>> = ({
     children,
     id = "",
+    ready,
 }) => {
     return (
         <section
             id={id}
             className="animated-section text-center flex-center align-items-center min-vh-100"
         >
-            {children}
+            {ready ? (
+                <Suspense fallback={<Spinner />}>{children}</Suspense>
+            ) : (
+                <Spinner />
+            )}
         </section>
     );
 };
@@ -70,51 +118,84 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
     const [sectionIndex, setSectionIndex] = useState(-1);
     const containerRef = useRef<HTMLDivElement>(null);
     const bodyRef = useRef<HTMLElement>(null) as MutableRefObject<HTMLElement>;
-    const { height } = useResizeObserver(containerRef.current);
-    const { width: pageWidth } = useResizeObserver(bodyRef.current);
+    const { height } = useResizeObserver({ ref: containerRef });
+    const { width: pageWidth } = useResizeObserver({ ref: bodyRef });
+    const [readySections, setReadySections] = useState<Record<number, boolean>>(
+        { 0: true },
+    );
 
     useEffect(() => {
         bodyRef.current = document.body;
     }, []);
 
     const sections = useMemo(() => {
+        const hasEnoughData = hasRaceData(wrapped);
         return [
-            <WrappedSection key="wrapped-total-stats-compliment">
+            <WrappedSection
+                key="wrapped-total-stats-compliment"
+                id="wrapped-total-stats-compliment"
+                ready
+            >
                 <WrappedStatsOverview wrapped={wrapped} />
             </WrappedSection>,
 
-            <WrappedSection key="wrapped-activity-graphs">
+            <WrappedSection
+                key="wrapped-activity-graphs"
+                id="wrapped-activity-graphs"
+                ready={readySections[1]}
+            >
                 <WrappedActivityGraphs wrapped={wrapped} />
             </WrappedSection>,
 
-            <WrappedSection key="wrapped-top-games">
+            <WrappedSection
+                key="wrapped-top-games"
+                id="wrapped-top-games"
+                ready={readySections[2]}
+            >
                 <WrappedTopGames wrapped={wrapped} />
             </WrappedSection>,
 
-            <WrappedSection key="wrapped-pbs-and-golds">
+            <WrappedSection
+                key="wrapped-pbs-and-golds"
+                id="wrapped-pbs-and-golds"
+                ready={readySections[3]}
+            >
                 <WrappedRunsAndPbs wrapped={wrapped} />
             </WrappedSection>,
 
-            <WrappedSection key="wrapped-streak">
+            <WrappedSection
+                key="wrapped-streak"
+                id="wrapped-streak"
+                ready={readySections[4]}
+            >
                 <WrappedStreak wrapped={wrapped} />
             </WrappedSection>,
 
-            hasRaceData(wrapped) ? (
-                <WrappedSection key="wrapped-race-stats">
+            hasEnoughData ? (
+                <WrappedSection
+                    key="wrapped-race-stats"
+                    id="wrapped-race-stats"
+                    ready={readySections[5]}
+                >
                     <WrappedRaceStats wrapped={wrapped} />
                 </WrappedSection>
             ) : null,
             <WrappedSection
                 key="wrapped-social-share"
                 id="wrapped-social-share"
+                ready={readySections[hasEnoughData ? 6 : 5]}
             >
                 <WrappedSocialCard wrapped={wrapped} />
             </WrappedSection>,
-            <WrappedSection key="wrapped-outro" id="wrapped-outro">
+            <WrappedSection
+                key="wrapped-outro"
+                id="wrapped-outro"
+                ready={readySections[hasEnoughData ? 7 : 6]}
+            >
                 <WrappedOutroThanks wrapped={wrapped} />
             </WrappedSection>,
         ].filter(isDefined);
-    }, [wrapped]);
+    }, [wrapped, readySections]);
 
     // https://gsap.com/resources/React/
     useGSAP(
@@ -129,15 +210,27 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                 ScrollTrigger.defaults({
                     pin: true,
                     scrub: 0.5,
+                    markers: true,
                 });
 
                 sections.forEach((section, index) => {
                     ScrollTrigger.create({
                         trigger: section,
-                        onEnter: () => setSectionIndex(index),
+                        onEnter: () => {
+                            setSectionIndex(index);
+                            setReadySections((prevSections) => ({
+                                ...prevSections,
+                                [index + 1]: true,
+                            }));
+                        },
                         onLeaveBack: () => setSectionIndex(index - 1),
                     });
                 });
+                // triggering a resize event snaps the scrolltrigger markers in place
+                window.setTimeout(
+                    () => window.dispatchEvent(new Event("resize")),
+                    300,
+                );
             });
         },
         {
@@ -194,7 +287,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
             {sections.map((section, index) => {
                 return (
                     <>
-                        {pageWidth >= MOBILE_BREAKPOINT ? null : (
+                        {pageWidth && pageWidth >= MOBILE_BREAKPOINT ? null : (
                             <div className={wrappedStyles.separator}>
                                 <h2>
                                     {index + 1} / {sections.length}
