@@ -109,14 +109,21 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             }}
                         />
                     </Row>
-                    <Row className="mb-5 row-cols-1 row-cols-lg-2 row-gap-5">
+                    <Row className="w-100 row-cols-1 row-cols-lg-3 row-gap-5">
                         <SectionStatsCard
                             stat={wrapped.totalGames}
                             statDescription={
                                 <>
-                                    You ran <b>{wrapped.totalGames}</b> games,{" "}
-                                    {wrapped.newGames.length} of them for the
-                                    first time!
+                                    You ran <b>{wrapped.totalGames}</b> games
+                                </>
+                            }
+                        />
+                        <SectionStatsCard
+                            stat={wrapped.newGames.length}
+                            statDescription={
+                                <>
+                                    <b>{wrapped.newGames.length}</b> of them for
+                                    the first time!
                                 </>
                             }
                         />
