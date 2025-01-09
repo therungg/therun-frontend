@@ -9,6 +9,7 @@
     border: 3px solid var(--bs-border-color);
     border-radius: 25px;
 
+    transform: translateY(-15px);
     animation: scrollerMove 1.5s cubic-bezier(0.15, 0.41, 0.69, 0.94) infinite;
 }
 
@@ -23,12 +24,12 @@
 
 @keyframes scrollerMove {
     10% {
-        transform: translateY(0);
+        transform: translateY(-15px);
         border-color: var(--bs-border-color);
     }
 
     100% {
-        transform: translateY(15px);
+        transform: translateY(0);
         border-color: transparent;
     }
 }

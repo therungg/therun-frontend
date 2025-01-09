@@ -3,7 +3,7 @@
     display: flex;
     align-items: center;
     text-align: center;
-    margin: 2rem 0;
+    margin: 7rem 0;
     opacity: 0.7;
 }
 
@@ -11,7 +11,6 @@
 .separator::after {
     content: "";
     flex: 1;
-    //border-bottom: 3px solid white;
     border-bottom: 3px solid var(--bs-body-color);
 }
 

@@ -16,133 +16,121 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
         return (
             <SectionWrapper>
                 <SectionTitle
-                    title="We know you love stats. Let's get right into it!"
-                    extraRemark="We couldn't decide which stats to put here -- so we put them all"
+                    title="We know you love stats. Let's get right into them!"
+                    extraRemark="We couldn't decide which stats to put here – so we put them all"
                 />
                 <SectionBody>
-                    <Row className="mb-4">
-                        <Col md={12} lg={4}>
-                            <SectionStatsCard
-                                stat={wrapped.totalRuns}
-                                statDescription={
-                                    <span>
-                                        You started <b>{wrapped.totalRuns}</b>{" "}
-                                        runs
-                                    </span>
-                                }
-                            />
-                        </Col>
-                        <Col md={12} lg={4}>
-                            <SectionStatsCard
-                                stat={wrapped.totalFinishedRuns}
-                                statDescription={
-                                    <>
-                                        You finished{" "}
-                                        <b>{wrapped.totalFinishedRuns}</b> (or{" "}
-                                        <b>
-                                            {(
-                                                (wrapped.totalFinishedRuns /
-                                                    wrapped.totalRuns) *
-                                                100
-                                            ).toFixed(2)}
-                                            %
-                                        </b>
-                                        ) of them
-                                    </>
-                                }
-                            />
-                        </Col>
-                        <Col md={12} lg={4}>
-                            <SectionStatsCard
-                                stat={personalBestCount}
-                                statDescription={
-                                    <>
-                                        And you got a PB{" "}
-                                        <b>{personalBestCount}</b> times!
-                                    </>
-                                }
-                                style={{
-                                    background:
-                                        "linear-gradient(to right, #80FF72, #7EE8FA)",
-                                    color: "transparent",
-                                    backgroundClip: "text",
-                                }}
-                            />
-                        </Col>
+                    <Row className="mb-5 w-100 row-cols-1 row-cols-lg-3 row-gap-5">
+                        <SectionStatsCard
+                            stat={wrapped.totalRuns}
+                            statDescription={
+                                <span>
+                                    You started {wrapped.totalRuns}{" "}
+                                    runs
+                                </span>
+                            }
+                        />
+
+
+                        <SectionStatsCard
+                            stat={wrapped.totalFinishedRuns}
+                            statDescription={
+                                <>
+                                    You finished{" "}
+                                    {wrapped.totalFinishedRuns} (or{" "}
+                                        {(
+                                            (wrapped.totalFinishedRuns /
+                                                wrapped.totalRuns) *
+                                            100
+                                        ).toFixed(2)}
+                                        %
+                                    ) of them
+                                </>
+                            }
+                        />
+
+
+                        <SectionStatsCard
+                            stat={personalBestCount}
+                            statDescription={
+                                <>
+                                    And you got a PB{" "}
+                                    {personalBestCount} times!
+                                </>
+                            }
+                            style={{
+                                background:
+                                    "linear-gradient(to right, #80FF72, #7EE8FA)",
+                                color: "transparent",
+                                backgroundClip: "text",
+                            }}
+                        />
                     </Row>
-                    <Row className="mb-4">
-                        <Col md={12} lg={4}>
-                            <SectionStatsCard
-                                stat={wrapped.totalSplits}
-                                statDescription={
-                                    <>
-                                        You completed a split{" "}
-                                        <b>{wrapped.totalSplits}</b> times!
-                                    </>
-                                }
-                            />
-                        </Col>
-                        <Col md={12} lg={4}>
-                            <SectionStatsCard
-                                stat={wrapped.countResetFirstSplit}
-                                statDescription={
-                                    <>
-                                        Forced to reset on the first split{" "}
-                                        <b>{wrapped.countResetFirstSplit}</b>{" "}
-                                        times...
-                                    </>
-                                }
-                                style={{
-                                    background:
-                                        "linear-gradient(to right, #E01C34, #CCABB0)",
-                                    color: "transparent",
-                                    backgroundClip: "text",
-                                }}
-                            />
-                        </Col>
-                        <Col md={12} lg={4}>
-                            <SectionStatsCard
-                                stat={wrapped.totalGolds}
-                                statDescription={
-                                    <>
-                                        You got <b>{wrapped.totalGolds}</b> gold
-                                        splits this year!
-                                    </>
-                                }
-                                style={{
-                                    background:
-                                        "linear-gradient(to right, #d19e1d, #ffd86e, #e3a812)",
-                                    color: "transparent",
-                                    backgroundClip: "text",
-                                }}
-                            />
-                        </Col>
+                    <Row className="mb-5 w-100 row-cols-1 row-cols-lg-3 row-gap-5">
+                        <SectionStatsCard
+                            stat={wrapped.totalSplits}
+                            statDescription={
+                                <>
+                                    You completed a split{" "}
+                                    {wrapped.totalSplits} times!
+                                </>
+                            }
+                        />
+
+                        <SectionStatsCard
+                            stat={wrapped.countResetFirstSplit}
+                            statDescription={
+                                <>
+                                    Forced to reset on the first split{" "}
+                                    {wrapped.countResetFirstSplit}{" "}
+                                    times...
+                                </>
+                            }
+                            style={{
+                                background:
+                                    "linear-gradient(to right, #E01C34, #CCABB0)",
+                                color: "transparent",
+                                backgroundClip: "text",
+                            }}
+                        />
+
+                        <SectionStatsCard
+                            stat={wrapped.totalGolds}
+                            statDescription={
+                                <>
+                                    You got {wrapped.totalGolds} gold
+                                    splits this year!
+                                </>
+                            }
+                            style={{
+                                background:
+                                    "linear-gradient(to right, #d19e1d, #ffd86e, #e3a812)",
+                                color: "transparent",
+                                backgroundClip: "text",
+                            }}
+                        />
                     </Row>
-                    <Row className="mb-4">
-                        <Col md={12} lg={6}>
-                            <SectionStatsCard
-                                stat={wrapped.totalGames}
-                                statDescription={
-                                    <>
-                                        You ran <b>{wrapped.totalGames}</b>{" "}
-                                        games, <b>{wrapped.newGames.length}</b>{" "}
-                                        of them for the first time!
-                                    </>
-                                }
-                            />
-                        </Col>
-                        <Col md={12} lg={6}>
-                            <SectionStatsCard
-                                stat={wrapped.totalCategories}
-                                statDescription={
-                                    <>
-                                        You did runs for a total of{" "}
-                                        <b>{wrapped.totalCategories}</b>{" "}
-                                        categories!
-                                    </>
-                                }
-                            />
-                        </Col>
+                    <Row className="mb-5 row-cols-1 row-cols-lg-2 row-gap-5">
+                        <SectionStatsCard
+                            stat={wrapped.totalGames}
+                            statDescription={
+                                <>
+                                    You ran {wrapped.totalGames}{" "}
+                                    games, {wrapped.newGames.length}{" "}
+                                    of them for the first time!
+                                </>
+                            }
+                        />
+                        <SectionStatsCard
+                            stat={wrapped.totalCategories}
+                            statDescription={
+                                <>
+                                    You did runs for a total of{" "}
+                                    {wrapped.totalCategories}{" "}
+                                    categories!
+                                </>
+                            }
+                        />
                     </Row>
                 </SectionBody>
             </SectionWrapper>

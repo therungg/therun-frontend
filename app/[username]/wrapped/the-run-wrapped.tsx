@@ -263,28 +263,34 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
             <div className={styles.meshBg} style={{ height }}></div>
             <section
                 id="wrapped-intro"
-                className="flex-center flex-column min-vh-100-no-header text-center"
+                className="d-flex flex-column min-vh-100-no-header text-center"
             >
-                <p className="display-2 mb-0">You had a great 2024!</p>
-                <WrappedTitle user={user} />
-                <p className="display-6 mb-5">
-                    Let's see your stats for this year. Start scrolling!
-                </p>
-                <p className="d-lg-none d-md-block text-sm text-muted mb-5">
-                    (For an optimal experience, we recommend viewing your Recap
-                    on a computer)
-                </p>
-                <ScrollDown />
+                <div className="flex-grow-1 d-flex flex-column justify-content-end">
+                    <p className="display-5 mb-0">You had a great 2024!</p>
+                    <WrappedTitle user={user} />
+                </div>
+                <div className="flex-grow-1 d-flex flex-column justify-content-end">
+                    <p className="fs-5 mb-4">
+                        Let's see your stats for this year. Start scrolling!
+                    </p>
+                    <p className="d-lg-none d-md-block text-sm text-muted mb-5">
+                        (For an optimal experience, we recommend viewing your Recap
+                        on a computer)
+                    </p>
+                    <ScrollDown />
+                </div>
             </section>
             {sections.map((section, index) => {
                 return (
                     <>
-                        <div
-                            className={`d-sm-flex d-md-none ${wrappedStyles.separator}`}
-                        >
-                            <h2>
-                                {index + 1} / {sections.length}
-                            </h2>
+                        <div className="py-md-6">
+                            <div
+                                className={`d-sm-flex d-md-none ${wrappedStyles.separator}`}
+                            >
+                                <h2>
+                                    {index + 1} / {sections.length}
+                                </h2>
+                            </div>
                         </div>
                         {section}
                     </>

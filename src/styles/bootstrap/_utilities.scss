@@ -88,5 +88,16 @@ $utilities: map-merge(
             )
           )
       ),
+      "padding-y": map-merge(
+          map-get($utilities, "padding-y"),
+          (
+            values: map-merge(
+                map-get(map-get($utilities, "padding-y"), "values"),
+                (
+                  6: 6rem,
+                )
+            )
+          )
+      ),
     )
 );

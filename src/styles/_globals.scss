@@ -270,7 +270,11 @@ body {
 
 // Heights
 .min-vh-100-no-header {
-  min-height: calc(100vh - 70px) !important;
+  min-height: calc(100vh - 94px) !important;
+}
+
+.heatmap h3 {
+  font-weight: 400;
 }
 
 // Filters

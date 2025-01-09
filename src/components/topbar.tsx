@@ -136,7 +136,7 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                             </Can>
                             <Nav.Link href={`/wrapped/${username}`}>
                                 Wrapped 2024
-                                <i className="text-secondary">
+                                <i className="ms-1 text-secondary">
                                     <sup>New</sup>
                                 </i>
                             </Nav.Link>

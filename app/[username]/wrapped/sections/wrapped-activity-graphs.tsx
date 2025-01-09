@@ -47,31 +47,26 @@ export const WrappedActivityGraphs = memo<WrappedActivityGraphsProps>(
         return (
             <SectionWrapper ref={activityGraphRef}>
                 <SectionTitle
-                    title={"Here's your heatmap for this year."}
-                    subtitle="Also, we added some cool graphs. Try hovering over them!"
-                    extraRemark={"I bet you like that, don't you?"}
+                    title="We added some cool graphs."
+                    extraRemark={"Try hovering over them! I bet you like that, don't you?"}
                 />
                 <SectionBody>
-                    <div className="w-100">
-                        <div className="d-flex align-items-center display-4">
-                            <div
-                                className="w-100 playtime-graph"
-                                style={{
-                                    marginTop: "1rem",
-                                    marginBottom: "2rem",
-                                }}
-                            >
+                    <>
+                        <div className="d-none d-lg-block mb-3 py-3 game-border border-2 bg-opacity-25 bg-body-secondary rounded-3">
+                            <h3 className="fw-normal mb-2">Your heatmap of this year</h3>
+                            <div className="playtime-graph" style={{ transform: `scale(.9)` }}>
                                 <CalendarHeatmap
                                     width={width}
                                     data={data}
-                                    setter={() => {}}
+                                    setter={() => {
+                                    }}
                                     overview="year"
                                 />
                             </div>
                         </div>
-                        <div className="d-flex align-items-center display-4 mt-5">
-                            <Row className="w-100">
-                                <Col xl={4} lg={12}>
+                        <Row className="row-cols-1 row-cols-xl-3 flex-center display-4 heatmap align-self-stretch">
+                            <div className="py-1">
+                                <div className="game-border border-2 bg-opacity-25 bg-body-secondary p-1 pt-3 rounded-3">
                                     <PlaytimePerMonthGraph
                                         year={wrapped.year}
                                         playtimePerMonthMap={
@@ -79,26 +74,30 @@ export const WrappedActivityGraphs = memo<WrappedActivityGraphsProps>(
                                                 .playtimePerMonthMap
                                         }
                                     />
-                                </Col>
-                                <Col xl={4} lg={12}>
+                                </div>
+                            </div>
+                            <div className="py-1">
+                                <div className="game-border border-2 bg-opacity-25 bg-body-secondary p-1 pt-3 rounded-3">
                                     <PlayTimePerDayOfWeekGraph
                                         playtimePerDayOfWeekMap={
                                             wrapped.playtimeData
                                                 .playtimePerDayOfWeekMap
                                         }
                                     />
-                                </Col>
-                                <Col xl={4} lg={12}>
+                                </div>
+                            </div>
+                            <div className="py-1">
+                                <div className="game-border border-2 bg-opacity-25 bg-body-secondary p-1 pt-3 rounded-3">
                                     <PlaytimePerHourGraph
                                         playtimePerHourMap={
                                             wrapped.playtimeData
                                                 .playtimePerHourMap
                                         }
                                     />
-                                </Col>
-                            </Row>
-                        </div>
-                    </div>
+                                </div>
+                            </div>
+                        </Row>
+                    </>
                 </SectionBody>
             </SectionWrapper>
         );

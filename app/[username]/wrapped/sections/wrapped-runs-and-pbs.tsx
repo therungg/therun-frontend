@@ -190,7 +190,7 @@ const GameOverview: React.FC<
                         return (
                             <Col key={key}>
                                 <div
-                                    className={`mb-3 bg-body-secondary game-border border-secondary py-2 rounded-3 ${styles.liveRunContainer}`}
+                                    className={`mb-4 bg-body-secondary bg-opacity-50 game-border border-2 border-secondary py-3 rounded-3 ${styles.liveRunContainer}`}
                                     onClick={() => {
                                         setSelectedGame(key);
                                     }}
@@ -200,7 +200,7 @@ const GameOverview: React.FC<
                                             xs={3}
                                             className="px-0 align-self-center"
                                         >
-                                            <div className="">
+                                            <div className="text-center">
                                                 {gameData && (
                                                     <GameImage
                                                         className="rounded-3"
@@ -417,7 +417,7 @@ const ShowGame: React.FC<
                             return (
                                 <div
                                     key={category}
-                                    className={`mb-3 bg-body-secondary game-border border-secondary py-2 rounded-3 ${styles.liveRunContainer}`}
+                                    className={`mb-3 bg-body-secondary bg-opacity-50 game-border border-secondary py-2 rounded-3 ${styles.liveRunContainer}`}
                                     onClick={() => {
                                         setSelectedCategory(category);
                                     }}
