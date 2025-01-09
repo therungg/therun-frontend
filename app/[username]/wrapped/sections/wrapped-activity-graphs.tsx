@@ -2,7 +2,7 @@ import React, { memo, useMemo, useRef } from "react";
 import { WrappedWithData } from "~app/[username]/wrapped/wrapped-types";
 import { useResizeObserver } from "usehooks-ts";
 import CalendarHeatmap from "../../../../public/js/calendar-heatmap.component";
-import { Col, Row } from "react-bootstrap";
+import { Row } from "react-bootstrap";
 import {
     PlayTimePerDayOfWeekGraph,
     PlaytimePerHourGraph,
@@ -48,18 +48,24 @@ export const WrappedActivityGraphs = memo<WrappedActivityGraphsProps>(
             <SectionWrapper ref={activityGraphRef}>
                 <SectionTitle
                     title="We added some cool graphs."
-                    extraRemark={"Try hovering over them! I bet you like that, don't you?"}
+                    extraRemark={
+                        "Try hovering over them! I bet you like that, don't you?"
+                    }
                 />
                 <SectionBody>
                     <>
                         <div className="d-none d-lg-block mb-3 py-3 game-border border-2 bg-opacity-25 bg-body-secondary rounded-3">
-                            <h3 className="fw-normal mb-2">Your heatmap of this year</h3>
-                            <div className="playtime-graph" style={{ transform: `scale(.9)` }}>
+                            <h3 className="fw-normal mb-2">
+                                Your heatmap of this year
+                            </h3>
+                            <div
+                                className="playtime-graph"
+                                style={{ transform: `scale(.9)` }}
+                            >
                                 <CalendarHeatmap
                                     width={width}
                                     data={data}
-                                    setter={() => {
-                                    }}
+                                    setter={() => {}}
                                     overview="year"
                                 />
                             </div>

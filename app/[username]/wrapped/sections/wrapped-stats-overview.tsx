@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { Col, Row } from "react-bootstrap";
+import { Row } from "react-bootstrap";
 import { WrappedWithData } from "../wrapped-types";
 import { SectionTitle } from "./section-title";
 import { SectionWrapper } from "./section-wrapper";
@@ -25,38 +25,30 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             stat={wrapped.totalRuns}
                             statDescription={
                                 <span>
-                                    You started {wrapped.totalRuns}{" "}
-                                    runs
+                                    You started {wrapped.totalRuns} runs
                                 </span>
                             }
                         />
-
 
                         <SectionStatsCard
                             stat={wrapped.totalFinishedRuns}
                             statDescription={
                                 <>
-                                    You finished{" "}
-                                    {wrapped.totalFinishedRuns} (or{" "}
-                                        {(
-                                            (wrapped.totalFinishedRuns /
-                                                wrapped.totalRuns) *
-                                            100
-                                        ).toFixed(2)}
-                                        %
-                                    ) of them
+                                    You finished {wrapped.totalFinishedRuns} (or{" "}
+                                    {(
+                                        (wrapped.totalFinishedRuns /
+                                            wrapped.totalRuns) *
+                                        100
+                                    ).toFixed(2)}
+                                    % ) of them
                                 </>
                             }
                         />
 
-
                         <SectionStatsCard
                             stat={personalBestCount}
                             statDescription={
-                                <>
-                                    And you got a PB{" "}
-                                    {personalBestCount} times!
-                                </>
+                                <>And you got a PB {personalBestCount} times!</>
                             }
                             style={{
                                 background:
@@ -71,8 +63,8 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             stat={wrapped.totalSplits}
                             statDescription={
                                 <>
-                                    You completed a split{" "}
-                                    {wrapped.totalSplits} times!
+                                    You completed a split {wrapped.totalSplits}{" "}
+                                    times!
                                 </>
                             }
                         />
@@ -82,8 +74,7 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             statDescription={
                                 <>
                                     Forced to reset on the first split{" "}
-                                    {wrapped.countResetFirstSplit}{" "}
-                                    times...
+                                    {wrapped.countResetFirstSplit} times...
                                 </>
                             }
                             style={{
@@ -98,8 +89,8 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             stat={wrapped.totalGolds}
                             statDescription={
                                 <>
-                                    You got {wrapped.totalGolds} gold
-                                    splits this year!
+                                    You got {wrapped.totalGolds} gold splits
+                                    this year!
                                 </>
                             }
                             style={{
@@ -115,9 +106,9 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             stat={wrapped.totalGames}
                             statDescription={
                                 <>
-                                    You ran {wrapped.totalGames}{" "}
-                                    games, {wrapped.newGames.length}{" "}
-                                    of them for the first time!
+                                    You ran {wrapped.totalGames} games,{" "}
+                                    {wrapped.newGames.length} of them for the
+                                    first time!
                                 </>
                             }
                         />
@@ -126,8 +117,7 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             statDescription={
                                 <>
                                     You did runs for a total of{" "}
-                                    {wrapped.totalCategories}{" "}
-                                    categories!
+                                    {wrapped.totalCategories} categories!
                                 </>
                             }
                         />
