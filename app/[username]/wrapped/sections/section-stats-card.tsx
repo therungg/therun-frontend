@@ -12,7 +12,7 @@ interface SectionStatsCardProps {
 export const SectionStatsCard = memo<SectionStatsCardProps>(
     ({ stat, statDescription, statFormatter, style }) => {
         return (
-            <div className="h-100 d-flex flex-column">
+            <div className="d-flex flex-column">
                 <h4 className="h-100 flex-center h4 fw-normal mb-2">
                     <div>{statDescription}</div>
                 </h4>
