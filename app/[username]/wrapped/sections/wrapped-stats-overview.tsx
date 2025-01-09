@@ -65,7 +65,7 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             }}
                         />
                     </Row>
-                    <Row className="mb-5 w-100 row-cols-1 row-cols-lg-3 row-gap-5">
+                    <Row className="mb-4 w-100 row-cols-1 row-cols-lg-3 row-gap-5">
                         <SectionStatsCard
                             stat={wrapped.totalSplits}
                             statDescription={
