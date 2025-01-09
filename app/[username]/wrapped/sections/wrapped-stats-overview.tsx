@@ -20,12 +20,12 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                     extraRemark="We couldn't decide which stats to put here – so we put them all"
                 />
                 <SectionBody>
-                    <Row className="mb-5 w-100 row-cols-1 row-cols-lg-3 row-gap-5">
+                    <Row className="mb-4 w-100 row-cols-1 row-cols-lg-3 row-gap-5">
                         <SectionStatsCard
                             stat={wrapped.totalRuns}
                             statDescription={
                                 <span>
-                                    You started {wrapped.totalRuns} runs
+                                    You started <b>{wrapped.totalRuns}</b> runs
                                 </span>
                             }
                         />
@@ -34,7 +34,8 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             stat={wrapped.totalFinishedRuns}
                             statDescription={
                                 <>
-                                    You finished {wrapped.totalFinishedRuns} (or{" "}
+                                    You finished{" "}
+                                    <b>{wrapped.totalFinishedRuns}</b> (or{" "}
                                     {(
                                         (wrapped.totalFinishedRuns /
                                             wrapped.totalRuns) *
@@ -48,7 +49,10 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                         <SectionStatsCard
                             stat={personalBestCount}
                             statDescription={
-                                <>And you got a PB {personalBestCount} times!</>
+                                <>
+                                    And you got a PB <b>{personalBestCount}</b>{" "}
+                                    times!
+                                </>
                             }
                             style={{
                                 background:
@@ -63,8 +67,8 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             stat={wrapped.totalSplits}
                             statDescription={
                                 <>
-                                    You completed a split {wrapped.totalSplits}{" "}
-                                    times!
+                                    You completed a split{" "}
+                                    <b>{wrapped.totalSplits}</b> times!
                                 </>
                             }
                         />
@@ -74,7 +78,8 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             statDescription={
                                 <>
                                     Forced to reset on the first split{" "}
-                                    {wrapped.countResetFirstSplit} times...
+                                    <b>{wrapped.countResetFirstSplit}</b>{" "}
+                                    times...
                                 </>
                             }
                             style={{
@@ -89,8 +94,8 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             stat={wrapped.totalGolds}
                             statDescription={
                                 <>
-                                    You got {wrapped.totalGolds} gold splits
-                                    this year!
+                                    You got <b>{wrapped.totalGolds}</b> gold
+                                    splits this year!
                                 </>
                             }
                             style={{
@@ -106,7 +111,7 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             stat={wrapped.totalGames}
                             statDescription={
                                 <>
-                                    You ran {wrapped.totalGames} games,{" "}
+                                    You ran <b>{wrapped.totalGames}</b> games,{" "}
                                     {wrapped.newGames.length} of them for the
                                     first time!
                                 </>
@@ -117,7 +122,7 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             statDescription={
                                 <>
                                     You did runs for a total of{" "}
-                                    {wrapped.totalCategories} categories!
+                                    <b>{wrapped.totalCategories}</b> categories!
                                 </>
                             }
                         />
