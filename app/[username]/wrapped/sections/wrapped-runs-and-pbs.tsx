@@ -173,11 +173,11 @@ const GameOverview: React.FC<
     }
 > = ({ wrapped, setSelectedGame, groupedData }) => {
     return (
-        <div>
+        <>
             <div className="mb-2">
                 Click on a game to view detailed data about that game!
             </div>
-            <Row lg={3} md={2} sm={1} className="justify-content-center">
+            <Row lg={3} md={2} sm={1} className="justify-content-center w-100">
                 {Array.from(groupedData)
                     .sort(
                         ([, aValue], [, bValue]) =>
@@ -273,7 +273,7 @@ const GameOverview: React.FC<
                         );
                     })}
             </Row>
-        </div>
+        </>
     );
 };
 
