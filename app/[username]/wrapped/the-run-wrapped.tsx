@@ -1,4 +1,4 @@
-import { PropsWithChildren, useEffect, useMemo, useRef, useState } from "react";
+import { PropsWithChildren, useMemo, useRef, useState } from "react";
 import { WrappedWithData } from "~app/[username]/wrapped/wrapped-types";
 import { WrappedTitle } from "~app/[username]/wrapped/wrapped-title";
 import { ScrollDown } from "~src/components/scroll-down";
@@ -16,8 +16,10 @@ import { WrappedRaceStats } from "./sections/wrapped-race-stats";
 import { WrappedRunsAndPbs } from "~app/[username]/wrapped/sections/wrapped-runs-and-pbs";
 import { isDefined } from "~src/utils/isDefined";
 import styles from "./mesh-background.module.scss";
+import wrappedStyles from "./wrapped.module.scss";
 import { WrappedOutroThanks } from "./sections/wrapped-outro-thanks";
 import { WrappedSocialCard } from "./sections/wrapped-social-card";
+import { useResizeObserver } from "~src/common/use-resize-observer.hook";
 
 gsap.registerPlugin(useGSAP);
 gsap.registerPlugin(ScrollTrigger);
@@ -36,6 +38,8 @@ const hasRaceData = (wrapped: WrappedWithData) => {
         wrapped.raceData?.globalStats?.totalRaces > 0
     );
 };
+
+const MOBILE_BREAKPOINT = 768;
 
 interface WrappedSectionProps {
     id?: string;
@@ -57,26 +61,9 @@ const WrappedSection: React.FC<PropsWithChildren<WrappedSectionProps>> = ({
 
 export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
     const [sectionIndex, setSectionIndex] = useState(-1);
-    const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
     const containerRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        if (!containerRef.current) return;
-        const observer = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-                setContainerSize({
-                    width: entry.contentRect.width,
-                    height: entry.contentRect.height,
-                });
-            }
-        });
-
-        observer.observe(containerRef.current);
-
-        return () => {
-            observer.disconnect();
-        };
-    }, []);
+    const { height } = useResizeObserver(containerRef.current);
+    const { width: pageWidth } = useResizeObserver(document.body);
 
     const sections = useMemo(() => {
         return [
@@ -126,7 +113,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                 gsap.utils.toArray(".animated-section");
 
             const matchMedia = gsap.matchMedia();
-            matchMedia.add("(min-width: 800px)", () => {
+            matchMedia.add(`(min-width: ${MOBILE_BREAKPOINT}px)`, () => {
                 ScrollTrigger.defaults({
                     pin: true,
                     scrub: 0.5,
@@ -176,10 +163,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
     });
     return (
         <div ref={containerRef}>
-            <div
-                className={styles.meshBg}
-                style={{ height: containerSize.height }}
-            ></div>
+            <div className={styles.meshBg} style={{ height }}></div>
             <section
                 id="wrapped-intro"
                 className="flex-center flex-column min-vh-100-no-header text-center"
@@ -195,7 +179,20 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                 </p>
                 <ScrollDown />
             </section>
-            {sections}
+            {sections.map((section, index) => {
+                return (
+                    <>
+                        {pageWidth >= MOBILE_BREAKPOINT ? null : (
+                            <div className={wrappedStyles.separator}>
+                                <h2>
+                                    {index + 1} / {sections.length}
+                                </h2>
+                            </div>
+                        )}
+                        {section}
+                    </>
+                );
+            })}
             {sectionIndex + 1 === 0 ||
             sectionIndex + 1 === sections.length ? null : (
                 <h2
