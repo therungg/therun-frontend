@@ -8,6 +8,8 @@ import { SectionTitle } from "./section-title";
 import { SectionBody } from "./section-body";
 import { Button } from "react-bootstrap";
 import { safeDecodeURI } from "~src/utils/uri";
+import { usePatreons } from "~src/components/patreon/use-patreons";
+import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 
 const bangers = Bangers({
     weight: "400",
@@ -25,6 +27,7 @@ export function WrappedSocialCard({
     const [profilePhoto, setProfilePhoto] = useState<string | undefined>(
         undefined,
     );
+    const [isPatron, setIsPatron] = useState<boolean>(false);
 
     const topGames = useMemo(() => {
         return wrapped.playtimeData.playtimePerYearMap[wrapped.year].perGame;
@@ -65,9 +68,15 @@ export function WrappedSocialCard({
 
     const belovedGameImageUrl: string | undefined = getBelovedGameImageUrl();
 
+    const { data: patreons, isLoading } = usePatreons();
+
     useEffect(() => {
+        const patronExists = patreons?.[wrapped.user];
+
+        if (patronExists) setIsPatron(true);
+
         generateImage();
-    }, []);
+    }, [isLoading, isPatron]);
 
     const generateImage = async () => {
         if (!cardRef.current) return;
@@ -258,7 +267,16 @@ export function WrappedSocialCard({
                                             getEnhancedTextShadow("#27a11b"),
                                     }}
                                 >
-                                    {safeDecodeURI(wrapped.user)}
+                                    {safeDecodeURI(wrapped.user)}{" "}
+                                    {isPatron && (
+                                        <PatreonBunnySvgWithoutLink
+                                            size={
+                                                wrapped.user.length > 16
+                                                    ? 48
+                                                    : 64
+                                            }
+                                        />
+                                    )}
                                 </span>
                             </p>
                         </div>
