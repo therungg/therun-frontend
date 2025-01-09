@@ -11,8 +11,8 @@ import {
     Stack,
 } from "react-bootstrap";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { TwitchUser } from "./twitch/TwitchUser";
 import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
@@ -43,8 +43,15 @@ interface TopbarProps {
 
 const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
     const router = useRouter();
+    const pathname = usePathname();
     const [show, setShow] = useState(false);
     const [dark, setDark] = useState(true);
+    const parentPath = useMemo(() => {
+        if (!pathname) return "";
+
+        const [parent] = pathname.split("/");
+        return parent;
+    }, [pathname]);
 
     const handleResetSession = useCallback(async () => {
         await resetSession();
@@ -198,24 +205,26 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                     </Navbar.Collapse>
                 </Container>
             </Navbar>
-            <Alert className="container w-100">
-                <AlertHeading>
-                    <Badge>NEW</Badge>&nbsp;The Run Wrapped 2024 is here!!
-                </AlertHeading>
-                <Stack
-                    direction="horizontal"
-                    className="justify-content-between"
-                >
-                    <p>
-                        After several weeks of hard work, we're finally here!
-                        Wrapped brings you all of your 2024 speedrun stats
-                        summarized in a nice package.
-                    </p>
-                </Stack>
-                <div className="d-flex justify-content-center">
-                    <Button className="text-nowrap">Wrapped 2024</Button>
-                </div>
-            </Alert>
+            {parentPath === "wrapped" ? (
+                <Alert className="container w-100">
+                    <AlertHeading>
+                        <Badge>NEW</Badge>&nbsp;The Run Wrapped 2024 is here!!
+                    </AlertHeading>
+                    <Stack
+                        direction="horizontal"
+                        className="justify-content-between"
+                    >
+                        <p>
+                            After several weeks of hard work, we're finally
+                            here! Wrapped brings you all of your 2024 speedrun
+                            stats summarized in a nice package.
+                        </p>
+                    </Stack>
+                    <div className="d-flex justify-content-center">
+                        <Button className="text-nowrap">Wrapped 2024</Button>
+                    </div>
+                </Alert>
+            ) : null}
         </>
     );
 };

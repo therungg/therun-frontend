@@ -1,4 +1,11 @@
-import { PropsWithChildren, useMemo, useRef, useState } from "react";
+import {
+    MutableRefObject,
+    PropsWithChildren,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 import { WrappedWithData } from "~app/[username]/wrapped/wrapped-types";
 import { WrappedTitle } from "~app/[username]/wrapped/wrapped-title";
 import { ScrollDown } from "~src/components/scroll-down";
@@ -62,8 +69,13 @@ const WrappedSection: React.FC<PropsWithChildren<WrappedSectionProps>> = ({
 export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
     const [sectionIndex, setSectionIndex] = useState(-1);
     const containerRef = useRef<HTMLDivElement>(null);
+    const bodyRef = useRef<HTMLElement>(null) as MutableRefObject<HTMLElement>;
     const { height } = useResizeObserver(containerRef.current);
-    const { width: pageWidth } = useResizeObserver(document.body);
+    const { width: pageWidth } = useResizeObserver(bodyRef.current);
+
+    useEffect(() => {
+        bodyRef.current = document.body;
+    }, []);
 
     const sections = useMemo(() => {
         return [
