@@ -20,7 +20,7 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                     extraRemark="We couldn't decide which stats to put here – so we put them all"
                 />
                 <SectionBody>
-                    <Row className="mb-4 w-100 row-cols-1 row-cols-lg-3 row-gap-5">
+                    <Row className="mb-4 w-100 row-cols-1 row-cols-lg-3 row-gap-5 counter-align">
                         <SectionStatsCard
                             stat={wrapped.totalRuns}
                             statDescription={
@@ -65,7 +65,7 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             }}
                         />
                     </Row>
-                    <Row className="mb-4 w-100 row-cols-1 row-cols-lg-3 row-gap-5">
+                    <Row className="mb-4 w-100 row-cols-1 row-cols-lg-3 row-gap-5 counter-align">
                         <SectionStatsCard
                             stat={wrapped.totalSplits}
                             statDescription={
@@ -109,7 +109,7 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             }}
                         />
                     </Row>
-                    <Row className="w-100 row-cols-1 row-cols-lg-3 row-gap-5">
+                    <Row className="w-100 row-cols-1 row-cols-lg-3 row-gap-5 counter-align">
                         <SectionStatsCard
                             stat={wrapped.totalGames}
                             statDescription={

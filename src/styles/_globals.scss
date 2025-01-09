@@ -277,6 +277,43 @@ body {
   font-weight: 400;
 }
 
+.counter-align .counter-align-text-top {
+  vertical-align: text-top;
+}
+
+@media (min-width: 992px) {
+  .podium-xl {
+    > div {
+      order: 3;
+
+      > div {
+        border: 4px var(--bs-border-color) solid;
+      }
+    }
+
+    > div:first-child {
+      order: 2;
+      transform: translateY(-50px);
+
+      > div {
+        border-color: var(--bs-secondary);
+      }
+    }
+
+    > div:nth-child(2) {
+
+      > div {
+        border-color: silver;
+        transform: translateY(-20px);
+      }
+    }
+
+    > div:nth-child(2):not(:last-child) {
+      order: 1;
+    }
+  }
+}
+
 // Filters
 div.game-filter {
 

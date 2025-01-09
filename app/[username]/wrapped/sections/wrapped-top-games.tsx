@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from "react";
 import { DurationToFormatted } from "~src/components/util/datetime";
 import { GameImage } from "~src/components/image/gameimage";
-import { Col, Row } from "react-bootstrap";
+import { Row } from "react-bootstrap";
 import { WrappedWithData } from "../wrapped-types";
 import { WrappedCounter } from "../wrapped-counter";
 import { SectionWrapper } from "./section-wrapper";
@@ -73,13 +73,13 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
                 extraRemark={extraRemark}
             />
             <SectionBody>
-                <Row className="row-cols-1 row-cols-md-2 row-cols-xl-3 mx-auto pt-5 gx-3 gy-5 g-md-5 w-75 justify-content-center">
+                <Row className="w-100 row-cols-1 row-cols-md-2 row-cols-xl-3 mx-auto g-5 justify-content-center podium-xl mw-75r">
                     {top3Games.map(({ display, total = 0, image }, i) => {
                         return (
-                            <Col key={`${display}-${i}`} xs={12}>
+                            <div key={`${display}-${i}`}>
                                 <div className="card h-100">
                                     <div className="card-header d-flex align-items-center justify-content-between">
-                                        <span className="h3 mb-0 fw-bold">
+                                        <span className="h2 mb-0 fw-bold">
                                             <span className="me-2">
                                                 #{i + 1}
                                             </span>
@@ -116,7 +116,7 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
                                         </h3>
                                     </div>
                                 </div>
-                            </Col>
+                            </div>
                         );
                     })}
                 </Row>

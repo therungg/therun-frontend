@@ -16,7 +16,13 @@ export const WrappedCounter = memo<WrappedCounterProps>(
             duration: duration ?? 4,
             formattingFn,
         });
-        return <span ref={countRef} className="align-text-top" style={style} />;
+        return (
+            <span
+                ref={countRef}
+                className="counter-align-text-top"
+                style={style}
+            />
+        );
     },
 );
 WrappedCounter.displayName = "WrappedCounter";
