@@ -4,6 +4,7 @@ import patreonStyles from "./patreon-styles";
 import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import { usePatreons } from "./use-patreons";
 import { getColorMode } from "~src/utils/colormode";
+import { safeDecodeURI } from "~src/utils/uri";
 
 interface NameAsPatreonProps {
     name: string;
@@ -29,7 +30,7 @@ export const NameAsPatreon: React.FunctionComponent<NameAsPatreonProps> = ({
         return <PatreonName name={name} icon={showIcon} color={color} />;
     }
 
-    return <>{name}</>;
+    return <>{safeDecodeURI(name)}</>;
 };
 
 interface PatreonNameProps {

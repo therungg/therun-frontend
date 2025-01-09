@@ -31,7 +31,10 @@ interface TheRunWrappedProps {
 const FOOTER_HEIGHT = 25;
 
 const hasRaceData = (wrapped: WrappedWithData) => {
-    return wrapped.raceData?.categoryStats?.length > 0;
+    return (
+        wrapped.raceData?.categoryStats?.length > 0 &&
+        wrapped.raceData?.globalStats?.totalRaces > 0
+    );
 };
 
 interface WrappedSectionProps {
@@ -182,6 +185,10 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                 <WrappedTitle user={user} />
                 <p className="display-6 mb-5">
                     Let's see your stats for this year. Start scrolling!
+                </p>
+                <p className="d-lg-none d-md-block text-sm text-muted mb-5">
+                    (For an optimal experience, we recommend viewing your Recap
+                    on a computer)
                 </p>
                 <ScrollDown />
             </section>

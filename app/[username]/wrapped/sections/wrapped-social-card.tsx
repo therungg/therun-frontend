@@ -7,6 +7,7 @@ import { SectionWrapper } from "./section-wrapper";
 import { SectionTitle } from "./section-title";
 import { SectionBody } from "./section-body";
 import { Button } from "react-bootstrap";
+import { safeDecodeURI } from "~src/utils/uri";
 
 const bangers = Bangers({
     weight: "400",
@@ -140,7 +141,9 @@ export function WrappedSocialCard({
         if (!previewUrl) return;
         const link = document.createElement("a");
         link.href = previewUrl;
-        link.download = `TheRun-Recap-${wrapped.year}-${wrapped.user}.jpg`;
+        link.download = `TheRun-Recap-${wrapped.year}-${safeDecodeURI(
+            wrapped.user,
+        )}.jpg`;
         link.click();
     };
 
@@ -255,7 +258,7 @@ export function WrappedSocialCard({
                                             getEnhancedTextShadow("#27a11b"),
                                     }}
                                 >
-                                    {wrapped.user}
+                                    {safeDecodeURI(wrapped.user)}
                                 </span>
                             </p>
                         </div>
@@ -444,7 +447,9 @@ export function WrappedSocialCard({
                         <div className="d-flex flex-column align-items-center gap-4">
                             <img
                                 src={previewUrl}
-                                alt={`${wrapped.user}'s 2024 The Run Recap summary image`}
+                                alt={`${safeDecodeURI(
+                                    wrapped.user,
+                                )}'s 2024 The Run Recap summary image`}
                                 style={{ maxHeight: "640px" }}
                             />
                             <Button
