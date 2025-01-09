@@ -148,9 +148,9 @@ export function WrappedSocialCard({
         <div style={{ position: "relative", width: "100%", height: "100%" }}>
             <div
                 style={{
-                    position: "absolute",
-                    left: 0,
-                    top: 0,
+                    position: "fixed",
+                    left: "-9999px",
+                    top: "-9999px",
                     width: "1080px",
                     height: "1920px",
                     overflow: "hidden",
