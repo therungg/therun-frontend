@@ -222,9 +222,6 @@ const GameOverview: React.FC<
                                                         "var(--bs-secondary)",
                                                 }}
                                             >
-                                                <span className="me-2">
-                                                    {key}
-                                                </span>
                                                 {i < 3 && (
                                                     <TrophyIcon
                                                         size={24}
@@ -237,6 +234,9 @@ const GameOverview: React.FC<
                                                         }
                                                     />
                                                 )}
+                                                <span className="me-2">
+                                                    {key}
+                                                </span>
                                             </div>
                                             <div className="d-flex justify-content-between me-3">
                                                 <div>
