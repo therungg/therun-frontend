@@ -19,6 +19,7 @@ import { isDefined } from "~src/utils/isDefined";
 import styles from "./mesh-background.module.scss";
 import wrappedStyles from "./wrapped.module.scss";
 import { useResizeObserver } from "usehooks-ts";
+import { SocialShareSpeedDial } from "./social-share-dial";
 
 gsap.registerPlugin(useGSAP);
 gsap.registerPlugin(ScrollTrigger);
@@ -218,11 +219,16 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                         onLeaveBack: () => setSectionIndex(index - 1),
                     });
                 });
+                // DO NOT TRY THIS AT HOME. THIS STUNT WAS PERFORMED BY TRAINED PROFESSIONALS.
                 // triggering a resize event snaps the scrolltrigger markers in place
-                window.setTimeout(
-                    () => window.dispatchEvent(new Event("resize")),
-                    300,
-                );
+                const interval = window.setInterval(() => {
+                    window.dispatchEvent(new Event("resize"));
+                    ScrollTrigger.refresh();
+                }, 300);
+
+                return () => {
+                    window.clearInterval(interval);
+                };
             });
         },
         {
@@ -274,8 +280,8 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                         Let's see your stats for this year. Start scrolling!
                     </p>
                     <p className="d-lg-none d-md-block text-sm text-muted mb-5">
-                        (For an optimal experience, we recommend viewing your Recap
-                        on a computer)
+                        (For an optimal experience, we recommend viewing your
+                        Recap on a computer)
                     </p>
                     <ScrollDown />
                 </div>
@@ -296,6 +302,18 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                     </>
                 );
             })}
+            <div
+                className="sticky-bottom text-center start-50 me-4 position-fixed d-none d-md-flex"
+                style={{
+                    transform: "translateX(-50%)",
+                }}
+            >
+                <SocialShareSpeedDial
+                    title="Check out my 2024 The Run speedrunning recap!"
+                    text="Here's something you might love!"
+                    url={`https://therun.gg/${user}/wrapped`}
+                />
+            </div>
             {sectionIndex + 1 === 0 ||
             sectionIndex + 1 === sections.length ? null : (
                 <h2
