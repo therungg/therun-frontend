@@ -1,9 +1,7 @@
 import {
-    MutableRefObject,
     PropsWithChildren,
     Suspense,
     lazy,
-    useEffect,
     useMemo,
     useRef,
     useState,
@@ -117,16 +115,10 @@ const WrappedSection: React.FC<PropsWithChildren<WrappedSectionProps>> = ({
 export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
     const [sectionIndex, setSectionIndex] = useState(-1);
     const containerRef = useRef<HTMLDivElement>(null);
-    const bodyRef = useRef<HTMLElement>(null) as MutableRefObject<HTMLElement>;
     const { height } = useResizeObserver({ ref: containerRef });
-    const { width: pageWidth } = useResizeObserver({ ref: bodyRef });
     const [readySections, setReadySections] = useState<Record<number, boolean>>(
         { 0: true },
     );
-
-    useEffect(() => {
-        bodyRef.current = document.body;
-    }, []);
 
     const sections = useMemo(() => {
         const hasEnoughData = hasRaceData(wrapped);
@@ -287,13 +279,13 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
             {sections.map((section, index) => {
                 return (
                     <>
-                        {pageWidth && pageWidth >= MOBILE_BREAKPOINT ? null : (
-                            <div className={wrappedStyles.separator}>
-                                <h2>
-                                    {index + 1} / {sections.length}
-                                </h2>
-                            </div>
-                        )}
+                        <div
+                            className={`d-sm-flex d-md-none ${wrappedStyles.separator}`}
+                        >
+                            <h2>
+                                {index + 1} / {sections.length}
+                            </h2>
+                        </div>
                         {section}
                     </>
                 );
