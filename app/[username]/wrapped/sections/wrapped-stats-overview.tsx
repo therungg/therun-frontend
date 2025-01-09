@@ -36,12 +36,15 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                                 <>
                                     You finished{" "}
                                     <b>{wrapped.totalFinishedRuns}</b> (or{" "}
-                                    {(
-                                        (wrapped.totalFinishedRuns /
-                                            wrapped.totalRuns) *
-                                        100
-                                    ).toFixed(2)}
-                                    % ) of them
+                                    <b>
+                                        {(
+                                            (wrapped.totalFinishedRuns /
+                                                wrapped.totalRuns) *
+                                            100
+                                        ).toFixed(2)}
+                                        %
+                                    </b>
+                                    ) of them
                                 </>
                             }
                         />
