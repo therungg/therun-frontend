@@ -11,7 +11,7 @@ import {
     Stack,
 } from "react-bootstrap";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import { TwitchUser } from "./twitch/TwitchUser";
@@ -46,12 +46,14 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
     const pathname = usePathname();
     const [show, setShow] = useState(false);
     const [dark, setDark] = useState(true);
-    const parentPath = useMemo(() => {
-        if (!pathname) return "";
+    const hasRoute = useCallback(
+        (route: string) => {
+            if (!pathname) return "";
 
-        const [parent] = pathname.split("/");
-        return parent;
-    }, [pathname]);
+            return pathname.split("/").includes(route);
+        },
+        [pathname],
+    );
 
     const handleResetSession = useCallback(async () => {
         await resetSession();
@@ -205,7 +207,7 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                     </Navbar.Collapse>
                 </Container>
             </Navbar>
-            {parentPath === "wrapped" ? (
+            {!hasRoute("wrapped") ? (
                 <Alert className="container w-100">
                     <AlertHeading>
                         <Badge>NEW</Badge>&nbsp;The Run Wrapped 2024 is here!!
