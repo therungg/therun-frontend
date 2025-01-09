@@ -125,16 +125,19 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
             const sections: gsap.DOMTarget[] =
                 gsap.utils.toArray(".animated-section");
 
-            ScrollTrigger.defaults({
-                pin: true,
-                scrub: 0.5,
-            });
+            const matchMedia = gsap.matchMedia();
+            matchMedia.add("(min-width: 800px)", () => {
+                ScrollTrigger.defaults({
+                    pin: true,
+                    scrub: 0.5,
+                });
 
-            sections.forEach((section, index) => {
-                ScrollTrigger.create({
-                    trigger: section,
-                    onEnter: () => setSectionIndex(index),
-                    onLeaveBack: () => setSectionIndex(index - 1),
+                sections.forEach((section, index) => {
+                    ScrollTrigger.create({
+                        trigger: section,
+                        onEnter: () => setSectionIndex(index),
+                        onLeaveBack: () => setSectionIndex(index - 1),
+                    });
                 });
             });
         },
