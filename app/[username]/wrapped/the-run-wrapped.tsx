@@ -223,7 +223,6 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                 // triggering a resize event snaps the scrolltrigger markers in place
                 const interval = window.setInterval(() => {
                     window.dispatchEvent(new Event("resize"));
-                    ScrollTrigger.refresh();
                 }, 300);
 
                 return () => {
