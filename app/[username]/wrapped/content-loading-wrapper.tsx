@@ -5,6 +5,7 @@ import { User } from "../../../types/session.types";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { TheRunWrapped } from "~app/[username]/wrapped/the-run-wrapped";
+import useSWR from "swr";
 
 interface ContentLoadingWrapperProps {
     user: string;
@@ -18,16 +19,18 @@ export const ContentLoadingWrapper = ({
 }: ContentLoadingWrapperProps) => {
     const router = useRouter();
     const [status, setStatus] = useState(wrapped.status);
-
-    useEffect(() => {
-        if (status === 0) {
-            const interval = setInterval(() => {
-                router.refresh();
-            }, 1000);
-
-            return () => clearInterval(interval);
-        }
-    }, [status, router]);
+    useSWR(
+        `/api/wrapped/${user}/data`,
+        () => {
+            status === 0 ? router.refresh() : undefined;
+        },
+        {
+            refreshInterval: 1000,
+            revalidateOnReconnect: true,
+            revalidateOnFocus: true,
+            revalidateIfStale: true,
+        },
+    );
 
     useEffect(() => {
         setStatus(wrapped.status);
