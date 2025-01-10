@@ -248,7 +248,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                         });
                     },
                     {
-                        threshold: 0.5, // Trigger when 50% of the section is in view
+                        threshold: 0.1, // Trigger when 10% of the section is in view
                     },
                 );
 
