@@ -20,22 +20,71 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                     extraRemark="We couldn't decide which stats to put here – so we put them all"
                 />
                 <SectionBody>
-                    <Row className="mb-4 w-100 row-cols-1 row-cols-lg-3 row-gap-5 counter-align">
+                    <div className="mb-4 w-100">
                         <SectionStatsCard
+                            style={{
+                                width: "100%",
+                                background:
+                                    "linear-gradient(to right, #5BCEFA, #F5A9B8, #FFFFFF, #F5A9B8, #5BCEFA)",
+                                color: "transparent",
+                                backgroundClip: "text",
+                            }}
+                            stat={wrapped.totalPlaytime}
+                            statFormatter={(a) => {
+                                return (
+                                    a.toLocaleString() + " hours of playtime"
+                                );
+                            }}
+                            statDescription={
+                                <span>
+                                    You did runs for{" "}
+                                    <b>
+                                        {wrapped.totalPlaytime.toLocaleString()}
+                                    </b>{" "}
+                                    hours in {wrapped.year}. That's about{" "}
+                                    <b>
+                                        {(wrapped.totalPlaytime / 365).toFixed(
+                                            2,
+                                        )}
+                                    </b>{" "}
+                                    hours per day on average!
+                                </span>
+                            }
+                        />
+                    </div>
+                    <Row className="mb-2 w-100 row-cols-1 row-cols-lg-3 row-gap-5">
+                        <SectionStatsCard
+                            style={{
+                                background:
+                                    "linear-gradient(to right, #4f46e5, #6f66e5)",
+                                color: "transparent",
+                                backgroundClip: "text",
+                            }}
                             stat={wrapped.totalRuns}
                             statDescription={
                                 <span>
-                                    You started <b>{wrapped.totalRuns}</b> runs
+                                    You started{" "}
+                                    <b>{wrapped.totalRuns.toLocaleString()}</b>{" "}
+                                    runs
                                 </span>
                             }
                         />
 
                         <SectionStatsCard
+                            style={{
+                                background:
+                                    "linear-gradient(to right, #f97316, #f99386)",
+                                color: "transparent",
+                                backgroundClip: "text",
+                            }}
                             stat={wrapped.totalFinishedRuns}
                             statDescription={
                                 <>
                                     You finished{" "}
-                                    <b>{wrapped.totalFinishedRuns}</b> (or{" "}
+                                    <b>
+                                        {wrapped.totalFinishedRuns.toLocaleString()}
+                                    </b>{" "}
+                                    (or{" "}
                                     <b>
                                         {(
                                             (wrapped.totalFinishedRuns /
@@ -53,7 +102,8 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             stat={personalBestCount}
                             statDescription={
                                 <>
-                                    And you got a PB <b>{personalBestCount}</b>{" "}
+                                    And you got a PB{" "}
+                                    <b>{personalBestCount.toLocaleString()}</b>{" "}
                                     times!
                                 </>
                             }
@@ -65,13 +115,22 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             }}
                         />
                     </Row>
-                    <Row className="mb-4 w-100 row-cols-1 row-cols-lg-3 row-gap-5 counter-align">
+                    <Row className="mb-2 w-100 row-cols-1 row-cols-lg-3 row-gap-5 counter-align">
                         <SectionStatsCard
                             stat={wrapped.totalSplits}
+                            style={{
+                                background:
+                                    "linear-gradient(to right, #27A11B, #47C11B)",
+                                color: "transparent",
+                                backgroundClip: "text",
+                            }}
                             statDescription={
                                 <>
                                     You completed a split{" "}
-                                    <b>{wrapped.totalSplits}</b> times!
+                                    <b>
+                                        {wrapped.totalSplits.toLocaleString()}
+                                    </b>{" "}
+                                    times!
                                 </>
                             }
                         />
@@ -81,7 +140,9 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             statDescription={
                                 <>
                                     Forced to reset on the first split{" "}
-                                    <b>{wrapped.countResetFirstSplit}</b>{" "}
+                                    <b>
+                                        {wrapped.countResetFirstSplit.toLocaleString()}
+                                    </b>{" "}
                                     times...
                                 </>
                             }
@@ -97,8 +158,9 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                             stat={wrapped.totalGolds}
                             statDescription={
                                 <>
-                                    You got <b>{wrapped.totalGolds}</b> gold
-                                    splits this year!
+                                    You got{" "}
+                                    <b>{wrapped.totalGolds.toLocaleString()}</b>{" "}
+                                    gold splits this year!
                                 </>
                             }
                             style={{
@@ -117,15 +179,27 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                                     You ran <b>{wrapped.totalGames}</b> games
                                 </>
                             }
+                            style={{
+                                background:
+                                    "linear-gradient(to right, #c0c0c0, #f3f3f3)",
+                                color: "transparent",
+                                backgroundClip: "text",
+                            }}
                         />
                         <SectionStatsCard
                             stat={wrapped.newGames.length}
                             statDescription={
                                 <>
-                                    <b>{wrapped.newGames.length}</b> of them for
-                                    the first time!
+                                    ...<b>{wrapped.newGames.length}</b> of them
+                                    for the first time!
                                 </>
                             }
+                            style={{
+                                background:
+                                    "linear-gradient(to right, #40e0d0, #73ffff)",
+                                color: "transparent",
+                                backgroundClip: "text",
+                            }}
                         />
                         <SectionStatsCard
                             stat={wrapped.totalCategories}
@@ -135,6 +209,12 @@ export const WrappedStatsOverview = memo<WrappedStatsOverviewProps>(
                                     <b>{wrapped.totalCategories}</b> categories!
                                 </>
                             }
+                            style={{
+                                background:
+                                    "linear-gradient(to right, #c154c1, #c174e1)",
+                                color: "transparent",
+                                backgroundClip: "text",
+                            }}
                         />
                     </Row>
                 </SectionBody>

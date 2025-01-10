@@ -382,15 +382,19 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                     return (
                                         <tr key={run.endedAt}>
                                             <td>
-                                                <div className="h5">
+                                                <div className="h5 text-truncate">
                                                     {getDateAsMonthDay(
                                                         new Date(run.endedAt),
                                                     )}
                                                 </div>
                                             </td>
-                                            <td>
+                                            <td
+                                                style={{
+                                                    maxWidth: "18rem",
+                                                }}
+                                            >
                                                 <div
-                                                    className="h5 mb-1 mt-0"
+                                                    className="h5 mb-1 mt-0 text-truncate"
                                                     style={{
                                                         color: "var(--bs-link-color)",
                                                     }}

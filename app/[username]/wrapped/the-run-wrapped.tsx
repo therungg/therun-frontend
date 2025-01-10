@@ -1,7 +1,7 @@
 import {
+    lazy,
     PropsWithChildren,
     Suspense,
-    lazy,
     useMemo,
     useRef,
     useState,
@@ -269,6 +269,12 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                 <div className="flex-grow-1 d-flex flex-column justify-content-end">
                     <p className="display-5 mb-0">You had a great 2024!</p>
                     <WrappedTitle user={user} />
+                    <p className="h3 mt-1 opacity-50">
+                        Brought to you by{" "}
+                        <span style={{ color: "var(--bs-link-color)" }}>
+                            therun.gg
+                        </span>
+                    </p>
                 </div>
                 <div className="flex-grow-1 d-flex flex-column justify-content-end">
                     <p className="fs-5 mb-4">
