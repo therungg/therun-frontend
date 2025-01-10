@@ -230,6 +230,34 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                     });
                 });
             });
+
+            // Mobile lazy loading logic
+            matchMedia.add(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`, () => {
+                const observer = new IntersectionObserver(
+                    (entries) => {
+                        entries.forEach((entry) => {
+                            const section = entry.target;
+                            const sectionIndex = sections.indexOf(section);
+
+                            if (entry.isIntersecting) {
+                                setReadySections((prevSections) => ({
+                                    ...prevSections,
+                                    [sectionIndex + 1]: true,
+                                }));
+                            }
+                        });
+                    },
+                    {
+                        threshold: 0.5, // Trigger when 50% of the section is in view
+                    },
+                );
+
+                sections.forEach((section) =>
+                    observer.observe(section as Element),
+                );
+
+                return () => observer.disconnect();
+            });
         },
         {
             dependencies: [wrapped.hasEnoughRuns],
