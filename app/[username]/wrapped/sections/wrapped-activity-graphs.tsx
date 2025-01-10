@@ -48,9 +48,7 @@ export const WrappedActivityGraphs = memo<WrappedActivityGraphsProps>(
             <SectionWrapper ref={activityGraphRef}>
                 <SectionTitle
                     title="We added some cool graphs."
-                    extraRemark={
-                        "Try hovering over them! I bet you like that, don't you?"
-                    }
+                    extraRemark="Try hovering over them! Pretty neat, right?"
                 />
                 <SectionBody>
                     <>
