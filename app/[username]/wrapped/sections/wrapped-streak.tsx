@@ -13,6 +13,7 @@ import {
 } from "~src/components/util/datetime";
 import { Col, Row, Table } from "react-bootstrap";
 import styles from "../hearts.module.scss";
+import { TruncatedTextTooltip } from "~src/components/tooltip";
 
 export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
     const streakInDays = wrapped.streak.length;
@@ -396,10 +397,14 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                     return (
                                         <tr key={run.endedAt}>
                                             <td>
-                                                <div className="h5 text-truncate">
-                                                    {getDateAsMonthDay(
-                                                        new Date(run.endedAt),
-                                                    )}
+                                                <div className="h5">
+                                                    <TruncatedTextTooltip
+                                                        text={getDateAsMonthDay(
+                                                            new Date(
+                                                                run.endedAt,
+                                                            ),
+                                                        )}
+                                                    />
                                                 </div>
                                             </td>
                                             <td
@@ -408,12 +413,14 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                                 }}
                                             >
                                                 <div
-                                                    className="h5 mb-1 mt-0 text-truncate"
+                                                    className="h5 mb-1 mt-0"
                                                     style={{
                                                         color: "var(--bs-link-color)",
                                                     }}
                                                 >
-                                                    {run.game}
+                                                    <TruncatedTextTooltip
+                                                        text={run.game}
+                                                    />
                                                 </div>
                                                 <div className="fst-italic">
                                                     {run.category}
@@ -447,8 +454,8 @@ const StreakStatItem = ({
 }) => {
     return (
         <tr>
-            <td className="h4 text-truncate">
-                <b>{stat}</b>
+            <td className="h4">
+                <TruncatedTextTooltip text={<b>{stat}</b>} />
             </td>
             <td className="align-bottom h6">{explanation}</td>
         </tr>

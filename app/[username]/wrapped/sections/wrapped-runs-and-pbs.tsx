@@ -13,6 +13,7 @@ import {
 import styles from "~src/components/css/LiveRun.module.scss";
 import { GameImage } from "~src/components/image/gameimage";
 import { TrophyIcon } from "~src/icons/trophy-icon";
+import { TruncatedTextTooltip } from "~src/components/tooltip";
 
 interface WrappedRunsAndPbsProps {
     wrapped: WrappedWithData;
@@ -252,28 +253,35 @@ const GameOverview: React.FC<
                                         </Col>
                                         <Col xs={9}>
                                             <div
-                                                className="text-start h5 fw-bold text-truncate pe-3"
+                                                className="text-start h5 fw-bold pe-3"
                                                 style={{
                                                     textDecoration: "underline",
                                                     textDecorationColor:
                                                         "var(--bs-secondary)",
                                                 }}
                                             >
-                                                {i < 3 && (
-                                                    <TrophyIcon
-                                                        size={24}
-                                                        trophyColor={
-                                                            i === 0
-                                                                ? "gold"
-                                                                : i === 1
-                                                                  ? "silver"
-                                                                  : "bronze"
-                                                        }
-                                                    />
-                                                )}
-                                                <span className="me-2">
-                                                    {key}
-                                                </span>
+                                                <TruncatedTextTooltip
+                                                    text={
+                                                        <>
+                                                            {i < 3 && (
+                                                                <TrophyIcon
+                                                                    size={24}
+                                                                    trophyColor={
+                                                                        i === 0
+                                                                            ? "gold"
+                                                                            : i ===
+                                                                                1
+                                                                              ? "silver"
+                                                                              : "bronze"
+                                                                    }
+                                                                />
+                                                            )}
+                                                            <span className="me-2">
+                                                                {key}
+                                                            </span>
+                                                        </>
+                                                    }
+                                                />
                                             </div>
                                             <div className="d-flex justify-content-between me-3">
                                                 <div>
@@ -459,25 +467,35 @@ const ShowGame: React.FC<
                                         setSelectedCategory(category);
                                     }}
                                 >
-                                    <div className="text-start px-3 h5 fw-bold text-truncate">
-                                        {category} -{" "}
-                                        <DurationToFormatted
-                                            duration={categoryData.pb}
-                                        />{" "}
-                                        {categoryData.timeBefore &&
-                                            categoryData.pb &&
-                                            categoryData.timeBefore !==
-                                                categoryData.pb && (
-                                                <span className="h6">
-                                                    (
-                                                    <Difference
-                                                        two={categoryData.timeBefore.toString()}
-                                                        one={categoryData.pb.toString()}
-                                                        inline={true}
+                                    <div className="text-start px-3 h5 fw-bold">
+                                        <TruncatedTextTooltip
+                                            text={
+                                                <>
+                                                    {category} -{" "}
+                                                    <DurationToFormatted
+                                                        duration={
+                                                            categoryData.pb
+                                                        }
                                                     />{" "}
-                                                    this year)
-                                                </span>
-                                            )}
+                                                    {categoryData.timeBefore &&
+                                                        categoryData.pb &&
+                                                        categoryData.timeBefore !==
+                                                            categoryData.pb && (
+                                                            <span className="h6">
+                                                                (
+                                                                <Difference
+                                                                    two={categoryData.timeBefore.toString()}
+                                                                    one={categoryData.pb.toString()}
+                                                                    inline={
+                                                                        true
+                                                                    }
+                                                                />{" "}
+                                                                this year)
+                                                            </span>
+                                                        )}
+                                                </>
+                                            }
+                                        />
                                     </div>
                                     <div className="d-flex justify-content-between px-3">
                                         <div>

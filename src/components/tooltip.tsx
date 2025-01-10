@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { ReactNode, memo } from "react";
 import { OverlayTrigger, Popover, Tooltip } from "react-bootstrap";
 import { ReactElementLike } from "prop-types";
 
@@ -73,7 +73,7 @@ export const QuestionMark = () => {
 };
 
 interface TruncatedTextTooltipProps {
-    text: string;
+    text: ReactNode;
     maxWidth?: number;
 }
 export const TruncatedTextTooltip = memo<TruncatedTextTooltipProps>(
