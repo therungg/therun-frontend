@@ -157,7 +157,9 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
             });
         });
 
-        return runs;
+        return runs.sort((a, b) => {
+            return a.endedAt > b.endedAt ? 1 : -1;
+        });
     }, [wrapped.runData, wrapped.streak]);
 
     const pbsDuringStreak = useMemo(() => {
