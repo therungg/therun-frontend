@@ -58,7 +58,18 @@ export const WrappedRunsAndPbs: React.FC<WrappedRunsAndPbsProps> = ({
         const gameCategoryMap = new Map();
 
         wrapped.runData.forEach((run, i) => {
-            const correspondingPbs = wrapped.pbsAndGolds[i];
+            let correspondingPbs = wrapped.pbsAndGolds[i];
+
+            if (!correspondingPbs) {
+                correspondingPbs = wrapped.pbsAndGolds.find(
+                    (p) => p.game === run.game && p.category === run.category,
+                );
+            }
+
+            if (!correspondingPbs) {
+                return;
+            }
+
             const {
                 game,
                 category,
