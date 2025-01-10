@@ -1,3 +1,5 @@
+"use client";
+
 import React, { memo, useCallback, useRef, useState } from "react";
 import {
     TwitterShareButton,
@@ -21,7 +23,7 @@ interface SocialShareSpeedDialProps {
 
 export const SocialShareSpeedDial = memo<SocialShareSpeedDialProps>(
     ({ url, title }) => {
-        const buttonRef = useRef<HTMLButtonElement>(null);
+        const containerRef = useRef<HTMLButtonElement>(null);
         const [isOpen, setIsOpen] = useState(false);
         const [copied, setCopied] = useState<"PENDING" | "SUCCESS" | "ERROR">(
             "PENDING",
@@ -32,7 +34,7 @@ export const SocialShareSpeedDial = memo<SocialShareSpeedDialProps>(
             [],
         );
 
-        useOnClickOutside(buttonRef, onOutsideClick);
+        useOnClickOutside(containerRef, onOutsideClick);
 
         const handleCopy = () => {
             navigator.clipboard
@@ -47,9 +49,12 @@ export const SocialShareSpeedDial = memo<SocialShareSpeedDialProps>(
         };
 
         return (
-            <div className="position-relative p-3 d-flex flex-column align-items-center">
+            <div
+                // @ts-expect-error Legacy type issue with Refs that's resolved in React 19
+                ref={containerRef}
+                className="position-relative p-3 d-flex flex-column align-items-center"
+            >
                 <button
-                    ref={buttonRef}
                     className={`btn btn-primary rounded-circle d-flex justify-content-center align-items-center shadow ${
                         isOpen ? "rotate-icon" : ""
                     }`}
