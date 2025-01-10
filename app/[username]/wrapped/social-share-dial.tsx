@@ -1,11 +1,7 @@
 import React, { memo, useState } from "react";
 import {
-    FacebookMessengerShareButton,
     TwitterShareButton,
-    WhatsappShareButton,
-    FacebookMessengerIcon,
     TwitterIcon,
-    WhatsappIcon,
     RedditShareButton,
     RedditIcon,
 } from "react-share";
@@ -20,11 +16,10 @@ import socialStyles from "./social-icons.module.scss";
 interface SocialShareSpeedDialProps {
     url: string;
     title: string;
-    text: string;
 }
 
 export const SocialShareSpeedDial = memo<SocialShareSpeedDialProps>(
-    ({ url, title, text }) => {
+    ({ url, title }) => {
         const [isOpen, setIsOpen] = useState(false);
         const [copied, setCopied] = useState<"PENDING" | "SUCCESS" | "ERROR">(
             "PENDING",
@@ -98,21 +93,6 @@ export const SocialShareSpeedDial = memo<SocialShareSpeedDialProps>(
                         >
                             <TwitterIcon size={40} round />
                         </TwitterShareButton>
-                    </div>
-                    <div className={socialStyles.socialIcon}>
-                        <FacebookMessengerShareButton
-                            url={url || window.location.href}
-                        >
-                            <FacebookMessengerIcon size={40} round />
-                        </FacebookMessengerShareButton>
-                    </div>
-                    <div className={socialStyles.socialIcon}>
-                        <WhatsappShareButton
-                            url={url || window.location.href}
-                            title={text}
-                        >
-                            <WhatsappIcon size={40} round />
-                        </WhatsappShareButton>
                     </div>
                     <div className={socialStyles.socialIcon}>
                         <RedditShareButton
