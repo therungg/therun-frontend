@@ -8,6 +8,7 @@ import { SectionWrapper } from "./section-wrapper";
 import { SectionBody } from "./section-body";
 import { SectionTitle } from "./section-title";
 import { TrophyIcon } from "~src/icons/trophy-icon";
+import { TruncatedTextTooltip } from "~src/components/tooltip";
 
 interface WrappedTopGamesProps {
     wrapped: WrappedWithData;
@@ -127,8 +128,10 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
                                         autosize
                                     />
                                     <div className="card-footer fw-bold">
-                                        <h3 className="text-truncate">
-                                            {display}
+                                        <h3>
+                                            <TruncatedTextTooltip
+                                                text={display ?? ""}
+                                            />
                                         </h3>
                                     </div>
                                 </div>
