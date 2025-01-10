@@ -50,7 +50,10 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
         (route: string) => {
             if (!pathname) return "";
 
-            return pathname.split("/").includes(route);
+            return pathname
+                .split("/")
+                .map((part) => part.toLowerCase())
+                .includes(route);
         },
         [pathname],
     );
