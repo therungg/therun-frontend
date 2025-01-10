@@ -1,5 +1,7 @@
 import {
     ReactElement,
+    RefObject,
+    memo,
     useCallback,
     useEffect,
     useMemo,
@@ -24,147 +26,21 @@ const bangers = Bangers({
     display: "swap",
 });
 
-export function WrappedSocialCard({
-    wrapped,
-}: {
+interface HiddenDataSummaryProps {
+    gameImageUrl: string | undefined;
     wrapped: WrappedWithData;
-}): ReactElement {
-    const cardRef = useRef<HTMLDivElement>(null);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-    const [profilePhoto, setProfilePhoto] = useState<string | undefined>(
-        undefined,
-    );
-    const [isPatron, setIsPatron] = useState<boolean>(false);
-
-    const topGames = useMemo(() => {
-        return wrapped.playtimeData.playtimePerYearMap[wrapped.year].perGame;
-    }, [wrapped.playtimeData.playtimePerYearMap, wrapped.year]);
-    const gameMap = useMemo(() => {
-        return new Map(wrapped.gamesData.map((game) => [game.display, game]));
-    }, [wrapped.gamesData]);
-
-    const gameEntries = useMemo(() => {
-        return Object.entries(topGames)
-            .map(([key, value]) => {
-                return { game: key, total: value.total };
-            })
-            .sort((a, b) => b.total - a.total);
-    }, [topGames]);
-
-    const top3Games = useMemo(
-        () =>
-            gameEntries.slice(0, 3).map((entry) => ({
-                ...gameMap.get(entry.game),
-                total: entry.total,
-            })),
-        [gameEntries, gameMap],
-    );
-
-    const getBelovedGameImageUrl = () => {
-        for (let i = 0; i < top3Games.length; i++) {
-            const topGame = top3Games[i];
-
-            if (topGame.image) {
-                return `https://images.igdb.com/igdb/image/upload/t_1080p${topGame.image.slice(
-                    topGame.image.lastIndexOf("/"),
-                )}`;
-            }
-        }
-        return undefined;
-    };
-
-    const belovedGameImageUrl: string | undefined = getBelovedGameImageUrl();
-
-    const { data: patreons, isLoading } = usePatreons();
-
-    const generateImage = useCallback(async () => {
-        if (!cardRef.current) return;
-
-        const photo = await getUserProfilePhoto(wrapped.user);
-
-        if (photo) {
-            setProfilePhoto(photo[0].url as string);
-        }
-
-        try {
-            // Wait for images to load
-            const images = Array.from(cardRef.current.querySelectorAll("img"));
-
-            await Promise.all(
-                images.map(
-                    (img, index) =>
-                        new Promise((resolve, reject) => {
-                            if (img.complete) {
-                                resolve(null);
-                            } else {
-                                img.onload = () => {
-                                    resolve(null);
-                                };
-                                img.onerror = () => {
-                                    reject(`Image ${index} failed to load`);
-                                };
-                            }
-                        }),
-                ),
-            );
-
-            // Add a small delay to ensure everything is rendered
-            await new Promise((resolve) => setTimeout(resolve, 100));
-
-            const canvas = await html2canvas(cardRef.current, {
-                useCORS: true,
-                scale: 1,
-                allowTaint: false,
-                backgroundColor: "#000",
-                height: 1920,
-                width: 1080,
-            });
-
-            const targetWidth = 1080;
-            const targetHeight = 1920;
-            const resizedCanvas = document.createElement("canvas");
-            resizedCanvas.width = targetWidth;
-            resizedCanvas.height = targetHeight;
-
-            // Get the context and draw the scaled image
-            const ctx = resizedCanvas.getContext("2d");
-            if (!ctx) return;
-
-            // Use better quality scaling
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = "high";
-
-            // Draw the original canvas scaled down
-            ctx.drawImage(canvas, 0, 0, targetWidth, targetHeight);
-
-            // Convert to JPEG
-            const url = resizedCanvas.toDataURL("image/jpeg", 0.85);
-            setPreviewUrl(url);
-        } catch (error) {
-            console.error("Error generating image:", error);
-        }
-    }, [wrapped.user]);
-
-    const handleDownload = () => {
-        if (!previewUrl) return;
-        const link = document.createElement("a");
-        link.href = previewUrl;
-        link.download = `TheRun-Recap-${wrapped.year}-${safeDecodeURI(
-            wrapped.user,
-        )}.jpg`;
-        link.click();
-    };
-
-    useEffect(() => {
-        const patronExists = patreons?.[wrapped.user];
-
-        if (patronExists) setIsPatron(true);
-
-        generateImage();
-    }, [generateImage, isLoading, isPatron, patreons, wrapped.user]);
-
-    return (
-        <div className="position-relative w-100 h-100">
+    cardRef: RefObject<HTMLDivElement>;
+    profilePhoto: string | undefined;
+    isPatron: boolean;
+    top3Games: {
+        total: number;
+        image?: string | undefined;
+        display?: string | undefined;
+    }[];
+}
+const HiddenDataSummary = memo<HiddenDataSummaryProps>(
+    ({ gameImageUrl, wrapped, cardRef, isPatron, profilePhoto, top3Games }) => {
+        return (
             <div
                 style={{
                     position: "fixed",
@@ -192,8 +68,9 @@ export function WrappedSocialCard({
                         position: "relative",
                     }}
                 >
+                    {/* eslint-disable-next-line */}
                     <img
-                        src={belovedGameImageUrl}
+                        src={gameImageUrl}
                         style={{
                             position: "absolute",
                             top: 0,
@@ -235,6 +112,7 @@ export function WrappedSocialCard({
                                         width: "fit-content",
                                     }}
                                 >
+                                    {/* eslint-disable-next-line */}
                                     <img
                                         src="/bow-2024279_1920.png"
                                         style={{
@@ -247,6 +125,7 @@ export function WrappedSocialCard({
                                             height: "38px",
                                         }}
                                     />
+                                    {/* eslint-disable-next-line */}
                                     <img
                                         src={profilePhoto}
                                         width={150}
@@ -429,6 +308,7 @@ export function WrappedSocialCard({
                                 padding: "20px",
                             }}
                         >
+                            {/* eslint-disable-next-line */}
                             <img
                                 src="https://therun.gg/_next/image?url=%2Flogo_dark_theme_no_text_transparent.png&w=48&q=75"
                                 width="100px"
@@ -458,7 +338,152 @@ export function WrappedSocialCard({
                     </div>
                 </div>
             </div>
+        );
+    },
+);
+HiddenDataSummary.displayName = "HiddenDataSummary";
 
+export function WrappedSocialCard({
+    wrapped,
+}: {
+    wrapped: WrappedWithData;
+}): ReactElement {
+    const cardRef = useRef<HTMLDivElement>(null);
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+    const [profilePhoto, setProfilePhoto] = useState<string | undefined>(
+        undefined,
+    );
+    const [isPatron, setIsPatron] = useState<boolean>(false);
+
+    const topGames = useMemo(() => {
+        return wrapped.playtimeData.playtimePerYearMap[wrapped.year].perGame;
+    }, [wrapped.playtimeData.playtimePerYearMap, wrapped.year]);
+    const gameMap = useMemo(() => {
+        return new Map(wrapped.gamesData.map((game) => [game.display, game]));
+    }, [wrapped.gamesData]);
+
+    const gameEntries = useMemo(() => {
+        return Object.entries(topGames)
+            .map(([key, value]) => {
+                return { game: key, total: value.total };
+            })
+            .sort((a, b) => b.total - a.total);
+    }, [topGames]);
+
+    const top3Games = useMemo(
+        () =>
+            gameEntries.slice(0, 3).map((entry) => ({
+                ...gameMap.get(entry.game),
+                total: entry.total,
+            })),
+        [gameEntries, gameMap],
+    );
+
+    const getBelovedGameImageUrl = () => {
+        for (let i = 0; i < top3Games.length; i++) {
+            const topGame = top3Games[i];
+
+            if (topGame.image) {
+                return `https://images.igdb.com/igdb/image/upload/t_1080p${topGame.image.slice(
+                    topGame.image.lastIndexOf("/"),
+                )}`;
+            }
+        }
+        return undefined;
+    };
+
+    const belovedGameImageUrl: string | undefined = getBelovedGameImageUrl();
+
+    const { data: patreons, isLoading } = usePatreons();
+
+    const generateImage = useCallback(async () => {
+        if (!cardRef.current) return;
+
+        const photo = await getUserProfilePhoto(wrapped.user);
+
+        if (photo) {
+            setProfilePhoto(photo[0].url as string);
+        }
+
+        try {
+            // Wait for images to load
+            const images = Array.from(cardRef.current.querySelectorAll("img"));
+
+            await Promise.all(
+                images.map(
+                    (img, index) =>
+                        new Promise((resolve, reject) => {
+                            if (img.complete) {
+                                resolve(null);
+                            } else {
+                                img.onload = () => {
+                                    resolve(null);
+                                };
+                                img.onerror = () => {
+                                    reject(`Image ${index} failed to load`);
+                                };
+                            }
+                        }),
+                ),
+            );
+
+            // Add a small delay to ensure everything is rendered
+            await new Promise((resolve) => setTimeout(resolve, 100));
+
+            const canvas = await html2canvas(cardRef.current, {
+                useCORS: true,
+                scale: 1,
+                allowTaint: false,
+                backgroundColor: "#000",
+                height: 1920,
+                width: 1080,
+            });
+
+            const targetWidth = 1080;
+            const targetHeight = 1920;
+            const resizedCanvas = document.createElement("canvas");
+            resizedCanvas.width = targetWidth;
+            resizedCanvas.height = targetHeight;
+
+            // Get the context and draw the scaled image
+            const ctx = resizedCanvas.getContext("2d");
+            if (!ctx) return;
+
+            // Use better quality scaling
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = "high";
+
+            // Draw the original canvas scaled down
+            ctx.drawImage(canvas, 0, 0, targetWidth, targetHeight);
+
+            // Convert to JPEG
+            const url = resizedCanvas.toDataURL("image/jpeg", 0.85);
+            setPreviewUrl(url);
+        } catch (error) {
+            console.error("Error generating image:", error);
+        }
+    }, [wrapped.user]);
+
+    const handleDownload = () => {
+        if (!previewUrl) return;
+        const link = document.createElement("a");
+        link.href = previewUrl;
+        link.download = `TheRun-Recap-${wrapped.year}-${safeDecodeURI(
+            wrapped.user,
+        )}.jpg`;
+        link.click();
+    };
+
+    useEffect(() => {
+        const patronExists = patreons?.[wrapped.user];
+
+        if (patronExists) setIsPatron(true);
+
+        generateImage();
+    }, [generateImage, isLoading, isPatron, patreons, wrapped.user]);
+
+    return (
+        <div className="position-relative w-100 h-100">
             <SectionWrapper>
                 <SectionTitle
                     title="Here's your image to share with others"
@@ -470,6 +495,7 @@ export function WrappedSocialCard({
                 <SectionBody>
                     {previewUrl && (
                         <div className="d-flex flex-column align-items-center gap-4">
+                            {/* eslint-disable-next-line */}
                             <img
                                 src={previewUrl}
                                 alt={`${safeDecodeURI(
@@ -491,6 +517,14 @@ export function WrappedSocialCard({
                             to share it!
                         </div>
                     )}
+                    <HiddenDataSummary
+                        gameImageUrl={belovedGameImageUrl}
+                        wrapped={wrapped}
+                        cardRef={cardRef}
+                        isPatron={isPatron}
+                        profilePhoto={profilePhoto}
+                        top3Games={top3Games}
+                    />
                 </SectionBody>
             </SectionWrapper>
         </div>
