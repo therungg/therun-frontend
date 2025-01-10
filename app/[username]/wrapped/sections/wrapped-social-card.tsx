@@ -368,6 +368,7 @@ export function WrappedSocialCard({
     const [isPatron, setIsPatron] = useState<boolean>(false);
     const [canvas, setCanvas] = useState<HTMLCanvasElement>();
     const [blob, setBlob] = useState<Blob>();
+    const [copied, setCopied] = useState(false);
     const topGames = useMemo(() => {
         return wrapped.playtimeData.playtimePerYearMap[wrapped.year].perGame;
     }, [wrapped.playtimeData.playtimePerYearMap, wrapped.year]);
@@ -507,6 +508,11 @@ export function WrappedSocialCard({
                     "image/png": blob!,
                 }),
             ]);
+
+            setCopied(true);
+            setTimeout(() => {
+                setCopied(false);
+            }, 3000);
         } catch (error) {
             console.error(error);
         }
@@ -536,14 +542,10 @@ export function WrappedSocialCard({
                 <SectionTitle
                     title="Here's your image to share with others"
                     subtitle="But please don't leave until we properly thank you below!"
-                    extraRemark={
-                        "(you can either click the button to download it, or right click and copy it. whatever you'd like!)"
-                    }
                 />
                 <SectionBody>
                     {previewUrl && (
                         <div className="d-flex flex-column align-items-center gap-4">
-                            {/* eslint-disable-next-line */}
                             <img
                                 src={previewUrl}
                                 alt={`${safeDecodeURI(
@@ -551,19 +553,23 @@ export function WrappedSocialCard({
                                 )}'s 2024 The Run Recap summary image`}
                                 style={{ maxHeight: "640px" }}
                             />
-                            <Button
-                                onClick={copyToClipboard}
-                                className="button-secondary px-4 py-2"
-                            >
-                                Copy
-                            </Button>
-                            <Button
-                                onClick={handleDownload}
-                                className="px-4 py-2"
-                                variant="secondary"
-                            >
-                                Download
-                            </Button>
+                            <div className="d-flex flex-row align-items-center gap-4">
+                                <Button
+                                    onClick={copyToClipboard}
+                                    variant="secondary"
+                                    className="px-4 py-2"
+                                    disabled={copied}
+                                >
+                                    {copied ? "Copied!" : "Copy"}
+                                </Button>
+                                <Button
+                                    onClick={handleDownload}
+                                    className="px-4 py-2"
+                                    variant="secondary"
+                                >
+                                    Download
+                                </Button>
+                            </div>
                         </div>
                     )}
                     {!previewUrl && (
