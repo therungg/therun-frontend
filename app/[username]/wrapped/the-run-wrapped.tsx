@@ -107,11 +107,10 @@ const WrappedSection: React.FC<PropsWithChildren<WrappedSectionProps>> = ({
             className="animated-section text-center flex-center align-items-center min-vh-100"
         >
             {ignoreReady && children}
-            {!ignoreReady && ready ? (
+            {!ignoreReady && ready && (
                 <Suspense fallback={<Spinner />}>{children}</Suspense>
-            ) : (
-                <Spinner />
             )}
+            {!ignoreReady && !ready && <Spinner />}
         </section>
     );
 };
