@@ -22,6 +22,7 @@ import wrappedStyles from "./wrapped.module.scss";
 import socialStyles from "./social-icons.module.scss";
 import { useResizeObserver } from "usehooks-ts";
 import { SocialShareSpeedDial } from "./social-share-dial";
+import { PatreonBunnySvg } from "~app/patron/patreon-info";
 
 gsap.registerPlugin(useGSAP);
 gsap.registerPlugin(ScrollTrigger);
@@ -276,9 +277,13 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                     <WrappedTitle user={user} />
                     <p className="h3 mt-1 opacity-50">
                         Brought to you by{" "}
-                        <span style={{ color: "var(--bs-link-color)" }}>
+                        <span
+                            className="me-1"
+                            style={{ color: "var(--bs-link-color)" }}
+                        >
                             therun.gg
                         </span>
+                        <PatreonBunnySvg />
                     </p>
                 </div>
                 <div className="flex-grow-1 d-flex flex-column justify-content-end">

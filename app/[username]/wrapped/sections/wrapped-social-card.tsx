@@ -485,6 +485,12 @@ export function WrappedSocialCard({
                             </Button>
                         </div>
                     )}
+                    {!previewUrl && (
+                        <div className="d-flex flex-column align-items-center gap-4">
+                            Loading your image... Hang in there, and get ready
+                            to share it!
+                        </div>
+                    )}
                 </SectionBody>
             </SectionWrapper>
         </div>
