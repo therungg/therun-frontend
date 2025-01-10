@@ -3,11 +3,17 @@ import { PatreonBunnyHeartWithoutLink } from "~app/patron/patreon-info";
 import { getSession } from "~src/actions/session.action";
 import { TwitchLoginButton } from "~src/components/twitch/TwitchLoginButton";
 import { safeDecodeURI } from "~src/utils/uri";
+import { getWrappedForUser } from "~src/lib/wrapped";
 
 export default async function Page() {
     const session = await getSession();
 
     const hasSession = session.id && session.id !== "";
+
+    if (hasSession) {
+        // Preload the wrapped so it doesn't take as long on the next page
+        await getWrappedForUser(session.user);
+    }
 
     return (
         <Col width="100%">

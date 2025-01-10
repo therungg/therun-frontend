@@ -19,6 +19,7 @@ import { getColorMode } from "~src/utils/colormode";
 import { Upload } from "react-bootstrap-icons";
 import { resetSession } from "~src/actions/reset-session.action";
 import { Can } from "~src/rbac/Can.component";
+import { PatreonBunnySvg } from "~app/patron/patreon-info";
 
 const DarkModeSlider = dynamic(() => import("./dark-mode-slider"), {
     ssr: false,
@@ -133,11 +134,6 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                                     </div>
                                 </Nav.Link>
                             )}
-                            <Can I="view-restricted" a="stories">
-                                <Nav.Link href="/stories/manage">
-                                    Story Mode
-                                </Nav.Link>
-                            </Can>
 
                             <Nav.Link href="/recap">
                                 Recap 2024
@@ -146,9 +142,15 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                                 </i>
                             </Nav.Link>
                             <Nav.Link href="/races">Races</Nav.Link>
-                            <Nav.Link href="/tournaments">Tournaments</Nav.Link>
                             <Nav.Link href="/live">Live</Nav.Link>
-                            <Nav.Link href="/games/">Games</Nav.Link>
+                            <Can I="view-restricted" a="stories">
+                                <Nav.Link href="/stories/manage">
+                                    Story Mode
+                                </Nav.Link>
+                            </Can>
+                            <Nav.Link href="/patron">
+                                Support us! <PatreonBunnySvg />
+                            </Nav.Link>
                         </Nav>
                         <Nav className="ml-auto mb-2 mb-lg-0 me-lg-2">
                             <GlobalSearch />
@@ -210,7 +212,9 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                     </Navbar.Collapse>
                 </Container>
             </Navbar>
-            {!hasRoute("wrapped") && !hasRoute("recap") ? (
+            {!hasRoute("wrapped") &&
+            !hasRoute("recap") &&
+            !hasRoute("patron") ? (
                 <Alert className="container w-100">
                     <AlertHeading>
                         <Badge>NEW</Badge>&nbsp;The Run Recap 2024 is here!!

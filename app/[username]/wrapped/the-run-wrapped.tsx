@@ -342,8 +342,12 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                     </p>
                 </div>
                 <div className="flex-grow-1 d-flex flex-column justify-content-end">
-                    <p className="fs-5 mb-4">
+                    <p className="fs-4 mb-4">
                         Let's see your stats for this year. Start scrolling!
+                    </p>
+                    <p className="fs-5 mb-3">
+                        If you are impatient, you can download your recap as a
+                        cool little image here:
                     </p>
                     <p className="d-lg-none d-md-block text-sm text-muted mb-5">
                         (For an optimal experience, we recommend viewing your
