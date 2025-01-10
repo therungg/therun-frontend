@@ -1,4 +1,5 @@
-import { OverlayTrigger, Popover } from "react-bootstrap";
+import { ReactNode, memo } from "react";
+import { OverlayTrigger, Popover, Tooltip } from "react-bootstrap";
 import { ReactElementLike } from "prop-types";
 
 export const InfoTooltip = ({
@@ -70,3 +71,30 @@ export const QuestionMark = () => {
         </svg>
     );
 };
+
+interface TruncatedTextTooltipProps {
+    text: ReactNode;
+    maxWidth?: number;
+}
+export const TruncatedTextTooltip = memo<TruncatedTextTooltipProps>(
+    ({ text, maxWidth }) => {
+        return (
+            <div
+                style={{
+                    maxWidth: maxWidth,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                }}
+            >
+                <OverlayTrigger
+                    placement="top"
+                    overlay={<Tooltip id="tooltip">{text}</Tooltip>}
+                >
+                    <span>{text}</span>
+                </OverlayTrigger>
+            </div>
+        );
+    },
+);
+TruncatedTextTooltip.displayName = "TruncatedTextTooltip";
