@@ -5,3 +5,14 @@
     transform: scale(1.1);
     transition: transform 0.2s;
 }
+
+@media (min-width: 768px) {
+    .socialContainer {
+        bottom: 50% !important;
+        transform: translateY(50%);
+    }
+}
+
+.socialContainer {
+    bottom: 0;
+}

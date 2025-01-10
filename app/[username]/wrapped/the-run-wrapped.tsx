@@ -18,6 +18,7 @@ import { ArrowDownCircleFill, ArrowUpCircleFill } from "react-bootstrap-icons";
 import { isDefined } from "~src/utils/isDefined";
 import styles from "./mesh-background.module.scss";
 import wrappedStyles from "./wrapped.module.scss";
+import socialStyles from "./social-icons.module.scss";
 import { useResizeObserver } from "usehooks-ts";
 import { SocialShareSpeedDial } from "./social-share-dial";
 
@@ -304,10 +305,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                 );
             })}
             <div
-                className="sticky-bottom text-center start-50 me-4 position-fixed d-none d-md-flex"
-                style={{
-                    transform: "translateX(-50%)",
-                }}
+                className={`sticky-bottom text-center end-0 me-4 position-fixed d-md-flex ${socialStyles.socialContainer}`}
             >
                 <SocialShareSpeedDial
                     title="Check out my 2024 The Run speedrunning recap!"
