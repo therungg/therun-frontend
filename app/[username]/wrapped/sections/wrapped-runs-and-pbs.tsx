@@ -177,7 +177,13 @@ const GameOverview: React.FC<
             <div className="mb-2">
                 Click on a game to view detailed data about that game!
             </div>
-            <Row lg={3} md={2} sm={1} className="justify-content-center w-100">
+            <Row
+                lg={3}
+                md={2}
+                sm={1}
+                xs={1}
+                className="justify-content-center w-100"
+            >
                 {Array.from(groupedData)
                     .sort(
                         ([, aValue], [, bValue]) =>
