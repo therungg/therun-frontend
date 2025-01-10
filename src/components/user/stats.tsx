@@ -272,8 +272,7 @@ export const PlaytimePerMonthGraph = ({
                     }}
                     data={victoryData}
                     labels={({ index }) => {
-                        const key =
-                            year + "-" + String(index + 1).padStart(2, "0");
+                        const key = year + "-" + String(index).padStart(2, "0");
 
                         const target: TotalStat = playtimePerMonthMap[key];
 
