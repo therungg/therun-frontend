@@ -23,12 +23,11 @@ interface SocialShareSpeedDialProps {
 
 export const SocialShareSpeedDial = memo<SocialShareSpeedDialProps>(
     ({ url, title }) => {
-        const containerRef = useRef<HTMLDivElement>(null);
+        const containerRef = useRef<HTMLButtonElement>(null);
         const [isOpen, setIsOpen] = useState(false);
         const [copied, setCopied] = useState<"PENDING" | "SUCCESS" | "ERROR">(
             "PENDING",
         );
-
         const onOutsideClick = useCallback(() => setIsOpen(false), []);
         const toggleSpeedDial = useCallback(
             () => setIsOpen((prev) => !prev),
@@ -51,15 +50,15 @@ export const SocialShareSpeedDial = memo<SocialShareSpeedDialProps>(
 
         return (
             <div
+                // @ts-expect-error Legacy type issue with Refs that's resolved in React 19
                 ref={containerRef}
                 className="position-relative p-3 d-flex flex-column align-items-center"
             >
                 <button
-                    className="btn btn-primary rounded-circle d-flex justify-content-center align-items-center shadow speed-dial-trigger"
-                    style={{
-                        width: "50px",
-                        height: "50px",
-                    }}
+                    className={`btn btn-primary rounded-circle d-flex justify-content-center align-items-center shadow ${
+                        isOpen ? "rotate-icon" : ""
+                    }`}
+                    style={{ width: "50px", height: "50px" }}
                     onClick={toggleSpeedDial}
                     aria-label="Toggle share options"
                 >
@@ -67,7 +66,7 @@ export const SocialShareSpeedDial = memo<SocialShareSpeedDialProps>(
                 </button>
 
                 <div
-                    className={`d-flex flex-column align-items-center gap-2 position-absolute bottom-100 speed-dial-content ${
+                    className={`d-flex flex-column align-items-center gap-2 position-absolute bottom-100 ${
                         isOpen ? "opacity-100" : "opacity-0"
                     }`}
                     style={{
@@ -141,20 +140,6 @@ export const SocialShareSpeedDial = memo<SocialShareSpeedDialProps>(
                         </a>
                     </div>
                 </div>
-
-                <style jsx>{`
-                    @media (hover: hover) {
-                        /* For desktop: keep hover effect but disable clicks */
-                        .speed-dial-trigger {
-                            pointer-events: auto;
-                        }
-
-                        .speed-dial-trigger:hover + .speed-dial-content {
-                            opacity: 1 !important;
-                            pointer-events: auto !important;
-                        }
-                    }
-                `}</style>
             </div>
         );
     },
