@@ -107,13 +107,25 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
         }
     };
 
-    const gameData = useMemo(
-        () =>
-            wrapped.gamesData.find(
-                (gameData) => gameData.display === mostPlayedGame,
-            ),
-        [mostPlayedGame, wrapped.gamesData],
-    );
+    const gameMap = useMemo(() => {
+        return new Map(wrapped.gamesData.map((game) => [game.display, game]));
+    }, [wrapped.gamesData]);
+
+    const gameData = useMemo(() => {
+        let gameMapEntry = gameMap.get(mostPlayedGame);
+
+        if (!gameMapEntry) {
+            gameMap.forEach((val) => {
+                if (
+                    val.display.toLowerCase() === mostPlayedGame.toLowerCase()
+                ) {
+                    gameMapEntry = val;
+                }
+            });
+        }
+
+        return gameMapEntry;
+    }, [mostPlayedGame, wrapped.gamesData]);
 
     // useHeartsAnimation({
     //     heartRef: heartContainerRef,

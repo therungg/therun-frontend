@@ -172,6 +172,10 @@ const GameOverview: React.FC<
         groupedData: Map<string, GroupedGameData>;
     }
 > = ({ wrapped, setSelectedGame, groupedData }) => {
+    const gameMap = useMemo(() => {
+        return new Map(wrapped.gamesData.map((game) => [game.display, game]));
+    }, [wrapped.gamesData]);
+
     return (
         <>
             <div className="mb-2">
@@ -190,9 +194,25 @@ const GameOverview: React.FC<
                             bValue.totalRunTime - aValue.totalRunTime,
                     )
                     .map(([key, value], i) => {
-                        const gameData = wrapped.gamesData.find(
-                            (gameData) => gameData.display === key,
-                        );
+                        const getGameData = () => {
+                            let gameMapEntry = gameMap.get(key);
+
+                            if (!gameMapEntry) {
+                                gameMap.forEach((val) => {
+                                    if (
+                                        val.display.toLowerCase() ===
+                                        key.toLowerCase()
+                                    ) {
+                                        gameMapEntry = val;
+                                    }
+                                });
+                            }
+
+                            return gameMapEntry;
+                        };
+
+                        const gameData = getGameData();
+
                         return (
                             <Col key={key}>
                                 <div

@@ -17,6 +17,7 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
     const topGames = useMemo(() => {
         return wrapped.playtimeData.playtimePerYearMap[wrapped.year].perGame;
     }, [wrapped.playtimeData.playtimePerYearMap, wrapped.year]);
+
     const gameMap = useMemo(() => {
         return new Map(wrapped.gamesData.map((game) => [game.display, game]));
     }, [wrapped.gamesData]);
@@ -31,10 +32,25 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
 
     const top3Games = useMemo(
         () =>
-            gameEntries.slice(0, 3).map((entry) => ({
-                ...gameMap.get(entry.game),
-                total: entry.total,
-            })),
+            gameEntries.slice(0, 3).map((entry) => {
+                let gameMapEntry = gameMap.get(entry.game);
+
+                if (!gameMapEntry) {
+                    gameMap.forEach((val) => {
+                        if (
+                            val.display.toLowerCase() ===
+                            entry.game.toLowerCase()
+                        ) {
+                            gameMapEntry = val;
+                        }
+                    });
+                }
+
+                return {
+                    ...gameMapEntry,
+                    total: entry.total,
+                };
+            }),
         [gameEntries, gameMap],
     );
     const { title, subtitle, extraRemark } = useMemo(() => {
