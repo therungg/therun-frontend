@@ -356,11 +356,25 @@ const HiddenDataSummary = memo<HiddenDataSummaryProps>(
 );
 HiddenDataSummary.displayName = "HiddenDataSummary";
 
+interface WrappedSocialCardProps {
+    wrapped: WrappedWithData;
+    onImageGenerated?: (imageData: {
+        previewUrl: string;
+        blob: Blob | undefined;
+        canvas: HTMLCanvasElement | undefined;
+    }) => void;
+    onLoadingStateChange?: (state: {
+        isLoading: boolean;
+        isError: boolean;
+        error?: Error;
+    }) => void;
+}
+
 export function WrappedSocialCard({
     wrapped,
-}: {
-    wrapped: WrappedWithData;
-}): ReactElement {
+    onImageGenerated,
+    onLoadingStateChange,
+}: WrappedSocialCardProps): ReactElement {
     const cardRef = useRef<HTMLDivElement>(null);
     const [profilePhoto, setProfilePhoto] = useState<string | undefined>(
         undefined,
@@ -412,6 +426,13 @@ export function WrappedSocialCard({
 
     const generateImage = useCallback(async () => {
         if (!cardRef.current) return;
+
+        if (onLoadingStateChange) {
+            onLoadingStateChange({
+                isLoading: true,
+                isError: false,
+            });
+        }
 
         const photo = await getUserProfilePhoto(wrapped.user);
 
@@ -470,8 +491,25 @@ export function WrappedSocialCard({
             // Draw the original canvas scaled down
             ctx.drawImage(canvas, 0, 0, targetWidth, targetHeight);
             setCanvas(resizedCanvas);
+
+            if (onLoadingStateChange) {
+                onLoadingStateChange({
+                    isLoading: false,
+                    isError: false,
+                });
+            }
         } catch (error) {
             console.error("Error generating image:", error);
+            if (onLoadingStateChange) {
+                onLoadingStateChange({
+                    isLoading: false,
+                    isError: true,
+                    error:
+                        error instanceof Error
+                            ? error
+                            : new Error("Unknown error occurred"),
+                });
+            }
         }
     }, [wrapped.user]);
 
@@ -497,7 +535,16 @@ export function WrappedSocialCard({
             });
 
         getCanvasBlob(canvas)
-            .then((blobData) => setBlob(blobData))
+            .then((blobData) => {
+                setBlob(blobData);
+                if (onImageGenerated) {
+                    onImageGenerated({
+                        previewUrl,
+                        blob: blobData,
+                        canvas,
+                    });
+                }
+            })
             .catch((error) => console.error(error));
     }, [canvas]);
 

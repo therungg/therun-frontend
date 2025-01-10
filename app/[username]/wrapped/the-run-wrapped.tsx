@@ -2,6 +2,7 @@ import {
     lazy,
     PropsWithChildren,
     Suspense,
+    useCallback,
     useEffect,
     useMemo,
     useRef,
@@ -23,6 +24,8 @@ import socialStyles from "./social-icons.module.scss";
 import { useResizeObserver } from "usehooks-ts";
 import { SocialShareSpeedDial } from "./social-share-dial";
 import { PatreonBunnySvg } from "~app/patron/patreon-info";
+import { WrappedSocialCard } from "./sections/wrapped-social-card";
+import { safeDecodeURI } from "~src/utils/uri";
 
 gsap.registerPlugin(useGSAP);
 gsap.registerPlugin(ScrollTrigger);
@@ -41,12 +44,6 @@ const WrappedTopGames = lazy(() =>
 const WrappedOutroThanks = lazy(() =>
     import("./sections/wrapped-outro-thanks").then((module) => ({
         default: module.WrappedOutroThanks,
-    })),
-);
-
-const WrappedSocialCard = lazy(() =>
-    import("./sections/wrapped-social-card").then((module) => ({
-        default: module.WrappedSocialCard,
     })),
 );
 
@@ -95,19 +92,22 @@ const MOBILE_BREAKPOINT = 768;
 interface WrappedSectionProps {
     id?: string;
     ready?: boolean;
+    ignoreReady?: boolean;
 }
 
 const WrappedSection: React.FC<PropsWithChildren<WrappedSectionProps>> = ({
     children,
     id = "",
     ready,
+    ignoreReady = false,
 }) => {
     return (
         <section
             id={id}
             className="animated-section text-center flex-center align-items-center min-vh-100"
         >
-            {ready ? (
+            {ignoreReady && children}
+            {!ignoreReady && ready ? (
                 <Suspense fallback={<Spinner />}>{children}</Suspense>
             ) : (
                 <Spinner />
@@ -123,6 +123,41 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
     const [readySections, setReadySections] = useState<Record<number, boolean>>(
         { 0: true },
     );
+    const [socialImageLoadingState, setSocialImageLoadingState] = useState({
+        isLoading: true,
+        isError: false,
+    });
+    const [socialImageUrl, setSocialImageUrl] = useState<string | null>(null);
+
+    const handleSocialImageLoadingStateChange = useCallback(
+        (state: { isLoading: boolean; isError: boolean; error?: Error }) => {
+            setSocialImageLoadingState(state);
+        },
+        [],
+    );
+
+    const handleSocialImageGenerated = useCallback(
+        (state: {
+            previewUrl: string;
+            blob: Blob | undefined;
+            canvas: HTMLCanvasElement | undefined;
+        }) => {
+            if (!socialImageLoadingState.isError)
+                setSocialImageUrl(state.previewUrl);
+        },
+        [],
+    );
+
+    const downloadSocialImage = () => {
+        if (!socialImageUrl) return;
+        const link = document.createElement("a");
+        link.href = socialImageUrl;
+        link.download = `TheRun-Recap-${wrapped.year}-${safeDecodeURI(
+            wrapped.user,
+        )}.jpg`;
+        link.click();
+    };
+
     useEffect(() => {
         if (readySections) {
             // When the readySections updates this means a new lazy-loaded Section is ready
@@ -187,14 +222,18 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
             <WrappedSection
                 key="wrapped-social-share"
                 id="wrapped-social-share"
-                ready={readySections[hasEnoughData ? 6 : 5]}
+                ignoreReady
             >
-                <WrappedSocialCard wrapped={wrapped} />
+                <WrappedSocialCard
+                    wrapped={wrapped}
+                    onImageGenerated={handleSocialImageGenerated}
+                    onLoadingStateChange={handleSocialImageLoadingStateChange}
+                />
             </WrappedSection>,
             <WrappedSection
                 key="wrapped-outro"
                 id="wrapped-outro"
-                ready={readySections[hasEnoughData ? 7 : 6]}
+                ready={readySections[hasEnoughData ? 6 : 5]}
             >
                 <WrappedOutroThanks wrapped={wrapped} />
             </WrappedSection>,
@@ -349,6 +388,31 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                         If you are impatient, you can download your recap as a
                         cool little image here:
                     </p>
+                    <div className="mb-5">
+                        {socialImageLoadingState.isLoading && (
+                            <p className="fs-6">
+                                Hold on for a sec - it's generating!
+                            </p>
+                        )}
+                        {socialImageLoadingState.isError && (
+                            <p className="fs-6 text-danger">
+                                There was an error generating your image. If
+                                this keeps happening, contact us on Discord.
+                            </p>
+                        )}
+                        {!socialImageLoadingState.isLoading &&
+                            socialImageUrl && (
+                                <div className="d-inline-block">
+                                    <Button
+                                        size="lg"
+                                        className="w-auto"
+                                        onClick={downloadSocialImage}
+                                    >
+                                        Download Recap Image
+                                    </Button>
+                                </div>
+                            )}
+                    </div>
                     <p className="d-lg-none d-md-block text-sm text-muted mb-5">
                         (For an optimal experience, we recommend viewing your
                         Recap on a computer)
