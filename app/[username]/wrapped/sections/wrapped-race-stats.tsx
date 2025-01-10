@@ -95,7 +95,7 @@ export const WrappedRaceStats = memo<WrappedRaceStatsProps>(({ wrapped }) => {
                 extraRemark={extraRemark}
             />
             <SectionBody>
-                <Row>
+                <Row className="w-100">
                     <Col xl={8}>
                         <div className="table-responsive mt-4">
                             <Table className="table table_custom h4">

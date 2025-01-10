@@ -208,7 +208,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                 extraRemark={getExtraRemark(streakInDays)}
             />
             <SectionBody>
-                <Row>
+                <Row className="w-100">
                     <Col
                         xl={3}
                         lg={0}
