@@ -3,7 +3,6 @@ import {
     Alert,
     AlertHeading,
     Badge,
-    Button,
     Container,
     Nav,
     Navbar,
@@ -139,8 +138,9 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                                     Story Mode
                                 </Nav.Link>
                             </Can>
-                            <Nav.Link href={`/wrapped/${username}`}>
-                                Wrapped 2024
+
+                            <Nav.Link href="/recap">
+                                Recap 2024
                                 <i className="ms-1 text-secondary">
                                     <sup>New</sup>
                                 </i>
@@ -210,10 +210,10 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                     </Navbar.Collapse>
                 </Container>
             </Navbar>
-            {!hasRoute("wrapped") ? (
+            {!hasRoute("wrapped") && !hasRoute("recap") ? (
                 <Alert className="container w-100">
                     <AlertHeading>
-                        <Badge>NEW</Badge>&nbsp;The Run Wrapped 2024 is here!!
+                        <Badge>NEW</Badge>&nbsp;The Run Recap 2024 is here!!
                     </AlertHeading>
                     <Stack
                         direction="horizontal"
@@ -221,12 +221,17 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                     >
                         <p>
                             After several weeks of hard work, we're finally
-                            here! Wrapped brings you all of your 2024 speedrun
+                            here! Recap brings you all of your 2024 speedrun
                             stats summarized in a nice package.
                         </p>
                     </Stack>
                     <div className="d-flex justify-content-center">
-                        <Button className="text-nowrap">Wrapped 2024</Button>
+                        <a
+                            href="/recap"
+                            className="btn btn-lg btn-primary text-nowrap"
+                        >
+                            Go to Recap 2024
+                        </a>
                     </div>
                 </Alert>
             ) : null}
