@@ -62,7 +62,7 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
                         This year, you did runs for{" "}
                         <WrappedCounter
                             id="game-entries-count"
-                            end={gameEntries.length}
+                            end={wrapped.totalGames}
                         />{" "}
                         games.
                     </>

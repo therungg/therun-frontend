@@ -385,8 +385,8 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                         Let's see your stats for this year. Start scrolling!
                     </p>
                     <p className="fs-5 mb-3">
-                        If you are impatient, you can download your recap as a
-                        cool little image here.{" "}
+                        If you are impatient, you can download your Speedrun
+                        Recap as a cool little image here.{" "}
                         <span className="opacity-25">
                             Promise you'll share on socials?
                         </span>
