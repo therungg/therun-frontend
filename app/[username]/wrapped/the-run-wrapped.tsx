@@ -359,127 +359,146 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
         scrollToSection(prevIndex);
     });
     return (
-        <div ref={containerRef}>
-            <div className={styles.meshBg} style={{ height }}></div>
-            <section
-                id="wrapped-intro"
-                className="d-flex flex-column min-vh-100-no-header text-center"
-            >
-                <div className="flex-grow-1 d-flex flex-column justify-content-end">
-                    <p className="display-5 mb-0">You had a great 2024!</p>
-                    <WrappedTitle user={user} />
-                    <p className="h3 mt-1 opacity-50">
-                        Brought to you by{" "}
-                        <span
-                            className="me-1"
-                            style={{ color: "var(--bs-link-color)" }}
-                        >
-                            therun.gg
-                        </span>
-                        <PatreonBunnySvg />
-                    </p>
-                </div>
-                <div className="flex-grow-1 d-flex flex-column justify-content-end">
-                    <p className="fs-4 mb-4">
-                        Let's see your stats for this year. Start scrolling!
-                    </p>
-                    <p className="fs-5 mb-3">
-                        If you are impatient, you can download your Speedrun
-                        Recap as a cool little image here.{" "}
-                        <span className="opacity-25">
-                            Promise you'll share on socials?
-                        </span>
-                    </p>
-                    <div className="mb-5">
-                        {socialImageLoadingState.isLoading && (
-                            <p className="fs-6">
-                                Hold on for a sec - it's generating!
-                            </p>
-                        )}
-                        {socialImageLoadingState.isError && (
-                            <p className="fs-6 text-danger">
-                                There was an error generating your image. If
-                                this keeps happening, contact us on Discord.
-                            </p>
-                        )}
-                        {!socialImageLoadingState.isLoading &&
-                            socialImageUrl && (
-                                <div className="d-inline-block">
-                                    <Button
-                                        size="lg"
-                                        className="w-auto"
-                                        onClick={downloadSocialImage}
-                                    >
-                                        Download Recap Image
-                                    </Button>
-                                </div>
-                            )}
-                    </div>
-                    <p className="d-lg-none d-md-block text-sm text-muted mb-5">
-                        (For an optimal experience, we recommend viewing your
-                        Recap on a computer)
-                    </p>
-                    <ScrollDown />
-                </div>
-            </section>
-            {sections.map((section, index) => {
-                return (
-                    <>
-                        <div className="py-md-6">
-                            <div
-                                className={`d-sm-flex d-md-none ${wrappedStyles.separator}`}
+        <>
+            <script
+                dangerouslySetInnerHTML={{
+                    __html: `
+            (function () {
+              // Override the existing theme
+              window.localStorage.setItem("theme", "dark");
+              document.documentElement.dataset.bsTheme = "dark";
+              
+              // Override any future attempts to change the theme
+              Object.defineProperty(window.localStorage, "theme", {
+                get: () => "dark",
+                set: () => "dark"
+              });
+            })();
+          `,
+                }}
+            />
+            <div ref={containerRef}>
+                <div className={styles.meshBg} style={{ height }}></div>
+                <section
+                    id="wrapped-intro"
+                    className="d-flex flex-column min-vh-100-no-header text-center"
+                >
+                    <div className="flex-grow-1 d-flex flex-column justify-content-end">
+                        <p className="display-5 mb-0">You had a great 2024!</p>
+                        <WrappedTitle user={user} />
+                        <p className="h3 mt-1 opacity-50">
+                            Brought to you by{" "}
+                            <span
+                                className="me-1"
+                                style={{ color: "var(--bs-link-color)" }}
                             >
-                                <h2>
-                                    {index + 1} / {sections.length}
-                                </h2>
-                            </div>
+                                therun.gg
+                            </span>
+                            <PatreonBunnySvg />
+                        </p>
+                    </div>
+                    <div className="flex-grow-1 d-flex flex-column justify-content-end">
+                        <p className="fs-4 mb-4">
+                            Let's see your stats for this year. Start scrolling!
+                        </p>
+                        <p className="fs-5 mb-3">
+                            If you are impatient, you can download your recap as
+                            a cool little image here.{" "}
+                            <span className="opacity-25">
+                                Promise you'll share on socials?
+                            </span>
+                        </p>
+                        <div className="mb-5">
+                            {socialImageLoadingState.isLoading && (
+                                <p className="fs-6">
+                                    Hold on for a sec - it's generating!
+                                </p>
+                            )}
+                            {socialImageLoadingState.isError && (
+                                <p className="fs-6 text-danger">
+                                    There was an error generating your image. If
+                                    this keeps happening, contact us on Discord.
+                                </p>
+                            )}
+                            {!socialImageLoadingState.isLoading &&
+                                socialImageUrl && (
+                                    <div className="d-inline-block">
+                                        <Button
+                                            size="lg"
+                                            className="w-auto"
+                                            onClick={downloadSocialImage}
+                                        >
+                                            Download Recap Image
+                                        </Button>
+                                    </div>
+                                )}
                         </div>
-                        {section}
-                    </>
-                );
-            })}
-            <div
-                className={`sticky-bottom text-center end-0 me-4 position-fixed d-md-flex ${socialStyles.socialContainer}`}
-            >
-                <SocialShareSpeedDial
-                    title="Check out my 2024 The Run speedrunning recap!"
-                    url={`https://therun.gg/${user}/wrapped`}
-                />
+                        <p className="d-lg-none d-md-block text-sm text-muted mb-5">
+                            (For an optimal experience, we recommend viewing
+                            your Recap on a computer)
+                        </p>
+                        <ScrollDown />
+                    </div>
+                </section>
+                {sections.map((section, index) => {
+                    return (
+                        <>
+                            <div className="py-md-6">
+                                <div
+                                    className={`d-sm-flex d-md-none ${wrappedStyles.separator}`}
+                                >
+                                    <h2>
+                                        {index + 1} / {sections.length}
+                                    </h2>
+                                </div>
+                            </div>
+                            {section}
+                        </>
+                    );
+                })}
+                <div
+                    className={`sticky-bottom text-center end-0 me-4 position-fixed d-md-flex ${socialStyles.socialContainer}`}
+                >
+                    <SocialShareSpeedDial
+                        title="Check out my 2024 The Run speedrunning recap!"
+                        url={`https://therun.gg/${user}/wrapped`}
+                    />
+                </div>
+                {sectionIndex + 1 === 0 ||
+                sectionIndex + 1 === sections.length ? null : (
+                    <h2
+                        style={{
+                            bottom: FOOTER_HEIGHT,
+                            opacity: 0.66,
+                            marginRight: "-8rem",
+                        }}
+                        className="sticky-bottom text-end end-0 me-4 position-fixed d-none d-md-flex"
+                    >
+                        {sectionIndex + 1} / {sections.length - 1}
+                    </h2>
+                )}
+                <div
+                    style={{ bottom: FOOTER_HEIGHT }}
+                    className="sticky-bottom start-0 ms-4 position-fixed d-none d-md-flex"
+                >
+                    <Button
+                        disabled={sectionIndex + 1 === 0}
+                        variant="outline-secondary mx-2"
+                        aria-description="previous"
+                        onClick={onClickPrevious}
+                    >
+                        <ArrowUpCircleFill />
+                    </Button>
+                    <Button
+                        disabled={sectionIndex + 1 === sections.length}
+                        variant="outline-secondary"
+                        aria-description="next"
+                        onClick={onClickNext}
+                    >
+                        <ArrowDownCircleFill />
+                    </Button>
+                </div>
             </div>
-            {sectionIndex + 1 === 0 ||
-            sectionIndex + 1 === sections.length ? null : (
-                <h2
-                    style={{
-                        bottom: FOOTER_HEIGHT,
-                        opacity: 0.66,
-                        marginRight: "-8rem",
-                    }}
-                    className="sticky-bottom text-end end-0 me-4 position-fixed d-none d-md-flex"
-                >
-                    {sectionIndex + 1} / {sections.length - 1}
-                </h2>
-            )}
-            <div
-                style={{ bottom: FOOTER_HEIGHT }}
-                className="sticky-bottom start-0 ms-4 position-fixed d-none d-md-flex"
-            >
-                <Button
-                    disabled={sectionIndex + 1 === 0}
-                    variant="outline-secondary mx-2"
-                    aria-description="previous"
-                    onClick={onClickPrevious}
-                >
-                    <ArrowUpCircleFill />
-                </Button>
-                <Button
-                    disabled={sectionIndex + 1 === sections.length}
-                    variant="outline-secondary"
-                    aria-description="next"
-                    onClick={onClickNext}
-                >
-                    <ArrowDownCircleFill />
-                </Button>
-            </div>
-        </div>
+        </>
     );
 };
