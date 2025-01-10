@@ -48,7 +48,7 @@ export default async function Page() {
                         <p className="fs-6 leading-relaxed mb-4">
                             To view your 2024 Recap, please login with Twitch.
                         </p>
-                        <TwitchLoginButton url="/recap" />
+                        <TwitchLoginButton url="/api/recap" />
                     </div>
                 )}
 
