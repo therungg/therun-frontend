@@ -11,7 +11,6 @@ import {
 import { WrappedWithData } from "~app/[username]/wrapped/wrapped-types";
 import html2canvas from "html2canvas";
 import { getUserProfilePhoto } from "~src/utils/metadata";
-import { Bangers } from "next/font/google";
 import { SectionWrapper } from "./section-wrapper";
 import { SectionTitle } from "./section-title";
 import { SectionBody } from "./section-body";
@@ -23,14 +22,10 @@ import {
     PatreonBunnySvgWithoutLink,
 } from "~app/patron/patreon-info";
 
-const bangers = Bangers({
-    weight: "400",
-    subsets: ["latin"],
-    display: "swap",
-});
-
 interface HiddenDataSummaryProps {
     gameImageUrl: string | undefined;
+    // eslint-disable-next-line
+    bangers: any;
     wrapped: WrappedWithData;
     cardRef: RefObject<HTMLDivElement>;
     profilePhoto: string | undefined;
@@ -42,7 +37,15 @@ interface HiddenDataSummaryProps {
     }[];
 }
 const HiddenDataSummary = memo<HiddenDataSummaryProps>(
-    ({ gameImageUrl, wrapped, cardRef, isPatron, profilePhoto, top3Games }) => {
+    ({
+        gameImageUrl,
+        wrapped,
+        cardRef,
+        isPatron,
+        profilePhoto,
+        top3Games,
+        bangers,
+    }) => {
         return (
             <div
                 style={{
@@ -189,7 +192,7 @@ const HiddenDataSummary = memo<HiddenDataSummaryProps>(
                                 justifyContent: "center",
                             }}
                         >
-                            <LayeredStats wrapped={wrapped} />
+                            <LayeredStats wrapped={wrapped} bangers={bangers} />
                         </div>
 
                         <div
@@ -358,6 +361,8 @@ HiddenDataSummary.displayName = "HiddenDataSummary";
 
 interface WrappedSocialCardProps {
     wrapped: WrappedWithData;
+    // eslint-disable-next-line
+    bangers: any;
     onImageGenerated?: (imageData: {
         previewUrl: string;
         blob: Blob | undefined;
@@ -372,6 +377,7 @@ interface WrappedSocialCardProps {
 
 export function WrappedSocialCard({
     wrapped,
+    bangers,
     onImageGenerated,
     onLoadingStateChange,
 }: WrappedSocialCardProps): ReactElement {
@@ -627,6 +633,7 @@ export function WrappedSocialCard({
                     )}
                     <HiddenDataSummary
                         gameImageUrl={belovedGameImageUrl}
+                        bangers={bangers}
                         wrapped={wrapped}
                         cardRef={cardRef}
                         isPatron={isPatron}
@@ -639,7 +646,14 @@ export function WrappedSocialCard({
     );
 }
 
-const LayeredStats = ({ wrapped }: { wrapped: WrappedWithData }) => {
+const LayeredStats = ({
+    wrapped,
+    bangers,
+}: {
+    wrapped: WrappedWithData;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    bangers: any;
+}) => {
     const stats = [
         { value: wrapped.totalRuns, label: "RUN", color: "#4f46e5" },
         {

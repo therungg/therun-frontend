@@ -26,6 +26,13 @@ import { SocialShareSpeedDial } from "./social-share-dial";
 import { PatreonBunnySvg } from "~app/patron/patreon-info";
 import { WrappedSocialCard } from "./sections/wrapped-social-card";
 import { safeDecodeURI } from "~src/utils/uri";
+import { Bangers } from "next/font/google";
+
+const bangers = Bangers({
+    weight: "400",
+    subsets: ["latin"],
+    display: "swap",
+});
 
 gsap.registerPlugin(useGSAP);
 gsap.registerPlugin(ScrollTrigger);
@@ -225,6 +232,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
             >
                 <WrappedSocialCard
                     wrapped={wrapped}
+                    bangers={bangers}
                     onImageGenerated={handleSocialImageGenerated}
                     onLoadingStateChange={handleSocialImageLoadingStateChange}
                 />
