@@ -18,7 +18,10 @@ import { SectionBody } from "./section-body";
 import { Button } from "react-bootstrap";
 import { safeDecodeURI } from "~src/utils/uri";
 import { usePatreons } from "~src/components/patreon/use-patreons";
-import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
+import {
+    PatreonBunnySvgMarioPipe,
+    PatreonBunnySvgWithoutLink,
+} from "~app/patron/patreon-info";
 
 const bangers = Bangers({
     weight: "400",
@@ -105,7 +108,7 @@ const HiddenDataSummary = memo<HiddenDataSummaryProps>(
                                 justifyContent: "center",
                             }}
                         >
-                            {profilePhoto && (
+                            {profilePhoto ? (
                                 <div
                                     style={{
                                         position: "relative",
@@ -137,9 +140,19 @@ const HiddenDataSummary = memo<HiddenDataSummaryProps>(
                                         }}
                                     />
                                 </div>
+                            ) : (
+                                <PatreonBunnySvgMarioPipe size={150} />
                             )}
                             <p style={{ marginLeft: "25px", fontSize: "48px" }}>
-                                therun.gg/
+                                <span
+                                    className="text-white"
+                                    style={{
+                                        textShadow:
+                                            getEnhancedTextShadow("#27a11b"),
+                                    }}
+                                >
+                                    therun.gg/
+                                </span>
                                 <span
                                     className={bangers.className}
                                     style={{
@@ -349,12 +362,12 @@ export function WrappedSocialCard({
     wrapped: WrappedWithData;
 }): ReactElement {
     const cardRef = useRef<HTMLDivElement>(null);
-    const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [profilePhoto, setProfilePhoto] = useState<string | undefined>(
         undefined,
     );
     const [isPatron, setIsPatron] = useState<boolean>(false);
-
+    const [canvas, setCanvas] = useState<HTMLCanvasElement>();
+    const [blob, setBlob] = useState<Blob>();
     const topGames = useMemo(() => {
         return wrapped.playtimeData.playtimePerYearMap[wrapped.year].perGame;
     }, [wrapped.playtimeData.playtimePerYearMap, wrapped.year]);
@@ -455,14 +468,49 @@ export function WrappedSocialCard({
 
             // Draw the original canvas scaled down
             ctx.drawImage(canvas, 0, 0, targetWidth, targetHeight);
-
-            // Convert to JPEG
-            const url = resizedCanvas.toDataURL("image/jpeg", 0.85);
-            setPreviewUrl(url);
+            setCanvas(resizedCanvas);
         } catch (error) {
             console.error("Error generating image:", error);
         }
     }, [wrapped.user]);
+
+    const previewUrl = useMemo(() => {
+        if (!canvas) {
+            return "";
+        }
+        // Convert to JPEG
+        return canvas.toDataURL("image/jpeg", 0.85);
+    }, [canvas]);
+
+    useEffect(() => {
+        if (!canvas) return;
+        const getCanvasBlob = (canvas: HTMLCanvasElement) =>
+            new Promise<Blob>((resolve, reject) => {
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        resolve(blob);
+                    } else {
+                        reject(new Error("Canvas toBlob failed."));
+                    }
+                });
+            });
+
+        getCanvasBlob(canvas)
+            .then((blobData) => setBlob(blobData))
+            .catch((error) => console.error(error));
+    }, [canvas]);
+
+    const copyToClipboard = () => {
+        try {
+            navigator.clipboard.write([
+                new ClipboardItem({
+                    "image/png": blob!,
+                }),
+            ]);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     const handleDownload = () => {
         if (!previewUrl) return;
@@ -504,8 +552,15 @@ export function WrappedSocialCard({
                                 style={{ maxHeight: "640px" }}
                             />
                             <Button
+                                onClick={copyToClipboard}
+                                className="button-secondary px-4 py-2"
+                            >
+                                Copy
+                            </Button>
+                            <Button
                                 onClick={handleDownload}
                                 className="px-4 py-2"
+                                variant="secondary"
                             >
                                 Download
                             </Button>
