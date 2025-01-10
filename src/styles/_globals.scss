@@ -281,6 +281,13 @@ body {
   vertical-align: text-top;
 }
 
+// Add that extra padding on those gsap sections that can't re-calc the height afterwards :D
+@media (min-width: 992px) {
+  .animated-section {
+    margin-top: 600px;
+  }
+}
+
 @media (min-width: 992px) {
   .podium-xl {
     > div {
