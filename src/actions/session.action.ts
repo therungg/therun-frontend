@@ -1,3 +1,5 @@
+"use server";
+
 import {
     createNewSession,
     getSession as getExistingSession,
