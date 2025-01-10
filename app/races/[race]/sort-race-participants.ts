@@ -33,6 +33,37 @@ export const sortRaceParticipants = (
         if (a.liveData || b.liveData) {
             if (!a.liveData) return 1;
             if (!b.liveData) return -1;
+
+            if (race.startTime) {
+                if (
+                    a.liveData.startedAt <
+                    new Date(race.startTime).getTime() - 1000 * 60
+                ) {
+                    return 1;
+                }
+                if (
+                    b.liveData.startedAt <
+                    new Date(race.startTime).getTime() - 1000 * 60
+                ) {
+                    return -1;
+                }
+            }
+
+            if (race.category.includes("602")) {
+                if (
+                    a.liveData.totalSplits < 400 &&
+                    b.liveData.totalSplits < 400
+                ) {
+                    return a.user < b.user ? -1 : 1;
+                }
+                if (a.liveData.totalSplits < 400) {
+                    return 1;
+                }
+                if (b.liveData.totalSplits < 400) {
+                    return -1;
+                }
+            }
+
             // Both have liveData, compare their percentages
             const aPercentage = (
                 a.liveData.runPercentageTime &&
