@@ -1,4 +1,11 @@
-import { ReactElement, useEffect, useMemo, useRef, useState } from "react";
+import {
+    ReactElement,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 import { WrappedWithData } from "~app/[username]/wrapped/wrapped-types";
 import html2canvas from "html2canvas";
 import { getUserProfilePhoto } from "~src/utils/metadata";
@@ -70,15 +77,7 @@ export function WrappedSocialCard({
 
     const { data: patreons, isLoading } = usePatreons();
 
-    useEffect(() => {
-        const patronExists = patreons?.[wrapped.user];
-
-        if (patronExists) setIsPatron(true);
-
-        generateImage();
-    }, [isLoading, isPatron]);
-
-    const generateImage = async () => {
+    const generateImage = useCallback(async () => {
         if (!cardRef.current) return;
 
         const photo = await getUserProfilePhoto(wrapped.user);
@@ -144,7 +143,7 @@ export function WrappedSocialCard({
         } catch (error) {
             console.error("Error generating image:", error);
         }
-    };
+    }, [wrapped.user]);
 
     const handleDownload = () => {
         if (!previewUrl) return;
@@ -156,8 +155,16 @@ export function WrappedSocialCard({
         link.click();
     };
 
+    useEffect(() => {
+        const patronExists = patreons?.[wrapped.user];
+
+        if (patronExists) setIsPatron(true);
+
+        generateImage();
+    }, [generateImage, isLoading, isPatron, patreons, wrapped.user]);
+
     return (
-        <div style={{ position: "relative", width: "100%", height: "100%" }}>
+        <div className="position-relative w-100 h-100">
             <div
                 style={{
                     position: "fixed",
