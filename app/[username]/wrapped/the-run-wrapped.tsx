@@ -221,13 +221,9 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                 });
                 // DO NOT TRY THIS AT HOME. THIS STUNT WAS PERFORMED BY TRAINED PROFESSIONALS.
                 // triggering a resize event snaps the scrolltrigger markers in place
-                const interval = window.setInterval(() => {
+                window.setTimeout(() => {
                     window.dispatchEvent(new Event("resize"));
                 }, 300);
-
-                return () => {
-                    window.clearInterval(interval);
-                };
             });
         },
         {
