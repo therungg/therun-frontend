@@ -386,7 +386,10 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                     </p>
                     <p className="fs-5 mb-3">
                         If you are impatient, you can download your recap as a
-                        cool little image here:
+                        cool little image here.{" "}
+                        <span className="opacity-25">
+                            Promise you'll share on socials?
+                        </span>
                     </p>
                     <div className="mb-5">
                         {socialImageLoadingState.isLoading && (
