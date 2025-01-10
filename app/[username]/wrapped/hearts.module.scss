@@ -1,0 +1,41 @@
+
+.heart {
+  display: none;
+  position: absolute;
+  color: rgb(236, 72, 153);
+  filter: drop-shadow(0 0 2px rgba(236, 72, 153, 0.3));
+  pointer-events: none;
+  width: 16px; /* Adjust dimensions */
+  height: 16px; /* Adjust dimensions */
+}
+
+.heartContainer {
+  position: relative;
+}
+
+.heartbeatContainer {
+  position: relative;
+}
+
+.heartbeatContainer::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  animation: heartbeat 3s infinite ease-in-out;
+}
+
+@keyframes heartbeat {
+  0% {
+    box-shadow: 0 0 20px #f11fce;
+  }
+  50% {
+    box-shadow: 0 0 30px #ff0058;
+  }
+  100% {
+    box-shadow: 0 0 20px #f11fce;
+  }
+}

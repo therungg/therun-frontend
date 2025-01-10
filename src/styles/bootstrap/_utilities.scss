@@ -42,7 +42,9 @@ $utilities: map-merge(
                 (
                   350p: 350px,
                   550p: 550px,
-                  30r:  30rem
+                  30r:  30rem,
+                  75r:  75rem,
+                  80:   80%
                 )
             )
           )
@@ -83,6 +85,17 @@ $utilities: map-merge(
                   400p: 400px,
                   1r:   1rem,
                   2r:   2rem,
+                )
+            )
+          )
+      ),
+      "padding-y": map-merge(
+          map-get($utilities, "padding-y"),
+          (
+            values: map-merge(
+                map-get(map-get($utilities, "padding-y"), "values"),
+                (
+                  6: 6rem,
                 )
             )
           )

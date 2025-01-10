@@ -7,7 +7,7 @@ import { Col, Row } from "react-bootstrap";
 import CalendarHeatmap from "../../../public/js/calendar-heatmap.component";
 import { scaleLinear } from "d3";
 
-interface PlaytimeStats {
+export interface PlaytimeStats {
     total: number;
     playtimePerDayMap: StatMap;
     playtimePerDayOfWeekMap: StatMap;
@@ -20,7 +20,7 @@ interface StatMap {
     [key: string]: TotalStat;
 }
 
-interface TotalStat {
+export interface TotalStat {
     total: number;
     perGame: PerGameStat;
 }
@@ -162,6 +162,134 @@ export const PlayTimeTable = ({
     );
 };
 
+export const PlaytimePerMonthGraph = ({
+    playtimePerMonthMap,
+    year,
+}: {
+    playtimePerMonthMap: StatMap;
+    year: number;
+}) => {
+    let max = 0;
+
+    const currentYear = year;
+    for (let month = 1; month <= 12; month++) {
+        const monthKey = `${currentYear}-${String(month).padStart(2, "0")}`;
+        if (
+            !Object.prototype.hasOwnProperty.call(playtimePerMonthMap, monthKey)
+        ) {
+            playtimePerMonthMap[monthKey] = { total: 0, perGame: {} };
+        }
+    }
+
+    const victoryData = Object.entries(playtimePerMonthMap)
+        .map(([day, stat]) => {
+            if (stat.total > max) max = stat.total;
+            return {
+                x: day.split("-")[1],
+                y: stat.total,
+                fill: "green",
+            };
+        })
+        .sort((a, b) => {
+            if (a.x > b.x) return 1;
+            return -1;
+        });
+
+    const color = scaleLinear()
+        .range(["#ffffff", "#27A11B"])
+        .domain([-0.15 * max, max]);
+
+    return (
+        <div>
+            <h3>Playtime per month</h3>
+            <VictoryChart
+                padding={{ top: 10, left: 0, right: 0, bottom: 70 }}
+                domainPadding={{ x: [30, 30], y: [10, 10] }}
+            >
+                <VictoryAxis
+                    style={{
+                        tickLabels: {
+                            fontSize: 11,
+                            // TODO: Get rid of this
+                            // eslint-disable-next-line sonarjs/no-duplicate-string
+                            color: "var(--bs-body-color)",
+                            fill: "var(--bs-body-color)",
+                            angle: 0,
+                            padding: 10,
+                        },
+                        axis: {
+                            color: "var(--bs-body-color)",
+                            borderColor: "var(--bs-body-color)",
+                            fill: "var(--bs-body-color)",
+                            stroke: "var(--bs-body-color)",
+                        },
+                    }}
+                    data={victoryData}
+                    tickFormat={(a) => {
+                        switch (a) {
+                            case "01":
+                                return "Jan";
+                            case "02":
+                                return "Feb";
+                            case "03":
+                                return "Mar";
+                            case "04":
+                                return "Apr";
+                            case "05":
+                                return "May";
+                            case "06":
+                                return "June";
+                            case "07":
+                                return "July";
+                            case "08":
+                                return "Aug";
+                            case "09":
+                                return "Sep";
+                            case "10":
+                                return "Oct";
+                            case "11":
+                                return "Nov";
+                            case "12":
+                                return "Dec";
+                            default:
+                                return "Monday";
+                        }
+                    }}
+                />
+                <VictoryBar
+                    style={{
+                        data: {
+                            fill: (d) => {
+                                return color(
+                                    d.data &&
+                                        d.index !== null &&
+                                        d.index !== undefined
+                                        ? d.data[d.index as number]._y
+                                        : "var(--bs-link-color)",
+                                );
+                            },
+                        },
+                    }}
+                    data={victoryData}
+                    labels={({ index }) => {
+                        const key = year + "-" + String(index).padStart(2, "0");
+
+                        const target: TotalStat = playtimePerMonthMap[key];
+
+                        return tooltip(target);
+                    }}
+                    labelComponent={
+                        <VictoryTooltip
+                            style={{ fontStyle: 10 }}
+                            flyoutPadding={10}
+                        />
+                    }
+                />
+            </VictoryChart>
+        </div>
+    );
+};
+
 export const PlayTimePerDayOfWeekGraph = ({
     playtimePerDayOfWeekMap,
 }: {
@@ -196,7 +324,7 @@ export const PlayTimePerDayOfWeekGraph = ({
                         tickLabels: {
                             fontSize: 11,
                             // TODO: Get rid of this
-                            // eslint-disable-next-line sonarjs/no-duplicate-string
+
                             color: "var(--bs-body-color)",
                             fill: "var(--bs-body-color)",
                             angle: 0,
@@ -236,7 +364,9 @@ export const PlayTimePerDayOfWeekGraph = ({
                         data: {
                             fill: (d) => {
                                 return color(
-                                    d.data && d.index
+                                    d.data &&
+                                        d.index !== null &&
+                                        d.index !== undefined
                                         ? d.data[d.index as number]._y
                                         : "var(--bs-link-color)",
                                 );
@@ -344,7 +474,11 @@ export const PlaytimePerHourGraph = ({
                     style={{
                         data: {
                             fill: (d) => {
-                                if (d.data && d.index) {
+                                if (
+                                    d.data &&
+                                    d.index !== null &&
+                                    d.index !== undefined
+                                ) {
                                     return color(d.data[d.index as number]._y);
                                 } else {
                                     return 0;
@@ -372,6 +506,7 @@ export const PlaytimePerHourGraph = ({
 };
 
 const tooltip = (data: TotalStat): string => {
+    if (!data) return "No time";
     return getFormattedString(data.total.toString());
 };
 

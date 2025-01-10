@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { SearchResults } from "./find-user-or-run";
 import useSWR from "swr";
-import { useDebounce } from "usehooks-ts";
+import { useDebounceValue } from "usehooks-ts";
 import { useAggregatedResults } from "./use-aggregated-results";
 import { useFilteredFuzzySearch, useFuseSearch } from "./use-fuzzy-search";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -26,7 +26,7 @@ export const GlobalSearch = React.memo(() => {
     const [isResultsPanelOpen, setIsResultsPanelOpen] = useState(false);
     const searchRef = React.useRef<HTMLInputElement>(null);
     const resultsPanelRef = React.useRef<HTMLDivElement>(null);
-    const debouncedQuery = useDebounce(query, 300);
+    const [debouncedQuery] = useDebounceValue(query, 300);
 
     const {
         data: searchResults,

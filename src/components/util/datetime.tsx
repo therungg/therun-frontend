@@ -15,6 +15,25 @@ interface DurationToFormattedProps {
     human?: boolean;
 }
 
+const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+];
+
+export const getDateAsMonthDay = (date: Date) => {
+    return monthNames[date.getMonth()] + " " + date.getDate();
+};
+
 export const getFullDate = (iso: string | Date) => {
     return moment(iso).format("YYYY-MM-DD hh:mm:ss");
 };
@@ -52,12 +71,14 @@ export const Difference = ({
     withMillis = false,
     isGold = false,
     human = true,
+    inline = false,
 }: {
     one: string;
     two: string;
     withMillis?: boolean;
     isGold?: boolean;
     human?: boolean;
+    inline?: boolean;
 }) => {
     const diff = parseInt(one) - parseInt(two);
 
@@ -83,17 +104,33 @@ export const Difference = ({
                 false,
             )}`}
         >
-            <div
-                style={{
-                    color: isGold
-                        ? "var(--bs-secondary)"
-                        : diff <= 0
-                          ? "var(--bs-link-color)"
-                          : "var(--bs-red)",
-                }}
-            >
-                {formatted}
-            </div>
+            {inline ? (
+                <span
+                    style={{
+                        color: isGold
+                            ? "var(--bs-secondary)"
+                            : diff <= 0
+                              ? // eslint-disable-next-line sonarjs/no-duplicate-string
+                                "var(--bs-link-color)"
+                              : // eslint-disable-next-line sonarjs/no-duplicate-string
+                                "var(--bs-red)",
+                    }}
+                >
+                    {formatted}
+                </span>
+            ) : (
+                <div
+                    style={{
+                        color: isGold
+                            ? "var(--bs-secondary)"
+                            : diff <= 0
+                              ? "var(--bs-link-color)"
+                              : "var(--bs-red)",
+                    }}
+                >
+                    {formatted}
+                </div>
+            )}
         </abbr>
     );
 };

@@ -30,8 +30,6 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
         splits[0].single.alternative &&
         splits[0].single.alternative.length > 0;
 
-    console.log(splits);
-
     const [totalTime, setTotalTime] = useState(true);
     const [selectedComparison, setSelectedComparison] =
         useState<SplitFilterValue>(SPLIT_FILTERS.BEST_POSSIBLE);

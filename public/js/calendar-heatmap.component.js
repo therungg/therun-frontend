@@ -8,11 +8,10 @@ import styles from "../../src/components/css/Calendar.module.scss";
 class CalendarHeatmap extends React.Component {
     constructor(props) {
         super(props);
-
         this.settings = {
             gutter: 6,
             item_gutter: 1,
-            width: 1616,
+            width: Number.isInteger(props.width) ? props.width : 1616,
             height: 200,
             item_size: 1111,
             label_padding: 45,
@@ -25,7 +24,7 @@ class CalendarHeatmap extends React.Component {
         this.in_transition = false;
         this.overview = this.props.overview;
         this.history = ["global"];
-        this.selected = {};
+        this.selected = { date: props.data[0].date.slice(0, 4) };
 
         this.calcDimensions = this.calcDimensions.bind(this);
     }
@@ -38,6 +37,12 @@ class CalendarHeatmap extends React.Component {
         window.addEventListener("resize", this.calcDimensions);
     }
 
+    UNSAFE_componentWillUpdate(nextProps) {
+        if (nextProps.width !== this.props.width) {
+            this.calcDimensions(nextProps.width);
+        }
+    }
+
     componentDidUpdate() {
         this.parseData();
         this.drawChart();
@@ -45,6 +50,16 @@ class CalendarHeatmap extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener("resize", this.calcDimensions);
+        this.removeDayOverview();
+        this.removeWeekOverview();
+        this.removeMonthOverview();
+        this.removeYearOverview();
+        this.removeGlobalOverview();
+        if (this.svg) this.svg.remove();
+        if (this.items) this.items.remove();
+        if (this.labels) this.labels.remove();
+        if (this.buttons) this.buttons.remove();
+        if (this.tooltip) this.tooltip.remove();
     }
 
     createElements() {
@@ -81,7 +96,7 @@ class CalendarHeatmap extends React.Component {
     }
 
     // Calculate dimensions based on available width
-    calcDimensions() {
+    calcDimensions(updatedWidth) {
         let dayIndex = Math.round(
             (moment() - moment().subtract(1, "year").startOf("week")) /
                 86400000,
@@ -89,10 +104,14 @@ class CalendarHeatmap extends React.Component {
         let colIndex = Math.trunc(dayIndex / 7);
         let numWeeks = colIndex + 1;
 
-        this.settings.width =
-            this.container.offsetWidth < 1616
-                ? 1616
-                : this.container.offsetWidth;
+        if (!updatedWidth) {
+            this.settings.width =
+                this.container.offsetWidth < 1616
+                    ? 1616
+                    : this.container.offsetWidth;
+        } else if (typeof updatedWidth === "number") {
+            this.settings.width = updatedWidth;
+        }
         this.settings.item_size =
             (this.settings.width - this.settings.label_padding) / numWeeks -
             this.settings.gutter;
