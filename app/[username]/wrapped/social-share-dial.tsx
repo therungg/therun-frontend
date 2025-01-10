@@ -1,4 +1,4 @@
-import React, { memo, useState } from "react";
+import React, { memo, useCallback, useRef, useState } from "react";
 import {
     TwitterShareButton,
     TwitterIcon,
@@ -12,6 +12,7 @@ import {
     ShareFill,
 } from "react-bootstrap-icons/";
 import socialStyles from "./social-icons.module.scss";
+import { useOnClickOutside } from "usehooks-ts";
 
 interface SocialShareSpeedDialProps {
     url: string;
@@ -20,12 +21,18 @@ interface SocialShareSpeedDialProps {
 
 export const SocialShareSpeedDial = memo<SocialShareSpeedDialProps>(
     ({ url, title }) => {
+        const buttonRef = useRef<HTMLButtonElement>(null);
         const [isOpen, setIsOpen] = useState(false);
         const [copied, setCopied] = useState<"PENDING" | "SUCCESS" | "ERROR">(
             "PENDING",
         );
+        const onOutsideClick = useCallback(() => setIsOpen(false), []);
+        const toggleSpeedDial = useCallback(
+            () => setIsOpen((prev) => !prev),
+            [],
+        );
 
-        const toggleSpeedDial = () => setIsOpen((prev) => !prev);
+        useOnClickOutside(buttonRef, onOutsideClick);
 
         const handleCopy = () => {
             navigator.clipboard
@@ -42,6 +49,7 @@ export const SocialShareSpeedDial = memo<SocialShareSpeedDialProps>(
         return (
             <div className="position-relative p-3 d-flex flex-column align-items-center">
                 <button
+                    ref={buttonRef}
                     className={`btn btn-primary rounded-circle d-flex justify-content-center align-items-center shadow ${
                         isOpen ? "rotate-icon" : ""
                     }`}
