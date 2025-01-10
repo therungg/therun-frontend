@@ -2,6 +2,7 @@ import {
     lazy,
     PropsWithChildren,
     Suspense,
+    useEffect,
     useMemo,
     useRef,
     useState,
@@ -121,7 +122,15 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
     const [readySections, setReadySections] = useState<Record<number, boolean>>(
         { 0: true },
     );
-
+    useEffect(() => {
+        if (readySections) {
+            // When the readySections updates this means a new lazy-loaded Section is ready
+            // This also means the content height isn't properly known and gsap
+            // believes before this point that the height is 100vh.
+            // This recomputes the start + end markers
+            ScrollTrigger.refresh();
+        }
+    }, [readySections]);
     const sections = useMemo(() => {
         const hasEnoughData = hasRaceData(wrapped);
         return [
@@ -220,11 +229,6 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                         onLeaveBack: () => setSectionIndex(index - 1),
                     });
                 });
-                // DO NOT TRY THIS AT HOME. THIS STUNT WAS PERFORMED BY TRAINED PROFESSIONALS.
-                // triggering a resize event snaps the scrolltrigger markers in place
-                window.setTimeout(() => {
-                    window.dispatchEvent(new Event("resize"));
-                }, 300);
             });
         },
         {
