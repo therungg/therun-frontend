@@ -90,6 +90,8 @@ const hasRaceData = (wrapped: WrappedWithData) => {
     );
 };
 
+const MOBILE_BREAKPOINT = 768;
+
 interface WrappedSectionProps {
     id?: string;
     ready?: boolean;
@@ -207,22 +209,25 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
             const sections: gsap.DOMTarget[] =
                 gsap.utils.toArray(".animated-section");
 
-            ScrollTrigger.defaults({
-                pin: true,
-                scrub: 0.5,
-            });
+            const matchMedia = gsap.matchMedia();
+            matchMedia.add(`(min-width: ${MOBILE_BREAKPOINT}px)`, () => {
+                ScrollTrigger.defaults({
+                    pin: true,
+                    scrub: 0.5,
+                });
 
-            sections.forEach((section, index) => {
-                ScrollTrigger.create({
-                    trigger: section,
-                    onEnter: () => {
-                        setSectionIndex(index);
-                        setReadySections((prevSections) => ({
-                            ...prevSections,
-                            [index + 1]: true,
-                        }));
-                    },
-                    onLeaveBack: () => setSectionIndex(index - 1),
+                sections.forEach((section, index) => {
+                    ScrollTrigger.create({
+                        trigger: section,
+                        onEnter: () => {
+                            setSectionIndex(index);
+                            setReadySections((prevSections) => ({
+                                ...prevSections,
+                                [index + 1]: true,
+                            }));
+                        },
+                        onLeaveBack: () => setSectionIndex(index - 1),
+                    });
                 });
             });
         },
@@ -312,6 +317,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
             >
                 <SocialShareSpeedDial
                     title="Check out my 2024 The Run speedrunning recap!"
+                    text="Here's something you might love!"
                     url={`https://therun.gg/${user}/wrapped`}
                 />
             </div>
