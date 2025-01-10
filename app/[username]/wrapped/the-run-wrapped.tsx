@@ -214,7 +214,6 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                 ScrollTrigger.defaults({
                     pin: true,
                     scrub: 0.5,
-                    markers: true,
                 });
 
                 sections.forEach((section, index) => {
