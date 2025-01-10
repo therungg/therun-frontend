@@ -226,7 +226,13 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                                 [index + 1]: true,
                             }));
                         },
-                        onLeaveBack: () => setSectionIndex(index - 1),
+                        onLeaveBack: () => {
+                            setSectionIndex(index - 1);
+                            setReadySections((prevSections) => ({
+                                ...prevSections,
+                                [index]: true,
+                            }));
+                        },
                     });
                 });
             });
@@ -238,17 +244,39 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                         entries.forEach((entry) => {
                             const section = entry.target;
                             const sectionIndex = sections.indexOf(section);
+                            const fromTop = entry.intersectionRect.top;
+                            const fromBottom =
+                                (entry.rootBounds?.height ?? 0) -
+                                entry.intersectionRect.bottom;
 
-                            if (entry.isIntersecting) {
-                                setReadySections((prevSections) => ({
-                                    ...prevSections,
-                                    [sectionIndex + 1]: true,
-                                }));
+                            // Scrolling Down
+                            if (fromTop > fromBottom && entry.isIntersecting) {
+                                setReadySections((prevSections) => {
+                                    return {
+                                        ...prevSections,
+                                        // intersection observer is kind of funky so just going
+                                        // so making sure we grab the current and next section just in case
+                                        [sectionIndex]: true,
+                                        [sectionIndex + 1]: true,
+                                    };
+                                });
+                            }
+                            // Scrolling Up
+                            if (fromBottom > fromTop && entry.isIntersecting) {
+                                setReadySections((prevSections) => {
+                                    return {
+                                        ...prevSections,
+                                        // intersection observer is kind of funky so just going
+                                        // so making sure we grab the current and next section just in case
+                                        [sectionIndex]: true,
+                                        [sectionIndex - 1]: true,
+                                    };
+                                });
                             }
                         });
                     },
                     {
-                        threshold: 0.1, // Trigger when 10% of the section is in view
+                        threshold: 0.2, // Trigger when 20% of the section is in view
                     },
                 );
 
@@ -345,7 +373,6 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
             >
                 <SocialShareSpeedDial
                     title="Check out my 2024 The Run speedrunning recap!"
-                    text="Here's something you might love!"
                     url={`https://therun.gg/${user}/wrapped`}
                 />
             </div>

@@ -106,7 +106,7 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
                                     <GameImage
                                         alt={display}
                                         src={image || ""}
-                                        quality="hd"
+                                        quality="sd"
                                         className="card-img-top h-100"
                                         autosize
                                     />
