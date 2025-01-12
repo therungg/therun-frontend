@@ -46,6 +46,8 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
     const pathname = usePathname();
     const [show, setShow] = useState(false);
     const [dark, setDark] = useState(true);
+    const [mounted, setMounted] = useState(false);
+    const [notificationDisabled, setNotificationDisabled] = useState(false);
     const hasRoute = useCallback(
         (route: string) => {
             if (!pathname) return "";
@@ -63,8 +65,18 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
         window.location.reload();
     }, []);
 
+    const handleNotification = () => {
+        setNotificationDisabled(true);
+        localStorage.setItem("disableNotification", "true");
+    };
+
     useEffect(function () {
         setDark(getColorMode() !== "light");
+
+        if ("true" === localStorage.getItem("disableNotification")) {
+            setNotificationDisabled(true);
+        }
+        setMounted(true);
     }, []);
 
     const handleColorMode: React.MouseEventHandler<HTMLElement> = useCallback(
@@ -212,10 +224,16 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                     </Navbar.Collapse>
                 </Container>
             </Navbar>
-            {!hasRoute("wrapped") &&
+            {mounted &&
+            !notificationDisabled &&
+            !hasRoute("wrapped") &&
             !hasRoute("recap") &&
             !hasRoute("patron") ? (
-                <Alert className="container w-100">
+                <Alert
+                    className="container w-100"
+                    onClose={handleNotification}
+                    dismissible
+                >
                     <AlertHeading>
                         <Badge>NEW</Badge>&nbsp;The Run Recap 2024 is here!!
                     </AlertHeading>
