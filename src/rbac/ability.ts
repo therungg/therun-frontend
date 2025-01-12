@@ -14,6 +14,7 @@ export const actions = [
     "delete",
     "ban",
     "style",
+    // eslint-disable-next-line sonarjs/no-duplicate-string
     "view-restricted",
     "moderate",
 ] as const;
@@ -24,15 +25,15 @@ export const subjects = [
     "game",
     "leaderboard",
     "moderators",
+    "stories",
 ] as const;
 type AllowedActions = (typeof actions)[number];
 type AllowedSubjects = (typeof subjects)[number];
 type AppAbilities = [
     AllowedActions,
     (
-        | (typeof subjects)[number]
-        | ForcedSubject<(typeof subjects)[number]>
-        // eslint-disable-next-line no-unused-vars
+        | AllowedSubjects
+        | ForcedSubject<AllowedSubjects>
         | ForcedSubject<{ [key in AllowedSubjects]?: string }>
     ),
 ];
@@ -41,14 +42,12 @@ export type AppAbility = MongoAbility<AppAbilities>;
 export const createAppAbility = createMongoAbility as CreateAbility<AppAbility>;
 
 type DefinePermissions = (
-    // eslint-disable-next-line no-unused-vars
     user: User,
-    // eslint-disable-next-line no-unused-vars
     builder: AbilityBuilder<AppAbility>,
 ) => void;
 
 const rolePermissions: Record<Role, DefinePermissions> = {
-    admin(user, { can }) {
+    admin(_user, { can }) {
         actions.forEach((action) => {
             subjects.forEach((subject) => {
                 can(action, subject);
@@ -57,26 +56,36 @@ const rolePermissions: Record<Role, DefinePermissions> = {
     },
     patreon1(user, { can }) {
         can("style", "user");
+        can("view-restricted", "stories");
+        can("edit", "stories", { user: user.username });
     },
     patreon2(user, { can }) {
         can("style", "user");
+        can("view-restricted", "stories");
+        can("edit", "stories", { user: user.username });
     },
     patreon3(user, { can }) {
         can("style", "user");
+        can("view-restricted", "stories");
+        can("edit", "stories", { user: user.username });
     },
-    moderator(user, { can }) {
+    moderator(_user, { can }) {
         can("ban", "user");
         can("ban", "run");
         can("edit", "run");
     },
-    "board-admin": function (user, { can }) {
+    "story-beta-user": function (user, { can }) {
+        can("view-restricted", "stories");
+        can("edit", "stories", { user: user.username });
+    },
+    "board-admin": function (_user, { can }) {
         can("edit", "leaderboard");
         can("edit", "moderators");
     },
-    "board-moderator": function (user, { can }) {
+    "board-moderator": function (_user, { can }) {
         can("edit", "leaderboard");
     },
-    "race-admin": function (user, { can }) {
+    "race-admin": function (_user, { can }) {
         can("edit", "race");
         can("delete", "race");
         can("moderate", "race");

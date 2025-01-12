@@ -1,3 +1,5 @@
+"use client";
+
 import { Title } from "../title";
 import React, { useState } from "react";
 import { Button, Form } from "react-bootstrap";
@@ -12,10 +14,11 @@ import {
     Youtube as YoutubeIcon,
 } from "react-bootstrap-icons";
 import { Can, subject } from "~src/rbac/Can.component";
+import { BlueskyIcon } from "~src/icons/bluesky-icon";
 
 //TODO:: Would be better to use some form lib, not sure why i built it this way
-export const Userform = ({ username, session, userData }) => {
-    const [editingInfo, setEditingInfo] = useState(false);
+export const Userform = ({ username, session, userData, editInfo = false }) => {
+    const [editingInfo, setEditingInfo] = useState(editInfo);
 
     if (userData.socials) {
         if (userData.socials.twitter) {
@@ -48,16 +51,20 @@ export const Userform = ({ username, session, userData }) => {
         <div>
             {!editingInfo &&
                 Display({
-                    username: userData.login || username,
+                    username:
+                        userData.login &&
+                        userData.login.toLowerCase() !== username.toLowerCase()
+                            ? userData.login
+                            : username,
                     form,
                     showTimezone: !!userData.timezone,
                 })}
             {editingInfo && Edit({ username, form, setForm })}
 
-            <Can I={"edit"} this={subject("user", username)}>
+            <Can I="edit" this={subject("user", username)}>
                 <div className="mt-3 d-flex align-items-center">
                     <Button
-                        variant={"primary"}
+                        variant="primary"
                         className="w-240p"
                         onClick={async () => {
                             if (editingInfo) {
@@ -77,7 +84,7 @@ export const Userform = ({ username, session, userData }) => {
                     </Button>
                     {editingInfo && (
                         <Button
-                            variant={"danger"}
+                            variant="danger"
                             className="ms-3"
                             onClick={() => {
                                 setEditingInfo(false);
@@ -109,27 +116,36 @@ const Display = ({ username, form, showTimezone = false }) => {
                 </div>
                 <a
                     href={`https://twitch.tv/${username}`}
-                    target={"_blank"}
-                    rel={"noreferrer"}
+                    target="_blank"
+                    rel="noreferrer"
                 >
-                    <TwitchIcon size={24} color={"#6441a5"} />
+                    <TwitchIcon size={24} color="#6441a5" />
                 </a>
                 {form.socials && form.socials.youtube && (
                     <a
                         href={`https://youtube.com/${form.socials.youtube}`}
-                        target={"_blank"}
-                        rel={"noreferrer"}
+                        target="_blank"
+                        rel="noreferrer"
                     >
-                        <YoutubeIcon size={24} color={"red"} />
+                        <YoutubeIcon size={24} color="red" />
                     </a>
                 )}
                 {form.socials && form.socials.twitter && (
                     <a
                         href={`https://twitter.com/${form.socials.twitter}`}
-                        target={"_blank"}
-                        rel={"noreferrer"}
+                        target="_blank"
+                        rel="noreferrer"
                     >
-                        <TwitterIcon size={24} color={"#1DA1F2"} />
+                        <TwitterIcon size={24} color="#1DA1F2" />
+                    </a>
+                )}
+                {form.socials && form.socials.bluesky && (
+                    <a
+                        href={`https://bsky.app/profile/${form.socials.bluesky}`}
+                        target="_blank"
+                        rel="noreferrer"
+                    >
+                        <BlueskyIcon />
                     </a>
                 )}
             </div>
@@ -153,7 +169,9 @@ const Display = ({ username, form, showTimezone = false }) => {
 const Edit = ({ username, form, setForm }) => {
     return (
         <>
-            <Title>{username}</Title>
+            <Title>
+                <NameAsPatreon name={username} />
+            </Title>
             <Form className="row g-3">
                 <div className="col col-12 col-lg-6">
                     <fieldset className="border py-3 px-4">
@@ -161,7 +179,7 @@ const Edit = ({ username, form, setForm }) => {
                         <div className="row g-3">
                             <Form.Group
                                 className="col-12 col-md-6 col-lg-12 col-xl-6"
-                                controlId={"pronouns"}
+                                controlId="pronouns"
                             >
                                 <Form.Label>Pronouns</Form.Label>
                                 <Form.Control
@@ -180,7 +198,7 @@ const Edit = ({ username, form, setForm }) => {
 
                             <Form.Group
                                 className="col-12 col-md-6 col-lg-12 col-xl-6"
-                                controlId={"alias"}
+                                controlId="alias"
                             >
                                 <Form.Label>Also known as</Form.Label>
                                 <Form.Control
@@ -199,7 +217,7 @@ const Edit = ({ username, form, setForm }) => {
 
                             <Form.Group
                                 className="col-12 col-md-6 col-lg-12 col-xl-6"
-                                controlId={"country"}
+                                controlId="country"
                             >
                                 <Form.Label>Country</Form.Label>
                                 <Form.Control
@@ -213,7 +231,7 @@ const Edit = ({ username, form, setForm }) => {
                                         })
                                     }
                                 >
-                                    <option value={""}>Show no country</option>
+                                    <option>Show no country</option>
                                     {Array.from(
                                         Object.entries(countries()),
                                     ).map(([key, value]) => {
@@ -228,7 +246,7 @@ const Edit = ({ username, form, setForm }) => {
 
                             <Form.Group
                                 className="col-12 col-md-6 col-lg-12 col-xl-6"
-                                controlId={"timezone"}
+                                controlId="timezone"
                             >
                                 <Form.Label>Timezone</Form.Label>
                                 <TimezoneSelect
@@ -240,7 +258,7 @@ const Edit = ({ username, form, setForm }) => {
                                 />
                             </Form.Group>
 
-                            <Form.Group className="col-12" controlId={"bio"}>
+                            <Form.Group className="col-12" controlId="bio">
                                 <Form.Label>
                                     About (max. 100 characters)
                                 </Form.Label>
@@ -268,11 +286,11 @@ const Edit = ({ username, form, setForm }) => {
                         <div className="row g-3">
                             <Form.Group
                                 className="col-12 col-md-6 col-lg-12 col-xl-6"
-                                controlId={"youtube"}
+                                controlId="youtube"
                             >
                                 <Form.Label>
                                     Youtube{" "}
-                                    <YoutubeIcon size={24} color={"red"} />
+                                    <YoutubeIcon size={24} color="red" />
                                 </Form.Label>
                                 <Form.Control
                                     maxLength={100}
@@ -297,11 +315,11 @@ const Edit = ({ username, form, setForm }) => {
 
                             <Form.Group
                                 className="col-12 col-md-6 col-lg-12 col-xl-6"
-                                controlId={"twitter"}
+                                controlId="twitter"
                             >
                                 <Form.Label>
                                     Twitter{" "}
-                                    <TwitterIcon size={24} color={"#1DA1F2"} />
+                                    <TwitterIcon size={24} color="#1DA1F2" />
                                 </Form.Label>
                                 <Form.Control
                                     maxLength={100}
@@ -318,6 +336,34 @@ const Edit = ({ username, form, setForm }) => {
                                             socials: {
                                                 ...form.socials,
                                                 twitter: e.target.value,
+                                            },
+                                        })
+                                    }
+                                />
+                            </Form.Group>
+
+                            <Form.Group
+                                className="col-12 col-md-6 col-lg-12 col-xl-6"
+                                controlId="bluesky"
+                            >
+                                <Form.Label>
+                                    Bluesky <BlueskyIcon />
+                                </Form.Label>
+                                <Form.Control
+                                    maxLength={100}
+                                    type="text"
+                                    defaultValue={
+                                        form.socials && form.socials.bluesky
+                                            ? form.socials.bluesky
+                                            : ""
+                                    }
+                                    placeholder="bsky.app/profile/..."
+                                    onChange={(e) =>
+                                        setForm({
+                                            ...form,
+                                            socials: {
+                                                ...form.socials,
+                                                bluesky: e.target.value,
                                             },
                                         })
                                     }

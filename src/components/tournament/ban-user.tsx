@@ -18,8 +18,8 @@ export const BanUser = ({ tournament, session }) => {
                 <h2>Ban user</h2>
                 Input User to ban:
                 <input
-                    type={"text"}
-                    className={"form-control"}
+                    type="text"
+                    className="form-control"
                     value={bannedUser}
                     style={{ width: "20rem" }}
                     onChange={(e) => {
@@ -27,7 +27,7 @@ export const BanUser = ({ tournament, session }) => {
                     }}
                 ></input>
                 <Button
-                    variant={"primary"}
+                    variant="primary"
                     style={{ marginTop: "1rem" }}
                     onClick={async () => {
                         if (

@@ -13,16 +13,16 @@ export const RaceStats = ({ race }: { race: Race }) => {
         return;
     }
     return (
-        <div className={"game-border bg-body-secondary p-3 rounded mb-2"}>
-            <h4 className={"w-100 d-flex justify-content-center"}>Stats</h4>
+        <div className="game-border bg-body-secondary p-3 rounded mb-2">
+            <h4 className="w-100 d-flex justify-content-center">Stats</h4>
             <hr />
             <Row>
-                <Col sm={6} className={"mb-3 mb-md-1"}>
-                    <div className={"fs-5 mb-1"}>Top Ratings</div>
+                <Col sm={6} className="mb-3 mb-md-1">
+                    <div className="fs-5 mb-1">Top Ratings</div>
                     {race.mmrLeaderboards.map((stat, i) => {
                         return (
                             <div key={`${stat.user}-mmr`}>
-                                <span className={"text-truncate"}>
+                                <span className="text-truncate">
                                     <TrophyIcon
                                         trophyColor={
                                             i === 0
@@ -42,12 +42,12 @@ export const RaceStats = ({ race }: { race: Race }) => {
                         );
                     })}
                 </Col>
-                <Col sm={6} className={"mb-3 mb-xl-1 px-2"}>
-                    <div className={"fs-5 mb-1"}>Top Times This Month</div>
+                <Col sm={6} className="mb-3 mb-xl-1 px-2">
+                    <div className="fs-5 mb-1">Top Times This Month</div>
                     {race.timeLeaderboards.map((stat, i) => {
                         return (
                             <div key={`${stat.user}-time`}>
-                                <span className={"text-truncate"}>
+                                <span className="text-truncate">
                                     <TrophyIcon
                                         trophyColor={
                                             i === 0

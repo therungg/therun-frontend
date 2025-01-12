@@ -35,7 +35,8 @@ export async function PUT(
     },
 ) {
     const { user } = params;
-    const result = await editUser(user, await request.text());
+    const data = await request.text();
+    const result = await editUser(user, data);
 
     return apiResponse({
         body: result,

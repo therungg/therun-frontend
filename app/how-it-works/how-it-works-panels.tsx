@@ -23,7 +23,7 @@ export default function HowItWorksPanels({
                         <strong>{session.username}</strong>!
                     </p>
                 ) : (
-                    <TwitchLoginButton url={"/how-it-works"} />
+                    <TwitchLoginButton url="/how-it-works" />
                 )}
             </li>
             <li>
@@ -33,7 +33,7 @@ export default function HowItWorksPanels({
                 {!session.username ? (
                     <p>Please login first!</p>
                 ) : (
-                    <a href={"/upload"}>
+                    <a href="/upload">
                         <button>Upload now!</button>
                     </a>
                 )}

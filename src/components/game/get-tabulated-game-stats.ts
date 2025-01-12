@@ -1,4 +1,4 @@
-import { PaginatedGameResult } from "~app/games/games.types";
+import { Game, PaginatedGameResult } from "~app/games/games.types";
 import { getApiKey } from "~src/actions/api-key.action";
 
 const fetchData = async (url: string) => {
@@ -43,7 +43,7 @@ export const getTabulatedGameStats = async () => {
     return fetchData(url);
 };
 
-export const getTabulatedGameStatsPopular = async () => {
+export const getTabulatedGameStatsPopular = async (): Promise<Game[]> => {
     const url = `${process.env.NEXT_PUBLIC_DATA_URL}/games/stats/`;
 
     return fetchData(url);

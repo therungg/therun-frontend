@@ -1,46 +1,50 @@
+"use client";
 import { useEffect, useState } from "react";
 import patreonStyles from "./patreon-styles";
 import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import { usePatreons } from "./use-patreons";
 import { getColorMode } from "~src/utils/colormode";
+import { safeDecodeURI } from "~src/utils/uri";
 
-export const NameAsPatreon = ({ name }) => {
+interface NameAsPatreonProps {
+    name: string;
+}
+
+export const NameAsPatreon: React.FunctionComponent<NameAsPatreonProps> = ({
+    name,
+}) => {
     const { data: patreons, isLoading } = usePatreons();
+    const patronExists = patreons?.[name];
+    !isLoading;
+    const isMissingPreferences =
+        !patreons?.[name]?.preferences || !patreons?.[name]?.preferences?.hide;
+    if (patronExists && !isLoading && isMissingPreferences) {
+        let color = 0;
+        let showIcon = true;
 
-    if (!isLoading && patreons && patreons[name]) {
-        if (!patreons[name].preferences || !patreons[name].preferences.hide) {
-            let color = 0;
-            let showIcon = true;
-
-            if (patreons[name].preferences) {
-                color = patreons[name].preferences.colorPreference;
-                showIcon = patreons[name].preferences.showIcon;
-            }
-
-            return (
-                <PatreonName
-                    name={name}
-                    icon={showIcon}
-                    color={color}
-                    url={"/"}
-                />
-            );
+        if (patreons[name].preferences) {
+            color = patreons[name].preferences.colorPreference;
+            showIcon = patreons[name].preferences.showIcon;
         }
+
+        return <PatreonName name={name} icon={showIcon} color={color} />;
     }
 
-    return <>{name}</>;
+    return <>{safeDecodeURI(name)}</>;
 };
 
-export const PatreonName = ({
-    name,
-    color = 0,
-    icon = true,
-    size = 20,
-}: {
+interface PatreonNameProps {
     name: string;
     color: number;
     icon?: boolean;
     size?: number;
+}
+
+export const PatreonName: React.FunctionComponent<PatreonNameProps> = ({
+    name,
+    color = 0,
+    icon = true,
+    size = 20,
 }) => {
     const [dark, setDark] = useState(true);
     useEffect(function () {

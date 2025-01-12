@@ -111,7 +111,7 @@ export const UserOverview = ({
                                                 <GameImage
                                                     alt={globalData.display}
                                                     src={globalData.image}
-                                                    quality={"medium"}
+                                                    quality="medium"
                                                     height={132}
                                                     width={99}
                                                 />
@@ -119,7 +119,7 @@ export const UserOverview = ({
                                         {(!globalData.image ||
                                             globalData.image == "noimage") && (
                                             <Image
-                                                alt={"Logo"}
+                                                alt="Logo"
                                                 src={
                                                     dark
                                                         ? "/logo_dark_theme_no_text_transparent.png"
@@ -179,7 +179,7 @@ export const UserOverview = ({
                                     <th style={{ width: "13%" }}>Played</th>
                                     <th style={{ width: "29%" }}>PB Time</th>
                                     <Can
-                                        I={"delete"}
+                                        I="delete"
                                         this={subject("run", username)}
                                     >
                                         <th>Delete</th>
@@ -271,7 +271,7 @@ export const UserOverview = ({
                                                 />
                                             </td>
                                             <Can
-                                                I={"delete"}
+                                                I="delete"
                                                 this={subject("run", username)}
                                             >
                                                 <td
@@ -305,7 +305,7 @@ export const UserOverview = ({
                                                                 );
 
                                                                 delete runs.get(
-                                                                    game,
+                                                                    originalGame,
                                                                 )[runKey];
 
                                                                 forceUpdate();
@@ -381,7 +381,9 @@ export const UserOverview = ({
                                                                 const str =
                                                                     await result.json();
 
-                                                                runs.get(game)[
+                                                                runs.get(
+                                                                    originalGame,
+                                                                )[
                                                                     runKey
                                                                 ].highlighted =
                                                                     str.result.highlighted;

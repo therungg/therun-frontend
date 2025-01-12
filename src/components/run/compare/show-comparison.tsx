@@ -50,7 +50,7 @@ export const ShowComparison = ({
                                 }}
                             >
                                 <label
-                                    htmlFor={"switch"}
+                                    htmlFor="switch"
                                     style={{
                                         marginRight: "10px",
                                         alignSelf: "center",
@@ -63,7 +63,7 @@ export const ShowComparison = ({
                                         : "Show split time"}{" "}
                                 </label>
                                 <Switch
-                                    name={"switch"}
+                                    name="switch"
                                     onChange={(checked) => {
                                         setTotalTime(checked);
                                     }}

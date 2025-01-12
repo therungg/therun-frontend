@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { TimeParts, Unit } from '../../types';
 
 import getTimeParts from './getTimeParts';

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { MarathonEvent } from "./send-marathon-data-button";
 import { useLiveRunsWebsocket } from "../websocket/use-reconnect-websocket";
+import { WebsocketLiveRunMessage } from "~app/live/live.types";
 
-interface ReceivedEvent {
+interface ReceivedEvent extends WebsocketLiveRunMessage {
     time: string;
     event: MarathonEvent;
 }
@@ -12,18 +13,18 @@ export const EventDisplay = ({
 }: {
     session: { username: string; id: string };
 }) => {
-    const [messages, setMessages] = useState([]);
-    const [currentMessage, setCurrentMessage] = useState("");
+    const [messages, setMessages] = useState<ReceivedEvent[]>([]);
+    const [currentMessage, setCurrentMessage] = useState<ReceivedEvent>();
 
-    const lastMessage = useLiveRunsWebsocket(`marathon-${session.username}`);
+    const lastMessage = useLiveRunsWebsocket<ReceivedEvent>(
+        `marathon-${session.username}`,
+    );
 
     useEffect(() => {
-        if (lastMessage !== null) {
-            if (lastMessage.time != currentMessage.time) {
-                messages.push(lastMessage);
-                setMessages(messages);
-                setCurrentMessage(lastMessage);
-            }
+        if (lastMessage !== null && lastMessage.time != currentMessage?.time) {
+            messages.push(lastMessage);
+            setMessages(messages);
+            setCurrentMessage(lastMessage);
         }
     }, [lastMessage]);
 
@@ -35,7 +36,7 @@ export const EventDisplay = ({
             {messages
                 .slice()
                 .reverse()
-                .map((message: ReceivedEvent) => {
+                .map((message) => {
                     return (
                         <div key={message.time}>
                             {message.event.name} {message.time}

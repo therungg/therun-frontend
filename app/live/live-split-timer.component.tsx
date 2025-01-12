@@ -9,8 +9,20 @@ import {
 } from "~src/components/util/datetime";
 import { Flag } from "~src/components/live/live-user-run";
 import Timer from "~src/vendor/timer/src";
+import { LiveRun } from "./live.types";
 
-export const LiveSplitTimerComponent = ({
+interface LiveSplitTimerComponentProps {
+    liveRun: LiveRun;
+    dark: boolean;
+    withDiff?: boolean;
+    className?: string | null;
+    timerClassName?: string | null;
+    splitTime?: boolean;
+}
+
+export const LiveSplitTimerComponent: React.FunctionComponent<
+    LiveSplitTimerComponentProps
+> = ({
     liveRun,
     dark,
     withDiff = true,
@@ -26,6 +38,9 @@ export const LiveSplitTimerComponent = ({
     }, [liveRun.insertedAt, splitTime]);
 
     const [id, setId] = useState(0);
+    useEffect(() => {
+        setId(id + 1);
+    }, [liveRun.currentSplitIndex]);
 
     const formatHours = (value: number): string => {
         if (value < 0) return "-00";
@@ -42,10 +57,6 @@ export const LiveSplitTimerComponent = ({
     const formatSeconds = (value: number): string => {
         return String(Math.abs(value)).padStart(2, "0");
     };
-
-    useEffect(() => {
-        setId(id + 1);
-    }, [liveRun.currentSplitIndex]);
 
     if (!className) className = runStyles.timerBody;
     if (!timerClassName) timerClassName = runStyles.timer;
@@ -71,7 +82,8 @@ export const LiveSplitTimerComponent = ({
                                             <i>
                                                 <DurationAsTimer
                                                     duration={
-                                                        lastSplitStatus?.singleTime
+                                                        lastSplitStatus?.singleTime?.toString() ||
+                                                        ""
                                                     }
                                                 />
                                             </i>
@@ -102,7 +114,8 @@ export const LiveSplitTimerComponent = ({
                                             <i className="fs-big">
                                                 <DurationAsTimer
                                                     duration={
-                                                        lastSplitStatus?.time
+                                                        lastSplitStatus?.time?.toString() ||
+                                                        ""
                                                     }
                                                 />
                                             </i>

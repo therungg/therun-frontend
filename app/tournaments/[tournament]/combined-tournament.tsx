@@ -68,7 +68,6 @@ export const CombinedTournament = ({
             const fullRunList = [];
             data.forEach((runs, key) => {
                 if (!runs) return;
-
                 const game = tournaments[key].game;
 
                 runs.runList.forEach((run) => {
@@ -255,10 +254,10 @@ export const CombinedTournament = ({
 
             <Tabs
                 defaultActiveKey={tab}
-                className={"mb-3"}
+                className="mb-3"
                 style={{ position: "relative", zIndex: 0, maxWidth: "30rem" }}
             >
-                <Tab title={"Live"} eventKey={"live"}>
+                <Tab title="Live" eventKey="live">
                     <Row className="g-3 my-3">
                         {currentlyViewing &&
                             updatedLiveDataMap[currentlyViewing] && (
@@ -429,16 +428,16 @@ export const CombinedTournament = ({
                         </Col>
                     </Row>
                 </Tab>
-                <Tab title={"Seeding"} eventKey={"seeding"}>
+                <Tab title="Seeding" eventKey="seeding">
                     <CombinedTournamentSeedingTable
                         tournaments={tournaments}
                         leaderboards={standingsMap}
                     />
                 </Tab>
-                <Tab title={"Runs"} eventKey={"runs"}>
+                <Tab title="Runs" eventKey="runs">
                     <TournamentRuns data={{ runList }} showGame={true} />
                 </Tab>
-                <Tab title={"Info"} eventKey={"info"}>
+                <Tab title="Info" eventKey="info">
                     <TournamentInfo tournament={guidingTournament} />
                 </Tab>
             </Tabs>

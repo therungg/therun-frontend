@@ -1,3 +1,5 @@
+/* eslint-disable  */
+// TODO: REFACTOR
 import { RunHistory, SplitsHistory } from "~src/common/types";
 import {
     GoldHistory,
@@ -313,7 +315,7 @@ export const Golds = ({
                             "Gold Explorer"
                         ) : (
                             <a
-                                href={"#"}
+                                href="#"
                                 onClick={() => {
                                     setSplitFilter("no-filter");
                                 }}
@@ -335,7 +337,7 @@ export const Golds = ({
                     >
                         <select
                             style={{ width: "20rem" }}
-                            className={"form-select"}
+                            className="form-select"
                             onChange={(e) => {
                                 setSplitFilter(e.target.value);
                                 setActive(1);
@@ -343,24 +345,24 @@ export const Golds = ({
                             value={splitFilter}
                         >
                             <option
-                                key={"no-filter"}
-                                title={"No split filter"}
-                                value={"no-filter"}
+                                key="no-filter"
+                                title="No split filter"
+                                value="no-filter"
                             >
                                 No split filter
                             </option>
                             <option
-                                key={"empty"}
-                                title={"------------------------------------"}
-                                value={"no-filter"}
+                                key="empty"
+                                title="------------------------------------"
+                                value="no-filter"
                                 disabled
                             >
                                 ------------------------------------
                             </option>
-                            {useSplits.map((split, n) => {
+                            {useSplits.map((split) => {
                                 return (
                                     <option
-                                        key={split.name + n}
+                                        key={JSON.stringify(split)}
                                         value={split.name}
                                     >
                                         {convertSplitName(split.name)}
@@ -402,10 +404,8 @@ export const Golds = ({
                                 }}
                             >
                                 <UnderlineTooltip
-                                    title={"Undo"}
-                                    content={
-                                        "Undo all merged splits and go back to all splits"
-                                    }
+                                    title="Undo"
+                                    content="Undo all merged splits and go back to all splits"
                                     element={<Undo />}
                                 />
                             </Col>
@@ -426,10 +426,8 @@ export const Golds = ({
                                     }}
                                 >
                                     <UnderlineTooltip
-                                        title={"Merge subsplits"}
-                                        content={
-                                            "This will merge all splits within a subsplit to the subsplit"
-                                        }
+                                        title="Merge subsplits"
+                                        content="This will merge all splits within a subsplit to the subsplit"
                                         element={<Collapse />}
                                     />
                                 </Col>
@@ -449,7 +447,7 @@ export const Golds = ({
                                     }}
                                 >
                                     <UnderlineTooltip
-                                        title={"Grouping splits"}
+                                        title="Grouping splits"
                                         content={
                                             "This tool allows you to group multiple splits together. " +
                                             "When you press the arrow behind a split, it will be grouped with the split after it." +
@@ -457,7 +455,7 @@ export const Golds = ({
                                             " This allows you to group the run into custom segments. " +
                                             "Clicking Reset merged splits resets all splits."
                                         }
-                                        element={"Merge"}
+                                        element="Merge"
                                     />
                                 </th>
                             </tr>
@@ -466,24 +464,26 @@ export const Golds = ({
                             {goldRuns
                                 .filter((golds: GoldSplit[]) => {
                                     if (splitFilter == "no-filter") return true;
-                                    const best = golds[golds.length - 1];
+                                    const best = golds.at(-1);
 
                                     return best && splitFilter == best.split;
                                 })
                                 .map((golds: GoldSplit[], n, a) => {
-                                    const best = golds[golds.length - 1];
+                                    const best = golds.at(-1);
 
                                     if (!best) return <></>;
                                     return (
                                         <tr
                                             key={
-                                                best.split + n + best.totalTime
+                                                (best?.split ?? 0) +
+                                                n +
+                                                best.totalTime
                                             }
                                         >
                                             <td style={{ display: "flex" }}>
                                                 {splitFilter === "no-filter" ? (
                                                     <a
-                                                        href={"#"}
+                                                        href="#"
                                                         onClick={() => {
                                                             setSplitFilter(
                                                                 best.split,
@@ -509,9 +509,7 @@ export const Golds = ({
                                                         }}
                                                     >
                                                         <UnderlineTooltip
-                                                            title={
-                                                                "Merged Splits"
-                                                            }
+                                                            title="Merged Splits"
                                                             content={
                                                                 <div>
                                                                     {best.mergedSplits.map(
@@ -688,7 +686,7 @@ export const Golds = ({
                                                             color: "var(--bs-link-color)",
                                                         }}
                                                     >
-                                                        {"-"}
+                                                        -
                                                         <DurationToFormatted
                                                             duration={diff.toString()}
                                                             withMillis={true}

@@ -1,0 +1,72 @@
+body:has(div.meshBg) {
+  header {
+    background-color: transparent !important;
+
+    .input-group > label,
+    .input-group > input {
+      background-color: var(--bs-body-bg) !important;
+    }
+  }
+}
+
+.meshBg {
+  opacity: 0.5;
+  z-index: -5;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: radial-gradient(
+                  at 86.58194190551993% 39.549002601908064%,
+                  #e86123 0px,
+                  transparent 50%
+  ),
+  radial-gradient(
+                  at 59.88052234302158% 52.905464006938416%,
+                  #e8c423 0px,
+                  transparent 50%
+  ),
+  radial-gradient(at 29% 16%, #aae823 0px, transparent 50%),
+  radial-gradient(
+                  at 77.51353526165256% 14.917606244579359%,
+                  #23aae8 0px,
+                  transparent 50%
+  ),
+  radial-gradient(
+                  at 33.96279224357349% 53.16565481352992%,
+                  #6123e8 0px,
+                  transparent 50%
+  ) #fbfbfb;
+  background-color: #fbfbfb;
+  background-repeat: repeat;
+}
+
+[data-bs-theme="dark"] .meshBg {
+  opacity: 0.35;
+  background: radial-gradient(
+                  at 85.99706141639729% 25.09457755359395%,
+                  #3074c2 0px,
+                  transparent 50%
+  ),
+  radial-gradient(
+                  at 30.25330590655304% 53.46784363177805%,
+                  #3530c2 0px,
+                  transparent 50%
+  ),
+  radial-gradient(
+                  at 22.42962092271525% 30.012610340479196%,
+                  #7e30c2 0px,
+                  transparent 50%
+  ),
+  radial-gradient(
+                  at 59.37672197391783% 28.96790980052038%,
+                  #c27e30 0px,
+                  transparent 50%
+  ),
+  radial-gradient(
+                  at 83.95098442242261% 57.32870771899393%,
+                  #74c230 0px,
+                  transparent 50%
+  );
+  background-color: #131313;
+}

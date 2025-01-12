@@ -2,12 +2,23 @@
   "extends": [
     "next",
     "next/core-web-vitals",
-    "plugin:github/recommended"
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:sonarjs/recommended-legacy",
+    "plugin:eslint-comments/recommended"
   ],
+  "root": true,
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "project": true
+  },
   "plugins": [
+    "@typescript-eslint",
     "react",
-    "github",
-    "import"
+    "react-compiler",
+    "import",
+    "validate-jsx-nesting",
+    "sonarjs"
   ],
   "settings": {
     "import/resolver": {
@@ -15,33 +26,61 @@
     }
   },
   "ignorePatterns": [
-    "vendor/"
+    "vendor/",
+    "public/js/",
+    "next.config.js"
   ],
   "rules": {
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "args": "all",
+        "argsIgnorePattern": "^_",
+        "caughtErrors": "all",
+        "caughtErrorsIgnorePattern": "^_",
+        "destructuredArrayIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "ignoreRestSiblings": true
+      }
+    ],
+    "sonarjs/no-ignored-return": "off",
     "eslint-comments/no-use": "off",
+    "eslint-comments/no-unused-disable": "error",
+    "eslint-comments/disable-enable-pair": "off",
+    "eslint-comments/no-unlimited-disable": "off",
     "@next/next/no-page-custom-font": "off",
     "react-hooks/exhaustive-deps": "warn",
     "@next/next/google-font-display": "off",
     "filenames/match-regex": "off",
-    "no-irregular-whitespace": "off",
     "import/no-named-as-default": "off",
-    "github/array-foreach": "off",
     "import/no-named-as-default-member": "off",
+    "react/no-unescaped-entities": "off",
     "eqeqeq": "off",
     "i18n-text/no-en": "off",
-    "prettier/prettier": [
+    "react/jsx-curly-brace-presence": [
       "error",
       {
-        "endOfLine": "auto"
+        "props": "never",
+        "children": "never"
       }
     ]
   },
   "overrides": [
-      {
-          "files": ["*.config.js"],
-          "rules": {
-              "import/no-commonjs": "off"
-          }
+    {
+      "files": [
+        "*.config.js"
+      ],
+      "rules": {
+        "@typescript-eslint/no-var-requires": "off"
       }
+    },
+    {
+      "files": [
+        "*.d.ts"
+      ],
+      "rules": {
+        "@typescript-eslint/no-unused-vars": "off"
+      }
+    }
   ]
 }

@@ -1,4 +1,5 @@
-import { OverlayTrigger, Popover } from "react-bootstrap";
+import { ReactNode, memo } from "react";
+import { OverlayTrigger, Popover, Tooltip } from "react-bootstrap";
 import { ReactElementLike } from "prop-types";
 
 export const InfoTooltip = ({
@@ -16,8 +17,8 @@ export const InfoTooltip = ({
     );
 
     return (
-        <OverlayTrigger key={"timesave"} placement={"top"} overlay={popover}>
-            <div className={"question-tooltip"}>
+        <OverlayTrigger key="timesave" placement="top" overlay={popover}>
+            <div className="question-tooltip">
                 <QuestionMark />
             </div>
         </OverlayTrigger>
@@ -41,7 +42,7 @@ export const UnderlineTooltip = ({
     );
 
     return (
-        <OverlayTrigger key={"timesave"} placement={"top"} overlay={popover}>
+        <OverlayTrigger key="timesave" placement="top" overlay={popover}>
             <div
                 style={{
                     textDecoration: "underline",
@@ -70,3 +71,30 @@ export const QuestionMark = () => {
         </svg>
     );
 };
+
+interface TruncatedTextTooltipProps {
+    text: ReactNode;
+    maxWidth?: number;
+}
+export const TruncatedTextTooltip = memo<TruncatedTextTooltipProps>(
+    ({ text, maxWidth }) => {
+        return (
+            <div
+                style={{
+                    maxWidth: maxWidth,
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                }}
+            >
+                <OverlayTrigger
+                    placement="top"
+                    overlay={<Tooltip id="tooltip">{text}</Tooltip>}
+                >
+                    <span>{text}</span>
+                </OverlayTrigger>
+            </div>
+        );
+    },
+);
+TruncatedTextTooltip.displayName = "TruncatedTextTooltip";

@@ -1,3 +1,4 @@
+"use client";
 import Link from "next/link";
 import { ReactNode } from "react";
 import { usePatreons } from "../patreon/use-patreons";
@@ -22,7 +23,7 @@ interface UserGameCategoryLinkProps
     extends UserLinkProps,
         GameCategoryLinkProps {}
 
-interface GameLinkProps extends ChildrenType {
+interface GameLinkProps {
     game: string;
 }
 
@@ -111,7 +112,9 @@ export const UserGameCategoryLink = ({
     );
 };
 
-export const GameLink = ({ game, children }: GameLinkProps) => {
+export const GameLink: React.FunctionComponent<
+    React.PropsWithChildren<GameLinkProps>
+> = ({ game, children }) => {
     return (
         <Link href={`/games/${safeEncodeURI(game)}`}>
             {children ? children : display(game)}

@@ -7,12 +7,17 @@ import {
     RaceParticipant,
     WebsocketRaceMessage,
 } from "~app/races/races.types";
-import { User } from "../../../types/session.types";
+import {
+    SplitStory,
+    Story,
+    WebsocketStoryMessage,
+} from "~app/live/story.types";
 
-type WebsocketType = "liveRun" | "race";
+type WebsocketType = "username" | "race" | "story";
 
-export const useLiveRunsWebsocket = (username?: string) =>
-    useReconnectWebsocket<WebsocketLiveRunMessage>("liveRun", username);
+export const useLiveRunsWebsocket = <Message = WebsocketLiveRunMessage>(
+    username?: string,
+) => useReconnectWebsocket<Message>("username", username);
 
 export const useAllRacesWebsocket = () =>
     useReconnectWebsocket<WebsocketRaceMessage<Race | RaceParticipant>>(
@@ -25,14 +30,14 @@ export const useRaceWebsocket = (raceId: string) =>
         WebsocketRaceMessage<Race | RaceParticipant | RaceMessage>
     >("race", raceId);
 
-export const useUserRaceParticipationsWebsocket = (user: User | undefined) =>
-    useReconnectWebsocket<WebsocketRaceMessage<RaceParticipant>>(
-        "race",
-        user ? `${user.username}-races` : null,
+export const useStoryWebsocket = (user: string) =>
+    useReconnectWebsocket<WebsocketStoryMessage<Story | SplitStory>>(
+        "story",
+        user,
     );
 
 export const useReconnectWebsocket = <T>(
-    type: WebsocketType,
+    type?: WebsocketType,
     value?: string | null,
 ): T => {
     const options: Options = {
@@ -45,8 +50,7 @@ export const useReconnectWebsocket = <T>(
     let websocketUrl = process.env.NEXT_PUBLIC_WEBSOCKET_URL as string;
 
     if (value) {
-        const queryType = type === "liveRun" ? "username" : "race";
-        websocketUrl += `?${queryType}=${value}`;
+        websocketUrl += `?${type}=${value}`;
     }
 
     const { lastJsonMessage, sendMessage, readyState } = useWebSocket<T>(

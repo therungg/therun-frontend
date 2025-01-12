@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-duplicate-string */
 // Will just make this DB values in the future (I really will), no time now
 
 type CombinedTournament = {
@@ -17,9 +18,9 @@ const tournamentEntries: Array<[string, TournamentEntryValue]> = [
         { tournament: "Defeat Ganon No SRM Community Clash Main Event" },
     ],
     ["dirtythirty", { tournament: "Dirty Thirty Sapphire Tourney 2" }],
-    ["gsa", { tournament: "SWRC Season 4: 70 Star" }],
+    ["gsa", { tournament: "PACE Fall 2024 Qualifiers 3" }],
     ["hgss", { tournament: "HGSS Blitz" }],
-    ["lego", { tournament: "Lego Challenge 3" }],
+    ["lego", { tournament: "LEGO Star Wars BTR" }],
     [
         "moist",
         {
@@ -50,9 +51,9 @@ const tournamentEntries: Array<[string, TournamentEntryValue]> = [
         { tournament: "Hazeblade Invitational Qualifiers ft. Resident Evil 4" },
     ],
     ["basementcup", { tournament: "Ultimate Basement Cup 2023" }],
-    ["tcs", { tournament: "TCS Community BTR" }],
+    ["tcs", { tournament: "LEGO Star Wars BTR" }],
     ["nitro_cup", { tournament: "Nitro Cup SMO" }],
-    ["nitro_tournament", { tournament: "Nitro Tournament VI" }],
+    ["nitro_tournament", { tournament: "Nitro Tournament - TMA" }],
     ["knuckles", { tournament: "Knuckles Story Eclipse the Record" }],
     [
         "3dmm",
@@ -69,6 +70,7 @@ const tournamentEntries: Array<[string, TournamentEntryValue]> = [
         },
     ],
     ["rayman", { tournament: "Rayman 1 BTR" }],
+    ["kakarikoclassic2024", { tournament: "Kakariko Classic 2024" }],
 ];
 
 const tournamentMap: Map<string, Tournament | CombinedTournament> = new Map(

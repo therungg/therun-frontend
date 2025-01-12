@@ -21,7 +21,7 @@ export function AllTournaments({
             <Row>
                 <Col xl={8}>
                     <CurrentTournaments tournaments={ongoingTournaments} />
-                    <hr className={"mt-4"} />
+                    <hr className="mt-4" />
                     <FinishedTournaments tournaments={finishedTournaments} />
                 </Col>
                 <Col xl={4}>
@@ -39,7 +39,7 @@ export const ListTournaments = ({
     tournaments: Tournament[];
 }) => {
     return (
-        <Row className={"g-3 mb-5"}>
+        <Row className="g-3 mb-5">
             {tournaments.map((tournament: Tournament) => {
                 const startDate = new Date(tournament.startDate);
                 const endDate = new Date(tournament.endDate);
@@ -59,7 +59,7 @@ export const ListTournaments = ({
                                 >
                                     <Image
                                         className="w-auto"
-                                        alt={"Tournament Logo"}
+                                        alt="Tournament Logo"
                                         src={`/${tournament.logoUrl}`}
                                         height={135}
                                         width={135}

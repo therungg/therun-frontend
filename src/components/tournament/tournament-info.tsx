@@ -23,6 +23,7 @@ export interface Tournament {
     eligiblePeriods: DateRange[];
     eligibleUsers: string[] | null;
     eligibleRuns: GameCategory[];
+    ineligibleUsersForPoints: string[] | null;
     ineligibleUsers: string[] | null;
     moderators: string[] | null;
     url: string;
@@ -126,18 +127,18 @@ export const TournamentInfo = ({
                                         <Form
                                             suppressHydrationWarning
                                             action={increaseEndTimeByAnHour}
-                                            className={"ms-2"}
+                                            className="ms-2"
                                         >
                                             <input
                                                 hidden
-                                                name={"tournament"}
+                                                name="tournament"
                                                 value={tournament.name}
                                                 readOnly
                                             />
 
                                             <input
                                                 hidden
-                                                name={"date"}
+                                                name="date"
                                                 value={new Date(
                                                     new Date(
                                                         tournament.endDate,
@@ -149,15 +150,13 @@ export const TournamentInfo = ({
 
                                             <input
                                                 hidden
-                                                name={"heat"}
+                                                name="heat"
                                                 value={0}
                                                 readOnly
                                             />
                                             <SubmitButton
-                                                innerText={`Increase End Time By An Hour`}
-                                                pendingText={
-                                                    "Increasing End Time By An Hour"
-                                                }
+                                                innerText="Increase End Time By An Hour"
+                                                pendingText="Increasing End Time By An Hour"
                                             />
                                         </Form>
                                     )}
@@ -180,10 +179,12 @@ export const TournamentInfo = ({
                                         60 * 60 * 1000,
                                 ).toISOString();
                                 return (
-                                    <>
+                                    <React.Fragment
+                                        key={JSON.stringify(period)}
+                                    >
                                         <tr>
                                             <th>Day {i + 1}</th>
-                                            <td className={"d-flex"}>
+                                            <td className="d-flex">
                                                 {moment(
                                                     period.startDate,
                                                 ).format("LLL")}{" "}
@@ -198,13 +199,11 @@ export const TournamentInfo = ({
                                                             action={
                                                                 increaseEndTimeByAnHour
                                                             }
-                                                            className={"ms-2"}
+                                                            className="ms-2"
                                                         >
                                                             <input
                                                                 hidden
-                                                                name={
-                                                                    "tournament"
-                                                                }
+                                                                name="tournament"
                                                                 value={
                                                                     tournament.name
                                                                 }
@@ -213,7 +212,7 @@ export const TournamentInfo = ({
 
                                                             <input
                                                                 hidden
-                                                                name={"date"}
+                                                                name="date"
                                                                 value={
                                                                     hourBeforeEndDate
                                                                 }
@@ -222,20 +221,16 @@ export const TournamentInfo = ({
 
                                                             <input
                                                                 hidden
-                                                                name={"heat"}
+                                                                name="heat"
                                                                 value={i}
                                                                 readOnly
                                                             />
                                                             <SubmitButton
-                                                                variant={
-                                                                    "danger"
-                                                                }
+                                                                variant="danger"
                                                                 innerText={`Decrease End Time Of Day ${
                                                                     i + 1
                                                                 } By An Hour`}
-                                                                pendingText={
-                                                                    "Decrease End Time By An Hour"
-                                                                }
+                                                                pendingText="Decrease End Time By An Hour"
                                                             />
                                                         </Form>
                                                         <Form
@@ -243,13 +238,11 @@ export const TournamentInfo = ({
                                                             action={
                                                                 increaseEndTimeByAnHour
                                                             }
-                                                            className={"ms-2"}
+                                                            className="ms-2"
                                                         >
                                                             <input
                                                                 hidden
-                                                                name={
-                                                                    "tournament"
-                                                                }
+                                                                name="tournament"
                                                                 value={
                                                                     tournament.name
                                                                 }
@@ -258,7 +251,7 @@ export const TournamentInfo = ({
 
                                                             <input
                                                                 hidden
-                                                                name={"date"}
+                                                                name="date"
                                                                 value={
                                                                     hourAfterEndDate
                                                                 }
@@ -267,7 +260,7 @@ export const TournamentInfo = ({
 
                                                             <input
                                                                 hidden
-                                                                name={"heat"}
+                                                                name="heat"
                                                                 value={i}
                                                                 readOnly
                                                             />
@@ -275,16 +268,14 @@ export const TournamentInfo = ({
                                                                 innerText={`Increase End Time Of Day ${
                                                                     i + 1
                                                                 } By An Hour`}
-                                                                pendingText={
-                                                                    "Increasing End Time By An Hour"
-                                                                }
+                                                                pendingText="Increasing End Time By An Hour"
                                                             />
                                                         </Form>
                                                     </div>
                                                 )}
                                             </td>
                                         </tr>
-                                    </>
+                                    </React.Fragment>
                                 );
                             })}
                         </>
@@ -297,20 +288,20 @@ export const TournamentInfo = ({
                     {tournament.socials &&
                         Object.values(tournament.socials).map((social) => {
                             return (
-                                <>
+                                <React.Fragment key={JSON.stringify(social)}>
                                     <tr key={social.display}>
                                         <th>{social.display}</th>
                                         <td>
                                             <a
-                                                target={"_blank"}
-                                                rel={"noreferrer"}
+                                                target="_blank"
+                                                rel="noreferrer"
                                                 href={social.url}
                                             >
                                                 {social.urlDisplay}
                                             </a>
                                         </td>
                                     </tr>
-                                </>
+                                </React.Fragment>
                             );
                         })}
                 </tbody>
@@ -362,8 +353,8 @@ export const TournamentInfo = ({
                                 return (
                                     <li key={moderator}>
                                         <a
-                                            target={"_blank"}
-                                            rel={"noreferrer"}
+                                            target="_blank"
+                                            rel="noreferrer"
                                             href={`/${moderator}`}
                                         >
                                             {moderator}
@@ -383,8 +374,8 @@ export const TournamentInfo = ({
                                     return (
                                         <li key={moderator}>
                                             <a
-                                                target={"_blank"}
-                                                rel={"noreferrer"}
+                                                target="_blank"
+                                                rel="noreferrer"
                                                 href={`/${moderator}`}
                                             >
                                                 {moderator}

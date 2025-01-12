@@ -1,7 +1,7 @@
 "use client";
 
 import moment from "moment/moment";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface IsoToFormattedProps {
     iso: string | Date;
@@ -14,6 +14,25 @@ interface DurationToFormattedProps {
     padded?: boolean;
     human?: boolean;
 }
+
+const monthNames = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+];
+
+export const getDateAsMonthDay = (date: Date) => {
+    return monthNames[date.getMonth()] + " " + date.getDate();
+};
 
 export const getFullDate = (iso: string | Date) => {
     return moment(iso).format("YYYY-MM-DD hh:mm:ss");
@@ -28,11 +47,19 @@ export const IsoToFormatted = ({ iso }: IsoToFormattedProps) => {
     return <>{moment(iso).format("L LT")}</>;
 };
 
-export const LocalizedTime = ({ date }: { date: Date }) => {
+export const LocalizedTime = ({
+    date,
+    asDate = false,
+}: {
+    date: Date;
+    asDate?: boolean;
+}) => {
     const [stateDate, setStateDate] = useState(date.toString());
 
     useEffect(() => {
-        setStateDate(date.toLocaleString());
+        setStateDate(
+            asDate ? date.toLocaleDateString() : date.toLocaleString(),
+        );
     }, []);
 
     return <>{stateDate}</>;
@@ -44,12 +71,14 @@ export const Difference = ({
     withMillis = false,
     isGold = false,
     human = true,
+    inline = false,
 }: {
     one: string;
     two: string;
     withMillis?: boolean;
     isGold?: boolean;
     human?: boolean;
+    inline?: boolean;
 }) => {
     const diff = parseInt(one) - parseInt(two);
 
@@ -75,17 +104,33 @@ export const Difference = ({
                 false,
             )}`}
         >
-            <div
-                style={{
-                    color: isGold
-                        ? "var(--bs-secondary)"
-                        : diff <= 0
-                          ? "var(--bs-link-color)"
-                          : "var(--bs-red)",
-                }}
-            >
-                {formatted}
-            </div>
+            {inline ? (
+                <span
+                    style={{
+                        color: isGold
+                            ? "var(--bs-secondary)"
+                            : diff <= 0
+                              ? // eslint-disable-next-line sonarjs/no-duplicate-string
+                                "var(--bs-link-color)"
+                              : // eslint-disable-next-line sonarjs/no-duplicate-string
+                                "var(--bs-red)",
+                    }}
+                >
+                    {formatted}
+                </span>
+            ) : (
+                <div
+                    style={{
+                        color: isGold
+                            ? "var(--bs-secondary)"
+                            : diff <= 0
+                              ? "var(--bs-link-color)"
+                              : "var(--bs-red)",
+                    }}
+                >
+                    {formatted}
+                </div>
+            )}
         </abbr>
     );
 };
@@ -229,20 +274,41 @@ export const timeToMillis = (timeString: string) => {
     return time;
 };
 
-export const DurationToFormatted = ({
+export const DurationToFormatted: React.FunctionComponent<
+    DurationToFormattedProps
+> = ({
     duration,
     withMillis = false,
     padded = false,
     human = true,
     withDays = false,
-}: DurationToFormattedProps) => {
+}) => {
+    const timeDuration = useMemo(() => {
+        return duration ?? 0;
+    }, [duration]);
     if (withMillis)
-        return <>{getFormattedString(duration, withMillis, padded, human)}</>;
+        return (
+            <>
+                {getFormattedString(
+                    timeDuration.toString(),
+                    withMillis,
+                    padded,
+                    human,
+                )}
+            </>
+        );
     return (
         <>
-            <abbr title={getFormattedString(duration, true, padded, human)}>
+            <abbr
+                title={getFormattedString(
+                    timeDuration.toString(),
+                    true,
+                    padded,
+                    human,
+                )}
+            >
                 {getFormattedString(
-                    duration,
+                    timeDuration.toString(),
                     withMillis,
                     padded,
                     human,

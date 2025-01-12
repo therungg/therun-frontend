@@ -20,14 +20,16 @@ import { GlobalGameData } from "~app/[username]/[game]/[run]/run";
 import { TwitchEmbed } from "react-twitch-embed";
 import { UserStats as UserRaceStats } from "~app/races/races.types";
 import { UserRaceStatsTable } from "~src/components/run/user-detail/user-race-stats";
+import type { User as IUser, User } from "types/session.types";
+import type { UserData } from "~src/lib/get-session-data";
 
 export interface UserPageProps {
     runs: Run[];
     username: string;
     hasGameTime: boolean;
     defaultGameTime: boolean;
-    session: any;
-    userData: any;
+    session: IUser;
+    userData: UserData;
     allGlobalGameData: GlobalGameData[];
     liveData?: LiveRun;
     raceStats?: UserRaceStats;
@@ -130,15 +132,15 @@ const User = ({
                         className="my-3 my-md-0 game-filter-mb game-filter-mw"
                     >
                         <select
-                            className={"form-select"}
+                            className="form-select"
                             onChange={(e) => {
                                 setCurrentGame(e.target.value.split("#")[0]);
                             }}
                         >
                             <option
-                                key={"all-games"}
-                                title={"All Games"}
-                                value={"all-games"}
+                                key="all-games"
+                                title="All Games"
+                                value="all-games"
                             >
                                 No Game Filter
                             </option>
@@ -187,7 +189,7 @@ const User = ({
                                 <div className="mb-3">
                                     <h2>
                                         Currently Live!&nbsp;
-                                        <a href={"/live"}>
+                                        <a href="/live">
                                             <LiveIcon />
                                         </a>
                                     </h2>
@@ -195,7 +197,7 @@ const User = ({
                                     <div>
                                         <a
                                             href={`/live/${username}`}
-                                            className={"link-without-style"}
+                                            className="link-without-style"
                                         >
                                             <LiveUserRun
                                                 isUrl={true}
@@ -209,27 +211,19 @@ const User = ({
                             <UserStats runs={currentRuns} />
                             {raceStats && (
                                 <div>
-                                    <span
-                                        className={
-                                            "justify-content-between d-flex"
-                                        }
-                                    >
-                                        <div className={"d-flex"}>
+                                    <span className="justify-content-between d-flex">
+                                        <div className="d-flex">
                                             <h2>Races</h2>
                                             <span
                                                 style={{
                                                     color: "var(--bs-secondary)",
                                                 }}
-                                                className={"ms-2"}
+                                                className="ms-2"
                                             >
                                                 New!
                                             </span>
                                         </div>
-                                        <div
-                                            className={
-                                                "d-flex align-items-center"
-                                            }
-                                        >
+                                        <div className="d-flex align-items-center">
                                             <a href={`${username}/races`}>
                                                 User Race Profile
                                             </a>
@@ -245,14 +239,14 @@ const User = ({
                     </Row>
                 </Tab>
 
-                <Tab title={"Activity"} eventKey={"stats"}>
+                <Tab title="Activity" eventKey="stats">
                     <Row>
                         <Col>
                             <Stats username={username} />
                         </Col>
                     </Row>
                 </Tab>
-                <Tab title={"Sessions"} eventKey={"sessions"}>
+                <Tab title="Sessions" eventKey="sessions">
                     <Row>
                         <Col>
                             <h2>Speedrun Sessions</h2>
@@ -268,13 +262,13 @@ const User = ({
                         </Col>
                     </Row>
                 </Tab>
-                <Tab title={"Twitch stream"} eventKey={"stream"}>
+                <Tab title="Twitch stream" eventKey="stream">
                     <h2>Twitch stream</h2>
 
                     <TwitchEmbed
                         channel={username}
-                        width={"100%"}
-                        height={"800px"}
+                        width="100%"
+                        height="800px"
                         muted
                         withChat={true}
                     />
@@ -284,7 +278,7 @@ const User = ({
     );
 };
 
-const NoRuns = (username: string, session: any, userData: any) => {
+const NoRuns = (username: string, session: User, userData: UserData) => {
     return (
         <>
             <Userform
@@ -297,7 +291,7 @@ const NoRuns = (username: string, session: any, userData: any) => {
                 Unfortunately, {username} has not uploaded runs yet, or their
                 upload has not yet been processed (should not take long). If the
                 user has uploaded runs, but this page still shows, please{" "}
-                <Link href={"/contact"}>contact me!</Link>
+                <Link href="/contact">contact me!</Link>
             </div>
         </>
     );

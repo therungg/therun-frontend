@@ -29,7 +29,7 @@ export const confirmPermission = (
 export const isRaceAdmin = (user: User) => {
     try {
         checkAdminPermission(user);
-    } catch (e) {
+    } catch (_e) {
         return false;
     }
     return true;
@@ -38,7 +38,7 @@ export const isRaceAdmin = (user: User) => {
 export const isRaceModerator = (race: Race, user: User) => {
     try {
         checkModeratorPermission(race, user);
-    } catch (e) {
+    } catch (_e) {
         return false;
     }
     return true;
@@ -64,15 +64,15 @@ export const checkModeratorPermission = (race: Race, user: User) => {
     try {
         checkAdminPermission(user);
         return;
-    } catch (e) {
+    } catch (_e) {
         // Fine if this fails, just not an admin
     }
 
     try {
         confirmPermission(user, "edit", "race", race);
-    } catch (e) {
+    } catch (_e) {
         throw Error(
-            `Race Log: User is not allowed to moderate race ${race.raceId}, user: ${user.user}`,
+            `Race Log: User is not allowed to moderate race ${race.raceId}, user: ${user.username}`,
         );
     }
 };

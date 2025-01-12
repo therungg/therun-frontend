@@ -9,10 +9,12 @@ export const useSpeedrunTimer = (initialOffset = 0, autoStart = false) => {
         stopwatchInitialOffset.getSeconds() + Math.abs(initialOffset),
     );
 
-    const { hours, minutes, seconds, start, pause, reset } = useStopwatch({
-        autoStart,
-        offsetTimestamp: stopwatchInitialOffset,
-    });
+    const { days, hours, minutes, seconds, start, pause, reset } = useStopwatch(
+        {
+            autoStart,
+            offsetTimestamp: stopwatchInitialOffset,
+        },
+    );
 
     const formatHours = (value: number): string => {
         if (value === 0) return "";
@@ -48,7 +50,7 @@ export const useSpeedrunTimer = (initialOffset = 0, autoStart = false) => {
     const render = () => {
         return (
             <span suppressHydrationWarning={true}>
-                {formatHours(hours)}
+                {formatHours(hours + days * 24)}
                 {formatMinutes(minutes)}
                 {formatSeconds(seconds)}
             </span>

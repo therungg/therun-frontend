@@ -8,7 +8,7 @@ type Equal<X, Y> = (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y
 type Exact<T, U> = T extends U ? (U extends T ? T : never) : never;
 
 // Define a utility type to compare the types of imported locales
-type CompareLocales<T extends readonly any[]> = T extends [
+type CompareLocales<T extends readonly unknown[]> = T extends [
     infer First,
     ...infer Rest,
 ]
@@ -19,4 +19,7 @@ type CompareLocales<T extends readonly any[]> = T extends [
         : true
     : true;
 
-export type AreLocalesValid<T extends any[]> = Equal<CompareLocales<T>, true>;
+export type AreLocalesValid<T extends unknown[]> = Equal<
+    CompareLocales<T>,
+    true
+>;

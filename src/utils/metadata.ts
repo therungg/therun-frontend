@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { OpenGraphType } from "next/dist/lib/metadata/types/opengraph-types";
 import { getBaseUrl } from "~src/actions/base-url.action";
-import { safeEncodeURI } from "./uri";
+import { safeDecodeURI, safeEncodeURI } from "./uri";
 
 declare type OpenGraphImage = {
     url: string | URL;
@@ -31,8 +31,10 @@ export interface MetadataProps {
 export default function buildMetadata(props?: MetadataProps): Metadata {
     const defaultImageUrl = "/therun-no-url-with-black-background.png";
     const title =
-        props?.absoluteTitle ||
-        `The Run - ${props?.title || "Speedrun Statistics"}`;
+        safeDecodeURI(props?.absoluteTitle || "") ||
+        `The Run - ${
+            safeDecodeURI(props?.title || "") || "Speedrun Statistics"
+        }`;
     const description =
         props?.description ||
         "The Run - a free tool for speedrun statistics. Explore leaderboards, check out live runs, and easily manage your own speedrun data!";
@@ -97,8 +99,10 @@ export async function getUserProfilePhoto(
 ): Promise<OpenGraphImage[] | undefined> {
     let response: Response;
     try {
-        response = await fetch(`${getBaseUrl()}/api/users/${username}/global`);
-    } catch (e) {
+        response = await fetch(
+            `${await getBaseUrl()}/api/users/${username}/global`,
+        );
+    } catch (_e) {
         return undefined;
     }
 
@@ -126,7 +130,6 @@ export async function getGameImage(
         );
     } catch (e) {
         // Allow this one since it's server-side
-        // eslint-disable-next-line no-console
         console.error(e);
         return undefined;
     }

@@ -6,14 +6,14 @@ export const RaceStream = ({ stream }: { stream: string }) => {
     const [showStream, setShowStream] = useState(!!stream);
     if (!stream) return <></>;
     return (
-        <div className={"mb-3"}>
+        <div className="mb-3">
             <Form>
                 <Form.Check
-                    name={"showStream"}
-                    type={"checkbox"}
+                    name="showStream"
+                    type="checkbox"
                     defaultChecked={showStream}
-                    label={"Show Stream"}
-                    id={"show-stream"}
+                    label="Show Stream"
+                    id="show-stream"
                     reverse
                     onChange={() => {
                         setShowStream(!showStream);
@@ -22,12 +22,10 @@ export const RaceStream = ({ stream }: { stream: string }) => {
             </Form>
             {showStream && (
                 <TwitchEmbed
-                    className={
-                        "card game-border ratio ratio-16x9 rounded overflow-hidden"
-                    }
+                    className="card game-border ratio ratio-16x9 rounded overflow-hidden"
                     channel={stream}
-                    width={"100%"}
-                    height={"revert"}
+                    width="100%"
+                    height="revert"
                     muted
                     withChat={false}
                 />

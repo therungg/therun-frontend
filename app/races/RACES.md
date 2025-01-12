@@ -23,7 +23,6 @@ There's also three websocket endpoints, find them in `components/websocket/use-r
 
 -   `useAllRacesWebsocket` - keeps track of all races, but without detailed data, like above.
 -   `useRaceWebsocket` - keeps track of one specific race, with detailed data. Used to view the races details.
--   `useUserRaceParticipationsWebsocket` - keeps track of the race participations for a specific user
 
 ## Pages
 

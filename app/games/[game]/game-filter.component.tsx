@@ -16,13 +16,13 @@ export const GameFilter: React.FunctionComponent = () => {
             />
             <Col sm={12} md={4} className={styles.form}>
                 <select
-                    className={"form-select"}
+                    className="form-select"
                     onChange={(e) => {
                         setCategory(e.target.value);
                     }}
                     value={category}
                 >
-                    <option key={"*"} title={"All Categories"} value={"*"}>
+                    <option key="*" title="All Categories" value="*">
                         Select a Category
                     </option>
                     {categories.map((leaderboard) => {

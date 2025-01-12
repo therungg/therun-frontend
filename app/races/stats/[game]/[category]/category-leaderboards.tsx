@@ -26,9 +26,9 @@ export const CategoryLeaderboards = ({
 
     return (
         <div>
-            <div className={"mb-3"}>
+            <div className="mb-3">
                 <select
-                    className={"form-select"}
+                    className="form-select"
                     onChange={(e) => {
                         setCurrentLeaderboard(
                             leaderboards.find(

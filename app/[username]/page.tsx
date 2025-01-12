@@ -54,7 +54,7 @@ export default async function Page({ params, searchParams }: PageProps) {
 
     const runs = await getUserRuns(username);
 
-    const allRunsRunMap: Map<string, any> = getRunmap(runs);
+    const allRunsRunMap = getRunmap(runs);
 
     const promises = Array.from(allRunsRunMap.keys()).map((game) => {
         game = game.split("#")[0];
@@ -83,15 +83,12 @@ export default async function Page({ params, searchParams }: PageProps) {
         });
     }
 
-    const dataPromises = [
+    const [userData, liveData, raceStats, session] = await Promise.all([
         getGlobalUser(username),
         getLiveRunForUser(username),
         getUserRaceStats(username),
         getSession(),
-    ];
-
-    const [userData, liveData, raceStats, session] =
-        await Promise.all(dataPromises);
+    ] as const);
 
     return (
         <UserProfile

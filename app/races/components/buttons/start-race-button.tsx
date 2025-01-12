@@ -8,8 +8,8 @@ export const StartRaceButton = (props: RaceActionProps) => {
     return (
         <RaceActionButton
             action={startRace}
-            innerText={"Start Countdown"}
-            pendingText={"Starting Countdown..."}
+            innerText="Start Countdown"
+            pendingText="Starting Countdown..."
             {...props}
         />
     );

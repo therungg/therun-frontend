@@ -3,6 +3,7 @@ import { MarathonEvent } from "~src/components/marathon/send-marathon-data-butto
 
 export interface LiveRun {
     user: string;
+    login: string;
     currentSplitIndex: number;
     currentSplitName: string;
     currentTime: number;
@@ -52,8 +53,10 @@ interface SplitDefault {
     predictedTotalTime: number | null;
     recentCompletionsSingle: number[];
     recentCompletionsTotal: number[];
-    single: any;
-    total: any;
+    // TODO: Confirm this type
+    single: unknown;
+    // TODO: Confirm this type
+    total: unknown;
     name: string;
     pbSplitTime?: number;
     bestPossible?: number;
@@ -61,7 +64,7 @@ interface SplitDefault {
     comparisons: Comparisons;
 }
 
-type Split = Comparisons & SplitDefault;
+export type Split = Comparisons & SplitDefault;
 export type LiveDataMap = {
     [user: string]: LiveRun;
 };
@@ -70,8 +73,8 @@ export interface LiveProps {
     liveDataMap: LiveDataMap;
     username?: string;
     showTitle?: boolean;
-    forceGame?: any;
-    forceCategory?: any;
+    forceGame?: string;
+    forceCategory?: string;
 }
 
 export interface WebsocketLiveRunMessage {

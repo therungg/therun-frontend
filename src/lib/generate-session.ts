@@ -1,4 +1,16 @@
-export const generateSession = async (data: any): Promise<string> => {
+export interface SessionPayload {
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
+    data: {
+        username: string;
+        picture: string;
+    };
+}
+
+export const generateSession = async (
+    data: SessionPayload,
+): Promise<string> => {
     const url =
         "https://6ob8kz9k4g.execute-api.eu-west-1.amazonaws.com/session";
     return (

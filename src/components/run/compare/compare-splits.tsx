@@ -7,14 +7,17 @@ import { Col, Row } from "react-bootstrap";
 import { UserLink } from "../../links/links";
 import { getSplitsHistoryUrl } from "~src/lib/get-splits-history";
 import { AppContext } from "~src/common/app.context";
+import levenshtein from "js-levenshtein";
 
-// eslint-disable-next-line import/no-commonjs
-const levenshtein = require("js-levenshtein");
-
-interface UserData {
-    meta: any;
+interface UserGameData {
+    meta: {
+        historyFilename: string;
+        hasGameTime: boolean;
+    };
     stats: History;
 }
+
+const NO_SELECTION = "no-selection";
 
 export const CompareSplits = ({
     statsData,
@@ -34,7 +37,7 @@ export const CompareSplits = ({
     gameTime: boolean;
 }) => {
     const { baseUrl = "https://therun.gg" } = React.useContext(AppContext);
-    const [currentUser, setCurrentUser] = useState("no-selection");
+    const [currentUser, setCurrentUser] = useState(NO_SELECTION);
     const [userData, setUserData] = useState(new Map());
     const [loaded, setLoaded] = useState(true);
 
@@ -61,7 +64,7 @@ export const CompareSplits = ({
     if (!catLeaderboard) return <>Could not find similar runs...</>;
 
     const currentUserData =
-        currentUser != "no-selection" && loaded
+        currentUser != NO_SELECTION && loaded
             ? userData.get(currentUser)[
                   !gameTime ? "currentRuns" : "runsGameTime"
               ]
@@ -76,11 +79,10 @@ export const CompareSplits = ({
                     <h2>
                         Compare{" "}
                         {currentUser &&
-                            (currentUser != "no-selection" ||
-                                currentUserData) &&
+                            (currentUser != NO_SELECTION || currentUserData) &&
                             "to "}
                         {currentUser &&
-                            (currentUser != "no-selection" ||
+                            (currentUser != NO_SELECTION ||
                                 currentUserData) && (
                                 <UserLink username={currentUser} />
                             )}
@@ -88,14 +90,14 @@ export const CompareSplits = ({
                 </Col>
             </Row>
             <select
-                className={"form-select"}
+                className="form-select"
                 style={{ width: "40%", marginBottom: "1rem" }}
                 onChange={async (e) => {
                     const selectedUser = e.currentTarget.value.split(" (")[0];
                     const fullUser = catLeaderboard.pbLeaderboard.find(
                         (l) => l.username == selectedUser,
                     );
-                    const correctUrl = fullUser.url;
+                    const correctUrl = fullUser?.url || "";
                     setCurrentUser(selectedUser);
 
                     try {
@@ -103,7 +105,7 @@ export const CompareSplits = ({
                             setLoaded(false);
                             const url = `${baseUrl}/api/users${correctUrl}`;
 
-                            const gamesData: UserData = await (
+                            const gamesData: UserGameData = await (
                                 await fetch(url, {
                                     method: "GET",
                                     headers: {
@@ -153,10 +155,8 @@ export const CompareSplits = ({
                     }
                 }}
             >
-                {(currentUser == "no-selection" || !currentUserData) && (
-                    <option key={"no-selection"}>
-                        Select run to compare to
-                    </option>
+                {(currentUser === NO_SELECTION || !currentUserData) && (
+                    <option key={NO_SELECTION}>Select run to compare to</option>
                 )}
                 {catLeaderboard.pbLeaderboard
                     .filter((lb) => lb.username != username)
@@ -173,7 +173,7 @@ export const CompareSplits = ({
                     })}
             </select>
             <hr />
-            {currentUser != "no-selection" && !loaded && (
+            {currentUser !== NO_SELECTION && !loaded && (
                 <>Loading data for {currentUser}...</>
             )}
             {currentUserData && (

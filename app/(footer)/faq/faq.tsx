@@ -13,7 +13,7 @@ export const Faq = () => {
 
             <h2>General</h2>
             <Accordion>
-                <AccordionItem eventKey={"help"}>
+                <AccordionItem eventKey="help">
                     <AccordionHeader>How can I help?</AccordionHeader>
                     <AccordionBody>
                         <p>
@@ -23,16 +23,16 @@ export const Faq = () => {
                             The Run on{" "}
                             <a
                                 href={process.env.NEXT_PUBLIC_TWITTER_URL}
-                                target={"_blank"}
-                                rel={"noreferrer"}
+                                target="_blank"
+                                rel="noreferrer"
                             >
                                 Twitter
                             </a>
                             , joining the{" "}
                             <a
                                 href={process.env.NEXT_PUBLIC_DISCORD_URL}
-                                target={"_blank"}
-                                rel={"noreferrer"}
+                                target="_blank"
+                                rel="noreferrer"
                             >
                                 Discord
                             </a>{" "}
@@ -51,7 +51,7 @@ export const Faq = () => {
                         </p>
                     </AccordionBody>
                 </AccordionItem>
-                <AccordionItem eventKey={"splitsio"}>
+                <AccordionItem eventKey="splitsio">
                     <AccordionHeader>
                         Why did you build this? There is already Splits.io
                     </AccordionHeader>
@@ -65,8 +65,8 @@ export const Faq = () => {
                     </AccordionBody>
                 </AccordionItem>
                 <h2 style={{ marginTop: "1rem" }}>Troubleshooting</h2>
-                <AccordionItem eventKey={"a"}>
-                    <AccordionItem eventKey={"features"}>
+                <AccordionItem eventKey="a">
+                    <AccordionItem eventKey="features">
                         <AccordionHeader>
                             Why can&apos;t I do X? Is there a way to do Y?
                         </AccordionHeader>
@@ -75,10 +75,10 @@ export const Faq = () => {
                                 This site is still in beta, so there are a lot
                                 of feature that are still missing or implemented
                                 sub-optimally. You can check out the{" "}
-                                <a href={"/roadmap"}>Roadmap</a> to see if the
+                                <a href="/roadmap">Roadmap</a> to see if the
                                 feature you want is already on there. If not,
                                 don&apos;t hesitate to{" "}
-                                <a href={"/contact"}>contact me</a> and request
+                                <a href="/contact">contact me</a> and request
                                 the feature!
                             </p>
                         </AccordionBody>
@@ -103,7 +103,7 @@ export const Faq = () => {
                         figure out when you actually got that PB.
                     </AccordionBody>
                 </AccordionItem>
-                <AccordionItem eventKey={"b"}>
+                <AccordionItem eventKey="b">
                     <AccordionHeader>
                         My run shows up seperately from other games or other
                         runs in the same category on the leaderboards
@@ -121,7 +121,7 @@ export const Faq = () => {
                         this!
                     </AccordionBody>
                 </AccordionItem>
-                <AccordionItem eventKey={"c"}>
+                <AccordionItem eventKey="c">
                     <AccordionHeader>
                         My run has been uploaded, but I cannot click it on my
                         profile
@@ -131,7 +131,7 @@ export const Faq = () => {
                         field in LiveSplit.
                     </AccordionBody>
                 </AccordionItem>
-                <AccordionItem eventKey={"d"}>
+                <AccordionItem eventKey="d">
                     <AccordionHeader>
                         My Best Achieved Time shows up all weird or is lower
                         than my Best Possible Time
@@ -142,7 +142,7 @@ export const Faq = () => {
                         everyone. If you reupload, it should fix itself.
                     </AccordionBody>
                 </AccordionItem>
-                <AccordionItem eventKey={"e"}>
+                <AccordionItem eventKey="e">
                     <AccordionHeader>
                         My run shows up, but does not have a PB.
                     </AccordionHeader>
@@ -152,14 +152,14 @@ export const Faq = () => {
                         uploading again already helps.
                     </AccordionBody>
                 </AccordionItem>
-                <AccordionItem eventKey={"f"}>
+                <AccordionItem eventKey="f">
                     <AccordionHeader>
                         I changed my Twitch name, but now all my runs are gone!
                     </AccordionHeader>
                     <AccordionBody>
                         The system identifies you by your Twitch name. I can
                         copy your profile, please{" "}
-                        <a href={"/contact"}>Contact me</a>!
+                        <a href="/contact">Contact me</a>!
                     </AccordionBody>
                 </AccordionItem>
             </Accordion>

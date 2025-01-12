@@ -1,4 +1,4 @@
-@import "bootstrap/scss/utilities";
+@import "node_modules/bootstrap/scss/_utilities.scss";
 
 $utilities: map-merge(
     $utilities,
@@ -19,6 +19,7 @@ $utilities: map-merge(
                   40:   40%,
                   60:   60%,
                   80:   80%,
+                  42p:  42px,
                   110p: 110px,
                   160p: 160px,
                   192p: 192px,
@@ -41,7 +42,9 @@ $utilities: map-merge(
                 (
                   350p: 350px,
                   550p: 550px,
-                  30r:  30rem
+                  30r:  30rem,
+                  75r:  75rem,
+                  80:   80%
                 )
             )
           )
@@ -79,8 +82,20 @@ $utilities: map-merge(
             values: map-merge(
                 map-get(map-get($utilities, "max-height"), "values"),
                 (
-                  1r: 1rem,
-                  2r: 2rem,
+                  400p: 400px,
+                  1r:   1rem,
+                  2r:   2rem,
+                )
+            )
+          )
+      ),
+      "padding-y": map-merge(
+          map-get($utilities, "padding-y"),
+          (
+            values: map-merge(
+                map-get(map-get($utilities, "padding-y"), "values"),
+                (
+                  6: 6rem,
                 )
             )
           )

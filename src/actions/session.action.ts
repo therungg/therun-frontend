@@ -1,3 +1,5 @@
+"use server";
+
 import {
     createNewSession,
     getSession as getExistingSession,
@@ -48,13 +50,15 @@ export const getSession = async (): Promise<User> => {
     try {
         const session = await getExistingSession(sessionId);
         if (session) {
-            return { id: sessionId, ...session };
+            return { id: sessionId, ...session } as User;
         }
     } catch (error) {
         // For now we only want to handle _explicit_ failures when retrieving the session.
         if (error instanceof SessionError) {
-            // re-raise the error
-            throw error;
+            return {
+                ...DEFAULT_SESSION,
+                sessionError: error.toString(),
+            };
         }
 
         return DEFAULT_SESSION;

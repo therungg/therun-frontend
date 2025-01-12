@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
-interface ApiResponse {
-    body: any;
+interface ApiResponse<Body = unknown> {
+    body: Body;
     cache?: StaleWhileRevalidateCache;
     status?: number;
     headers?: { [key: string]: string };

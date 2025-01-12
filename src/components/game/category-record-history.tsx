@@ -42,7 +42,7 @@ export const CategoryRecordHistory = ({
 
     return (
         <div>
-            <Row className={"flex-center"}>
+            <Row className="flex-center">
                 <Col xl={3}>
                     <h2>Record History</h2>
                 </Col>
@@ -57,7 +57,7 @@ export const CategoryRecordHistory = ({
                         ).getPropertyValue("--bs-tertiary-bg")}
                         checkedIcon={false}
                         uncheckedIcon={false}
-                        name={"switch"}
+                        name="switch"
                         onChange={(checked) => {
                             setVisualMode(checked);
                         }}

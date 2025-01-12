@@ -15,7 +15,7 @@ export const UpcomingTournaments = ({
     }
 
     return (
-        <div className={"game-border bg-body-secondary rounded-2 px-4 py-3"}>
+        <div className="game-border bg-body-secondary rounded-2 px-4 py-3">
             <h2>Upcoming</h2>
             <hr />
             <div>
@@ -30,7 +30,7 @@ export const UpcomingTournaments = ({
                             href={`/tournaments/${safeEncodeURI(
                                 tournament.name,
                             )}`}
-                            className={"text-decoration-none"}
+                            className="text-decoration-none"
                             key={tournament.name}
                         >
                             <UpcomingTournament tournament={tournament} />
@@ -51,29 +51,25 @@ const UpcomingTournament = ({ tournament }: { tournament: Tournament }) => {
             <GameImage
                 alt={`Image for ${tournament.name}`}
                 src={tournament.gameImage || ""}
-                quality={"large"}
+                quality="large"
                 height={64 * 1.3}
                 width={48 * 1.3}
-                className={"rounded-2"}
+                className="rounded-2"
             />
-            <div
-                className={
-                    "px-3 flex-grow-1 d-flex flex-column justify-content-center"
-                }
-            >
+            <div className="px-3 flex-grow-1 d-flex flex-column justify-content-center">
                 <div
-                    className={"h5 mb-1 p-0"}
+                    className="h5 mb-1 p-0"
                     style={{
                         color: "var(--bs-link-color)",
                     }}
                 >
                     {tournament.shortName}
                 </div>
-                <div className={"fst-italic"}>
+                <div className="fst-italic">
                     {tournament.eligibleRuns[0].game} -{" "}
                     {tournament.eligibleRuns[0].category}
                 </div>
-                <div className={"d-flex justify-content-between"}>
+                <div className="d-flex justify-content-between">
                     <div>{tournament.organizer}</div>
                     <div>
                         Starts <FromNow time={tournament.startDate} />

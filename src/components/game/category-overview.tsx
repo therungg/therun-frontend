@@ -6,7 +6,7 @@ import {
     UserGameCategoryLink,
     UserLink,
 } from "../links/links";
-import { Dispatch } from "react";
+import { Dispatch, useState } from "react";
 import { InfoTooltip } from "../tooltip";
 
 export const CategoryOverview = ({
@@ -16,8 +16,11 @@ export const CategoryOverview = ({
 }: {
     categories: CategoryLeaderboard[];
     game: string;
-    setCurrentCategory: Dispatch<any>;
+    setCurrentCategory: Dispatch<React.SetStateAction<string>>;
 }) => {
+    const [categoriesCountLimit, setCategoriesCountLimit] = useState(5);
+    const MINIMUM_CATEGORIES_LIMIT: number = 5;
+
     return (
         <Table striped bordered hover responsive>
             <thead>
@@ -26,7 +29,7 @@ export const CategoryOverview = ({
                     <th>
                         Best run
                         <InfoTooltip
-                            title={"Best run"}
+                            title="Best run"
                             content={
                                 <div>
                                     This is the best time out of all users of
@@ -46,7 +49,7 @@ export const CategoryOverview = ({
                 </tr>
             </thead>
             <tbody>
-                {categories.map((category) => {
+                {categories.slice(0, categoriesCountLimit).map((category) => {
                     return (
                         category.pbLeaderboard[0] && (
                             <tr key={category.categoryName}>
@@ -56,7 +59,7 @@ export const CategoryOverview = ({
                                         game={game}
                                     >
                                         <a
-                                            href={"#"}
+                                            href="#"
                                             onClick={() => {
                                                 setCurrentCategory(
                                                     category.categoryName,
@@ -76,7 +79,9 @@ export const CategoryOverview = ({
                                         game={game}
                                     >
                                         <DurationToFormatted
-                                            duration={category.pbLeaderboard[0].stat.toString()}
+                                            duration={
+                                                category.pbLeaderboard[0].stat
+                                            }
                                         />
                                     </UserGameCategoryLink>
                                     &nbsp;(
@@ -117,6 +122,29 @@ export const CategoryOverview = ({
                     );
                 })}
             </tbody>
+            {categories.length > MINIMUM_CATEGORIES_LIMIT ? (
+                categoriesCountLimit === MINIMUM_CATEGORIES_LIMIT ? (
+                    <button
+                        name="Show more categories"
+                        className="mt-2"
+                        onClick={() =>
+                            setCategoriesCountLimit(categories.length)
+                        }
+                    >
+                        Show more categories
+                    </button>
+                ) : (
+                    <button
+                        name="Show fewer categories"
+                        className="mt-2"
+                        onClick={() =>
+                            setCategoriesCountLimit(MINIMUM_CATEGORIES_LIMIT)
+                        }
+                    >
+                        Show fewer categories
+                    </button>
+                )
+            ) : null}
         </Table>
     );
 };

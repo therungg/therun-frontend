@@ -33,6 +33,8 @@ ChartJS.register(
 
 const amount = 100000;
 
+type LineProps = React.ComponentProps<typeof Line>;
+
 export const RecentRuns = ({
     history,
     pb,
@@ -65,12 +67,13 @@ export const RecentRuns = ({
     });
 
     if (pbs.length > 0) {
-        const minAttemptPb = parseInt(pb) * 3;
+        const parsedPb = parseInt(pb);
+        const minAttemptPb = parsedPb * 3;
 
         attempts = attempts.filter((attempt) => {
             return (
                 parseInt(attempt.time) < minAttemptPb &&
-                parseInt(attempt.time) >= pb - 1
+                parseInt(attempt.time) >= parsedPb - 1
             );
         });
     }
@@ -85,9 +88,10 @@ export const RecentRuns = ({
             {
                 label: "Recent runs",
                 fill: false,
-                lineTension: 0.1,
                 backgroundColor:
                     getComputedStyle(document.documentElement).getPropertyValue(
+                        // TODO: Get rid of this
+                        // eslint-disable-next-line sonarjs/no-duplicate-string
                         "--bs-link-color",
                     ) || "",
                 borderColor: getComputedStyle(
@@ -115,7 +119,7 @@ export const RecentRuns = ({
                 data: runToShow.map((attempt: RunHistory) => attempt.time),
             },
         ],
-    };
+    } as LineProps["data"];
 
     const options = {
         plugins: {
@@ -142,7 +146,7 @@ export const RecentRuns = ({
                 },
             },
         },
-    };
+    } as LineProps["options"];
 
     return (
         <div>
@@ -159,17 +163,17 @@ export const RecentRuns = ({
                         }}
                     >
                         <label
-                            htmlFor={"switch"}
+                            htmlFor="switch"
                             style={{
                                 marginRight: "10px",
                                 alignSelf: "center",
                             }}
                         >
                             {" "}
-                            {pbOnly ? "Show only PBs" : "Show only PBs"}{" "}
+                            {pbOnly ? "Show only PBs" : "Show All"}{" "}
                         </label>
                         <Switch
-                            name={"switch"}
+                            name="switch"
                             onChange={(checked) => {
                                 setPbOnly(checked);
                             }}
@@ -178,7 +182,7 @@ export const RecentRuns = ({
                     </div>
                 </Col>
             </Row>
-            <Line data={data} type={"line"} options={options} />
+            <Line data={data} options={options} />
         </div>
     );
 };

@@ -31,31 +31,29 @@ export const RaceAdminActions = ({
 
     return (
         <div
-            className={
-                "rounded-3 px-4 pt-2 pb-4 mb-3 game-border bg-body-secondary"
-            }
+            className="rounded-3 px-4 pt-2 pb-4 mb-3 game-border bg-body-secondary"
             style={{
                 borderColor: "var(--bs-link-color)",
             }}
         >
-            <span className={"h4 w-100 flex-center"}>Moderator actions</span>
+            <span className="h4 w-100 flex-center">Moderator actions</span>
             <hr />
             {raceCanBeStarted && (
                 <StartRaceButton
                     raceId={race.raceId}
-                    className={"w-100 fs-5 mt-2 mb-2"}
+                    className="w-100 fs-5 mt-2 mb-2"
                 />
             )}
             <a href={`/races/${race.raceId}/edit`}>
-                <Button variant={"primary"} className={"w-100 fs-5"}>
+                <Button variant="primary" className="w-100 fs-5">
                     Edit race
                 </Button>
             </a>
             {raceIsPending && (
                 <AbortRaceButton
                     raceId={race.raceId}
-                    variant={"danger"}
-                    className={"w-100 fs-5 mt-2"}
+                    variant="danger"
+                    className="w-100 fs-5 mt-2"
                 />
             )}
         </div>

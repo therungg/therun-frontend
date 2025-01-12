@@ -2,57 +2,56 @@ import { Tournament } from "./tournament-info";
 import React from "react";
 import { getLeaderboard } from "../game/game-leaderboards";
 import { Col, Row } from "react-bootstrap";
-import { DurationToFormatted } from "../util/datetime";
+import { DurationToFormatted, LocalizedTime } from "../util/datetime";
 import useSWR from "swr";
 import { fetcher } from "~src/utils/fetcher";
 
-export const TournamentStandings = ({
-    tournament,
-}: {
-    tournament: Tournament;
-}) => {
+export const TournamentStandings = () => {
     const { data: tournament1Data }: { data: Tournament } = useSWR(
-        "/api/tournaments/PACE 2024 Qualifiers 1",
+        "/api/tournaments/PACE Fall 2024 Qualifiers 1",
         fetcher,
     );
     const { data: tournament2Data }: { data: Tournament } = useSWR(
-        "/api/tournaments/PACE 2024 Qualifiers 2",
+        "/api/tournaments/PACE Fall 2024 Qualifiers 2",
+        fetcher,
+    );
+    const { data: tournament3Data }: { data: Tournament } = useSWR(
+        "/api/tournaments/PACE Fall 2024 Qualifiers 3",
         fetcher,
     );
 
-    if (!tournament1Data || !tournament2Data) {
+    if (!tournament1Data || !tournament2Data || !tournament3Data) {
         return <div>Loading data...</div>;
     }
 
     const points = {};
 
-    tournament.pointDistribution?.forEach((point, index) => {
-        [tournament1Data, tournament2Data].forEach((data) => {
-            if (data.leaderboards?.pbLeaderboard[index]) {
-                const standing = data.leaderboards?.pbLeaderboard[index];
+    const allTournaments = [tournament1Data, tournament2Data, tournament3Data];
 
-                const user = standing.username;
-
-                if (!points[user]) {
-                    points[user] = {
-                        stat: 0,
-                        username: user,
-                        url: standing.url,
-                    };
-                }
-
-                points[user].stat += point;
-            }
-        });
+    allTournaments.forEach((data) => {
+        let i = 0;
 
         if (
-            tournament.leaderboards &&
-            tournament.leaderboards?.pbLeaderboard &&
-            tournament.leaderboards?.pbLeaderboard[index]
-        ) {
-            const standing = tournament.leaderboards?.pbLeaderboard[index];
+            !data.leaderboards ||
+            !data.leaderboards.pbLeaderboard ||
+            !data.pointDistribution
+        )
+            return;
+
+        data.leaderboards.pbLeaderboard.forEach((standing) => {
+            const pointDistribution = data.pointDistribution as number[];
+
+            if (i > (pointDistribution as number[]).length) return;
 
             const user = standing.username;
+            const point = pointDistribution[i];
+
+            if (
+                data.ineligibleUsersForPoints &&
+                data.ineligibleUsersForPoints.includes(user)
+            ) {
+                return;
+            }
 
             if (!points[user]) {
                 points[user] = {
@@ -63,7 +62,9 @@ export const TournamentStandings = ({
             }
 
             points[user].stat += point;
-        }
+
+            i++;
+        });
     });
 
     const pointsLeaderboard = Array.from(Object.values(points));
@@ -94,110 +95,78 @@ export const TournamentStandings = ({
                         },
                     )}
                 </Col>
-                {/*<Col>*/}
-                {/*    <h2>Standings Heat 1</h2>*/}
-
-                {/*    {getLeaderboard(*/}
-                {/*        "Points Heat 1",*/}
-                {/*        tournament1Data.leaderboards?.pbLeaderboard,*/}
-                {/*        "",*/}
-                {/*        (stat, key) => {*/}
-                {/*            return (*/}
-                {/*                <div>*/}
-                {/*                    {tournament.pointDistribution[key] || 0} (*/}
-                {/*                    <DurationToFormatted*/}
-                {/*                        duration={stat.toString()}*/}
-                {/*                    />*/}
-                {/*                    )*/}
-                {/*                </div>*/}
-                {/*            );*/}
-                {/*        },*/}
-                {/*    )}*/}
-                {/*</Col>*/}
-                {/*<Col>*/}
-                {/*    <h2>Standings Heat 2</h2>*/}
-
-                {/*    {getLeaderboard(*/}
-                {/*        "Points Heat 2",*/}
-                {/*        tournament2Data.leaderboards?.pbLeaderboard,*/}
-                {/*        "",*/}
-                {/*        (stat, key) => {*/}
-                {/*            return (*/}
-                {/*                <div>*/}
-                {/*                    {tournament.pointDistribution[key] || 0} (*/}
-                {/*                    <DurationToFormatted*/}
-                {/*                        duration={stat.toString()}*/}
-                {/*                    />*/}
-                {/*                    )*/}
-                {/*                </div>*/}
-                {/*            );*/}
-                {/*        },*/}
-                {/*    )}*/}
-                {/*</Col>*/}
-                <Col>
-                    <h2>Standings Heat 1</h2>
-
-                    {getLeaderboard(
-                        "Points Heat 1",
-                        tournament1Data.leaderboards?.pbLeaderboard,
-                        "",
-                        (stat, key) => {
-                            return (
+                {allTournaments.map((data, tournamentIndex) => {
+                    const leaderboard =
+                        data.leaderboards && data.leaderboards.pbLeaderboard
+                            ? data.leaderboards.pbLeaderboard.filter(
+                                  (standing) =>
+                                      !(
+                                          data.ineligibleUsersForPoints &&
+                                          data.ineligibleUsersForPoints.includes(
+                                              standing.username,
+                                          )
+                                      ),
+                              )
+                            : null;
+                    const pointDistribution =
+                        data.pointDistribution as number[];
+                    return (
+                        <Col key={data.name}>
+                            <div className="d-flex justify-content-between align-items-center">
                                 <div>
-                                    {tournament1Data.pointDistribution[key] ||
-                                        0}{" "}
-                                    (
-                                    <DurationToFormatted
-                                        duration={stat.toString()}
-                                    />
-                                    )
+                                    <h2>Heat {tournamentIndex + 1}</h2>
                                 </div>
-                            );
-                        },
-                    )}
-                </Col>
-                <Col>
-                    <h2>Standings Heat 2</h2>
-
-                    {getLeaderboard(
-                        "Points Heat 2",
-                        tournament2Data.leaderboards?.pbLeaderboard,
-                        "",
-                        (stat, key) => {
-                            return (
                                 <div>
-                                    {tournament2Data.pointDistribution[key] ||
-                                        0}{" "}
-                                    (
-                                    <DurationToFormatted
-                                        duration={stat.toString()}
+                                    Starts{" "}
+                                    <LocalizedTime
+                                        date={new Date(data.startDate)}
+                                        asDate={true}
                                     />
-                                    )
                                 </div>
-                            );
-                        },
-                    )}
-                </Col>
-                <Col>
-                    <h2>Standings Heat 3</h2>
+                            </div>
 
-                    {getLeaderboard(
-                        "Points Heat 3",
-                        tournament.leaderboards?.pbLeaderboard,
-                        "",
-                        (stat, key) => {
-                            return (
-                                <div>
-                                    {tournament.pointDistribution[key] || 0} (
-                                    <DurationToFormatted
-                                        duration={stat.toString()}
-                                    />
-                                    )
-                                </div>
-                            );
-                        },
-                    )}
-                </Col>
+                            {getLeaderboard(
+                                "Points Heat " + (tournamentIndex + 1),
+                                leaderboard &&
+                                    leaderboard.length >
+                                        pointDistribution.length
+                                    ? leaderboard
+                                    : pointDistribution.map((_, index) => {
+                                          if (
+                                              leaderboard !== null &&
+                                              leaderboard[index]
+                                          ) {
+                                              return leaderboard[index];
+                                          }
+                                          return {
+                                              username: "",
+                                              stat: 0,
+                                              placing: index + 1,
+                                          };
+                                      }),
+                                "",
+                                (stat, key) => {
+                                    return (
+                                        <div>
+                                            {(
+                                                data.pointDistribution as number[]
+                                            )[key] || 0}{" "}
+                                            {stat > 0 && (
+                                                <span>
+                                                    (
+                                                    <DurationToFormatted
+                                                        duration={stat.toString()}
+                                                    />
+                                                    )
+                                                </span>
+                                            )}
+                                        </div>
+                                    );
+                                },
+                            )}
+                        </Col>
+                    );
+                })}
             </Row>
         </div>
     );

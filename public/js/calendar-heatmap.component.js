@@ -8,11 +8,10 @@ import styles from "../../src/components/css/Calendar.module.scss";
 class CalendarHeatmap extends React.Component {
     constructor(props) {
         super(props);
-
         this.settings = {
             gutter: 6,
             item_gutter: 1,
-            width: 1616,
+            width: Number.isInteger(props.width) ? props.width : 1616,
             height: 200,
             item_size: 1111,
             label_padding: 45,
@@ -25,7 +24,7 @@ class CalendarHeatmap extends React.Component {
         this.in_transition = false;
         this.overview = this.props.overview;
         this.history = ["global"];
-        this.selected = {};
+        this.selected = { date: props.data[0].date.slice(0, 4) };
 
         this.calcDimensions = this.calcDimensions.bind(this);
     }
@@ -38,6 +37,12 @@ class CalendarHeatmap extends React.Component {
         window.addEventListener("resize", this.calcDimensions);
     }
 
+    UNSAFE_componentWillUpdate(nextProps) {
+        if (nextProps.width !== this.props.width) {
+            this.calcDimensions(nextProps.width);
+        }
+    }
+
     componentDidUpdate() {
         this.parseData();
         this.drawChart();
@@ -45,6 +50,16 @@ class CalendarHeatmap extends React.Component {
 
     componentWillUnmount() {
         window.removeEventListener("resize", this.calcDimensions);
+        this.removeDayOverview();
+        this.removeWeekOverview();
+        this.removeMonthOverview();
+        this.removeYearOverview();
+        this.removeGlobalOverview();
+        if (this.svg) this.svg.remove();
+        if (this.items) this.items.remove();
+        if (this.labels) this.labels.remove();
+        if (this.buttons) this.buttons.remove();
+        if (this.tooltip) this.tooltip.remove();
     }
 
     createElements() {
@@ -81,17 +96,22 @@ class CalendarHeatmap extends React.Component {
     }
 
     // Calculate dimensions based on available width
-    calcDimensions() {
+    calcDimensions(updatedWidth) {
         let dayIndex = Math.round(
-            (moment() - moment().subtract(1, "year").startOf("week")) / 86400000
+            (moment() - moment().subtract(1, "year").startOf("week")) /
+                86400000,
         );
         let colIndex = Math.trunc(dayIndex / 7);
         let numWeeks = colIndex + 1;
 
-        this.settings.width =
-            this.container.offsetWidth < 1616
-                ? 1616
-                : this.container.offsetWidth;
+        if (!updatedWidth) {
+            this.settings.width =
+                this.container.offsetWidth < 1616
+                    ? 1616
+                    : this.container.offsetWidth;
+        } else if (typeof updatedWidth === "number") {
+            this.settings.width = updatedWidth;
+        }
         this.settings.item_size =
             (this.settings.width - this.settings.label_padding) / numWeeks -
             this.settings.gutter;
@@ -174,7 +194,7 @@ class CalendarHeatmap extends React.Component {
         // Define start and end of the dataset
         let start = moment(this.props.data[0].date).startOf("year");
         let end = moment(
-            this.props.data[this.props.data.length - 1].date
+            this.props.data[this.props.data.length - 1].date,
         ).endOf("year");
 
         // Define array of years and total values
@@ -233,7 +253,7 @@ class CalendarHeatmap extends React.Component {
             .domain(
                 year_labels.map((d) => {
                     return d.year();
-                })
+                }),
             );
 
         // Add global data items to the overview
@@ -413,7 +433,7 @@ class CalendarHeatmap extends React.Component {
                 },
                 () => {
                     this.in_transition = false;
-                }
+                },
             );
 
         // Add year labels
@@ -518,7 +538,7 @@ class CalendarHeatmap extends React.Component {
         let calcItemX = (d) => {
             let date = moment(d.date);
             let dayIndex = Math.round(
-                (date - moment(start_of_year).startOf("week")) / 86400000
+                (date - moment(start_of_year).startOf("week")) / 86400000,
             );
             let colIndex = Math.trunc(dayIndex / 7);
             return (
@@ -746,7 +766,7 @@ class CalendarHeatmap extends React.Component {
                 },
                 () => {
                     this.in_transition = false;
-                }
+                },
             );
 
         // Add month labels
@@ -840,7 +860,7 @@ class CalendarHeatmap extends React.Component {
         // Add day labels
         let day_labels = d3.timeDays(
             moment().startOf("week"),
-            moment().endOf("week")
+            moment().endOf("week"),
         );
         let dayScale = d3
             .scaleBand()
@@ -848,7 +868,7 @@ class CalendarHeatmap extends React.Component {
             .domain(
                 day_labels.map((d) => {
                     return moment(d).weekday();
-                })
+                }),
             );
         this.labels.selectAll(".label-day").remove();
         this.labels
@@ -933,7 +953,7 @@ class CalendarHeatmap extends React.Component {
         // Define day labels and axis
         let day_labels = d3.timeDays(
             moment().startOf("week"),
-            moment().endOf("week")
+            moment().endOf("week"),
         );
         let dayScale = d3
             .scaleBand()
@@ -941,7 +961,7 @@ class CalendarHeatmap extends React.Component {
             .domain(
                 day_labels.map((d) => {
                     return moment(d).weekday();
-                })
+                }),
             );
 
         // Define week labels and axis
@@ -956,7 +976,7 @@ class CalendarHeatmap extends React.Component {
             .domain(
                 week_labels.map((weekday) => {
                     return weekday.week();
-                })
+                }),
             );
 
         // Add month data items to the overview
@@ -978,7 +998,7 @@ class CalendarHeatmap extends React.Component {
             .attr("height", () => {
                 return Math.min(
                     dayScale.bandwidth(),
-                    this.settings.max_block_height
+                    this.settings.max_block_height,
                 );
             })
             .attr("transform", (d) => {
@@ -1042,12 +1062,12 @@ class CalendarHeatmap extends React.Component {
             .attr("x", function (d) {
                 let total = parseInt(d3.select(this.parentNode).attr("total"));
                 let offset = parseInt(
-                    d3.select(this.parentNode).attr("offset")
+                    d3.select(this.parentNode).attr("offset"),
                 );
                 itemScale.domain([0, total]);
                 d3.select(this.parentNode).attr(
                     "offset",
-                    offset + itemScale(d.value)
+                    offset + itemScale(d.value),
                 );
                 return offset;
             })
@@ -1059,7 +1079,7 @@ class CalendarHeatmap extends React.Component {
             .attr("height", () => {
                 return Math.min(
                     dayScale.bandwidth(),
-                    this.settings.max_block_height
+                    this.settings.max_block_height,
                 );
             })
             .attr("fill", (d) => {
@@ -1150,7 +1170,7 @@ class CalendarHeatmap extends React.Component {
                 },
                 () => {
                     this.in_transition = false;
-                }
+                },
             );
 
         // Add week labels
@@ -1285,7 +1305,7 @@ class CalendarHeatmap extends React.Component {
         // Define day labels and axis
         let day_labels = d3.timeDays(
             moment().startOf("week"),
-            moment().endOf("week")
+            moment().endOf("week"),
         );
         let dayScale = d3
             .scaleBand()
@@ -1293,7 +1313,7 @@ class CalendarHeatmap extends React.Component {
             .domain(
                 day_labels.map((d) => {
                     return moment(d).weekday();
-                })
+                }),
             );
 
         // Define week labels and axis
@@ -1305,7 +1325,7 @@ class CalendarHeatmap extends React.Component {
             .domain(
                 week_labels.map((weekday) => {
                     return weekday.week();
-                })
+                }),
             );
 
         // Add week data items to the overview
@@ -1327,7 +1347,7 @@ class CalendarHeatmap extends React.Component {
             .attr("height", () => {
                 return Math.min(
                     dayScale.bandwidth(),
-                    this.settings.max_block_height
+                    this.settings.max_block_height,
                 );
             })
             .attr("transform", (d) => {
@@ -1391,12 +1411,12 @@ class CalendarHeatmap extends React.Component {
             .attr("x", function (d) {
                 let total = parseInt(d3.select(this.parentNode).attr("total"));
                 let offset = parseInt(
-                    d3.select(this.parentNode).attr("offset")
+                    d3.select(this.parentNode).attr("offset"),
                 );
                 itemScale.domain([0, total]);
                 d3.select(this.parentNode).attr(
                     "offset",
-                    offset + itemScale(d.value)
+                    offset + itemScale(d.value),
                 );
                 return offset;
             })
@@ -1408,7 +1428,7 @@ class CalendarHeatmap extends React.Component {
             .attr("height", () => {
                 return Math.min(
                     dayScale.bandwidth(),
-                    this.settings.max_block_height
+                    this.settings.max_block_height,
                 );
             })
             .attr("fill", (d) => {
@@ -1502,7 +1522,7 @@ class CalendarHeatmap extends React.Component {
                 },
                 () => {
                     this.in_transition = false;
-                }
+                },
             );
 
         // Add week labels
@@ -1654,14 +1674,14 @@ class CalendarHeatmap extends React.Component {
             })
             .attr("width", (d) => {
                 let end = itemScale(
-                    d3.timeSecond.offset(moment(d.date), d.value)
+                    d3.timeSecond.offset(moment(d.date), d.value),
                 );
                 return Math.max(end - itemScale(moment(d.date)), 1);
             })
             .attr("height", () => {
                 return Math.min(
                     projectScale.bandwidth(),
-                    this.settings.max_block_height
+                    this.settings.max_block_height,
                 );
             })
             .attr("fill", () => {
@@ -1753,13 +1773,13 @@ class CalendarHeatmap extends React.Component {
                 },
                 () => {
                     this.in_transition = false;
-                }
+                },
             );
 
         // Add time labels
         let timeLabels = d3.timeHours(
             moment(this.selected.date).startOf("day"),
-            moment(this.selected.date).endOf("day")
+            moment(this.selected.date).endOf("day"),
         );
         let timeScale = d3
             .scaleTime()
@@ -1798,7 +1818,7 @@ class CalendarHeatmap extends React.Component {
                     .style("opacity", (d) => {
                         let start = itemScale(moment(d.date));
                         let end = itemScale(
-                            moment(d.date).add(d.value, "seconds")
+                            moment(d.date).add(d.value, "seconds"),
                         );
                         return selected >= start && selected <= end ? 1 : 0.1;
                     });

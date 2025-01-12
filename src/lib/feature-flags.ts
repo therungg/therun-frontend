@@ -27,7 +27,7 @@ export const getFeatureFlag = async (
     return parseBoolean(process.env[prefixedKey], defaultValue);
 };
 
-const parseBoolean = (val: any, defVal: boolean) => {
+const parseBoolean = (val: unknown, defVal: boolean) => {
     if (val == undefined) {
         return defVal;
     }

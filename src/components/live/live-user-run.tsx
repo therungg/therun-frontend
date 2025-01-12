@@ -11,26 +11,28 @@ import { GameImage } from "~src/components/image/gameimage";
 import { Twitch as TwitchIcon } from "react-bootstrap-icons";
 import { getColorMode } from "~src/utils/colormode";
 import { CombinedLeaderboardStat } from "~app/tournaments/[tournament]/get-combined-tournament-leaderboard.component";
+import { Count } from "~app/games/[game]/game.types";
 
 export const LiveUserRun = ({
     liveRun,
     currentlyActive,
     showGameCategory = true,
     leaderboard = null,
-    leaderboardGameTime = null,
     isUrl = false,
     seedingTable = [],
 }: {
     liveRun: LiveRun;
     currentlyActive?: string;
     showGameCategory?: boolean;
-    leaderboard?: any;
-    leaderboardGameTime?: any;
+    leaderboard?: Count[] | null;
     isUrl?: boolean;
     seedingTable?: CombinedLeaderboardStat[];
 }) => {
     const [dark, setDark] = useState(true);
-    const [liveUserStyles, setLiveUserStyles] = useState({});
+    const [liveUserStyles, setLiveUserStyles] = useState<{
+        borderColor: string;
+        gradient: string;
+    }>({ borderColor: "", gradient: "" });
     const { data: patreons, isLoading } = usePatreons();
     useEffect(function () {
         setDark(getColorMode() !== "light");
@@ -54,6 +56,7 @@ export const LiveUserRun = ({
                     ? darkStyle.backgroundImage
                     : lightStyle.backgroundImage;
             } else {
+                // TODO: Get rid of this.
                 borderColor = "var(--bs-link-color)";
             }
             setLiveUserStyles({ borderColor, gradient });
@@ -61,7 +64,6 @@ export const LiveUserRun = ({
     }, [patreons, isLoading, liveRun.user]);
 
     let tournamentPb = null;
-    let tournamentPbGameTime = null;
     let ranking = null;
     let seed = null;
 
@@ -73,17 +75,6 @@ export const LiveUserRun = ({
         if (pbLeaderboardIndex > -1) {
             ranking = pbLeaderboardIndex + 1;
             tournamentPb = leaderboard[pbLeaderboardIndex].stat;
-        }
-    }
-
-    if (leaderboardGameTime) {
-        const pbLeaderboardIndex = leaderboardGameTime.findIndex(
-            (count) => count.username == liveRun.user,
-        );
-
-        if (pbLeaderboardIndex > -1) {
-            ranking = pbLeaderboardIndex + 1;
-            tournamentPbGameTime = leaderboardGameTime[pbLeaderboardIndex].stat;
         }
     }
 
@@ -133,16 +124,14 @@ export const LiveUserRun = ({
                         <GameImage
                             alt={liveRun.game}
                             src={liveRun.gameImage}
-                            quality={"small"}
+                            quality="small"
                             height={108}
                             width={81}
                             style={
                                 liveUserStyles.gradient ||
                                 liveUserStyles.borderColor
                                     ? {
-                                          height: liveUserStyles.gradient
-                                              ? "106px"
-                                              : "106px",
+                                          height: "106px",
                                       }
                                     : {}
                             }
@@ -159,14 +148,14 @@ export const LiveUserRun = ({
                     }}
                 >
                     <Image
-                        alt={"Logo"}
+                        alt="Logo"
                         src={
                             dark
                                 ? "/logo_dark_theme_no_text_transparent.png"
                                 : "/logo_light_theme_no_text_transparent.png"
                         }
-                        width={"75px"}
-                        height={"75px"}
+                        width="75px"
+                        height="75px"
                         className="mt-3"
                     />
                 </div>
@@ -195,7 +184,7 @@ export const LiveUserRun = ({
                         />
                         {liveRun.currentlyStreaming && (
                             <div className="ms-2">
-                                <TwitchIcon height={22} color={"#6441a5"} />
+                                <TwitchIcon height={22} color="#6441a5" />
                             </div>
                         )}
                     </div>
@@ -210,37 +199,22 @@ export const LiveUserRun = ({
                         </div>
                     )}
 
-                    {!showGameCategory && tournamentPbGameTime && (
-                        <div className="text-truncate fs-large">
+                    {!showGameCategory && tournamentPb && (
+                        <div className="text-truncate">
                             Tournament PB -{" "}
-                            {!!tournamentPbGameTime && (
-                                <DurationToFormatted
-                                    duration={tournamentPbGameTime}
-                                />
+                            {!!tournamentPb && (
+                                <DurationToFormatted duration={tournamentPb} />
                             )}
                         </div>
                     )}
 
                     {!showGameCategory &&
-                        tournamentPb &&
-                        !tournamentPbGameTime && (
-                            <div className="text-truncate">
-                                Tournament PB -{" "}
-                                {!!tournamentPb && (
-                                    <DurationToFormatted
-                                        duration={tournamentPb}
-                                    />
-                                )}
-                            </div>
-                        )}
-
-                    {!showGameCategory &&
                         liveRun.pb &&
-                        liveRun.pb != tournamentPbGameTime &&
-                        liveRun.pb != tournamentPb && (
+                        Math.trunc(liveRun.pb) !==
+                            Math.trunc(Number(tournamentPb)) && (
                             <div className="text-truncate">
                                 Personal Best -{" "}
-                                {<DurationToFormatted duration={liveRun.pb} />}
+                                <DurationToFormatted duration={liveRun.pb} />
                             </div>
                         )}
                 </Col>
@@ -258,7 +232,7 @@ export const LiveUserRun = ({
 export const LiveIcon = ({ height = 16, dark = false }) => {
     return (
         <Image
-            alt={"Live Icon"}
+            alt="Live Icon"
             src={!dark ? "/LiveTR-light.png" : "/LiveTR-dark.png"}
             height={height}
         />
@@ -268,7 +242,7 @@ export const LiveIcon = ({ height = 16, dark = false }) => {
 export const Flag = ({ className = "", height = 16, dark = false }) => {
     return (
         <Image
-            alt={"Flag"}
+            alt="Flag"
             src={
                 !dark
                     ? "/Flag finish greenTR-darktransparant.png"

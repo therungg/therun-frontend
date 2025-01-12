@@ -10,8 +10,6 @@ import { Scripts } from "./scripts";
 import { getSession } from "~src/actions/session.action";
 import buildMetadata from "~src/utils/metadata";
 import { Viewport } from "next";
-import { SessionError } from "~src/common/session.error";
-import { User } from "types/session.types";
 import { SessionErrorBoundary } from "~src/components/errors/session.error-boundary";
 
 export const metadata = buildMetadata();
@@ -25,20 +23,14 @@ export default async function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
-    let sessionError: string | null = null;
-    let session!: User;
-    try {
-        session = await getSession();
-    } catch (error) {
-        if (error instanceof SessionError) {
-            sessionError = error.toString();
-        }
-    }
-    const locale = await getLocale();
-    // Providing all messages to the client
-    // side is the easiest way to get started
-    const messages = await getMessages();
-
+    const [
+        session,
+        locale,
+        // Providing all messages to the client
+        // side is the easiest way to get started
+        messages,
+    ] = await Promise.all([getSession(), getLocale(), getMessages()]);
+    const sessionError = session.sessionError;
     return (
         <html lang={locale} suppressHydrationWarning>
             <body>

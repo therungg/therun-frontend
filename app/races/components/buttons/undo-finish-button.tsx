@@ -8,8 +8,8 @@ export const UndoFinishButton = (props: RaceActionProps) => {
     return (
         <RaceActionButton
             action={undoFinishRace}
-            innerText={"Undo finish"}
-            pendingText={"Undoing finish..."}
+            innerText="Undo finish"
+            pendingText="Undoing finish..."
             {...props}
         />
     );

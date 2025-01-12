@@ -12,7 +12,7 @@ export default function Terms() {
             <br /> If you continue to use this website, you are agreeing to
             comply with and be bound by the following terms and conditions of
             use, which together with the{" "}
-            <a href={"/privacy-policy"}>Privacy policy</a> govern The Runs
+            <a href="/privacy-policy">Privacy policy</a> govern The Runs
             relationship with you in relation to this website.
             <br />
             <br />

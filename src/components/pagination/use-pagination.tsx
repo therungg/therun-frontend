@@ -1,11 +1,11 @@
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import {
     PaginatedData,
     PaginationFetcher,
     PaginationHook,
 } from "~src/components/pagination/pagination.types";
 import { PaginationContext } from "~src/components/pagination/pagination.context";
-import { useDebounce } from "usehooks-ts";
+import { useDebounceValue } from "usehooks-ts";
 import { paginateArray } from "~src/components/pagination/paginate-array";
 import { genericFetcher } from "~src/components/pagination/fetchers/generic-fetcher";
 
@@ -14,7 +14,7 @@ function usePagination<T>(
     fetchPage?: PaginationFetcher<T>,
     pageSize: number = 10,
     debounce?: number,
-    params?: any,
+    params?: { [key: string]: unknown },
 ): PaginationHook<T> {
     let fullData = initialData;
 
@@ -39,7 +39,33 @@ function usePagination<T>(
     const [isLoading, setIsLoading] = useState(false);
 
     const { search, currentPage } = useContext(PaginationContext);
-    const debouncedSearch = useDebounce(search, debounce);
+    const [debouncedSearch] = useDebounceValue(search, debounce);
+
+    const fetchData = useCallback(
+        async (page: number, query: string) => {
+            setIsLoading(true);
+
+            if (data[`${currentPage}-${query}`]) {
+                setCurrentData(data[`${currentPage}-${query}`]);
+            } else {
+                const result = await fetchPage(
+                    page,
+                    pageSize,
+                    query,
+                    fullData,
+                    params,
+                );
+                setCurrentData(result);
+
+                setData((prevData) => ({
+                    ...prevData,
+                    [`${page}-${query}`]: result,
+                }));
+            }
+            setIsLoading(false);
+        },
+        [currentPage, data, fetchPage, fullData, pageSize, params],
+    );
 
     useEffect(() => {
         fetchData(1, debouncedSearch);
@@ -56,29 +82,6 @@ function usePagination<T>(
             setIsLoading(true);
         }
     }, [search]);
-
-    const fetchData = async (page: number, query: string) => {
-        setIsLoading(true);
-
-        if (data[`${currentPage}-${query}`]) {
-            setCurrentData(data[`${currentPage}-${query}`]);
-        } else {
-            const result = await fetchPage(
-                page,
-                pageSize,
-                query,
-                fullData,
-                params,
-            );
-            setCurrentData(result);
-
-            setData((prevData) => ({
-                ...prevData,
-                [`${page}-${query}`]: result,
-            }));
-        }
-        setIsLoading(false);
-    };
 
     return {
         data: currentData.items,

@@ -1,17 +1,12 @@
-"use client";
-
-import { Game } from "~app/games/games.types";
 import { Row, Table } from "react-bootstrap";
 import { GameLink, UserLink } from "../links/links";
 import { DurationToFormatted } from "../util/datetime";
 import React from "react";
 import { GameImage } from "~src/components/image/gameimage";
+import { getTabulatedGameStatsPopular } from "./get-tabulated-game-stats";
 
-interface PopularGamesProps {
-    gamestats: Game[];
-}
-
-export const PopularGames: React.FC<PopularGamesProps> = ({ gamestats }) => {
+export const PopularGames = async () => {
+    const gamestats = await getTabulatedGameStatsPopular();
     return (
         <div>
             <Table striped bordered hover responsive>
@@ -32,7 +27,7 @@ export const PopularGames: React.FC<PopularGamesProps> = ({ gamestats }) => {
                                                     <GameImage
                                                         alt={game.display}
                                                         src={game.image}
-                                                        quality={"small"}
+                                                        quality="small"
                                                         height={64}
                                                         width={48}
                                                     />

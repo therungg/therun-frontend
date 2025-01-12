@@ -1,15 +1,28 @@
 export interface User {
     id: string;
-    username: string;
-    picture: string;
-    roles?: Role[];
+    roles?: string[];
     moderatedGames?: string[];
+    sessionError?: string;
+    pronouns?: string;
+
+    username: string;
+    createdAt: string;
+    user: string;
+    picture: string;
+    lastLogin: string;
+    login: string;
+    banned: false;
+    socials: { youtube: string; twitter: string; twitch: string };
+    timezone: string;
+    preferences: unknown;
+    searchName: string;
 }
 
 export type Role =
     | "admin"
     | "patreon3"
     | "moderator"
+    | "story-beta-user"
     | "board-admin"
     | "board-moderator"
     | "race-admin"

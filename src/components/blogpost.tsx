@@ -5,7 +5,7 @@ import { FromNow } from "./util/datetime";
 export const Blogpost = ({ post }) => {
     return (
         <div>
-            <a href={"/blog"}>{"< "}Back to Blog</a>
+            <a href="/blog">{"< "}Back to Blog</a>
             <h1 style={{ textAlign: "center" }}>{post.title}</h1>
             <div style={{ textAlign: "center" }}>
                 <small>
