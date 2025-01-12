@@ -46,6 +46,7 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
     const pathname = usePathname();
     const [show, setShow] = useState(false);
     const [dark, setDark] = useState(true);
+    const [mounted, setMounted] = useState(false);
     const [notificationDisabled, setNotificationDisabled] = useState(false);
     const hasRoute = useCallback(
         (route: string) => {
@@ -75,6 +76,7 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
         if ("true" === localStorage.getItem("disableNotification")) {
             setNotificationDisabled(true);
         }
+        setMounted(true);
     }, []);
 
     const handleColorMode: React.MouseEventHandler<HTMLElement> = useCallback(
@@ -222,7 +224,8 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                     </Navbar.Collapse>
                 </Container>
             </Navbar>
-            {!notificationDisabled &&
+            {mounted &&
+            !notificationDisabled &&
             !hasRoute("wrapped") &&
             !hasRoute("recap") &&
             !hasRoute("patron") ? (
