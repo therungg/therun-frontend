@@ -295,7 +295,7 @@ const ManageStories = ({
                             <thead>
                                 <tr>
                                     <th>Enabled</th>
-                                    <th>Cooldown</th>
+                                    <th>Cooldown (minutes)</th>
                                     <th>Text</th>
                                 </tr>
                             </thead>
@@ -317,11 +317,13 @@ const ManageStories = ({
                                             <td>
                                                 <input
                                                     type="hidden"
+                                                    className="cursor-pointer"
                                                     value={0}
                                                     name={id}
                                                 />
                                                 <Form.Check
                                                     type="switch"
+                                                    className="cursor-pointer"
                                                     id={id}
                                                     name={id}
                                                     disabled={

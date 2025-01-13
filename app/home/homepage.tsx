@@ -7,7 +7,6 @@ import { SkeletonPersonalBests } from "~src/components/skeleton/index/skeleton-p
 import { PopularGames } from "~src/components/game/popular-games";
 import { SkeletonPopularGames } from "~src/components/skeleton/index/skeleton-popular-games";
 import { useTranslations } from "next-intl";
-import { StoryModeInfoPanel } from "~app/story-mode-info-panel";
 
 export const Homepage = () => {
     const t = useTranslations("homepage");
@@ -47,7 +46,6 @@ export const Homepage = () => {
                     </div>
                 </div>
             </div>
-            <StoryModeInfoPanel />
             <div>
                 <Row className="text-center">
                     <Col xl={6} className="mt-4">

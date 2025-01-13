@@ -18,7 +18,6 @@ import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
 import { getColorMode } from "~src/utils/colormode";
 import { Upload } from "react-bootstrap-icons";
 import { resetSession } from "~src/actions/reset-session.action";
-import { Can } from "~src/rbac/Can.component";
 import { PatreonBunnySvg } from "~app/patron/patreon-info";
 
 const DarkModeSlider = dynamic(() => import("./dark-mode-slider"), {
@@ -155,11 +154,12 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                             </Nav.Link>
                             <Nav.Link href="/races">Races</Nav.Link>
                             <Nav.Link href="/live">Live</Nav.Link>
-                            <Can I="view-restricted" a="stories">
+
+                            {username && (
                                 <Nav.Link href="/stories/manage">
                                     Story Mode
                                 </Nav.Link>
-                            </Can>
+                            )}
                             <Nav.Link href="/patron">
                                 Support us! <PatreonBunnySvg />
                             </Nav.Link>
@@ -196,11 +196,9 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                                     <NavDropdown.Item href="/change-appearance">
                                         Name Appearance
                                     </NavDropdown.Item>
-                                    <Can I="view-restricted" a="stories">
-                                        <NavDropdown.Item href="/stories/manage">
-                                            Story Preferences
-                                        </NavDropdown.Item>
-                                    </Can>
+                                    <NavDropdown.Item href="/stories/manage">
+                                        Story Preferences
+                                    </NavDropdown.Item>
                                     <NavDropdown.Item onClick={() => logout()}>
                                         Logout
                                     </NavDropdown.Item>
