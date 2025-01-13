@@ -16,7 +16,6 @@ import { getLiveRunForUser } from "~src/lib/live-runs";
 import { SkeletonLiveRun } from "~src/components/skeleton/live/skeleton-live-run";
 import { Search as SearchIcon } from "react-bootstrap-icons";
 import { RunStoryView } from "~app/live/stories/run-story-view";
-import { Can } from "~src/rbac/Can.component";
 
 export const Live = ({
     liveDataMap,
@@ -125,11 +124,9 @@ export const Live = ({
                                 liveRun={updatedLiveDataMap[currentlyViewing]}
                             />
                         </Row>
-                        <Can I={"view-restricted"} a={"stories"}>
-                            <RunStoryView
-                                liveRun={updatedLiveDataMap[currentlyViewing]}
-                            />
-                        </Can>
+                        <RunStoryView
+                            liveRun={updatedLiveDataMap[currentlyViewing]}
+                        />
                     </>
                 )}
             <Row className="g-3 my-3">
