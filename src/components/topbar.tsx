@@ -1,24 +1,15 @@
 "use client";
-import {
-    Alert,
-    AlertHeading,
-    Badge,
-    Container,
-    Nav,
-    Navbar,
-    NavDropdown,
-    Stack,
-} from "react-bootstrap";
+import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { TwitchUser } from "./twitch/TwitchUser";
 import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
 import { getColorMode } from "~src/utils/colormode";
 import { Upload } from "react-bootstrap-icons";
 import { resetSession } from "~src/actions/reset-session.action";
-import { PatreonBunnySvg } from "~app/patron/patreon-info";
+import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 
 const DarkModeSlider = dynamic(() => import("./dark-mode-slider"), {
     ssr: false,
@@ -42,40 +33,16 @@ interface TopbarProps {
 
 const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
     const router = useRouter();
-    const pathname = usePathname();
     const [show, setShow] = useState(false);
     const [dark, setDark] = useState(true);
-    const [mounted, setMounted] = useState(false);
-    const [notificationDisabled, setNotificationDisabled] = useState(false);
-    const hasRoute = useCallback(
-        (route: string) => {
-            if (!pathname) return "";
-
-            return pathname
-                .split("/")
-                .map((part) => part.toLowerCase())
-                .includes(route);
-        },
-        [pathname],
-    );
 
     const handleResetSession = useCallback(async () => {
         await resetSession();
         window.location.reload();
     }, []);
 
-    const handleNotification = () => {
-        setNotificationDisabled(true);
-        localStorage.setItem("disableNotification", "true");
-    };
-
     useEffect(function () {
         setDark(getColorMode() !== "light");
-
-        if ("true" === localStorage.getItem("disableNotification")) {
-            setNotificationDisabled(true);
-        }
-        setMounted(true);
     }, []);
 
     const handleColorMode: React.MouseEventHandler<HTMLElement> = useCallback(
@@ -161,7 +128,7 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                                 </Nav.Link>
                             )}
                             <Nav.Link href="/patron">
-                                Support us! <PatreonBunnySvg />
+                                Support us! <PatreonBunnySvgWithoutLink />
                             </Nav.Link>
                         </Nav>
                         <Nav className="ml-auto mb-2 mb-lg-0 me-lg-2">
@@ -222,39 +189,6 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                     </Navbar.Collapse>
                 </Container>
             </Navbar>
-            {mounted &&
-            !notificationDisabled &&
-            !hasRoute("wrapped") &&
-            !hasRoute("recap") &&
-            !hasRoute("patron") ? (
-                <Alert
-                    className="container w-100"
-                    onClose={handleNotification}
-                    dismissible
-                >
-                    <AlertHeading>
-                        <Badge>NEW</Badge>&nbsp;The Run Recap 2024 is here!!
-                    </AlertHeading>
-                    <Stack
-                        direction="horizontal"
-                        className="justify-content-between"
-                    >
-                        <p>
-                            After several weeks of hard work, we're finally
-                            here! Recap brings you all of your 2024 speedrun
-                            stats summarized in a nice package.
-                        </p>
-                    </Stack>
-                    <div className="d-flex justify-content-center">
-                        <a
-                            href="/recap"
-                            className="btn btn-lg btn-primary text-nowrap"
-                        >
-                            Go to Recap 2024
-                        </a>
-                    </div>
-                </Alert>
-            ) : null}
         </>
     );
 };
