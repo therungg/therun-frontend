@@ -332,23 +332,12 @@ export const CombinedTournament = ({
 
                             <div className="d-flex justify-content-center">
                                 <div className="mb-3 input-group">
-                                    <span
+                                    <label
+                                        htmlFor="gameSearch"
                                         className="input-group-text"
-                                        onClick={() => {
-                                            const searchElement =
-                                                document.getElementById(
-                                                    "gameSearch",
-                                                );
-                                            if (
-                                                document.activeElement !==
-                                                searchElement
-                                            ) {
-                                                searchElement.focus();
-                                            }
-                                        }}
                                     >
                                         <SearchIcon size={18} />
-                                    </span>
+                                    </label>
                                     <input
                                         type="search"
                                         className="form-control"

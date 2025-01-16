@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createRef, useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Card, Col, Row, Tab, Tabs } from "react-bootstrap";
 import { LiveUserRun } from "~src/components/live/live-user-run";
 import { RecommendedStream } from "~src/components/live/recommended-stream";
@@ -55,8 +55,6 @@ export const GenericTournament = ({
     const [currentlyViewing, setCurrentlyViewing] = useState(recommendedStream);
 
     const [loadingUserData, setLoadingUserData] = useState(true);
-
-    const gameSearchRef = createRef<HTMLInputElement>();
 
     const handleSortChange: React.ChangeEventHandler<HTMLSelectElement> =
         useCallback(
@@ -340,22 +338,13 @@ export const GenericTournament = ({
                                 </Col>
                                 <Col md={8} className="mb-4">
                                     <div className="input-group">
-                                        <span
+                                        <label
                                             className="input-group-text"
-                                            onClick={() => {
-                                                if (
-                                                    gameSearchRef.current &&
-                                                    document.activeElement !==
-                                                        gameSearchRef.current
-                                                ) {
-                                                    gameSearchRef.current.focus();
-                                                }
-                                            }}
+                                            htmlFor="gameSearch"
                                         >
                                             <SearchIcon size={18} />
-                                        </span>
+                                        </label>
                                         <input
-                                            ref={gameSearchRef}
                                             type="search"
                                             className="form-control"
                                             placeholder="Filter by user"

@@ -21,25 +21,13 @@ export const useSearch = () => {
 export const RenderSearch = () => {
     const { search, setSearch } = useContext(PaginationContext);
 
-    const searchInputRef = React.useRef<HTMLInputElement>(null);
-
     return (
         <div>
             <div className="d-flex justify-content-start">
                 <div className="mb-3 input-group">
-                    <span
-                        className="input-group-text"
-                        onClick={() => {
-                            if (
-                                document.activeElement !==
-                                searchInputRef.current
-                            ) {
-                                searchInputRef.current?.focus();
-                            }
-                        }}
-                    >
+                    <label className="input-group-text" htmlFor="race-search">
                         <SearchIcon size={18} />
-                    </span>
+                    </label>
                     <input
                         type="search"
                         className="form-control"
@@ -47,9 +35,8 @@ export const RenderSearch = () => {
                         onChange={(e) => {
                             setSearch(e.target.value);
                         }}
-                        ref={searchInputRef}
                         value={search}
-                        id="gameSearch"
+                        id="race-search"
                     />
                 </div>
             </div>
