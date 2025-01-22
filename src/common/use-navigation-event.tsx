@@ -2,7 +2,7 @@
 import { useEffect, useRef } from "react";
 
 export function useNavigationEvent(callback: MutationCallback) {
-    const observerRef = useRef<MutationObserver>();
+    const observerRef = useRef<MutationObserver>(undefined);
 
     useEffect(() => {
         const observer = new MutationObserver(callback);

@@ -1,8 +1,8 @@
 "use client";
 
-import React, { Fragment, useEffect } from "react";
+import React, { Fragment, useEffect, useActionState } from "react";
 import { Button, Col, Form, Row, Tab, Table, Tabs } from "react-bootstrap";
-import { useFormState, useFormStatus } from "react-dom";
+import { useFormStatus } from "react-dom";
 import { setStoryPreferencesAction } from "~src/actions/stories/set-story-preferences.action";
 import {
     StoryElementCategory,
@@ -24,7 +24,7 @@ export const SetStoryPreferences = ({
     user: User;
     storyOptions: StoryOption[];
 }) => {
-    const [state, formAction] = useFormState(setStoryPreferencesAction, {
+    const [state, formAction] = useActionState(setStoryPreferencesAction, {
         message: "",
         type: "",
     });

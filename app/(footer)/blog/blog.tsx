@@ -184,9 +184,10 @@ export const getBlogs = (): BlogInterface[] => {
                         Now that the tool is pretty much stable (almost no
                         uploads have failed for a couple of weeks now, most bugs
                         are gone), I can start working on the{" "}
-                        <a href="/roadmap">Toadmap</a> (Roadmap, but funny. Get
-                        it? Please laugh) I put together again. Here&apos;s what
-                        I&apos;m looking forward to building next:
+                        <Link href="/roadmap">Toadmap</Link> (Roadmap, but
+                        funny. Get it? Please laugh) I put together again.
+                        Here&apos;s what I&apos;m looking forward to building
+                        next:
                     </p>
                     <ul>
                         <li>
@@ -259,7 +260,7 @@ export const getBlogs = (): BlogInterface[] => {
                         Thanks so much to everyone who uploaded, gave feedback
                         or just checked out the tool. If you have any feedback,
                         remarks or just want to talk, please do not hesitate to{" "}
-                        <a href="/contact">contact me</a>. Let&apos;s keep
+                        <Link href="/contact">contact me</Link>. Let&apos;s keep
                         working to make this thing used by many for a long time
                         to come!
                     </p>
@@ -415,7 +416,7 @@ export const getBlogs = (): BlogInterface[] => {
                     Uploading and a The Run Live. All this is is powered by a
                     custom built LiveSplit Component. The component will track
                     your live runs and display them in real time, along with
-                    your stream, on the <a href="/live">Live Page</a>.
+                    your stream, on the <Link href="/live">Live Page</Link>.
                     Furthermore, it will upload your splits after every reset.
                     You never have to manually upload your runs again!
                 </>
@@ -429,8 +430,8 @@ export const getBlogs = (): BlogInterface[] => {
                         a <b>custom built LiveSplit Component</b>. The component
                         will track your live runs and display them in real time,
                         along with your stream, on the{" "}
-                        <a href="/live">Live Page</a>. Furthermore, it will
-                        upload your splits after every reset.{" "}
+                        <Link href="/live">Live Page</Link>. Furthermore, it
+                        will upload your splits after every reset.{" "}
                         <b>
                             You never have to manually upload your runs again!
                         </b>
@@ -438,10 +439,10 @@ export const getBlogs = (): BlogInterface[] => {
                     <h2>How does it work?</h2>
                     <p>
                         It is simple! Just follow the instructions on{" "}
-                        <a href="/livesplit">this page</a> and you are done!
-                        Forever! Never upload manually again. All your stats
-                        will be tracked forever, and you will be featured on the
-                        Live page forever!
+                        <Link href="/livesplit">this page</Link> and you are
+                        done! Forever! Never upload manually again. All your
+                        stats will be tracked forever, and you will be featured
+                        on the Live page forever!
                     </p>
                     <p>
                         In short, you install the LiveSplit Component{" "}
@@ -454,8 +455,8 @@ export const getBlogs = (): BlogInterface[] => {
                         </a>
                         . Plug the .dll file into your Components folder. Then,
                         get the upload-key from the{" "}
-                        <a href="/upload-key">upload-key page</a> and plug that
-                        into the LiveSplit Layout. Done!
+                        <Link href="/upload-key">upload-key page</Link> and plug
+                        that into the LiveSplit Layout. Done!
                     </p>
                     <h2>Features</h2>
                     <p>
@@ -469,7 +470,7 @@ export const getBlogs = (): BlogInterface[] => {
                         tracked in real-time. When you are running, your current
                         run will be displayed on your profile, your run detail
                         page, but most importantly: on the{" "}
-                        <a href="/live">Live Page!</a>
+                        <Link href="/live">Live Page!</Link>
                     </p>
                     <p>
                         The live page was inspired by{" "}
@@ -576,10 +577,10 @@ export const getBlogs = (): BlogInterface[] => {
                 <>
                     <p>
                         tl;dr:{" "}
-                        <a href="/races" className="fst-italic">
+                        <Link href="/races" className="fst-italic">
                             Race on therun.gg, in real time, with cool stats,
                             graphs. Easy, fun, and fully free.
-                        </a>
+                        </Link>
                     </p>
                     <p>
                         It has been a while since the last update, since updates
@@ -727,13 +728,16 @@ export const getBlogs = (): BlogInterface[] => {
                     <h5>With the LiveSplit Component</h5>
                     <p>
                         I recommend using the{" "}
-                        <a href="/upload-key">therun.gg LiveSplit Component</a>,
-                        which will allow the site to track you during your race.
-                        You will also appear on the Live page if you enable it!
-                        When you use the component, all of the race will be done
-                        automatically. When you finish your run your final time
-                        will be recorded automatically. If you reset, you will
-                        be abandoned from the race automatically, etc.
+                        <Link href="/upload-key">
+                            therun.gg LiveSplit Component
+                        </Link>
+                        , which will allow the site to track you during your
+                        race. You will also appear on the Live page if you
+                        enable it! When you use the component, all of the race
+                        will be done automatically. When you finish your run
+                        your final time will be recorded automatically. If you
+                        reset, you will be abandoned from the race
+                        automatically, etc.
                     </p>
                     <h5>What if something goes wrong?</h5>
                     <p>

@@ -8,10 +8,11 @@ import buildMetadata, { getUserProfilePhoto } from "~src/utils/metadata";
 export const revalidate = 60;
 
 interface PageProps {
-    params: { username: string; game: string };
+    params: Promise<{ username: string; game: string }>;
 }
 
-export default async function CustomRunPage({ params }: PageProps) {
+export default async function CustomRunPage(props: PageProps) {
+    const params = await props.params;
     const username: string = params.username as string;
     const customUrl: string = params.game as string;
 
@@ -37,9 +38,8 @@ export default async function CustomRunPage({ params }: PageProps) {
     );
 }
 
-export async function generateMetadata({
-    params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+    const params = await props.params;
     const username: string = params.username as string;
     const customUrl: string = params.game as string;
 

@@ -9,19 +9,19 @@ import buildMetadata from "~src/utils/metadata";
 export const revalidate = 0;
 
 interface PageProps {
-    params: { username: string };
+    params: Promise<{ username: string }>;
 }
 
-export default async function LiveUser({ params }: PageProps) {
+export default async function LiveUser(props: PageProps) {
+    const params = await props.params;
     const liveData: LiveRun[] = await getAllLiveRuns();
     const liveDataMap = liveRunArrayToMap(liveData);
 
     return <Live liveDataMap={liveDataMap} username={params.username} />;
 }
 
-export async function generateMetadata({
-    params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+    const params = await props.params;
     let imageUrl = undefined;
     const baseUrl = getBaseUrl();
     const username = params.username;

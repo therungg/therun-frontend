@@ -2,8 +2,8 @@ import { useEffect, RefObject } from "react";
 import styles from "./hearts.module.scss";
 
 interface UseGlowAnimationProps {
-    heartRef: RefObject<HTMLElement>;
-    containerRef: RefObject<HTMLElement>;
+    heartRef: RefObject<HTMLElement | null>;
+    containerRef: RefObject<HTMLElement | null>;
     shouldShowHearts: boolean;
 }
 

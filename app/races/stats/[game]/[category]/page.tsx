@@ -14,10 +14,11 @@ import {
 import { LeaderboardData } from "~app/races/stats/[game]/[category]/category-leaderboards";
 
 interface PageProps {
-    params: { game: string; category: string };
+    params: Promise<{ game: string; category: string }>;
 }
 
-export default async function RaceCategoryStatsPage({ params }: PageProps) {
+export default async function RaceCategoryStatsPage(props: PageProps) {
+    const params = await props.params;
     const monthString = new Date().toISOString().slice(0, 7);
 
     const promises = [
@@ -96,9 +97,8 @@ export default async function RaceCategoryStatsPage({ params }: PageProps) {
     );
 }
 
-export async function generateMetadata({
-    params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+    const params = await props.params;
     const gameName = params.game;
     const categoryName = params.category;
 

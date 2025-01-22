@@ -8,11 +8,10 @@ import buildMetadata from "~src/utils/metadata";
 
 export const revalidate = 0;
 
-export default async function ChangeAppearance({
-    searchParams = {},
-}: {
-    searchParams: { [_: string]: string };
+export default async function ChangeAppearance(props: {
+    searchParams: Promise<{ [_: string]: string }>;
 }) {
+    const searchParams = await props.searchParams;
     const session = await getSession();
     const userPatreonData = await getUserPatreonData(searchParams);
     const baseUrl = getBaseUrl();

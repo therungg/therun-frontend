@@ -9,11 +9,13 @@ import { safeDecodeURI } from "~src/utils/uri";
 export const revalidate = 60;
 
 interface PageProps {
-    params: { username: string; game: string; run: string };
-    searchParams: { [_: string]: string };
+    params: Promise<{ username: string; game: string; run: string }>;
+    searchParams: Promise<{ [_: string]: string }>;
 }
 
-export default async function RunPage({ params, searchParams }: PageProps) {
+export default async function RunPage(props: PageProps) {
+    const searchParams = await props.searchParams;
+    const params = await props.params;
     if (!params || !params.username || !params.game || !params.run)
         throw new Error("Params not found");
 
@@ -42,9 +44,8 @@ export default async function RunPage({ params, searchParams }: PageProps) {
     );
 }
 
-export async function generateMetadata({
-    params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+    const params = await props.params;
     const username = params.username;
 
     if (!username) return buildMetadata();
