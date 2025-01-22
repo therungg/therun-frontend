@@ -189,9 +189,9 @@ const User = ({
                                 <div className="mb-3">
                                     <h2>
                                         Currently Live!&nbsp;
-                                        <a href="/live">
+                                        <Link href="/live">
                                             <LiveIcon />
-                                        </a>
+                                        </Link>
                                     </h2>
 
                                     <div>

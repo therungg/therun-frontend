@@ -1,6 +1,7 @@
 "use client";
 
 import { TwitchLoginButton } from "~src/components/twitch/TwitchLoginButton";
+import Link from "next/link";
 
 export default function HowItWorksPanels({
     session,
@@ -33,9 +34,9 @@ export default function HowItWorksPanels({
                 {!session.username ? (
                     <p>Please login first!</p>
                 ) : (
-                    <a href="/upload">
+                    <Link href="/upload">
                         <button>Upload now!</button>
-                    </a>
+                    </Link>
                 )}
             </li>
             <li>

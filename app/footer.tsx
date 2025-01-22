@@ -1,6 +1,7 @@
 import React from "react";
 import { Col, Row } from "react-bootstrap";
 import { PatreonBar } from "./patreon/patreon-bar.component";
+import Link from "next/link";
 
 export const Footer: React.FunctionComponent = () => {
     return (
@@ -10,55 +11,55 @@ export const Footer: React.FunctionComponent = () => {
                 <Row sm={2} md={4} className="pb-3 text-center row-cols-1">
                     <Col className="mt-3">
                         <h3>General</h3>
-                        <a href="/about">About</a> <br />
-                        <a href="/roadmap">Roadmap</a> <br />
-                        <a href="/faq">FAQ</a> <br />
-                        <a href="/live">Live</a> <br />
-                        <a href="/blog">Blog</a> <br />
+                        <Link href="/about">About</Link> <br />
+                        <Link href="/roadmap">Roadmap</Link> <br />
+                        <Link href="/faq">FAQ</Link> <br />
+                        <Link href="/live">Live</Link> <br />
+                        <Link href="/blog">Blog</Link> <br />
                     </Col>
                     <Col className="mt-3">
                         <h3>Media</h3>
-                        <a href="/media">Media kit</a> <br />
+                        <Link href="/media">Media kit</Link> <br />
                     </Col>
                     <Col className="mt-3">
                         <h3>Privacy and Terms</h3>
-                        <a href="/terms">Terms and conditions</a> <br />
-                        <a href="/privacy-policy">Privacy Policy</a>
+                        <Link href="/terms">Terms and conditions</Link> <br />
+                        <Link href="/privacy-policy">Privacy Policy</Link>
                     </Col>
                     <Col className="mt-3">
                         <h3>Contact</h3>
-                        <a href="/contact">Contact form</a> <br />
-                        <a
+                        <Link href="/contact">Contact form</Link> <br />
+                        <Link
                             rel="noreferrer"
                             target="_blank"
                             href={process.env.NEXT_PUBLIC_DISCORD_URL}
                         >
                             Discord
-                        </a>
+                        </Link>
                         <br />
-                        <a
+                        <Link
                             rel="noreferrer"
                             target="_blank"
                             href={process.env.NEXT_PUBLIC_TWITTER_URL}
                         >
                             Twitter
-                        </a>{" "}
+                        </Link>{" "}
                         <br />
-                        <a
+                        <Link
                             rel="noreferrer"
                             target="_blank"
                             href={process.env.NEXT_PUBLIC_BLUESKY_URL}
                         >
                             Bluesky
-                        </a>{" "}
+                        </Link>{" "}
                         <br />
-                        <a
+                        <Link
                             rel="noreferrer"
                             target="_blank"
                             href={`mailto:${process.env.NEXT_PUBLIC_CONTACT_EMAIL}`}
                         >
                             {process.env.NEXT_PUBLIC_CONTACT_EMAIL}
-                        </a>
+                        </Link>
                     </Col>
                 </Row>
             </div>
