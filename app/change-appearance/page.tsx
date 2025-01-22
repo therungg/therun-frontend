@@ -14,7 +14,7 @@ export default async function ChangeAppearance(props: {
     const searchParams = await props.searchParams;
     const session = await getSession();
     const userPatreonData = await getUserPatreonData(searchParams);
-    const baseUrl = getBaseUrl();
+    const baseUrl = await getBaseUrl();
 
     return (
         <div>

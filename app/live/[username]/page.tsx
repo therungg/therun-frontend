@@ -23,7 +23,7 @@ export default async function LiveUser(props: PageProps) {
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
     const params = await props.params;
     let imageUrl = undefined;
-    const baseUrl = getBaseUrl();
+    const baseUrl = await getBaseUrl();
     const username = params.username;
 
     if (!username) return buildMetadata();

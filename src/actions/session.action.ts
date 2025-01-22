@@ -12,7 +12,7 @@ import { SessionError } from "~src/common/session.error";
 import { DEFAULT_SESSION } from "~src/common/constants";
 
 export const createSession = async (code: string) => {
-    const baseUrl = getBaseUrl();
+    const baseUrl = await getBaseUrl();
     let sessionId = (await cookies()).get("session_id")?.value ?? undefined;
     if (sessionId === "undefined") sessionId = undefined;
 

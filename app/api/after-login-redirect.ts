@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 const MAX_AGE = 30 * 60 * 60 * 24;
 
 export async function afterLoginRedirect(request: NextRequest, postfix = "") {
-    const baseUrl = `${getBaseUrl()}/${postfix}`;
+    const baseUrl = `${await getBaseUrl()}/${postfix}`;
 
     const code = request.nextUrl.searchParams.get("code");
     if (code) {

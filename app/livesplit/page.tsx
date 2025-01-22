@@ -2,12 +2,13 @@ import { getSession } from "~src/actions/session.action";
 import { CopyUploadKey } from "./copy-upload-key.component";
 import { getBaseUrl } from "~src/actions/base-url.action";
 import buildMetadata from "~src/utils/metadata";
+import Link from "next/link";
 
 export const revalidate = 0;
 
 export default async function Livesplit() {
     const session = await getSession();
-    const baseUrl = getBaseUrl();
+    const baseUrl = await getBaseUrl();
     const data = await fetch(
         `${baseUrl}/api/users/${session.id}-${session.username}/upload-key`,
     );
@@ -39,8 +40,8 @@ export default async function Livesplit() {
                     automatically updated after every run.
                 </p>
                 <p className="mb-4">
-                    Check out the <a href="/live">Live page</a> to see runs in
-                    progress!
+                    Check out the <Link href="/live">Live page</Link> to see
+                    runs in progress!
                 </p>
                 <p>
                     Treat this key like a password. Anyone who has this key can
@@ -67,9 +68,9 @@ export default async function Livesplit() {
                 <p className="mb-4">
                     Now, you will never have to upload your runs again! In
                     addition, your live runs will show up in real time on your
-                    profile, and on the dedicated <a href="/live">Live page</a>!
-                    It also allows you to join Tournaments, or to participate in
-                    Races!
+                    profile, and on the dedicated{" "}
+                    <Link href="/live">Live page</Link>! It also allows you to
+                    join Tournaments, or to participate in Races!
                 </p>
 
                 <p>
