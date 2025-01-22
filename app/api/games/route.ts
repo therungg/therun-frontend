@@ -2,7 +2,7 @@ import { getGamesPagesFromSearchParams } from "~src/components/game/get-tabulate
 import { apiResponse } from "~app/api/response";
 
 // Long cache because this endpoint is very expensive and doesnt get updated often anyway.
-export const revalidate = 60 * 60 * 6;
+export const revalidate = 21600;
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);

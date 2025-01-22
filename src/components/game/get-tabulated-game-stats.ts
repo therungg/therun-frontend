@@ -4,7 +4,7 @@ import { getApiKey } from "~src/actions/api-key.action";
 const fetchData = async (url: string) => {
     const res = await fetch(url, {
         headers: {
-            "x-api-key": getApiKey(),
+            "x-api-key": await getApiKey(),
         },
     });
 

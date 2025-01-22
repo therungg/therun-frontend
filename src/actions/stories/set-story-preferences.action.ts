@@ -64,7 +64,7 @@ export async function setStoryPreferencesAction(
     }
 
     const session = await getSession();
-    const apiKey = getApiKey();
+    const apiKey = await getApiKey();
 
     if (!session.id) return;
 
