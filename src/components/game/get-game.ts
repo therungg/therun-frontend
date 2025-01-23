@@ -1,7 +1,10 @@
 import { safeEncodeURI } from "~src/utils/uri";
 
-const fetchData = async (url: string) => {
-    const res = await fetch(url, { cache: "no-cache" });
+const fetchData = async (url: string, cacheRevalidateSeconds = 0) => {
+    const res = await fetch(url, {
+        cache: cacheRevalidateSeconds === 0 ? "no-cache" : "force-cache",
+        next: { revalidate: cacheRevalidateSeconds },
+    });
     const json = await res.json();
 
     return json.result;
@@ -35,6 +38,7 @@ export const getGameGlobal = async (game: string) => {
 
     const globalGameData = await fetchData(
         `${process.env.NEXT_PUBLIC_DATA_URL}/games/global/${game}`,
+        60 * 60,
     );
 
     if (!globalGameData && game.includes(" ")) {
