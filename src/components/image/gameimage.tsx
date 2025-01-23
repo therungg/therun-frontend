@@ -72,6 +72,7 @@ export const GameImage = (props: GameImageProps) => {
     if (!src || src === "noimage")
         return (
             <Image
+                unoptimized
                 width={width}
                 height={height}
                 loading="lazy"
@@ -86,6 +87,7 @@ export const GameImage = (props: GameImageProps) => {
 
     return (
         <Image
+            unoptimized
             className={className}
             src={`https://images.igdb.com/igdb/image/upload/t_${qualityMap[quality]}${file}`}
             alt={alt}

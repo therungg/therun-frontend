@@ -83,6 +83,7 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                 <Container>
                     <Navbar.Brand href="/" className="d-flex">
                         <Image
+                            unoptimized
                             alt="TheRun"
                             src={`/logo_${
                                 dark ? "dark" : "light"

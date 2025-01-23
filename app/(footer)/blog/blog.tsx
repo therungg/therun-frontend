@@ -334,6 +334,7 @@ export const getBlogs = (): BlogInterface[] => {
                                 rel="noreferrer"
                             >
                                 <Image
+                                    unoptimized
                                     src="/media/speedruns.png"
                                     alt="component"
                                     style={{

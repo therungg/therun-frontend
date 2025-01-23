@@ -31,6 +31,7 @@ export const AllGamesImage: React.FunctionComponent<AllGamesImageProps> = ({
                 {(!game.image || game.image == "noimage") && (
                     <div className="d-flex align-items-center">
                         <Image
+                            unoptimized
                             alt="Game Image"
                             src={`/logo_${theme}_theme_no_text_transparent.png`}
                             width={106}
