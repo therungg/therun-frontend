@@ -1,7 +1,7 @@
 import {
+    memo,
     ReactElement,
     RefObject,
-    memo,
     useCallback,
     useEffect,
     useMemo,
@@ -32,7 +32,7 @@ const bangers = Bangers({
 interface HiddenDataSummaryProps {
     gameImageUrl: string | undefined;
     wrapped: WrappedWithData;
-    cardRef: RefObject<HTMLDivElement>;
+    cardRef: RefObject<HTMLDivElement | null>;
     profilePhoto: string | undefined;
     isPatron: boolean;
     top3Games: {
@@ -41,6 +41,7 @@ interface HiddenDataSummaryProps {
         display?: string | undefined;
     }[];
 }
+
 const HiddenDataSummary = memo<HiddenDataSummaryProps>(
     ({ gameImageUrl, wrapped, cardRef, isPatron, profilePhoto, top3Games }) => {
         return (

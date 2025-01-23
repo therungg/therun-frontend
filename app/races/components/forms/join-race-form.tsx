@@ -3,14 +3,13 @@
 import { Form } from "react-bootstrap";
 import { SubmitButton } from "~src/actions/components/submit-button";
 import { joinRace } from "~src/actions/races/join-race.action";
-import { useState } from "react";
+import { useState, useActionState } from "react";
 import { Race } from "~app/races/races.types";
 
-import { useFormState } from "react-dom";
 import { useSearchParams } from "next/navigation";
 
 export const JoinRaceForm = ({ race }: { race: Race }) => {
-    const [state, formAction] = useFormState(joinRace, { message: "" });
+    const [state, formAction] = useActionState(joinRace, { message: "" });
     const [passwordInput, setPasswordInput] = useState("");
 
     const searchParams = useSearchParams();

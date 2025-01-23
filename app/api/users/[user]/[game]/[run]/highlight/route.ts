@@ -4,12 +4,11 @@ import { apiResponse } from "~app/api/response";
 
 export async function PUT(
     _request: NextRequest,
-    {
-        params,
-    }: {
-        params: { user: string; game: string; run: string };
+    props: {
+        params: Promise<{ user: string; game: string; run: string }>;
     },
 ) {
+    const params = await props.params;
     const { user } = params;
     const game = safeDecodeURI(params.game);
     const category = safeDecodeURI(params.run);

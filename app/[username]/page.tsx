@@ -4,7 +4,7 @@ import { getGameGlobal } from "~src/components/game/get-game";
 import getGlobalUser from "~src/lib/get-global-user";
 import { GlobalGameData } from "~app/[username]/[game]/[run]/run";
 import { getLiveRunForUser } from "~src/lib/live-runs";
-import UserProfile from "~app/[username]/user-profile";
+import { UserProfile } from "~app/[username]/user-profile";
 import { getSession } from "~src/actions/session.action";
 import {
     getAllTournamentSlugs,
@@ -21,11 +21,13 @@ import RaceDetailPage from "~app/races/[race]/page";
 export const revalidate = 0;
 
 interface PageProps {
-    params: { username: string };
-    searchParams: { [_: string]: string };
+    params: Promise<{ username: string }>;
+    searchParams: Promise<{ [_: string]: string }>;
 }
 
-export default async function Page({ params, searchParams }: PageProps) {
+export default async function Page(props: PageProps) {
+    const searchParams = await props.searchParams;
+    const params = await props.params;
     if (!params || !params.username) throw new Error("Username not found");
 
     const username: string = params.username as string;
@@ -49,7 +51,11 @@ export default async function Page({ params, searchParams }: PageProps) {
     const race = getImportantRace(username);
 
     if (race) {
-        return RaceDetailPage({ params: { race } });
+        return RaceDetailPage({
+            params: new Promise(() => {
+                return { race };
+            }),
+        });
     }
 
     const runs = await getUserRuns(username);
@@ -111,9 +117,8 @@ export async function generateStaticParams() {
     });
 }
 
-export async function generateMetadata({
-    params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+    const params = await props.params;
     const username = params.username;
 
     if (!username) return buildMetadata();

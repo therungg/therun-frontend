@@ -17,6 +17,7 @@ export const TwitchUser: React.FunctionComponent<TwitchUserProps> = ({
             <Nav.Item className="d-flex align-items-center">
                 <div className="cursor-pointer">
                     <Image
+                        unoptimized
                         className="rounded-circle"
                         src={picture as string}
                         alt={username}

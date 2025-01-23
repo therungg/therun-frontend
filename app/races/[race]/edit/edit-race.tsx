@@ -5,17 +5,17 @@ import { Race } from "~app/races/races.types";
 import { isRaceModerator } from "~src/rbac/confirm-permission";
 import { User } from "../../../../types/session.types";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useFormStatus } from "react-dom";
 import { editRace } from "~src/actions/races/edit-race.action";
 import {
     Breadcrumb,
     BreadcrumbItem,
 } from "~src/components/breadcrumbs/breadcrumb";
 import { UnderlineTooltip } from "~src/components/tooltip";
-import React from "react";
+import React, { useActionState } from "react";
 
 export const EditRace = ({ race, user }: { race: Race; user: User }) => {
-    const [state, formAction] = useFormState(editRace, { message: "" });
+    const [state, formAction] = useActionState(editRace, { message: "" });
 
     if (!isRaceModerator(race, user)) {
         throw Error("You are not a moderator of this race");
@@ -72,9 +72,7 @@ export const EditRace = ({ race, user }: { race: Race; user: User }) => {
                             <Form.Label>
                                 <UnderlineTooltip
                                     title="Twitch Stream"
-                                    content={
-                                        "Force a specific stream instead of the participant's streams on the race page. Only input the name of the stream, no need to input https://twitch.tv/siglemic, just input siglemic"
-                                    }
+                                    content="Force a specific stream instead of the participant's streams on the race page. Only input the name of the stream, no need to input https://twitch.tv/siglemic, just input siglemic"
                                     element="Twitch Stream"
                                 />
                             </Form.Label>

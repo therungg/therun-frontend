@@ -3,16 +3,18 @@ import { safeDecodeURI } from "~src/utils/uri";
 import { Game } from "./game";
 import buildMetadata, { getGameImage } from "~src/utils/metadata";
 import { getGame } from "~src/components/game/get-game";
+import Link from "next/link";
 
 export const revalidate = 60;
 // Increase Games Page timeout to 60 seconds since the payloads are gigantic for some games like SM64
 export const maxDuration = 60;
 
 interface PageProps {
-    params: { game: string };
+    params: Promise<{ game: string }>;
 }
 
-export default async function GamePage({ params }: PageProps) {
+export default async function GamePage(props: PageProps) {
+    const params = await props.params;
     const { game: gameName } = params;
 
     if (!gameName) {
@@ -27,7 +29,7 @@ export default async function GamePage({ params }: PageProps) {
                 Unfortunately, Nobody has uploaded runs for this game yet, or
                 the upload is not processed yet. If you have uploaded runs for
                 the game, but this page still shows, please{" "}
-                <a href="/contact">contact me!</a>
+                <Link href="/contact">contact me!</Link>
                 {JSON.stringify(data)}
             </>
         );
@@ -46,9 +48,8 @@ export default async function GamePage({ params }: PageProps) {
     return <Game data={data} />;
 }
 
-export async function generateMetadata({
-    params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+    const params = await props.params;
     if (!params.game) return buildMetadata();
 
     const game = safeDecodeURI(params.game);

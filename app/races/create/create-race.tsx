@@ -1,10 +1,10 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useFormStatus } from "react-dom";
 
 import { Accordion, Button, Col, Form, Row } from "react-bootstrap";
 import { createRace } from "~src/actions/races/create-race.action";
-import React, { useState } from "react";
+import React, { useState, useActionState } from "react";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -32,7 +32,7 @@ export default function CreateRace() {
         return `${year}-${month}-${day}T${hours}:${minutes}`;
     }
 
-    const [state, formAction] = useFormState(createRace, { message: "" });
+    const [state, formAction] = useActionState(createRace, { message: "" });
     const [showStartDate, setShowStartDate] = useState(false);
     const [startDateInput, setStartDateInput] = useState(
         getInitialStartDateInput(),
@@ -101,9 +101,7 @@ export default function CreateRace() {
                                         <Form.Label>
                                             <UnderlineTooltip
                                                 title="Twitch Stream"
-                                                content={
-                                                    "Force a specific stream instead of the participant's streams on the race page. Only input the name of the stream, no need to input https://twitch.tv/siglemic, just input siglemic"
-                                                }
+                                                content="Force a specific stream instead of the participant's streams on the race page. Only input the name of the stream, no need to input https://twitch.tv/siglemic, just input siglemic"
                                                 element="Twitch Stream"
                                             />
                                         </Form.Label>

@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { apiResponse } from "~app/api/response";
 
 export async function POST() {
-    const baseUrl = getBaseUrl();
+    const baseUrl = await getBaseUrl();
 
     const response = apiResponse({
         body: null,

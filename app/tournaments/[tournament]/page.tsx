@@ -15,11 +15,13 @@ export const revalidate = 30;
 export const maxDuration = 60;
 
 interface PageProps {
-    params: { tournament: string };
-    searchParams: { [_: string]: string };
+    params: Promise<{ tournament: string }>;
+    searchParams: Promise<{ [_: string]: string }>;
 }
 
-export default async function Page({ params, searchParams }: PageProps) {
+export default async function Page(props: PageProps) {
+    const searchParams = await props.searchParams;
+    const params = await props.params;
     return TournamentPage({ params, searchParams });
 }
 
@@ -79,7 +81,8 @@ export const TournamentPage = async ({
     );
 };
 
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata(props: PageProps) {
+    const params = await props.params;
     const name = safeDecodeURI(params.tournament);
     const endString = name.toLowerCase().includes("tournament")
         ? `the ${name}`

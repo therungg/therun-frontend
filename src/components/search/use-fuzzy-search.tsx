@@ -12,27 +12,25 @@ export interface SearchItem {
 
 // TODO: Add categories and other types in the future
 export const useFuseSearch = (aggregatedResults: AggregatedResults) => {
-    return React.useMemo(() => {
-        const combinedResults = [
-            ...Object.entries(aggregatedResults.users).map(([key, data]) => ({
-                type: "user" as const,
-                key,
-                data,
-            })),
-            ...Object.entries(aggregatedResults.games).map(([key, data]) => ({
-                type: "game" as const,
-                key,
-                data,
-            })),
-        ];
+    const combinedResults = [
+        ...Object.entries(aggregatedResults.users).map(([key, data]) => ({
+            type: "user" as const,
+            key,
+            data,
+        })),
+        ...Object.entries(aggregatedResults.games).map(([key, data]) => ({
+            type: "game" as const,
+            key,
+            data,
+        })),
+    ];
 
-        return new Fuse(combinedResults, {
-            keys: ["key", "game", "user"],
-            includeScore: true,
-            includeMatches: true,
-            threshold: 0.45,
-        });
-    }, [aggregatedResults]);
+    return new Fuse(combinedResults, {
+        keys: ["key", "game", "user"],
+        includeScore: true,
+        includeMatches: true,
+        threshold: 0.45,
+    });
 };
 
 export const useFilteredFuzzySearch = (

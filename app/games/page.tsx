@@ -3,7 +3,7 @@ import { AllGames } from "./all-games";
 import { getGamesPage } from "~src/components/game/get-tabulated-game-stats";
 import buildMetadata from "~src/utils/metadata";
 
-export const revalidate = 60 * 60 * 6;
+export const revalidate = 21600;
 
 export const metadata: Metadata = buildMetadata({
     title: "Game overview",

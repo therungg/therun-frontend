@@ -9,7 +9,7 @@ const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
 
 export async function createFictionalTestRace() {
     const session = await getSession();
-    const apiKey = getApiKey();
+    const apiKey = await getApiKey();
 
     if (!session.id) return;
 

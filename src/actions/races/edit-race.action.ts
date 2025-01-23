@@ -18,7 +18,7 @@ export async function editRace(_prevState: unknown, raceInput: FormData) {
 
     const raceId = raceInput.get("raceId") as string;
 
-    const { error } = validateInput(input);
+    const { error } = await validateInput(input);
 
     if (error) {
         return {
@@ -27,7 +27,7 @@ export async function editRace(_prevState: unknown, raceInput: FormData) {
     }
 
     const session = await getSession();
-    const apiKey = getApiKey();
+    const apiKey = await getApiKey();
 
     if (!session.id) return;
 
@@ -48,9 +48,9 @@ export async function editRace(_prevState: unknown, raceInput: FormData) {
     redirect(`/races/${raceId}`);
 }
 
-export const validateInput = (
+export const validateInput = async (
     input: EditRaceInput,
-): Joi.ValidationResult<EditRaceInput> => {
+): Promise<Joi.ValidationResult<EditRaceInput>> => {
     const raceSchema: Joi.ObjectSchema<EditRaceInput> = Joi.object({
         customName: Joi.string().min(0).max(40).optional(),
         description: Joi.string().min(0).max(1000).optional(),

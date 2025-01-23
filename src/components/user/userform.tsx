@@ -380,6 +380,7 @@ const Edit = ({ username, form, setForm }) => {
 export const CountryIcon = ({ countryCode }) => {
     return (
         <Image
+            unoptimized
             className="img-fluid"
             width={24}
             height={16}

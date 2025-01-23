@@ -12,8 +12,8 @@ import { SessionError } from "~src/common/session.error";
 import { DEFAULT_SESSION } from "~src/common/constants";
 
 export const createSession = async (code: string) => {
-    const baseUrl = getBaseUrl();
-    let sessionId = cookies().get("session_id")?.value ?? undefined;
+    const baseUrl = await getBaseUrl();
+    let sessionId = (await cookies()).get("session_id")?.value ?? undefined;
     if (sessionId === "undefined") sessionId = undefined;
 
     if (!code || sessionId) return;
@@ -43,7 +43,7 @@ export const createSession = async (code: string) => {
 };
 
 export const getSession = async (): Promise<User> => {
-    const sessionId = cookies().get("session_id")?.value;
+    const sessionId = (await cookies()).get("session_id")?.value;
     if (!sessionId || sessionId === "undefined") {
         return DEFAULT_SESSION;
     }

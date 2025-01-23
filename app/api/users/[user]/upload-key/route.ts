@@ -6,12 +6,11 @@ export const revalidate = 0;
 
 export async function GET(
     _request: NextRequest,
-    {
-        params,
-    }: {
-        params: { user: string };
+    props: {
+        params: Promise<{ user: string }>;
     },
 ) {
+    const params = await props.params;
     const { user } = params;
     const userData = await getUploadKey(user);
 

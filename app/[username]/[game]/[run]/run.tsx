@@ -23,6 +23,7 @@ import { CompareSplits } from "~src/components/run/compare/compare-splits";
 import { Vod } from "~src/components/run/dashboard/vod";
 import Golds from "~src/components/run/dashboard/golds";
 import { safeEncodeURI } from "~src/utils/uri";
+import Link from "next/link";
 
 interface RunPageProps {
     run: Run;
@@ -226,9 +227,9 @@ export default function RunDetail({
                 <div className="mb-3 mw-550p">
                     <h2>
                         Currently Live!&nbsp;
-                        <a href="/live">
+                        <Link href="/live">
                             <LiveIcon />
-                        </a>
+                        </Link>
                     </h2>
 
                     <div>

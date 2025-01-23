@@ -83,6 +83,7 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                 <Container>
                     <Navbar.Brand href="/" className="d-flex">
                         <Image
+                            unoptimized
                             alt="TheRun"
                             src={`/logo_${
                                 dark ? "dark" : "light"
@@ -166,7 +167,12 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                                     <NavDropdown.Item href="/stories/manage">
                                         Story Preferences
                                     </NavDropdown.Item>
-                                    <NavDropdown.Item onClick={() => logout()}>
+                                    <NavDropdown.Item
+                                        onClick={async () => {
+                                            console.log("click");
+                                            await logout();
+                                        }}
+                                    >
                                         Logout
                                     </NavDropdown.Item>
                                 </NavDropdown>

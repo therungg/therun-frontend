@@ -6,8 +6,9 @@ export const revalidate = 30;
 
 export async function GET(
     _: NextRequest,
-    { params }: { params: { tournament: string } },
+    props: { params: Promise<{ tournament: string }> },
 ) {
+    const params = await props.params;
     const result = await getTournamentStatsByName(params.tournament);
 
     return apiResponse({

@@ -29,7 +29,7 @@ export const RecommendedStream = ({
     const pixelsForSplit = 27.9;
 
     const usePrevious = <T,>(value: T): T | undefined => {
-        const ref = useRef<T>();
+        const ref = useRef<T>(undefined);
         useEffect(() => {
             ref.current = value;
         });

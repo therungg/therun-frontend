@@ -6,12 +6,11 @@ export const revalidate = 240;
 
 export async function GET(
     _request: NextRequest,
-    {
-        params,
-    }: {
-        params: { game: string };
+    props: {
+        params: Promise<{ game: string }>;
     },
 ) {
+    const params = await props.params;
     const { game } = params;
     const gameData = await getGameGlobal(game);
 

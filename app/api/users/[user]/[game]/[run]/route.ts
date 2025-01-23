@@ -7,12 +7,11 @@ export const revalidate = 60;
 
 export async function PUT(
     request: NextRequest,
-    {
-        params,
-    }: {
-        params: { user: string; game: string; run: string };
+    props: {
+        params: Promise<{ user: string; game: string; run: string }>;
     },
 ) {
+    const params = await props.params;
     const { user } = params;
     const game = safeDecodeURI(params.game);
     const category = safeDecodeURI(params.run);
@@ -55,12 +54,11 @@ export async function PUT(
 
 export async function GET(
     _request: NextRequest,
-    {
-        params,
-    }: {
-        params: { user: string; game: string; run: string };
+    props: {
+        params: Promise<{ user: string; game: string; run: string }>;
     },
 ) {
+    const params = await props.params;
     const { user } = params;
     const game = safeDecodeURI(params.game);
     const category = safeDecodeURI(params.run);
@@ -75,12 +73,11 @@ export async function GET(
 
 export async function DELETE(
     _request: NextRequest,
-    {
-        params,
-    }: {
-        params: { user: string; game: string; run: string };
+    props: {
+        params: Promise<{ user: string; game: string; run: string }>;
     },
 ) {
+    const params = await props.params;
     const { user } = params;
     const game = safeDecodeURI(params.game);
     const category = safeDecodeURI(params.run);

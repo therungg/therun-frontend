@@ -15,10 +15,11 @@ import {
 import { safeEncodeURI } from "~src/utils/uri";
 
 interface PageProps {
-    params: { game: string };
+    params: Promise<{ game: string }>;
 }
 
-export default async function RaceGameStatsPage({ params }: PageProps) {
+export default async function RaceGameStatsPage(props: PageProps) {
+    const params = await props.params;
     const promises = [
         getRaceGameStatsByGame(params.game),
         getPaginatedFinishedRacesByGame(1, 5, "", [], {
@@ -80,9 +81,8 @@ export default async function RaceGameStatsPage({ params }: PageProps) {
     );
 }
 
-export async function generateMetadata({
-    params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+    const params = await props.params;
     const game = params.game;
 
     if (!game) return buildMetadata();

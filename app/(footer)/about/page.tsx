@@ -1,5 +1,6 @@
 import { Title } from "~src/components/title";
 import buildMetadata from "~src/utils/metadata";
+import Link from "next/link";
 
 export const metadata = buildMetadata({
     title: "About",
@@ -83,11 +84,11 @@ export default function About() {
                 </li>
                 <li>
                     Automatic uploads through a{" "}
-                    <a href="/livesplit">LiveSplit Component </a>
+                    <Link href="/livesplit">LiveSplit Component </Link>
                 </li>
                 <li>
                     Live Run tracking from the Component on the{" "}
-                    <a href="/live">Runs page</a>
+                    <Link href="/live">Runs page</Link>
                 </li>
                 <li>
                     A{" "}
@@ -122,7 +123,7 @@ export default function About() {
                     </li>
                     <li>
                         Upload your .lss file by going to the{" "}
-                        <a href="/upload">Upload</a> page.
+                        <Link href="/upload">Upload</Link> page.
                     </li>
                     <li>
                         Wait for 10 to 30 seconds for your splits to be

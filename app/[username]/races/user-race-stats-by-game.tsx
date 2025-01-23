@@ -47,6 +47,7 @@ export const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
                 <div className="d-flex">
                     {useStat.image && useStat.image !== "noimage" && (
                         <Image
+                            unoptimized
                             alt={`Image for ${useStat.displayValue}`}
                             src={useStat.image}
                             height={64 * 2.3}
@@ -138,6 +139,7 @@ const UserRaceStatsForGameWithoutUrls = ({ stats }: { stats: UserStats[] }) => {
                 <div className="d-flex">
                     {useStat.image && useStat.image !== "noimage" && (
                         <Image
+                            unoptimized
                             alt={`Image for ${useStat.displayValue}`}
                             src={useStat.image}
                             height={64 * 2.3}

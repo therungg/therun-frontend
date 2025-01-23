@@ -27,7 +27,7 @@ export async function createRace(_prevState: unknown, raceInput: FormData) {
         startTime: raceInput.get("startTime") as string | undefined,
     };
 
-    const { error } = validateInput(input);
+    const { error } = await validateInput(input);
 
     if (error) {
         return {
@@ -36,7 +36,7 @@ export async function createRace(_prevState: unknown, raceInput: FormData) {
     }
 
     const session = await getSession();
-    const apiKey = getApiKey();
+    const apiKey = await getApiKey();
 
     if (!session.id) return;
 
@@ -64,9 +64,9 @@ export async function createRace(_prevState: unknown, raceInput: FormData) {
     redirect(`/races/${raceId}`);
 }
 
-export const validateInput = (
+export const validateInput = async (
     input: CreateRaceInput,
-): Joi.ValidationResult<CreateRaceInput> => {
+): Promise<Joi.ValidationResult<CreateRaceInput>> => {
     const raceSchema: Joi.ObjectSchema<CreateRaceInput> = Joi.object({
         game: Joi.string().required().min(1).max(200),
         category: Joi.string().required().min(1).max(200),

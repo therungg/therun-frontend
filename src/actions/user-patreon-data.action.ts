@@ -10,7 +10,7 @@ export const getUserPatreonData = async (query: {
     code?: string;
     scope?: string;
 }): Promise<UserPatreonData | null> => {
-    const baseUrl = getBaseUrl();
+    const baseUrl = await getBaseUrl();
 
     if (!baseUrl) {
         return null;

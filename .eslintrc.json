@@ -49,6 +49,7 @@
     "eslint-comments/disable-enable-pair": "off",
     "eslint-comments/no-unlimited-disable": "off",
     "@next/next/no-page-custom-font": "off",
+    "@next/next/no-html-link-for-pages": "off",
     "react-hooks/exhaustive-deps": "warn",
     "@next/next/google-font-display": "off",
     "filenames/match-regex": "off",
