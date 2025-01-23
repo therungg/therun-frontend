@@ -1,9 +1,8 @@
-import React, { memo, useRef } from "react";
+import React, { memo } from "react";
 import { WrappedWithData } from "../wrapped-types";
 import { SectionBody } from "./section-body";
 import { SectionTitle } from "./section-title";
 import { SectionWrapper } from "./section-wrapper";
-// import { useHeartsAnimation } from "../use-hearts-animation.hook";
 import styles from "../hearts.module.scss";
 import {
     PatreonBunnySvg,
@@ -18,19 +17,11 @@ interface WrappedOutroThanksProps {
 
 export const WrappedOutroThanks = memo<WrappedOutroThanksProps>(
     ({ wrapped }) => {
-        const containerRef = useRef<HTMLDivElement>(null);
-        const heartRef = useRef<HTMLDivElement>(null);
-        // useHeartsAnimation({
-        //     containerRef,
-        //     heartRef,
-        //     shouldShowHearts: true,
-        // });
         return (
             <SectionWrapper>
                 <SectionTitle title={`That's a wrap on ${wrapped.year}!`} />
-                <SectionBody ref={heartRef}>
+                <SectionBody>
                     <div
-                        ref={containerRef}
                         className={`w-75 align-items-center mb-5 p-8 rounded-lg shadow-md ${styles.heartbeatContainer}`}
                     >
                         <p className="display-2 fw-semibold">THANK YOU</p>
