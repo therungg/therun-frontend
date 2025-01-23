@@ -6,6 +6,9 @@ const nextConfig = {
     typescript: {
         ignoreBuildErrors: true,
     },
+    experimental: {
+        reactCompiler: true,
+    },
     productionBrowserSourceMaps: true,
     reactStrictMode: true,
     images: {
