@@ -107,15 +107,6 @@ export const RaceParticipantItem = ({
                     />
                 </td>
             </tr>
-            {/*{percentage > 0 && (*/}
-            {/*    <tr className={"h-50"}>*/}
-            {/*        <td colSpan={10}>*/}
-            {/*            <RaceParticipantPercentageLine*/}
-            {/*                participant={participant}*/}
-            {/*            />*/}
-            {/*        </td>*/}
-            {/*    </tr>*/}
-            {/*)}*/}
         </>
     );
 };
