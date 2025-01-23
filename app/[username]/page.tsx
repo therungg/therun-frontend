@@ -4,7 +4,7 @@ import { getGameGlobal } from "~src/components/game/get-game";
 import getGlobalUser from "~src/lib/get-global-user";
 import { GlobalGameData } from "~app/[username]/[game]/[run]/run";
 import { getLiveRunForUser } from "~src/lib/live-runs";
-import UserProfile from "~app/[username]/user-profile";
+import { UserProfile } from "~app/[username]/user-profile";
 import { getSession } from "~src/actions/session.action";
 import {
     getAllTournamentSlugs,
@@ -51,7 +51,11 @@ export default async function Page(props: PageProps) {
     const race = getImportantRace(username);
 
     if (race) {
-        return RaceDetailPage({ params: { race } });
+        return RaceDetailPage({
+            params: new Promise(() => {
+                return { race };
+            }),
+        });
     }
 
     const runs = await getUserRuns(username);

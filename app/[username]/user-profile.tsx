@@ -35,7 +35,7 @@ export interface UserPageProps {
     raceStats?: UserRaceStats;
 }
 
-const User = ({
+export const UserProfile = ({
     runs,
     username,
     userData,
@@ -300,5 +300,3 @@ const NoRuns = (username: string, session: User, userData: UserData) => {
 const filterRunsByGame = (runs: Run[], game: string): Run[] => {
     return runs.filter((run) => run.game === game);
 };
-
-export default User;
