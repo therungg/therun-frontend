@@ -18,6 +18,8 @@ import { BlueskyIcon } from "~src/icons/bluesky-icon";
 
 //TODO:: Would be better to use some form lib, not sure why i built it this way
 export const Userform = ({ username, session, userData, editInfo = false }) => {
+    "use no memo";
+
     const [editingInfo, setEditingInfo] = useState(editInfo);
 
     if (userData.socials) {
@@ -101,6 +103,8 @@ export const Userform = ({ username, session, userData, editInfo = false }) => {
 };
 
 const Display = ({ username, form, showTimezone = false }) => {
+    "use no memo";
+
     return (
         <div>
             <div className="d-flex column-gap-2 align-items-center">
@@ -167,6 +171,8 @@ const Display = ({ username, form, showTimezone = false }) => {
 };
 
 const Edit = ({ username, form, setForm }) => {
+    "use no memo";
+
     return (
         <>
             <Title>
