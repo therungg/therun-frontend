@@ -60,6 +60,7 @@
     "babel-plugin-react-compiler": "^19.0.0-beta-decd7b8-20250118",
     "bootstrap": "^5.3.3",
     "chart.js": "^4.4.1",
+    "clsx": "^2.1.1",
     "cookies-next": "^5.1.0",
     "country-flag-icons": "^1.5.9",
     "d3": "^7.8.5",
