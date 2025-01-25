@@ -15,8 +15,11 @@ export const getGame = async (game: string) => {
     game = safeEncodeURI(game);
 
     const promises = [
-        fetchData(`${process.env.NEXT_PUBLIC_DATA_URL}/games/${game}`),
-        fetchData(`${process.env.NEXT_PUBLIC_DATA_URL}/games/global/${game}`),
+        fetchData(`${process.env.NEXT_PUBLIC_DATA_URL}/games/${game}`, 60 * 60),
+        fetchData(
+            `${process.env.NEXT_PUBLIC_DATA_URL}/games/global/${game}`,
+            60 * 60 * 12,
+        ),
     ];
 
     const [gameData, globalGameData] = await Promise.all(promises);
@@ -38,7 +41,7 @@ export const getGameGlobal = async (game: string) => {
 
     const globalGameData = await fetchData(
         `${process.env.NEXT_PUBLIC_DATA_URL}/games/global/${game}`,
-        60 * 60,
+        60 * 60 * 12,
     );
 
     if (!globalGameData && game.includes(" ")) {
