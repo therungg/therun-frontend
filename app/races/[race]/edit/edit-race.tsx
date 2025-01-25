@@ -6,7 +6,7 @@ import { isRaceModerator } from "~src/rbac/confirm-permission";
 import { User } from "../../../../types/session.types";
 
 import { useFormStatus } from "react-dom";
-import { editRace } from "~src/actions/races/edit-race.action";
+import { editRace } from "~app/races/actions/edit-race.action";
 import {
     Breadcrumb,
     BreadcrumbItem,

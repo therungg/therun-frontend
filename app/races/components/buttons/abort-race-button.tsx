@@ -2,7 +2,7 @@ import {
     RaceActionButton,
     RaceActionProps,
 } from "~app/races/components/buttons/race-action-button";
-import { abortRace } from "~src/actions/races/abort-race.action";
+import { abortRace } from "~app/races/actions/abort-race.action";
 
 export const AbortRaceButton = (props: RaceActionProps) => {
     return (

@@ -1,9 +1,9 @@
 "use client";
 
-import React, { Fragment, useEffect, useActionState } from "react";
+import React, { useEffect, useActionState } from "react";
 import { Button, Col, Form, Row, Tab, Table, Tabs } from "react-bootstrap";
 import { useFormStatus } from "react-dom";
-import { setStoryPreferencesAction } from "~src/actions/stories/set-story-preferences.action";
+import { setStoryPreferencesAction } from "~app/stories/actions/set-story-preferences.action";
 import {
     StoryElementCategory,
     StoryOption,

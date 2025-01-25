@@ -1,8 +1,5 @@
 import { Form } from "react-bootstrap";
-import {
-    SubmitButton,
-    SubmitButtonProps,
-} from "~src/actions/components/submit-button";
+import { SubmitButton, SubmitButtonProps } from "~src/components/submit-button";
 
 export interface RaceActionProps
     extends Omit<SubmitButtonProps, "pendingText" | "innerText"> {
@@ -10,7 +7,7 @@ export interface RaceActionProps
 }
 
 interface RaceActionButtonProps extends SubmitButtonProps {
-    action: (raceInput: FormData) => Promise<unknown>;
+    action: (raceInput: FormData) => Promise<void>;
     raceId: string;
 }
 

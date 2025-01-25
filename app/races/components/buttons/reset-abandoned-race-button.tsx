@@ -2,7 +2,7 @@ import {
     RaceActionButton,
     RaceActionProps,
 } from "~app/races/components/buttons/race-action-button";
-import { resetAbandonedRace } from "~src/actions/races/reset-abandoned-race.action";
+import { resetAbandonedRace } from "~app/races/actions/reset-abandoned-race.action";
 
 export const ResetAbandonedRaceButton = (props: RaceActionProps) => {
     return (

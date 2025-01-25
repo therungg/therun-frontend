@@ -1,8 +1,8 @@
 "use client";
 
 import { Form } from "react-bootstrap";
-import { SubmitButton } from "~src/actions/components/submit-button";
-import { joinRace } from "~src/actions/races/join-race.action";
+import { SubmitButton } from "~src/components/submit-button";
+import { joinRace } from "~app/races/actions/join-race.action";
 import { useState, useActionState } from "react";
 import { Race } from "~app/races/races.types";
 

@@ -1,6 +1,6 @@
 import { Form } from "react-bootstrap";
-import { SubmitButton } from "~src/actions/components/submit-button";
-import { sendChatMessage } from "~src/actions/races/send-chat-messages.action";
+import { SubmitButton } from "~src/components/submit-button";
+import { sendChatMessage } from "~app/races/actions/send-chat-messages.action";
 import { useState } from "react";
 import { RaceMessage } from "~app/races/races.types";
 import { User } from "../../../../types/session.types";

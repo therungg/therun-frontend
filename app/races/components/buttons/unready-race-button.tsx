@@ -2,7 +2,7 @@ import {
     RaceActionButton,
     RaceActionProps,
 } from "~app/races/components/buttons/race-action-button";
-import { unreadyRace } from "~src/actions/races/unready-race.action";
+import { unreadyRace } from "~app/races/actions/unready-race.action";
 
 export const UnreadyRaceButton = (props: RaceActionProps) => {
     return (
