@@ -5,8 +5,8 @@ import { Col, Form, Row, Table } from "react-bootstrap";
 import styles from "../css/Game.module.scss";
 import { PatreonBunnySvg } from "~app/patron/patreon-info";
 import { User } from "../../../types/session.types";
-import { increaseEndTimeByAnHour } from "~src/actions/tournaments/increase-end-time-by-an-hour";
-import { SubmitButton } from "~src/actions/components/submit-button";
+import { increaseEndTimeByAnHour } from "~app/tournaments/actions/increase-end-time-by-an-hour";
+import { SubmitButton } from "~src/components/submit-button";
 
 export interface Tournament {
     name: string;

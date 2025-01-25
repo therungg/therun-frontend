@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { Form } from "react-bootstrap";
-import { confirmFinalTime } from "~src/actions/races/confirm-final-time.action";
+import { confirmFinalTime } from "~app/races/actions/confirm-final-time.action";
 import {
     getFormattedString,
     timeToMillis,
 } from "~src/components/util/datetime";
-import { SubmitButton } from "~src/actions/components/submit-button";
+import { SubmitButton } from "~src/components/submit-button";
 
 export const ConfirmFinalTimeForm = ({
     raceId,

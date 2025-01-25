@@ -3,7 +3,7 @@
 import { useFormStatus } from "react-dom";
 
 import { Accordion, Button, Col, Form, Row } from "react-bootstrap";
-import { createRace } from "~src/actions/races/create-race.action";
+import { createRace } from "~app/races/actions/create-race.action";
 import React, { useState, useActionState } from "react";
 import {
     Breadcrumb,

@@ -2,7 +2,7 @@ import {
     RaceActionButton,
     RaceActionProps,
 } from "~app/races/components/buttons/race-action-button";
-import { leaveRace } from "~src/actions/races/leave-race.action";
+import { leaveRace } from "~app/races/actions/leave-race.action";
 
 export const AbandonRaceButton = (props: RaceActionProps) => {
     return (
