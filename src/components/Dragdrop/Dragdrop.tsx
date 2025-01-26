@@ -1,11 +1,11 @@
 "use client";
-import Dropzone, { useDropzone } from "react-dropzone";
-import { upload } from "./fileupload/upload";
 import React, { CSSProperties, useMemo, useState } from "react";
+import Dropzone, { useDropzone } from "react-dropzone";
 import { Alert } from "react-bootstrap";
-import { UserLink } from "./links/links";
-import Link from "next/link";
 import { CheckCircle, CloudUpload } from "react-bootstrap-icons";
+import Link from "next/link";
+import { useUploadMutation } from "./upload";
+import { UserLink } from "../links/links";
 
 export const Dragdrop = ({
     sessionId,
@@ -14,6 +14,7 @@ export const Dragdrop = ({
     sessionId: string;
     username: string;
 }) => {
+    const { trigger: uploadFile } = useUploadMutation();
     const acceptFiles = async (acceptedFiles: File[]) => {
         const file = acceptedFiles[0];
         const reader = new FileReader();
@@ -21,7 +22,11 @@ export const Dragdrop = ({
         reader.onload = async () => {
             const binaryString: string = reader.result as string;
 
-            await upload(file, binaryString, sessionId);
+            await uploadFile({
+                file,
+                contents: binaryString,
+                sessionId,
+            });
         };
 
         reader.readAsText(file);
