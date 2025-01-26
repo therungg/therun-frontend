@@ -11,10 +11,8 @@ type ButtonVariant =
     | "light"
     | "dark"
     | "link";
-interface ButtonProps {
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: ButtonVariant;
-    onClick: () => void;
-    className?: string;
 }
 
 export const Button: React.FC<React.PropsWithChildren<ButtonProps>> = ({
@@ -22,10 +20,12 @@ export const Button: React.FC<React.PropsWithChildren<ButtonProps>> = ({
     variant = "primary",
     onClick,
     className,
+    type = "button",
+    ...props
 }) => {
     const classes = clsx("btn", `btn-${variant}`, className);
     return (
-        <button className={classes} onClick={onClick}>
+        <button type={type} className={classes} onClick={onClick} {...props}>
             {children}
         </button>
     );
