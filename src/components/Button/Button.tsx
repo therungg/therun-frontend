@@ -1,0 +1,32 @@
+import React from "react";
+import { clsx } from "clsx";
+
+type ButtonVariant =
+    | "primary"
+    | "secondary"
+    | "success"
+    | "danger"
+    | "warning"
+    | "info"
+    | "light"
+    | "dark"
+    | "link";
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+    variant?: ButtonVariant;
+}
+
+export const Button: React.FC<React.PropsWithChildren<ButtonProps>> = ({
+    children,
+    variant = "primary",
+    onClick,
+    className,
+    type = "button",
+    ...props
+}) => {
+    const classes = clsx("btn", `btn-${variant}`, className);
+    return (
+        <button type={type} className={classes} onClick={onClick} {...props}>
+            {children}
+        </button>
+    );
+};
