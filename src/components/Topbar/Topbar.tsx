@@ -4,15 +4,15 @@ import dynamic from "next/dynamic";
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { TwitchUser } from "./twitch/TwitchUser";
-import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
+import { TwitchUser } from "../twitch/TwitchUser";
+import { TwitchLoginButton } from "../twitch/TwitchLoginButton";
 import { Upload } from "react-bootstrap-icons";
 import { resetSession } from "~src/actions/reset-session.action";
 import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import { Button } from "~src/components/Button/Button";
 import { useTheme } from "next-themes";
 
-const DarkModeSlider = dynamic(() => import("./dark-mode-slider"), {
+const DarkModeSlider = dynamic(() => import("../dark-mode-slider"), {
     ssr: false,
 });
 
@@ -32,7 +32,11 @@ interface TopbarProps {
     sessionError: string | null;
 }
 
-const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
+export const Topbar = ({
+    username,
+    picture,
+    sessionError,
+}: Partial<TopbarProps>) => {
     const router = useRouter();
     const { theme = "dark" } = useTheme();
     const [show, setShow] = useState(false);
@@ -178,4 +182,3 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
     );
 };
 Topbar.displayName = "Topbar";
-export default Topbar;
