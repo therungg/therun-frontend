@@ -3,6 +3,7 @@ import { Accordion } from "react-bootstrap";
 import AccordionHeader from "react-bootstrap/AccordionHeader";
 import AccordionBody from "react-bootstrap/AccordionBody";
 import AccordionItem from "react-bootstrap/AccordionItem";
+import Link from "next/link";
 
 export const Faq = () => {
     return (
@@ -75,11 +76,11 @@ export const Faq = () => {
                                 This site is still in beta, so there are a lot
                                 of feature that are still missing or implemented
                                 sub-optimally. You can check out the{" "}
-                                <a href="/roadmap">Roadmap</a> to see if the
-                                feature you want is already on there. If not,
-                                don&apos;t hesitate to{" "}
-                                <a href="/contact">contact me</a> and request
-                                the feature!
+                                <Link href="/roadmap">Roadmap</Link> to see if
+                                the feature you want is already on there. If
+                                not, don&apos;t hesitate to{" "}
+                                <Link href="/contact">contact me</Link> and
+                                request the feature!
                             </p>
                         </AccordionBody>
                     </AccordionItem>
@@ -159,7 +160,7 @@ export const Faq = () => {
                     <AccordionBody>
                         The system identifies you by your Twitch name. I can
                         copy your profile, please{" "}
-                        <a href="/contact">Contact me</a>!
+                        <Link href="/contact">Contact me</Link>!
                     </AccordionBody>
                 </AccordionItem>
             </Accordion>

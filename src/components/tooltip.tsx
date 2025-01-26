@@ -1,13 +1,12 @@
 import { ReactNode, memo } from "react";
 import { OverlayTrigger, Popover, Tooltip } from "react-bootstrap";
-import { ReactElementLike } from "prop-types";
 
 export const InfoTooltip = ({
     title,
     content,
 }: {
     title: string;
-    content: ReactElementLike | string;
+    content: ReactNode;
 }) => {
     const popover = (
         <Popover id="popover-basic">
@@ -31,8 +30,8 @@ export const UnderlineTooltip = ({
     element,
 }: {
     title: string;
-    content: ReactElementLike | string;
-    element: ReactElementLike | string;
+    content: ReactNode;
+    element: ReactNode;
 }) => {
     const popover = (
         <Popover id="popover-basic">

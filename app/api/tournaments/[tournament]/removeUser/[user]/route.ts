@@ -4,8 +4,9 @@ import { apiResponse } from "~app/api/response";
 
 export async function GET(
     _: NextRequest,
-    { params }: { params: { tournament: string; user: string } },
+    props: { params: Promise<{ tournament: string; user: string }> },
 ) {
+    const params = await props.params;
     const result = await banUserFromTournament(params.tournament, params.user);
 
     return apiResponse({ body: result });

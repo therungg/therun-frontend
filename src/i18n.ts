@@ -16,18 +16,18 @@ type _ValidLocales = Expect<AreLocalesValid<Translations>>;
 const SUPPORTED_LOCALES = ["en", "fr"];
 const DEFAULT_LOCALE = "en";
 
-const detectLocale = () => {
+const detectLocale = async () => {
     // Initialize locale variable
     let locale = DEFAULT_LOCALE;
 
     // Try to get the locale from cookies
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const localeCookie = cookieStore.get("NEXT_LOCALE");
     if (localeCookie) {
         locale = localeCookie.value;
     } else {
         // If no locale found in cookies, try to get from headers
-        const acceptLanguageHeader = headers().get("accept-language");
+        const acceptLanguageHeader = (await headers()).get("accept-language");
         if (acceptLanguageHeader) {
             // Get the preferred language from the browser
             const preferredLocale = acceptLanguageHeader.split(",")[0];
@@ -45,7 +45,7 @@ const detectLocale = () => {
 };
 
 export default getRequestConfig(async () => {
-    const locale = detectLocale() || DEFAULT_LOCALE;
+    const locale = (await detectLocale()) || DEFAULT_LOCALE;
     return {
         locale,
         messages: (await import(`../locales/${locale}.json`)).default,

@@ -6,10 +6,11 @@ import { safeDecodeURI } from "~src/utils/uri";
 export const revalidate = 0;
 
 interface PageProps {
-    params: { username: string };
+    params: Promise<{ username: string }>;
 }
 
-export default async function Page({ params }: PageProps) {
+export default async function Page(props: PageProps) {
+    const params = await props.params;
     if (!params || !params.username) throw new Error("Username not found");
 
     const username: string = params.username as string;

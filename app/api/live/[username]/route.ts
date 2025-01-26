@@ -6,8 +6,9 @@ export const revalidate = 0;
 
 export async function GET(
     _request: NextRequest,
-    { params }: { params: { username: string } },
+    props: { params: Promise<{ username: string }> },
 ) {
+    const params = await props.params;
     const result = await getLiveRunForUser(params.username);
 
     return apiResponse({ body: result });

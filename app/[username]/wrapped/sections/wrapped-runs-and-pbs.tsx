@@ -149,7 +149,7 @@ export const WrappedRunsAndPbs: React.FC<WrappedRunsAndPbsProps> = ({
     return (
         <SectionWrapper>
             <SectionTitle
-                title={"Here's a full overview of your runs this year!"}
+                title="Here's a full overview of your runs this year!"
                 subtitle={`You finished ${wrapped.totalFinishedRuns} runs. ${
                     wrapped.totalPbs
                 } - or ${pbPercentage.toFixed(2)}% - of them were a PB.`}

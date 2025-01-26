@@ -13,10 +13,11 @@ import buildMetadata from "~src/utils/metadata";
 import { safeEncodeURI } from "~src/utils/uri";
 
 interface PageProps {
-    params: { race: string };
+    params: Promise<{ race: string }>;
 }
 
-export default async function RaceDetailPage({ params }: PageProps) {
+export default async function RaceDetailPage(props: PageProps) {
+    const params = await props.params;
     const raceId = params.race;
 
     const promises = [
@@ -48,9 +49,8 @@ export default async function RaceDetailPage({ params }: PageProps) {
     return <RaceDetail race={race} user={session} messages={messages} />;
 }
 
-export async function generateMetadata({
-    params,
-}: PageProps): Promise<Metadata> {
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+    const params = await props.params;
     const raceId = params.race;
 
     if (!raceId) return buildMetadata();

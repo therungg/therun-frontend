@@ -7,12 +7,11 @@ export const revalidate = 600;
 
 export async function GET(
     _request: NextRequest,
-    {
-        params,
-    }: {
-        params: { game: string; category: string };
+    props: {
+        params: Promise<{ game: string; category: string }>;
     },
 ) {
+    const params = await props.params;
     const { game, category } = params;
 
     if (category === "*") {

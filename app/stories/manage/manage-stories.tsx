@@ -22,8 +22,17 @@ const ManageStories = async () => {
                         <h3>Story Mode by therun.gg</h3>
                         <div style={{ fontSize: "large" }}>
                             <p>
-                                Welcome to the Story Mode beta,{" "}
-                                {session.username}. Thanks for checking it out!
+                                Welcome to <b>Story Mode</b>, {session.username}
+                                . Thanks for checking it out!
+                            </p>
+                            <p>
+                                Please note that the Twitch bot will only
+                                activate if you have at least <b>14 started</b>{" "}
+                                and <b>4 finished</b> attempts for the category.
+                            </p>
+                            <p>
+                                Also, you need to have the LiveSplit component
+                                enabled.
                             </p>
                         </div>
                     </div>

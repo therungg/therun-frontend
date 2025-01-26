@@ -4,7 +4,6 @@ import { StoryElementType, StoryPreferences } from "~app/live/story.types";
 import Joi from "joi";
 import { getSession } from "~src/actions/session.action";
 import { getApiKey } from "~src/actions/api-key.action";
-import { confirmPermission } from "~src/rbac/confirm-permission";
 
 const apiUrl = process.env.NEXT_PUBLIC_STORIES_API_URL as string;
 
@@ -65,11 +64,9 @@ export async function setStoryPreferencesAction(
     }
 
     const session = await getSession();
-    const apiKey = getApiKey();
+    const apiKey = await getApiKey();
 
     if (!session.id) return;
-
-    confirmPermission(session, "edit", "stories");
 
     const result = await fetch(
         apiUrl + `/user/${session.username}/preferences`,

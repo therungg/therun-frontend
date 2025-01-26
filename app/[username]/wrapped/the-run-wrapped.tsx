@@ -21,7 +21,7 @@ import { isDefined } from "~src/utils/isDefined";
 import styles from "./mesh-background.module.scss";
 import wrappedStyles from "./wrapped.module.scss";
 import socialStyles from "./social-icons.module.scss";
-import { useResizeObserver } from "usehooks-ts";
+import { useResizeObserver, useDebounceCallback } from "usehooks-ts";
 import { SocialShareSpeedDial } from "./social-share-dial";
 import { PatreonBunnySvg } from "~app/patron/patreon-info";
 import { WrappedSocialCard } from "./sections/wrapped-social-card";
@@ -157,15 +157,15 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
         link.click();
     };
 
-    useEffect(() => {
+    const debouncedRefresh = useDebounceCallback(() => {
         if (readySections) {
-            // When the readySections updates this means a new lazy-loaded Section is ready
-            // This also means the content height isn't properly known and gsap
-            // believes before this point that the height is 100vh.
-            // This recomputes the start + end markers
             ScrollTrigger.refresh();
         }
-    }, [readySections]);
+    }, 100);
+    useEffect(() => {
+        debouncedRefresh();
+        return () => debouncedRefresh.cancel();
+    }, [readySections, useDebounceCallback]);
     const sections = useMemo(() => {
         const hasEnoughData = hasRaceData(wrapped);
         return [
@@ -239,6 +239,23 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
         ].filter(isDefined);
     }, [wrapped, readySections]);
 
+    const updateReadySections = useCallback(
+        (
+            updater: (prev: Record<number, boolean>) => Record<number, boolean>,
+        ) => {
+            setReadySections((prevSections) => {
+                const nextSections = updater(prevSections);
+                // Check if state has actually changed before updating it
+                const hasChanged = Object.keys(nextSections).some(
+                    (key) =>
+                        nextSections[Number(key)] !== prevSections[Number(key)],
+                );
+                return hasChanged ? nextSections : prevSections;
+            });
+        },
+        [],
+    );
+
     // https://gsap.com/resources/React/
     useGSAP(
         () => {
@@ -259,14 +276,14 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                         trigger: section,
                         onEnter: () => {
                             setSectionIndex(index);
-                            setReadySections((prevSections) => ({
+                            updateReadySections((prevSections) => ({
                                 ...prevSections,
                                 [index + 1]: true,
                             }));
                         },
                         onLeaveBack: () => {
                             setSectionIndex(index - 1);
-                            setReadySections((prevSections) => ({
+                            updateReadySections((prevSections) => ({
                                 ...prevSections,
                                 [index]: true,
                             }));
@@ -289,7 +306,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
 
                             // Scrolling Down
                             if (fromTop > fromBottom && entry.isIntersecting) {
-                                setReadySections((prevSections) => {
+                                updateReadySections((prevSections) => {
                                     return {
                                         ...prevSections,
                                         // intersection observer is kind of funky so just going
@@ -301,7 +318,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                             }
                             // Scrolling Up
                             if (fromBottom > fromTop && entry.isIntersecting) {
-                                setReadySections((prevSections) => {
+                                updateReadySections((prevSections) => {
                                     return {
                                         ...prevSections,
                                         // intersection observer is kind of funky so just going

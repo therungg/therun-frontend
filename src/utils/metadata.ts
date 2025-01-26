@@ -126,7 +126,7 @@ export async function getGameImage(
     let response: Response;
     try {
         response = await fetch(
-            `${getBaseUrl()}/api/games/${safeEncodeURI(game)}/global`,
+            `${await getBaseUrl()}/api/games/${safeEncodeURI(game)}/global`,
         );
     } catch (e) {
         // Allow this one since it's server-side

@@ -5,10 +5,11 @@ import { EditRace } from "~app/races/[race]/edit/edit-race";
 import { User } from "../../../../types/session.types";
 
 interface PageProps {
-    params: { race: string };
+    params: Promise<{ race: string }>;
 }
 
-export default async function RaceDetailPage({ params }: PageProps) {
+export default async function RaceDetailPage(props: PageProps) {
+    const params = await props.params;
     const raceId = params.race;
 
     const promises = [getRaceByRaceId(raceId), getSession()];

@@ -1,9 +1,9 @@
 "use client";
 
-import React, { Fragment, useEffect } from "react";
+import React, { useEffect, useActionState } from "react";
 import { Button, Col, Form, Row, Tab, Table, Tabs } from "react-bootstrap";
-import { useFormState, useFormStatus } from "react-dom";
-import { setStoryPreferencesAction } from "~src/actions/stories/set-story-preferences.action";
+import { useFormStatus } from "react-dom";
+import { setStoryPreferencesAction } from "~app/stories/actions/set-story-preferences.action";
 import {
     StoryElementCategory,
     StoryOption,
@@ -24,7 +24,7 @@ export const SetStoryPreferences = ({
     user: User;
     storyOptions: StoryOption[];
 }) => {
-    const [state, formAction] = useFormState(setStoryPreferencesAction, {
+    const [state, formAction] = useActionState(setStoryPreferencesAction, {
         message: "",
         type: "",
     });
@@ -295,7 +295,7 @@ const ManageStories = ({
                             <thead>
                                 <tr>
                                     <th>Enabled</th>
-                                    <th>Cooldown</th>
+                                    <th>Cooldown (minutes)</th>
                                     <th>Text</th>
                                 </tr>
                             </thead>
@@ -317,11 +317,13 @@ const ManageStories = ({
                                             <td>
                                                 <input
                                                     type="hidden"
+                                                    className="cursor-pointer"
                                                     value={0}
                                                     name={id}
                                                 />
                                                 <Form.Check
                                                     type="switch"
+                                                    className="cursor-pointer"
                                                     id={id}
                                                     name={id}
                                                     disabled={

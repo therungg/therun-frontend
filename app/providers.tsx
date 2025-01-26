@@ -1,7 +1,6 @@
 "use client";
 
 import { ThemeProvider } from "next-themes";
-import { HelmetProvider } from "react-helmet-async";
 import { PropsWithChildren } from "react";
 import { User } from "../types/session.types";
 import { defineAbilityFor } from "~src/rbac/ability";
@@ -19,11 +18,9 @@ export function Providers({
 
     return (
         <ThemeProvider attribute="data-bs-theme">
-            <HelmetProvider>
-                <AbilityContext.Provider value={ability}>
-                    {children}
-                </AbilityContext.Provider>
-            </HelmetProvider>
+            <AbilityContext.Provider value={ability}>
+                {children}
+            </AbilityContext.Provider>
         </ThemeProvider>
     );
 }

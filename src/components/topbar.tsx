@@ -1,25 +1,15 @@
 "use client";
-import {
-    Alert,
-    AlertHeading,
-    Badge,
-    Container,
-    Nav,
-    Navbar,
-    NavDropdown,
-    Stack,
-} from "react-bootstrap";
+import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { TwitchUser } from "./twitch/TwitchUser";
 import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
 import { getColorMode } from "~src/utils/colormode";
 import { Upload } from "react-bootstrap-icons";
 import { resetSession } from "~src/actions/reset-session.action";
-import { Can } from "~src/rbac/Can.component";
-import { PatreonBunnySvg } from "~app/patron/patreon-info";
+import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 
 const DarkModeSlider = dynamic(() => import("./dark-mode-slider"), {
     ssr: false,
@@ -43,20 +33,8 @@ interface TopbarProps {
 
 const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
     const router = useRouter();
-    const pathname = usePathname();
     const [show, setShow] = useState(false);
     const [dark, setDark] = useState(true);
-    const hasRoute = useCallback(
-        (route: string) => {
-            if (!pathname) return "";
-
-            return pathname
-                .split("/")
-                .map((part) => part.toLowerCase())
-                .includes(route);
-        },
-        [pathname],
-    );
 
     const handleResetSession = useCallback(async () => {
         await resetSession();
@@ -105,6 +83,7 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                 <Container>
                     <Navbar.Brand href="/" className="d-flex">
                         <Image
+                            unoptimized
                             alt="TheRun"
                             src={`/logo_${
                                 dark ? "dark" : "light"
@@ -143,13 +122,14 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                             </Nav.Link>
                             <Nav.Link href="/races">Races</Nav.Link>
                             <Nav.Link href="/live">Live</Nav.Link>
-                            <Can I="view-restricted" a="stories">
+
+                            {username && (
                                 <Nav.Link href="/stories/manage">
                                     Story Mode
                                 </Nav.Link>
-                            </Can>
+                            )}
                             <Nav.Link href="/patron">
-                                Support us! <PatreonBunnySvg />
+                                Support us! <PatreonBunnySvgWithoutLink />
                             </Nav.Link>
                         </Nav>
                         <Nav className="ml-auto mb-2 mb-lg-0 me-lg-2">
@@ -184,12 +164,15 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                                     <NavDropdown.Item href="/change-appearance">
                                         Name Appearance
                                     </NavDropdown.Item>
-                                    <Can I="view-restricted" a="stories">
-                                        <NavDropdown.Item href="/stories/manage">
-                                            Story Preferences
-                                        </NavDropdown.Item>
-                                    </Can>
-                                    <NavDropdown.Item onClick={() => logout()}>
+                                    <NavDropdown.Item href="/stories/manage">
+                                        Story Preferences
+                                    </NavDropdown.Item>
+                                    <NavDropdown.Item
+                                        onClick={async () => {
+                                            console.log("click");
+                                            await logout();
+                                        }}
+                                    >
                                         Logout
                                     </NavDropdown.Item>
                                 </NavDropdown>
@@ -212,33 +195,6 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                     </Navbar.Collapse>
                 </Container>
             </Navbar>
-            {!hasRoute("wrapped") &&
-            !hasRoute("recap") &&
-            !hasRoute("patron") ? (
-                <Alert className="container w-100">
-                    <AlertHeading>
-                        <Badge>NEW</Badge>&nbsp;The Run Recap 2024 is here!!
-                    </AlertHeading>
-                    <Stack
-                        direction="horizontal"
-                        className="justify-content-between"
-                    >
-                        <p>
-                            After several weeks of hard work, we're finally
-                            here! Recap brings you all of your 2024 speedrun
-                            stats summarized in a nice package.
-                        </p>
-                    </Stack>
-                    <div className="d-flex justify-content-center">
-                        <a
-                            href="/recap"
-                            className="btn btn-lg btn-primary text-nowrap"
-                        >
-                            Go to Recap 2024
-                        </a>
-                    </div>
-                </Alert>
-            ) : null}
         </>
     );
 };

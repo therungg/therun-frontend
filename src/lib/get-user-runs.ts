@@ -8,7 +8,12 @@ export const getUserRuns = async (
         game ? `/${game}` : ""
     }`;
 
-    const res = await fetch(url);
+    const res = await fetch(url, {
+        cache: "force-cache",
+        next: {
+            revalidate: 600,
+        },
+    });
     const json = await res.json();
 
     return json.result;

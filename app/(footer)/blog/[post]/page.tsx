@@ -11,7 +11,10 @@ export function generateStaticParams() {
     return posts.map((post) => ({ post }));
 }
 
-export default function PostPage({ params }: { params: { post: string } }) {
+export default async function PostPage(props: {
+    params: Promise<{ post: string }>;
+}) {
+    const params = await props.params;
     const { post } = params;
     const postIndex = posts.findIndex((blog) => blog === post);
     return <Post index={postIndex} />;

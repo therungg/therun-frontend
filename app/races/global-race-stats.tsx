@@ -5,6 +5,7 @@ import { DurationToFormatted } from "~src/components/util/datetime";
 import { GameImage } from "~src/components/image/gameimage";
 import styles from "~src/components/css/LiveRun.module.scss";
 import { safeEncodeURI } from "~src/utils/uri";
+import Link from "next/link";
 
 export const GlobalRaceStats = ({
     stats,
@@ -17,7 +18,7 @@ export const GlobalRaceStats = ({
         <div className="bg-body-secondary mb-3 game-border px-4 py-3 rounded-3">
             <div className="justify-content-between w-100 d-flex align-items-center">
                 <span className="h3 m-0">Race Stats</span>
-                <a href="/races/stats">View all stats</a>
+                <Link href="/races/stats">View all stats</Link>
             </div>
             <hr />
             <div>

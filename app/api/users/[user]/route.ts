@@ -7,12 +7,11 @@ export const revalidate = 60;
 
 export async function GET(
     _: NextRequest,
-    {
-        params,
-    }: {
-        params: { user: string };
+    props: {
+        params: Promise<{ user: string }>;
     },
 ) {
+    const params = await props.params;
     const { user } = params;
 
     const result = await getUserRuns(user);
@@ -28,12 +27,11 @@ export async function GET(
 
 export async function PUT(
     request: NextRequest,
-    {
-        params,
-    }: {
-        params: { user: string };
+    props: {
+        params: Promise<{ user: string }>;
     },
 ) {
+    const params = await props.params;
     const { user } = params;
     const data = await request.text();
     const result = await editUser(user, data);

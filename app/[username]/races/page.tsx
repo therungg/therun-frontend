@@ -11,10 +11,11 @@ import { groupCategoryStatsByGame } from "~app/[username]/races/group-category-s
 import { safeDecodeURI } from "~src/utils/uri";
 
 interface PageProps {
-    params: { username: string };
+    params: Promise<{ username: string }>;
 }
 
-export default async function Page({ params }: PageProps) {
+export default async function Page(props: PageProps) {
+    const params = await props.params;
     const username = safeDecodeURI(params.username);
 
     const promises = [
