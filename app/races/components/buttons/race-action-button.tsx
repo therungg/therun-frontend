@@ -1,5 +1,8 @@
 import { Form } from "react-bootstrap";
-import { SubmitButton, SubmitButtonProps } from "~src/components/submit-button";
+import {
+    SubmitButton,
+    SubmitButtonProps,
+} from "~src/components/Button/SubmitButton";
 
 export interface RaceActionProps
     extends Omit<SubmitButtonProps, "pendingText" | "innerText"> {

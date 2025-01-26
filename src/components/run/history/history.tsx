@@ -1597,6 +1597,7 @@ export const getLineGraphData = (run: RunHistory, splits: SplitsHistory[]) => {
     };
 };
 
+// TODO: Move this to icons directory
 export const Filter = () => {
     return (
         <svg
@@ -1612,6 +1613,7 @@ export const Filter = () => {
     );
 };
 
+// TODO: Move this to icons directory
 export const XCircle = ({ color = "currentColor" }) => {
     return (
         <svg

@@ -34,8 +34,9 @@ export const FreeInput = ({
                 description="Send Free Input to ESA"
                 sessionId={sessionId}
                 data={freeInputEvent(liveRun, input)}
-                buttonText="Send Free Input"
-            />
+            >
+                Send Free Input
+            </SendMarathonDataButton>
         </div>
     );
 };

@@ -126,7 +126,7 @@ export const GameCategoryLink = ({
     game,
     category,
     children,
-}: GameCategoryLinkProps) => {
+}: React.PropsWithChildren<GameCategoryLinkProps>) => {
     return (
         <>{children ? children : `${display(game)} - ${display(category)}`}</>
     );

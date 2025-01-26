@@ -441,6 +441,7 @@ export const UserOverview = ({
     );
 };
 
+// TODO: Move this to the icons directory
 const TrashIcon = () => {
     return (
         <svg
@@ -460,6 +461,7 @@ const TrashIcon = () => {
     );
 };
 
+// TODO: Move this to the icons directory
 const EditIcon = () => {
     return (
         <svg
@@ -475,6 +477,7 @@ const EditIcon = () => {
     );
 };
 
+// TODO: Move this to the icons directory
 const StarIcon = () => {
     return (
         <svg
@@ -490,6 +493,7 @@ const StarIcon = () => {
     );
 };
 
+// TODO: Move this to the icons directory
 export const StarFilledInIcon = () => {
     return (
         <svg

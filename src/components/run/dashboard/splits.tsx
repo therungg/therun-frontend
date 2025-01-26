@@ -314,6 +314,7 @@ const TimeCell: React.FunctionComponent<TimeCellProps> = ({
     );
 };
 
+// TODO: Move this to icons directory
 const DownloadIcon = () => {
     return (
         <svg

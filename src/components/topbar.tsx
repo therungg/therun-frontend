@@ -10,6 +10,7 @@ import { getColorMode } from "~src/utils/colormode";
 import { Upload } from "react-bootstrap-icons";
 import { resetSession } from "~src/actions/reset-session.action";
 import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
+import { Button } from "~src/components/Button/Button";
 
 const DarkModeSlider = dynamic(() => import("./dark-mode-slider"), {
     ssr: false,
@@ -169,7 +170,6 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                                     </NavDropdown.Item>
                                     <NavDropdown.Item
                                         onClick={async () => {
-                                            console.log("click");
                                             await logout();
                                         }}
                                     >
@@ -179,13 +179,12 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                             )}
                             {sessionError && (
                                 <div className="ms-2">
-                                    <button
+                                    <Button
                                         className="btn btn-primary"
-                                        type="button"
                                         onClick={handleResetSession}
                                     >
                                         Reset session
-                                    </button>
+                                    </Button>
                                 </div>
                             )}
                             {!sessionError && !username && (

@@ -53,11 +53,8 @@ export const PatreonName: React.FunctionComponent<PatreonNameProps> = ({
 
     const colors = patreonStyles();
 
-    let style = colors.find((val) => val.id == color);
-
-    if (!style) style = colors[0];
-
-    style = dark ? style.style[0] : style.style[1];
+    const matchingStyle = colors.find((val) => val.id == color) ?? colors[0];
+    const style = dark ? matchingStyle.style[0] : matchingStyle.style[1];
 
     return (
         <>

@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import ContentLoader from "react-content-loader";
+// TODO: Remove all of the PropsFrom uses for the native React.ComponentProps
 import { PropsFrom } from "../../../../types/utility.types";
 import styles from "./skeleton.module.scss";
 

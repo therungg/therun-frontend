@@ -723,6 +723,7 @@ export const Golds = ({
     );
 };
 
+// TODO: Move this to icons directory
 const DownArrow = () => {
     return (
         <svg
