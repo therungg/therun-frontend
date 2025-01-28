@@ -1,7 +1,7 @@
 "use client";
 import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import dynamic from "next/dynamic";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { TwitchUser } from "./twitch/TwitchUser";
@@ -35,6 +35,7 @@ interface TopbarProps {
 const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
     const router = useRouter();
     const { theme = "dark" } = useTheme();
+    const [show, setShow] = useState(false);
 
     const handleResetSession = useCallback(async () => {
         await resetSession();
@@ -48,10 +49,20 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
         router.push("/");
         router.refresh();
     }
+    const showDropdown = () => {
+        setShow(true);
+    };
+    const hideDropdown = () => {
+        setShow(false);
+    };
 
     return (
         <>
-            <Navbar expand="lg" data-bs-theme={theme}>
+            <Navbar
+                expand="lg"
+                onMouseLeave={hideDropdown}
+                data-bs-theme={theme}
+            >
                 <Container>
                     <Navbar.Brand href="/" className="d-flex">
                         <Image
@@ -109,9 +120,14 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                             {" "}
                             <DarkModeSlider />
                         </Nav>
-                        <Nav className=" ml-auto">
+                        <Nav
+                            className="ml-auto"
+                            onMouseEnter={showDropdown}
+                            onClick={showDropdown}
+                        >
                             {username && (
                                 <NavDropdown
+                                    show={show}
                                     title={
                                         <TwitchUser
                                             username={username}
@@ -134,7 +150,6 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                                     </NavDropdown.Item>
                                     <NavDropdown.Item
                                         onClick={async () => {
-                                            console.log("click");
                                             await logout();
                                         }}
                                     >
