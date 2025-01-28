@@ -6,7 +6,7 @@ import styles from "../css/Game.module.scss";
 import { PatreonBunnySvg } from "~app/patron/patreon-info";
 import { User } from "../../../types/session.types";
 import { increaseEndTimeByAnHour } from "~app/tournaments/actions/increase-end-time-by-an-hour";
-import { SubmitButton } from "~src/components/submit-button";
+import { SubmitButton } from "~src/components/Button/SubmitButton";
 
 export interface Tournament {
     name: string;

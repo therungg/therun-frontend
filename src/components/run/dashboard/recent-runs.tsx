@@ -17,6 +17,7 @@ import { useState } from "react";
 import { Col, Row } from "react-bootstrap";
 import Switch from "react-switch";
 
+// TODO: Move this to a centralized file.
 ChartJS.register(
     CategoryScale,
     LinearScale,

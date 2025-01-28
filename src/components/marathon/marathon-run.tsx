@@ -55,21 +55,23 @@ export const MarathonRun = ({
                         />
 
                         <SendMarathonDataButton
-                            buttonText="Submit current run data to ESA"
                             description="Will transmit real-time data about the current run"
                             sessionId={session.id}
                             data={liveRunEvent(runData)}
-                        />
+                        >
+                            Submit current run data to ESA
+                        </SendMarathonDataButton>
                     </Col>
                     <Col md={12} xl={3}>
                         <Stats run={runData.gameData} sessionId={session.id} />
 
                         <SendMarathonDataButton
                             sessionId={session.id}
-                            buttonText="Submit general runner data to ESA"
                             data={generalDataEvent(runData)}
                             description="Will transmit general data about the runner to ESA as shown above. Will trigger event --INSERT EVENT ON ESA STREAM-- at ESA. "
-                        />
+                        >
+                            Submit general runner data to ESA
+                        </SendMarathonDataButton>
                     </Col>
                 </Row>
             </div>

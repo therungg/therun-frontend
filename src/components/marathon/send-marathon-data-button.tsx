@@ -1,5 +1,5 @@
-import { Button } from "react-bootstrap";
 import React from "react";
+import { Button, ButtonProps } from "~src/components/Button/Button";
 
 export interface MarathonEvent {
     type: string;
@@ -13,16 +13,15 @@ export interface MarathonEvent {
     data: unknown;
 }
 
-interface SendMarathonDataButtonProps {
-    description: string;
+interface SendMarathonDataButtonProps extends ButtonProps {
+    description?: string;
     sessionId: string;
     data: MarathonEvent;
-    buttonText?: string;
 }
 
 export const SendMarathonDataButton: React.FunctionComponent<
     SendMarathonDataButtonProps
-> = ({ description, sessionId, data, buttonText = "Submit Event" }) => {
+> = ({ description, sessionId, data, children = "Submit Event" }) => {
     return (
         <div>
             {description && (
@@ -31,7 +30,6 @@ export const SendMarathonDataButton: React.FunctionComponent<
                 </div>
             )}
             <Button
-                variant="primary"
                 className={`w-100 fw-medium d-inline-flex justify-content-center 
                     align-items-center ${description ? "h-3r" : "h-2r"}`}
                 onClick={async () => {
@@ -44,7 +42,7 @@ export const SendMarathonDataButton: React.FunctionComponent<
                     }
                 }}
             >
-                {buttonText}
+                {children}
             </Button>
         </div>
     );

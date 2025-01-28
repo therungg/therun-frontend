@@ -1,8 +1,9 @@
 import { Run } from "~src/common/types";
-import { Button, Form } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import styles from "../../../components/css/Userform.module.scss";
 import { useState } from "react";
 import { User } from "types/session.types";
+import { Button } from "~src/components/Button/Button";
 
 export const EditRun = ({
     run,
@@ -111,7 +112,6 @@ export const EditRun = ({
                 </fieldset>
                 <div style={{ marginTop: "1rem" }}>
                     <Button
-                        variant="primary"
                         className={styles.editInfoButton}
                         onClick={async () => {
                             const userIdentifier = `${session.id}-${username}`;
@@ -145,7 +145,6 @@ export const EditRun = ({
                             abort();
                         }}
                     >
-                        {" "}
                         Cancel
                     </Button>
                 </div>
