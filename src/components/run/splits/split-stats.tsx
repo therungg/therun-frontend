@@ -340,6 +340,7 @@ const calculateConsistencyScore = (
     return stddevScore * (1 - resetPercentage);
 };
 
+// TODO: Consider changing these colors for theme variables
 const consistencyScoreIndication = (score: number) => {
     let phrase: string = "";
     let color: string = "";

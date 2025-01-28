@@ -1,9 +1,13 @@
 "use client";
 import React from "react";
 import styles from "./css/DarkModeSlider.module.scss";
-import { getColorMode, setColorMode } from "~src/utils/colormode";
+import { useTheme } from "next-themes";
+
+const getCheckedTheme = (isChecked: boolean) => (isChecked ? "light" : "dark");
 
 export const DarkModeSlider = () => {
+    const { theme, setTheme } = useTheme();
+    const [checked, setChecked] = React.useState(theme === "light");
     return (
         <>
             <div className={styles.switch}>
@@ -12,11 +16,10 @@ export const DarkModeSlider = () => {
                     className={styles.switch__input}
                     id="Switch"
                     onChange={(checked) => {
-                        setColorMode(
-                            !checked.target.checked ? "dark" : "light",
-                        );
+                        setChecked(checked.target.checked);
+                        setTheme(getCheckedTheme(checked.target.checked));
                     }}
-                    checked={getColorMode() == "light"}
+                    checked={checked}
                 />
                 <label className={styles.switch__label} htmlFor="Switch">
                     <span className={styles.switch__indicator}></span>

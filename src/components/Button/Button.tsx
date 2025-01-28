@@ -1,7 +1,7 @@
 import React from "react";
 import { clsx } from "clsx";
 
-type ButtonVariant =
+export type ButtonVariant =
     | "primary"
     | "secondary"
     | "success"
@@ -11,7 +11,9 @@ type ButtonVariant =
     | "light"
     | "dark"
     | "link";
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+
+export interface ButtonProps
+    extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     variant?: ButtonVariant;
 }
 

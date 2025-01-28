@@ -1,5 +1,5 @@
 import { Form } from "react-bootstrap";
-import { SubmitButton } from "~src/components/submit-button";
+import { SubmitButton } from "~src/components/Button/SubmitButton";
 import { sendChatMessage } from "~app/races/actions/send-chat-messages.action";
 import { useState } from "react";
 import { RaceMessage } from "~app/races/races.types";

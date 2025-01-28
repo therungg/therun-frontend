@@ -1,7 +1,14 @@
 import React from "react";
+import { Button } from "~src/components/Button/Button";
 
-class ErrorBoundary extends React.Component {
-    constructor(props) {
+interface ErrorBoundaryState {
+    hasError: boolean;
+}
+class ErrorBoundary extends React.Component<
+    React.PropsWithChildren,
+    ErrorBoundaryState
+> {
+    constructor(props: React.PropsWithChildren) {
         super(props);
 
         // Define a state variable to track whether is an error or not
@@ -21,12 +28,9 @@ class ErrorBoundary extends React.Component {
             return (
                 <div>
                     <h2>Oops, there is an error!</h2>
-                    <button
-                        type="button"
-                        onClick={() => this.setState({ hasError: false })}
-                    >
+                    <Button onClick={() => this.setState({ hasError: false })}>
                         Try again?
-                    </button>
+                    </Button>
                 </div>
             );
         }

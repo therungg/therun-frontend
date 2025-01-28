@@ -19,8 +19,9 @@ export const SuggestedEvents = ({
                             description={event.description}
                             sessionId={sessionId}
                             data={event}
-                            buttonText={`Submit ${event.name}`}
-                        />
+                        >
+                            Submit ${event.name}
+                        </SendMarathonDataButton>
                         <hr />
                     </div>
                 );
