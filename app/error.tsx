@@ -1,6 +1,7 @@
 "use client"; // Error components must be Client Components
 
 import React from "react";
+import { Button } from "~src/components/Button/Button";
 
 export default function Error({
     error,
@@ -23,7 +24,7 @@ export default function Error({
                 <p className="lead mb-4">
                     Sorry about that. Let's try that again.
                 </p>
-                <button
+                <Button
                     className="btn btn-primary px-4 py-2"
                     onClick={
                         // Attempt to recover by trying to re-render the segment
@@ -31,7 +32,7 @@ export default function Error({
                     }
                 >
                     Try again
-                </button>
+                </Button>
                 <h3 className="mt-5 mb-3">Does this keep happening?</h3>
                 <p className="lead mb-4">
                     You can let us know in our{" "}
