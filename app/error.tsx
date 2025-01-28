@@ -1,5 +1,6 @@
 "use client"; // Error components must be Client Components
 
+import Link from "next/link";
 import React from "react";
 import { Button } from "~src/components/Button/Button";
 
@@ -18,7 +19,7 @@ export default function Error({
     return (
         <div className="d-flex flex-column align-items-center justify-content-center py-5">
             <div className="text-center">
-                <h2 className="display-5 mb-3 text-danger fw-medium">
+                <h2 className="display-5 mb-3 fw-medium">
                     Something went wrong!
                 </h2>
                 <p className="lead mb-4">
@@ -33,16 +34,15 @@ export default function Error({
                 >
                     Try again
                 </Button>
-                <h3 className="mt-5 mb-3">Does this keep happening?</h3>
-                <p className="lead mb-4">
-                    You can let us know in our{" "}
-                    <a
-                        href="https://discord.gg/KuAwwPsKUp"
+                <p className="lead mt-5">
+                    You can also let us know about the issue in our&nbsp;
+                    <Link
+                        href={process.env.NEXT_PUBLIC_DISCORD_URL}
                         target="_blank"
                         rel="noreferrer"
                     >
                         Discord
-                    </a>
+                    </Link>
                     .
                 </p>
             </div>
