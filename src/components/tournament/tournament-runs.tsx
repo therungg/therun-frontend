@@ -12,7 +12,7 @@ import { Search as SearchIcon } from "react-bootstrap-icons";
 import { UserLink } from "~src/components/links/links";
 import { User } from "../../../types/session.types";
 import { Tournament } from "~src/components/tournament/tournament-info";
-import { SubmitButton } from "~src/components/submit-button";
+import { SubmitButton } from "~src/components/Button/SubmitButton";
 import { excludeRun } from "~app/tournaments/actions/exclude-run.action";
 import { addTime } from "~app/tournaments/actions/add-time.action";
 

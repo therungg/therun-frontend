@@ -69,11 +69,11 @@ export const LiveRunStats = ({
                         </td>
                         <td>
                             <SendMarathonDataButton
-                                buttonText="Send"
-                                description={null}
                                 sessionId={sessionId}
                                 data={currentPbEvent(liveRun)}
-                            />
+                            >
+                                Send
+                            </SendMarathonDataButton>
                         </td>
                     </tr>
                     <tr>
@@ -85,11 +85,11 @@ export const LiveRunStats = ({
                         </td>
                         <td>
                             <SendMarathonDataButton
-                                buttonText="Send"
-                                description={null}
                                 sessionId={sessionId}
                                 data={currentPredictionEvent(liveRun)}
-                            />
+                            >
+                                Send
+                            </SendMarathonDataButton>
                         </td>
                     </tr>
                     <tr>
@@ -105,11 +105,11 @@ export const LiveRunStats = ({
                         </td>
                         <td>
                             <SendMarathonDataButton
-                                buttonText="Send"
-                                description={null}
                                 sessionId={sessionId}
                                 data={currentPredictionEvent(liveRun)}
-                            />
+                            >
+                                Send
+                            </SendMarathonDataButton>
                         </td>
                     </tr>
                     <tr>
@@ -121,11 +121,11 @@ export const LiveRunStats = ({
                         </td>
                         <td>
                             <SendMarathonDataButton
-                                buttonText="Send"
-                                description={null}
                                 sessionId={sessionId}
                                 data={currentBestPossibleEvent(liveRun)}
-                            />
+                            >
+                                Send
+                            </SendMarathonDataButton>
                         </td>
                     </tr>
                     <tr>
@@ -135,11 +135,11 @@ export const LiveRunStats = ({
                         </td>
                         <td>
                             <SendMarathonDataButton
-                                buttonText="Send"
-                                description={null}
                                 sessionId={sessionId}
                                 data={currentSobEvent(liveRun)}
-                            />
+                            >
+                                Send
+                            </SendMarathonDataButton>
                         </td>
                     </tr>
                     <tr>
@@ -158,11 +158,11 @@ export const LiveRunStats = ({
                         </td>
                         <td>
                             <SendMarathonDataButton
-                                buttonText="Send"
-                                description={null}
                                 sessionId={sessionId}
                                 data={currentSplitEvent(liveRun)}
-                            />
+                            >
+                                Send
+                            </SendMarathonDataButton>
                         </td>
                     </tr>
                     <tr>

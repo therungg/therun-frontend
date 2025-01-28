@@ -24,6 +24,7 @@ import moment from "moment";
 import { UnderlineTooltip } from "../tooltip";
 import { useState } from "react";
 
+// TODO: Centralize charts
 ChartJS.register(
     CategoryScale,
     LinearScale,

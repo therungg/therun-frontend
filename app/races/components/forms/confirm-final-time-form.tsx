@@ -7,7 +7,7 @@ import {
     getFormattedString,
     timeToMillis,
 } from "~src/components/util/datetime";
-import { SubmitButton } from "~src/components/submit-button";
+import { SubmitButton } from "~src/components/Button/SubmitButton";
 
 export const ConfirmFinalTimeForm = ({
     raceId,

@@ -1,13 +1,11 @@
 "use client";
 
 import { useFormStatus } from "react-dom";
-import { Button, ButtonProps } from "react-bootstrap";
-import { ButtonVariant } from "react-bootstrap/types";
+import { Button, ButtonProps } from "~src/components/Button/Button";
 
 export interface SubmitButtonProps extends ButtonProps {
     innerText: string;
     pendingText: string;
-    variant?: ButtonVariant;
 }
 
 export const SubmitButton = ({

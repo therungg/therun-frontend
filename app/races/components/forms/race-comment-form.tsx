@@ -1,7 +1,7 @@
 "use client";
 
 import { Form } from "react-bootstrap";
-import { SubmitButton } from "~src/components/submit-button";
+import { SubmitButton } from "~src/components/Button/SubmitButton";
 import { leaveRaceComment } from "~app/races/actions/leave-race-comment.action";
 
 export const CommentOnRaceForm = ({ raceId }: { raceId: string }) => {

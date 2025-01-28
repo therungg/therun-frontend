@@ -1,8 +1,9 @@
 "use client";
 
 import React from "react";
-import { Button, Nav } from "react-bootstrap";
+import { Nav } from "react-bootstrap";
 import { getTwitchOAuthURL } from "./twitch-oauth";
+import { Button } from "~src/components/Button/Button";
 
 interface TwitchLoginButtonProps {
     url?: string;

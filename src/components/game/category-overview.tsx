@@ -8,6 +8,7 @@ import {
 } from "../links/links";
 import { Dispatch, useState } from "react";
 import { InfoTooltip } from "../tooltip";
+import { Button } from "~src/components/Button/Button";
 
 export const CategoryOverview = ({
     categories,
@@ -124,7 +125,7 @@ export const CategoryOverview = ({
             </tbody>
             {categories.length > MINIMUM_CATEGORIES_LIMIT ? (
                 categoriesCountLimit === MINIMUM_CATEGORIES_LIMIT ? (
-                    <button
+                    <Button
                         name="Show more categories"
                         className="mt-2"
                         onClick={() =>
@@ -132,9 +133,9 @@ export const CategoryOverview = ({
                         }
                     >
                         Show more categories
-                    </button>
+                    </Button>
                 ) : (
-                    <button
+                    <Button
                         name="Show fewer categories"
                         className="mt-2"
                         onClick={() =>
@@ -142,7 +143,7 @@ export const CategoryOverview = ({
                         }
                     >
                         Show fewer categories
-                    </button>
+                    </Button>
                 )
             ) : null}
         </Table>

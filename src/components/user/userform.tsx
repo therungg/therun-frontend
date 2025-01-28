@@ -2,7 +2,7 @@
 
 import { Title } from "../title";
 import React, { useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Form } from "react-bootstrap";
 import { countries } from "~src/common/countries";
 import { hasFlag } from "country-flag-icons";
 import { NameAsPatreon } from "../patreon/patreon-name";
@@ -15,6 +15,7 @@ import {
 } from "react-bootstrap-icons";
 import { Can, subject } from "~src/rbac/Can.component";
 import { BlueskyIcon } from "~src/icons/bluesky-icon";
+import { Button } from "~src/components/Button/Button";
 
 //TODO:: Would be better to use some form lib, not sure why i built it this way
 export const Userform = ({ username, session, userData, editInfo = false }) => {
@@ -66,7 +67,6 @@ export const Userform = ({ username, session, userData, editInfo = false }) => {
             <Can I="edit" this={subject("user", username)}>
                 <div className="mt-3 d-flex align-items-center">
                     <Button
-                        variant="primary"
                         className="w-240p"
                         onClick={async () => {
                             if (editingInfo) {
@@ -92,7 +92,7 @@ export const Userform = ({ username, session, userData, editInfo = false }) => {
                                 setEditingInfo(false);
                             }}
                         >
-                            {" "}
+                            {/* TODO: Add ms-4 or equivalent instead of empty space */}{" "}
                             Cancel
                         </Button>
                     )}
