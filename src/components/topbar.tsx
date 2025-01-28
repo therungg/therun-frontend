@@ -1,16 +1,16 @@
 "use client";
 import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { TwitchUser } from "./twitch/TwitchUser";
 import { TwitchLoginButton } from "./twitch/TwitchLoginButton";
-import { getColorMode } from "~src/utils/colormode";
 import { Upload } from "react-bootstrap-icons";
 import { resetSession } from "~src/actions/reset-session.action";
 import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import { Button } from "~src/components/Button/Button";
+import { useTheme } from "next-themes";
 
 const DarkModeSlider = dynamic(() => import("./dark-mode-slider"), {
     ssr: false,
@@ -34,37 +34,13 @@ interface TopbarProps {
 
 const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
     const router = useRouter();
+    const { theme = "dark" } = useTheme();
     const [show, setShow] = useState(false);
-    const [dark, setDark] = useState(true);
 
     const handleResetSession = useCallback(async () => {
         await resetSession();
         window.location.reload();
     }, []);
-
-    useEffect(function () {
-        setDark(getColorMode() !== "light");
-    }, []);
-
-    const handleColorMode: React.MouseEventHandler<HTMLElement> = useCallback(
-        (e) => {
-            const { target } = e;
-            if (
-                target instanceof HTMLElement &&
-                target.className.includes("input")
-            ) {
-                setDark(!dark);
-            }
-        },
-        [dark],
-    );
-
-    const showDropdown = () => {
-        setShow(true);
-    };
-    const hideDropdown = () => {
-        setShow(false);
-    };
 
     async function logout() {
         await fetch("/api/logout", {
@@ -73,22 +49,26 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
         router.push("/");
         router.refresh();
     }
+    const showDropdown = () => {
+        setShow(true);
+    };
+    const hideDropdown = () => {
+        setShow(false);
+    };
 
     return (
         <>
             <Navbar
                 expand="lg"
                 onMouseLeave={hideDropdown}
-                data-bs-theme={dark ? "dark" : "light"}
+                data-bs-theme={theme}
             >
                 <Container>
                     <Navbar.Brand href="/" className="d-flex">
                         <Image
                             unoptimized
                             alt="TheRun"
-                            src={`/logo_${
-                                dark ? "dark" : "light"
-                            }_theme_no_text_transparent.png`}
+                            src={`/logo_${theme}_theme_no_text_transparent.png`}
                             height="44"
                             width="44"
                             className="img-fluid align-self-start me-2"
@@ -136,7 +116,7 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
                         <Nav className="ml-auto mb-2 mb-lg-0 me-lg-2">
                             <GlobalSearch />
                         </Nav>
-                        <Nav className="ml-auto" onClick={handleColorMode}>
+                        <Nav className="ml-auto">
                             {" "}
                             <DarkModeSlider />
                         </Nav>
@@ -197,4 +177,5 @@ const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
         </>
     );
 };
+Topbar.displayName = "Topbar";
 export default Topbar;
