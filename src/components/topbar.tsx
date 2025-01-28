@@ -34,7 +34,7 @@ interface TopbarProps {
 
 const Topbar = ({ username, picture, sessionError }: Partial<TopbarProps>) => {
     const router = useRouter();
-    const { theme } = useTheme();
+    const { theme = "dark" } = useTheme();
 
     const handleResetSession = useCallback(async () => {
         await resetSession();
