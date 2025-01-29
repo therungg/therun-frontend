@@ -1,6 +1,6 @@
 "use server";
 
-import {
+import type {
     DetailedUserStats,
     GameStats,
     GlobalStats,
@@ -16,12 +16,13 @@ import {
     RaceTimeStat,
     UserStats,
 } from "~app/races/races.types";
-import { PaginationFetcher } from "~src/components/pagination/pagination.types";
+import { type PaginationFetcher } from "~src/components/pagination/pagination.types";
 import { URLSearchParams } from "next/dist/compiled/@edge-runtime/primitives";
 
 const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
 const paginationPageSize = 12;
 
+// client as default fn + server
 export const getPaginatedFinishedRaces: PaginationFetcher<Race> = async (
     page = 1,
     pageSize = paginationPageSize,
@@ -34,6 +35,7 @@ export const getPaginatedFinishedRaces: PaginationFetcher<Race> = async (
     return (await races.json()).result as PaginatedRaces;
 };
 
+// server + :point_up: passed in the prop in that client section
 export const getPaginatedFinishedRacesByGame: PaginationFetcher<Race> = async (
     page = 1,
     pageSize = paginationPageSize,
@@ -53,6 +55,7 @@ export const getPaginatedFinishedRacesByGame: PaginationFetcher<Race> = async (
     return (await races.json()).result as PaginatedRaces;
 };
 
+// server
 export const getAllActiveRaces = async (): Promise<Race[]> => {
     const races = await fetch(`${racesApiUrl}/active`, {
         next: { revalidate: 0 },
@@ -68,6 +71,7 @@ export const getAllActiveRaces = async (): Promise<Race[]> => {
     });
 };
 
+// server + pagination fetcher?
 export const getRacesByIds = async (ids: string[]): Promise<Race[]> => {
     const idsString = ids.join(",");
     const races = await fetch(`${racesApiUrl}?raceIds=${idsString}`, {
@@ -77,6 +81,7 @@ export const getRacesByIds = async (ids: string[]): Promise<Race[]> => {
     return (await races.json()).result as Race[];
 };
 
+// unused
 export const getAllActiveRacesByGame = async (
     game: string,
 ): Promise<Race[]> => {
@@ -87,6 +92,7 @@ export const getAllActiveRacesByGame = async (
     return (await races.json()).result as Race[];
 };
 
+// server
 export const getRaceParticipationsByUser = async (
     user?: string,
 ): Promise<RaceParticipant[] | undefined> => {
@@ -99,6 +105,7 @@ export const getRaceParticipationsByUser = async (
     return (await races.json()).result as RaceParticipant[];
 };
 
+// server
 export const getUserRaceStats = async (user: string) => {
     const url = `${racesApiUrl}/stats/users/${user}`;
 
@@ -107,6 +114,7 @@ export const getUserRaceStats = async (user: string) => {
     return (await raceStats.json()).result as UserStats;
 };
 
+// server
 export const getDetailedUserStats = async (user: string) => {
     const url = `${racesApiUrl}/stats/users/${user}/detailed`;
 
@@ -115,6 +123,7 @@ export const getDetailedUserStats = async (user: string) => {
     return (await raceStats.json()).result as DetailedUserStats;
 };
 
+// server
 export const getRaceByRaceId = async (raceId: string): Promise<Race> => {
     const url = `${racesApiUrl}/${raceId}`;
 
@@ -123,6 +132,7 @@ export const getRaceByRaceId = async (raceId: string): Promise<Race> => {
     return (await races.json()).result as Race;
 };
 
+// server
 export const getGlobalRaceStats = async (): Promise<GlobalStats> => {
     const url = `${racesApiUrl}/stats`;
 
@@ -132,6 +142,7 @@ export const getGlobalRaceStats = async (): Promise<GlobalStats> => {
     return (await races.json()).result as GlobalStats;
 };
 
+// server
 export const getRaceGameStats = async (limit = 3): Promise<GameStats[]> => {
     let url = `${racesApiUrl}/stats/games`;
 
@@ -153,6 +164,7 @@ export const getRaceGameStats = async (limit = 3): Promise<GameStats[]> => {
     });
 };
 
+// server
 export const getRaceGameStatsByGame = async (
     game: string,
 ): Promise<RaceGameStatsByGame> => {
@@ -163,6 +175,7 @@ export const getRaceGameStatsByGame = async (
     return (await stats.json()).result as RaceGameStatsByGame;
 };
 
+// server
 export const getRaceCategoryStats = async (game: string, category: string) => {
     const url = `${racesApiUrl}/stats/games/${game}/${category}`;
 
@@ -171,6 +184,7 @@ export const getRaceCategoryStats = async (game: string, category: string) => {
     return (await stats.json()).result as RaceGameStatsByCategory;
 };
 
+// client + server
 export const getRaceMessages = async (
     raceId: string,
     initialCall = false,
@@ -186,6 +200,7 @@ export const getRaceMessages = async (
     return (await messages.json()).result;
 };
 
+// server
 export const getTimeLeaderboards = async (
     game: string,
     category: string,
@@ -214,6 +229,7 @@ export const getTimeLeaderboards = async (
     return (await messages.json()).result;
 };
 
+// server
 export const getMmrLeaderboards = async (
     game: string,
     category: string,
@@ -232,6 +248,7 @@ export const getMmrLeaderboards = async (
     return (await messages.json()).result;
 };
 
+// server
 export const getTimeAndMmrLeaderboards = async (
     game: string,
     category: string,

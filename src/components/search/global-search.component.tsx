@@ -8,9 +8,8 @@ import { useFilteredFuzzySearch, useFuseSearch } from "./use-fuzzy-search";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SearchInput } from "./search-input.component";
 import { SearchResultsPanel } from "./search-results-panel.component";
+import { fetcher } from "~src/utils/fetcher";
 // import { getFormattedString } from "../util/datetime";
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const MAX_SEARCH_RESULTS = 15;
 
