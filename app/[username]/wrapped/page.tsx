@@ -1,4 +1,4 @@
-import { getWrappedForUser } from "~src/lib/wrapped";
+import { getWrappedForUser } from "~src/lib/server/get-wrapped-for-user";
 import { getSession } from "~src/actions/session.action";
 import { ContentLoadingWrapper } from "~app/[username]/wrapped/content-loading-wrapper";
 import { TimezoneWarning } from "~app/[username]/wrapped/timezone-warning";

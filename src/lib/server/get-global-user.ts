@@ -1,4 +1,5 @@
-import { UserData } from "./get-session-data";
+"use server";
+import { type UserData } from "../get-session-data";
 
 export const getGlobalUser = async (user: string) => {
     const url = `${process.env.NEXT_PUBLIC_DATA_URL}/users/global/${user}`;
@@ -13,5 +14,3 @@ export const getGlobalUser = async (user: string) => {
 
     return json.result as UserData;
 };
-
-export default getGlobalUser;

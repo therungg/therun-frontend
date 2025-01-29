@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { apiResponse } from "~app/api/response";
-import advancedUserStats from "~src/lib/advanced-user-stats";
+import { getAdvancedUserStats } from "~src/lib/server/get-advanced-user-stats";
 
 export const revalidate = 60;
 
@@ -12,7 +12,7 @@ export async function GET(
 ) {
     const params = await props.params;
     const { user } = params;
-    const userData = await advancedUserStats(user, "0");
+    const userData = await getAdvancedUserStats(user, "0");
 
     return apiResponse({
         body: userData,
