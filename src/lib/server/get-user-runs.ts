@@ -1,4 +1,5 @@
-import { Run } from "../common/types";
+"use server";
+import { type Run } from "../../common/types";
 
 export const getUserRuns = async (
     username: string,

@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import getUploadKey from "../../../../../src/lib/get-upload-key";
+import { getUploadKey } from "~src/lib/server/get-upload-key";
 import { apiResponse } from "~app/api/response";
 
 export const revalidate = 0;

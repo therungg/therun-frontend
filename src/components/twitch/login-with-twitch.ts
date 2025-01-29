@@ -1,5 +1,3 @@
-import { getUserInfo } from "./get-user-info";
-
 export interface LoginWithTwitchResult {
     loginData: LoginData;
     userInfo: UserInfo;
@@ -15,6 +13,14 @@ interface UserInfo {
     preferred_username: string;
     picture: string;
 }
+
+const getUserInfo = async (oauthToken: string) => {
+    return fetch("https://id.twitch.tv/oauth2/userinfo", {
+        headers: {
+            Authorization: `Bearer ${oauthToken}`,
+        },
+    });
+};
 
 export const loginWithTwitch = async (
     baseUrl: string,

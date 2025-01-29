@@ -1,4 +1,4 @@
-import { getPersonalBestRuns } from "~src/lib/get-personal-best-runs";
+import { getPersonalBestRuns } from "~src/lib/server/get-personal-best-runs";
 import { getTabulatedGameStatsPopular } from "~src/components/game/get-tabulated-game-stats";
 import { apiResponse } from "~app/api/response";
 

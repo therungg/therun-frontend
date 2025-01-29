@@ -4,7 +4,8 @@ import { Col } from "react-bootstrap";
 import { PatreonBunnyHeartWithoutLink } from "~app/patron/patreon-info";
 import { getSession } from "~src/actions/session.action";
 import { TwitchLoginButton } from "~src/components/twitch/TwitchLoginButton";
-import { getWrappedForUser } from "~src/lib/wrapped";
+// TODO: Create a client fetcher
+import { getWrappedForUser } from "~src/lib/server/get-wrapped-for-user";
 import React, { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useDebounceValue } from "usehooks-ts";
@@ -28,6 +29,7 @@ export default function Page() {
     useEffect(() => {
         async function fetchSession() {
             try {
+                // TODO: Migrate this to useSWR
                 const sessionData = await getSession();
                 setSession(sessionData);
 
@@ -36,6 +38,7 @@ export default function Page() {
                     setHasSession(true);
 
                     try {
+                        // TODO: Migrate this to useSWR
                         await getWrappedForUser(sessionData.user);
                     } catch (wrappedError) {
                         console.error(
