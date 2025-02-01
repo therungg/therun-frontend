@@ -54,13 +54,16 @@ export const SearchResultsPanel = React.memo(
                         )}
                         {filteredResults?.map(([type, results], index) => (
                             <React.Fragment key={index}>
-                                <dt
-                                    className={`${
-                                        0 !== index && "pt-1 mt-1 border-top"
-                                    } py-1 px-2 fw-semibold border-bottom text-truncate pe-none fs-smaller`}
-                                >
-                                    {toTitleCase(type)}
-                                </dt>
+                                {(!filter || filter.length !== 1) && (
+                                    <dt
+                                        className={`${
+                                            0 !== index &&
+                                            "pt-1 mt-1 border-top"
+                                        } py-1 px-2 fw-semibold border-bottom text-truncate pe-none fs-smaller`}
+                                    >
+                                        {toTitleCase(type)}
+                                    </dt>
+                                )}
                                 {results.map((result) => (
                                     <SearchResultItem
                                         key={result.key}
