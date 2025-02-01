@@ -1,3 +1,4 @@
+"use server";
 import {
     getRaceByRaceId,
     getRaceMessages,
@@ -5,8 +6,6 @@ import {
 } from "~src/lib/races";
 import { RaceDetail } from "~app/races/[race]/race-view";
 import { getSession } from "~src/actions/session.action";
-import { Race, RaceMessage } from "~app/races/races.types";
-import { User } from "../../../types/session.types";
 import { sortRaceParticipants } from "~app/races/[race]/sort-race-participants";
 import { Metadata } from "next";
 import buildMetadata from "~src/utils/metadata";
@@ -24,13 +23,9 @@ export default async function RaceDetailPage(props: PageProps) {
         getRaceByRaceId(raceId),
         getSession(),
         getRaceMessages(raceId, true),
-    ];
+    ] as const;
 
-    const [race, session, messages] = (await Promise.all(promises)) as [
-        Race,
-        User,
-        RaceMessage[],
-    ];
+    const [race, session, messages] = await Promise.all(promises);
 
     race.participants = sortRaceParticipants(race);
 

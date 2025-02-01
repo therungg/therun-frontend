@@ -186,42 +186,37 @@ const RaceFaqBody = () => {
                     </Accordion.Header>
                     <Accordion.Body>
                         <h5>Before the race</h5>
-                        <p>
-                            <b>Before the race</b>, you can:
-                            <ul>
-                                <li>
-                                    <b>Join</b> the race
-                                </li>
-                                <li>
-                                    <b>Unjoin</b> the race
-                                </li>
-                                <li>
-                                    Set yourself to <b>Ready</b>
-                                </li>
-                                <li>
-                                    Set yourself to <b>Unready</b>
-                                </li>
-                            </ul>
-                        </p>
+                        <b>Before the race</b>, you can:
+                        <ul>
+                            <li>
+                                <b>Join</b> the race
+                            </li>
+                            <li>
+                                <b>Unjoin</b> the race
+                            </li>
+                            <li>
+                                Set yourself to <b>Ready</b>
+                            </li>
+                            <li>
+                                Set yourself to <b>Unready</b>
+                            </li>
+                        </ul>
                         <h5>During the race</h5>
-                        <p>
-                            While the run is <b>in progress</b>, you can:
-                            <ul>
-                                <li>
-                                    <b>Create</b> a new race if you created the
-                                    race
-                                </li>
-                                <li>
-                                    <b>Abandon</b> the race (either reset in
-                                    LiveSplit or click the Abandon-button)
-                                </li>
-                                <li>Do your run and be tracked in real-time</li>
-                                <li>
-                                    <b>Finish</b> the race (either finish in
-                                    LiveSplit or click the Finish-button)
-                                </li>
-                            </ul>
-                        </p>
+                        While the run is <b>in progress</b>, you can:
+                        <ul>
+                            <li>
+                                <b>Create</b> a new race if you created the race
+                            </li>
+                            <li>
+                                <b>Abandon</b> the race (either reset in
+                                LiveSplit or click the Abandon-button)
+                            </li>
+                            <li>Do your run and be tracked in real-time</li>
+                            <li>
+                                <b>Finish</b> the race (either finish in
+                                LiveSplit or click the Finish-button)
+                            </li>
+                        </ul>
                         <h5>After the race</h5>
                         <p>
                             When you have <b>finished</b>, you can:

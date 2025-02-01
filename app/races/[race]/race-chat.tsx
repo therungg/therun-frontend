@@ -11,8 +11,7 @@ import { SendChatMessageForm } from "~app/races/components/forms/send-chat-messa
 import { Form } from "react-bootstrap";
 import { UserLink } from "~src/components/links/links";
 import { DurationToFormatted } from "~src/components/util/datetime";
-import React, { useEffect, useState } from "react";
-import { random } from "nanoid";
+import React, { useEffect, useId, useState } from "react";
 import dynamic from "next/dynamic";
 import { User } from "../../../types/session.types";
 
@@ -117,7 +116,6 @@ const ChatFilterOptions = ({
     filterOptions: FilterOptions;
     setFilterOptions: (_: FilterOptions) => void;
 }) => {
-    const rnd = random(1);
     const subjects: (keyof FilterOptions)[] = [
         "chat",
         "race",
@@ -127,20 +125,16 @@ const ChatFilterOptions = ({
     return (
         <div className="d-flex">
             {subjects.map((subject) => {
+                const label =
+                    subject.charAt(0).toUpperCase() + subject.slice(1);
                 return (
                     <Form
                         key={subject}
                         className="me-2 me-sm-4 me-md-3 mg-lg-2 me-xl-4"
                     >
-                        <Form.Check
+                        <RaceChatFilter
+                            label={label}
                             name={subject}
-                            type="checkbox"
-                            label={
-                                subject.charAt(0).toUpperCase() +
-                                subject.slice(1)
-                            }
-                            id={`${subject}_id_${rnd}`}
-                            defaultChecked={true}
                             onClick={() => {
                                 const newFilterOptions = { ...filterOptions };
                                 newFilterOptions[subject] =
@@ -152,6 +146,30 @@ const ChatFilterOptions = ({
                 );
             })}
         </div>
+    );
+};
+
+interface RaceChatFilterProps {
+    name: string;
+    label: string;
+    onClick: () => void;
+}
+const RaceChatFilter: React.FunctionComponent<RaceChatFilterProps> = ({
+    name,
+    label,
+    onClick,
+}) => {
+    const id = useId();
+
+    return (
+        <Form.Check
+            name={name}
+            type="checkbox"
+            label={label}
+            id={`${name}_${id}`}
+            defaultChecked
+            onClick={onClick}
+        />
     );
 };
 

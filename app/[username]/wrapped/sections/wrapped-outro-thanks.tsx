@@ -4,12 +4,10 @@ import { SectionBody } from "./section-body";
 import { SectionTitle } from "./section-title";
 import { SectionWrapper } from "./section-wrapper";
 import styles from "../hearts.module.scss";
-import {
-    PatreonBunnySvg,
-    PatreonBunnySvgWithoutLink,
-} from "~app/patron/patreon-info";
+import { PatreonBunnySvg } from "~app/patron/patreon-info";
 import Link from "next/link";
 import { Button } from "react-bootstrap";
+import { BunnyIcon } from "~src/icons/bunny-icon";
 
 interface WrappedOutroThanksProps {
     wrapped: WrappedWithData;
@@ -83,7 +81,7 @@ export const WrappedOutroThanks = memo<WrappedOutroThanksProps>(
                                     variant="secondary"
                                     className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
                                 >
-                                    Support us! <PatreonBunnySvgWithoutLink />
+                                    Support us! <BunnyIcon />
                                 </Button>
                             </Link>
                         </p>

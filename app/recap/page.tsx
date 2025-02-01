@@ -1,7 +1,6 @@
 "use client";
 
 import { Col } from "react-bootstrap";
-import { PatreonBunnyHeartWithoutLink } from "~app/patron/patreon-info";
 import { getSession } from "~src/actions/session.action";
 import { TwitchLoginButton } from "~src/components/twitch/TwitchLoginButton";
 import { getWrappedForUser } from "~src/lib/wrapped";
@@ -20,6 +19,7 @@ import Link from "next/link";
 import { FuzzyMatchHighlight } from "~src/components/search/fuzzy-match-highlight.component";
 import { Search as SearchIcon } from "react-bootstrap-icons";
 import { User } from "types/session.types";
+import { BunnyHeartIcon } from "~src/icons/bunny-heart-icon";
 
 export default function Page() {
     const [session, setSession] = useState<User | null>(null);
@@ -108,7 +108,7 @@ export default function Page() {
 
                 <Col className="justify-content-center">
                     <p className="display-6">Here's to 2025!</p>
-                    <PatreonBunnyHeartWithoutLink size={125} />
+                    <BunnyHeartIcon size={125} />
                     <p className="mt-3">
                         -- Joey and <b>The</b>{" "}
                         <span

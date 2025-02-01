@@ -8,9 +8,9 @@ import { TwitchUser } from "../twitch/TwitchUser";
 import { TwitchLoginButton } from "../twitch/TwitchLoginButton";
 import { Upload } from "react-bootstrap-icons";
 import { resetSession } from "~src/actions/reset-session.action";
-import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import { Button } from "~src/components/Button/Button";
 import { useTheme } from "next-themes";
+import { BunnyIcon } from "~src/icons/bunny-icon";
 
 const DarkModeSlider = dynamic(() => import("../dark-mode-slider"), {
     ssr: false,
@@ -114,7 +114,7 @@ export const Topbar = ({
                                 </Nav.Link>
                             )}
                             <Nav.Link href="/patron">
-                                Support us! <PatreonBunnySvgWithoutLink />
+                                Support us! <BunnyIcon />
                             </Nav.Link>
                         </Nav>
                         <Nav className="ml-auto mb-2 mb-lg-0 me-lg-2">

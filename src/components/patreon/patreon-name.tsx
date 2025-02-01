@@ -1,10 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import patreonStyles from "./patreon-styles";
-import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import { usePatreons } from "./use-patreons";
 import { getColorMode } from "~src/utils/colormode";
 import { safeDecodeURI } from "~src/utils/uri";
+import { BunnyIcon } from "~src/icons/bunny-icon";
 
 interface NameAsPatreonProps {
     name: string;
@@ -62,7 +62,7 @@ export const PatreonName: React.FunctionComponent<PatreonNameProps> = ({
             {icon && (
                 <span>
                     {" "}
-                    <PatreonBunnySvgWithoutLink size={size} />
+                    <BunnyIcon size={size} />
                 </span>
             )}
         </>
