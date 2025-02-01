@@ -4,7 +4,11 @@ import { SearchResults } from "./find-user-or-run";
 import useSWR from "swr";
 import { useDebounceValue } from "usehooks-ts";
 import { useAggregatedResults } from "./use-aggregated-results";
-import { useFilteredFuzzySearch, useFuseSearch } from "./use-fuzzy-search";
+import {
+    SearchItem,
+    useFilteredFuzzySearch,
+    useFuseSearch,
+} from "./use-fuzzy-search";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SearchInput } from "./search-input.component";
 import { SearchResultsPanel } from "./search-results-panel.component";
@@ -84,10 +88,32 @@ export const GlobalSearch = React.memo<SearchProps>(
 
         const fuse = useFuseSearch(aggregatedResults);
         const filteredResults = useFilteredFuzzySearch(fuse, query);
-        const searchResultEntries = React.useMemo(
-            () => Object.entries(filteredResults).slice(0, MAX_SEARCH_RESULTS),
-            [filteredResults],
-        );
+        const searchResultEntries = React.useMemo(() => {
+            const entries = Object.entries(filteredResults).slice(
+                0,
+                MAX_SEARCH_RESULTS,
+            );
+
+            if (!filter?.length) {
+                return entries;
+            }
+
+            // Otherwise apply the filter
+            return entries
+                .map(
+                    ([type, items]) =>
+                        [
+                            type,
+                            items.filter((item) =>
+                                filter.includes(
+                                    item.type as SearchFilterValues,
+                                ),
+                            ),
+                        ] as [string, SearchItem[]],
+                )
+                .filter(([_, items]) => items.length > 0);
+        }, [filteredResults, filter]);
+
         //const resultsLength = fuse._docs?.length; Unsure about this right now
         const handleInputChange: React.ChangeEventHandler<HTMLInputElement> =
             React.useCallback((e) => {
@@ -151,7 +177,7 @@ export const GlobalSearch = React.memo<SearchProps>(
                 {query && isResultsPanelOpen ? (
                     <SearchResultsPanel
                         searchResults={searchResultEntries}
-                        filter={filter}
+                        showHeader={filter.length !== 1}
                         isSearching={isSearching}
                         ref={resultsPanelRef}
                     />
