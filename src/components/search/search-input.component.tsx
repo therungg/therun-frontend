@@ -4,7 +4,7 @@ import { SearchFilterValues, UniqueArray } from "./global-search.component";
 
 interface SearchInputProps {
     query: string;
-    filter?: UniqueArray<SearchFilterValues>;
+    filter: UniqueArray<SearchFilterValues>;
     isSearching: boolean;
     onChange: React.ChangeEventHandler<HTMLInputElement>;
     onInputFocus: React.FocusEventHandler<HTMLInputElement>;
@@ -47,8 +47,8 @@ export const SearchInput = React.memo(
 
 SearchInput.displayName = "SearchInput";
 
-const getPlaceholderText = (filter?: UniqueArray<SearchFilterValues>) => {
-    const items = filter?.length ? filter : ["user", "game"];
+const getPlaceholderText = (filter: UniqueArray<SearchFilterValues>) => {
+    const items = filter;
     const formatter = new Intl.ListFormat("en-US", {
         style: "short",
         type: "disjunction",

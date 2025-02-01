@@ -6,7 +6,7 @@ import { SearchFilterValues, UniqueArray } from "./global-search.component";
 
 interface SearchResultsPanelProps {
     searchResults: [string, SearchItem[]][];
-    filter?: UniqueArray<SearchFilterValues>;
+    filter: UniqueArray<SearchFilterValues>;
     isSearching: boolean;
 }
 
