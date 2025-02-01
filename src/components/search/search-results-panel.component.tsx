@@ -2,9 +2,11 @@ import React from "react";
 import type { SearchItem } from "./use-fuzzy-search";
 import Link from "next/link";
 import { FuzzyMatchHighlight } from "./fuzzy-match-highlight.component";
+import { SearchFilterValues, UniqueArray } from "./global-search.component";
 
 interface SearchResultsPanelProps {
     searchResults: [string, SearchItem[]][];
+    filter?: UniqueArray<SearchFilterValues>;
     isSearching: boolean;
 }
 
@@ -13,24 +15,44 @@ const toTitleCase = (text: string) =>
 
 export const SearchResultsPanel = React.memo(
     React.forwardRef<HTMLDivElement, SearchResultsPanelProps>(
-        ({ searchResults, isSearching }, resultsPanelRef) => {
+        ({ searchResults, filter, isSearching }, resultsPanelRef) => {
+            const filteredResults = React.useMemo(() => {
+                if (!filter?.length) {
+                    return searchResults;
+                }
+
+                return searchResults
+                    .map(
+                        ([type, items]) =>
+                            [
+                                type,
+                                items.filter((item) =>
+                                    filter.includes(
+                                        item.type as SearchFilterValues,
+                                    ),
+                                ),
+                            ] as [string, SearchItem[]],
+                    )
+                    .filter(([_, items]) => items.length > 0);
+            }, [searchResults, filter]);
+
             return (
                 <div
                     ref={resultsPanelRef}
                     className="dropdown-menu d-block mt-2 py-0 overflow-y-auto w-100 mh-400p"
                 >
                     <dl className="list-group">
-                        {!searchResults.length && !isSearching && (
+                        {!filteredResults.length && !isSearching && (
                             <dt className="m-2 fw-semibold text-truncate fs-smaller">
                                 No results found
                             </dt>
                         )}
-                        {isSearching && !searchResults.length && (
+                        {isSearching && !filteredResults.length && (
                             <dt className="m-2 fw-semibold fs-smaller">
                                 Searching...
                             </dt>
                         )}
-                        {searchResults?.map(([type, results], index) => (
+                        {filteredResults?.map(([type, results], index) => (
                             <React.Fragment key={index}>
                                 <dt
                                     className={`${

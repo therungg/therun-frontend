@@ -14,10 +14,14 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const MAX_SEARCH_RESULTS = 15;
 
+interface SearchProps {
+    filter?: UniqueArray<SearchFilterValues>;
+}
+
 // TODO: Split apart the results from the search
 // If the input is its own component and continues to put the search term in the queryparams
 // then we can make the results a server component by reading from the queryparams
-export const GlobalSearch = React.memo(() => {
+export const GlobalSearch = React.memo<SearchProps>(({ filter }) => {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -132,6 +136,7 @@ export const GlobalSearch = React.memo(() => {
         <div className="position-relative">
             <SearchInput
                 query={query}
+                filter={filter}
                 isSearching={isSearching}
                 onChange={handleInputChange}
                 onInputFocus={handleInputFocus}
@@ -140,6 +145,7 @@ export const GlobalSearch = React.memo(() => {
             {query && isResultsPanelOpen ? (
                 <SearchResultsPanel
                     searchResults={searchResultEntries}
+                    filter={filter}
                     isSearching={isSearching}
                     ref={resultsPanelRef}
                 />
@@ -149,3 +155,12 @@ export const GlobalSearch = React.memo(() => {
 });
 
 GlobalSearch.displayName = "GlobalSearch";
+
+export type SearchFilterValues = "user" | "game";
+
+// To ensure we can only pass search filter values, and only once each.
+export type UniqueArray<T, A extends T[] = []> = T extends T
+    ? Exclude<T, A[number]> extends never
+        ? A
+        : UniqueArray<T, [...A, Exclude<T, A[number]>]>
+    : never;

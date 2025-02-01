@@ -1,8 +1,10 @@
 import React from "react";
 import { Search as SearchIcon } from "react-bootstrap-icons";
+import { SearchFilterValues, UniqueArray } from "./global-search.component";
 
 interface SearchInputProps {
     query: string;
+    filter?: UniqueArray<SearchFilterValues>;
     isSearching: boolean;
     onChange: React.ChangeEventHandler<HTMLInputElement>;
     onInputFocus: React.FocusEventHandler<HTMLInputElement>;
@@ -10,7 +12,7 @@ interface SearchInputProps {
 
 export const SearchInput = React.memo(
     React.forwardRef<HTMLInputElement, SearchInputProps>(
-        ({ isSearching, query, onChange, onInputFocus }, searchRef) => {
+        ({ isSearching, query, filter, onChange, onInputFocus }, searchRef) => {
             return (
                 <div className="input-group">
                     <label
@@ -31,7 +33,7 @@ export const SearchInput = React.memo(
                         type="search"
                         autoComplete="off"
                         className="form-control"
-                        placeholder="Find a User or Game"
+                        placeholder={getPlaceholderText(filter)}
                         onChange={onChange}
                         value={query}
                         onFocus={onInputFocus}
@@ -44,3 +46,15 @@ export const SearchInput = React.memo(
 );
 
 SearchInput.displayName = "SearchInput";
+
+const getPlaceholderText = (filter?: UniqueArray<SearchFilterValues>) => {
+    const fallbackText = "Find a User or Game";
+
+    if (!filter?.length) return fallbackText;
+
+    if (filter.length === 1) {
+        return `Find a ${filter[0] === "user" ? "User" : "Game"}`;
+    }
+
+    return fallbackText;
+};
