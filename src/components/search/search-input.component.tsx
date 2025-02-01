@@ -48,13 +48,14 @@ export const SearchInput = React.memo(
 SearchInput.displayName = "SearchInput";
 
 const getPlaceholderText = (filter?: UniqueArray<SearchFilterValues>) => {
-    const fallbackText = "Find a User or Game";
+    const items = filter?.length ? filter : ["user", "game"];
+    const formatter = new Intl.ListFormat("en-US", {
+        style: "short",
+        type: "disjunction",
+    });
+    const itemList = formatter.format(
+        items.map((item) => item.charAt(0).toUpperCase() + item.slice(1)),
+    );
 
-    if (!filter?.length) return fallbackText;
-
-    if (filter.length === 1) {
-        return `Find a ${filter[0] === "user" ? "User" : "Game"}`;
-    }
-
-    return fallbackText;
+    return `Find a ${itemList}`;
 };
