@@ -1,5 +1,6 @@
 import React from "react";
 import { Button, ButtonProps } from "./Button";
+import clsx from "clsx";
 
 export interface IconButtonProps extends ButtonProps {
     icon: React.ReactNode;
@@ -10,13 +11,23 @@ export const IconButton: React.FC<React.PropsWithChildren<IconButtonProps>> = ({
     children,
     icon,
     iconPosition = "left",
+    className,
     ...buttonProps
 }) => {
+    const flexDirection =
+        iconPosition === "right" ? "flex-row-reverse" : "flex-row";
+    const cls = clsx(
+        className,
+        "d-inline-flex",
+        "justify-content-center",
+        "align-items-center",
+        "gap-1",
+        flexDirection,
+    );
     return (
-        <Button {...buttonProps}>
-            {iconPosition === "left" && <span className="me-2">{icon}</span>}
+        <Button className={cls} {...buttonProps}>
+            <span>{icon}</span>
             {children}
-            {iconPosition === "right" && <span className="ms-2">{icon}</span>}
         </Button>
     );
 };
