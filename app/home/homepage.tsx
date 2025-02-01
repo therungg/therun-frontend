@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import React from "react";
 import { Button, Col, Row } from "react-bootstrap";
 import { DataHolder } from "~src/components/frontpage/data-holder";
@@ -7,6 +6,7 @@ import { SkeletonPersonalBests } from "~src/components/skeleton/index/skeleton-p
 import { PopularGames } from "~src/components/game/popular-games";
 import { SkeletonPopularGames } from "~src/components/skeleton/index/skeleton-popular-games";
 import { useTranslations } from "next-intl";
+import { BunnyIcon } from "~src/icons/bunny-icon";
 
 export const Homepage = () => {
     const t = useTranslations("homepage");
@@ -24,7 +24,7 @@ export const Homepage = () => {
                                 variant="secondary"
                                 className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
                             >
-                                {t("support")} <PatreonBunnySvgWithoutLink />
+                                {t("support")} <BunnyIcon />
                             </Button>
                         </Link>
                         <Link href="/about">

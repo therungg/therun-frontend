@@ -4,7 +4,7 @@ import React, { ReactElement } from "react";
 import { Button, Col, Row } from "react-bootstrap";
 import Image from "next/image";
 import Link from "next/link";
-import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
+import { BunnyIcon } from "~src/icons/bunny-icon";
 
 export interface BlogInterface {
     title: string;
@@ -623,7 +623,7 @@ export const getBlogs = (): BlogInterface[] => {
                             variant="secondary"
                             className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
                         >
-                            Support <PatreonBunnySvgWithoutLink />
+                            Support <BunnyIcon />
                         </Button>
                     </Link>
                     <h2>Races!!!</h2>
