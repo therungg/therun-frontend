@@ -18,13 +18,10 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const MAX_SEARCH_RESULTS = 15;
 
-const DEFAULT_FILTER_VALUES = [
-    "user",
-    "game",
-] as unknown as UniqueArray<SearchFilterValues>;
+const DEFAULT_FILTER_VALUES = ["user", "game"] as SearchFilterValues[];
 
 interface SearchProps {
-    filter?: UniqueArray<SearchFilterValues>;
+    filter?: SearchFilterValues[];
 }
 
 // TODO: Split apart the results from the search
@@ -88,6 +85,9 @@ export const GlobalSearch = React.memo<SearchProps>(
 
         const fuse = useFuseSearch(aggregatedResults);
         const filteredResults = useFilteredFuzzySearch(fuse, query);
+
+        const filterSet: Set<SearchFilterValues> = new Set(filter);
+
         const searchResultEntries = React.useMemo(() => {
             const entries = Object.entries(filteredResults).slice(
                 0,
@@ -105,9 +105,7 @@ export const GlobalSearch = React.memo<SearchProps>(
                         [
                             type,
                             items.filter((item) =>
-                                filter.includes(
-                                    item.type as SearchFilterValues,
-                                ),
+                                filterSet.has(item.type as SearchFilterValues),
                             ),
                         ] as [string, SearchItem[]],
                 )
@@ -168,7 +166,7 @@ export const GlobalSearch = React.memo<SearchProps>(
             <div className="position-relative">
                 <SearchInput
                     query={query}
-                    filter={filter}
+                    filterSet={filterSet}
                     isSearching={isSearching}
                     onChange={handleInputChange}
                     onInputFocus={handleInputFocus}
@@ -190,10 +188,3 @@ export const GlobalSearch = React.memo<SearchProps>(
 GlobalSearch.displayName = "GlobalSearch";
 
 export type SearchFilterValues = "user" | "game";
-
-// To ensure we can only pass search filter values, and only once each.
-export type UniqueArray<T, A extends T[] = []> = T extends T
-    ? Exclude<T, A[number]> extends never
-        ? A
-        : UniqueArray<T, [...A, Exclude<T, A[number]>]>
-    : never;

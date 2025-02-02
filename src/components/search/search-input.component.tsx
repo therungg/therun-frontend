@@ -1,10 +1,10 @@
 import React from "react";
 import { Search as SearchIcon } from "react-bootstrap-icons";
-import { SearchFilterValues, UniqueArray } from "./global-search.component";
+import { SearchFilterValues } from "./global-search.component";
 
 interface SearchInputProps {
     query: string;
-    filter: UniqueArray<SearchFilterValues>;
+    filterSet: Set<SearchFilterValues>;
     isSearching: boolean;
     onChange: React.ChangeEventHandler<HTMLInputElement>;
     onInputFocus: React.FocusEventHandler<HTMLInputElement>;
@@ -12,7 +12,10 @@ interface SearchInputProps {
 
 export const SearchInput = React.memo(
     React.forwardRef<HTMLInputElement, SearchInputProps>(
-        ({ isSearching, query, filter, onChange, onInputFocus }, searchRef) => {
+        (
+            { isSearching, query, filterSet, onChange, onInputFocus },
+            searchRef,
+        ) => {
             return (
                 <div className="input-group">
                     <label
@@ -33,7 +36,7 @@ export const SearchInput = React.memo(
                         type="search"
                         autoComplete="off"
                         className="form-control"
-                        placeholder={getPlaceholderText(filter)}
+                        placeholder={getPlaceholderText(filterSet)}
                         onChange={onChange}
                         value={query}
                         onFocus={onInputFocus}
@@ -47,8 +50,8 @@ export const SearchInput = React.memo(
 
 SearchInput.displayName = "SearchInput";
 
-const getPlaceholderText = (filter: UniqueArray<SearchFilterValues>) => {
-    const items = filter;
+const getPlaceholderText = (filterSet: Set<SearchFilterValues>) => {
+    const items = filterSet.values();
     const formatter = new Intl.ListFormat("en-US", {
         style: "short",
         type: "disjunction",
