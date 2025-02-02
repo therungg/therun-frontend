@@ -5,6 +5,7 @@ import { FuzzyMatchHighlight } from "./fuzzy-match-highlight.component";
 
 interface SearchResultsPanelProps {
     searchResults: [string, SearchItem[]][];
+    showHeader: boolean;
     isSearching: boolean;
 }
 
@@ -13,7 +14,7 @@ const toTitleCase = (text: string) =>
 
 export const SearchResultsPanel = React.memo(
     React.forwardRef<HTMLDivElement, SearchResultsPanelProps>(
-        ({ searchResults, isSearching }, resultsPanelRef) => {
+        ({ searchResults, showHeader, isSearching }, resultsPanelRef) => {
             return (
                 <div
                     ref={resultsPanelRef}
@@ -32,13 +33,16 @@ export const SearchResultsPanel = React.memo(
                         )}
                         {searchResults?.map(([type, results], index) => (
                             <React.Fragment key={index}>
-                                <dt
-                                    className={`${
-                                        0 !== index && "pt-1 mt-1 border-top"
-                                    } py-1 px-2 fw-semibold border-bottom text-truncate pe-none fs-smaller`}
-                                >
-                                    {toTitleCase(type)}
-                                </dt>
+                                {showHeader && (
+                                    <dt
+                                        className={`${
+                                            0 !== index &&
+                                            "pt-1 mt-1 border-top"
+                                        } py-1 px-2 fw-semibold border-bottom text-truncate pe-none fs-smaller`}
+                                    >
+                                        {toTitleCase(type)}
+                                    </dt>
+                                )}
                                 {results.map((result) => (
                                     <SearchResultItem
                                         key={result.key}
