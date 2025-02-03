@@ -1,4 +1,5 @@
-import { UserPatreonData } from "~app/change-appearance/patreon-section";
+"use server";
+import { type UserPatreonData } from "~app/change-appearance/patreon-section";
 
 export const savePatreonSettings = async (
     user: string,
@@ -13,5 +14,3 @@ export const savePatreonSettings = async (
 
     return res.json();
 };
-
-export default savePatreonSettings;
