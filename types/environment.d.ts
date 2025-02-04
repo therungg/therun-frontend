@@ -27,5 +27,6 @@ namespace NodeJS {
         SMTP_HOST: string;
         SMTP_PASSWORD: string;
         EDGE_CONFIG: string;
+        DATABASE_URL: string;
     }
 }
