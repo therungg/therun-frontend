@@ -45,3 +45,5 @@ yarn-error.log*
 bun.lockb
 
 *:Zone.Identifier
+
+/drizzle
