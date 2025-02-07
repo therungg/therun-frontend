@@ -1,8 +1,9 @@
+"use server";
+import React from "react";
 import { Col, Row, Table } from "react-bootstrap";
 import { RunPreview } from "./run-preview";
-import React from "react";
-import { type Run } from "../../common/types";
-import { getPersonalBestRuns } from "~src/lib/get-personal-best-runs";
+import { type Run } from "~src/common/types";
+import { getPersonalBestRuns } from "~src/lib/server/get-personal-best-runs";
 
 export const DataHolder = async () => {
     const runs = await getPersonalBestRuns();

@@ -1,4 +1,5 @@
-import { Run } from "../common/types";
+"use server";
+import { type Run } from "../../common/types";
 
 export const getUserRuns = async (
     username: string,
@@ -12,6 +13,7 @@ export const getUserRuns = async (
         cache: "force-cache",
         next: {
             revalidate: 600,
+            tags: [`/users/${username}`],
         },
     });
     const json = await res.json();

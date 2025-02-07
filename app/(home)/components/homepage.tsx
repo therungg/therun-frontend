@@ -1,7 +1,7 @@
-import Link from "next/link";
 import React from "react";
+import Link from "next/link";
 import { Col, Row } from "react-bootstrap";
-import { DataHolder } from "~src/components/frontpage/data-holder";
+import { DataHolder } from "~app/(home)/components/data-holder";
 import { SkeletonPersonalBests } from "~src/components/skeleton/index/skeleton-personal-bests";
 import { PopularGames } from "~src/components/game/popular-games";
 import { SkeletonPopularGames } from "~src/components/skeleton/index/skeleton-popular-games";

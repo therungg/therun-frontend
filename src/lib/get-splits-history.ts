@@ -1,6 +1,7 @@
 import { safeEncodeURI } from "~src/utils/uri";
 import { History } from "../common/types";
 
+// Not in use
 export const getSplitsHistory = async (
     filename: string,
     hasGameTime = false,
@@ -12,6 +13,7 @@ export const getSplitsHistory = async (
     return res.json();
 };
 
+// Client only
 export const getSplitsHistoryUrl = (
     filename: string,
     hasGameTime = false,

@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { safeDecodeURI, safeEncodeURI } from "~src/utils/uri";
 import { apiResponse } from "~app/api/response";
+import { revalidateTag } from "next/cache";
 
 export async function PUT(
     _request: NextRequest,
@@ -27,6 +28,10 @@ const highlight = async (user: string, game: string, category: string) => {
     const res = await fetch(url, {
         method: "PUT",
     });
+
+    const username = user.split("-")[1];
+
+    revalidateTag(`/users/${username}`);
 
     return res.json();
 };

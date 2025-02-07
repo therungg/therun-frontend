@@ -5,6 +5,7 @@ import { FuzzyMatchHighlight } from "./fuzzy-match-highlight.component";
 
 interface SearchResultsPanelProps {
     searchResults: [string, SearchItem[]][];
+    showHeader: boolean;
     isSearching: boolean;
 }
 
@@ -13,7 +14,7 @@ const toTitleCase = (text: string) =>
 
 export const SearchResultsPanel = React.memo(
     React.forwardRef<HTMLDivElement, SearchResultsPanelProps>(
-        ({ searchResults, isSearching }, resultsPanelRef) => {
+        ({ searchResults, showHeader, isSearching }, resultsPanelRef) => {
             return (
                 <div
                     ref={resultsPanelRef}
@@ -32,13 +33,16 @@ export const SearchResultsPanel = React.memo(
                         )}
                         {searchResults?.map(([type, results], index) => (
                             <React.Fragment key={index}>
-                                <dt
-                                    className={`${
-                                        0 !== index && "pt-1 mt-1 border-top"
-                                    } py-1 px-2 fw-semibold border-bottom text-truncate pe-none fs-smaller`}
-                                >
-                                    {toTitleCase(type)}
-                                </dt>
+                                {showHeader && (
+                                    <dt
+                                        className={`${
+                                            0 !== index &&
+                                            "pt-1 mt-1 border-top"
+                                        } py-1 px-2 fw-semibold border-bottom text-truncate pe-none fs-smaller`}
+                                    >
+                                        {toTitleCase(type)}
+                                    </dt>
+                                )}
                                 {results.map((result) => (
                                     <SearchResultItem
                                         key={result.key}
@@ -73,14 +77,12 @@ interface SearchResultItemProps {
 }
 
 const SearchResultItem = React.memo<SearchResultItemProps>(({ result }) => {
-    const url =
-        result.type === "user" ? `/${result.key}` : `/games/${result.key}`;
     return (
-        <dd className="list-group-item-action m-0">
+        <dd className="m-0">
             <Link
-                href={url}
+                href={result.url ?? ""}
                 title={result.key}
-                className="d-block text-decoration-none px-3 py-1 text-truncate text-body lh-sm"
+                className="list-group-item-action d-block text-decoration-none px-3 py-1 text-truncate text-body lh-sm"
             >
                 <FuzzyMatchHighlight
                     result={result.key}
