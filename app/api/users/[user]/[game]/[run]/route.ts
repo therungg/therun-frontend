@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { apiResponse } from "~app/api/response";
 import { safeDecodeURI, safeEncodeURI } from "~src/utils/uri";
 import { getRun } from "~src/lib/get-run";
+import { revalidateTag } from "next/cache";
 
 export const revalidate = 60;
 
@@ -83,6 +84,10 @@ export async function DELETE(
     const category = safeDecodeURI(params.run);
 
     const result = await remove(user, game, category);
+
+    const username = user.split("-")[1];
+
+    revalidateTag(`/users/${username}`);
 
     return apiResponse({ body: result });
 }
