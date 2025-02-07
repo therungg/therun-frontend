@@ -42,33 +42,24 @@ export const ShowComparison = ({
                             <h2>Splits</h2>
                         </Col>
                         <Col style={{ display: "flex", justifyContent: "end" }}>
-                            <div
-                                style={{
-                                    display: "flex",
-                                    justifyContent: "end",
-                                    alignSelf: "center",
-                                }}
-                            >
-                                <label
-                                    htmlFor="switch"
-                                    style={{
-                                        marginRight: "10px",
-                                        alignSelf: "center",
-                                        whiteSpace: "nowrap",
-                                    }}
-                                >
-                                    {" "}
-                                    {totalTime
-                                        ? "Show total time"
-                                        : "Show split time"}{" "}
-                                </label>
+                            <div className="d-flex justify-content-start align-items-center justify-content-lg-center">
+                                <div className="me-2">Segment time</div>
                                 <Switch
+                                    uncheckedIcon={false}
+                                    checkedIcon={false}
+                                    onColor={getComputedStyle(
+                                        document.documentElement,
+                                    ).getPropertyValue("--bs-link-color")}
+                                    offColor={getComputedStyle(
+                                        document.documentElement,
+                                    ).getPropertyValue("--bs-link-color")}
                                     name="switch"
                                     onChange={(checked) => {
                                         setTotalTime(checked);
                                     }}
                                     checked={totalTime}
                                 />
+                                <div className="ms-2">Split time</div>
                             </div>
                         </Col>
                     </Row>
