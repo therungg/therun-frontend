@@ -23,13 +23,9 @@ export const TwitchUser: React.FunctionComponent<TwitchUserProps> = ({
                         alt={username}
                         width={32}
                         height={32}
-                        style={{
-                            maxWidth: "100%",
-                            height: "auto",
-                        }}
                     />
                 </div>
-                <div className="ms-2 ">
+                <div className="ms-2">
                     <NameAsPatreon name={username} />
                 </div>
             </Nav.Item>

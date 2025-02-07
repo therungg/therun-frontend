@@ -45,21 +45,20 @@ export const SplitStats = ({
                 </Col>
                 <Col
                     xl={3}
-                    style={{ display: "flex", justifyContent: "flex-end" }}
+                    className="d-flex justify-content-start align-items-center justify-content-lg-center justify-content-end"
                 >
-                    <label
-                        htmlFor="switch"
-                        style={{
-                            marginRight: "10px",
-                            alignSelf: "center",
-                            whiteSpace: "nowrap",
-                        }}
-                    >
-                        {" "}
-                        Show times as +- PB{" "}
-                    </label>
+                    <div className="me-2">Show Delta to PB</div>
+
                     <div style={{ alignSelf: "center" }}>
                         <Switch
+                            uncheckedIcon={false}
+                            checkedIcon={false}
+                            onColor={getComputedStyle(
+                                document.documentElement,
+                            ).getPropertyValue("--bs-link-color")}
+                            offColor={getComputedStyle(
+                                document.documentElement,
+                            ).getPropertyValue("--bs-link-color")}
                             name="switch"
                             onChange={(checked) => {
                                 setShowDifference(checked);
@@ -67,6 +66,7 @@ export const SplitStats = ({
                             checked={showDifference}
                         />
                     </div>
+                    <div className="ms-2">Show Absolute times</div>
                 </Col>
             </Row>
             <Card body>
