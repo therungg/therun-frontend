@@ -9,6 +9,7 @@ import styles from "../../css/User.module.scss";
 import { GameImage } from "~src/components/image/gameimage";
 import { getColorMode } from "~src/utils/colormode";
 import { Can, subject } from "~src/rbac/Can.component";
+import { useRouter } from "next/navigation";
 
 export const UserOverview = ({
     runs,
@@ -28,6 +29,7 @@ export const UserOverview = ({
     const [, forceUpdate] = useReducer((x) => x + 1, 0);
     const [openedEdit, setOpenedEdit] = useState([]);
     const [dark, setDark] = useState(true);
+    const router = useRouter();
 
     useEffect(function () {
         setDark(getColorMode() !== "light");
@@ -258,7 +260,10 @@ export const UserOverview = ({
                                                     duration={run.totalRunTime}
                                                 />
                                             </td>
-                                            <td style={{ width: "29%" }}>
+                                            <td
+                                                className="text-nowrap"
+                                                style={{ width: "29%" }}
+                                            >
                                                 <IsoToFormatted
                                                     iso={
                                                         gameTime &&
@@ -274,15 +279,12 @@ export const UserOverview = ({
                                                 I="delete"
                                                 this={subject("run", username)}
                                             >
-                                                <td
-                                                    style={{
-                                                        display: "flex",
-                                                        justifyContent:
-                                                            "center",
-                                                    }}
-                                                >
+                                                <td>
                                                     <div
                                                         style={{
+                                                            display: "flex",
+                                                            justifyContent:
+                                                                "center",
                                                             cursor: "pointer",
                                                         }}
                                                         onClick={async () => {
@@ -308,6 +310,7 @@ export const UserOverview = ({
                                                                     originalGame,
                                                                 )[runKey];
 
+                                                                router.refresh();
                                                                 forceUpdate();
                                                             }
                                                         }}
@@ -388,7 +391,7 @@ export const UserOverview = ({
                                                                 ].highlighted =
                                                                     str.result.highlighted;
 
-                                                                parentForceUpdate();
+                                                                router.refresh();
                                                             }}
                                                         >
                                                             {!run.highlighted ? (
