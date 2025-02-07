@@ -1,5 +1,5 @@
 import React from "react";
-import { Homepage } from "~app/home/homepage";
+import { Homepage } from "~app/(home)/components/homepage";
 
 export const revalidate = 60;
 
