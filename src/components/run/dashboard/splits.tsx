@@ -4,7 +4,6 @@ import { Col, Row, Table } from "react-bootstrap";
 import React, { useState } from "react";
 import Switch from "react-switch";
 import styles from "../../css/User.module.scss";
-import { UnderlineTooltip } from "../../tooltip";
 import SplitName from "../../transformers/split-name";
 import { ValueOf } from "next/dist/shared/lib/constants";
 import { Bounce, toast, ToastContainer } from "react-toastify";
@@ -81,44 +80,24 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                     )}
                 </Col>
                 <Col sm={3} style={{ display: "flex", justifyContent: "end" }}>
-                    <div
-                        style={{
-                            display: "flex",
-                            justifyContent: "end",
-                            alignSelf: "center",
-                        }}
-                    >
-                        <label
-                            htmlFor="switch"
-                            style={{
-                                marginRight: "10px",
-                                alignSelf: "center",
-                                whiteSpace: "nowrap",
-                            }}
-                        >
-                            {" "}
-                            <UnderlineTooltip
-                                title="Total/split time"
-                                content={
-                                    "This table can show you the splits in two forms: Total time or Split time. " +
-                                    "Total time means it will show you the full split time, including previous splits. Split time will only show the time for that specific segment."
-                                }
-                                element="Show total time"
-                            />{" "}
-                        </label>
+                    <div className="d-flex justify-content-start align-items-center justify-content-lg-center">
+                        <div className="me-2">Segment time</div>
                         <Switch
+                            uncheckedIcon={false}
+                            checkedIcon={false}
                             onColor={getComputedStyle(
                                 document.documentElement,
                             ).getPropertyValue("--bs-link-color")}
                             offColor={getComputedStyle(
                                 document.documentElement,
-                            ).getPropertyValue("--bs-tertiary-bg")}
+                            ).getPropertyValue("--bs-link-color")}
                             name="switch"
                             onChange={(checked) => {
                                 setTotalTime(checked);
                             }}
                             checked={totalTime}
                         />
+                        <div className="ms-2">Split time</div>
                     </div>
                 </Col>
             </Row>

@@ -1,6 +1,6 @@
-import { Run } from "../../common/types";
-import { DurationToFormatted, FromNow } from "../util/datetime";
-import { UserGameCategoryLink, UserLink } from "../links/links";
+import { Run } from "~src/common/types";
+import { DurationToFormatted, FromNow } from "~src/components/util/datetime";
+import { UserGameCategoryLink, UserLink } from "~src/components/links/links";
 
 export const RunPreview = ({ run }: { run: Run }) => {
     const duration = run.hasGameTime

@@ -1,9 +1,7 @@
 "use server";
 
-import {
-    createNewSession,
-    getSession as getExistingSession,
-} from "../components/util/session";
+import { generateSession } from "~src/lib/generate-session";
+import { getSessionData } from "~src/lib/get-session-data";
 import { getBaseUrl } from "./base-url.action";
 import { loginWithTwitch } from "../components/twitch/login-with-twitch";
 import { cookies } from "next/headers";
@@ -23,15 +21,15 @@ export const createSession = async (code: string) => {
         code,
     );
 
-    const twitchSessionId = await createNewSession(
-        loginData.access_token,
-        loginData.refresh_token,
-        loginData.expires_in,
-        {
+    const twitchSessionId = await generateSession({
+        accessToken: loginData.access_token,
+        refreshToken: loginData.refresh_token,
+        expiresIn: loginData.expires_in,
+        data: {
             username: userInfo.preferred_username,
             picture: userInfo.picture,
         },
-    );
+    });
 
     if (twitchSessionId) {
         return {
@@ -48,7 +46,7 @@ export const getSession = async (): Promise<User> => {
         return DEFAULT_SESSION;
     }
     try {
-        const session = await getExistingSession(sessionId);
+        const session = await getSessionData(sessionId);
         if (session) {
             return { id: sessionId, ...session } as User;
         }
