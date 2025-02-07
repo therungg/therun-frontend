@@ -3,9 +3,12 @@ import React from "react";
 import { AggregatedResults } from "./use-aggregated-results";
 import { RunData } from "./find-user-or-run";
 
+export type SearchItemKind = "user" | "game";
+
 export interface SearchItem {
     key: string;
-    type: "user" | "game";
+    type: SearchItemKind;
+    url?: string;
     data: RunData[];
     matches: FuseResultMatch[];
 }
@@ -35,7 +38,7 @@ export const useFuseSearch = (aggregatedResults: AggregatedResults) => {
 
 export const useFilteredFuzzySearch = (
     fuse: Fuse<{
-        type: "user" | "game";
+        type: SearchItemKind;
         key: string;
         data: RunData[];
     }>,

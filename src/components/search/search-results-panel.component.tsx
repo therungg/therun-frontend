@@ -77,12 +77,10 @@ interface SearchResultItemProps {
 }
 
 const SearchResultItem = React.memo<SearchResultItemProps>(({ result }) => {
-    const url =
-        result.type === "user" ? `/${result.key}` : `/games/${result.key}`;
     return (
         <dd className="m-0">
             <Link
-                href={url}
+                href={result.url ?? ""}
                 title={result.key}
                 className="list-group-item-action d-block text-decoration-none px-3 py-1 text-truncate text-body lh-sm"
             >

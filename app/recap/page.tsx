@@ -91,7 +91,18 @@ export default function Page() {
                     </p>
                 </div>
                 <div className="w-auto d-inline-block mb-5">
-                    <GlobalSearch filter={["user"]} />
+                    <GlobalSearch
+                        filter={["user"]}
+                        onSearchResults={(results) => {
+                            return results.map(([type, items]) => {
+                                const itemsWithRecapUrl = items.map((item) => ({
+                                    ...item,
+                                    url: `${item.url ?? ""}/recap`,
+                                }));
+                                return [type, itemsWithRecapUrl];
+                            });
+                        }}
+                    />
                 </div>
 
                 <Col className="justify-content-center">

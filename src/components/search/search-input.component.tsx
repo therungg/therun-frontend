@@ -1,10 +1,10 @@
 import React from "react";
+import { type SearchItemKind } from "./use-fuzzy-search";
 import { Search as SearchIcon } from "react-bootstrap-icons";
-import { SearchFilterValues } from "./global-search.component";
 
 interface SearchInputProps {
     query: string;
-    filterSet: Set<SearchFilterValues>;
+    filters: SearchItemKind[];
     isSearching: boolean;
     onChange: React.ChangeEventHandler<HTMLInputElement>;
     onInputFocus: React.FocusEventHandler<HTMLInputElement>;
@@ -13,7 +13,7 @@ interface SearchInputProps {
 export const SearchInput = React.memo(
     React.forwardRef<HTMLInputElement, SearchInputProps>(
         (
-            { isSearching, query, filterSet, onChange, onInputFocus },
+            { isSearching, query, filters, onChange, onInputFocus },
             searchRef,
         ) => {
             return (
@@ -36,7 +36,7 @@ export const SearchInput = React.memo(
                         type="search"
                         autoComplete="off"
                         className="form-control"
-                        placeholder={getPlaceholderText(filterSet)}
+                        placeholder={getPlaceholderText(filters)}
                         onChange={onChange}
                         value={query}
                         onFocus={onInputFocus}
@@ -50,14 +50,16 @@ export const SearchInput = React.memo(
 
 SearchInput.displayName = "SearchInput";
 
-const getPlaceholderText = (filterSet: Set<SearchFilterValues>) => {
-    const items = filterSet.values();
+const getPlaceholderText = (filters: SearchItemKind[]) => {
+    // TODO: Localize this.
     const formatter = new Intl.ListFormat("en-US", {
         style: "short",
         type: "disjunction",
     });
     const itemList = formatter.format(
-        items.map((item) => item.charAt(0).toUpperCase() + item.slice(1)),
+        filters.map(
+            (filter) => filter.charAt(0).toUpperCase() + filter.slice(1),
+        ),
     );
 
     return `Find a ${itemList}`;
