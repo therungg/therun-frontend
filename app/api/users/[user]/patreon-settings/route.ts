@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { apiResponse } from "~app/api/response";
-import savePatreonSettings from "~src/lib/save-patreon-settings";
+import { savePatreonSettings } from "~src/lib/server/save-patreon-settings";
 
 export async function POST(
     request: NextRequest,
