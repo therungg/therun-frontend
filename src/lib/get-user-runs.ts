@@ -12,6 +12,7 @@ export const getUserRuns = async (
         cache: "force-cache",
         next: {
             revalidate: 600,
+            tags: [`/users/${username}`],
         },
     });
     const json = await res.json();

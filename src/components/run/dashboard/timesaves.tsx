@@ -126,12 +126,14 @@ export const Timesaves = ({
                 >
                     <div className="me-2">Table mode</div>
                     <Switch
+                        uncheckedIcon={false}
+                        checkedIcon={false}
                         onColor={getComputedStyle(
                             document.documentElement,
                         ).getPropertyValue("--bs-link-color")}
                         offColor={getComputedStyle(
                             document.documentElement,
-                        ).getPropertyValue("--bs-tertiary-bg")}
+                        ).getPropertyValue("--bs-link-color")}
                         name="switch"
                         onChange={(checked) => {
                             setVisual(checked);
