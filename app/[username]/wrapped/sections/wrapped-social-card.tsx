@@ -18,10 +18,8 @@ import { SectionBody } from "./section-body";
 import { Button } from "react-bootstrap";
 import { safeDecodeURI } from "~src/utils/uri";
 import { usePatreons } from "~src/components/patreon/use-patreons";
-import {
-    PatreonBunnySvgMarioPipe,
-    PatreonBunnySvgWithoutLink,
-} from "~app/patron/patreon-info";
+import { BunnyMarioPipeIcon } from "~src/icons/bunny-mario-pipe-icon";
+import { BunnyIcon } from "~src/icons/bunny-icon";
 
 const bangers = Bangers({
     weight: "400",
@@ -142,7 +140,7 @@ const HiddenDataSummary = memo<HiddenDataSummaryProps>(
                                     />
                                 </div>
                             ) : (
-                                <PatreonBunnySvgMarioPipe size={150} />
+                                <BunnyMarioPipeIcon size={150} />
                             )}
                             <p style={{ marginLeft: "25px", fontSize: "48px" }}>
                                 <span
@@ -169,7 +167,7 @@ const HiddenDataSummary = memo<HiddenDataSummaryProps>(
                                 >
                                     {safeDecodeURI(wrapped.user)}{" "}
                                     {isPatron && (
-                                        <PatreonBunnySvgWithoutLink
+                                        <BunnyIcon
                                             size={
                                                 wrapped.user.length > 16
                                                     ? 48

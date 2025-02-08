@@ -1,13 +1,13 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
 import { Col } from "react-bootstrap";
-import { PatreonBunnyHeartWithoutLink } from "~app/patron/patreon-info";
 import { getSession } from "~src/actions/session.action";
 import { TwitchLoginButton } from "~src/components/twitch/TwitchLoginButton";
 // TODO: Create a client fetcher
 import { getWrappedForUser } from "~src/lib/server/get-wrapped-for-user";
-import React, { useEffect, useState } from "react";
 import { User } from "types/session.types";
+import { BunnyHeartIcon } from "~src/icons/bunny-heart-icon";
 import { GlobalSearch } from "~src/components/search/global-search.component";
 
 export default function Page() {
@@ -110,7 +110,7 @@ export default function Page() {
 
                 <Col className="justify-content-center">
                     <p className="display-6">Here's to 2025!</p>
-                    <PatreonBunnyHeartWithoutLink size={125} />
+                    <BunnyHeartIcon size={125} />
                     <p className="mt-3">
                         -- Joey and <b>The</b>{" "}
                         <span

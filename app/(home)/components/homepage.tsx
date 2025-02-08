@@ -1,12 +1,14 @@
-import Link from "next/link";
-import { Button, Col, Row } from "react-bootstrap";
-import { PatreonBunnySvgWithoutLink } from "~app/patron/patreon-info";
 import React from "react";
+import Link from "next/link";
+import { Col, Row } from "react-bootstrap";
 import { DataHolder } from "~app/(home)/components/data-holder";
 import { SkeletonPersonalBests } from "~src/components/skeleton/index/skeleton-personal-bests";
 import { PopularGames } from "~src/components/game/popular-games";
 import { SkeletonPopularGames } from "~src/components/skeleton/index/skeleton-popular-games";
 import { useTranslations } from "next-intl";
+import { BunnyIcon } from "~src/icons/bunny-icon";
+import { IconButton } from "~src/components/Button/IconButton";
+import { Button } from "~src/components/Button/Button";
 
 export const Homepage = () => {
     const t = useTranslations("homepage");
@@ -20,12 +22,14 @@ export const Homepage = () => {
                     <p className="lead mb-4"></p>
                     <div className="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
                         <Link href="/patron">
-                            <Button
+                            <IconButton
+                                icon={<BunnyIcon />}
+                                iconPosition="right"
                                 variant="secondary"
                                 className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
                             >
-                                {t("support")} <PatreonBunnySvgWithoutLink />
-                            </Button>
+                                {t("support")}
+                            </IconButton>
                         </Link>
                         <Link href="/about">
                             <Button
