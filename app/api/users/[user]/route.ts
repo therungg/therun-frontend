@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
-import { getUserRuns } from "~src/lib/get-user-runs";
+import { getUserRuns } from "~src/lib/server/get-user-runs";
 import { apiResponse } from "~app/api/response";
-import { editUser } from "~src/lib/edit-user";
+import { editUser } from "~src/lib/server/edit-user";
 
 export const revalidate = 60;
 

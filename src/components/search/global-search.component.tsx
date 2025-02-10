@@ -5,30 +5,32 @@ import useSWR from "swr";
 import { useDebounceValue } from "usehooks-ts";
 import { useAggregatedResults } from "./use-aggregated-results";
 import {
-    SearchItem,
+    type SearchItem,
+    type SearchItemKind,
     useFilteredFuzzySearch,
     useFuseSearch,
 } from "./use-fuzzy-search";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { SearchInput } from "./search-input.component";
 import { SearchResultsPanel } from "./search-results-panel.component";
+import { fetcher } from "~src/utils/fetcher";
 // import { getFormattedString } from "../util/datetime";
-
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const MAX_SEARCH_RESULTS = 15;
 
-const DEFAULT_FILTER_VALUES = ["user", "game"] as SearchFilterValues[];
+const DEFAULT_FILTER_VALUES = ["user", "game"] as SearchItemKind[];
 
+type SearchResultEntries = [SearchItemKind, SearchItem[]][];
 interface SearchProps {
-    filter?: SearchFilterValues[];
+    filter?: SearchItemKind[];
+    onSearchResults?: (results: SearchResultEntries) => SearchResultEntries;
 }
 
 // TODO: Split apart the results from the search
 // If the input is its own component and continues to put the search term in the queryparams
 // then we can make the results a server component by reading from the queryparams
 export const GlobalSearch = React.memo<SearchProps>(
-    ({ filter = DEFAULT_FILTER_VALUES }) => {
+    ({ filter = DEFAULT_FILTER_VALUES, onSearchResults }) => {
         const pathname = usePathname();
         const searchParams = useSearchParams();
         const router = useRouter();
@@ -86,31 +88,38 @@ export const GlobalSearch = React.memo<SearchProps>(
         const fuse = useFuseSearch(aggregatedResults);
         const filteredResults = useFilteredFuzzySearch(fuse, query);
 
-        const filterSet: Set<SearchFilterValues> = new Set(filter);
-
+        const searchFilters = Array.from(new Set(filter));
         const searchResultEntries = React.useMemo(() => {
-            const entries = Object.entries(filteredResults).slice(
-                0,
-                MAX_SEARCH_RESULTS,
-            );
+            let results = Object.entries(filteredResults)
+                // Get a couple of results. We don't need to display the world.
+                .slice(0, MAX_SEARCH_RESULTS)
+                // Then go through the search results and add a URL for them
+                .map(([type, items]) => {
+                    const getItemUrl = (item: SearchItem) =>
+                        item.type === "user"
+                            ? `/${item.key}`
+                            : `/games/${item.key}`;
+                    const itemsWithUrl = items.map((item) => ({
+                        ...item,
+                        url: getItemUrl(item),
+                    }));
+                    return [type, itemsWithUrl];
+                }) as SearchResultEntries;
 
-            if (!filter?.length) {
-                return entries;
+            // Apply search filters if we have any
+            if (searchFilters.length) {
+                results = results.filter(
+                    ([type, items]) =>
+                        searchFilters.includes(type) && items.length > 0,
+                );
             }
 
-            // Otherwise apply the filter
-            return entries
-                .map(
-                    ([type, items]) =>
-                        [
-                            type,
-                            items.filter((item) =>
-                                filterSet.has(item.type as SearchFilterValues),
-                            ),
-                        ] as [string, SearchItem[]],
-                )
-                .filter(([_, items]) => items.length > 0);
-        }, [filteredResults, filter]);
+            // If we have a callback, call it - it has to return results.
+            if (onSearchResults) {
+                results = onSearchResults(results);
+            }
+            return results;
+        }, [filteredResults, searchFilters]);
 
         //const resultsLength = fuse._docs?.length; Unsure about this right now
         const handleInputChange: React.ChangeEventHandler<HTMLInputElement> =
@@ -166,7 +175,7 @@ export const GlobalSearch = React.memo<SearchProps>(
             <div className="position-relative">
                 <SearchInput
                     query={query}
-                    filterSet={filterSet}
+                    filters={searchFilters}
                     isSearching={isSearching}
                     onChange={handleInputChange}
                     onInputFocus={handleInputFocus}
@@ -186,5 +195,3 @@ export const GlobalSearch = React.memo<SearchProps>(
 );
 
 GlobalSearch.displayName = "GlobalSearch";
-
-export type SearchFilterValues = "user" | "game";

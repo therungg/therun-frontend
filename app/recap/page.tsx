@@ -1,12 +1,13 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
 import { Col } from "react-bootstrap";
-import { PatreonBunnyHeartWithoutLink } from "~app/patron/patreon-info";
 import { getSession } from "~src/actions/session.action";
 import { TwitchLoginButton } from "~src/components/twitch/TwitchLoginButton";
-import { getWrappedForUser } from "~src/lib/wrapped";
-import React, { useEffect, useState } from "react";
+// TODO: Create a client fetcher
+import { getWrappedForUser } from "~src/lib/server/get-wrapped-for-user";
 import { User } from "types/session.types";
+import { BunnyHeartIcon } from "~src/icons/bunny-heart-icon";
 import { GlobalSearch } from "~src/components/search/global-search.component";
 
 export default function Page() {
@@ -16,6 +17,7 @@ export default function Page() {
     useEffect(() => {
         async function fetchSession() {
             try {
+                // TODO: Migrate this to useSWR
                 const sessionData = await getSession();
                 setSession(sessionData);
 
@@ -24,6 +26,7 @@ export default function Page() {
                     setHasSession(true);
 
                     try {
+                        // TODO: Migrate this to useSWR
                         await getWrappedForUser(sessionData.user);
                     } catch (wrappedError) {
                         console.error(
@@ -91,12 +94,23 @@ export default function Page() {
                     </p>
                 </div>
                 <div className="w-auto d-inline-block mb-5">
-                    <GlobalSearch filter={["user"]} />
+                    <GlobalSearch
+                        filter={["user"]}
+                        onSearchResults={(results) => {
+                            return results.map(([type, items]) => {
+                                const itemsWithRecapUrl = items.map((item) => ({
+                                    ...item,
+                                    url: `${item.url ?? ""}/recap`,
+                                }));
+                                return [type, itemsWithRecapUrl];
+                            });
+                        }}
+                    />
                 </div>
 
                 <Col className="justify-content-center">
                     <p className="display-6">Here's to 2025!</p>
-                    <PatreonBunnyHeartWithoutLink size={125} />
+                    <BunnyHeartIcon size={125} />
                     <p className="mt-3">
                         -- Joey and <b>The</b>{" "}
                         <span
