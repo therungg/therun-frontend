@@ -8,6 +8,20 @@
       "when": 1738957494204,
       "tag": "0000_bored_talisman",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1739229107431,
+      "tag": "0001_skinny_arclight",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1739229725909,
+      "tag": "0002_outgoing_wither",
+      "breakpoints": true
     }
   ]
 }
