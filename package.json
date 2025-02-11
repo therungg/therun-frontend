@@ -14,6 +14,7 @@
     "prepush": "next lint --fix",
     "typecheck": "tsc --noEmit",
     "generate-migration": "npx drizzle-kit generate",
+    "seed": "npx dotenvx run -f .env.local -f .env -- npx tsx ./src/db/seed.ts",
     "migrate": "npx dotenvx run -f .env.local -f .env -- npx drizzle-kit migrate"
   },
   "overrides": {
@@ -110,6 +111,7 @@
     "victory": "^37.3.5"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.4.0",
     "@types/bootstrap": "^5.2",
     "@types/d3": "^7.4.3",
     "@types/js-levenshtein": "^1.1.3",
