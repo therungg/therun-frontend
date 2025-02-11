@@ -54,7 +54,6 @@ const main = async () => {
     }
 
     // Insert the generated events into the "events" table
-    await db.delete(events);
     await db.insert(events).values(fakeEvents);
     console.log("Seed done");
 };
