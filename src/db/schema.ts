@@ -5,6 +5,7 @@ import {
     timestamp,
     index,
     varchar,
+    boolean,
 } from "drizzle-orm/pg-core";
 
 export const events = pgTable(
@@ -23,6 +24,7 @@ export const events = pgTable(
         description: text().notNull(),
         url: varchar({ length: 255 }),
         imageUrl: varchar({ length: 255 }),
+        approved: boolean(),
         createdAt: timestamp().defaultNow(),
     },
     (table) => [index("starts_at_index").on(table.startsAt)],
