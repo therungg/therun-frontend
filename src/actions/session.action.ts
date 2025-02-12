@@ -8,6 +8,7 @@ import { cookies } from "next/headers";
 import { User } from "../../types/session.types";
 import { SessionError } from "~src/common/session.error";
 import { DEFAULT_SESSION } from "~src/common/constants";
+import { getOrCreateUser, getUserRoles } from "~src/lib/users";
 
 export const createSession = async (code: string) => {
     const baseUrl = await getBaseUrl();
@@ -48,6 +49,10 @@ export const getSession = async (): Promise<User> => {
     try {
         const session = await getSessionData(sessionId);
         if (session) {
+            const userId = await getOrCreateUser(session.username);
+            const roles = await getUserRoles(userId);
+            session.roles.push(...roles);
+
             return { id: sessionId, ...session } as User;
         }
     } catch (error) {
