@@ -31,7 +31,8 @@ Since early 2025, we use this project as our backend, with a new SQL database. T
 
 -   Get yourself a Postgres DB (I recommend using Supabase)
 -   Add your DATABASE_URL to `env.local`
--   Run `npm run migrate`
+-   Run `npm run migrate` to create the database tables
+-   Run `npm run seed` to fill the database with seed data
 
 ## Support
 
