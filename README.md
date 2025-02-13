@@ -5,17 +5,17 @@ speedrunners.
 
 ## Features
 
-- Live Runs tracking
-- Advanced statistics
-- Games overview
-- Splits backup
-- Twitch Extension
+-   Live Runs tracking
+-   Advanced statistics
+-   Games overview
+-   Splits backup
+-   Twitch Extension
 
 and many, many more.
 
 ## Getting Started
 
-You'll need node.js version 16 or higher. First clone this repository.
+You'll need node.js version 22 or higher. First clone this repository.
 
 ```
 cp .env .env.local
@@ -24,6 +24,14 @@ npm run dev
 ```
 
 Navigate to `localhost:3000`
+
+## Setting up the database
+
+Since early 2025, we use this project as our backend, with a new SQL database. To set it up:
+
+-   Get yourself a Postgres DB (I recommend using Supabase)
+-   Add your DATABASE_URL to `env.local`
+-   Run `npm run migrate`
 
 ## Support
 
