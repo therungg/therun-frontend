@@ -1,6 +1,6 @@
 export interface User {
     id: string;
-    roles?: string[];
+    roles?: Role[];
     moderatedGames?: string[];
     sessionError?: string;
     pronouns?: string;
