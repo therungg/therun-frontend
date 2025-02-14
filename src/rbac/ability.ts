@@ -114,6 +114,8 @@ export function defineAbilityFor(user?: User): AppAbility {
     const userRoles = user.roles || [];
 
     userRoles?.forEach((role) => {
+        if (!rolePermissions[role]) return;
+
         rolePermissions[role](user, builder);
     });
 
