@@ -99,20 +99,17 @@ export const Topbar = ({
                                 </Nav.Link>
                             )}
 
-                            <Nav.Link href="/recap">
-                                Recap 2024
-                                <i className="ms-1 text-secondary">
-                                    <sup>New</sup>
-                                </i>
+                            <Nav.Link href="/aethermancer">
+                                Aethermancer Contest
                             </Nav.Link>
                             <Nav.Link href="/races">Races</Nav.Link>
                             <Nav.Link href="/live">Live</Nav.Link>
 
-                            {username && (
-                                <Nav.Link href="/stories/manage">
-                                    Story Mode
-                                </Nav.Link>
-                            )}
+                            {/*{username && (*/}
+                            {/*    <Nav.Link href="/stories/manage">*/}
+                            {/*        Story Mode*/}
+                            {/*    </Nav.Link>*/}
+                            {/*)}*/}
                             <Nav.Link href="/patron">
                                 Support us! <BunnyIcon />
                             </Nav.Link>
