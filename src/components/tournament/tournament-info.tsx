@@ -90,15 +90,12 @@ export const TournamentInfo = ({
     return (
         <div>
             {tournament.description && (
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        fontSize: "x-large",
-                        marginBottom: "1rem",
-                    }}
-                >
-                    {tournament.description}
+                <div className="w-75 mx-auto text-center">
+                    <div
+                        dangerouslySetInnerHTML={{
+                            __html: tournament.description,
+                        }}
+                    />
                 </div>
             )}
             <Table
@@ -111,7 +108,7 @@ export const TournamentInfo = ({
                     {tournament.eligiblePeriods.length === 1 && (
                         <>
                             <tr className={styles.tableVerticalHeader}>
-                                <th colSpan={2}>Tournament</th>
+                                <th colSpan={2}>Tournament Dates</th>
                             </tr>
                             <tr>
                                 <th>Starting at</th>
@@ -280,11 +277,12 @@ export const TournamentInfo = ({
                             })}
                         </>
                     )}
-                    {tournament.socials && (
-                        <tr className={styles.tableVerticalHeader}>
-                            <th colSpan={2}>Tournament socials</th>
-                        </tr>
-                    )}
+                    {tournament.socials &&
+                        Object.keys(tournament.socials).length > 0 && (
+                            <tr className={styles.tableVerticalHeader}>
+                                <th colSpan={2}>Tournament socials</th>
+                            </tr>
+                        )}
                     {tournament.socials &&
                         Object.values(tournament.socials).map((social) => {
                             return (
@@ -340,7 +338,21 @@ export const TournamentInfo = ({
                         <h3>Rules</h3>
                         <ul>
                             {tournament.rules.map((rule) => {
-                                return <li key={rule}>{rule}</li>;
+                                try {
+                                    const urlRule = new URL(rule);
+
+                                    return (
+                                        <a
+                                            href={urlRule.toString()}
+                                            target="_blank"
+                                            rel="nofollow"
+                                        >
+                                            Link to full ruleset
+                                        </a>
+                                    );
+                                } catch (_) {
+                                    return <li key={rule}>{rule}</li>;
+                                }
                             })}
                         </ul>
                     </Col>
