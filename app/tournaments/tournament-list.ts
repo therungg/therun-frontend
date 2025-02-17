@@ -13,6 +13,7 @@ type Tournament = {
 type TournamentEntryValue = Tournament | CombinedTournament;
 
 const tournamentEntries: Array<[string, TournamentEntryValue]> = [
+    ["aethermancer", { tournament: "Aethermancer Contest" }],
     [
         "DefeatGanonCC",
         { tournament: "Defeat Ganon No SRM Community Clash Main Event" },
