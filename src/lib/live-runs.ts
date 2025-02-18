@@ -59,14 +59,14 @@ export const getLiveRunForUser = async (username: string) => {
 };
 
 // Server
-export const getTopNLiveRuns = async (n = 5) => {
+export const getTopNLiveRuns = async (n = 5): Promise<LiveRun[]> => {
     const result = await fetch(`${LIVE_RUN_URL}?limit=${n}`);
 
     return result.json();
 };
 
 // Server
-export const getRandomTopLiveRun = async () => {
+export const getRandomTopLiveRun = async (): Promise<LiveRun[]> => {
     const result = await fetch(`${LIVE_RUN_URL}?random=true`);
 
     return result.json();

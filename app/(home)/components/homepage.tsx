@@ -1,71 +1,83 @@
-import React from "react";
-import Link from "next/link";
 import { Col, Row } from "react-bootstrap";
-import { DataHolder } from "~app/(home)/components/data-holder";
+import { DataHolder } from "~app/(home)/components/server/data-holder";
 import { SkeletonPersonalBests } from "~src/components/skeleton/index/skeleton-personal-bests";
-import { PopularGames } from "~src/components/game/popular-games";
-import { SkeletonPopularGames } from "~src/components/skeleton/index/skeleton-popular-games";
-import { useTranslations } from "next-intl";
-import { BunnyIcon } from "~src/icons/bunny-icon";
-import { IconButton } from "~src/components/Button/IconButton";
-import { Button } from "~src/components/Button/Button";
+import SupportSection from "./client/SupportSection";
+import React from "react";
+import {
+    HomeLayout,
+    ContentCard,
+    MainContainer,
+    SidebarContainer,
+} from "./client/home-layout";
+import HappeningNowSection from "./client/sidebar/happening-now";
+import { LatestNewsSection } from "./client/sidebar/latest-news";
+import NewAndTrending from "./client/sidebar/new-and-trending";
+import RecentlyVisited from "./client/sidebar/recently-visited";
+import RelevantRacesFetcher from "./server/relevant-races-fetcher";
+import TournamentsFetcher from "./server/tournaments-fetcher";
+import LiveRunsFetcher from "./server/live-runs-fetcher";
 
-export const Homepage = () => {
-    const t = useTranslations("homepage");
-
+export default function Homepage() {
     return (
-        <div>
-            <div className="px-4 pt-5 mt-3 mb-5 text-center">
-                <h1 className="display-1 fw-medium">{t("title")}</h1>
-                <h2 className="display-6 mb-5">{t("subtitle")}</h2>
-                <div className="col-lg-6 mx-auto">
-                    <p className="lead mb-4"></p>
-                    <div className="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
-                        <Link href="/patron">
-                            <IconButton
-                                icon={<BunnyIcon />}
-                                iconPosition="right"
-                                variant="secondary"
-                                className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
+        <HomeLayout>
+            <MainContainer>
+                <ContentCard
+                    title="Live Runs"
+                    callToActionText="View All"
+                    callToActionHref="/live"
+                >
+                    <React.Suspense>
+                        <LiveRunsFetcher />
+                    </React.Suspense>
+                </ContentCard>
+                <Row className="g-4">
+                    <Col md={8}>
+                        <ContentCard
+                            title="Recent PBs"
+                            scrollable
+                            maxHeight="500px"
+                        >
+                            <React.Suspense
+                                fallback={<SkeletonPersonalBests />}
                             >
-                                {t("support")}
-                            </IconButton>
-                        </Link>
-                        <Link href="/about">
-                            <Button
-                                variant="primary"
-                                className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
-                            >
-                                {t("learnMore")}
-                            </Button>
-                        </Link>
-                        <Link href="/livesplit">
-                            <Button
-                                variant="primary"
-                                className="btn-lg px-3 w-160p h-3r fw-medium"
-                            >
-                                {t("liveSplitKey")}
-                            </Button>
-                        </Link>
-                    </div>
-                </div>
-            </div>
-            <div>
-                <Row className="text-center">
-                    <Col xl={6} className="mt-4">
-                        <h2>Recent Personal Bests</h2>
-                        <React.Suspense fallback={<SkeletonPersonalBests />}>
-                            <DataHolder />
-                        </React.Suspense>
+                                <DataHolder />
+                            </React.Suspense>
+                        </ContentCard>
                     </Col>
-                    <Col xl={6} className="mt-4">
-                        <h2>Popular Games</h2>
-                        <React.Suspense fallback={<SkeletonPopularGames />}>
-                            <PopularGames />
-                        </React.Suspense>
+                    <Col md={4}>
+                        <SupportSection />
+                    </Col>
+                    <Col md={6}>
+                        <ContentCard
+                            title="Races"
+                            callToActionText="View All"
+                            callToActionHref="/races"
+                        >
+                            <React.Suspense>
+                                <RelevantRacesFetcher />
+                            </React.Suspense>
+                        </ContentCard>
+                    </Col>
+                    <Col md={6}>
+                        <ContentCard
+                            title="Tournaments"
+                            callToActionText="View All"
+                            callToActionHref="/tournaments"
+                        >
+                            <React.Suspense>
+                                <TournamentsFetcher />
+                            </React.Suspense>
+                        </ContentCard>
                     </Col>
                 </Row>
-            </div>
-        </div>
+            </MainContainer>
+
+            <SidebarContainer>
+                <HappeningNowSection />
+                <LatestNewsSection />
+                <NewAndTrending />
+                <RecentlyVisited />
+            </SidebarContainer>
+        </HomeLayout>
     );
-};
+}

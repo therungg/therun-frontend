@@ -15,6 +15,10 @@ import { useRaces } from "~app/races/hooks/use-race";
 import { RecentlyFinishedRaces } from "~app/races/recently-finished-races";
 import { RaceFaq } from "~app/races/race-faq";
 import { RacesWelcomeMessage } from "~app/races/races-welcome-message";
+import {
+    getInProgressRaces,
+    getUpcomingRaces,
+} from "~src/helpers/race-helpers";
 
 interface RaceOverviewProps {
     races: Race[];
@@ -66,34 +70,4 @@ export const RaceOverview = ({
             </Row>
         </>
     );
-};
-
-const getInProgressRaces = (races: Race[]): Race[] => {
-    return races
-        .filter((race) => {
-            return (
-                race.status === "progress" ||
-                race.status === "starting" ||
-                race.status === "finished"
-            );
-        })
-        .sort((a, b) => {
-            return (
-                new Date(a.startTime as string).getTime() -
-                new Date(b.startTime as string).getTime()
-            );
-        });
-};
-
-const getUpcomingRaces = (races: Race[]): Race[] => {
-    return races
-        .filter((race) => {
-            return race.status === "pending";
-        })
-        .sort((a, b) => {
-            return (
-                new Date(a.startTime as string).getTime() -
-                new Date(b.startTime as string).getTime()
-            );
-        });
 };

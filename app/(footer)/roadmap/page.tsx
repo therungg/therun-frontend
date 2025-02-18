@@ -1,169 +1,224 @@
-import buildMetadata from "~src/utils/metadata";
+"use client";
 
-export const metadata = buildMetadata({
-    title: "Roadmap",
-    description:
-        "See a list of planned features for The Run that could be coming soon!",
-});
+import moment from "moment";
+import React from "react";
+import { useEffect, useRef, useState } from "react";
+
+const onePxSolidGrey = "1px solid #333";
+
+const styles = {
+    container: {
+        backgroundColor: "#000000",
+        color: "white",
+        maxWidth: "400px",
+        border: onePxSolidGrey,
+    },
+    header: {
+        backgroundColor: "#222",
+        borderBottom: onePxSolidGrey,
+        padding: "8px 12px",
+        fontSize: "0.9rem",
+    },
+    gameIcon: {
+        width: "28px",
+        height: "28px",
+        objectFit: "cover",
+        borderRadius: "2px",
+        paddingRight: "6px",
+    },
+    splitRow: {
+        borderBottom: onePxSolidGrey,
+        padding: "4px 12px",
+        fontSize: "0.9rem",
+        transition: "background-color 0.2s",
+    },
+    splitRowActive: {
+        backgroundColor: "#1a3561",
+        borderBottom: onePxSolidGrey,
+        padding: "4px 12px",
+        fontSize: "0.9rem",
+    },
+    splitTime: {
+        color: "#fff",
+        fontWeight: "bold",
+    },
+    currentTime: {
+        backgroundColor: "#111",
+        padding: "15px 25px",
+        fontSize: "2.5rem",
+        fontWeight: "bold",
+        color: "#00ff00",
+        fontFamily: '"Consolas", "Liberation Mono", Menlo, Courier, monospace',
+        letterSpacing: "0.05em",
+        textAlign: "right",
+    },
+    previousSegment: {
+        backgroundColor: "#222",
+        borderTop: onePxSolidGrey,
+        padding: "8px 12px",
+        fontSize: "0.9rem",
+    },
+    delta: {
+        color: "#00ff00",
+        fontFamily: '"Consolas", "Liberation Mono", Menlo, Courier, monospace',
+    },
+    completedSplit: {
+        color: "#888",
+    },
+    upcomingSplit: {
+        color: "#fff",
+    },
+};
+
+const SplitRow = React.forwardRef(({ name, time, isActive }, ref) => (
+    <div
+        ref={ref}
+        className="d-flex justify-content-between align-items-center"
+        style={isActive ? styles.splitRowActive : styles.splitRow}
+        onMouseEnter={(e) =>
+            !isActive && (e.currentTarget.style.backgroundColor = "#222")
+        }
+        onMouseLeave={(e) =>
+            !isActive && (e.currentTarget.style.backgroundColor = "transparent")
+        }
+    >
+        <div className="d-flex align-items-center">
+            <span style={styles.upcomingSplit}>{name}</span>
+        </div>
+        <span style={styles.splitTime}>{time}</span>
+    </div>
+));
+
+SplitRow.displayName = "SplitRow";
 
 // TODO: Link to the Github Issues or other project planning in the future
 export default function Roadmap() {
+    const august = "August 2022"; // fuck you eslint
+
+    const splits = [
+        { name: "The Run Goes Live", time: "June 2022" },
+        { name: "Game Art!", time: "July 2022" },
+        { name: "Twitch Extension", time: august },
+        { name: "VIEW GLODS!", time: august },
+        { name: "Timesave Analysis", time: august },
+        { name: "The Run Live", time: "October 2022" },
+        { name: "Patreon Launch", time: "December 2022" },
+        { name: "Record History Graphs", time: "January 2023" },
+        { name: "Activity Tab", time: "March 2023" },
+        { name: "Open Source", time: "May 2023" },
+        { name: "The Run Races Beta", time: "January 2024" },
+        { name: "The Run Races", time: "March 2024" },
+        { name: "The Run Enters LiveSplit", time: "March 2024" },
+        { name: "Story Mode", time: "November 2024" },
+        { name: "The Run Recap", time: "January 2025" },
+        { name: "The Run Events", time: "Coming Q1 2025", currentSplit: true },
+        { name: "Speedbun: The In Scope Video Game!", time: "Coming Never" },
+        { name: "THERUN Treadmill Integration", time: "LOL" },
+    ];
+
+    const [startTime] = useState(moment.utc("2022-07-17T16:57:35Z"));
+    const [currentTime, setCurrentTime] = useState(moment.utc());
+    const activeSplitRef = useRef(null);
+    const containerRef = useRef(null);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(moment.utc());
+        }, 10); // Update every 10ms for smooth millisecond display
+
+        return () => clearInterval(timer);
+    }, []);
+
+    useEffect(() => {
+        // Scroll to active split with a small delay to ensure rendering is complete
+        const timeoutId = setTimeout(() => {
+            if (activeSplitRef.current && containerRef.current) {
+                const container = containerRef.current;
+                const activeElement = activeSplitRef.current;
+
+                // Calculate the scroll position to center the active split
+                const containerHeight = container.clientHeight;
+                const activeElementOffset = activeElement.offsetTop;
+                const activeElementHeight = activeElement.clientHeight;
+
+                // Center the active split in the container
+                const scrollPosition =
+                    activeElementOffset -
+                    containerHeight / 2 +
+                    activeElementHeight / 2;
+
+                // Set the scroll position
+                container.scrollTop = scrollPosition;
+            }
+        }, 100);
+
+        return () => clearTimeout(timeoutId);
+    }, []);
+
+    const formatElapsedTime = () => {
+        const duration = moment.duration(currentTime.diff(startTime));
+
+        const hours = Math.floor(duration.asHours()).toString();
+        const minutes = duration.minutes().toString().padStart(2, "0");
+        const seconds = duration.seconds().toString().padStart(2, "0");
+        const milliseconds = Math.floor(duration.milliseconds() / 10)
+            .toString()
+            .padStart(2, "0");
+
+        return `${hours}:${minutes}:${seconds}.${milliseconds}`;
+    };
+
     return (
-        <div>
-            <h1>Roadmap</h1>
+        <div className="container mt-4">
+            <div className="text-center">
+                <h1>Roadmap</h1>
+                <p>
+                    We're hard at work building new features. Here's our roadmap
+                    and the site's history...put more imaginative and
+                    descriptive text here.
+                </p>
+            </div>
 
-            <p>
-                These are the things I am working on or want to be working on.
-            </p>
+            <div className="mx-auto" style={styles.container}>
+                {/* Game Header */}
+                <div style={styles.header}>
+                    <img
+                        src="/logo_dark_theme_no_text_transparent.png"
+                        alt="The Run Logo"
+                        style={styles.gameIcon}
+                    />
+                    TheRun.gg Any% (No Sleep)
+                </div>
 
-            <h2>Done!</h2>
-            <ul>
-                <li>
-                    <s>
-                        Frontend/design revamp + make usable (enough) on mobile
-                    </s>
-                </li>
-                <li>
-                    <s>
-                        Navigating through games/categories/runners improvement
-                        (breadcrumbs?)
-                    </s>
-                </li>
-                <li>
-                    <s>Support Game Time as well instead of only Real Time</s>
-                </li>
-                <li>
-                    <s>
-                        Give users a profile for deleting/hiding/highlighting
-                        runs etc, editing some settings and probably a lot more
-                    </s>
-                </li>
-                <li>
-                    <s>
-                        Compare run to same run of other user or compare runs
-                        within same splits
-                    </s>
-                </li>
-                <li>
-                    <s>Discord/socials to better communicate/handle feedback</s>
-                </li>
-                <li>
-                    <s>Overview page for most popular games (or all)</s>
-                </li>
-                <li>
-                    <s>Feedback form</s>
-                </li>
-                <li>
-                    <s>
-                        Option to add other data to runs, like vod url,
-                        description etc
-                    </s>
-                </li>
-                <li>
-                    <s>Download splits from run</s>
-                </li>
-                <li>
-                    <s>Compare to different splits within file</s>
-                </li>
-                <li>
-                    <s>Dark mode</s>
-                </li>
-                <li>
-                    <s>Footer</s>
-                </li>
-                <li>
-                    <s>Privacy/Terms of use</s>
-                </li>
-                <li>
-                    <s>Show game art next to games</s>
-                </li>
-                <li>
-                    <s>Twitch panel for under stream with your data</s>
-                </li>
-                <li>
-                    <s>Tab to analyze gold splits</s>
-                </li>
-                <li>
-                    <s>
-                        Important time saves overview / Overview of strong and
-                        weak splits or parts of run in pb
-                    </s>
-                </li>
-                <li>
-                    <s>
-                        Show how often a sub-x time was achieved for splits/runs
-                    </s>
-                </li>
+                {/* Splits List */}
+                <div
+                    ref={containerRef}
+                    style={{ maxHeight: "400px", overflowY: "auto" }}
+                >
+                    {splits.map((split, i) => (
+                        <SplitRow
+                            key={i}
+                            ref={split.currentSplit ? activeSplitRef : null}
+                            name={split.name}
+                            time={split.time}
+                            icon={split.icon}
+                            isActive={split.currentSplit}
+                        />
+                    ))}
+                </div>
 
-                <li>
-                    <s>
-                        Handle secondary data from livesplit (region - platform
-                        - custom vars)
-                    </s>
-                </li>
-                <li>
-                    <s>Upload automatically from LiveSplit with a plugin</s>
-                </li>
-                <li>
-                    <s>The Run Live</s>
-                </li>
-            </ul>
+                {/* Current Time */}
+                <div style={styles.currentTime}>{formatElapsedTime()}</div>
 
-            <h2>What I am working on next / Coming soon</h2>
-
-            <ul>
-                <li>
-                    Working on fixing bugs and QOL changes for The Run Live,
-                    including improving the sorting algorithm, the shifting of
-                    runs on the overview and the bug that does not update game
-                    and category name when you select new splits in LiveSplit.
-                </li>
-            </ul>
-
-            <h2>Next up (priority is not set)</h2>
-            <ul>
-                <li>Filters on data/tables + pagination everywhere?</li>
-                <li>Display subsplits nicer</li>
-                <li>
-                    Better feedback on uploading splits + uploading multiple
-                    files at a time
-                </li>
-                <li>Show splits icons from livesplit</li>
-                <li>Leaderboards per week/month?</li>
-                <li>
-                    Add runs that you have no splits for (no data, but will
-                    still show up on profile, twitch extension etc)
-                </li>
-                <li>Improve consistency score</li>
-                <li>
-                    Community sum of bests/best achieved/ideal run/other
-                    community records?
-                </li>
-                <li>Use LiveSplit variables in game leaderboards</li>
-                <li>Mark graphs with PB time at date</li>
-                <li>Be able to select a range of runs on run filters</li>
-            </ul>
-
-            <h2>In the future (will happen but not really soon I think)</h2>
-
-            <ul>
-                <li>Exports from GUI</li>
-                <li>Friendlist/Follow</li>
-                <li>
-                    Historical pbs, see how often pb pace has been reached (at
-                    the time) etc
-                </li>
-                <li>Open source and/or API</li>
-                <li>Support non-twitch login (seperate account, youtube)?</li>
-                <li>Show live stream(s) for game</li>
-            </ul>
-
-            <h2>Thought about but no real plans (yet)</h2>
-
-            <ul>
-                <li>Twitch extension to show stats directly on stream</li>
-                <li>Mobile app</li>
-            </ul>
+                {/* Previous Segment */}
+                <div
+                    className="d-flex justify-content-between"
+                    style={styles.previousSegment}
+                >
+                    <span>Previous Segment</span>
+                    <span style={styles.delta}>-4.7</span>
+                </div>
+            </div>
         </div>
     );
 }

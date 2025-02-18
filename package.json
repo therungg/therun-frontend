@@ -70,8 +70,11 @@
     "d3": "^7.8.5",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.39.1",
+    "fast-xml-parser": "^4.5.1",
+    "framer-motion": "^12.4.3",
     "fuse.js": "^7.0.0",
     "globby": "^14.0.0",
+    "gray-matter": "^4.0.3",
     "gsap": "^3.12.7",
     "html2canvas": "^1.4.1",
     "joi": "^17.11.0",
@@ -80,6 +83,7 @@
     "nanoid": "^5.0.9",
     "next": "15.1.6",
     "next-intl": "^3.26.3",
+    "next-mdx-remote": "^5.0.0",
     "next-nprogress-bar": "^2.1.2",
     "next-themes": "^0.4.4",
     "nextjs-google-analytics": "^2.3.3",
@@ -108,7 +112,8 @@
     "react-use-websocket": "^4.5.0",
     "swr": "^2.2.4",
     "usehooks-ts": "^3.1.0",
-    "victory": "^37.3.5"
+    "victory": "^37.3.5",
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.4.0",
