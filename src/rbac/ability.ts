@@ -23,6 +23,7 @@ export const subjects = [
     "run",
     "race",
     "game",
+    "event",
     "leaderboard",
     "moderators",
     "stories",
@@ -89,6 +90,12 @@ const rolePermissions: Record<Role, DefinePermissions> = {
         can("edit", "race");
         can("delete", "race");
         can("moderate", "race");
+    },
+    "event-admin": function (_user, { can }) {
+        can("create", "event");
+        can("edit", "event");
+        can("delete", "event");
+        can("moderate", "event");
     },
 };
 
