@@ -2,7 +2,7 @@ export interface UserSummary {
     user: string;
     type: UserSummaryType;
     // start date of the week of this summary when type === 'week', always monday (2025-03-03)
-    // start date of the month of this summary when type === 'month', always first of month (2025-03-01)
+    // just the month when type === 'month', (2025-03)
     value: string;
     lastUpdate: number;
     totalRuns: number;
