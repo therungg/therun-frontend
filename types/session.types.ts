@@ -27,6 +27,7 @@ export type Role =
     | "board-moderator"
     | "race-admin"
     | "event-admin"
+    | "event-creator"
     | "patreon1"
     | "patreon2";
 

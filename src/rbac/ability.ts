@@ -97,6 +97,9 @@ const rolePermissions: Record<Role, DefinePermissions> = {
         can("delete", "event");
         can("moderate", "event");
     },
+    "event-creator": function (_user, { can }) {
+        can("create", "event");
+    },
 };
 
 const defaultPermissions: DefinePermissions = (user, { can }) => {
@@ -108,6 +111,7 @@ const defaultPermissions: DefinePermissions = (user, { can }) => {
         can(action, "user", { user: user.username });
         can(action, "run", { run: user.username });
         can("edit", "race", { creator: user.username });
+        can("edit", "event", { createdBy: user.username });
         can("create", "race");
         can("join", "race");
     });

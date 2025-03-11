@@ -99,9 +99,6 @@ export const Topbar = ({
                                 </Nav.Link>
                             )}
 
-                            <Nav.Link href="/aethermancer">
-                                Aethermancer Contest
-                            </Nav.Link>
                             <Nav.Link href="/races">Races</Nav.Link>
                             <Nav.Link href="/live">Live</Nav.Link>
 

@@ -13,6 +13,9 @@ export const events = pgTable(
     "events",
     {
         id: integer().primaryKey().generatedAlwaysAsIdentity(),
+        organizerId: integer()
+            .references(() => eventOrganizers.id)
+            .notNull(),
         startsAt: timestamp().notNull(),
         endsAt: timestamp().notNull(),
         name: varchar({ length: 255 }).notNull(),
@@ -25,10 +28,16 @@ export const events = pgTable(
         description: text().notNull(),
         url: varchar({ length: 255 }),
         imageUrl: varchar({ length: 255 }),
-        createdAt: timestamp().defaultNow(),
+        createdAt: timestamp().defaultNow().notNull(),
+        createdBy: varchar({ length: 255 }).notNull(),
     },
     (table) => [index("starts_at_index").on(table.startsAt)],
 );
+
+export const eventOrganizers = pgTable("event_organizers", {
+    id: serial().primaryKey().unique(),
+    name: varchar({ length: 255 }).notNull().unique(),
+});
 
 export const users = pgTable("users", {
     id: serial().primaryKey().unique(),
@@ -38,6 +47,7 @@ export const users = pgTable("users", {
 export const roles = pgTable("roles", {
     id: serial().primaryKey().unique(),
     name: varchar({ length: 255 }).notNull().unique(),
+    description: varchar({ length: 1000 }).notNull(),
 });
 
 export const userRoles = pgTable(
