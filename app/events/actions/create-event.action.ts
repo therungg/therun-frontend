@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { CreateEventInput } from "~app/events/types";
+import { CreateEventInput } from "../../../types/events.types";
 import Joi from "joi";
 import { getSession } from "~src/actions/session.action";
 import { confirmPermission } from "~src/rbac/confirm-permission";

@@ -9,7 +9,7 @@ When you get all races, you only get the 5 top participants in `topParticipants`
 amount of data to keep payload small. When you get a single race, you get a
 detailed list of all participants.
 
-See `races.types.ts` for full data. This should make it pretty clear what the data looks like.
+See `races.events.types.ts` for full data. This should make it pretty clear what the data looks like.
 
 ## Api
 

@@ -1,6 +1,6 @@
 "use server";
 
-import { CreateEventInput, EditEventInput } from "~app/events/types";
+import { CreateEventInput, EditEventInput } from "../../../types/events.types";
 import Joi from "joi";
 import { getSession } from "~src/actions/session.action";
 import { confirmPermission } from "~src/rbac/confirm-permission";

@@ -1,7 +1,7 @@
 import { Col, Form, Row } from "react-bootstrap";
-import { Event } from "~app/events/types";
 import { Button } from "~src/components/Button/Button";
 import React from "react";
+import { Event } from "../../../types/events.types";
 
 export const EventForm = ({ event }: { event?: Event }) => {
     return (

@@ -1,11 +1,11 @@
 "use client";
 
-import { Event } from "~app/events/types";
 import { Can } from "~src/rbac/Can.component";
 import Link from "next/link";
 import { IconButton } from "~src/components/Button/IconButton";
 import { PlusIcon } from "~src/icons/plus-icon";
 import { Col, Row } from "react-bootstrap";
+import { Event } from "../../types/events.types";
 
 export const Events = ({ events }: { events: Event[] }) => {
     return (

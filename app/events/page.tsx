@@ -1,7 +1,7 @@
 "use server";
 
-import { getEventsPaginated } from "~src/lib/events";
 import { Events } from "~app/events/events";
+import { getEventsPaginated } from "~src/lib/events";
 
 export default async function EventsPage() {
     const events = await getEventsPaginated(1, 4);

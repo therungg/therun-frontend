@@ -2,7 +2,7 @@ import { eq, sql } from "drizzle-orm";
 import { db } from "~src/db";
 import { eventOrganizers, events } from "~src/db/schema";
 import { PaginatedData } from "~src/components/pagination/pagination.types";
-import { CreateEventInput, Event } from "~app/events/types";
+import { CreateEventInput, Event } from "../../types/events.types";
 
 export const getEventById = async (eventId: number) => {
     return db.query.events.findFirst({
