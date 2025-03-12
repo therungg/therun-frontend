@@ -26,7 +26,9 @@ export const subjects = [
     "event",
     "leaderboard",
     "moderators",
+    "admins",
     "stories",
+    "roles",
 ] as const;
 type AllowedActions = (typeof actions)[number];
 type AllowedSubjects = (typeof subjects)[number];
@@ -99,6 +101,9 @@ const rolePermissions: Record<Role, DefinePermissions> = {
     },
     "event-creator": function (_user, { can }) {
         can("create", "event");
+    },
+    "role-admin": function (_user, { can }) {
+        can("moderate", "roles");
     },
 };
 
