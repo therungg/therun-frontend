@@ -4,6 +4,8 @@ import { UserSearch } from "~app/admin/roles/user-search";
 import { UserPagination } from "~app/admin/roles/user-pagination";
 import { RoleEntity } from "../../../types/roles.types";
 import { UserRoleFilter } from "./user-role-filter";
+import { UserRoleBadges } from "./user-role-badges";
+import { UserAddRole } from "~app/admin/roles/user-add-role";
 
 export const UsersTable = ({
     userPagination,
@@ -33,6 +35,7 @@ export const UsersTable = ({
                                     <th>ID</th>
                                     <th>Username</th>
                                     <th>Roles</th>
+                                    <th>Add Role</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -45,26 +48,10 @@ export const UsersTable = ({
                                             {user.username}
                                         </td>
                                         <td className="align-middle">
-                                            {user.roles.length > 0 ? (
-                                                user.roles.map((role) => {
-                                                    return (
-                                                        <span
-                                                            key={
-                                                                user.username +
-                                                                "-" +
-                                                                role
-                                                            }
-                                                            className="badge bg-success me-1"
-                                                        >
-                                                            {role}
-                                                        </span>
-                                                    );
-                                                })
-                                            ) : (
-                                                <span className="text-muted">
-                                                    No Roles
-                                                </span>
-                                            )}
+                                            <UserRoleBadges user={user} />
+                                        </td>
+                                        <td>
+                                            <UserAddRole user={user} />
                                         </td>
                                     </tr>
                                 ))}

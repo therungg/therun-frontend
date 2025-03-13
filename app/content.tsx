@@ -4,6 +4,7 @@ import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
 import { Container } from "react-bootstrap";
 import { useTheme } from "next-themes";
 import { useProgressBar } from "~src/components/n-progress.component";
+import { Bounce, ToastContainer } from "react-toastify";
 
 export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
     children,
@@ -42,6 +43,18 @@ export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
                 color="#fffd00"
                 options={{ showSpinner: false }}
                 shallowRouting
+            />
+
+            <ToastContainer
+                position="top-center"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                draggable
+                pauseOnHover
+                transition={Bounce}
+                theme={systemTheme || "dark"}
             />
             {children}
         </Container>

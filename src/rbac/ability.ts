@@ -103,7 +103,9 @@ const rolePermissions: Record<Role, DefinePermissions> = {
         can("create", "event");
     },
     "role-admin": function (_user, { can }) {
-        can("moderate", "roles");
+        can("moderate", "roles", {
+            role: { $in: ["event-admin", "race-admin", "event-creator"] },
+        });
     },
 };
 

@@ -1,3 +1,5 @@
+"use server";
+
 import { db } from "~src/db";
 import { roles, userRoles, users } from "~src/db/schema";
 import { and, eq, sql } from "drizzle-orm";

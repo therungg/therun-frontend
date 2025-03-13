@@ -1,3 +1,5 @@
+"use server";
+
 import { eq, sql } from "drizzle-orm";
 import { db } from "~src/db";
 import { eventOrganizers, events } from "~src/db/schema";

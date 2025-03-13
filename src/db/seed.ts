@@ -3,8 +3,9 @@ import { faker } from "@faker-js/faker";
 import * as dotenv from "dotenv";
 import { db } from "~src/db/index";
 import { CreateEventInput } from "../../types/events.types";
-import { InferInsertModel } from "drizzle-orm";
-import { sql } from "drizzle-orm";
+import { InferInsertModel, sql } from "drizzle-orm";
+import { manageableRoles } from "../../types/roles.types";
+
 dotenv.config({ path: "./.env.development" });
 
 if (!("DATABASE_URL" in process.env))
@@ -80,21 +81,13 @@ const insertEventSeeds = async () => {
     await db.insert(events).values(fakeEvents).onConflictDoNothing();
 };
 
-const roleNames: Role[] = [
-    "admin",
-    "moderator",
-    "race-admin",
-    "event-admin",
-    "event-creator",
-];
-
 const adminUsers = ["joeys64", "therun_gg"];
 
 const insertRoles = async () => {
     // Seed roles
     console.log("Seeding roles...");
     await Promise.all(
-        roleNames.map(async (roleName) => {
+        manageableRoles.map(async (roleName) => {
             await db
                 .insert(roles)
                 .values({
