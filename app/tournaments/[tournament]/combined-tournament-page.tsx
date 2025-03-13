@@ -1,7 +1,7 @@
 import { Tournament } from "~src/components/tournament/tournament-info";
 import { getTournamentByName } from "~src/components/tournament/getTournaments";
 import { LiveRun } from "~app/live/live.types";
-import { getLiveRunsForTournament } from "~src/lib/live-runs";
+import { getLiveRunsForTournament } from "~src/lib/client/live-runs";
 import { isLiveDataEligibleForTournament } from "./is-live-data-eligible-for-tournament.component";
 import { liveRunArrayToMap } from "~app/tournaments/[tournament]/live-run-array-to-map.component";
 import buildMetadata from "~src/utils/metadata";

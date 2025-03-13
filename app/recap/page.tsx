@@ -5,7 +5,7 @@ import { Col } from "react-bootstrap";
 import { getSession } from "~src/actions/session.action";
 import { TwitchLoginButton } from "~src/components/twitch/TwitchLoginButton";
 // TODO: Create a client fetcher
-import { getWrappedForUser } from "~src/lib/server/get-wrapped-for-user";
+import { getWrappedForUser } from "~src/lib/get-wrapped-for-user";
 import { User } from "types/session.types";
 import { BunnyHeartIcon } from "~src/icons/bunny-heart-icon";
 import { GlobalSearch } from "~src/components/search/global-search.component";

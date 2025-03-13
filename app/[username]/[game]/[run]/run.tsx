@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react";
 import { AppContext } from "~src/common/app.context";
 import { useLiveRunsWebsocket } from "~src/components/websocket/use-reconnect-websocket";
 import { StatsData } from "~app/games/[game]/game.types";
-import { getSplitsHistoryUrl } from "~src/lib/get-splits-history";
+import { getSplitsHistoryUrl } from "~src/lib/client/get-splits-history";
 import { Col, Row, Tab, Tabs } from "react-bootstrap";
 import { Title } from "~src/components/title";
 import { UserGameLink, UserLink } from "~src/components/links/links";

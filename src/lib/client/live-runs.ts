@@ -1,8 +1,10 @@
+"use server";
+
 import { safeEncodeURI } from "~src/utils/uri";
 import { type Tournament } from "~src/components/tournament/tournament-info";
 import { type LiveRun } from "~app/live/live.types";
 
-export const LIVE_RUN_URL =
+const LIVE_RUN_URL =
     "https://pokzhwoycl3uo7n5lzh6iltyoq0iaibq.lambda-url.eu-west-1.on.aws/";
 
 // Server

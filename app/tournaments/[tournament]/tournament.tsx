@@ -28,7 +28,7 @@ import {
 } from "~src/components/breadcrumbs/breadcrumb";
 import { CategoryLeaderboard } from "~app/games/[game]/game.types";
 import { GameLink, UserLink } from "~src/components/links/links";
-import { getLiveRunForUser } from "~src/lib/live-runs";
+import { getLiveRunForUser } from "~src/lib/client/live-runs";
 import { SkeletonLiveRun } from "~src/components/skeleton/live/skeleton-live-run";
 import { User } from "types/session.types";
 

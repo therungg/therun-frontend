@@ -1,3 +1,5 @@
+"use server";
+
 import { UserSummary, UserSummaryType } from "~src/types/summary.types";
 
 export const getUserSummary = async (

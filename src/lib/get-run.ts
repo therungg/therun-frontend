@@ -1,7 +1,8 @@
+"use server";
+
 import { safeEncodeURI } from "~src/utils/uri";
 import { Run } from "../common/types";
 
-// server
 export const getRun = async (
     username: string,
     game: string,
@@ -17,7 +18,6 @@ export const getRun = async (
     return json.result;
 };
 
-// server
 export const getRunByCustomUrl = async (
     username: string,
     customUrl: string,

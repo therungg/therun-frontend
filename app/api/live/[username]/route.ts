@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { getLiveRunForUser } from "~src/lib/live-runs";
+import { getLiveRunForUser } from "~src/lib/client/live-runs";
 import { apiResponse } from "~app/api/response";
 
 export const revalidate = 0;

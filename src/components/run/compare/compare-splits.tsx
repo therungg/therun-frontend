@@ -5,7 +5,7 @@ import { ShowComparison } from "./show-comparison";
 import { Run, RunHistory, SplitsHistory } from "~src/common/types";
 import { Col, Row } from "react-bootstrap";
 import { UserLink } from "../../links/links";
-import { getSplitsHistoryUrl } from "~src/lib/get-splits-history";
+import { getSplitsHistoryUrl } from "~src/lib/client/get-splits-history";
 import { AppContext } from "~src/common/app.context";
 import levenshtein from "js-levenshtein";
 
