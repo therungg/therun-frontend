@@ -48,10 +48,6 @@ export async function editEventAction(
             message: error.message,
         };
     }
-
-    const updatedEvent = { ...event, ...input };
-
-    console.log(updatedEvent);
 }
 
 export const validateInput = async (

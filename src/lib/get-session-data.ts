@@ -29,7 +29,6 @@ export const getSessionData = async (sessionId: string) => {
             next: { revalidate: 0 },
         });
         const result = await response.json();
-        console.log(result.result);
         const session = result?.result?.data as UserData;
 
         if (!session) {

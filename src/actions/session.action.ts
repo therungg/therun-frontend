@@ -51,7 +51,6 @@ export const getSession = async (): Promise<User> => {
         if (session) {
             const userId = await getOrCreateUser(session.username);
             const roles = await getUserRoles(userId);
-            console.log(roles, session.roles);
             session.roles.push(...roles);
 
             return { id: sessionId, ...session } as User;
