@@ -20,7 +20,6 @@ export const getStoryByUser = async (username: string) => {
     return (await story.json()).result as StoryWithSplitsStories;
 };
 
-// server
 export const getStoryOptions = async () => {
     const storyApiUrl = process.env.NEXT_PUBLIC_STORIES_API_URL as string;
 
@@ -33,7 +32,6 @@ export const getStoryOptions = async () => {
     return (await options.json()).result as StoryOption[];
 };
 
-// server
 export const getStoryPreferencesByUser = async (user: User) => {
     const storyApiUrl = process.env.NEXT_PUBLIC_STORIES_API_URL as string;
 
