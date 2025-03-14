@@ -26,7 +26,9 @@ export const subjects = [
     "event",
     "leaderboard",
     "moderators",
+    "admins",
     "stories",
+    "roles",
 ] as const;
 type AllowedActions = (typeof actions)[number];
 type AllowedSubjects = (typeof subjects)[number];
@@ -48,6 +50,7 @@ type DefinePermissions = (
 ) => void;
 
 const rolePermissions: Record<Role, DefinePermissions> = {
+    // Admin can do anything to any entity
     admin(_user, { can }) {
         actions.forEach((action) => {
             subjects.forEach((subject) => {
@@ -70,6 +73,7 @@ const rolePermissions: Record<Role, DefinePermissions> = {
         can("view-restricted", "stories");
         can("edit", "stories", { user: user.username });
     },
+    // Moderators can ban users, remove runs, and edit runs
     moderator(_user, { can }) {
         can("ban", "user");
         can("ban", "run");
@@ -97,18 +101,41 @@ const rolePermissions: Record<Role, DefinePermissions> = {
         can("delete", "event");
         can("moderate", "event");
     },
+    "event-creator": function (_user, { can }) {
+        can("create", "event");
+    },
+    // role-admins can remove and add roles for other users, but only specific ones.
+    "role-admin": function (_user, { can }) {
+        can("moderate", "roles", {
+            role: { $in: ["event-admin", "race-admin", "event-creator"] },
+        });
+    },
 };
 
+// These are default permissions, you don't need a role to do this.
 const defaultPermissions: DefinePermissions = (user, { can }) => {
     const moderatedGames = user.moderatedGames || [];
     actions.forEach((action) => {
         moderatedGames.forEach((game) => {
             can(action, "leaderboard", { game });
         });
+
+        // You can manage your own user (e.g. profile)
         can(action, "user", { user: user.username });
+
+        // You can manage your own runs (e.g. delete, set vod etc.)
         can(action, "run", { run: user.username });
+
+        // You can manage your own races
         can("edit", "race", { creator: user.username });
+
+        // You can manage your own events
+        can("edit", "event", { createdBy: user.username });
+
+        // Anyone can create a race
         can("create", "race");
+
+        // Anyone can join a race
         can("join", "race");
     });
 };

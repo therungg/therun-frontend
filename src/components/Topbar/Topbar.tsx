@@ -11,6 +11,7 @@ import { resetSession } from "~src/actions/reset-session.action";
 import { Button } from "~src/components/Button/Button";
 import { useTheme } from "next-themes";
 import { BunnyIcon } from "~src/icons/bunny-icon";
+import { Can } from "~src/rbac/Can.component";
 
 const DarkModeSlider = dynamic(() => import("../dark-mode-slider"), {
     ssr: false,
@@ -99,9 +100,6 @@ export const Topbar = ({
                                 </Nav.Link>
                             )}
 
-                            <Nav.Link href="/aethermancer">
-                                Aethermancer Contest
-                            </Nav.Link>
                             <Nav.Link href="/races">Races</Nav.Link>
                             <Nav.Link href="/live">Live</Nav.Link>
 
@@ -149,6 +147,11 @@ export const Topbar = ({
                                     <NavDropdown.Item href="/stories/manage">
                                         Story Preferences
                                     </NavDropdown.Item>
+                                    <Can I="moderate" a="roles">
+                                        <NavDropdown.Item href="/admin/roles">
+                                            Admin Panel
+                                        </NavDropdown.Item>
+                                    </Can>
                                     <NavDropdown.Item
                                         onClick={async () => {
                                             await logout();

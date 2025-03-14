@@ -1,18 +1,23 @@
 import {
+    index,
     integer,
     pgTable,
+    primaryKey,
+    serial,
     text,
     timestamp,
-    index,
+    uniqueIndex,
     varchar,
-    serial,
-    primaryKey,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 export const events = pgTable(
     "events",
     {
         id: integer().primaryKey().generatedAlwaysAsIdentity(),
+        organizerId: integer()
+            .references(() => eventOrganizers.id)
+            .notNull(),
         startsAt: timestamp().notNull(),
         endsAt: timestamp().notNull(),
         name: varchar({ length: 255 }).notNull(),
@@ -25,19 +30,35 @@ export const events = pgTable(
         description: text().notNull(),
         url: varchar({ length: 255 }),
         imageUrl: varchar({ length: 255 }),
-        createdAt: timestamp().defaultNow(),
+        createdAt: timestamp().defaultNow().notNull(),
+        createdBy: varchar({ length: 255 }).notNull(),
     },
     (table) => [index("starts_at_index").on(table.startsAt)],
 );
 
-export const users = pgTable("users", {
+export const eventOrganizers = pgTable("event_organizers", {
     id: serial().primaryKey().unique(),
-    username: varchar({ length: 255 }).notNull().unique(),
+    name: varchar({ length: 255 }).notNull().unique(),
 });
+
+export const users = pgTable(
+    "users",
+    {
+        id: serial().primaryKey().unique(),
+        username: varchar({ length: 255 }).notNull().unique(),
+    },
+    (table) => [
+        uniqueIndex("idx_users_username_lower").using(
+            "btree",
+            sql`(lower(${table.username}))`,
+        ),
+    ],
+);
 
 export const roles = pgTable("roles", {
     id: serial().primaryKey().unique(),
     name: varchar({ length: 255 }).notNull().unique(),
+    description: varchar({ length: 1000 }).notNull(),
 });
 
 export const userRoles = pgTable(

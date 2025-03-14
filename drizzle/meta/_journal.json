@@ -29,6 +29,34 @@
       "when": 1739403870183,
       "tag": "0006_glorious_wraith",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1741478814049,
+      "tag": "0007_whole_gateway",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1741796498376,
+      "tag": "0008_jittery_the_twelve",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1741814266148,
+      "tag": "0009_living_gladiator",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1741814323821,
+      "tag": "0010_flawless_preak",
+      "breakpoints": true
     }
   ]
 }

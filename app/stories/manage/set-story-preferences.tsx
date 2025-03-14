@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useActionState } from "react";
+import React, { useActionState, useEffect } from "react";
 import { Button, Col, Form, Row, Tab, Table, Tabs } from "react-bootstrap";
 import { useFormStatus } from "react-dom";
 import { setStoryPreferencesAction } from "~app/stories/actions/set-story-preferences.action";
@@ -12,8 +12,7 @@ import {
 import { UnderlineTooltip } from "~src/components/tooltip";
 import { User } from "../../../types/session.types";
 import { getPronounsFromString } from "~app/stories/manage/get-pronouns-from-string";
-import { Bounce, toast, ToastContainer } from "react-toastify";
-import { useTheme } from "next-themes";
+import { toast } from "react-toastify";
 
 export const SetStoryPreferences = ({
     storyPreferences,
@@ -35,21 +34,8 @@ export const SetStoryPreferences = ({
         }
     }, [state?.message]);
 
-    const theme = useTheme();
-
     return (
         <>
-            <ToastContainer
-                position="top-center"
-                autoClose={5000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                draggable
-                pauseOnHover
-                transition={Bounce}
-                theme={theme.theme || "dark"}
-            />
             <Form action={formAction} className="row">
                 <fieldset className="border py-3 px-4">
                     <legend className="w-auto mb-0">
