@@ -26,7 +26,7 @@ export const getSessionData = async (sessionId: string) => {
 
     try {
         const response = await fetch(url, {
-            next: { revalidate: 60 * 60 * 2 },
+            next: { revalidate: 0 },
         });
         const result = await response.json();
         const session = result?.result?.data as UserData;
