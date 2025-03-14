@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { apiResponse } from "~app/api/response";
-import { getAdvancedUserStats } from "~src/lib/server/get-advanced-user-stats";
+import { getAdvancedUserStats } from "~src/lib/get-advanced-user-stats";
 
 export const revalidate = 60;
 

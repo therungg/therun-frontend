@@ -1,6 +1,6 @@
 import { LiveRun } from "~app/live/live.types";
 import React, { useEffect, useState } from "react";
-import { getSplitsHistoryUrl } from "../../lib/get-splits-history";
+import { getSplitsHistoryUrl } from "../run/get-splits-history";
 import { Runs } from "~app/[username]/[game]/[run]/run";
 import { UserLink } from "../links/links";
 import moment from "moment/moment";

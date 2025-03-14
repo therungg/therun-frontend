@@ -1,7 +1,7 @@
-import { getUserRuns } from "~src/lib/server/get-user-runs";
+import { getUserRuns } from "~src/lib/get-user-runs";
 import { getRunmap } from "~app/[username]/runmap.component";
 import { getGameGlobal } from "~src/components/game/get-game";
-import { getGlobalUser } from "~src/lib/server/get-global-user";
+import { getGlobalUser } from "~src/lib/get-global-user";
 import { GlobalGameData } from "~app/[username]/[game]/[run]/run";
 import { getLiveRunForUser } from "~src/lib/live-runs";
 import { UserProfile } from "~app/[username]/user-profile";

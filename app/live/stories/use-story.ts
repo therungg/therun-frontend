@@ -26,13 +26,7 @@ export const useStory = (user: string) => {
 
     useEffect(() => {
         const fetchInitialStory = async () => {
-            try {
-                setStoryState(await getStoryByUser(user));
-                setHasStories(true);
-            } catch (_) {
-                setHasStories(false);
-            }
-            setIsLoaded(true);
+            setStoryState(await getStoryByUser(user));
         };
 
         fetchInitialStory();

@@ -1,3 +1,5 @@
+"use server";
+
 import { SessionError } from "~src/common/session.error";
 
 export interface UserData {

@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { getGlobalUser } from "~src/lib/server/get-global-user";
+import { getGlobalUser } from "~src/lib/get-global-user";
 import { apiResponse } from "~app/api/response";
 
 export const revalidate = 60;
