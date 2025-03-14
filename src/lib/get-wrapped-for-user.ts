@@ -1,3 +1,5 @@
+"use server";
+
 import { WrappedWithData } from "~app/[username]/wrapped/wrapped-types";
 
 export const getWrappedForUser = async (

@@ -1,6 +1,5 @@
 import { safeEncodeURI } from "~src/utils/uri";
 
-// Client only
 export const getSplitsHistoryUrl = (
     filename: string,
     hasGameTime = false,

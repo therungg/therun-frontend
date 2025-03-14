@@ -1,5 +1,5 @@
 import { LiveRun } from "~app/live/live.types";
-import { getAllLiveRuns } from "~src/lib/client/live-runs";
+import { getAllLiveRuns } from "~src/lib/live-runs";
 import { getSession } from "~src/actions/session.action";
 import ShowMarathon from "~app/marathon/show-marathon";
 

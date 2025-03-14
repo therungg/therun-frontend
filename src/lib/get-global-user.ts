@@ -1,4 +1,5 @@
 "use server";
+
 import { type UserData } from "./get-session-data";
 
 export const getGlobalUser = async (user: string) => {

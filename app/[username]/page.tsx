@@ -3,7 +3,7 @@ import { getRunmap } from "~app/[username]/runmap.component";
 import { getGameGlobal } from "~src/components/game/get-game";
 import { getGlobalUser } from "~src/lib/get-global-user";
 import { GlobalGameData } from "~app/[username]/[game]/[run]/run";
-import { getLiveRunForUser } from "~src/lib/client/live-runs";
+import { getLiveRunForUser } from "~src/lib/live-runs";
 import { UserProfile } from "~app/[username]/user-profile";
 import { getSession } from "~src/actions/session.action";
 import {

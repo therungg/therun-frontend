@@ -4,7 +4,7 @@ import ShowRunStory from "~app/stories/manage/show-run-story";
 import { getSession } from "~src/actions/session.action";
 import { SetStoryPreferences } from "~app/stories/manage/set-story-preferences";
 import { getStoryOptions, getStoryPreferencesByUser } from "~src/lib/stories";
-import { getLiveRunForUser } from "~src/lib/client/live-runs";
+import { getLiveRunForUser } from "~src/lib/live-runs";
 import React from "react";
 
 const ManageStories = async () => {

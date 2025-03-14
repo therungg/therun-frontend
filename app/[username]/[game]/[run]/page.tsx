@@ -1,6 +1,6 @@
 import { getRun } from "~src/lib/get-run";
 import { getGameGlobal } from "~src/components/game/get-game";
-import { getLiveRunForUser } from "~src/lib/client/live-runs";
+import { getLiveRunForUser } from "~src/lib/live-runs";
 import RunDetail from "~app/[username]/[game]/[run]/run";
 import { Metadata } from "next";
 import buildMetadata, { getUserProfilePhoto } from "~src/utils/metadata";

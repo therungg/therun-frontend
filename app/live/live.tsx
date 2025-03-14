@@ -12,7 +12,7 @@ import {
     liveRunIsInSearch,
 } from "~app/live/utilities";
 import { LiveDataMap, LiveProps } from "~app/live/live.types";
-import { getLiveRunForUser } from "~src/lib/client/live-runs";
+import { getLiveRunForUser } from "~src/lib/live-runs";
 import { SkeletonLiveRun } from "~src/components/skeleton/live/skeleton-live-run";
 import { Search as SearchIcon } from "react-bootstrap-icons";
 

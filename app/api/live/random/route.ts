@@ -1,4 +1,4 @@
-import { getRandomTopLiveRun } from "~src/lib/client/live-runs";
+import { getRandomTopLiveRun } from "~src/lib/live-runs";
 import { apiResponse } from "~app/api/response";
 
 export const revalidate = 0;

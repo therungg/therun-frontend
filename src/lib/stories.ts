@@ -8,7 +8,6 @@ import {
 import { User } from "../../types/session.types";
 import { getPronounsFromString } from "~app/stories/manage/get-pronouns-from-string";
 
-// the file is use server but this is client-only LOL
 export const getStoryByUser = async (username: string) => {
     const storyApiUrl = process.env.NEXT_PUBLIC_STORIES_API_URL as string;
 
@@ -66,6 +65,8 @@ export const getStoryPreferencesByUser = async (user: User) => {
             pronounOverrideThey: defaultPronouns[0],
             pronounOverrideThem: defaultPronouns[1],
             pronounOverrideTheir: defaultPronouns[2],
+            disabledStories: [],
+            customCooldowns: {},
         };
 
         return defaultPreferences;

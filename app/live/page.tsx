@@ -1,4 +1,4 @@
-import { getAllLiveRuns } from "~src/lib/client/live-runs";
+import { getAllLiveRuns } from "~src/lib/live-runs";
 import { Live } from "~app/live/live";
 import { liveRunArrayToMap } from "~app/live/utilities";
 import { LiveRun } from "~app/live/live.types";

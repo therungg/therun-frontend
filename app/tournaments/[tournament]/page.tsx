@@ -1,7 +1,7 @@
 import { Tournament } from "~src/components/tournament/tournament-info";
 import { getTournamentByName } from "~src/components/tournament/getTournaments";
 import { LiveRun } from "~app/live/live.types";
-import { getAllLiveRuns } from "~src/lib/client/live-runs";
+import { getAllLiveRuns } from "~src/lib/live-runs";
 import { isLiveDataEligibleForTournament } from "./is-live-data-eligible-for-tournament.component";
 import { GenericTournament } from "~app/tournaments/[tournament]/tournament";
 import { getSession } from "~src/actions/session.action";
