@@ -1,6 +1,7 @@
 import {
     index,
     integer,
+    jsonb,
     pgTable,
     primaryKey,
     serial,
@@ -58,7 +59,7 @@ export const users = pgTable(
 export const roles = pgTable("roles", {
     id: serial().primaryKey().unique(),
     name: varchar({ length: 255 }).notNull().unique(),
-    description: varchar({ length: 1000 }).notNull(),
+    description: varchar({ length: 1000 }).notNull().default("Description"),
 });
 
 export const userRoles = pgTable(
@@ -73,3 +74,16 @@ export const userRoles = pgTable(
     },
     (table) => [primaryKey({ columns: [table.userId, table.roleId] })],
 );
+
+export const logs = pgTable("logs", {
+    id: serial().primaryKey().unique(),
+    userId: integer()
+        .references(() => users.id)
+        .notNull(),
+    remark: varchar({ length: 1000 }),
+    action: varchar({ length: 255 }).notNull(),
+    entity: varchar({ length: 255 }).notNull(),
+    target: varchar({ length: 255 }),
+    data: jsonb(),
+    timestamp: timestamp().defaultNow().notNull(),
+});
