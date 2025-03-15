@@ -87,7 +87,12 @@ export const RaceHeader = ({ race }: { race: Race }) => {
                             </div>
                         )}
                         <div className="pt-1">
-                            <Card.Text className="text-truncate">
+                            <Card.Text
+                                className="text-truncate"
+                                style={{
+                                    whiteSpace: "pre-line",
+                                }}
+                            >
                                 {race.description}
                             </Card.Text>
                         </div>
