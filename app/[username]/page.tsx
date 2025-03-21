@@ -58,7 +58,7 @@ export default async function Page(props: PageProps) {
         });
     }
 
-    const runs = await getUserRuns(username);
+    const runs = (await getUserRuns(username)) || [];
 
     const allRunsRunMap = getRunmap(runs);
 
