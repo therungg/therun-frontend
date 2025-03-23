@@ -1,47 +1,36 @@
 "use server";
 
-import { CreateEventInput, EditEventInput } from "../../../types/events.types";
-import Joi from "joi";
 import { getSession } from "~src/actions/session.action";
 import { confirmPermission } from "~src/rbac/confirm-permission";
 import { getEventById } from "~src/lib/events";
+import { validateEventInput } from "~app/events/actions/validate-event-input";
+import { formInputToEventInput } from "~app/events/actions/form-input-to-event-input";
 
 export async function editEventAction(
     _prevState: unknown,
     eventInput: FormData,
 ) {
-    const session = await getSession();
+    const user = await getSession();
 
-    if (!session.id) return;
+    if (!user.id) return;
 
     const eventId = parseInt(eventInput.get("eventId") as string);
-
-    const event = getEventById(eventId);
-
+    const event = await getEventById(eventId);
     if (!event) {
         return {
             message: "Event not found",
         };
     }
 
-    confirmPermission(session, "edit", "event", event);
+    confirmPermission(user, "edit", "event", event);
 
-    const input: EditEventInput = {
-        startsAt: new Date(eventInput.get("startsAt") as string),
-        endsAt: new Date(eventInput.get("endsAt") as string),
-        name: eventInput.get("name") as string,
-        type: eventInput.get("type") as string,
-        location: eventInput.get("location") as string,
-        bluesky: eventInput.get("bluesky") as string,
-        discord: eventInput.get("discord") as string,
-        language: eventInput.get("language") as string,
-        shortDescription: eventInput.get("shortDescription") as string,
-        description: eventInput.get("description") as string,
-        url: eventInput.get("url") as string,
-        imageUrl: eventInput.get("imageUrl") as string,
-    };
+    const input = await formInputToEventInput(eventInput);
 
-    const { error } = await validateInput(input);
+    if (!input.imageUrl && event.imageUrl) {
+        input.imageUrl = event.imageUrl;
+    }
+
+    const { error } = await validateEventInput(input);
 
     if (error) {
         return {
@@ -49,24 +38,3 @@ export async function editEventAction(
         };
     }
 }
-
-export const validateInput = async (
-    input: EditEventInput,
-): Promise<Joi.ValidationResult<EditEventInput>> => {
-    const createEventSchema: Joi.ObjectSchema<CreateEventInput> = Joi.object({
-        startsAt: Joi.date().iso().required(),
-        endsAt: Joi.date().iso().greater(Joi.ref("startsAt")).required(),
-        name: Joi.string().min(1).max(255).required(),
-        type: Joi.string().min(1).max(100).required(),
-        location: Joi.string().allow("").optional(),
-        bluesky: Joi.string().uri().allow("").optional(),
-        discord: Joi.string().uri().allow("").optional(),
-        language: Joi.string().min(1).max(50).required(),
-        shortDescription: Joi.string().min(1).max(500).required(),
-        description: Joi.string().min(1).max(5000).required(),
-        url: Joi.string().uri().allow("").optional(),
-        imageUrl: Joi.string().uri().allow("").optional(),
-    });
-
-    return createEventSchema.validate(input);
-};

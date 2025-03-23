@@ -73,7 +73,7 @@ const insertEventSeeds = async () => {
             shortDescription: faker.lorem.sentence(10),
             description: faker.lorem.paragraphs(2, "\n\n"),
             url: faker.internet.url(),
-            imageUrl: "no image", // You can choose a more specific image type if needed
+            imageUrl: "/logo_dark_theme_no_text_transparent.png", // You can choose a more specific image type if needed
         } as CreateEventInput);
     }
 

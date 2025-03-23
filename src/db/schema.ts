@@ -9,6 +9,7 @@ import {
     timestamp,
     uniqueIndex,
     varchar,
+    boolean,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -31,6 +32,9 @@ export const events = pgTable(
         description: text().notNull(),
         url: varchar({ length: 255 }),
         imageUrl: varchar({ length: 255 }),
+        isOffline: boolean().default(true).notNull(),
+        isHighlighted: boolean().default(false).notNull(),
+        tier: integer().default(0),
         createdAt: timestamp().defaultNow().notNull(),
         createdBy: varchar({ length: 255 }).notNull(),
     },

@@ -5,9 +5,16 @@ import Link from "next/link";
 import { IconButton } from "~src/components/Button/IconButton";
 import { PlusIcon } from "~src/icons/plus-icon";
 import { Col, Row } from "react-bootstrap";
-import { Event } from "../../types/events.types";
+import { EventWithOrganizerName } from "../../types/events.types";
+import { SpeedrunEventCard } from "./event-card";
+import { Paginate } from "~src/components/server-pagination/Paginate";
+import { PaginatedData } from "~src/components/pagination/pagination.types";
 
-export const Events = ({ events }: { events: Event[] }) => {
+export const Events = ({
+    events,
+}: {
+    events: PaginatedData<EventWithOrganizerName>;
+}) => {
     return (
         <div>
             <Row className="mb-3">
@@ -31,8 +38,10 @@ export const Events = ({ events }: { events: Event[] }) => {
                     </Can>
                 </Col>
             </Row>
-
-            {JSON.stringify(events)}
+            {events.items.map((event) => {
+                return <SpeedrunEventCard event={event} key={event.id} />;
+            })}
+            <Paginate data={events} />
         </div>
     );
 };

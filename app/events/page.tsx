@@ -3,8 +3,17 @@
 import { Events } from "~app/events/events";
 import { getEventsPaginated } from "~src/lib/events";
 
-export default async function EventsPage() {
-    const events = await getEventsPaginated(1, 4);
+export default async function EventsPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+    const queryParams = await searchParams;
 
-    return <Events events={events.items} />;
+    const events = await getEventsPaginated(
+        queryParams.page ? parseInt(queryParams.page as string) : 1,
+        5,
+    );
+
+    return <Events events={events} />;
 }

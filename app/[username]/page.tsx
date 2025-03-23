@@ -58,7 +58,7 @@ export default async function Page(props: PageProps) {
         });
     }
 
-    const runs = await getUserRuns(username);
+    const runs = (await getUserRuns(username)) || [];
 
     const allRunsRunMap = getRunmap(runs);
 
@@ -69,7 +69,7 @@ export default async function Page(props: PageProps) {
 
     const allGlobalGameData = await Promise.all(promises);
 
-    const hasGameTime = !!runs.find((run) => run.hasGameTime);
+    const hasGameTime = !!(runs || []).find((run) => run.hasGameTime);
 
     let defaultGameTime = hasGameTime;
 
