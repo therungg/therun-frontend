@@ -5,6 +5,9 @@
 // Progress loader
 @import "nprogress/nprogress.css";
 
+// Fonts
+@import "fonts";
+
 // Global styles
 @import "globals";
 
@@ -15,6 +18,7 @@
 @import "bootstrap/bootstrap";
 
 // Overrides
+@import "footer";
 @import "overrides";
 
 // Miscellaneous

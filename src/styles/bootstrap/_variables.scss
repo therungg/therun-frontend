@@ -1,5 +1,5 @@
 // theme-color-variables
-$primary:   #007c00;
+$primary:   #5f8b58;
 $secondary: #a3850e;
 $success:   #198754;
 $info:      #0dcaf0;
@@ -21,6 +21,7 @@ $theme-colors: (
 );
 
 // Body
+$font-family-base:                  'Inter', sans-serif;
 $body-color:                        #000;
 $body-bg:                           #fbfbfb;
 $body-secondary-color:              rgba($body-color, .6);
@@ -30,10 +31,10 @@ $body-tertiary-bg:                  #ddd;
 
 // Body Dark
 $body-color-dark:                   #ccc;
-$body-bg-dark:                      #131313;
+$body-bg-dark:                      #121212;
 $body-secondary-color-dark:         rgba($body-color-dark, .6);
 $body-secondary-bg-dark:            #232323;
-$body-tertiary-bg-dark:             #343434;
+$body-tertiary-bg-dark:             #141d13;
 
 // Links
 $link-color:                        $primary;
@@ -42,8 +43,8 @@ $link-hover-decoration:             revert;
 $link-hover-color:                  #040;
 
 // Links Dark
-$link-color-dark:                   #27a11b;
-$link-hover-color-dark:             #339900;
+$link-color-dark:                   #5f8b58;
+$link-hover-color-dark:             #5f8b58;
 
 // Icon links
 
