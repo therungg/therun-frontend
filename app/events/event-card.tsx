@@ -1,15 +1,11 @@
 "use client";
 
-import { EventWithOrganizerName } from "../../types/events.types";
+import { EventFromSearch } from "../../types/events.types";
 import Image from "next/image";
 import Link from "next/link";
-import { FaMapMarkerAlt, FaCalendarAlt, FaClock, FaUser } from "react-icons/fa";
+import { FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUser } from "react-icons/fa";
 
-export const SpeedrunEventCard = ({
-    event,
-}: {
-    event: EventWithOrganizerName;
-}) => {
+export const SpeedrunEventCard = ({ event }: { event: EventFromSearch }) => {
     return (
         <Link href={"/events/" + event.id} className="text-decoration-none">
             <div
@@ -52,9 +48,7 @@ export const SpeedrunEventCard = ({
                             >
                                 <FaUser className="me-1 text-primary" />
                                 <span className="text-muted">Organizer: </span>
-                                <span className="ms-1">
-                                    {event.organizerName}
-                                </span>
+                                <span className="ms-1">{event.organizer}</span>
                             </div>
                             <div
                                 className="me-3 d-flex align-items-center p-2 border rounded bg-body-tertiary"
@@ -63,7 +57,7 @@ export const SpeedrunEventCard = ({
                                 <FaCalendarAlt className="me-1 text-primary" />
                                 <span className="text-muted">Starts: </span>
                                 <span className="ms-1">
-                                    {event.startsAt.toDateString()}
+                                    {new Date(event.startsAt).toDateString()}
                                 </span>
                             </div>
                             <div
@@ -73,7 +67,7 @@ export const SpeedrunEventCard = ({
                                 <FaClock className="me-1 text-success" />
                                 <span className="text-muted">Ends: </span>
                                 <span className="ms-1">
-                                    {event.endsAt.toDateString()}
+                                    {new Date(event.endsAt).toDateString()}
                                 </span>
                             </div>
                             <div

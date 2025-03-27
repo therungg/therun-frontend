@@ -34,6 +34,14 @@ Since early 2025, we use this project as our backend, with a new SQL database. T
 -   Run `npm run migrate` to create the database tables
 -   Run `npm run seed` to fill the database with seed data
 
+## Setting up storage
+
+We use https://vercel.com/docs/vercel-blob for storing images. Set the environment variable `BLOB_READ_WRITE_TOKEN` in your `env.local` to use it.
+
+## Setting up Algolia
+
+We use Algolia for searching things like events, games, users. Set the `ALGOLIA_` environment variables in your `env.local` to use it.
+
 ## Support
 
 Love what we do? You can support the project on [Patreon](patreon.com/therungg)!

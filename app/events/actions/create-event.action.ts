@@ -32,8 +32,15 @@ export async function createEventAction(
             message: error.message,
         };
     }
+    let eventId = null;
 
-    const eventId = await createEvent(input);
+    try {
+        eventId = await createEvent(input);
+    } catch (error: never) {
+        return {
+            message: error.message,
+        };
+    }
 
     redirect(`/events/${eventId}`);
 }

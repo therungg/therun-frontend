@@ -332,6 +332,16 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 />
             </Form.Group>
 
+            {event && (
+                <input
+                    type="hidden"
+                    required
+                    id="eventId"
+                    name="eventId"
+                    value={event.id}
+                />
+            )}
+
             <Row>
                 <Col md={6}>
                     <Form.Group className="mb-3">

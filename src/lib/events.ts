@@ -11,6 +11,7 @@ import {
     EventOrganizer,
     EventWithOrganizerName,
 } from "../../types/events.types";
+import { insertEventToAlgolia } from "./algolia";
 
 interface EventDbResult {
     events: Event;
@@ -77,12 +78,17 @@ export const getEventsPaginated = async (
 };
 
 export const createEvent = async (input: CreateEventInput) => {
-    const insertedEvent = await db
-        .insert(events)
-        .values(input)
-        .returning({ id: events.id });
+    const insertedEvent = await db.insert(events).values(input).returning();
 
-    return insertedEvent[0]?.id;
+    const id = insertedEvent[0]?.id;
+
+    if (!id) {
+        throw new Error("Failed to create event");
+    }
+
+    await insertEventToAlgolia(insertedEvent[0]);
+
+    return id;
 };
 
 export const createEventOrganizer = async (

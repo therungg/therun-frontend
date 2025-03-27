@@ -3,10 +3,10 @@
 -   Make create event page pretty
 -   Add edit event page
 -   Make overview pretty
--   WYSIWYG input/output
+-   View event page
 
 # Add
 
--   View event page
 -   View events by organizer page
--
+-   Algolia filters
+-   Event tags to search on

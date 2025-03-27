@@ -5,6 +5,7 @@ import { db } from "~src/db/index";
 import { CreateEventInput } from "../../types/events.types";
 import { InferInsertModel, sql } from "drizzle-orm";
 import { manageableRoles } from "../../types/roles.types";
+import { clearAlgoliaIndex, insertEventsToAlgolia } from "~src/lib/algolia";
 
 dotenv.config({ path: "./.env.development" });
 
@@ -26,12 +27,13 @@ const main = async () => {
 };
 
 const insertEventSeeds = async () => {
+    console.log("Seeding events...");
     const fakeEvents: CreateEventInput[] = [];
     const organizers = await db
         .insert(eventOrganizers)
         .values([{ name: "Organizer" }] as InferInsertModel<
             typeof eventOrganizers
-        >)
+        >[])
         .onConflictDoNothing()
         .returning();
     for (let i = 0; i < NUM_EVENTS; i++) {
@@ -73,12 +75,23 @@ const insertEventSeeds = async () => {
             shortDescription: faker.lorem.sentence(10),
             description: faker.lorem.paragraphs(2, "\n\n"),
             url: faker.internet.url(),
-            imageUrl: "/logo_dark_theme_no_text_transparent.png", // You can choose a more specific image type if needed
+            tier: faker.number.int({ min: 0, max: 3 }),
+            isOffline: faker.datatype.boolean(),
+            isHighlighted: faker.datatype.boolean(),
+            imageUrl: "/logo_dark_theme_no_text_transparent.png",
         } as CreateEventInput);
     }
 
-    // Insert the generated events into the "events" table
-    await db.insert(events).values(fakeEvents).onConflictDoNothing();
+    const eventResults = await db
+        .insert(events)
+        .values(fakeEvents)
+        .onConflictDoNothing()
+        .returning();
+
+    console.log("Inserting events to algolia...");
+
+    await clearAlgoliaIndex();
+    await insertEventsToAlgolia(eventResults);
 };
 
 const adminUsers = ["joeys64", "therun_gg"];

@@ -3,6 +3,16 @@ import { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
 export type Event = InferSelectModel<typeof events>;
 export type EventWithOrganizerName = Event & { organizerName: string };
+
+export interface EventFromSearch
+    extends Omit<Event, "startsAt" | "endsAt" | "createdAt"> {
+    startsAt: string;
+    endsAt: string;
+    createdAt: string;
+    organizer: string;
+    objectID: string;
+}
+
 export type CreateEventInput = InferInsertModel<typeof events>;
 export type EditEventInput = Omit<CreateEventInput, "createdBy">;
 

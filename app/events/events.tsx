@@ -5,15 +5,19 @@ import Link from "next/link";
 import { IconButton } from "~src/components/Button/IconButton";
 import { PlusIcon } from "~src/icons/plus-icon";
 import { Col, Row } from "react-bootstrap";
-import { EventWithOrganizerName } from "../../types/events.types";
+import { EventFromSearch } from "../../types/events.types";
 import { SpeedrunEventCard } from "./event-card";
 import { Paginate } from "~src/components/server-pagination/Paginate";
 import { PaginatedData } from "~src/components/pagination/pagination.types";
+import { SearchResponse } from "algoliasearch";
+import { EventSearch } from "./event-search";
 
 export const Events = ({
     events,
+    pagination,
 }: {
-    events: PaginatedData<EventWithOrganizerName>;
+    events: SearchResponse<EventFromSearch>;
+    pagination: PaginatedData<EventFromSearch>;
 }) => {
     return (
         <div>
@@ -38,10 +42,11 @@ export const Events = ({
                     </Can>
                 </Col>
             </Row>
-            {events.items.map((event) => {
+            <EventSearch />
+            {events.hits.map((event) => {
                 return <SpeedrunEventCard event={event} key={event.id} />;
             })}
-            <Paginate data={events} />
+            <Paginate data={pagination} />
         </div>
     );
 };
