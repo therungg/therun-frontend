@@ -73,16 +73,13 @@ export const Topbar = ({
                         <Image
                             unoptimized
                             alt="TheRun"
-                            src={`/logo_${theme}_theme_no_text_transparent.png`}
+                            src={`/logo_${theme}_theme_text_transparent.png`}
                             height="44"
                             width="44"
                             className="img-fluid align-self-start me-2"
                         />
-                        <span className="align-self-center">
+                        <span className="align-self-center text-white">
                             The Run{" "}
-                            <i>
-                                <sup>beta</sup>
-                            </i>
                         </span>
                     </Navbar.Brand>
                     <Navbar.Toggle aria-controls="basic-navbar-nav" />

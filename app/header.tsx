@@ -15,7 +15,7 @@ export const Header = ({
 }: Partial<HeaderProps>) => {
     return (
         <ErrorBoundary fallback={<TopbarSkeleton />}>
-            <header className="bg-body-secondary">
+            <header className="bg-body-tertiary">
                 <Topbar
                     username={username}
                     picture={picture}
