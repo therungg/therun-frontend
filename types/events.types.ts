@@ -37,9 +37,16 @@ export const eventTiers: EventTier[] = [
     4, // Tier 4. Very small event/races etc.
 ];
 
+export const eventTierShortNames: Record<EventTier, string> = {
+    1: "Premium",
+    2: "Major",
+    3: "Minor",
+    4: "Local",
+};
+
 export const eventTierNames: Record<EventTier, string> = {
     1: "Premium (GDQ, Speedons, RTA in Japan, etc.)",
-    2: "Tier 2 (Large events, huge scheduled races like 602, etc.)",
-    3: "Tier 3 (Medium events, tournaments, big races, etc.)",
-    4: "Tier 4 (Small events, races, small community tournaments etc.)",
+    2: "Major (Large events, huge scheduled races like 602, etc.)",
+    3: "Minor (Medium events, tournaments, big races, etc.)",
+    4: "Local (Small events, races, small community tournaments etc.)",
 };

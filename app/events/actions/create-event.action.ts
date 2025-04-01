@@ -42,5 +42,5 @@ export async function createEventAction(
         };
     }
 
-    redirect(`/events/${eventId}`);
+    redirect(`/events/${eventId}?toast=Event succesfully created!`);
 }

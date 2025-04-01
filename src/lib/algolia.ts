@@ -17,7 +17,11 @@ export const getAlgoliaApiClient = async () => {
     return algoliasearch(appID, apiKey);
 };
 
-export async function searchAlgoliaEvents<T>(page = 1, search = "") {
+export async function searchAlgoliaEvents<T>(
+    page = 1,
+    search = "",
+    filters = "",
+) {
     const client = await getAlgoliaApiClient();
 
     const params = new URLSearchParams();
@@ -25,6 +29,7 @@ export async function searchAlgoliaEvents<T>(page = 1, search = "") {
     params.set("facets", "*");
     params.set("page", (page - 1).toString());
     params.set("query", search);
+    params.set("filters", filters);
 
     return client.searchSingleIndex<T>({
         indexName,
@@ -43,6 +48,20 @@ export const insertEventToAlgolia = async (event: Event) => {
     const { taskID } = await client.saveObject({
         indexName,
         body: input,
+    });
+
+    await client.waitForTask({
+        indexName,
+        taskID,
+    });
+};
+
+export const deleteEventFromAlgolia = async (event: Event) => {
+    const client = await getAlgoliaApiClient();
+
+    const { taskID } = await client.deleteObject({
+        indexName,
+        objectID: event.id.toString(),
     });
 
     await client.waitForTask({

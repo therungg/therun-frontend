@@ -16,9 +16,21 @@ export default async function EventsPage({
 
     const { page = "1", search = "" } = queryParams;
 
+    const filters = Object.entries(queryParams)
+        .filter(([key]) => key.startsWith("filter."))
+        .map(([key, value]) => {
+            const facetKey = key.replace("filter.", "");
+            const facetValues = (value as string)
+                .split(",")
+                .map((v) => `${facetKey}:${v}`);
+            return "(" + facetValues.join(" OR ") + ")";
+        })
+        .join(" AND ");
+
     const events = await searchAlgoliaEvents<EventFromSearch>(
         parseInt(page as string),
         search as string,
+        filters, // Pass the filters as a query string
     );
 
     return (

@@ -13,5 +13,9 @@ export default async function EditRacePage(props: PageProps) {
 
     const event = await getEventById(eventId);
 
+    if (event.isDeleted) {
+        return <div>Event not found</div>;
+    }
+
     return <ViewEvent event={event} />;
 }

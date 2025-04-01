@@ -8,5 +8,6 @@
 # Add
 
 -   View events by organizer page
--   Algolia filters
 -   Event tags to search on
+-   Filter explanations
+-   Slug for url

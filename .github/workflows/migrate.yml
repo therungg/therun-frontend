@@ -25,3 +25,11 @@ jobs:
         run: npm run migrate
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Run Algolia Index Settings
+        run: npm run algolia:set-index-settings
+        env:
+          ALGOLIA_API_KEY: ${{ secrets.ALGOLIA_API_KEY }}
+          NEXT_PUBLIC_ALGOLIA_APPLICATION_ID: ${{ secrets.NEXT_PUBLIC_ALGOLIA_APPLICATION_ID }}
+          NEXT_PUBLIC_ALGOLIA_EVENTS_INDEX_NAME: ${{ secrets.NEXT_PUBLIC_ALGOLIA_EVENTS_INDEX_NAME }}
+          NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY: ${{ secrets.NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY }}

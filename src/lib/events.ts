@@ -7,11 +7,12 @@ import { PaginatedData } from "~src/components/pagination/pagination.types";
 import {
     CreateEventInput,
     CreateEventOrganizerInput,
+    EditEventInput,
     Event,
     EventOrganizer,
     EventWithOrganizerName,
 } from "../../types/events.types";
-import { insertEventToAlgolia } from "./algolia";
+import { deleteEventFromAlgolia, insertEventToAlgolia } from "./algolia";
 
 interface EventDbResult {
     events: Event;
@@ -89,6 +90,28 @@ export const createEvent = async (input: CreateEventInput) => {
     await insertEventToAlgolia(insertedEvent[0]);
 
     return id;
+};
+
+export const editEvent = async (eventId: number, input: EditEventInput) => {
+    const updatedEvent = await db
+        .update(events)
+        .set(input)
+        .where(eq(events.id, eventId))
+        .returning();
+    if (!updatedEvent[0]) {
+        throw new Error("Failed to update event");
+    }
+
+    await insertEventToAlgolia(updatedEvent[0]);
+};
+
+export const deleteEvent = async (event: Event) => {
+    await db
+        .update(events)
+        .set({ isDeleted: true })
+        .where(eq(events.id, event.id));
+
+    await deleteEventFromAlgolia(event);
 };
 
 export const createEventOrganizer = async (

@@ -5,22 +5,28 @@ export const validateEventInput = async (
     input: EditEventInput,
 ): Promise<Joi.ValidationResult<EditEventInput>> => {
     const createEventSchema: Joi.ObjectSchema<CreateEventInput> = Joi.object({
-        startsAt: Joi.date().iso().required(),
-        endsAt: Joi.date().iso().greater(Joi.ref("startsAt")).required(),
         name: Joi.string().min(1).max(255).required(),
         type: Joi.string().min(1).max(100).required(),
         location: Joi.allow("").optional().default(""),
-        bluesky: Joi.string().uri().allow("").optional(),
-        discord: Joi.string().uri().allow("").optional(),
         language: Joi.string().min(1).max(50).required(),
         shortDescription: Joi.string().min(1).max(500).required(),
         description: Joi.string().min(1).max(5000).required(),
-        url: Joi.string().uri().allow("").optional(),
-        imageUrl: Joi.string().uri().allow("").optional(),
         organizerId: Joi.number().integer().required(),
-        createdBy: Joi.string().min(1).max(255).optional(),
+
+        startsAt: Joi.date().iso().required(),
+        endsAt: Joi.date().iso().greater(Joi.ref("startsAt")).required(),
+
+        bluesky: Joi.allow("").optional(),
+        discord: Joi.allow("").optional(),
+        oengus: Joi.allow("").optional(),
+        url: Joi.allow("").optional(),
+
+        imageUrl: Joi.allow("").optional(),
         tier: Joi.number().min(1).max(5),
         isOffline: Joi.boolean().required(),
+        tags: Joi.optional(),
+
+        createdBy: Joi.string().min(1).max(255).optional(),
     });
 
     return createEventSchema.validate(input);

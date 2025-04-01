@@ -11,10 +11,18 @@ const main = async () => {
     await client.setSettings({
         indexName,
         indexSettings: {
-            searchableAttributes: ["name", "organizer", "tags"],
+            searchableAttributes: [
+                "name",
+                "organizer",
+                "location",
+                "language",
+                "type",
+                "tags",
+            ],
+            ranking: ["desc(startsAt)", "desc(tier)"],
             typoTolerance: true,
-            minWordSizefor1Typo: 3,
-            minWordSizefor2Typos: 6,
+            minWordSizefor1Typo: 4,
+            minWordSizefor2Typos: 7,
             allowTyposOnNumericTokens: false,
             ignorePlurals: true,
             attributesForFaceting: [

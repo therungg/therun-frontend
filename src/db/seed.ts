@@ -75,7 +75,7 @@ const insertEventSeeds = async () => {
             shortDescription: faker.lorem.sentence(10),
             description: faker.lorem.paragraphs(2, "\n\n"),
             url: faker.internet.url(),
-            tier: faker.number.int({ min: 0, max: 3 }),
+            tier: faker.number.int({ min: 1, max: 4 }),
             isOffline: faker.datatype.boolean(),
             isHighlighted: faker.datatype.boolean(),
             imageUrl: "/logo_dark_theme_no_text_transparent.png",

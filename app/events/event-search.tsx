@@ -15,15 +15,17 @@ export const EventSearch = () => {
     const [debouncedSearch] = useDebounceValue(searchInput, 300);
 
     useEffect(() => {
-        const params = new URLSearchParams(searchParams.toString());
-        params.set("page", "1");
-
         if (debouncedSearch) {
-            params.set("search", debouncedSearch);
-        } else {
-            params.delete("search");
+            const params = new URLSearchParams(searchParams.toString());
+            params.set("page", "1");
+
+            if (debouncedSearch) {
+                params.set("search", debouncedSearch);
+            } else {
+                params.delete("search");
+            }
+            router.push(`?${params.toString()}`);
         }
-        router.push(`?${params.toString()}`);
     }, [debouncedSearch]);
 
     return (

@@ -12,11 +12,13 @@ export const formInputToEventInput = async (eventInput: FormData) => {
         location: eventInput.get("location") as string,
         bluesky: eventInput.get("bluesky") as string,
         discord: eventInput.get("discord") as string,
+        oengus: eventInput.get("oengus") as string,
         language: eventInput.get("language") as string,
         shortDescription: eventInput.get("shortDescription") as string,
         description: sanitizeHtml(eventInput.get("description") as string),
         url: eventInput.get("url") as string,
         tier: parseInt(eventInput.get("tier") as string) as number,
+        tags: JSON.parse((eventInput.get("tags") || "[]") as string),
         isOffline: eventInput.get("isOffline") === "on",
     } as EditEventInput;
 

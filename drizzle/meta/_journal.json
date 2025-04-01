@@ -106,6 +106,20 @@
       "when": 1742856652151,
       "tag": "0017_smooth_thaddeus_ross",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1743542203179,
+      "tag": "0018_giant_emma_frost",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1743542512252,
+      "tag": "0019_sour_stick",
+      "breakpoints": true
     }
   ]
 }

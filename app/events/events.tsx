@@ -11,6 +11,7 @@ import { Paginate } from "~src/components/server-pagination/Paginate";
 import { PaginatedData } from "~src/components/pagination/pagination.types";
 import { SearchResponse } from "algoliasearch";
 import { EventSearch } from "./event-search";
+import { EventFilters } from "./event-filters";
 
 export const Events = ({
     events,
@@ -42,11 +43,27 @@ export const Events = ({
                     </Can>
                 </Col>
             </Row>
-            <EventSearch />
-            {events.hits.map((event) => {
-                return <SpeedrunEventCard event={event} key={event.id} />;
-            })}
-            <Paginate data={pagination} />
+            <div className="flex-center">
+                <EventSearch />
+            </div>
+            <Row>
+                <Col md={2}>
+                    <EventFilters filters={events.facets!} />
+                </Col>
+                <Col md={10}>
+                    <section>
+                        {events.hits.map((event) => {
+                            return (
+                                <SpeedrunEventCard
+                                    event={event}
+                                    key={event.id}
+                                />
+                            );
+                        })}
+                        <Paginate data={pagination} />
+                    </section>
+                </Col>
+            </Row>
         </div>
     );
 };

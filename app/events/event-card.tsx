@@ -1,9 +1,9 @@
 "use client";
 
-import { EventFromSearch } from "../../types/events.types";
+import { EventFromSearch, eventTierShortNames } from "../../types/events.types";
 import Image from "next/image";
 import Link from "next/link";
-import { FaCalendarAlt, FaClock, FaMapMarkerAlt, FaUser } from "react-icons/fa";
+import { FaCalendarAlt, FaMapMarkerAlt, FaUser } from "react-icons/fa";
 
 export const SpeedrunEventCard = ({ event }: { event: EventFromSearch }) => {
     return (
@@ -37,8 +37,13 @@ export const SpeedrunEventCard = ({ event }: { event: EventFromSearch }) => {
                             <span className="badge bg-primary me-2">
                                 {event.type}
                             </span>
-                            <span className="badge bg-secondary">
+                            <span className="badge bg-secondary me-2">
                                 {event.language}
+                            </span>
+                            <span className="badge bg-info">
+                                {eventTierShortNames[
+                                    event.tier as keyof typeof eventTierShortNames
+                                ] || event.tier}
                             </span>
                         </div>
                         <div className="d-flex mt-2">
@@ -55,19 +60,18 @@ export const SpeedrunEventCard = ({ event }: { event: EventFromSearch }) => {
                                 style={{ borderColor: "#007bff" }}
                             >
                                 <FaCalendarAlt className="me-1 text-primary" />
-                                <span className="text-muted">Starts: </span>
+                                <span className="text-muted">Dates: </span>
                                 <span className="ms-1">
-                                    {new Date(event.startsAt).toDateString()}
-                                </span>
-                            </div>
-                            <div
-                                className="me-3 d-flex align-items-center p-2 border rounded bg-body-tertiary"
-                                style={{ borderColor: "#28a745" }}
-                            >
-                                <FaClock className="me-1 text-success" />
-                                <span className="text-muted">Ends: </span>
-                                <span className="ms-1">
-                                    {new Date(event.endsAt).toDateString()}
+                                    {new Intl.DateTimeFormat("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                    }).format(new Date(event.startsAt))}
+                                    {" - "}
+                                    {new Intl.DateTimeFormat("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                        year: "numeric",
+                                    }).format(new Date(event.endsAt))}
                                 </span>
                             </div>
                             <div

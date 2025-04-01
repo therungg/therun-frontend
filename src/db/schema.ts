@@ -10,6 +10,7 @@ import {
     uniqueIndex,
     varchar,
     boolean,
+    json,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -27,6 +28,7 @@ export const events = pgTable(
         location: varchar({ length: 255 }),
         bluesky: varchar({ length: 255 }),
         discord: varchar({ length: 255 }),
+        oengus: varchar({ length: 255 }),
         language: varchar({ length: 255 }).notNull(),
         shortDescription: varchar({ length: 255 }).notNull(),
         description: text().notNull(),
@@ -35,6 +37,8 @@ export const events = pgTable(
         isOffline: boolean().default(true).notNull(),
         isHighlighted: boolean().default(false).notNull(),
         tier: integer().default(0),
+        tags: json().default([]).notNull(),
+        isDeleted: boolean().default(false).notNull(),
         createdAt: timestamp().defaultNow().notNull(),
         createdBy: varchar({ length: 255 }).notNull(),
     },

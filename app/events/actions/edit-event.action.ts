@@ -2,9 +2,10 @@
 
 import { getSession } from "~src/actions/session.action";
 import { confirmPermission } from "~src/rbac/confirm-permission";
-import { getEventById } from "~src/lib/events";
+import { editEvent, getEventById } from "~src/lib/events";
 import { validateEventInput } from "~app/events/actions/validate-event-input";
 import { formInputToEventInput } from "~app/events/actions/form-input-to-event-input";
+import { redirect } from "next/navigation";
 
 export async function editEventAction(
     _prevState: unknown,
@@ -37,4 +38,13 @@ export async function editEventAction(
             message: error.message,
         };
     }
+    try {
+        await editEvent(eventId, input);
+    } catch (error: never) {
+        return {
+            message: error.message,
+        };
+    }
+
+    redirect(`/events/${eventId}?toast=Event succesfully edited!`);
 }

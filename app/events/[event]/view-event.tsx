@@ -5,6 +5,8 @@ import { EventWithOrganizerName } from "../../../types/events.types";
 import { Can, subject } from "~src/rbac/Can.component";
 import { Button } from "~src/components/Button/Button";
 import Link from "next/link";
+import { deleteEventAction } from "../actions/delete-event.action";
+import { redirect } from "next/navigation";
 
 export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
     return (
@@ -21,11 +23,32 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                             }
                             alt={event.name}
                         />
-                        <Can I="edit" this={subject("event", event)}>
-                            <Link href={`/events/${event.id}/edit`}>
-                                <Button>Edit</Button>
-                            </Link>
-                        </Can>
+                        <div>
+                            <Can I="edit" this={subject("event", event)}>
+                                <Link href={`/events/${event.id}/edit`}>
+                                    <Button>Edit Event</Button>
+                                </Link>
+                            </Can>
+                            <Can I="delete" this={subject("event", event)}>
+                                <Button
+                                    className="ms-2"
+                                    variant="danger"
+                                    onClick={async () => {
+                                        if (
+                                            confirm(
+                                                "Are you sure you want to delete this event?",
+                                            )
+                                        ) {
+                                            await deleteEventAction(event.id);
+
+                                            redirect("/events");
+                                        }
+                                    }}
+                                >
+                                    Delete Event
+                                </Button>
+                            </Can>
+                        </div>
                     </div>
                     <h1 className="card-title">{event.name}</h1>
                     <p className="card-text text-muted">
