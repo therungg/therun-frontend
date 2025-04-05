@@ -7,6 +7,8 @@ import { confirmPermission } from "~src/rbac/confirm-permission";
 import { createEvent } from "~src/lib/events";
 import { formInputToEventInput } from "~app/events/actions/form-input-to-event-input";
 import { validateEventInput } from "~app/events/actions/validate-event-input";
+import { insertLog } from "~src/lib/logs";
+import { getOrCreateUser } from "~src/lib/users";
 
 export async function createEventAction(
     _prevState: unknown,
@@ -36,6 +38,13 @@ export async function createEventAction(
 
     try {
         eventId = await createEvent(input);
+        await insertLog({
+            userId: await getOrCreateUser(session.username),
+            action: "create-event",
+            entity: "event",
+            target: eventId.toString(),
+            data: { eventId, input },
+        });
     } catch (error: never) {
         let message = error.message;
 

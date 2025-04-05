@@ -6,6 +6,8 @@ import { editEvent, getEventById } from "~src/lib/events";
 import { validateEventInput } from "~app/events/actions/validate-event-input";
 import { formInputToEventInput } from "~app/events/actions/form-input-to-event-input";
 import { redirect } from "next/navigation";
+import { insertLog } from "~src/lib/logs";
+import { getOrCreateUser } from "~src/lib/users";
 
 export async function editEventAction(
     _prevState: unknown,
@@ -40,6 +42,13 @@ export async function editEventAction(
     }
     try {
         await editEvent(eventId, input);
+        await insertLog({
+            userId: await getOrCreateUser(user.username),
+            action: "edit-event",
+            entity: "event",
+            target: eventId.toString(),
+            data: { eventId, input },
+        });
     } catch (error: never) {
         let message = error.message;
 
