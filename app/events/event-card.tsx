@@ -96,7 +96,11 @@ export const SpeedrunEventCard = ({ event }: { event: EventFromSearch }) => {
                                 <span className="text-muted">Location: </span>
                                 <span className="ms-1">
                                     <EventLocation
-                                        location={event.location as string}
+                                        location={
+                                            event.isOffline
+                                                ? "Offline"
+                                                : (event.location as string)
+                                        }
                                     />
                                 </span>
                             </EventCardInfo>
