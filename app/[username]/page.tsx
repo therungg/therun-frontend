@@ -69,7 +69,7 @@ export default async function Page(props: PageProps) {
 
     const allGlobalGameData = await Promise.all(promises);
 
-    const hasGameTime = !!runs.find((run) => run.hasGameTime);
+    const hasGameTime = !!(runs || []).find((run) => run.hasGameTime);
 
     let defaultGameTime = hasGameTime;
 

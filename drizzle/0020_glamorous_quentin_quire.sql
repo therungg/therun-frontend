@@ -1,0 +1,1 @@
+ALTER TABLE "events" ADD CONSTRAINT "events_name_unique" UNIQUE("name");

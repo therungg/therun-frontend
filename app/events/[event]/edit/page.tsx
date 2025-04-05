@@ -1,22 +1,20 @@
-"use server";
-
 import { getSession } from "~src/actions/session.action";
 import { confirmPermission } from "~src/rbac/confirm-permission";
-import { CreateEvent } from "~app/events/create/create-event";
 import { getEventById } from "~src/lib/events";
+import { EditEvent } from "./edit-event";
 
 interface PageProps {
-    params: Promise<{ eventId: number }>;
+    params: Promise<{ event: number }>;
 }
 
-export default async function EditRacePage(props: PageProps) {
+export default async function EditEventPage(props: PageProps) {
     const params = await props.params;
-    const eventId = params.eventId;
+    const eventId = params.event;
 
     const event = await getEventById(eventId);
 
     const session = await getSession();
     confirmPermission(session, "edit", "event", event);
 
-    return <CreateEvent />;
+    return <EditEvent event={event} />;
 }

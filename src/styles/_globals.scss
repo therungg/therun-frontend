@@ -34,9 +34,21 @@ body {
   width: 66.6666%;
 }
 
+.color-text {
+  color: var(--bs-body-color) !important;
+}
+
+.pointer {
+  cursor: pointer !important;
+}
+
+.cursor-text {
+  cursor: text !important;
+}
+
 .timeZoneSelect {
 
-  > div {
+  >div {
     background-color: var(--bs-secondary-bg) !important;
   }
 
@@ -210,11 +222,9 @@ body {
 }
 
 
-.form-control {
+.form-control {}
 
-}
-
-.form-floating > label:after {
+.form-floating>label:after {
   background: none !important;
 }
 
@@ -254,9 +264,11 @@ body {
   @media (min-width: 576px) {
     width: 80% !important
   }
+
   @media (min-width: 768px) {
     width: 60% !important
   }
+
   @media (min-width: 992px) {
     width: 40% !important
   }
@@ -284,32 +296,32 @@ body {
 
 @media (min-width: 992px) {
   .podium-xl {
-    > div {
+    >div {
       order: 3;
 
-      > div {
+      >div {
         border: 4px var(--bs-border-color) solid;
       }
     }
 
-    > div:first-child {
+    >div:first-child {
       order: 2;
       transform: translateY(-50px);
 
-      > div {
+      >div {
         border-color: var(--bs-secondary);
       }
     }
 
-    > div:nth-child(2) {
+    >div:nth-child(2) {
 
-      > div {
+      >div {
         border-color: silver;
         transform: translateY(-20px);
       }
     }
 
-    > div:nth-child(2):not(:last-child) {
+    >div:nth-child(2):not(:last-child) {
       order: 1;
     }
   }
@@ -330,7 +342,7 @@ div.game-filter {
 }
 
 // Tables
-.table > :not(:first-child) {
+.table> :not(:first-child) {
   border-top-width: 2px !important;
 }
 
@@ -352,6 +364,7 @@ div.game-filter {
   0% {
     transform: translateX(100%);
   }
+
   100% {
     transform: translateX(-100%);
   }

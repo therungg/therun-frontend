@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useActionState } from "react";
+import React, { FormEvent, startTransition, useActionState } from "react";
 import { createEventAction } from "~app/events/actions/create-event.action";
 import {
     Breadcrumb,
@@ -19,13 +19,19 @@ export const CreateEvent = () => {
         { content: "Create a new Event" },
     ];
 
+    function handleSubmit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        startTransition(() => formAction(formData));
+    }
+
     return (
         <>
             <Breadcrumb breadcrumbs={breadcrumbs} />
 
             {state?.message && state.message}
 
-            <Form action={formAction} className="row">
+            <Form onSubmit={handleSubmit} className="row">
                 <fieldset className="border py-3 px-4">
                     <legend className="w-auto mb-0">Create a new event</legend>
                     <EventForm />

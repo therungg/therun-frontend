@@ -5,9 +5,21 @@ import Link from "next/link";
 import { IconButton } from "~src/components/Button/IconButton";
 import { PlusIcon } from "~src/icons/plus-icon";
 import { Col, Row } from "react-bootstrap";
-import { Event } from "../../types/events.types";
+import { EventFromSearch } from "../../types/events.types";
+import { SpeedrunEventCard } from "./event-card";
+import { Paginate } from "~src/components/server-pagination/Paginate";
+import { PaginatedData } from "~src/components/pagination/pagination.types";
+import { SearchResponse } from "algoliasearch";
+import { EventSearch } from "./event-search";
+import { EventFilters } from "./event-filters";
 
-export const Events = ({ events }: { events: Event[] }) => {
+export const Events = ({
+    events,
+    pagination,
+}: {
+    events: SearchResponse<EventFromSearch>;
+    pagination: PaginatedData<EventFromSearch>;
+}) => {
     return (
         <div>
             <Row className="mb-3">
@@ -31,8 +43,27 @@ export const Events = ({ events }: { events: Event[] }) => {
                     </Can>
                 </Col>
             </Row>
-
-            {JSON.stringify(events)}
+            <div className="flex-center">
+                <EventSearch />
+            </div>
+            <Row>
+                <Col md={2}>
+                    <EventFilters filters={events.facets!} />
+                </Col>
+                <Col md={10}>
+                    <section>
+                        {events.hits.map((event) => {
+                            return (
+                                <SpeedrunEventCard
+                                    event={event}
+                                    key={event.id}
+                                />
+                            );
+                        })}
+                        <Paginate data={pagination} />
+                    </section>
+                </Col>
+            </Row>
         </div>
     );
 };

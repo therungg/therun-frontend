@@ -5,13 +5,14 @@ import { db } from "~src/db/index";
 import { CreateEventInput } from "../../types/events.types";
 import { InferInsertModel, sql } from "drizzle-orm";
 import { manageableRoles } from "../../types/roles.types";
+import { clearAlgoliaIndex, insertEventsToAlgolia } from "~src/lib/algolia";
 
 dotenv.config({ path: "./.env.development" });
 
 if (!("DATABASE_URL" in process.env))
     throw new Error("DATABASE_URL not found on .env.development");
 
-const NUM_EVENTS = 10;
+const NUM_EVENTS = 25;
 const NUM_USERS = 100;
 
 const main = async () => {
@@ -26,16 +27,20 @@ const main = async () => {
 };
 
 const insertEventSeeds = async () => {
+    console.log("Seeding events...");
     const fakeEvents: CreateEventInput[] = [];
     const organizers = await db
         .insert(eventOrganizers)
         .values([{ name: "Organizer" }] as InferInsertModel<
             typeof eventOrganizers
-        >)
+        >[])
         .onConflictDoNothing()
         .returning();
     for (let i = 0; i < NUM_EVENTS; i++) {
-        const startsAt = faker.date.future();
+        const startsAt = faker.date.between({
+            from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // 1 year ago
+            to: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+        });
         const durationHours = faker.number.int({ min: 24, max: 24 * 9 });
         const endsAt = new Date(
             startsAt.getTime() + durationHours * 60 * 60 * 1000,
@@ -73,12 +78,23 @@ const insertEventSeeds = async () => {
             shortDescription: faker.lorem.sentence(10),
             description: faker.lorem.paragraphs(2, "\n\n"),
             url: faker.internet.url(),
-            imageUrl: "no image", // You can choose a more specific image type if needed
+            tier: faker.number.int({ min: 1, max: 4 }),
+            isOffline: faker.datatype.boolean(),
+            isHighlighted: faker.datatype.boolean(),
+            imageUrl: "/logo_dark_theme_no_text_transparent.png",
         } as CreateEventInput);
     }
 
-    // Insert the generated events into the "events" table
-    await db.insert(events).values(fakeEvents).onConflictDoNothing();
+    const eventResults = await db
+        .insert(events)
+        .values(fakeEvents)
+        .onConflictDoNothing()
+        .returning();
+
+    console.log("Inserting events to algolia...");
+
+    await clearAlgoliaIndex();
+    await insertEventsToAlgolia(eventResults);
 };
 
 const adminUsers = ["joeys64", "therun_gg"];

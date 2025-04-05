@@ -44,6 +44,7 @@
       }
     ],
     "sonarjs/no-ignored-return": "off",
+    "sonarjs/no-small-switch": "off",
     "eslint-comments/no-use": "off",
     "eslint-comments/no-unused-disable": "error",
     "eslint-comments/disable-enable-pair": "off",

@@ -1,0 +1,1 @@
+ALTER TABLE "events" ALTER COLUMN "slug" SET DATA TYPE varchar(50);

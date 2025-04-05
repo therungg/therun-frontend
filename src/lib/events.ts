@@ -1,19 +1,52 @@
 "use server";
 
-import { eq, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { db } from "~src/db";
 import { eventOrganizers, events } from "~src/db/schema";
 import { PaginatedData } from "~src/components/pagination/pagination.types";
-import { CreateEventInput, Event } from "../../types/events.types";
+import {
+    CreateEventInput,
+    CreateEventOrganizerInput,
+    EditEventInput,
+    Event,
+    EventOrganizer,
+    EventWithOrganizerName,
+} from "../../types/events.types";
+import { deleteEventFromAlgolia, insertEventToAlgolia } from "./algolia";
 
-export const getEventById = async (eventId: number) => {
-    return db.query.events.findFirst({
-        where: eq(events.id, eventId),
-    });
+interface EventDbResult {
+    events: Event;
+    event_organizers: EventOrganizer;
+}
+
+export const getEventById = async (
+    eventId: number | string,
+): Promise<EventWithOrganizerName> => {
+    console.log(eventId);
+    const result = await db
+        .select()
+        .from(events)
+        .innerJoin(eventOrganizers, eq(events.organizerId, eventOrganizers.id))
+        .where(
+            !isNaN(eventId as number)
+                ? eq(events.id, eventId as number)
+                : eq(events.slug, eventId as string),
+        );
+
+    if (!result[0]) {
+        throw new Error("Event not found");
+    }
+
+    return addOrganizerNameToEvent(result[0]);
 };
 
-export const getAllEvents = async () => {
-    return db.select().from(events);
+export const getAllEvents = async (): Promise<EventWithOrganizerName[]> => {
+    const result = await db
+        .select()
+        .from(events)
+        .innerJoin(eventOrganizers, eq(events.organizerId, eventOrganizers.id));
+
+    return addOrganizerNameToEvents(result);
 };
 
 export const getAllEventOrganizers = async () => {
@@ -23,12 +56,14 @@ export const getAllEventOrganizers = async () => {
 export const getEventsPaginated = async (
     page = 1,
     pageSize = 10,
-): Promise<PaginatedData<Event>> => {
+): Promise<PaginatedData<EventWithOrganizerName>> => {
     const offset = (page - 1) * pageSize;
 
     const results = await db
         .select()
         .from(events)
+        .innerJoin(eventOrganizers, eq(events.organizerId, eventOrganizers.id))
+        .orderBy(desc(events.id))
         .limit(pageSize)
         .offset(offset);
 
@@ -40,7 +75,7 @@ export const getEventsPaginated = async (
     const totalPages = Math.ceil(total / pageSize);
 
     return {
-        items: results,
+        items: addOrganizerNameToEvents(results),
         totalItems: total,
         totalPages: totalPages,
         page,
@@ -49,10 +84,62 @@ export const getEventsPaginated = async (
 };
 
 export const createEvent = async (input: CreateEventInput) => {
-    const insertedEvent = await db
-        .insert(events)
-        .values(input)
-        .returning({ id: events.id });
+    const insertedEvent = await db.insert(events).values(input).returning();
 
-    return insertedEvent[0]?.id;
+    const id = insertedEvent[0]?.id;
+
+    if (!id) {
+        throw new Error("Failed to create event");
+    }
+
+    await insertEventToAlgolia(insertedEvent[0]);
+
+    return id;
+};
+
+export const editEvent = async (eventId: number, input: EditEventInput) => {
+    const updatedEvent = await db
+        .update(events)
+        .set(input)
+        .where(eq(events.id, eventId))
+        .returning();
+    if (!updatedEvent[0]) {
+        throw new Error("Failed to update event");
+    }
+
+    await insertEventToAlgolia(updatedEvent[0]);
+};
+
+export const deleteEvent = async (event: Event) => {
+    await db
+        .update(events)
+        .set({ isDeleted: true })
+        .where(eq(events.id, event.id));
+
+    await deleteEventFromAlgolia(event);
+};
+
+export const createEventOrganizer = async (
+    input: CreateEventOrganizerInput,
+) => {
+    const insertedEventOrganizer = await db
+        .insert(eventOrganizers)
+        .values(input)
+        .returning({ id: eventOrganizers.id });
+
+    return insertedEventOrganizer[0];
+};
+
+const addOrganizerNameToEvent = (dbResult: EventDbResult) => {
+    return {
+        ...dbResult.events,
+        organizerName: dbResult.event_organizers.name,
+    };
+};
+
+const addOrganizerNameToEvents = (dbResult: EventDbResult[]) => {
+    return dbResult.map((result) => ({
+        ...result.events,
+        organizerName: result.event_organizers.name,
+    }));
 };
