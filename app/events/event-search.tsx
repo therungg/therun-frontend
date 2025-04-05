@@ -10,12 +10,12 @@ export const EventSearch = () => {
     const searchParams = useSearchParams();
 
     const [searchInput, setSearchInput] = useState(
-        searchParams.get("search") ?? "",
+        searchParams.get("search") ?? null,
     );
     const [debouncedSearch] = useDebounceValue(searchInput, 300);
 
     useEffect(() => {
-        if (debouncedSearch) {
+        if (debouncedSearch !== null) {
             const params = new URLSearchParams(searchParams.toString());
             params.set("page", "1");
 
@@ -48,7 +48,7 @@ export const EventSearch = () => {
                 onChange={(e) => {
                     setSearchInput(e.target.value);
                 }}
-                value={searchInput}
+                value={searchInput ?? ""}
                 id="search"
             />
         </div>

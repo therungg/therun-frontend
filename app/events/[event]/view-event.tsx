@@ -11,6 +11,17 @@ import {
     Breadcrumb,
     BreadcrumbItem,
 } from "~src/components/breadcrumbs/breadcrumb";
+import { EventDates } from "../event-dates";
+import { EventBadges } from "../event-badges";
+import { Col, Row } from "react-bootstrap";
+import {
+    FaCalendarAlt,
+    FaFileAlt,
+    FaHeart,
+    FaMapMarkerAlt,
+    FaUserAlt,
+} from "react-icons/fa";
+import { EventLocation } from "../event-location";
 
 export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -23,9 +34,9 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
             <Breadcrumb breadcrumbs={breadcrumbs} />
             <div className="container mt-4">
                 <div
-                    className="d-flex align-items-center p-4 rounded shadow-lg bg-body-secondary"
+                    className="d-flex align-items-center p-2 rounded shadow-lg bg-body-secondary border border-secondary"
                     style={{
-                        height: "300px",
+                        height: "200px",
                         color: "white",
                     }}
                 >
@@ -41,47 +52,18 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                     <div className="ms-4">
                         <h1 className="fw-bold">{event.name}</h1>
                         <p className="mb-1">
-                            {new Intl.DateTimeFormat("en-US", {
-                                month: "long",
-                                day: "numeric",
-                                year: "numeric",
-                            }).format(new Date(event.startsAt))}{" "}
-                            -{" "}
-                            {new Intl.DateTimeFormat("en-US", {
-                                month: "long",
-                                day: "numeric",
-                                year: "numeric",
-                            }).format(new Date(event.endsAt))}
+                            <EventDates event={event} />
                         </p>
                         <div className="d-flex">
-                            <span
-                                className={`badge me-2 ${
-                                    event.tier === 1
-                                        ? "bg-warning text-dark"
-                                        : event.tier === 2
-                                          ? "bg-success text-white"
-                                          : event.tier === 3
-                                            ? "bg-primary text-white"
-                                            : "bg-secondary text-white"
-                                }`}
-                            >
-                                Tier {event.tier}
-                            </span>
-                            <span
-                                className={`badge me-2 ${
-                                    event.isOffline
-                                        ? "bg-danger text-white"
-                                        : "bg-info text-dark"
-                                }`}
-                            >
-                                {event.isOffline ? "Offline" : "Online"}
-                            </span>
-                            <span className="badge bg-primary text-white me-2">
-                                {event.type}
-                            </span>
-                            <span className="badge bg-secondary text-white">
-                                {event.language}
-                            </span>
+                            <EventBadges event={event} />
+                        </div>
+                        <div
+                            className="card-text text-muted mt-3 border-start ps-2"
+                            style={{
+                                borderColor: "#ccc",
+                            }}
+                        >
+                            {event.shortDescription}
                         </div>
                     </div>
                 </div>
@@ -89,67 +71,69 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                 {/* Description and Details Section */}
                 <div className="card mt-4">
                     <div className="card-body">
-                        <h2 className="card-title">About the Event</h2>
-                        <p className="card-text text-muted">
-                            {event.shortDescription}
-                        </p>
-                        <p
-                            className="card-text"
-                            dangerouslySetInnerHTML={{
-                                __html: event.description,
-                            }}
-                        ></p>
-
-                        <h3 className="mt-4">Details</h3>
-                        <ul className="list-group list-group-flush">
-                            <li className="list-group-item">
-                                <strong>Location:</strong>{" "}
-                                {event.location || "TBD"}
-                            </li>
-                            <li className="list-group-item">
-                                <strong>Organizer:</strong>{" "}
-                                {event.organizerName}
-                            </li>
-                            <li className="list-group-item">
-                                <strong>Created By:</strong> {event.createdBy}{" "}
-                                on{" "}
-                                {new Date(event.createdAt).toLocaleDateString()}
-                            </li>
-                        </ul>
-
-                        <h3 className="mt-4">Links</h3>
-                        <div className="d-flex flex-wrap">
-                            {event.url && (
-                                <a
-                                    href={event.url}
-                                    className="btn btn-primary me-2 mb-2"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    Event Website
-                                </a>
-                            )}
-                            {event.bluesky && (
-                                <a
-                                    href={event.bluesky}
-                                    className="btn btn-info me-2 mb-2"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    Bluesky
-                                </a>
-                            )}
-                            {event.discord && (
-                                <a
-                                    href={event.discord}
-                                    className="btn btn-secondary me-2 mb-2"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    Discord
-                                </a>
-                            )}
-                        </div>
+                        <Row>
+                            <Col md={8}>
+                                <h3 className="card-title">
+                                    <FaFileAlt className="me-2 mb-2 text-primary" />
+                                    Event Description
+                                </h3>
+                                <div
+                                    className="card-text border rounded-2 p-3 bg-body-tertiary"
+                                    style={{
+                                        maxHeight: "300px",
+                                        overflowY: "auto",
+                                        backgroundColor: "var(--bg-body)",
+                                    }}
+                                    dangerouslySetInnerHTML={{
+                                        __html: event.description,
+                                    }}
+                                ></div>
+                            </Col>
+                            <Col md={4}>
+                                <h3 className="card-title">
+                                    <FaHeart className="me-2 mb-2 text-primary" />
+                                    Event Details
+                                </h3>
+                                <div className="card-text border rounded-2 p-3 bg-body-tertiary">
+                                    <div className="d-flex mb-3">
+                                        <FaUserAlt className="me-2 text-primary flex-center h-100 mt-2" />
+                                        <div className="ms-2 mb-1">
+                                            <div>Organizer</div>
+                                            <div className="fw-bold fs-5">
+                                                {event.organizerName}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {event.location && (
+                                        <div className="d-flex mb-3">
+                                            <FaMapMarkerAlt className="me-2 text-danger flex-center h-100 mt-2" />
+                                            <div className="ms-2 mb-1">
+                                                <div>Location</div>
+                                                <div className="fw-bold fs-5">
+                                                    <EventLocation
+                                                        location={
+                                                            event.location
+                                                        }
+                                                        margin={2}
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="d-flex mb-3">
+                                        <FaCalendarAlt className="me-2 text-primary flex-center h-100 mt-2" />
+                                        <div className="ms-2 mb-1">
+                                            <div>Dates</div>
+                                            <div className="fw-bold fs-5">
+                                                <EventDates event={event} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <hr />
+                                    <h3>Links</h3>
+                                </div>
+                            </Col>
+                        </Row>
                     </div>
                 </div>
 

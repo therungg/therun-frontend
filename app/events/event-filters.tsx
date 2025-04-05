@@ -183,7 +183,13 @@ const FilterBody: FC<PropsWithChildren<{ header: string }>> = ({
                     {hidden ? "▲" : "▼"}
                 </span>
             </div>
-            <hr className="w-75 mt-0 mb-2" />
+            <hr
+                className="mt-0 mb-2 ms-2"
+                style={{
+                    color: "var(--bs-secondary)",
+                    width: "65%",
+                }}
+            />
             {!hidden && children}
         </div>
     );

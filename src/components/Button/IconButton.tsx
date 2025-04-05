@@ -26,7 +26,7 @@ export const IconButton: React.FC<React.PropsWithChildren<IconButtonProps>> = ({
     );
     return (
         <Button className={cls} {...buttonProps}>
-            <span>{icon}</span>
+            <span className="ms-1">{icon}</span>
             {children}
         </Button>
     );

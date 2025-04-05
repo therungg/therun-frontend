@@ -1,6 +1,6 @@
 "use client";
 
-import { EventFromSearch, eventTierShortNames } from "../../types/events.types";
+import { EventFromSearch } from "../../types/events.types";
 import Image from "next/image";
 import Link from "next/link";
 import { FaCalendarAlt, FaMapMarkerAlt, FaUser } from "react-icons/fa";
@@ -8,13 +8,15 @@ import { EventLocation } from "./event-location";
 import styles from "./event.styles.module.css";
 import clsx from "clsx";
 import { FC, PropsWithChildren } from "react";
+import { EventBadges } from "./event-badges";
+import { EventDates } from "./event-dates";
 
 export const SpeedrunEventCard = ({ event }: { event: EventFromSearch }) => {
     return (
         <Link href={`/events/${event.slug}`} className="text-decoration-none">
             <div
                 className={clsx(
-                    "container-fluid p-0 game-border mt-3 rounded-4 d-flex align-items-center shadow-lg",
+                    "container-fluid p-0 game-border mt-3 rounded-4 d-flex align-items-center shadow-lg border border-secondary",
                     styles["event-card"],
                 )}
             >
@@ -37,62 +39,20 @@ export const SpeedrunEventCard = ({ event }: { event: EventFromSearch }) => {
                         <span className="fs-2 fw-bold color-text">
                             {event.name}
                         </span>
-                        <div className="d-flex align-items-center mt-0">
-                            <span
-                                className={`badge me-2 ${
-                                    event.tier === 1
-                                        ? "bg-warning text-dark"
-                                        : event.tier === 2
-                                          ? "bg-success text-white"
-                                          : event.tier === 3
-                                            ? "bg-primary text-white"
-                                            : "bg-secondary text-white"
-                                }`}
-                            >
-                                {eventTierShortNames[
-                                    event.tier as keyof typeof eventTierShortNames
-                                ] || event.tier}
-                            </span>
-                            <span
-                                className={`badge me-2 ${
-                                    event.isOffline
-                                        ? "bg-danger text-white"
-                                        : "bg-info text-dark"
-                                }`}
-                            >
-                                {event.isOffline ? "Offline" : "Online"}
-                            </span>
-                            <span className="badge bg-primary text-white me-2">
-                                {event.type}
-                            </span>
-                            <span className="badge bg-secondary text-white me-2">
-                                {event.language}
-                            </span>
-                        </div>
+                        <EventBadges event={event} />
                         <div className="d-flex mt-3">
                             <EventCardInfo>
-                                <FaUser className="me-1 text-primary" />
+                                <FaUser className="me-2 text-primary" />
                                 <span className="text-muted">Organizer: </span>
                                 <span className="ms-1">{event.organizer}</span>
                             </EventCardInfo>
                             <EventCardInfo>
-                                <FaCalendarAlt className="me-1 text-primary" />
+                                <FaCalendarAlt className="me-2 text-primary" />
                                 <span className="text-muted">Dates: </span>
-                                <span className="ms-1">
-                                    {new Intl.DateTimeFormat("en-US", {
-                                        month: "short",
-                                        day: "numeric",
-                                    }).format(new Date(event.startsAt))}
-                                    {" - "}
-                                    {new Intl.DateTimeFormat("en-US", {
-                                        month: "short",
-                                        day: "numeric",
-                                        year: "numeric",
-                                    }).format(new Date(event.endsAt))}
-                                </span>
+                                <EventDates event={event} />
                             </EventCardInfo>
                             <EventCardInfo>
-                                <FaMapMarkerAlt className="me-1 text-danger" />
+                                <FaMapMarkerAlt className="me-2 text-danger" />
                                 <span className="text-muted">Location: </span>
                                 <span className="ms-1">
                                     <EventLocation
@@ -101,6 +61,7 @@ export const SpeedrunEventCard = ({ event }: { event: EventFromSearch }) => {
                                                 ? "Online"
                                                 : (event.location as string)
                                         }
+                                        margin={2}
                                     />
                                 </span>
                             </EventCardInfo>

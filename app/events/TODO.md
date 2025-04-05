@@ -9,3 +9,4 @@
 -   Filter explanations
 -   Deadline dates incl status view in card and detail (registration, schedule release, early bird etc.)
 -   Filter by custom date
+-   Full address, not just country
