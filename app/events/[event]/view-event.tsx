@@ -13,12 +13,13 @@ import {
 } from "~src/components/breadcrumbs/breadcrumb";
 import { EventDates } from "../event-dates";
 import { EventBadges } from "../event-badges";
-import { Col, Row } from "react-bootstrap";
+import { Badge, Col, Row } from "react-bootstrap";
 import {
     FaCalendarAlt,
     FaFileAlt,
     FaHeart,
     FaMapMarkerAlt,
+    FaTags,
     FaUserAlt,
 } from "react-icons/fa";
 import { EventLocation } from "../event-location";
@@ -134,6 +135,25 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                 </div>
                             </Col>
                         </Row>
+                        <h3 className="card-title">
+                            <FaTags className="me-2 mb-2 text-primary" />
+                            Event Tags
+                        </h3>
+                        <div>
+                            {(event.tags ?? []).map((tag) => {
+                                return (
+                                    <Badge
+                                        key={tag}
+                                        bg="primary"
+                                        className="ms-2 pt-2 pb-2 px-3"
+                                        pill={true}
+                                        style={{ fillOpacity: "50%" }}
+                                    >
+                                        <span className="fs-6">{tag}</span>
+                                    </Badge>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
 
