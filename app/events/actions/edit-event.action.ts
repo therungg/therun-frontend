@@ -41,9 +41,17 @@ export async function editEventAction(
     try {
         await editEvent(eventId, input);
     } catch (error: never) {
-        return {
-            message: error.message,
-        };
+        let message = error.message;
+
+        if (message.includes("events_name")) {
+            message = "The name is already taken";
+        }
+
+        if (message.includes("events_slug")) {
+            message = "The slug is already taken";
+        }
+
+        return { message };
     }
 
     redirect(`/events/${eventId}?toast=Event succesfully edited!`);

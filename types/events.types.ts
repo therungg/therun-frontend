@@ -1,7 +1,7 @@
 import { eventOrganizers, events } from "~src/db/schema";
 import { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
-export type Event = InferSelectModel<typeof events>;
+export type Event = InferSelectModel<typeof events> & { tags: string[] };
 export type EventWithOrganizerName = Event & { organizerName: string };
 
 export interface EventFromSearch

@@ -43,15 +43,13 @@ export const Events = ({
                     </Can>
                 </Col>
             </Row>
-            <div className="flex-center">
-                <EventSearch />
-            </div>
             <Row>
                 <Col md={2}>
                     <EventFilters filters={events.facets!} />
                 </Col>
                 <Col md={10}>
                     <section>
+                        <EventSearch />
                         {events.hits.map((event) => {
                             return (
                                 <SpeedrunEventCard

@@ -46,6 +46,16 @@ body {
   cursor: text !important;
 }
 
+.form-check .form-check-input {
+  cursor: pointer !important;
+}
+
+.form-check:hover {
+  .form-check-input {
+    border-color: var(--bs-primary) !important;
+  }
+}
+
 .timeZoneSelect {
 
   >div {

@@ -16,6 +16,7 @@ import { languages } from "~src/common/languages";
 import Tiptap from "~src/components/TipTap";
 import Image from "next/image";
 import { EventTagInput } from "./inputs/event-tag-input";
+import { EventFieldRequired } from "./event-field-required";
 
 export const EventForm = ({ event }: { event?: Event }) => {
     const [eventOrganizers, setEventOrganizers] = useState<EventOrganizer[]>(
@@ -59,7 +60,9 @@ export const EventForm = ({ event }: { event?: Event }) => {
             <Row>
                 <Col md={3}>
                     <Form.Group className="mb-3">
-                        <Form.Label htmlFor="eventName">Event Name</Form.Label>
+                        <Form.Label htmlFor="eventName">
+                            Event Name <EventFieldRequired />
+                        </Form.Label>
                         <Form.Control
                             id="eventName"
                             type="text"
@@ -72,7 +75,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 <Col md={3}>
                     <Form.Group className="mb-3">
                         <Form.Label htmlFor="slug">
-                            URL (therun.gg/events/{slug})
+                            URL (therun.gg/events/{slug}) <EventFieldRequired />
                         </Form.Label>
                         <Form.Control
                             id="slug"
@@ -94,7 +97,9 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 </Col>
                 <Col md={3}>
                     <Form.Group className="mb-3">
-                        <Form.Label htmlFor="eventType">Type</Form.Label>
+                        <Form.Label htmlFor="eventType">
+                            Type <EventFieldRequired />
+                        </Form.Label>
                         <Form.Select
                             id="eventType"
                             name="type"
@@ -112,7 +117,9 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 </Col>
                 <Col md={3}>
                     <Form.Group className="mb-3">
-                        <Form.Label htmlFor="eventTier">Tier</Form.Label>
+                        <Form.Label htmlFor="eventTier">
+                            Tier <EventFieldRequired />
+                        </Form.Label>
                         <Form.Select
                             id="eventTier"
                             name="tier"
@@ -152,7 +159,9 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 </Col>
                 <Col md={4}>
                     <Form.Group className="mb-3">
-                        <Form.Label htmlFor="language">Language</Form.Label>
+                        <Form.Label htmlFor="language">
+                            Language <EventFieldRequired />
+                        </Form.Label>
                         <Form.Select
                             id="language"
                             name="language"
@@ -202,7 +211,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 <Col md={6}>
                     <Form.Group className="mb-4">
                         <Form.Label htmlFor="organizer">
-                            Event Organizer
+                            Event Organizer <EventFieldRequired />
                         </Form.Label>
                         <Form.Select
                             id="organizer"
@@ -253,7 +262,9 @@ export const EventForm = ({ event }: { event?: Event }) => {
             <Row>
                 <Col md={6}>
                     <Form.Group className="mb-3">
-                        <Form.Label htmlFor="startsAt">Starts At</Form.Label>
+                        <Form.Label htmlFor="startsAt">
+                            Starts At <EventFieldRequired />
+                        </Form.Label>
                         <Form.Control
                             id="startsAt"
                             type="datetime-local"
@@ -271,7 +282,9 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 </Col>
                 <Col md={6}>
                     <Form.Group className="mb-3">
-                        <Form.Label htmlFor="endsAt">Ends At</Form.Label>
+                        <Form.Label htmlFor="endsAt">
+                            Ends At <EventFieldRequired />
+                        </Form.Label>
                         <Form.Control
                             id="endsAt"
                             type="datetime-local"
@@ -354,7 +367,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
 
             <Form.Group className="mb-3">
                 <Form.Label htmlFor="shortDescription">
-                    Short Description
+                    Short Description <EventFieldRequired />
                 </Form.Label>
                 <Form.Control
                     id="shortDescription"
@@ -368,7 +381,9 @@ export const EventForm = ({ event }: { event?: Event }) => {
             </Form.Group>
 
             <Form.Group className="mb-3">
-                <Form.Label htmlFor="description">Description</Form.Label>
+                <Form.Label htmlFor="description">
+                    Description <EventFieldRequired />
+                </Form.Label>
 
                 <Tiptap
                     onChange={setEditorContent}
@@ -376,8 +391,8 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 />
 
                 <input
-                    type="hidden"
                     required
+                    type="hidden"
                     id="description"
                     name="description"
                     value={editorContent}
@@ -396,7 +411,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
 
             <Row>
                 <Col>
-                    <EventTagInput />
+                    <EventTagInput event={event} />
                 </Col>
             </Row>
 

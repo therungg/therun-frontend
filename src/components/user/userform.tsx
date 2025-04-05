@@ -383,15 +383,21 @@ const Edit = ({ username, form, setForm }) => {
     );
 };
 
-export const CountryIcon = ({ countryCode }) => {
+export const CountryIcon = ({
+    countryCode,
+}: {
+    countryCode: keyof typeof countries;
+}) => {
     return (
         <Image
             unoptimized
             className="img-fluid"
             width={24}
             height={16}
-            alt={countries()[countryCode] as string}
-            src={`https://raw.githubusercontent.com/hampusborgos/country-flags/main/svg/${countryCode.toLowerCase()}.svg`}
+            alt={countries()[countryCode]}
+            src={`https://raw.githubusercontent.com/hampusborgos/country-flags/main/svg/${(
+                countryCode as string
+            ).toLowerCase()}.svg`}
         />
     );
 };

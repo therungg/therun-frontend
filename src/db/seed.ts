@@ -36,6 +36,17 @@ const insertEventSeeds = async () => {
         >[])
         .onConflictDoNothing()
         .returning();
+    const currentYear = new Date().getFullYear();
+    const eventNames = [
+        "GDQ",
+        "ESA",
+        "BSG",
+        "PACE",
+        "The Run Con",
+        "Speedons",
+        "Random Event",
+    ];
+
     for (let i = 0; i < NUM_EVENTS; i++) {
         const startsAt = faker.date.between({
             from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // 1 year ago
@@ -46,20 +57,17 @@ const insertEventSeeds = async () => {
             startsAt.getTime() + durationHours * 60 * 60 * 1000,
         );
 
-        const name = faker.helpers.arrayElement([
-            "GDQ",
-            "ESA",
-            "BSG",
-            "PACE",
-            "The Run Con",
-            "Speedons",
-            "Random event name",
-        ]);
+        const baseName = faker.helpers.arrayElement(eventNames);
+        const yearSuffix = currentYear + Math.floor(i / eventNames.length);
+        const name = `${baseName} ${yearSuffix}`;
+        const slug = name.toLowerCase().replace(/\s+/g, "-");
+
         fakeEvents.push({
             organizerId: organizers[0].id,
             startsAt,
             endsAt,
             name,
+            slug,
             createdBy: "me",
             type: faker.helpers.arrayElement([
                 "Live",
@@ -82,6 +90,16 @@ const insertEventSeeds = async () => {
             isOffline: faker.datatype.boolean(),
             isHighlighted: faker.datatype.boolean(),
             imageUrl: "/logo_dark_theme_no_text_transparent.png",
+            tags: faker.helpers.arrayElements(
+                [
+                    "speedrunning",
+                    "charity",
+                    "gaming",
+                    "tournament",
+                    "community",
+                ],
+                faker.number.int({ min: 1, max: 3 }),
+            ),
         } as CreateEventInput);
     }
 

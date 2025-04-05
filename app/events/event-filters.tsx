@@ -1,9 +1,12 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { FC, PropsWithChildren, useState } from "react";
+import { FC, PropsWithChildren, ReactNode, useState } from "react";
 import { Form } from "react-bootstrap";
 import { eventTierShortNames } from "types/events.types";
+import { EventLocation } from "./event-location";
+import styles from "./event.styles.module.css";
+import clsx from "clsx";
 
 const VIEW_MORE_THRESHOLD = 5;
 
@@ -66,10 +69,7 @@ const Filter = ({
     const [viewMore, setViewMore] = useState(false);
 
     return (
-        <div className="mb-3" key={categoryKey}>
-            <h5 className="fw-bold">
-                <FilterCategory category={categoryKey} />
-            </h5>
+        <FilterBody header={categoryKey}>
             {values.length > VIEW_MORE_THRESHOLD && (
                 <Form.Group className="mb-1">
                     <Form.Control
@@ -121,7 +121,7 @@ const Filter = ({
                             />
                         ))}
             </div>
-        </div>
+        </FilterBody>
     );
 };
 
@@ -164,6 +164,31 @@ const EventFilter = ({
     );
 };
 
+const FilterBody: FC<PropsWithChildren<{ header: string }>> = ({
+    children,
+    header,
+}) => {
+    const [hidden, setHidden] = useState(false);
+
+    return (
+        <div className="mb-4">
+            <div className="d-flex justify-content-between align-items-center mb-1 w-75">
+                <h5 className="fw-bold">
+                    <FilterCategory category={header} />
+                </h5>
+                <span
+                    className="cursor-pointer text-muted"
+                    onClick={() => setHidden(!hidden)}
+                >
+                    {hidden ? "▲" : "▼"}
+                </span>
+            </div>
+            <hr className="w-75 mt-0 mb-2" />
+            {!hidden && children}
+        </div>
+    );
+};
+
 const DateFilter = () => {
     const searchParams = new URLSearchParams(useSearchParams());
     const router = useRouter();
@@ -179,40 +204,33 @@ const DateFilter = () => {
         searchParams.get("filter." + categoryKey) || "upcoming";
 
     return (
-        <div className="mb-3" key="date">
-            <h5 className="fw-bold">
-                <FilterCategory category="Start Date" />
-            </h5>
-            <div className="cursor-pointer">
-                {Object.entries(values).map(([key, value]) => {
-                    const isChecked = existingFilter
-                        ? existingFilter.split(",").includes(key)
-                        : false;
+        <FilterBody header="Start Date">
+            {Object.entries(values).map(([key, value]) => {
+                const isChecked = existingFilter
+                    ? existingFilter.split(",").includes(key)
+                    : false;
 
-                    return (
-                        <Form.Check
-                            className="cursor-pointer"
-                            key={key}
-                            type="radio"
-                            label={
-                                <span className="cursor-pointer">{value}</span>
-                            }
-                            id={"date" + "-" + key}
-                            name="date"
-                            defaultChecked={isChecked}
-                            onChange={() => {
-                                const params = changeFilter(
-                                    searchParams,
-                                    categoryKey,
-                                    key,
-                                );
-                                router.push(`?${params.toString()}`);
-                            }}
-                        />
-                    );
-                })}
-            </div>
-        </div>
+                return (
+                    <Form.Check
+                        className="cursor-pointer"
+                        key={key}
+                        type="radio"
+                        label={<span className="cursor-pointer">{value}</span>}
+                        id={"date" + "-" + key}
+                        name="date"
+                        defaultChecked={isChecked}
+                        onChange={() => {
+                            const params = changeFilter(
+                                searchParams,
+                                categoryKey,
+                                key,
+                            );
+                            router.push(`?${params.toString()}`);
+                        }}
+                    />
+                );
+            })}
+        </FilterBody>
     );
 };
 
@@ -260,7 +278,7 @@ const FilterValue = ({
     filterValue,
 }: {
     category: string;
-    filterKey: string | number;
+    filterKey: string | number | ReactNode;
     filterValue: number;
 }) => {
     switch (category) {
@@ -270,6 +288,9 @@ const FilterValue = ({
                     filterKey as keyof typeof eventTierShortNames
                 ] || filterKey;
             break;
+        case "location":
+            filterKey = <EventLocation location={filterKey as string} />;
+            break;
         case "isOffline":
             filterKey = filterKey === "true" ? "Offline" : "Online";
             break;
@@ -278,9 +299,16 @@ const FilterValue = ({
     }
 
     return (
-        <span className="cursor-pointer">
+        <span className={styles["event-filter"]}>
             {filterKey}{" "}
-            <span className="mu text-muted fs-smaller">({filterValue})</span>
+            <span
+                className={clsx(
+                    "text-muted fs-smaller",
+                    styles["event-filter"],
+                )}
+            >
+                ({filterValue})
+            </span>
         </span>
     );
 };

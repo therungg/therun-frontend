@@ -1,0 +1,26 @@
+.event-card {
+    height: 205;
+    background-color: var(--bs-secondary-bg);
+}
+
+.event-card:hover {
+    cursor: pointer;
+    background-color: var(--bs-tertiary-bg) !important;
+
+    .event-card-info {
+        background-color: var(--bs-secondary-bg) !important;
+    }
+}
+
+.event-card-info {
+    background-color: var(--bs-tertiary-bg);
+    border-radius: 0.5rem;
+}
+
+.event-filter {
+    cursor: pointer;
+}
+
+.event-filter:hover {
+    color: var(--bs-primary);
+}

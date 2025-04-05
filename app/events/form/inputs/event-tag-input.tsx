@@ -4,9 +4,17 @@ import { useState } from "react";
 import { Form } from "react-bootstrap";
 import { MultiValue } from "react-select";
 import CreatableSelect from "react-select/creatable";
+import { Event } from "types/events.types";
 
-export const EventTagInput = () => {
-    const [tags, setTags] = useState<MultiValue<{ value: string }>>([]);
+export const EventTagInput = ({ event }: { event?: Event }) => {
+    const [tags, setTags] = useState<MultiValue<{ value: string }>>(
+        event?.tags?.map((tag) => {
+            return {
+                label: tag,
+                value: tag,
+            };
+        }) || [],
+    );
     const [inputValue, setInputValue] = useState("");
 
     const handleChange = (newValue: MultiValue<{ value: string }>) => {
