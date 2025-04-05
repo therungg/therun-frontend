@@ -31,12 +31,17 @@ const main = async () => {
                 "location",
                 "language",
                 "tier",
+                "isOffline",
+            ],
+            numericAttributesForFiltering: [
+                "startsAtTimeStamp",
+                "endsAtTimeStamp",
             ],
             maxValuesPerFacet: 100,
             sortFacetValuesBy: "count",
             maxFacetHits: 10,
             hitsPerPage: 10,
-            paginationLimitedTo: 20,
+            paginationLimitedTo: 1000,
         },
         forwardToReplicas: true,
     });

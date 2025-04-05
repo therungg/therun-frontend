@@ -15,6 +15,7 @@ import { countries } from "~src/common/countries";
 import { languages } from "~src/common/languages";
 import Tiptap from "~src/components/TipTap";
 import Image from "next/image";
+import { EventTagInput } from "./inputs/event-tag-input";
 
 export const EventForm = ({ event }: { event?: Event }) => {
     const [eventOrganizers, setEventOrganizers] = useState<EventOrganizer[]>(
@@ -30,6 +31,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
     const [editorContent, setEditorContent] = useState<string>(
         event?.description || "",
     );
+    const [slug, setSlug] = useState<string>(event?.slug || "");
 
     const fetchEventOrganizers = async () => {
         const organizers = await getAllEventOrganizers();
@@ -55,7 +57,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
     return (
         <>
             <Row>
-                <Col md={4}>
+                <Col md={3}>
                     <Form.Group className="mb-3">
                         <Form.Label htmlFor="eventName">Event Name</Form.Label>
                         <Form.Control
@@ -67,7 +69,30 @@ export const EventForm = ({ event }: { event?: Event }) => {
                         />
                     </Form.Group>
                 </Col>
-                <Col md={4}>
+                <Col md={3}>
+                    <Form.Group className="mb-3">
+                        <Form.Label htmlFor="slug">
+                            URL (therun.gg/events/{slug})
+                        </Form.Label>
+                        <Form.Control
+                            id="slug"
+                            type="text"
+                            name="slug"
+                            defaultValue={event?.slug || ""}
+                            required
+                            min="1"
+                            max="50"
+                            onChange={(e) => {
+                                const value = e.target.value
+                                    .toLowerCase()
+                                    .replace(/\s+/g, "-")
+                                    .replace(/[^a-z0-9-]/g, "");
+                                setSlug(value);
+                            }}
+                        />
+                    </Form.Group>
+                </Col>
+                <Col md={3}>
                     <Form.Group className="mb-3">
                         <Form.Label htmlFor="eventType">Type</Form.Label>
                         <Form.Select
@@ -85,7 +110,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                         </Form.Select>
                     </Form.Group>
                 </Col>
-                <Col md={4}>
+                <Col md={3}>
                     <Form.Group className="mb-3">
                         <Form.Label htmlFor="eventTier">Tier</Form.Label>
                         <Form.Select
@@ -267,6 +292,33 @@ export const EventForm = ({ event }: { event?: Event }) => {
             <Row>
                 <Col md={4}>
                     <Form.Group className="mb-3">
+                        <Form.Label htmlFor="url">Event URL</Form.Label>
+                        <Form.Control
+                            id="url"
+                            type="url"
+                            name="url"
+                            defaultValue={event?.url || ""}
+                        />
+                    </Form.Group>
+                </Col>
+                <Col md={4}>
+                    <Form.Group className="mb-3">
+                        <Form.Label htmlFor="scheduleUrl">
+                            Schedule URL
+                        </Form.Label>
+                        <Form.Control
+                            id="scheduleUrl"
+                            type="url"
+                            name="scheduleUrl"
+                            defaultValue={event?.scheduleUrl || ""}
+                        />
+                    </Form.Group>
+                </Col>
+            </Row>
+
+            <Row>
+                <Col md={4}>
+                    <Form.Group className="mb-3">
                         <Form.Label htmlFor="bluesky">Bluesky URL</Form.Label>
                         <Form.Control
                             id="bluesky"
@@ -289,12 +341,12 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 </Col>
                 <Col md={4}>
                     <Form.Group className="mb-3">
-                        <Form.Label htmlFor="url">Event URL</Form.Label>
+                        <Form.Label htmlFor="oengus">Oengus URL</Form.Label>
                         <Form.Control
-                            id="url"
+                            id="oengus"
                             type="url"
-                            name="url"
-                            defaultValue={event?.url || ""}
+                            name="oengus"
+                            defaultValue={event?.oengus || ""}
                         />
                     </Form.Group>
                 </Col>
@@ -341,6 +393,12 @@ export const EventForm = ({ event }: { event?: Event }) => {
                     value={event.id}
                 />
             )}
+
+            <Row>
+                <Col>
+                    <EventTagInput />
+                </Col>
+            </Row>
 
             <Row>
                 <Col md={6}>

@@ -20,13 +20,18 @@ interface EventDbResult {
 }
 
 export const getEventById = async (
-    eventId: number,
+    eventId: number | string,
 ): Promise<EventWithOrganizerName> => {
+    console.log(eventId);
     const result = await db
         .select()
         .from(events)
         .innerJoin(eventOrganizers, eq(events.organizerId, eventOrganizers.id))
-        .where(eq(events.id, eventId));
+        .where(
+            !isNaN(eventId as number)
+                ? eq(events.id, eventId as number)
+                : eq(events.slug, eventId as string),
+        );
 
     if (!result[0]) {
         throw new Error("Event not found");

@@ -12,7 +12,7 @@ dotenv.config({ path: "./.env.development" });
 if (!("DATABASE_URL" in process.env))
     throw new Error("DATABASE_URL not found on .env.development");
 
-const NUM_EVENTS = 10;
+const NUM_EVENTS = 25;
 const NUM_USERS = 100;
 
 const main = async () => {
@@ -37,7 +37,10 @@ const insertEventSeeds = async () => {
         .onConflictDoNothing()
         .returning();
     for (let i = 0; i < NUM_EVENTS; i++) {
-        const startsAt = faker.date.future();
+        const startsAt = faker.date.between({
+            from: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // 1 year ago
+            to: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // 1 year from now
+        });
         const durationHours = faker.number.int({ min: 24, max: 24 * 9 });
         const endsAt = new Date(
             startsAt.getTime() + durationHours * 60 * 60 * 1000,

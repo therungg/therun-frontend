@@ -7,6 +7,8 @@ export const validateEventInput = async (
     const createEventSchema: Joi.ObjectSchema<CreateEventInput> = Joi.object({
         name: Joi.string().min(1).max(255).required(),
         type: Joi.string().min(1).max(100).required(),
+        slug: Joi.string().min(1).max(50).required(),
+
         location: Joi.allow("").optional().default(""),
         language: Joi.string().min(1).max(50).required(),
         shortDescription: Joi.string().min(1).max(500).required(),
@@ -20,6 +22,7 @@ export const validateEventInput = async (
         discord: Joi.allow("").optional(),
         oengus: Joi.allow("").optional(),
         url: Joi.allow("").optional(),
+        scheduleUrl: Joi.allow("").optional(),
 
         imageUrl: Joi.allow("").optional(),
         tier: Joi.number().min(1).max(5),

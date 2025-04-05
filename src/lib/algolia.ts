@@ -108,6 +108,8 @@ const eventInputToAlgoliaInput = (
     return {
         ...event,
         objectID: event.id.toString(),
+        startsAtTimeStamp: new Date(event.startsAt).getTime(),
+        endsAtTimeStamp: new Date(event.endsAt).getTime(),
         organizer: organizers.find(
             (organizer) => organizer.id === event.organizerId,
         )?.name,

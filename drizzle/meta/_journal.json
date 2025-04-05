@@ -120,6 +120,41 @@
       "when": 1743542512252,
       "tag": "0019_sour_stick",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1743720132325,
+      "tag": "0020_glamorous_quentin_quire",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1743721138121,
+      "tag": "0021_redundant_wildside",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1743721143993,
+      "tag": "0022_narrow_thing",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1743721163879,
+      "tag": "0023_unique_deathbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1743756786844,
+      "tag": "0024_volatile_cammi",
+      "breakpoints": true
     }
   ]
 }

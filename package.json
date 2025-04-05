@@ -114,6 +114,7 @@
     "react-dropzone": "^14.2.3",
     "react-error-boundary": "^5.0.0",
     "react-icons": "^5.4.0",
+    "react-select": "^5.10.1",
     "react-share": "^5.1.2",
     "react-switch": "^7.0.0",
     "react-timer-hook": "^3.0.7",

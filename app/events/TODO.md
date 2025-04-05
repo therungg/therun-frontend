@@ -1,13 +1,12 @@
 # Fix
 
--   Make create event page pretty
--   Add edit event page
+-   Fixtures with unique name and slug
+-   Make create/edit event page pretty
 -   Make overview pretty
--   View event page
+-   Make view event page pretty
 
 # Add
 
--   View events by organizer page
--   Event tags to search on
 -   Filter explanations
--   Slug for url
+-   View events by organizer page
+-   Deadline dates (registration, schedule release, early bird etc.)

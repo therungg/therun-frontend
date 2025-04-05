@@ -7,7 +7,7 @@ interface PageProps {
     params: Promise<{ event: number }>;
 }
 
-export default async function EditRacePage(props: PageProps) {
+export default async function ViewEventPage(props: PageProps) {
     const params = await props.params;
     const eventId = params.event;
 
