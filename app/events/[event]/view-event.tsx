@@ -18,6 +18,7 @@ import {
     FaCalendarAlt,
     FaFileAlt,
     FaHeart,
+    FaLink,
     FaMapMarkerAlt,
     FaTags,
     FaUserAlt,
@@ -25,6 +26,7 @@ import {
 import { EventLocation } from "../event-location";
 import styles from "../event.styles.module.css";
 import clsx from "clsx";
+import { FaBluesky, FaDiscord } from "react-icons/fa6";
 
 export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -96,8 +98,8 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                 ></div>
                             </Col>
                             <Col xl={4} lg={4}>
-                                <h3 className="card-title">
-                                    <FaHeart className="me-2 mb-2 text-primary" />
+                                <h3 className="card-title mb-2">
+                                    <FaHeart className="me-2 text-primary" />
                                     Event Details
                                 </h3>
                                 <div className="card-text border rounded-2 p-3 bg-body-tertiary">
@@ -126,7 +128,7 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                             </div>
                                         </div>
                                     )}
-                                    <div className="d-flex mb-3">
+                                    <div className="d-flex">
                                         <FaCalendarAlt className="me-2 text-primary flex-center h-100 mt-2" />
                                         <div className="ms-2 mb-1">
                                             <div>Dates</div>
@@ -135,8 +137,35 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                             </div>
                                         </div>
                                     </div>
-                                    <hr />
-                                    <h3>Links</h3>
+                                </div>
+                                <div className="mt-2">
+                                    <h3 className="card-title mb-2">
+                                        <FaLink className="text-primary" />{" "}
+                                        Links
+                                    </h3>
+
+                                    <div className="card-text border rounded-2 px-3 pb-3 bg-body-tertiary">
+                                        <EventLink
+                                            text="Event URL"
+                                            url={event.url}
+                                        />
+                                        <EventLink
+                                            text="Schedule URL"
+                                            url={event.scheduleUrl}
+                                        />
+                                        <EventLink
+                                            text="Discord URL"
+                                            url={event.discord}
+                                        />
+                                        <EventLink
+                                            text="Bluesky URL"
+                                            url={event.bluesky}
+                                        />
+                                        <EventLink
+                                            text="Oengus URL"
+                                            url={event.oengus}
+                                        />
+                                    </div>
                                 </div>
                             </Col>
                         </Row>
@@ -190,6 +219,46 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                     </Can>
                 </div>
             </div>
+        </>
+    );
+};
+
+const EventLink = ({ text, url }: { text: string; url: string | null }) => {
+    let Icon = FaLink;
+    let iconColor = "var(--bs-secondary)";
+
+    if (text.toLowerCase().includes("bluesky")) {
+        Icon = FaBluesky;
+        iconColor = "#36c";
+    }
+    if (text.toLowerCase().includes("discord")) {
+        Icon = FaDiscord;
+        iconColor = "#7289d9";
+    }
+
+    return (
+        <>
+            {url && (
+                <div className="d-flex mt-3">
+                    <Icon
+                        className="me-2 flex-center h-100 mt-2"
+                        style={{ color: iconColor }}
+                    />
+                    <div className="ms-2 mb-1">
+                        <div>{text}</div>
+                        <div className="fw-bold fs-6">
+                            <a
+                                href={url}
+                                className="color-text"
+                                rel="noreferrer"
+                                target="_blank"
+                            >
+                                {url}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };
