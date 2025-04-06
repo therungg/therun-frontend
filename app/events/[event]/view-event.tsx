@@ -44,7 +44,7 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                         styles["event-card"],
                     )}
                 >
-                    <Row className={clsx(styles["event-card-row"], "m-0")}>
+                    <Row className={clsx(styles["event-card-row"])}>
                         <Col xl={2} lg={3} md={4} sm={5}>
                             <div className="w-100 d-flex justify-content-center align-items-center">
                                 <Image
@@ -55,7 +55,7 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                     }
                                     height={200}
                                     width={200}
-                                    className="rounded-start-4"
+                                    className="rounded-4 ms-xl-1"
                                 />
                             </div>
                         </Col>

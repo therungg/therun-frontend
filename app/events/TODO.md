@@ -1,7 +1,6 @@
 # Fix
 
 -   Make create/edit event page pretty
--   Make view event page pretty
 -   Explanations and guidelines for event creators
 
 # Add

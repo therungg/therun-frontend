@@ -39,6 +39,12 @@ hr.event-filter-divider {
     }
 }
 
+@media (max-width: 2000px) {
+    .event-card-row {
+        margin-left: 0rem;
+    }
+}
+
 @media (max-width: 1600px) {
     .event-card-row {
         margin-left: 1rem;
@@ -54,6 +60,6 @@ hr.event-filter-divider {
 @media (max-width: 1199px) {
     .event-card-row {
         margin-left: 0;
-        width: revert;
+        width: 100%;
     }
 }

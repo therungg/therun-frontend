@@ -32,7 +32,7 @@ export const SpeedrunEventCard = ({ event }: { event: EventFromSearch }) => {
                                 }
                                 height={200}
                                 width={200}
-                                className="rounded-start-4"
+                                className="rounded-4 ms-xl-2"
                             />
                         </div>
                     </Col>
