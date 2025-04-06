@@ -1,6 +1,6 @@
 import { MetadataRoute } from "next";
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+export default async function sitemap() {
     const normalRoutes: MetadataRoute.Sitemap = [
         {
             url: "https://therun.gg",

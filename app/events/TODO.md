@@ -10,3 +10,4 @@
 -   Filter by custom date
 -   Full address, not just country
 -   Sort by start date asc
+-   Timer to show when it starts
