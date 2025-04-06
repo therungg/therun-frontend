@@ -23,6 +23,8 @@ import {
     FaUserAlt,
 } from "react-icons/fa";
 import { EventLocation } from "../event-location";
+import styles from "../event.styles.module.css";
+import clsx from "clsx";
 
 export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -33,47 +35,50 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
     return (
         <>
             <Breadcrumb breadcrumbs={breadcrumbs} />
-            <div className="container mt-4">
+            <div className="mt-3">
                 <div
-                    className="d-flex align-items-center p-2 rounded shadow-lg bg-body-secondary border border-secondary"
-                    style={{
-                        height: "200px",
-                        color: "white",
-                    }}
+                    className={clsx(
+                        "container-fluid p-0 game-border mt-3 rounded-4 d-flex align-items-center shadow-lg border border-secondary",
+                        styles["event-card"],
+                    )}
                 >
-                    <Image
-                        src={
-                            event.imageUrl ??
-                            "/logo_dark_theme_no_text_transparent.png"
-                        }
-                        alt={event.name}
-                        height={200}
-                        width={200}
-                    />
-                    <div className="ms-4">
-                        <h1 className="fw-bold">{event.name}</h1>
-                        <p className="mb-1">
-                            <EventDates event={event} />
-                        </p>
-                        <div className="d-flex">
-                            <EventBadges event={event} />
-                        </div>
-                        <div
-                            className="card-text text-muted mt-3 border-start ps-2"
-                            style={{
-                                borderColor: "#ccc",
-                            }}
-                        >
-                            {event.shortDescription}
-                        </div>
-                    </div>
+                    <Row className={clsx(styles["event-card-row"], "m-0")}>
+                        <Col xl={2} lg={3} md={4} sm={5}>
+                            <div className="w-100 d-flex justify-content-center align-items-center">
+                                <Image
+                                    alt={event.name}
+                                    src={
+                                        event.imageUrl ??
+                                        "/logo_dark_theme_no_text_transparent.png"
+                                    }
+                                    height={200}
+                                    width={200}
+                                    className="rounded-start-4"
+                                />
+                            </div>
+                        </Col>
+                        <Col xl={10} lg={9} md={8} sm={7}>
+                            <div className="ms-4 pt-4">
+                                <h1 className="fw-bold">{event.name}</h1>
+                                <p className="mb-1">
+                                    <EventDates event={event} />
+                                </p>
+                                <div className="d-flex">
+                                    <EventBadges event={event} />
+                                </div>
+                                <div className="card-text text-muted mt-3 border-start ps-2 mb-3">
+                                    {event.shortDescription}
+                                </div>
+                            </div>
+                        </Col>
+                    </Row>
                 </div>
 
                 {/* Description and Details Section */}
                 <div className="card mt-4">
                     <div className="card-body">
-                        <Row>
-                            <Col md={8}>
+                        <Row className="row-gap-3">
+                            <Col xl={8} lg={8}>
                                 <h3 className="card-title">
                                     <FaFileAlt className="me-2 mb-2 text-primary" />
                                     Event Description
@@ -90,7 +95,7 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                     }}
                                 ></div>
                             </Col>
-                            <Col md={4}>
+                            <Col xl={4} lg={4}>
                                 <h3 className="card-title">
                                     <FaHeart className="me-2 mb-2 text-primary" />
                                     Event Details
@@ -135,7 +140,7 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                 </div>
                             </Col>
                         </Row>
-                        <h3 className="card-title">
+                        <h3 className="card-title mt-3 mt-md-0">
                             <FaTags className="me-2 mb-2 text-primary" />
                             Event Tags
                         </h3>

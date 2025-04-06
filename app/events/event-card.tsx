@@ -10,6 +10,7 @@ import clsx from "clsx";
 import { FC, PropsWithChildren } from "react";
 import { EventBadges } from "./event-badges";
 import { EventDates } from "./event-dates";
+import { Col, Row } from "react-bootstrap";
 
 export const SpeedrunEventCard = ({ event }: { event: EventFromSearch }) => {
     return (
@@ -20,59 +21,70 @@ export const SpeedrunEventCard = ({ event }: { event: EventFromSearch }) => {
                     styles["event-card"],
                 )}
             >
-                <Image
-                    alt={event.name}
-                    src={
-                        event.imageUrl ??
-                        "/logo_dark_theme_no_text_transparent.png"
-                    }
-                    height={200}
-                    width={200}
-                    className="rounded-start-4"
-                />
-
-                <div
-                    className="p-3 d-flex flex-column justify-content-between"
-                    style={{ flex: 1 }}
-                >
-                    <div>
-                        <span className="fs-2 fw-bold color-text">
-                            {event.name}
-                        </span>
-                        <EventBadges event={event} />
-                        <div className="d-flex mt-3">
-                            <EventCardInfo>
-                                <FaUser className="me-2 text-primary" />
-                                <span className="text-muted">Organizer: </span>
-                                <span className="ms-1">{event.organizer}</span>
-                            </EventCardInfo>
-                            <EventCardInfo>
-                                <FaCalendarAlt className="me-2 text-primary" />
-                                <span className="text-muted">Dates: </span>
-                                <EventDates event={event} />
-                            </EventCardInfo>
-                            <EventCardInfo>
-                                <FaMapMarkerAlt className="me-2 text-danger" />
-                                <span className="text-muted">Location: </span>
-                                <span className="ms-1">
-                                    <EventLocation
-                                        location={
-                                            !event.isOffline
-                                                ? "Online"
-                                                : (event.location as string)
-                                        }
-                                        margin={2}
-                                    />
-                                </span>
-                            </EventCardInfo>
+                <Row className={styles["event-card-row"]}>
+                    <Col xl={2} lg={12}>
+                        <div className="w-100 d-flex justify-content-center align-items-center">
+                            <Image
+                                alt={event.name}
+                                src={
+                                    event.imageUrl ??
+                                    "/logo_dark_theme_no_text_transparent.png"
+                                }
+                                height={200}
+                                width={200}
+                                className="rounded-start-4"
+                            />
                         </div>
-                    </div>
-                    <div className="mt-2">
-                        <span className="text-muted">
-                            {event.shortDescription}
-                        </span>
-                    </div>
-                </div>
+                    </Col>
+                    <Col xl={10} lg={12} className="ps-xl-2">
+                        <div className="px-3 pb-3 pt-xl-3 d-flex flex-column justify-content-between w-100">
+                            <span className="fs-2 fw-bold color-text">
+                                {event.name}
+                            </span>
+                            <EventBadges event={event} />
+                            <div className="d-flex mt-3 w-100">
+                                <Row className="w-100 g-1">
+                                    <Col xl={4}>
+                                        <EventCardInfo>
+                                            <FaUser className="me-2 text-primary" />
+                                            <span className="ms-1 color-text">
+                                                {event.organizer}
+                                            </span>
+                                        </EventCardInfo>
+                                    </Col>
+                                    <Col xl={4}>
+                                        <EventCardInfo>
+                                            <FaCalendarAlt className="me-2 text-primary" />
+                                            <span className="color-text">
+                                                <EventDates event={event} />
+                                            </span>
+                                        </EventCardInfo>
+                                    </Col>
+                                    <Col xl={4}>
+                                        <EventCardInfo>
+                                            <FaMapMarkerAlt className="me-2 text-danger" />
+                                            <span className="ms-1 color-text">
+                                                <EventLocation
+                                                    location={
+                                                        !event.isOffline
+                                                            ? "Online"
+                                                            : (event.location as string)
+                                                    }
+                                                    margin={2}
+                                                />
+                                            </span>
+                                        </EventCardInfo>
+                                    </Col>
+                                </Row>
+                            </div>
+                            <div className="mt-2">
+                                <span className="text-muted">
+                                    | {event.shortDescription}
+                                </span>
+                            </div>
+                        </div>
+                    </Col>
+                </Row>
             </div>
         </Link>
     );
@@ -82,7 +94,7 @@ const EventCardInfo: FC<PropsWithChildren> = ({ children }) => {
     return (
         <div
             className={clsx(
-                "me-3 d-flex align-items-center px-3 py-2 rounded border",
+                "d-flex align-items-center px-3 py-2 rounded border",
                 styles["event-card-info"],
             )}
         >

@@ -44,20 +44,26 @@ export const Events = ({
                 </Col>
             </Row>
             <Row>
-                <Col md={2}>
+                <Col xl={2} lg={3} md={4} sm={5} xs={12}>
                     <EventFilters filters={events.facets!} />
                 </Col>
-                <Col md={10}>
+                <Col xl={10} lg={9} md={8} sm={7} xs={12}>
                     <section>
                         <EventSearch />
-                        {events.hits.map((event) => {
-                            return (
-                                <SpeedrunEventCard
-                                    event={event}
-                                    key={event.id}
-                                />
-                            );
-                        })}
+                        <Row>
+                            {events.hits.map((event) => {
+                                return (
+                                    <Col key={event.id} xl={12} lg={6} md={12}>
+                                        <Link
+                                            href={`/events/${event.slug}`}
+                                            className="text-decoration-none"
+                                        >
+                                            <SpeedrunEventCard event={event} />
+                                        </Link>
+                                    </Col>
+                                );
+                            })}
+                        </Row>
                         <Paginate data={pagination} />
                     </section>
                 </Col>

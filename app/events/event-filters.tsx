@@ -2,11 +2,12 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { FC, PropsWithChildren, ReactNode, useState } from "react";
-import { Form } from "react-bootstrap";
+import { Form, Button } from "react-bootstrap";
 import { eventTierShortNames } from "types/events.types";
 import { EventLocation } from "./event-location";
 import styles from "./event.styles.module.css";
 import clsx from "clsx";
+import { FaFilter } from "react-icons/fa";
 
 const VIEW_MORE_THRESHOLD = 5;
 
@@ -21,28 +22,49 @@ export interface FilterInput {
 export const EventFilters: FC<PropsWithChildren<FilterInput>> = ({
     filters,
 }) => {
+    const [showFilters, setShowFilters] = useState(false);
+
     return (
         <aside>
-            <DateFilter />
-            {Object.entries(filters)
-                .sort(([a], [b]) => {
-                    const order = [
-                        "organizer",
-                        "type",
-                        "tier",
-                        "isOffline",
-                        "location",
-                        "language",
-                    ];
-                    return order.indexOf(a) - order.indexOf(b);
-                })
-                .map(([categoryKey, innerObject]) => (
-                    <Filter
-                        key={categoryKey}
-                        categoryKey={categoryKey}
-                        innerObject={innerObject}
-                    />
-                ))}
+            <div className="d-block d-sm-none mb-3">
+                <Button
+                    variant="outline-primary"
+                    onClick={() => setShowFilters(!showFilters)}
+                    className="w-100 color-text"
+                >
+                    {showFilters ? (
+                        <span>
+                            Hide Filters <FaFilter />
+                        </span>
+                    ) : (
+                        <span>
+                            Show Filters <FaFilter />
+                        </span>
+                    )}
+                </Button>
+            </div>
+            <div className={`${showFilters ? "d-block" : "d-none"} d-sm-block`}>
+                <DateFilter />
+                {Object.entries(filters)
+                    .sort(([a], [b]) => {
+                        const order = [
+                            "organizer",
+                            "type",
+                            "tier",
+                            "isOffline",
+                            "location",
+                            "language",
+                        ];
+                        return order.indexOf(a) - order.indexOf(b);
+                    })
+                    .map(([categoryKey, innerObject]) => (
+                        <Filter
+                            key={categoryKey}
+                            categoryKey={categoryKey}
+                            innerObject={innerObject}
+                        />
+                    ))}
+            </div>
         </aside>
     );
 };
@@ -78,7 +100,7 @@ const Filter = ({
                         id={categoryKey}
                         placeholder={`Search ${categoryKey}`}
                         value={search}
-                        className="w-75"
+                        className="w-sm-75"
                         onChange={(e) => {
                             setSearch(e.target.value);
                             setViewMore(false);
@@ -177,18 +199,17 @@ const FilterBody: FC<PropsWithChildren<{ header: string }>> = ({
                     <FilterCategory category={header} />
                 </h5>
                 <span
-                    className="cursor-pointer text-muted"
+                    className="cursor-pointer text-muted w-sm-75"
                     onClick={() => setHidden(!hidden)}
                 >
                     {hidden ? "▲" : "▼"}
                 </span>
             </div>
             <hr
-                className="mt-0 mb-2 ms-2"
-                style={{
-                    color: "var(--bs-secondary)",
-                    width: "65%",
-                }}
+                className={clsx(
+                    "mt-0 mb-2 ms-1 me-4",
+                    styles["event-filter-divider"],
+                )}
             />
             {!hidden && children}
         </div>

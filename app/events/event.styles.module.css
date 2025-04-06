@@ -1,5 +1,4 @@
 .event-card {
-    height: 205;
     background-color: var(--bs-secondary-bg);
 }
 
@@ -23,4 +22,38 @@
 
 .event-filter:hover {
     color: var(--bs-primary);
+}
+
+hr.event-filter-divider {
+    width: 74%;
+    color: var(--bs-secondary);
+}
+
+@media (min-width: 1200px) {
+    .event-card {
+        min-height: 13rem;
+    }
+
+    .event-card-row {
+        width: 100%;
+    }
+}
+
+@media (max-width: 1600px) {
+    .event-card-row {
+        margin-left: 1rem;
+    }
+}
+
+@media (max-width: 1400px) {
+    .event-card-row {
+        margin-left: 1.5rem;
+    }
+}
+
+@media (max-width: 1199px) {
+    .event-card-row {
+        margin-left: 0;
+        width: revert;
+    }
 }
