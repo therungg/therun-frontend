@@ -327,6 +327,17 @@ export const EventForm = ({ event }: { event?: Event }) => {
                         />
                     </Form.Group>
                 </Col>
+                <Col md={4}>
+                    <Form.Group className="mb-3">
+                        <Form.Label htmlFor="twitch">Twitch URL</Form.Label>
+                        <Form.Control
+                            id="twitch"
+                            type="url"
+                            name="twitch"
+                            defaultValue={event?.twitch || ""}
+                        />
+                    </Form.Group>
+                </Col>
             </Row>
 
             <Row>

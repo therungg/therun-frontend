@@ -26,7 +26,7 @@ import {
 import { EventLocation } from "../event-location";
 import styles from "../event.styles.module.css";
 import clsx from "clsx";
-import { FaBluesky, FaDiscord } from "react-icons/fa6";
+import { FaBluesky, FaDiscord, FaTwitch } from "react-icons/fa6";
 
 export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -154,6 +154,10 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                             url={event.scheduleUrl}
                                         />
                                         <EventLink
+                                            text="Twitch URL"
+                                            url={event.twitch}
+                                        />
+                                        <EventLink
                                             text="Discord URL"
                                             url={event.discord}
                                         />
@@ -234,6 +238,10 @@ const EventLink = ({ text, url }: { text: string; url: string | null }) => {
     if (text.toLowerCase().includes("discord")) {
         Icon = FaDiscord;
         iconColor = "#7289d9";
+    }
+    if (text.toLowerCase().includes("twitch")) {
+        Icon = FaTwitch;
+        iconColor = "#6441a5";
     }
 
     return (

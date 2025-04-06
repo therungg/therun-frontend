@@ -23,6 +23,7 @@ export const formInputToEventInput = async (eventInput: FormData) => {
         bluesky: eventInput.get("bluesky") as string,
         discord: eventInput.get("discord") as string,
         oengus: eventInput.get("oengus") as string,
+        twitch: eventInput.get("twitch") as string,
 
         shortDescription: eventInput.get("shortDescription") as string,
         description: sanitizeHtml(eventInput.get("description") as string),
