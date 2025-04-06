@@ -45,7 +45,10 @@ export const EventTagInput = ({ event }: { event?: Event }) => {
         <div>
             <Form.Group className="mb-3">
                 <Form.Label htmlFor="tags" className="mb-2">
-                    Tags
+                    Tags{" "}
+                    <span className="text-muted">
+                        (press enter to submit tag)
+                    </span>
                 </Form.Label>
                 <CreatableSelect
                     classNames={{

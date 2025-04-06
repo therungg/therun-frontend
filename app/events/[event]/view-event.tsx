@@ -79,7 +79,7 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                 {/* Description and Details Section */}
                 <div className="card mt-4">
                     <div className="card-body">
-                        <Row className="row-gap-3">
+                        <Row className="row-gap-3 mb-2">
                             <Col xl={8} lg={8}>
                                 <h3 className="card-title">
                                     <FaFileAlt className="me-2 mb-2 text-primary" />
@@ -88,7 +88,7 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                 <div
                                     className="card-text border rounded-2 p-3 bg-body-tertiary"
                                     style={{
-                                        maxHeight: "300px",
+                                        maxHeight: "50rem",
                                         overflowY: "auto",
                                         backgroundColor: "var(--bg-body)",
                                     }}

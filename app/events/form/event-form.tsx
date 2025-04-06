@@ -453,7 +453,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
             </Row>
 
             <Button variant="primary" type="submit">
-                {event ? "Edit Event" : "Create Event"}
+                {event ? "Save Event" : "Create Event"}
             </Button>
         </>
     );
