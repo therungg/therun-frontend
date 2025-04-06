@@ -170,7 +170,7 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                             </Col>
                         </Row>
                         <h3 className="card-title mt-3 mt-md-0">
-                            <FaTags className="me-2 mb-2 text-primary" />
+                            <FaTags className="me-2 text-primary" />
                             Event Tags
                         </h3>
                         <div>
@@ -179,7 +179,7 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                     <Badge
                                         key={tag}
                                         bg="primary"
-                                        className="ms-2 pt-2 pb-2 px-3"
+                                        className="ms-2 pt-2 pb-2 px-3 mt-2"
                                         pill={true}
                                         style={{ fillOpacity: "50%" }}
                                     >
@@ -244,14 +244,21 @@ const EventLink = ({ text, url }: { text: string; url: string | null }) => {
                         className="me-2 flex-center h-100 mt-2"
                         style={{ color: iconColor }}
                     />
-                    <div className="ms-2 mb-1">
+                    <div className="ms-2 mb-1" style={{ minWidth: 0, flex: 1 }}>
                         <div>{text}</div>
-                        <div className="fw-bold fs-6">
+                        <div className="fw-bold fs-6" style={{ width: "100%" }}>
                             <a
                                 href={url}
                                 className="color-text"
                                 rel="noreferrer"
                                 target="_blank"
+                                style={{
+                                    display: "block",
+                                    width: "100%",
+                                    overflow: "hidden",
+                                    textOverflow: "ellipsis",
+                                    whiteSpace: "nowrap",
+                                }}
                             >
                                 {url}
                             </a>
