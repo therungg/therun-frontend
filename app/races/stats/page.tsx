@@ -24,7 +24,11 @@ export async function generateMetadata(): Promise<Metadata> {
 
     return buildMetadata({
         title: `Statistics for speedrun races on therun.gg. So far, ${globalRaceStats.totalRaces} have been completed!`,
-        description: `The most popular speedrun game on therun.gg is ${raceGameStats[0].displayValue} with a total of ${raceGameStats[0].totalRaces} races completed. Come join in on the fun!`,
+        description: `The most popular speedrun game on therun.gg is ${
+            raceGameStats ? raceGameStats[0].displayValue : "unknown"
+        } with a total of ${
+            raceGameStats ? raceGameStats[0].totalRaces : "0"
+        } races completed. Come join in on the fun!`,
         index: true,
     });
 }
