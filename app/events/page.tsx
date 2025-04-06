@@ -36,7 +36,7 @@ const getAlgoliaFilters = (queryParams: {
     [key: string]: string | string[] | undefined;
 }) => {
     if (!queryParams["filter.date"]) {
-        queryParams["filter.date"] = "all";
+        queryParams["filter.date"] = "upcoming";
     }
 
     return Object.entries(queryParams)

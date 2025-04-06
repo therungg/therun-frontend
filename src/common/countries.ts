@@ -8,7 +8,7 @@ export const countries = () => {
         NL: "Netherlands",
         SE: "Sweden",
         GB: "United Kingdom",
-        US: "United States of America",
+        US: "United States",
         AF: "Afghanistan",
         AL: "Albania",
         DZ: "Algeria",

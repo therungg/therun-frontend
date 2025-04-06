@@ -123,6 +123,24 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
 
     if (!username) return buildMetadata();
 
+    const tournament = getTournamentNameFromSlug(username);
+
+    if (tournament) {
+        return buildMetadata({
+            title: "Speedrun tournament " + tournament,
+            description: "Speedrun tournament " + tournament,
+        });
+    }
+
+    const race = getImportantRace(username);
+
+    if (race) {
+        return buildMetadata({
+            title: "Speedrun race " + race[1],
+            description: "Speedrun race " + race[1],
+        });
+    }
+
     return buildMetadata({
         title: username,
         description: `${username} is on The Run! View their games, runs, personal bests, and more.`,

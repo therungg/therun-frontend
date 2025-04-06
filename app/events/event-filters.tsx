@@ -227,7 +227,8 @@ const DateFilter = () => {
         current: "Current Events",
     };
 
-    const existingFilter = searchParams.get("filter." + categoryKey) || "all";
+    const existingFilter =
+        searchParams.get("filter." + categoryKey) || "upcoming";
 
     return (
         <FilterBody header="Start Date">
