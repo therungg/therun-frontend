@@ -23,7 +23,6 @@ export async function searchAlgoliaEvents<T>(
     filters = "",
 ) {
     const client = await getAlgoliaApiClient();
-
     const params = new URLSearchParams();
 
     params.set("facets", "*");

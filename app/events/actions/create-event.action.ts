@@ -45,8 +45,8 @@ export async function createEventAction(
             target: eventId.toString(),
             data: { eventId, input },
         });
-    } catch (error: never) {
-        let message = error.message;
+    } catch (error: unknown) {
+        let message = (error as { message: string }).message;
 
         if (message.includes("events_name")) {
             message = "The name is already taken";

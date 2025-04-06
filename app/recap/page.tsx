@@ -9,6 +9,8 @@ import { getWrappedForUser } from "~src/lib/get-wrapped-for-user";
 import { User } from "types/session.types";
 import { BunnyHeartIcon } from "~src/icons/bunny-heart-icon";
 import { GlobalSearch } from "~src/components/search/global-search.component";
+import { Metadata } from "next";
+import buildMetadata from "~src/utils/metadata";
 
 export default function Page() {
     const [session, setSession] = useState<User | null>(null);
@@ -126,4 +128,12 @@ export default function Page() {
             </div>
         </Col>
     );
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+    return buildMetadata({
+        title: `Find your, or your favourite runner's, yearly speedrun recap on therun.gg!`,
+        description: `therun.gg generates a yearly recap for your speedrun year.`,
+        index: true,
+    });
 }

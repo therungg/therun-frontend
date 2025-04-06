@@ -13,6 +13,10 @@ import {
     EventWithOrganizerName,
 } from "../../types/events.types";
 import { deleteEventFromAlgolia, insertEventToAlgolia } from "./algolia";
+import { insertLog } from "./logs";
+import { getSession } from "~src/actions/session.action";
+import { confirmPermission } from "~src/rbac/confirm-permission";
+import { getOrCreateUser } from "./users";
 
 interface EventDbResult {
     events: Event;
@@ -122,10 +126,24 @@ export const deleteEvent = async (event: Event) => {
 export const createEventOrganizer = async (
     input: CreateEventOrganizerInput,
 ) => {
+    const session = await getSession();
+
+    if (!session.id) return;
+
+    confirmPermission(session, "create", "event");
+
     const insertedEventOrganizer = await db
         .insert(eventOrganizers)
         .values(input)
         .returning({ id: eventOrganizers.id });
+
+    await insertLog({
+        userId: await getOrCreateUser(session.username),
+        action: "create-event-organizer",
+        entity: "eventOrganizer",
+        target: insertedEventOrganizer.toString(),
+        data: { insertedEventOrganizer, input },
+    });
 
     return insertedEventOrganizer[0];
 };

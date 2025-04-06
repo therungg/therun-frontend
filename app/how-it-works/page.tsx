@@ -5,7 +5,7 @@ import buildMetadata from "~src/utils/metadata";
 export const revalidate = 0;
 
 export default async function howItWorks() {
-    const session = getSession();
+    const session = await getSession();
 
     return (
         <>
