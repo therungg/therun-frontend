@@ -20,7 +20,15 @@ export async function createEventAction(
 
     confirmPermission(session, "create", "event");
 
-    const baseInput = await formInputToEventInput(eventInput);
+    let baseInput = undefined;
+
+    try {
+        baseInput = await formInputToEventInput(eventInput);
+    } catch (error) {
+        return {
+            message: (error as { message: string }).message,
+        };
+    }
 
     const input: CreateEventInput = {
         ...baseInput,

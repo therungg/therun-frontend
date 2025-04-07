@@ -44,9 +44,9 @@ export const eventTierShortNames: Record<EventTier, string> = {
     4: "Local",
 };
 
-export const eventTierNames: Record<EventTier, string> = {
-    1: "Premium (GDQ, Speedons, RTA in Japan, etc.)",
-    2: "Major (Large events, huge scheduled races like 602, etc.)",
-    3: "Minor (Medium events, tournaments, big races, etc.)",
-    4: "Local (Small events, races, small community tournaments etc.)",
+export const eventTierNames: Partial<Record<EventTier, string>> = {
+    1: "Premium (Among the biggest 10 events in the world. GDQ, Speedons, RTA In Japan, etc.)",
+    2: "Major (Among the biggest 100 events in the world)",
+    3: "Minor",
+    // 4: "Local (Small events, races, small community tournaments etc.)",
 };

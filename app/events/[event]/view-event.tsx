@@ -6,7 +6,7 @@ import { Can, subject } from "~src/rbac/Can.component";
 import { Button } from "~src/components/Button/Button";
 import Link from "next/link";
 import { deleteEventAction } from "../actions/delete-event.action";
-import { redirect } from "next/navigation";
+import { redirect, usePathname } from "next/navigation";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -33,6 +33,9 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
         { content: "Events", href: "/events" },
         { content: event.name, href: "/events/" + event.id },
     ];
+    const pathname = usePathname();
+
+    console.log(pathname);
 
     return (
         <>
@@ -55,6 +58,7 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                     }
                                     height={200}
                                     width={200}
+                                    style={{ objectFit: "contain" }}
                                     className="rounded-4 ms-xl-1"
                                 />
                             </div>
@@ -147,7 +151,11 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                     <div className="card-text border rounded-2 px-3 pb-3 bg-body-tertiary">
                                         <EventLink
                                             text="Event URL"
-                                            url={event.url}
+                                            url={
+                                                event.url ??
+                                                "https://therun.gg/events/" +
+                                                    event.slug
+                                            }
                                         />
                                         <EventLink
                                             text="Schedule URL"

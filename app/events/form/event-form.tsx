@@ -1,8 +1,8 @@
 "use client";
 
-import { Col, Form, Row } from "react-bootstrap";
+import { Col, Form, Modal, Row } from "react-bootstrap";
 import { Button } from "~src/components/Button/Button";
-import React, { useEffect, useState } from "react";
+import React, { ReactElement, useEffect, useState } from "react";
 import {
     Event,
     EventOrganizer,
@@ -34,6 +34,8 @@ export const EventForm = ({ event }: { event?: Event }) => {
     );
     const [slug, setSlug] = useState<string>(event?.slug || "");
 
+    const [showModal, setShowModal] = useState("");
+
     const fetchEventOrganizers = async () => {
         const organizers = await getAllEventOrganizers();
         setEventOrganizers(organizers);
@@ -51,8 +53,47 @@ export const EventForm = ({ event }: { event?: Event }) => {
             setNewOrganizerName("");
             await fetchEventOrganizers();
             toast.success("Organizer added successfully");
-            setSelectedOrganizerId(newOrganizer.id);
+            setSelectedOrganizerId(newOrganizer!.id);
         }
+    };
+
+    const ExplanationModal = ({
+        header,
+        text,
+    }: {
+        header: string;
+        text: string | ReactElement;
+    }) => {
+        const handleClose = () => setShowModal("");
+        const handleShow = () => setShowModal(header);
+
+        return (
+            <>
+                <a
+                    href="#"
+                    className="text-muted ms-2 fs-small cursor-pointer"
+                    onClick={handleShow}
+                >
+                    Explanation
+                </a>
+
+                <Modal
+                    show={showModal === header}
+                    onHide={handleClose}
+                    centered
+                >
+                    <Modal.Header closeButton>
+                        <Modal.Title>{header}</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>{text}</Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={handleClose}>
+                            Ok I get it
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+            </>
+        );
     };
 
     return (
@@ -76,6 +117,11 @@ export const EventForm = ({ event }: { event?: Event }) => {
                     <Form.Group className="mb-3">
                         <Form.Label htmlFor="slug">
                             URL (therun.gg/events/{slug}) <EventFieldRequired />
+                            <ExplanationModal
+                                key="Event URL"
+                                header="Event URL"
+                                text="Your event will be available at https://therun.gg/events/<the-url-you-input>"
+                            />
                         </Form.Label>
                         <Form.Control
                             id="slug"
@@ -99,6 +145,11 @@ export const EventForm = ({ event }: { event?: Event }) => {
                     <Form.Group className="mb-3">
                         <Form.Label htmlFor="eventType">
                             Type <EventFieldRequired />
+                            <ExplanationModal
+                                key="Event Type"
+                                header="Event Type"
+                                text="If multiple apply, select the one you like the most. Contact Joey if you think a type should be added."
+                            />
                         </Form.Label>
                         <Form.Select
                             id="eventType"
@@ -119,6 +170,11 @@ export const EventForm = ({ event }: { event?: Event }) => {
                     <Form.Group className="mb-3">
                         <Form.Label htmlFor="eventTier">
                             Tier <EventFieldRequired />
+                            <ExplanationModal
+                                key="Event Tier"
+                                header="Event Tier"
+                                text="This is hard to decide sometimes, but it is useful for users to be able to find events by size. Please make an educated guess based on the amount of entrants, viewers, significance, donations, etc. Discuss with Joey if unclear."
+                            />
                         </Form.Label>
                         <Form.Select
                             id="eventTier"
@@ -143,7 +199,12 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 <Col md={4}>
                     <Form.Group className="mb-3">
                         <Form.Label htmlFor="isOffline">
-                            Is In-person event
+                            In Person, Hybrid or Offline
+                            <ExplanationModal
+                                key="Event In Person"
+                                header="Event In Person, Hybrid or Offline"
+                                text="Select this if your event happens, at least partially, in-person with other people."
+                            />
                         </Form.Label>
                         <Form.Check
                             id="isOffline"
@@ -153,14 +214,19 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             onChange={(e) =>
                                 setSelectedIsOffline(e.target.checked)
                             }
-                            label="The event is held in-person, not online"
+                            label="The event is held (partially) in-person"
                         />
                     </Form.Group>
                 </Col>
                 <Col md={4}>
                     <Form.Group className="mb-3">
                         <Form.Label htmlFor="language">
-                            Language <EventFieldRequired />
+                            Primary Language <EventFieldRequired />
+                            <ExplanationModal
+                                key="Event Language"
+                                header="Event Language"
+                                text="Enter the primary language that is spoken in the venue, or on the stream."
+                            />
                         </Form.Label>
                         <Form.Select
                             id="language"
@@ -212,6 +278,10 @@ export const EventForm = ({ event }: { event?: Event }) => {
                     <Form.Group className="mb-4">
                         <Form.Label htmlFor="organizer">
                             Event Organizer <EventFieldRequired />
+                            <ExplanationModal
+                                header="Event Organizer"
+                                text="Select the person/organization/group organizing this event. If you are sure it is not already in the last, add a new Organizer."
+                            />
                         </Form.Label>
                         <Form.Select
                             id="organizer"
@@ -305,7 +375,13 @@ export const EventForm = ({ event }: { event?: Event }) => {
             <Row>
                 <Col md={4}>
                     <Form.Group className="mb-3">
-                        <Form.Label htmlFor="url">Event URL</Form.Label>
+                        <Form.Label htmlFor="url">
+                            Event URL
+                            <ExplanationModal
+                                header="Event URL"
+                                text="The website of the Event itself. Leave blank if the event has no dedicated website."
+                            />
+                        </Form.Label>
                         <Form.Control
                             id="url"
                             type="url"
@@ -379,6 +455,10 @@ export const EventForm = ({ event }: { event?: Event }) => {
             <Form.Group className="mb-3">
                 <Form.Label htmlFor="shortDescription">
                     Short Description <EventFieldRequired />
+                    <ExplanationModal
+                        header="Event Short Description"
+                        text="This short description will show up as a quote in the Event Overview. Keep it short and to the point. Max 255 characters."
+                    />
                 </Form.Label>
                 <Form.Control
                     id="shortDescription"
@@ -394,6 +474,10 @@ export const EventForm = ({ event }: { event?: Event }) => {
             <Form.Group className="mb-3">
                 <Form.Label htmlFor="description">
                     Description <EventFieldRequired />
+                    <ExplanationModal
+                        header="Event Short Description"
+                        text="This long description will show up on the Event Detail page. You can add basic styling to it. Feel free to add anything you want here, like rules, schedule, directions, times, stuff like that."
+                    />
                 </Form.Label>
 
                 <Tiptap
@@ -431,6 +515,10 @@ export const EventForm = ({ event }: { event?: Event }) => {
                     <Form.Group className="mb-3">
                         <Form.Label htmlFor="eventImage">
                             Upload Event Image
+                            <ExplanationModal
+                                header="Event Image"
+                                text="Should be roughly square. The site will try to fit it, but if its not square at all it will look ugly. Max 10MB"
+                            />
                         </Form.Label>
                         <Form.Control
                             id="eventImage"
@@ -447,6 +535,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             width={300}
                             src={event.imageUrl}
                             alt={event.name}
+                            style={{ objectFit: "contain" }}
                         />
                     </Col>
                 )}

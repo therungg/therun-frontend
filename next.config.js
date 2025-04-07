@@ -8,6 +8,9 @@ const nextConfig = {
     },
     experimental: {
         reactCompiler: true,
+        serverActions: {
+            bodySizeLimit: "25mb",
+        },
     },
     productionBrowserSourceMaps: true,
     reactStrictMode: true,

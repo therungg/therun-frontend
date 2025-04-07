@@ -11,3 +11,12 @@
 -   Full address, not just country
 -   Sort by start date asc
 -   Timer to show when it starts
+-   Charity boolean + name + url
+-   Restream data
+-   Handle moderation: allow people to get rights to every event of an organization
+-   Handle moderation: allow
+
+# Think
+
+-   How to deal with event tiers
+-   What is the default filter? Now it looks like a bunch of events don't exist.

@@ -42,5 +42,9 @@ export const formInputToEventInput = async (eventInput: FormData) => {
         );
     }
 
+    if (file.size > 10 * 1024 * 1024) {
+        throw new Error("Image File can be maximum 10MB");
+    }
+
     return input;
 };

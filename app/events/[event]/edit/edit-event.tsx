@@ -1,11 +1,16 @@
 "use client";
 
-import React, { FormEvent, startTransition, useActionState } from "react";
+import React, {
+    FormEvent,
+    startTransition,
+    useActionState,
+    useEffect,
+} from "react";
 import {
     Breadcrumb,
     BreadcrumbItem,
 } from "~src/components/breadcrumbs/breadcrumb";
-import { Form } from "react-bootstrap";
+import { Alert, Form } from "react-bootstrap";
 import { EventForm } from "~app/events/form/event-form";
 import { Event } from "types/events.types";
 import { editEventAction } from "~app/events/actions/edit-event.action";
@@ -27,11 +32,17 @@ export const EditEvent = ({ event }: { event: Event }) => {
         startTransition(() => formAction(formData));
     }
 
+    useEffect(() => {
+        if (state?.message) {
+            window.scrollTo(0, 0);
+        }
+    }, [state?.message]);
+
     return (
         <>
             <Breadcrumb breadcrumbs={breadcrumbs} />
 
-            {state?.message && state.message}
+            {state?.message && <Alert variant="danger">{state.message}</Alert>}
 
             <Form onSubmit={handleSubmit} className="row">
                 <fieldset className="border py-3 px-4">

@@ -32,6 +32,7 @@ export const SpeedrunEventCard = ({ event }: { event: EventFromSearch }) => {
                                 }
                                 height={200}
                                 width={200}
+                                style={{ objectFit: "contain" }}
                                 className="rounded-4 ms-xl-2"
                             />
                         </div>

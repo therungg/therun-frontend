@@ -90,6 +90,13 @@ const MenuBar = () => {
             >
                 Ordered List
             </Button>
+            <Button
+                onClick={() => editor.chain().focus().setHorizontalRule().run()}
+                className={editor.isActive("horizontalRule") ? "active" : ""}
+                variant="secondary"
+            >
+                Divider
+            </Button>
         </div>
     );
 };

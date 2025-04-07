@@ -8,6 +8,7 @@ import { formInputToEventInput } from "~app/events/actions/form-input-to-event-i
 import { redirect } from "next/navigation";
 import { insertLog } from "~src/lib/logs";
 import { getOrCreateUser } from "~src/lib/users";
+import { EditEventInput } from "types/events.types";
 
 export async function editEventAction(
     _prevState: unknown,
@@ -27,10 +28,18 @@ export async function editEventAction(
 
     confirmPermission(user, "edit", "event", event);
 
-    const input = await formInputToEventInput(eventInput);
+    let input: EditEventInput;
 
-    if (!input.imageUrl && event.imageUrl) {
-        input.imageUrl = event.imageUrl;
+    try {
+        input = await formInputToEventInput(eventInput);
+
+        if (!input.imageUrl && event.imageUrl) {
+            input.imageUrl = event.imageUrl;
+        }
+    } catch (error) {
+        return {
+            message: (error as { message: string }).message,
+        };
     }
 
     const { error } = await validateEventInput(input);
