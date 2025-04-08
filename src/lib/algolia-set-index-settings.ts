@@ -19,7 +19,7 @@ const main = async () => {
                 "type",
                 "tags",
             ],
-            ranking: ["desc(startsAt)", "desc(tier)"],
+            ranking: ["asc(startsAt)", "desc(tier)"],
             typoTolerance: true,
             minWordSizefor1Typo: 4,
             minWordSizefor2Typos: 7,

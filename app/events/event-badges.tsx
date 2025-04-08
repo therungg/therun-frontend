@@ -1,3 +1,4 @@
+import { FaCrown } from "react-icons/fa6";
 import {
     EventFromSearch,
     eventTierShortNames,
@@ -9,8 +10,24 @@ export const EventBadges = ({
 }: {
     event: EventFromSearch | EventWithOrganizerName;
 }) => {
+    const isLive =
+        new Date().getTime() < new Date(event.endsAt).getTime() &&
+        new Date().getTime() > new Date(event.startsAt).getTime();
+
     return (
-        <div className="d-flex align-items-center mt-0">
+        <div className="d-flex align-items-center mt-0 flex-wrap">
+            {
+                // This was vibe coded
+                isLive && (
+                    <span className="badge bg-danger text-white me-2">
+                        <span className="ping-dot-container me-1">
+                            <span className="ping-dot-ping"></span>
+                            <span className="ping-dot"></span>
+                        </span>
+                        LIVE NOW
+                    </span>
+                )
+            }
             <span
                 className={`badge me-2 ${
                     event.tier === 1
@@ -24,7 +41,8 @@ export const EventBadges = ({
             >
                 {eventTierShortNames[
                     event.tier as keyof typeof eventTierShortNames
-                ] || event.tier}
+                ] || event.tier}{" "}
+                {event.tier === 1 && <FaCrown />}
             </span>
             <span
                 className={`badge me-2 ${

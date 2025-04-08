@@ -64,7 +64,7 @@ const generateDateFilter = (value: DateFilterOptions) => {
         case "upcoming":
             return `(startsAtTimeStamp:${
                 Math.floor(Date.now()) - 10 * 24 * 60 * 60 * 1000
-            } TO ${Math.floor(Date.now()) + 60 * 24 * 60 * 60 * 1000})`;
+            } TO ${Math.floor(Date.now()) + 365 * 24 * 60 * 60 * 1000})`;
         // Events that are happening now
         case "current":
             return `(startsAtTimeStamp < ${Math.floor(

@@ -17,27 +17,27 @@ export const SpeedrunEventCard = ({ event }: { event: EventFromSearch }) => {
         <Link href={`/events/${event.slug}`} className="text-decoration-none">
             <div
                 className={clsx(
-                    "container-fluid p-0 game-border mt-3 rounded-4 d-flex align-items-center shadow-lg border border-secondary",
+                    "container-fluid p-0 game-border mt-3 rounded-4 d-flex align-items-center shadow-lg border",
                     styles["event-card"],
                 )}
             >
                 <Row className={styles["event-card-row"]}>
-                    <Col xl={2} lg={12}>
-                        <div className="w-100 d-flex justify-content-center align-items-center">
+                    <Col xl={3} lg={12}>
+                        <div className="w-100 h-100 d-flex justify-content-center align-items-center">
                             <Image
                                 alt={event.name}
                                 src={
                                     event.imageUrl ??
                                     "/logo_dark_theme_no_text_transparent.png"
                                 }
-                                height={200}
-                                width={200}
+                                height={180}
+                                width={280}
                                 style={{ objectFit: "contain" }}
                                 className="rounded-4 ms-xl-2"
                             />
                         </div>
                     </Col>
-                    <Col xl={10} lg={12} className="ps-xl-2">
+                    <Col xl={9} lg={12} className="ps-xl-2">
                         <div className="px-3 pb-3 pt-xl-3 d-flex flex-column justify-content-between w-100">
                             <span className="fs-2 fw-bold color-text">
                                 {event.name}

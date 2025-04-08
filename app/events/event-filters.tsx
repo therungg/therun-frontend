@@ -222,9 +222,9 @@ const DateFilter = () => {
     const categoryKey = "date";
 
     const values = {
+        upcoming: "Recent and Upcoming",
+        current: "Live Now",
         all: "All Events",
-        upcoming: "Upcoming Events",
-        current: "Current Events",
     };
 
     const existingFilter =
