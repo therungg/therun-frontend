@@ -128,9 +128,10 @@ const defaultPermissions: DefinePermissions = (user, { can }) => {
 
         // You can manage your own races
         can("edit", "race", { creator: user.username });
-      
+
         // You can manage your own events
         can("edit", "event", { createdBy: user.username });
+        can("delete", "event", { createdBy: user.username });
 
         // Anyone can create a race
         can("create", "race");

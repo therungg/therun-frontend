@@ -26,7 +26,7 @@ import {
 import { EventLocation } from "../event-location";
 import styles from "../event.styles.module.css";
 import clsx from "clsx";
-import { FaBluesky, FaDiscord, FaTwitch } from "react-icons/fa6";
+import { FaBluesky, FaDiscord, FaTwitch, FaTwitter } from "react-icons/fa6";
 
 export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -39,7 +39,36 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
 
     return (
         <>
-            <Breadcrumb breadcrumbs={breadcrumbs} />
+            <div className="d-flex justify-content-between">
+                <Breadcrumb breadcrumbs={breadcrumbs} />
+
+                <div className="d-flex justify-content-end">
+                    <Can I="edit" this={subject("event", event)}>
+                        <Link href={`/events/${event.id}/edit`}>
+                            <Button>Edit Event</Button>
+                        </Link>
+                    </Can>
+                    <Can I="delete" this={subject("event", event)}>
+                        <Button
+                            className="ms-2"
+                            variant="danger"
+                            onClick={async () => {
+                                if (
+                                    confirm(
+                                        "Are you sure you want to delete this event?",
+                                    )
+                                ) {
+                                    await deleteEventAction(event.id);
+
+                                    redirect("/events");
+                                }
+                            }}
+                        >
+                            Delete Event
+                        </Button>
+                    </Can>
+                </div>
+            </div>
             <div className="mt-3">
                 <div
                     className={clsx(
@@ -177,6 +206,10 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                             text="Oengus URL"
                                             url={event.oengus}
                                         />
+                                        <EventLink
+                                            text="Twitter URL"
+                                            url={event.twitter}
+                                        />
                                     </div>
                                 </div>
                             </Col>
@@ -202,34 +235,6 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                         </div>
                     </div>
                 </div>
-
-                {/* Action Buttons */}
-                <div className="mt-4 d-flex justify-content-end">
-                    <Can I="edit" this={subject("event", event)}>
-                        <Link href={`/events/${event.id}/edit`}>
-                            <Button>Edit Event</Button>
-                        </Link>
-                    </Can>
-                    <Can I="delete" this={subject("event", event)}>
-                        <Button
-                            className="ms-2"
-                            variant="danger"
-                            onClick={async () => {
-                                if (
-                                    confirm(
-                                        "Are you sure you want to delete this event?",
-                                    )
-                                ) {
-                                    await deleteEventAction(event.id);
-
-                                    redirect("/events");
-                                }
-                            }}
-                        >
-                            Delete Event
-                        </Button>
-                    </Can>
-                </div>
             </div>
         </>
     );
@@ -250,6 +255,10 @@ const EventLink = ({ text, url }: { text: string; url: string | null }) => {
     if (text.toLowerCase().includes("twitch")) {
         Icon = FaTwitch;
         iconColor = "#6441a5";
+    }
+    if (text.toLowerCase().includes("twitter")) {
+        Icon = FaTwitter;
+        iconColor = "#1DA1F2";
     }
 
     return (

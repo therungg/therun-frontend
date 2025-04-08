@@ -293,7 +293,7 @@ const changeFilter = (
 
 const FilterCategory = ({ category }: { category: string }) => {
     if (category.toLowerCase() === "isoffline") {
-        category = "Online/Offline";
+        category = "Venue/Online";
     }
 
     return <span className="fw-bold text-capitalize">{category}</span>;
@@ -319,7 +319,11 @@ const FilterValue = ({
             filterKey = <EventLocation location={filterKey as string} />;
             break;
         case "isOffline":
-            filterKey = filterKey === "true" ? "Offline" : "Online";
+            filterKey =
+                filterKey === "true"
+                    ? "Event has a venue"
+                    : "Event is online only";
+
             break;
         default:
             break;

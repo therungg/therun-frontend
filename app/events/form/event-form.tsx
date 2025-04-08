@@ -199,7 +199,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 <Col md={4}>
                     <Form.Group className="mb-3">
                         <Form.Label htmlFor="isOffline">
-                            In Person, Hybrid or Offline
+                            In Person/Hybrid or Offline
                             <ExplanationModal
                                 key="Event In Person"
                                 header="Event In Person, Hybrid or Offline"
@@ -214,7 +214,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             onChange={(e) =>
                                 setSelectedIsOffline(e.target.checked)
                             }
-                            label="The event is held (partially) in-person"
+                            label="The event is held (at least partially) in-person"
                         />
                     </Form.Group>
                 </Col>
@@ -378,7 +378,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                         <Form.Label htmlFor="url">
                             Event URL
                             <ExplanationModal
-                                header="Event URL"
+                                header="URL"
                                 text="The website of the Event itself. Leave blank if the event has no dedicated website."
                             />
                         </Form.Label>
@@ -417,7 +417,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
             </Row>
 
             <Row>
-                <Col md={4}>
+                <Col md={3}>
                     <Form.Group className="mb-3">
                         <Form.Label htmlFor="bluesky">Bluesky URL</Form.Label>
                         <Form.Control
@@ -428,7 +428,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                         />
                     </Form.Group>
                 </Col>
-                <Col md={4}>
+                <Col md={3}>
                     <Form.Group className="mb-3">
                         <Form.Label htmlFor="discord">Discord URL</Form.Label>
                         <Form.Control
@@ -439,7 +439,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                         />
                     </Form.Group>
                 </Col>
-                <Col md={4}>
+                <Col md={3}>
                     <Form.Group className="mb-3">
                         <Form.Label htmlFor="oengus">Oengus URL</Form.Label>
                         <Form.Control
@@ -447,6 +447,17 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             type="url"
                             name="oengus"
                             defaultValue={event?.oengus || ""}
+                        />
+                    </Form.Group>
+                </Col>
+                <Col md={3}>
+                    <Form.Group className="mb-3">
+                        <Form.Label htmlFor="twitter">Twitter URL</Form.Label>
+                        <Form.Control
+                            id="twitter"
+                            type="url"
+                            name="twitter"
+                            defaultValue={event?.twitter || ""}
                         />
                     </Form.Group>
                 </Col>

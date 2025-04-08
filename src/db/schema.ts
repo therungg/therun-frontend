@@ -28,6 +28,7 @@ export const events = pgTable(
         type: varchar({ length: 255 }).notNull(),
         location: varchar({ length: 255 }),
         bluesky: varchar({ length: 255 }),
+        twitter: varchar({ length: 255 }),
         twitch: varchar({ length: 255 }),
         discord: varchar({ length: 255 }),
         oengus: varchar({ length: 255 }),

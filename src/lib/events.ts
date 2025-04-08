@@ -141,7 +141,7 @@ export const createEventOrganizer = async (
         userId: await getOrCreateUser(session.username),
         action: "create-event-organizer",
         entity: "eventOrganizer",
-        target: insertedEventOrganizer.toString(),
+        target: insertedEventOrganizer[0].toString(),
         data: { insertedEventOrganizer, input },
     });
 
