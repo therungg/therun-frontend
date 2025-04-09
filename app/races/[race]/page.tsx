@@ -56,7 +56,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     const participantCount = race.participantCount;
 
     return buildMetadata({
-        title: `Watch or join this speedrun race for ${game} - ${category} on therun.gg!`,
+        title: `Race for ${game} - ${category}`,
         description: `A race between ${participantCount} people speedrunning ${game} - ${category} on therun.gg. Come check it out!`,
         images:
             race.gameImage && race.gameImage !== "noimage"

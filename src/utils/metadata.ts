@@ -32,7 +32,7 @@ export default function buildMetadata(props?: MetadataProps): Metadata {
     const defaultImageUrl = "/therun-no-url-with-black-background.png";
     const title =
         safeDecodeURI(props?.absoluteTitle || "") ||
-        `The Run - ${
+        `The Run | ${
             safeDecodeURI(props?.title || "") || "Speedrun Statistics"
         }`;
     const description =

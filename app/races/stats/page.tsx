@@ -19,11 +19,10 @@ export default async function RaceStatsPage() {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-    const globalRaceStats = await getGlobalRaceStats();
     const raceGameStats = await getRaceGameStats(1);
 
     return buildMetadata({
-        title: `Statistics for speedrun races on therun.gg. So far, ${globalRaceStats.totalRaces} have been completed!`,
+        title: `Race Statistics`,
         description: `The most popular speedrun game on therun.gg is ${
             raceGameStats ? raceGameStats[0].displayValue : "unknown"
         } with a total of ${

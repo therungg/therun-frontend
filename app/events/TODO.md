@@ -1,6 +1,7 @@
 # Fix
 
 -   Explanations and guidelines for event creators
+-   Allow multiple filter options for the same filter
 
 # Add
 

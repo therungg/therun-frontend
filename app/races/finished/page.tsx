@@ -11,7 +11,7 @@ export default async function FinishedRacesPage() {
 
 export async function generateMetadata(): Promise<Metadata> {
     return buildMetadata({
-        title: `A list of finished speedrun races`,
+        title: `Finished Races`,
         description: `Detailed list of finished speedrun races on therun.gg.`,
         index: true,
     });

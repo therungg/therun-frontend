@@ -90,7 +90,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     const stats = await getRaceGameStatsByGame(game);
 
     return buildMetadata({
-        title: `Speedrun race statistics for ${stats.stats.displayValue} on therun.gg`,
+        title: `${stats.stats.displayValue} Race Statistics`,
         description: `So far, ${stats.stats.totalRaces} races have been completed on therun.gg for the game ${stats.stats.displayValue}.`,
         images:
             stats.stats.image && stats.stats.image !== "noimage"

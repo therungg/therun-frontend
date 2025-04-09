@@ -31,7 +31,7 @@ export default async function RacePage() {
 
 export async function generateMetadata(): Promise<Metadata> {
     return buildMetadata({
-        title: `Watch upcoming and ongoing speedrun races on therun.gg!`,
+        title: `Races`,
         description: `Dashboard for all things speedrun racing - statistics, race history, live races, you name it. All on therun.gg`,
         index: true,
     });
