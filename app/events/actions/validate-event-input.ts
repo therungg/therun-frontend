@@ -34,6 +34,7 @@ export const validateEventInput = async (
         tier: Joi.number().min(1).max(5),
         isOffline: Joi.boolean().required(),
         tags: Joi.optional(),
+        restreams: Joi.optional(),
 
         createdBy: Joi.string().min(1).max(255).optional(),
     });

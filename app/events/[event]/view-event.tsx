@@ -26,7 +26,13 @@ import {
 import { EventLocation } from "../event-location";
 import styles from "../event.styles.module.css";
 import clsx from "clsx";
-import { FaBluesky, FaDiscord, FaTwitch, FaTwitter } from "react-icons/fa6";
+import {
+    FaBluesky,
+    FaDiscord,
+    FaRetweet,
+    FaTwitch,
+    FaTwitter,
+} from "react-icons/fa6";
 
 export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
     const breadcrumbs: BreadcrumbItem[] = [
@@ -229,6 +235,78 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                             url={event.twitter}
                                         />
                                     </div>
+                                    {event.restreams &&
+                                        event.restreams.length > 0 && (
+                                            <div className="mt-2">
+                                                <h3 className="card-title mb-2">
+                                                    <FaRetweet className="text-primary" />{" "}
+                                                    Restreams
+                                                </h3>
+
+                                                <div className="card-text border rounded-2 px-3 pb-3 bg-body-tertiary">
+                                                    {event.restreams.map(
+                                                        (restream) => {
+                                                            return (
+                                                                <div
+                                                                    className="d-flex mt-3"
+                                                                    key={
+                                                                        restream.language
+                                                                    }
+                                                                >
+                                                                    <FaRetweet className="me-2 flex-center h-100 mt-2 text-primary" />
+                                                                    <div
+                                                                        className="ms-2 mb-1"
+                                                                        style={{
+                                                                            minWidth: 0,
+                                                                            flex: 1,
+                                                                        }}
+                                                                    >
+                                                                        <div>
+                                                                            {
+                                                                                restream.language
+                                                                            }{" "}
+                                                                            restream
+                                                                            by{" "}
+                                                                            {
+                                                                                restream.organizer
+                                                                            }
+                                                                        </div>
+                                                                        <div
+                                                                            className="fw-bold fs-6"
+                                                                            style={{
+                                                                                width: "100%",
+                                                                            }}
+                                                                        >
+                                                                            <a
+                                                                                href={
+                                                                                    restream.url
+                                                                                }
+                                                                                className="color-text"
+                                                                                rel="noreferrer"
+                                                                                target="_blank"
+                                                                                style={{
+                                                                                    width: "100%",
+                                                                                    overflow:
+                                                                                        "hidden",
+                                                                                    textOverflow:
+                                                                                        "ellipsis",
+                                                                                    whiteSpace:
+                                                                                        "nowrap",
+                                                                                }}
+                                                                            >
+                                                                                {
+                                                                                    restream.url
+                                                                                }
+                                                                            </a>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        },
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                 </div>
                             </Col>
                         </Row>

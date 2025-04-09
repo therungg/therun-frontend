@@ -1,4 +1,4 @@
-import { EditEventInput } from "../../../types/events.types";
+import { EditEventInput, EventRestream } from "../../../types/events.types";
 import { uploadEventImage } from "~app/events/actions/upload-event-image";
 import sanitizeHtml from "sanitize-html";
 
@@ -13,7 +13,9 @@ export const formInputToEventInput = async (eventInput: FormData) => {
         language: eventInput.get("language") as string,
         location: eventInput.get("location") as string,
 
-        organizerId: parseInt(eventInput.get("organizer") as string) as number,
+        organizerId: parseInt(
+            eventInput.get("organizerId") as string,
+        ) as number,
 
         startsAt: new Date(eventInput.get("startsAt") as string),
         endsAt: new Date(eventInput.get("endsAt") as string),
@@ -49,6 +51,21 @@ export const formInputToEventInput = async (eventInput: FormData) => {
 
     if (file.size > 10 * 1024 * 1024) {
         throw new Error("Image File can be maximum 10MB");
+    }
+
+    input.restreams = [] as EventRestream[];
+
+    for (let i = 0; i < 10; i++) {
+        const url = eventInput.get(`restreams[${i}].url`) as string;
+        if (url) {
+            (input.restreams as EventRestream[]).push({
+                language: eventInput.get(`restreams[${i}].language`) as string,
+                url,
+                organizer: eventInput.get(
+                    `restreams[${i}].organizer`,
+                ) as string,
+            });
+        }
     }
 
     return input;

@@ -8,6 +8,7 @@ import {
     EventOrganizer,
     eventTypes,
     eventTierNames,
+    EventRestream,
 } from "../../../types/events.types";
 import { createEventOrganizer, getAllEventOrganizers } from "~src/lib/events";
 import { toast } from "react-toastify";
@@ -37,6 +38,16 @@ export const EventForm = ({ event }: { event?: Event }) => {
     );
     const [slug, setSlug] = useState<string>(event?.slug || "");
 
+    // --- Restream State ---
+    // Initialize with one empty restream row, or existing data if available
+    // For simplicity, assuming event.restreams is the correct structure if it exists
+    const [restreams, setRestreams] = useState<EventRestream[]>(
+        (event?.restreams as EventRestream[]) || [
+            { language: "", url: "", organizer: "" },
+        ],
+    );
+    // --- End Restream State ---
+
     const [showModal, setShowModal] = useState("");
 
     const fetchEventOrganizers = async () => {
@@ -50,14 +61,52 @@ export const EventForm = ({ event }: { event?: Event }) => {
 
     const handleAddOrganizer = async () => {
         if (newOrganizerName.trim()) {
-            const newOrganizer = await createEventOrganizer({
-                name: newOrganizerName.trim(),
-            });
-            setNewOrganizerName("");
-            await fetchEventOrganizers();
-            toast.success("Organizer added successfully");
-            setSelectedOrganizerId(newOrganizer!.id);
+            try {
+                const newOrganizer = await createEventOrganizer({
+                    name: newOrganizerName.trim(),
+                });
+                setNewOrganizerName("");
+                await fetchEventOrganizers(); // Refetch to update the list
+                toast.success("Organizer added successfully");
+                // Automatically select the newly added organizer
+                if (newOrganizer) {
+                    setSelectedOrganizerId(newOrganizer.id);
+                }
+            } catch (error) {
+                toast.error("Failed to add organizer.");
+                console.error("Error adding organizer:", error);
+            }
         }
+    };
+
+    // --- Restream Handlers ---
+    const handleRestreamChange = (
+        index: number,
+        field: keyof EventRestream,
+        value: string,
+    ) => {
+        const updatedRestreams = [...restreams];
+        updatedRestreams[index] = {
+            ...updatedRestreams[index],
+            [field]: value,
+        };
+        setRestreams(updatedRestreams);
+    };
+
+    const addRestreamRow = () => {
+        if (restreams.length < 10) {
+            setRestreams([
+                ...restreams,
+                { language: "", url: "", organizer: "" },
+            ]);
+        } else {
+            toast.warn("Maximum of 10 restreams allowed.");
+        }
+    };
+
+    const removeRestreamRow = (index: number) => {
+        const updatedRestreams = restreams.filter((_, i) => i !== index);
+        setRestreams(updatedRestreams);
     };
 
     const ExplanationModal = ({
@@ -102,12 +151,25 @@ export const EventForm = ({ event }: { event?: Event }) => {
         );
     };
 
+    // Memoize language options to avoid recalculating on every render
+    const languageOptions = React.useMemo(
+        () => Array.from(Object.entries(languages())),
+        [],
+    );
+    const countryOptions = React.useMemo(
+        () => Array.from(Object.entries(countries())),
+        [],
+    );
+
     return (
         <>
+            {/* Sections 1, 2, 3 remain the same... */}
             <h5>1. Core Event Information</h5>
             <Row>
                 <Col md={6} lg={3}>
                     <Form.Group>
+                        {" "}
+                        {/* Added mb-3 */}
                         <Form.Label htmlFor="eventName">
                             Event Name <EventFieldRequired />
                         </Form.Label>
@@ -122,6 +184,8 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 </Col>
                 <Col md={6} lg={3}>
                     <Form.Group>
+                        {" "}
+                        {/* Added mb-3 */}
                         <Form.Label htmlFor="slug">
                             URL (therun.gg/events/{slug}) <EventFieldRequired />
                         </Form.Label>
@@ -148,6 +212,8 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 </Col>
                 <Col md={6} lg={3}>
                     <Form.Group>
+                        {" "}
+                        {/* Added mb-3 */}
                         <Form.Label htmlFor="eventType">
                             Type <EventFieldRequired />
                         </Form.Label>
@@ -168,6 +234,8 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 </Col>
                 <Col md={6} lg={3}>
                     <Form.Group>
+                        {" "}
+                        {/* Added mb-3 */}
                         <Form.Label htmlFor="eventTier">
                             Tier <EventFieldRequired />
                             <ExplanationModal
@@ -200,7 +268,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
             <h5>2. Date & Location</h5>
             <Row>
                 <Col md={4}>
-                    <Form.Group className="mb-3">
+                    <Form.Group>
                         <Form.Label htmlFor="isOffline">
                             Event Format
                         </Form.Label>
@@ -221,7 +289,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                     </Form.Group>
                 </Col>
                 <Col md={4}>
-                    <Form.Group className="mb-3">
+                    <Form.Group>
                         <Form.Label htmlFor="language">
                             Primary Language <EventFieldRequired />
                         </Form.Label>
@@ -229,16 +297,16 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             id="language"
                             name="language"
                             defaultValue={event?.language || "English"}
+                            required // Added required
                         >
-                            {Array.from(Object.entries(languages())).map(
-                                ([_, value]) => {
-                                    return (
-                                        <option key={value} value={value}>
-                                            {value}
-                                        </option>
-                                    );
-                                },
-                            )}
+                            {/* Removed placeholder option as defaultValue is set */}
+                            {languageOptions.map(([_, value]) => {
+                                return (
+                                    <option key={value} value={value}>
+                                        {value}
+                                    </option>
+                                );
+                            })}
                         </Form.Select>
                         <Form.Text>
                             Enter the primary language that is spoken in the
@@ -248,27 +316,29 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 </Col>
                 <Col md={4}>
                     {selectedIsOffline && (
-                        <Form.Group className="mb-3">
+                        <Form.Group>
                             <Form.Label htmlFor="location">
-                                Location (Country)
+                                Location (Country) <EventFieldRequired />{" "}
+                                {/* Added required indication */}
                             </Form.Label>
                             <Form.Select
                                 id="location"
                                 name="location"
                                 defaultValue={event?.location || ""}
                                 disabled={!selectedIsOffline}
+                                required={selectedIsOffline} // Conditionally required
                             >
                                 <option value="">Select Country</option>
-                                {Array.from(Object.entries(countries())).map(
-                                    ([key, value]) => {
-                                        return (
-                                            <option key={key} value={key}>
-                                                {value}
-                                            </option>
-                                        );
-                                    },
-                                )}
+                                {countryOptions.map(([key, value]) => {
+                                    return (
+                                        <option key={key} value={key}>
+                                            {value}
+                                        </option>
+                                    );
+                                })}
                             </Form.Select>
+                            {/* Removed disabled attribute */}
+                            {/* Removed Form.Text */}
                         </Form.Group>
                     )}
                 </Col>
@@ -276,6 +346,8 @@ export const EventForm = ({ event }: { event?: Event }) => {
             <Row>
                 <Col md={6}>
                     <Form.Group>
+                        {" "}
+                        {/* Added mb-3 */}
                         <Form.Label htmlFor="startsAt">
                             Start Date & Time <EventFieldRequired />
                         </Form.Label>
@@ -285,7 +357,11 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             name="startsAt"
                             defaultValue={
                                 event?.startsAt
-                                    ? new Date(event.startsAt)
+                                    ? new Date(
+                                          new Date(event.startsAt).getTime() -
+                                              new Date().getTimezoneOffset() *
+                                                  60000,
+                                      ) // Adjust for local timezone for input default
                                           .toISOString()
                                           .slice(0, 16)
                                     : ""
@@ -296,6 +372,8 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 </Col>
                 <Col md={6}>
                     <Form.Group>
+                        {" "}
+                        {/* Added mb-3 */}
                         <Form.Label htmlFor="endsAt">
                             End Date & Time <EventFieldRequired />
                         </Form.Label>
@@ -305,7 +383,11 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             name="endsAt"
                             defaultValue={
                                 event?.endsAt
-                                    ? new Date(event.endsAt)
+                                    ? new Date(
+                                          new Date(event.endsAt).getTime() -
+                                              new Date().getTimezoneOffset() *
+                                                  60000,
+                                      ) // Adjust for local timezone
                                           .toISOString()
                                           .slice(0, 16)
                                     : ""
@@ -319,7 +401,9 @@ export const EventForm = ({ event }: { event?: Event }) => {
             <hr className="my-4" />
 
             <h5>3. Organization</h5>
-            <Row className="align-items-end">
+            <Row className="align-items-end mb-3">
+                {" "}
+                {/* Added mb-3 */}
                 <Col md={6}>
                     <Form.Group>
                         <Form.Label htmlFor="organizer">
@@ -327,7 +411,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                         </Form.Label>
                         <Form.Select
                             id="organizer"
-                            name="organizer"
+                            name="organizerId"
                             value={selectedOrganizerId}
                             onChange={(e) =>
                                 setSelectedOrganizerId(e.target.value)
@@ -388,7 +472,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
             <h5>4. Online Presence & Links</h5>
             <Row>
                 <Col md={4}>
-                    <Form.Group className="mb-3">
+                    <Form.Group>
                         <Form.Label htmlFor="url">Event Website URL</Form.Label>
                         <Form.Control
                             id="url"
@@ -400,7 +484,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                     </Form.Group>
                 </Col>
                 <Col md={4}>
-                    <Form.Group className="mb-3">
+                    <Form.Group>
                         <Form.Label htmlFor="scheduleUrl">
                             Schedule URL
                         </Form.Label>
@@ -414,7 +498,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                     </Form.Group>
                 </Col>
                 <Col md={4}>
-                    <Form.Group className="mb-3">
+                    <Form.Group>
                         <Form.Label htmlFor="twitch">Twitch URL </Form.Label>
                         <Form.Control
                             id="twitch"
@@ -429,6 +513,8 @@ export const EventForm = ({ event }: { event?: Event }) => {
             <Row>
                 <Col md={3}>
                     <Form.Group>
+                        {" "}
+                        {/* Added mb-3 */}
                         <Form.Label htmlFor="discord">Discord URL </Form.Label>
                         <Form.Control
                             id="discord"
@@ -441,6 +527,8 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 </Col>
                 <Col md={3}>
                     <Form.Group>
+                        {" "}
+                        {/* Added mb-3 */}
                         <Form.Label htmlFor="twitter">Twitter URL </Form.Label>
                         <Form.Control
                             id="twitter"
@@ -453,6 +541,8 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 </Col>
                 <Col md={3}>
                     <Form.Group>
+                        {" "}
+                        {/* Added mb-3 */}
                         <Form.Label htmlFor="oengus">Oengus URL </Form.Label>
                         <Form.Control
                             id="oengus"
@@ -464,7 +554,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                     </Form.Group>
                 </Col>
                 <Col md={3}>
-                    <Form.Group className="mb-3">
+                    <Form.Group>
                         <Form.Label htmlFor="bluesky">Bluesky URL </Form.Label>
                         <Form.Control
                             id="bluesky"
@@ -477,12 +567,117 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 </Col>
             </Row>
 
+            <h6 className="mt-3">Restreams</h6>
+            {restreams.map((restream, index) => (
+                <Row key={`restream-${index}`} className="mb-3 align-items-end">
+                    <Col md={3}>
+                        <Form.Group>
+                            <Form.Label htmlFor={`restreamLanguage${index}`}>
+                                Language #{index + 1}
+                            </Form.Label>
+                            <Form.Select
+                                id={`restreamLanguage${index}`}
+                                name={`restreams[${index}].language`}
+                                value={restream.language}
+                                onChange={(e) =>
+                                    handleRestreamChange(
+                                        index,
+                                        "language",
+                                        e.target.value,
+                                    )
+                                }
+                            >
+                                <option value="">Select Language</option>
+                                {languageOptions.map(([_, value]) => (
+                                    <option key={value} value={value}>
+                                        {value}
+                                    </option>
+                                ))}
+                            </Form.Select>
+                        </Form.Group>
+                    </Col>
+
+                    <Col md={4}>
+                        <Form.Group>
+                            <Form.Label htmlFor={`restreamUrl${index}`}>
+                                URL #{index + 1}
+                            </Form.Label>
+                            <Form.Control
+                                id={`restreamUrl${index}`}
+                                type="url"
+                                name={`restreams[${index}].url`}
+                                placeholder="https://twitch.tv/restreamer"
+                                value={restream.url}
+                                onChange={(e) =>
+                                    handleRestreamChange(
+                                        index,
+                                        "url",
+                                        e.target.value,
+                                    )
+                                }
+                            />
+                        </Form.Group>
+                    </Col>
+
+                    <Col md={3}>
+                        <Form.Group>
+                            <Form.Label htmlFor={`restreamOrganizer${index}`}>
+                                Organizer #{index + 1}
+                            </Form.Label>
+                            <Form.Control
+                                id={`restreamOrganizer${index}`}
+                                type="text"
+                                name={`restreams[${index}].organizer`}
+                                placeholder="Restream Organizer Name"
+                                value={restream.organizer}
+                                onChange={(e) =>
+                                    handleRestreamChange(
+                                        index,
+                                        "organizer",
+                                        e.target.value,
+                                    )
+                                }
+                            />
+                        </Form.Group>
+                    </Col>
+
+                    <Col md={2} className="text-end">
+                        {restreams.length > 0 && (
+                            <Button
+                                variant="danger"
+                                onClick={() => removeRestreamRow(index)}
+                                aria-label={`Remove Restream ${index + 1}`}
+                            >
+                                Remove
+                            </Button>
+                        )}
+                    </Col>
+                </Row>
+            ))}
+
+            <Row>
+                <Col className="text-start">
+                    <Button
+                        variant="secondary"
+                        onClick={addRestreamRow}
+                        disabled={restreams.length >= 10}
+                    >
+                        + Add Restream
+                    </Button>
+                    {restreams.length >= 10 && (
+                        <Form.Text className="ms-2 text-muted">
+                            Maximum 10 restreams reached.
+                        </Form.Text>
+                    )}
+                </Col>
+            </Row>
+
             <hr className="my-4" />
 
             <h5>5. Event Details & Content</h5>
             <Row>
                 <Col>
-                    <Form.Group className="mb-3">
+                    <Form.Group>
                         <Form.Label htmlFor="shortDescription">
                             Short Description (Summary/Teaser){" "}
                             <EventFieldRequired />
@@ -503,7 +698,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                         </Form.Text>
                     </Form.Group>
 
-                    <Form.Group className="mb-3">
+                    <Form.Group>
                         <Form.Label htmlFor="description">
                             Full Event Description <EventFieldRequired />
                         </Form.Label>
@@ -513,7 +708,9 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             initialContent={editorContent}
                         />
                         <input
-                            required
+                            required={
+                                !editorContent || editorContent === "<p></p>"
+                            }
                             type="hidden"
                             id="description"
                             name="description"
@@ -539,7 +736,6 @@ export const EventForm = ({ event }: { event?: Event }) => {
             {event && (
                 <input
                     type="hidden"
-                    required
                     id="eventId"
                     name="eventId"
                     value={event.id}
@@ -549,7 +745,9 @@ export const EventForm = ({ event }: { event?: Event }) => {
             <hr className="my-4" />
 
             <h5>6. Charity</h5>
-            <Row className="align-items-center">
+            <Row className="align-items-center mb-3">
+                {" "}
+                {/* Added mb-3 */}
                 <Col md={4}>
                     <Form.Group>
                         <Form.Label htmlFor="isForCharity">
@@ -572,20 +770,20 @@ export const EventForm = ({ event }: { event?: Event }) => {
                         <Col md={4}>
                             <Form.Group>
                                 <Form.Label htmlFor="charityName">
-                                    Charity Name
+                                    Charity Name <EventFieldRequired />
                                 </Form.Label>
                                 <Form.Control
                                     id="charityName"
                                     type="text"
                                     name="charityName"
                                     defaultValue={event?.charityName || ""}
-                                    required
+                                    required={selectedIsForCharity}
                                 />
                             </Form.Group>
                         </Col>
                         <Col md={4}>
                             <Form.Group>
-                                <Form.Label htmlFor="twitter">
+                                <Form.Label htmlFor="charityUrl">
                                     Charity URL{" "}
                                 </Form.Label>
                                 <Form.Control
@@ -605,10 +803,12 @@ export const EventForm = ({ event }: { event?: Event }) => {
 
             <h5>7. Visuals</h5>
             <Row className="align-items-center mb-3">
-                <Col>
+                <Col md={event?.imageUrl ? 6 : 12}>
                     <Form.Group>
                         <Form.Label htmlFor="eventImage">
-                            Upload Event Logo
+                            {event?.imageUrl
+                                ? "Upload New Event Logo (Optional)"
+                                : "Upload Event Logo"}
                         </Form.Label>
                         <Form.Control
                             id="eventImage"
@@ -637,6 +837,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                                 height: "auto",
                                 border: "1px solid #dee2e6",
                                 borderRadius: "0.25rem",
+                                marginTop: "0.5rem",
                             }}
                         />
                     </Col>

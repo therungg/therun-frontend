@@ -1,7 +1,10 @@
 import { eventOrganizers, events } from "~src/db/schema";
 import { InferInsertModel, InferSelectModel } from "drizzle-orm";
 
-export type Event = InferSelectModel<typeof events> & { tags: string[] };
+export type Event = InferSelectModel<typeof events> & {
+    tags: string[];
+    restreams: EventRestream[];
+};
 export type EventWithOrganizerName = Event & { organizerName: string };
 
 export interface EventFromSearch
@@ -38,6 +41,12 @@ export const eventTypes: EventType[] = [
     "Community Meetup",
     "Other",
 ];
+
+export interface EventRestream {
+    url: string;
+    organizer?: string;
+    language?: string;
+}
 
 export type EventTier = 1 | 2 | 3 | 4;
 export const eventTiers: EventTier[] = [
