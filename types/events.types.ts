@@ -21,11 +21,21 @@ export type CreateEventOrganizerInput = InferInsertModel<
     typeof eventOrganizers
 >;
 
-export type EventType = "Marathon" | "Tournament" | "Race" | "Other";
+export type EventType =
+    | "Marathon"
+    | "Tournament"
+    | "Race"
+    | "Showcase"
+    | "Relay"
+    | "Community Meetup"
+    | "Other";
 export const eventTypes: EventType[] = [
     "Marathon",
     "Tournament",
     "Race",
+    "Showcase",
+    "Relay",
+    "Community Meetup",
     "Other",
 ];
 

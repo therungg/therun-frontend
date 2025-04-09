@@ -170,6 +170,49 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                             </div>
                                         </div>
                                     </div>
+                                    {event.isForCharity && (
+                                        <div className="d-flex mt-3">
+                                            <FaHeart className="me-2 text-danger flex-center h-100 mt-2" />
+                                            <div className="ms-2 mb-1">
+                                                <div>Charity</div>
+                                                <div className="fw-bold fs-5">
+                                                    <div className="fw-bold fs-5">
+                                                        {event.charityName &&
+                                                            event.charityUrl && (
+                                                                <a
+                                                                    href={
+                                                                        event.charityUrl
+                                                                    }
+                                                                    rel="noreferren"
+                                                                    target="'_blank"
+                                                                >
+                                                                    {
+                                                                        event.charityName
+                                                                    }
+                                                                </a>
+                                                            )}
+
+                                                        {event.charityName &&
+                                                            !event.charityUrl && (
+                                                                <span>
+                                                                    {
+                                                                        event.charityName
+                                                                    }
+                                                                </span>
+                                                            )}
+
+                                                        {!event.charityName &&
+                                                            !event.charityUrl && (
+                                                                <span>
+                                                                    Even is for
+                                                                    charity!
+                                                                </span>
+                                                            )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="mt-2">
                                     <h3 className="card-title mb-2">

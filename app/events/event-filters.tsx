@@ -8,6 +8,7 @@ import { EventLocation } from "./event-location";
 import styles from "./event.styles.module.css";
 import clsx from "clsx";
 import { FaFilter } from "react-icons/fa";
+import { FaHeart } from "react-icons/fa6";
 
 const VIEW_MORE_THRESHOLD = 5;
 
@@ -49,11 +50,12 @@ export const EventFilters: FC<PropsWithChildren<FilterInput>> = ({
                     .sort(([a], [b]) => {
                         const order = [
                             "organizer",
-                            "type",
                             "tier",
+                            "type",
                             "isOffline",
                             "location",
                             "language",
+                            "isForCharity",
                         ];
                         return order.indexOf(a) - order.indexOf(b);
                     })
@@ -82,9 +84,13 @@ const Filter = ({
     }));
     const [search, setSearch] = useState("");
 
-    const filteredValues = values.filter(({ key }) =>
-        key.toLowerCase().includes(search.toLowerCase()),
-    );
+    const filteredValues = values.filter(({ key }) => {
+        if (categoryKey.toLowerCase().includes("charity")) {
+            return key === "true";
+        }
+
+        return key.toLowerCase().includes(search.toLowerCase());
+    });
 
     const allowViewMore = filteredValues.length > VIEW_MORE_THRESHOLD;
 
@@ -100,7 +106,7 @@ const Filter = ({
                         id={categoryKey}
                         placeholder={`Search ${categoryKey}`}
                         value={search}
-                        className="w-sm-75"
+                        className="w-75"
                         onChange={(e) => {
                             setSearch(e.target.value);
                             setViewMore(false);
@@ -296,6 +302,10 @@ const FilterCategory = ({ category }: { category: string }) => {
         category = "Venue/Online";
     }
 
+    if (category.toLowerCase() === "isforcharity") {
+        category = "For Charity";
+    }
+
     return <span className="fw-bold text-capitalize">{category}</span>;
 };
 
@@ -323,6 +333,17 @@ const FilterValue = ({
                 filterKey === "true"
                     ? "Event has a venue"
                     : "Event is online only";
+
+            break;
+        case "isForCharity":
+            filterKey =
+                filterKey === "true" ? (
+                    <>
+                        Yes! <FaHeart />
+                    </>
+                ) : (
+                    "No"
+                );
 
             break;
         default:

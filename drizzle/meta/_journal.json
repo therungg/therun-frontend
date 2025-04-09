@@ -169,6 +169,13 @@
       "when": 1744149182499,
       "tag": "0026_soft_emma_frost",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1744231253587,
+      "tag": "0027_many_polaris",
+      "breakpoints": true
     }
   ]
 }

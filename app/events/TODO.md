@@ -9,7 +9,6 @@
 -   Deadline dates incl status view in card and detail (registration, schedule release, early bird etc.)
 -   Filter by custom date
 -   Full address, not just country
--   Sort by start date asc
 -   Timer to show when it starts
 -   Charity boolean + name + url
 -   Restream data
@@ -19,4 +18,3 @@
 # Think
 
 -   How to deal with event tiers
--   What is the default filter? Now it looks like a bunch of events don't exist.

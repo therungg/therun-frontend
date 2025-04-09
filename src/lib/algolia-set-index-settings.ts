@@ -32,6 +32,7 @@ const main = async () => {
                 "language",
                 "tier",
                 "isOffline",
+                "isForCharity",
             ],
             numericAttributesForFiltering: [
                 "startsAtTimeStamp",

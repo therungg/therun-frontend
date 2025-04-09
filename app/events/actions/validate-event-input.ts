@@ -26,6 +26,10 @@ export const validateEventInput = async (
         url: Joi.allow("").optional(),
         scheduleUrl: Joi.allow("").optional(),
 
+        charityName: Joi.allow("").optional(),
+        charityUrl: Joi.allow("").optional(),
+        isForCharity: Joi.boolean().required(),
+
         imageUrl: Joi.allow("").optional(),
         tier: Joi.number().min(1).max(5),
         isOffline: Joi.boolean().required(),

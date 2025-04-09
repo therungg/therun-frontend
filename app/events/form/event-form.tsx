@@ -29,6 +29,9 @@ export const EventForm = ({ event }: { event?: Event }) => {
     const [selectedIsOffline, setSelectedIsOffline] = useState(
         event?.isOffline || false,
     );
+    const [selectedIsForCharity, setSelectedIsForCharity] = useState(
+        event?.isForCharity || false,
+    );
     const [editorContent, setEditorContent] = useState<string>(
         event?.description || "",
     );
@@ -72,7 +75,10 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 <a
                     href="#"
                     className="text-muted ms-2 fs-small cursor-pointer"
-                    onClick={handleShow}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        handleShow();
+                    }}
                 >
                     Explanation
                 </a>
@@ -98,9 +104,10 @@ export const EventForm = ({ event }: { event?: Event }) => {
 
     return (
         <>
+            <h5>1. Core Event Information</h5>
             <Row>
-                <Col md={3}>
-                    <Form.Group className="mb-3">
+                <Col md={6} lg={3}>
+                    <Form.Group>
                         <Form.Label htmlFor="eventName">
                             Event Name <EventFieldRequired />
                         </Form.Label>
@@ -113,24 +120,19 @@ export const EventForm = ({ event }: { event?: Event }) => {
                         />
                     </Form.Group>
                 </Col>
-                <Col md={3}>
-                    <Form.Group className="mb-3">
+                <Col md={6} lg={3}>
+                    <Form.Group>
                         <Form.Label htmlFor="slug">
                             URL (therun.gg/events/{slug}) <EventFieldRequired />
-                            <ExplanationModal
-                                key="Event URL"
-                                header="Event URL"
-                                text="Your event will be available at https://therun.gg/events/<the-url-you-input>"
-                            />
                         </Form.Label>
                         <Form.Control
                             id="slug"
                             type="text"
                             name="slug"
-                            defaultValue={event?.slug || ""}
+                            value={slug}
                             required
-                            min="1"
-                            max="50"
+                            minLength={1}
+                            maxLength={50}
                             onChange={(e) => {
                                 const value = e.target.value
                                     .toLowerCase()
@@ -139,17 +141,15 @@ export const EventForm = ({ event }: { event?: Event }) => {
                                 setSlug(value);
                             }}
                         />
+                        <Form.Text>
+                            {"https://therun.gg/events/<the-url-you-input>"}
+                        </Form.Text>
                     </Form.Group>
                 </Col>
-                <Col md={3}>
-                    <Form.Group className="mb-3">
+                <Col md={6} lg={3}>
+                    <Form.Group>
                         <Form.Label htmlFor="eventType">
                             Type <EventFieldRequired />
-                            <ExplanationModal
-                                key="Event Type"
-                                header="Event Type"
-                                text="If multiple apply, select the one you like the most. Contact Joey if you think a type should be added."
-                            />
                         </Form.Label>
                         <Form.Select
                             id="eventType"
@@ -166,8 +166,8 @@ export const EventForm = ({ event }: { event?: Event }) => {
                         </Form.Select>
                     </Form.Group>
                 </Col>
-                <Col md={3}>
-                    <Form.Group className="mb-3">
+                <Col md={6} lg={3}>
+                    <Form.Group>
                         <Form.Label htmlFor="eventTier">
                             Tier <EventFieldRequired />
                             <ExplanationModal
@@ -195,16 +195,14 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 </Col>
             </Row>
 
+            <hr className="my-4" />
+
+            <h5>2. Date & Location</h5>
             <Row>
                 <Col md={4}>
                     <Form.Group className="mb-3">
                         <Form.Label htmlFor="isOffline">
-                            In Person/Hybrid or Offline
-                            <ExplanationModal
-                                key="Event In Person"
-                                header="Event In Person, Hybrid or Offline"
-                                text="Select this if your event happens, at least partially, in-person with other people."
-                            />
+                            Event Format
                         </Form.Label>
                         <Form.Check
                             id="isOffline"
@@ -216,23 +214,21 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             }
                             label="The event is held (at least partially) in-person"
                         />
+                        <Form.Text>
+                            Select this if your event happens, at least
+                            partially, in-person with other people.
+                        </Form.Text>
                     </Form.Group>
                 </Col>
                 <Col md={4}>
                     <Form.Group className="mb-3">
                         <Form.Label htmlFor="language">
                             Primary Language <EventFieldRequired />
-                            <ExplanationModal
-                                key="Event Language"
-                                header="Event Language"
-                                text="Enter the primary language that is spoken in the venue, or on the stream."
-                            />
                         </Form.Label>
                         <Form.Select
                             id="language"
                             name="language"
                             defaultValue={event?.language || "English"}
-                            as="select"
                         >
                             {Array.from(Object.entries(languages())).map(
                                 ([_, value]) => {
@@ -244,20 +240,25 @@ export const EventForm = ({ event }: { event?: Event }) => {
                                 },
                             )}
                         </Form.Select>
+                        <Form.Text>
+                            Enter the primary language that is spoken in the
+                            venue, or on the stream.
+                        </Form.Text>
                     </Form.Group>
                 </Col>
                 <Col md={4}>
                     {selectedIsOffline && (
                         <Form.Group className="mb-3">
-                            <Form.Label htmlFor="location">Location</Form.Label>
+                            <Form.Label htmlFor="location">
+                                Location (Country)
+                            </Form.Label>
                             <Form.Select
                                 id="location"
                                 name="location"
                                 defaultValue={event?.location || ""}
-                                as="select"
                                 disabled={!selectedIsOffline}
                             >
-                                <option>-</option>
+                                <option value="">Select Country</option>
                                 {Array.from(Object.entries(countries())).map(
                                     ([key, value]) => {
                                         return (
@@ -272,16 +273,57 @@ export const EventForm = ({ event }: { event?: Event }) => {
                     )}
                 </Col>
             </Row>
-
             <Row>
                 <Col md={6}>
-                    <Form.Group className="mb-4">
+                    <Form.Group>
+                        <Form.Label htmlFor="startsAt">
+                            Start Date & Time <EventFieldRequired />
+                        </Form.Label>
+                        <Form.Control
+                            id="startsAt"
+                            type="datetime-local"
+                            name="startsAt"
+                            defaultValue={
+                                event?.startsAt
+                                    ? new Date(event.startsAt)
+                                          .toISOString()
+                                          .slice(0, 16)
+                                    : ""
+                            }
+                            required
+                        />
+                    </Form.Group>
+                </Col>
+                <Col md={6}>
+                    <Form.Group>
+                        <Form.Label htmlFor="endsAt">
+                            End Date & Time <EventFieldRequired />
+                        </Form.Label>
+                        <Form.Control
+                            id="endsAt"
+                            type="datetime-local"
+                            name="endsAt"
+                            defaultValue={
+                                event?.endsAt
+                                    ? new Date(event.endsAt)
+                                          .toISOString()
+                                          .slice(0, 16)
+                                    : ""
+                            }
+                            required
+                        />
+                    </Form.Group>
+                </Col>
+            </Row>
+
+            <hr className="my-4" />
+
+            <h5>3. Organization</h5>
+            <Row className="align-items-end">
+                <Col md={6}>
+                    <Form.Group>
                         <Form.Label htmlFor="organizer">
                             Event Organizer <EventFieldRequired />
-                            <ExplanationModal
-                                header="Event Organizer"
-                                text="Select the person/organization/group organizing this event. If you are sure it is not already in the last, add a new Organizer."
-                            />
                         </Form.Label>
                         <Form.Select
                             id="organizer"
@@ -299,93 +341,60 @@ export const EventForm = ({ event }: { event?: Event }) => {
                                 </option>
                             ))}
                         </Form.Select>
+                        <Form.Text muted>
+                            Select the person/organization/group organizing this
+                            event. If you are sure it is not already in the
+                            list, add a new Organizer.
+                        </Form.Text>
                     </Form.Group>
                 </Col>
-                <Col>
-                    <Row>
+                <Col md={6}>
+                    <Form.Group>
                         <Form.Label htmlFor="newOrganizerName">
-                            Add new Event Organizer
+                            Add New Event Organizer
                         </Form.Label>
-                        <Col md={9}>
-                            <Form.Control
-                                id="newOrganizerName"
-                                type="text"
-                                value={newOrganizerName}
-                                onChange={(e) =>
-                                    setNewOrganizerName(e.target.value)
-                                }
-                                placeholder="New Organizer"
-                            />
-                        </Col>
-                        <Col md={3}>
-                            <Button
-                                onClick={handleAddOrganizer}
-                                variant="secondary"
-                            >
-                                Add Organizer
-                            </Button>
-                        </Col>
-                    </Row>
-                </Col>
-            </Row>
-
-            <Row>
-                <Col md={6}>
-                    <Form.Group className="mb-3">
-                        <Form.Label htmlFor="startsAt">
-                            Starts At <EventFieldRequired />
-                        </Form.Label>
-                        <Form.Control
-                            id="startsAt"
-                            type="datetime-local"
-                            name="startsAt"
-                            defaultValue={
-                                event?.startsAt
-                                    ? new Date(event.startsAt)
-                                          .toISOString()
-                                          .slice(0, -1)
-                                    : ""
-                            }
-                            required
-                        />
-                    </Form.Group>
-                </Col>
-                <Col md={6}>
-                    <Form.Group className="mb-3">
-                        <Form.Label htmlFor="endsAt">
-                            Ends At <EventFieldRequired />
-                        </Form.Label>
-                        <Form.Control
-                            id="endsAt"
-                            type="datetime-local"
-                            name="endsAt"
-                            defaultValue={
-                                event?.endsAt
-                                    ? new Date(event.endsAt)
-                                          .toISOString()
-                                          .slice(0, -1)
-                                    : ""
-                            }
-                            required
-                        />
+                        <Row>
+                            <Col xs={8} sm={9}>
+                                <Form.Control
+                                    id="newOrganizerName"
+                                    type="text"
+                                    value={newOrganizerName}
+                                    onChange={(e) =>
+                                        setNewOrganizerName(e.target.value)
+                                    }
+                                    placeholder="New Organizer Name"
+                                />
+                            </Col>
+                            <Col xs={4} sm={3}>
+                                <Button
+                                    onClick={handleAddOrganizer}
+                                    variant="secondary"
+                                    className="w-100"
+                                    disabled={!newOrganizerName.trim()}
+                                >
+                                    Add
+                                </Button>
+                            </Col>
+                        </Row>
+                        <Form.Text muted>
+                            Used to search for events by Organizer.
+                        </Form.Text>
                     </Form.Group>
                 </Col>
             </Row>
 
+            <hr className="my-4" />
+
+            <h5>4. Online Presence & Links</h5>
             <Row>
                 <Col md={4}>
                     <Form.Group className="mb-3">
-                        <Form.Label htmlFor="url">
-                            Event URL
-                            <ExplanationModal
-                                header="URL"
-                                text="The website of the Event itself. Leave blank if the event has no dedicated website."
-                            />
-                        </Form.Label>
+                        <Form.Label htmlFor="url">Event Website URL</Form.Label>
                         <Form.Control
                             id="url"
                             type="url"
                             name="url"
+                            placeholder="https://..."
                             defaultValue={event?.url || ""}
                         />
                     </Form.Group>
@@ -399,111 +408,133 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             id="scheduleUrl"
                             type="url"
                             name="scheduleUrl"
+                            placeholder="https://horaro.org/..."
                             defaultValue={event?.scheduleUrl || ""}
                         />
                     </Form.Group>
                 </Col>
                 <Col md={4}>
                     <Form.Group className="mb-3">
-                        <Form.Label htmlFor="twitch">Twitch URL</Form.Label>
+                        <Form.Label htmlFor="twitch">Twitch URL </Form.Label>
                         <Form.Control
                             id="twitch"
                             type="url"
                             name="twitch"
+                            placeholder="https://twitch.tv/..."
                             defaultValue={event?.twitch || ""}
                         />
                     </Form.Group>
                 </Col>
             </Row>
-
             <Row>
                 <Col md={3}>
-                    <Form.Group className="mb-3">
-                        <Form.Label htmlFor="bluesky">Bluesky URL</Form.Label>
-                        <Form.Control
-                            id="bluesky"
-                            type="url"
-                            name="bluesky"
-                            defaultValue={event?.bluesky || ""}
-                        />
-                    </Form.Group>
-                </Col>
-                <Col md={3}>
-                    <Form.Group className="mb-3">
-                        <Form.Label htmlFor="discord">Discord URL</Form.Label>
+                    <Form.Group>
+                        <Form.Label htmlFor="discord">Discord URL </Form.Label>
                         <Form.Control
                             id="discord"
                             type="url"
                             name="discord"
+                            placeholder="https://discord.gg/..."
                             defaultValue={event?.discord || ""}
                         />
                     </Form.Group>
                 </Col>
                 <Col md={3}>
-                    <Form.Group className="mb-3">
-                        <Form.Label htmlFor="oengus">Oengus URL</Form.Label>
+                    <Form.Group>
+                        <Form.Label htmlFor="twitter">Twitter URL </Form.Label>
+                        <Form.Control
+                            id="twitter"
+                            type="url"
+                            name="twitter"
+                            placeholder="https://twitter.com/..."
+                            defaultValue={event?.twitter || ""}
+                        />
+                    </Form.Group>
+                </Col>
+                <Col md={3}>
+                    <Form.Group>
+                        <Form.Label htmlFor="oengus">Oengus URL </Form.Label>
                         <Form.Control
                             id="oengus"
                             type="url"
                             name="oengus"
+                            placeholder="https://oengus.io/..."
                             defaultValue={event?.oengus || ""}
                         />
                     </Form.Group>
                 </Col>
                 <Col md={3}>
                     <Form.Group className="mb-3">
-                        <Form.Label htmlFor="twitter">Twitter URL</Form.Label>
+                        <Form.Label htmlFor="bluesky">Bluesky URL </Form.Label>
                         <Form.Control
-                            id="twitter"
+                            id="bluesky"
                             type="url"
-                            name="twitter"
-                            defaultValue={event?.twitter || ""}
+                            name="bluesky"
+                            placeholder="https://bsky.app/..."
+                            defaultValue={event?.bluesky || ""}
                         />
                     </Form.Group>
                 </Col>
             </Row>
 
-            <Form.Group className="mb-3">
-                <Form.Label htmlFor="shortDescription">
-                    Short Description <EventFieldRequired />
-                    <ExplanationModal
-                        header="Event Short Description"
-                        text="This short description will show up as a quote in the Event Overview. Keep it short and to the point. Max 255 characters."
-                    />
-                </Form.Label>
-                <Form.Control
-                    id="shortDescription"
-                    as="textarea"
-                    rows={2}
-                    name="shortDescription"
-                    defaultValue={event?.shortDescription || ""}
-                    required
-                    maxLength={255}
-                />
-            </Form.Group>
+            <hr className="my-4" />
 
-            <Form.Group className="mb-3">
-                <Form.Label htmlFor="description">
-                    Description <EventFieldRequired />
-                    <ExplanationModal
-                        header="Event Short Description"
-                        text="This long description will show up on the Event Detail page. You can add basic styling to it. Feel free to add anything you want here, like rules, schedule, directions, times, stuff like that."
-                    />
-                </Form.Label>
+            <h5>5. Event Details & Content</h5>
+            <Row>
+                <Col>
+                    <Form.Group className="mb-3">
+                        <Form.Label htmlFor="shortDescription">
+                            Short Description (Summary/Teaser){" "}
+                            <EventFieldRequired />
+                        </Form.Label>
+                        <Form.Control
+                            id="shortDescription"
+                            as="textarea"
+                            rows={2}
+                            name="shortDescription"
+                            defaultValue={event?.shortDescription || ""}
+                            required
+                            maxLength={255}
+                        />
+                        <Form.Text muted>
+                            This short description will show up as a quote in
+                            the Event Overview. Keep it short and to the point
+                            (max 255 characters).
+                        </Form.Text>
+                    </Form.Group>
 
-                <Tiptap
-                    onChange={setEditorContent}
-                    initialContent={editorContent}
-                />
+                    <Form.Group className="mb-3">
+                        <Form.Label htmlFor="description">
+                            Full Event Description <EventFieldRequired />
+                        </Form.Label>
 
-                <input
-                    required
-                    type="hidden"
-                    id="description"
-                    name="description"
-                    value={editorContent}
-                />
-            </Form.Group>
+                        <Tiptap
+                            onChange={setEditorContent}
+                            initialContent={editorContent}
+                        />
+                        <input
+                            required
+                            type="hidden"
+                            id="description"
+                            name="description"
+                            value={editorContent}
+                        />
+                        <Form.Text muted>
+                            This detailed description will show up on the Event
+                            page. You can use basic formatting. Include details
+                            like rules, schedule links, charity info, etc.
+                        </Form.Text>
+                    </Form.Group>
+
+                    <Form.Group>
+                        <EventTagInput event={event} />
+                        <Form.Text muted>
+                            Help users find your event (e.g., Charity, Marathon,
+                            Europe). Press Enter to Submit.
+                        </Form.Text>
+                    </Form.Group>
+                </Col>
+            </Row>
 
             {event && (
                 <input
@@ -515,46 +546,110 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 />
             )}
 
-            <Row>
-                <Col>
-                    <EventTagInput event={event} />
+            <hr className="my-4" />
+
+            <h5>6. Charity</h5>
+            <Row className="align-items-center">
+                <Col md={4}>
+                    <Form.Group>
+                        <Form.Label htmlFor="isForCharity">
+                            Event is for Charity
+                        </Form.Label>
+                        <Form.Check
+                            id="isForCharity"
+                            type="checkbox"
+                            name="isForCharity"
+                            checked={selectedIsForCharity}
+                            onChange={(e) =>
+                                setSelectedIsForCharity(e.target.checked)
+                            }
+                            label="The event raises funds for a charity"
+                        />
+                    </Form.Group>
                 </Col>
+                {selectedIsForCharity && (
+                    <>
+                        <Col md={4}>
+                            <Form.Group>
+                                <Form.Label htmlFor="charityName">
+                                    Charity Name
+                                </Form.Label>
+                                <Form.Control
+                                    id="charityName"
+                                    type="text"
+                                    name="charityName"
+                                    defaultValue={event?.charityName || ""}
+                                    required
+                                />
+                            </Form.Group>
+                        </Col>
+                        <Col md={4}>
+                            <Form.Group>
+                                <Form.Label htmlFor="twitter">
+                                    Charity URL{" "}
+                                </Form.Label>
+                                <Form.Control
+                                    id="charityUrl"
+                                    type="url"
+                                    name="charityUrl"
+                                    placeholder="https://..."
+                                    defaultValue={event?.charityUrl || ""}
+                                />
+                            </Form.Group>
+                        </Col>
+                    </>
+                )}
             </Row>
 
-            <Row>
-                <Col md={6}>
-                    <Form.Group className="mb-3">
+            <hr className="my-4" />
+
+            <h5>7. Visuals</h5>
+            <Row className="align-items-center mb-3">
+                <Col>
+                    <Form.Group>
                         <Form.Label htmlFor="eventImage">
-                            Upload Event Image
-                            <ExplanationModal
-                                header="Event Image"
-                                text="Should be roughly square. The site will try to fit it, but if its not square at all it will look ugly. Max 10MB"
-                            />
+                            Upload Event Logo
                         </Form.Label>
                         <Form.Control
                             id="eventImage"
                             type="file"
                             name="image"
+                            accept="image/png, image/jpeg, image/webp"
                         />
                     </Form.Group>
+                    <Form.Text muted>
+                        Recommended: Square image (e.g., 500x500px). Non-square
+                        images may be cropped or distorted. Max file size: 10MB.
+                        Formats: JPG, PNG, WEBP.
+                    </Form.Text>
                 </Col>
                 {event?.imageUrl && (
-                    <Col md={6}>
-                        Current image:
+                    <Col md={6} className="mb-3 text-center text-md-start">
+                        <div>Current image:</div>
                         <Image
-                            height={300}
-                            width={300}
+                            height={150}
+                            width={150}
                             src={event.imageUrl}
-                            alt={event.name}
-                            style={{ objectFit: "contain" }}
+                            alt={`${event.name} current logo`}
+                            style={{
+                                objectFit: "contain",
+                                maxWidth: "100%",
+                                height: "auto",
+                                border: "1px solid #dee2e6",
+                                borderRadius: "0.25rem",
+                            }}
                         />
                     </Col>
                 )}
             </Row>
 
-            <Button variant="primary" type="submit">
-                {event ? "Save Event" : "Create Event"}
-            </Button>
+            <Row>
+                <Col className="text-end">
+                    <Button variant="primary" type="submit">
+                        {event ? "Save Changes" : "Create Event"}
+                    </Button>
+                </Col>
+            </Row>
         </>
     );
 };

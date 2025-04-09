@@ -29,6 +29,10 @@ export const formInputToEventInput = async (eventInput: FormData) => {
         shortDescription: eventInput.get("shortDescription") as string,
         description: sanitizeHtml(eventInput.get("description") as string),
 
+        isForCharity: eventInput.get("isForCharity") === "on",
+        charityName: eventInput.get("charityName") as string,
+        charityUrl: eventInput.get("charityUrl") as string,
+
         tags: eventInput.get("tags")
             ? (eventInput.get("tags") as string).split(",")
             : [],

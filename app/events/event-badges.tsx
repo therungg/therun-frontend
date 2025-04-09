@@ -1,4 +1,4 @@
-import { FaCrown } from "react-icons/fa6";
+import { FaCrown, FaHeart } from "react-icons/fa6";
 import {
     EventFromSearch,
     eventTierShortNames,
@@ -56,6 +56,11 @@ export const EventBadges = ({
             <span className="badge bg-primary text-white me-2">
                 {event.type}
             </span>
+            {event.isForCharity && (
+                <span className="badge bg-info text-dark me-2">
+                    For Charity <FaHeart size={8} />
+                </span>
+            )}
             <span className="badge bg-secondary text-white me-2">
                 {event.language}
             </span>
