@@ -177,37 +177,8 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                                 <div>Charity</div>
                                                 <div className="fw-bold fs-5">
                                                     <div className="fw-bold fs-5">
-                                                        {event.charityName &&
-                                                            event.charityUrl && (
-                                                                <a
-                                                                    href={
-                                                                        event.charityUrl
-                                                                    }
-                                                                    rel="noreferren"
-                                                                    target="'_blank"
-                                                                >
-                                                                    {
-                                                                        event.charityName
-                                                                    }
-                                                                </a>
-                                                            )}
-
-                                                        {event.charityName &&
-                                                            !event.charityUrl && (
-                                                                <span>
-                                                                    {
-                                                                        event.charityName
-                                                                    }
-                                                                </span>
-                                                            )}
-
-                                                        {!event.charityName &&
-                                                            !event.charityUrl && (
-                                                                <span>
-                                                                    Even is for
-                                                                    charity!
-                                                                </span>
-                                                            )}
+                                                        {event.charityName ||
+                                                            "Event is for charity!"}
                                                     </div>
                                                 </div>
                                             </div>
@@ -236,6 +207,10 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                         <EventLink
                                             text="Twitch URL"
                                             url={event.twitch}
+                                        />
+                                        <EventLink
+                                            text="Charity URL"
+                                            url={event.charityUrl}
                                         />
                                         <EventLink
                                             text="Discord URL"
@@ -287,6 +262,10 @@ const EventLink = ({ text, url }: { text: string; url: string | null }) => {
     let Icon = FaLink;
     let iconColor = "var(--bs-secondary)";
 
+    if (text.toLowerCase().includes("charity")) {
+        Icon = FaHeart;
+        iconColor = "var(--bs-danger)";
+    }
     if (text.toLowerCase().includes("bluesky")) {
         Icon = FaBluesky;
         iconColor = "#36c";
