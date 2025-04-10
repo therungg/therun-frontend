@@ -20,7 +20,7 @@ export const validateEventInput = async (
 
         bluesky: Joi.allow("").optional(),
         discord: Joi.allow("").optional(),
-        oengus: Joi.allow("").optional(),
+        submissionsUrl: Joi.allow("").optional(),
         twitter: Joi.allow("").optional(),
         twitch: Joi.allow("").optional(),
         url: Joi.allow("").optional(),

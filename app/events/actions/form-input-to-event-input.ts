@@ -24,7 +24,7 @@ export const formInputToEventInput = async (eventInput: FormData) => {
         scheduleUrl: eventInput.get("scheduleUrl") as string,
         bluesky: eventInput.get("bluesky") as string,
         discord: eventInput.get("discord") as string,
-        oengus: eventInput.get("oengus") as string,
+        submissionsUrl: eventInput.get("submissionsUrl") as string,
         twitter: eventInput.get("twitter") as string,
         twitch: eventInput.get("twitch") as string,
 

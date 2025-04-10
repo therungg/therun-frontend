@@ -30,6 +30,7 @@ import {
     FaBluesky,
     FaDiscord,
     FaRetweet,
+    FaRocket,
     FaTwitch,
     FaTwitter,
 } from "react-icons/fa6";
@@ -227,8 +228,15 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                             url={event.bluesky}
                                         />
                                         <EventLink
-                                            text="Oengus URL"
-                                            url={event.oengus}
+                                            text={
+                                                event.submissionsUrl &&
+                                                event.submissionsUrl
+                                                    .toLowerCase()
+                                                    .includes("oengus")
+                                                    ? "Oengus URL"
+                                                    : "Submissions URL"
+                                            }
+                                            url={event.submissionsUrl}
                                         />
                                         <EventLink
                                             text="Twitter URL"
@@ -359,6 +367,13 @@ const EventLink = ({ text, url }: { text: string; url: string | null }) => {
     if (text.toLowerCase().includes("twitter")) {
         Icon = FaTwitter;
         iconColor = "#1DA1F2";
+    }
+    if (
+        text.toLowerCase().includes("submissions") ||
+        text.toLowerCase().includes("oengus")
+    ) {
+        Icon = FaRocket;
+        iconColor = "var(--bs-primary)";
     }
 
     return (

@@ -543,13 +543,15 @@ export const EventForm = ({ event }: { event?: Event }) => {
                     <Form.Group>
                         {" "}
                         {/* Added mb-3 */}
-                        <Form.Label htmlFor="oengus">Oengus URL </Form.Label>
+                        <Form.Label htmlFor="submissionsUrl">
+                            Submissions URL{" "}
+                        </Form.Label>
                         <Form.Control
-                            id="oengus"
+                            id="submissionsUrl"
                             type="url"
-                            name="oengus"
+                            name="submissionsUrl"
                             placeholder="https://oengus.io/..."
-                            defaultValue={event?.oengus || ""}
+                            defaultValue={event?.submissionsUrl || ""}
                         />
                     </Form.Group>
                 </Col>

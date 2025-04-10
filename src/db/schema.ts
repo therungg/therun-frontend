@@ -31,7 +31,7 @@ export const events = pgTable(
         twitter: varchar({ length: 255 }),
         twitch: varchar({ length: 255 }),
         discord: varchar({ length: 255 }),
-        oengus: varchar({ length: 255 }),
+        submissionsUrl: varchar({ length: 255 }),
         language: varchar({ length: 255 }).notNull(),
         shortDescription: varchar({ length: 255 }).notNull(),
         description: text().notNull(),
