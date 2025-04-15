@@ -4,8 +4,8 @@ import SplitName from "../transformers/split-name";
 import { Difference, DurationToFormatted } from "../util/datetime";
 import { getSplitStatus } from "./recommended-stream";
 import React, { useEffect, useState } from "react";
-import { LiveRun } from "~app/live/live.types";
-import { LiveSplitTimerComponent } from "~app/live/live-split-timer.component";
+import { LiveRun } from "~app/(old-layout)/live/live.types";
+import { LiveSplitTimerComponent } from "~app/(old-layout)/live/live-split-timer.component";
 import { SplitStatus } from "~src/types/splits.types";
 
 const PERSONAL_BEST = "Personal Best";

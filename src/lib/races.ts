@@ -15,7 +15,7 @@ import type {
     RaceParticipant,
     RaceTimeStat,
     UserStats,
-} from "~app/races/races.types";
+} from "~app/(old-layout)/races/races.types";
 import { type PaginationFetcher } from "~src/components/pagination/pagination.types";
 import { URLSearchParams } from "next/dist/compiled/@edge-runtime/primitives";
 

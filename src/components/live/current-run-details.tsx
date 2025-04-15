@@ -5,7 +5,7 @@ import {
     DifferenceFromOne,
     DurationToFormatted,
 } from "../util/datetime";
-import { LiveRun } from "~app/live/live.types";
+import { LiveRun } from "~app/(old-layout)/live/live.types";
 
 type CurrentRunDetailsProps = {
     liveRun: LiveRun;
@@ -88,12 +88,12 @@ export const CurrentRunDetails: React.FunctionComponent<
                 >
                     <DurationToFormatted duration={bestPossible} />
                     &nbsp;
-                    {pb && bestPossible && 
-                    <Difference
-                        one={bestPossible.toString()}
-                        two={pb.toString()}
-                    />
-                    }
+                    {pb && bestPossible && (
+                        <Difference
+                            one={bestPossible.toString()}
+                            two={pb.toString()}
+                        />
+                    )}
                 </Col>
             </Row>
             <Row>

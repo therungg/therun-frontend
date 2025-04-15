@@ -1,0 +1,32 @@
+$primary: var(--bs-primary);
+$secondary: var(--bs-secondary);
+
+.background {
+    position: relative;
+    min-height: 100vh;
+    z-index: 0;
+}
+
+/* 👇 This creates the mesh background */
+.background::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(at 30% 0%, $primary 0%, transparent 60%),
+        radial-gradient(at 70% 20%, $secondary 0%, transparent 50%);
+    /* overall visibility */
+    mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0));
+    background-size: cover;
+    opacity: 0.30;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.header,
+.main,
+.footer {
+    position: relative;
+    z-index: 1;
+    color: white;
+}

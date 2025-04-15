@@ -12,9 +12,6 @@ export const OptimizedImage: FC<{
     return (
         <div className="next-image-wrapper" style={style}>
             <Image
-                style={{
-                    position: "relative",
-                }}
                 alt={alt}
                 className={"next-image" + className}
                 src={src}

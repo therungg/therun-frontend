@@ -4,7 +4,7 @@ import {
     PaginatedData,
     PaginationFetcher,
 } from "~src/components/pagination/pagination.types";
-import { Count } from "~app/games/[game]/game.types";
+import { Count } from "~app/(old-layout)/games/[game]/game.types";
 import { paginateArray } from "~src/components/pagination/paginate-array";
 import { includesCaseInsensitive } from "~src/utils/string";
 

@@ -1,4 +1,4 @@
-import { Count } from "~app/games/[game]/game.types";
+import { Count } from "~app/(old-layout)/games/[game]/game.types";
 import React, { memo, useMemo, ReactElement } from "react";
 import { PaginationContextProvider } from "~src/components/pagination/pagination.context-provider";
 import usePagination from "~src/components/pagination/use-pagination";

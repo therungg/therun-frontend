@@ -5,13 +5,13 @@ import { UserLink } from "../links/links";
 import { usePatreons } from "../patreon/use-patreons";
 import patreonStyles from "../patreon/patreon-styles";
 import { DurationToFormatted } from "../util/datetime";
-import { LiveRun } from "~app/live/live.types";
-import { LiveSplitTimerComponent } from "~app/live/live-split-timer.component";
+import { LiveRun } from "~app/(old-layout)/live/live.types";
+import { LiveSplitTimerComponent } from "~app/(old-layout)/live/live-split-timer.component";
 import { GameImage } from "~src/components/image/gameimage";
 import { Twitch as TwitchIcon } from "react-bootstrap-icons";
 import { getColorMode } from "~src/utils/colormode";
-import { CombinedLeaderboardStat } from "~app/tournaments/[tournament]/get-combined-tournament-leaderboard.component";
-import { Count } from "~app/games/[game]/game.types";
+import { CombinedLeaderboardStat } from "~app/(old-layout)/tournaments/[tournament]/get-combined-tournament-leaderboard.component";
+import { Count } from "~app/(old-layout)/games/[game]/game.types";
 
 export const LiveUserRun = ({
     liveRun,

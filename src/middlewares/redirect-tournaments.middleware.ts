@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAllTournamentSlugs } from "~app/tournaments/tournament-list";
+import { getAllTournamentSlugs } from "~app/(old-layout)/tournaments/tournament-list";
 
 export const redirectTournamentsMiddleware = (
     request: NextRequest,

@@ -1,0 +1,185 @@
+// theme-color-variables
+$primary: #608C59;
+$secondary: #a3850e;
+$success: #198754;
+$info: #0dcaf0;
+$warning: #ffc107;
+$danger: #dc3545;
+$light: #f8f9fa;
+$dark: #212529;
+
+// theme-colors-map
+$theme-colors: (
+  "primary": $primary,
+  "secondary": $secondary,
+  "success": $success,
+  "info": $info,
+  "warning": $warning,
+  "danger": $danger,
+  "light": $light,
+  "dark": $dark
+);
+
+// Body
+$body-color: #000;
+$body-bg: #fbfbfb;
+$body-secondary-color: rgba($body-color, .6);
+$body-secondary-bg: #eee;
+$body-tertiary-color: rgba($body-color, .5);
+$body-tertiary-bg: #ddd;
+
+// Body Dark
+$body-color-dark: #ccc;
+$body-bg-dark: #131313;
+$body-secondary-color-dark: rgba($body-color-dark, .6);
+$body-secondary-bg-dark: #273025;
+$body-tertiary-bg-dark: #030303;
+
+// Links
+$link-color: $primary;
+$link-decoration: none;
+$link-hover-decoration: revert;
+$link-hover-color: #040;
+
+// Links Dark
+$link-color-dark: $primary;
+$link-hover-color-dark: $secondary;
+
+// Icon links
+
+// Paragraphs
+
+// Border
+$border-color: #b2b2b2;
+
+// Border Dark
+$border-color-dark: #2B3A29;
+
+// Border-radius
+
+// Box-shadow
+
+// Focus-ring
+$focus-ring-width: 1px;
+$focus-ring-opacity: 0;
+$focus-ring-color: var(--bs-link-color);
+$focus-ring-blur: 0;
+$focus-ring-box-shadow: inset 0 0 $focus-ring-blur $focus-ring-width $focus-ring-color;
+
+// Transition
+
+// Typography
+$font-size-base: 1rem;
+$lead-font-size: $font-size-base * 1.2;
+
+// Table
+$table-striped-bg: var(--bs-secondary-bg);
+$table-border-color: var(--bs-tertiary-bg);
+
+// Buttons
+$btn-padding-y: .3125rem;
+$btn-padding-x: .6875rem;
+$btn-font-size-lg: 1rem;
+
+// Forms
+$input-bg: var(--bs-tertiary-bg);
+$input-border-color: var(--bs-secondary-bg);
+$input-focus-border-color: var(--bs-secondary-bg);
+$input-focus-bg: var(--bs-secondary-bg);
+$input-focus-width: 0;
+$input-transition: 0 none;
+
+$form-select-bg: var(--bs-secondary-bg);
+$form-select-border-color: #ced4da;
+
+$form-select-focus-border-color: revert;
+
+// Z-index stack
+
+// Navs
+$nav-link-color: var(--bs-link-color);
+$nav-link-hover-color: var(--bs-link-hover-color);
+
+$nav-pills-link-active-color: var(--bs-body-color);
+$nav-pills-link-active-bg: var(--bs-body-bg);
+
+// Navbar
+$navbar-light-color: $body-color;
+$navbar-light-hover-color: $navbar-light-color;
+$navbar-light-active-color: $navbar-light-color;
+$navbar-light-icon-color: black;
+$navbar-light-toggler-border-color: $link-color;
+$navbar-light-brand-color: var(--bs-link-color);
+$navbar-light-brand-hover-color: var(--bs-link-hover-color);
+
+// Navbar Dark
+$navbar-dark-color: #fff;
+$navbar-dark-hover-color: $link-hover-color-dark;
+$navbar-dark-active-color: $navbar-dark-color;
+$navbar-dark-toggler-border-color: $link-color-dark;
+$navbar-dark-brand-color: var(--bs-link-color);
+$navbar-dark-brand-hover-color: var(--bs-link-hover-color);
+
+// Dropdowns
+
+// Pagination
+$pagination-bg: var(--bs-tertiary-bg);
+$pagination-border-color: var(--bs-secondary-bg);
+
+$pagination-hover-color: var(--bs-link-color);
+$pagination-hover-border-color: var(--bs-secondary-bg);
+
+// Placeholders
+
+// Cards
+$card-cap-bg: var(--bs-tertiary-bg);
+$card-bg: var(--bs-secondary-bg);
+
+// Accordion
+$accordion-bg: var(--bs-secondary-bg);
+$accordion-border-color: hsla(0, 0%, 80%, .25);
+
+$accordion-button-bg: var(--bs-tertiary-bg);
+$accordion-button-active-bg: var(--bs-tertiary-bg);
+$accordion-button-active-color: var(--bs-body-color);
+
+$accordion-icon-color: #212529;
+$accordion-icon-active-color: darkgreen;
+$accordion-button-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='#{$accordion-icon-color}'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>");
+$accordion-button-active-icon: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='#{$accordion-icon-active-color}'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>");
+
+// Accordion Dark
+$accordion-icon-color-dark: white;
+$accordion-icon-active-color-dark: darkgreen;
+$accordion-button-icon-dark: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='#{$accordion-icon-color-dark}'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>");
+$accordion-button-active-icon-dark: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='#{$accordion-icon-active-color-dark}'><path fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/></svg>");
+
+// Tooltips
+
+// Popovers
+
+// Toasts
+
+// Badges
+
+// Modals
+
+// Alerts
+
+// Progress bars
+
+// List group
+
+// Image thumbnails
+
+// Breadcrumbs
+
+// Carousel
+
+// Spinners
+
+// Close
+
+// Offcanvas
+
+// Code

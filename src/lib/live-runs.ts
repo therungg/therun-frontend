@@ -2,7 +2,7 @@
 
 import { safeEncodeURI } from "~src/utils/uri";
 import { type Tournament } from "~src/components/tournament/tournament-info";
-import { type LiveRun } from "~app/live/live.types";
+import { type LiveRun } from "~app/(old-layout)/live/live.types";
 
 const LIVE_RUN_URL =
     "https://pokzhwoycl3uo7n5lzh6iltyoq0iaibq.lambda-url.eu-west-1.on.aws/";

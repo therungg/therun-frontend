@@ -1,0 +1,75 @@
+$border-radius: 1.1rem;
+$border-width: 5px;
+$border-color: var(--bs-primary);
+
+$tab-width: 10rem;
+$tab-height: 3.3rem;
+
+.bookmarkFolder {
+    position: relative;
+    border-radius: 0px $border-radius $border-radius $border-radius;
+    z-index: 2;
+    border: $border-width solid $border-color;
+    margin-top: $tab-height + 2rem;
+    background-color: rgba(0, 0, 0, 0.3);
+
+    .title {
+        font-size: x-large;
+        font-weight: bold;
+    }
+
+    .subtitle {
+        font-size: x-small;
+        text-transform: uppercase;
+        margin-bottom: -0.4rem;
+        margin-left: 0.2rem
+    }
+
+    .tab {
+        position: absolute;
+        left: -$border-width;
+        transform: translateY(-100%);
+        padding: 0.4rem 0.7rem;
+        background-color: $border-color;
+        border-radius: $border-radius $border-radius 0 0;
+        z-index: 2;
+        min-width: $tab-width;
+        min-height: $tab-height;
+    }
+
+    .url {
+        position: absolute;
+        right: $border-width;
+        padding: 0.4rem 0.7rem;
+        z-index: 2;
+        transform: translateY(-100%);
+        padding-bottom: 0.7rem;
+    }
+
+    .tab::before {
+        position: absolute;
+        content: '';
+        width: 20px;
+        height: 20px;
+        background-image: radial-gradient(circle at 100% 100%, transparent 20px, $border-color calc(20px + 1px));
+        display: block;
+        z-index: 1;
+        transform: rotate(270deg);
+        bottom: $border-width;
+        right: -20px;
+    }
+
+    .content {
+        padding: 1rem 1.5rem;
+    }
+}
+
+.bookmarkFolder::before {
+    position: absolute;
+    content: '';
+    width: 20px;
+    height: 20px;
+    background-image: radial-gradient(circle at 100% 100%, transparent 20px, $border-color calc(20px + 1px));
+    display: block;
+    z-index: 1;
+}

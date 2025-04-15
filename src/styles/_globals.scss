@@ -173,11 +173,6 @@ input::-webkit-inner-spin-button {
   margin: 0;
 }
 
-/* Firefox */
-input[type="number"] {
-  -moz-appearance: textfield;
-}
-
 abbr {
   text-decoration: none !important;
 }
@@ -270,9 +265,6 @@ body {
     font-size: 15px;
   }
 }
-
-
-.form-control {}
 
 .form-floating>label:after {
   background: none !important;

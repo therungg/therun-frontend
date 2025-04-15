@@ -8,6 +8,8 @@ const nextConfig = {
     },
     experimental: {
         reactCompiler: true,
+        useCache: true,
+        dynamicIO: true,
         serverActions: {
             bodySizeLimit: "25mb",
         },

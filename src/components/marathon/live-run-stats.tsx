@@ -10,7 +10,7 @@ import {
     SendMarathonDataButton,
 } from "./send-marathon-data-button";
 import moment from "moment/moment";
-import { LiveRun } from "~app/live/live.types";
+import { LiveRun } from "~app/(old-layout)/live/live.types";
 
 interface LiveRunEvent extends MarathonEvent {
     data: LiveRunEventData;

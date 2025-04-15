@@ -1,7 +1,7 @@
 import { actions, defineAbilityFor, subjects } from "./ability";
 import { ForbiddenError, subject } from "@casl/ability";
 import { User } from "../../types/session.types";
-import { Race } from "~app/races/races.types";
+import { Race } from "~app/(old-layout)/races/races.types";
 
 export const confirmPermission = (
     user: User | undefined | null,
