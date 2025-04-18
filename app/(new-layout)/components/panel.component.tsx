@@ -1,10 +1,12 @@
-import { FC, PropsWithChildren } from "react";
+import { FC, HTMLAttributes, PropsWithChildren } from "react";
 import styles from "./styles/panel.component.module.scss";
 import { FaArrowUpRightFromSquare } from "react-icons/fa6";
+import { IconType } from "react-icons";
 
-interface PanelInterface {
+interface PanelInterface extends HTMLAttributes<HTMLDivElement> {
     title: string;
     subtitle: string;
+    icon?: IconType;
     link?: {
         url: string;
         text: string;
@@ -14,8 +16,10 @@ interface PanelInterface {
 export const Panel: FC<PropsWithChildren<PanelInterface>> = ({
     title,
     subtitle,
+    icon,
     link,
     children,
+    ...props
 }) => {
     return (
         <div className={styles.bookmarkFolder}>
@@ -29,7 +33,7 @@ export const Panel: FC<PropsWithChildren<PanelInterface>> = ({
                     <FaArrowUpRightFromSquare size={14} className="ms-1 mb-1" />
                 </a>
             )}
-            <div className={styles.content}>{children}</div>
+            <div {...props}>{children}</div>
         </div>
     );
 };

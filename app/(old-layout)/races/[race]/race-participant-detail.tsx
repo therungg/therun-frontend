@@ -6,7 +6,7 @@ import { Col, Row } from "react-bootstrap";
 import React from "react";
 import { UserLink } from "~src/components/links/links";
 import { Twitch as TwitchIcon } from "react-bootstrap-icons";
-import styles from "../../../src/components/css/LiveRun.module.scss";
+import styles from "../../../../src/components/css/LiveRun.module.scss";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import {
     DifferenceFromOne,

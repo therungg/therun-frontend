@@ -18,7 +18,7 @@ const raceMessageIsValid = (
     return message !== null && message.data && message.data.raceId;
 };
 export const useRace = (race: Race, messages: RaceMessage[]) => {
-    const [raceState, setRaceState] = useState(race);
+    const [raceState, setRaceState] = useState<Race>(race);
     const [messagesState, setMessagesState] = useState(messages);
     const raceStateRef = useRef(raceState);
 

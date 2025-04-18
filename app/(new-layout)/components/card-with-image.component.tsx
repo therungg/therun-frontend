@@ -16,11 +16,18 @@ export const CardWithImage: FC<PropsWithChildren<PanelInterface>> = ({
         <div
             {...props}
             className={
-                "border rounded-3 bg-body-secondary px-2 py-2 d-flex " +
-                    props.className || ""
+                "border rounded-3 px-2 py-2 d-flex " + props.className || ""
             }
         >
-            <div style={{ width: 70, height: 80, position: "relative" }}>
+            <div
+                style={{
+                    width: 70,
+                    height: 80,
+                    position: "relative",
+                    minWidth: 60,
+                    minHeight: 80,
+                }}
+            >
                 <Image
                     src={imageUrl}
                     fill
@@ -28,9 +35,10 @@ export const CardWithImage: FC<PropsWithChildren<PanelInterface>> = ({
                         objectFit: "contain",
                     }}
                     alt={imageAlt}
+                    className="rounded-2 w-100"
                 />
             </div>
-            <div className="ms-3">{children}</div>
+            <div className="ms-3 me-2 w-100 text-nowrap">{children}</div>
         </div>
     );
 };

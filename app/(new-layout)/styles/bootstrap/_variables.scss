@@ -1,6 +1,7 @@
 // theme-color-variables
 $primary: #608C59;
-$secondary: #a3850e;
+$highlight: #27a11b;
+$secondary: #fdc544;
 $success: #198754;
 $info: #0dcaf0;
 $warning: #ffc107;
@@ -11,6 +12,7 @@ $dark: #212529;
 // theme-colors-map
 $theme-colors: (
   "primary": $primary,
+  "highlight": $highlight,
   "secondary": $secondary,
   "success": $success,
   "info": $info,

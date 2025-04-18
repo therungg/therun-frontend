@@ -1,3 +1,5 @@
+"use client";
+
 import useWebSocket, { Options, ReadyState } from "react-use-websocket";
 import { useEffect } from "react";
 import { WebsocketLiveRunMessage } from "~app/(old-layout)/live/live.types";
