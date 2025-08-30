@@ -24,7 +24,9 @@ class CalendarHeatmap extends React.Component {
         this.in_transition = false;
         this.overview = this.props.overview;
         this.history = ["global"];
-        this.selected = { date: props.data[0].date.slice(0, 4) };
+        this.selected = props.data[0]
+            ? { date: props.data[0].date.slice(0, 4) }
+            : { date: new Date().getFullYear() };
 
         this.calcDimensions = this.calcDimensions.bind(this);
     }
