@@ -143,7 +143,7 @@
     "@types/sanitize-html": "^2.13.0",
     "@typescript-eslint/eslint-plugin": "^7.13.0",
     "@typescript-eslint/parser": "^7.13.0",
-    "drizzle-kit": "^0.30.4",
+    "drizzle-kit": "^0.31.5",
     "eslint": "^8.56.0",
     "eslint-config-next": "15.1.6",
     "eslint-import-resolver-typescript": "^3.6.1",
