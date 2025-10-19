@@ -9,7 +9,6 @@ import { useTranslations } from "next-intl";
 import { BunnyIcon } from "~src/icons/bunny-icon";
 import { IconButton } from "~src/components/Button/IconButton";
 import { Button } from "~src/components/Button/Button";
-import { EventHighlight } from "~app/(home)/components/event-highlight";
 
 export const Homepage = () => {
     const t = useTranslations("homepage");
@@ -17,7 +16,7 @@ export const Homepage = () => {
     return (
         <div>
             <Row>
-                <Col xl={7}>
+                <Col xl={12}>
                     <div className="px-4 pt-5 mt-3 mb-5 text-center">
                         <h1 className="display-1 fw-medium">{t("title")}</h1>
                         <h2 className="display-6 mb-5">{t("subtitle")}</h2>
@@ -54,9 +53,9 @@ export const Homepage = () => {
                         </div>
                     </div>
                 </Col>
-                <Col xl={5}>
-                    <EventHighlight />
-                </Col>
+                {/*<Col xl={5}>*/}
+                {/*    <EventHighlight />*/}
+                {/*</Col>*/}
             </Row>
             <div>
                 <Row className="text-center">

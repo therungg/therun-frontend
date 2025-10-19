@@ -42,14 +42,18 @@ export const History = ({
     const startFilter = history.filter((h) => !!h.startedAt);
 
     const start = new Date(
-        new Date(startFilter[0].startedAt).setHours(0, 0, 0),
+        startFilter.length > 0
+            ? new Date(startFilter[0].startedAt).setHours(0, 0, 0)
+            : 0,
     );
     const end = new Date(
-        new Date(startFilter[startFilter.length - 1].endedAt).setHours(
-            23,
-            59,
-            59,
-        ),
+        startFilter.length > 0
+            ? new Date(startFilter[startFilter.length - 1].endedAt).setHours(
+                  23,
+                  59,
+                  59,
+              )
+            : 0,
     );
 
     const [startDate, setStartDate] = useState(start);
