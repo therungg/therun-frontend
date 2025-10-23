@@ -4,6 +4,7 @@ import { isRaceModerator } from "~src/rbac/confirm-permission";
 import { AbortRaceButton } from "~app/races/components/buttons/abort-race-button";
 import { Button } from "react-bootstrap";
 import { StartRaceButton } from "~app/races/components/buttons/start-race-button";
+import { KickUserForm } from "~app/races/components/forms/kick-user-form";
 
 export const RaceAdminActions = ({
     race,
@@ -56,6 +57,10 @@ export const RaceAdminActions = ({
                     className="w-100 fs-5 mt-2"
                 />
             )}
+            <KickUserForm
+                raceId={race.raceId}
+                users={race.participants?.map((p) => p.user)}
+            />
         </div>
     );
 };

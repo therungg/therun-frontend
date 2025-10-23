@@ -314,7 +314,8 @@ const getRaceMessage = (message: RaceMessage) => {
             return (
                 <>
                     <UserLink icon={false} username={user as string} /> was
-                    disqualified
+                    disqualified by {customData.disqualifiedBy}:{" "}
+                    {customData.reason}
                 </>
             );
         }
