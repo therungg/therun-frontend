@@ -4,7 +4,7 @@ import { useFormStatus } from "react-dom";
 
 import { Accordion, Button, Col, Form, Row } from "react-bootstrap";
 import { createRace } from "~app/races/actions/create-race.action";
-import React, { useState, useActionState } from "react";
+import React, { useActionState, useState } from "react";
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -145,7 +145,7 @@ export default function CreateRace() {
                                             required={false}
                                             min={3}
                                             step={1}
-                                            max={60 * 60}
+                                            max={60}
                                             defaultValue={10}
                                         />
                                     </Form.Group>

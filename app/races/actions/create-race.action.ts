@@ -80,10 +80,7 @@ export const validateInput = async (
         forceStream: Joi.string().min(0).max(100).optional(),
         password: Joi.string().min(0).max(100).optional(),
         autoConfirm: Joi.boolean().optional(),
-        countdown: Joi.number()
-            .optional()
-            .min(3)
-            .max(60 * 60),
+        countdown: Joi.number().optional().min(3).max(60),
         startMethod: Joi.string()
             .valid(
                 ...([
