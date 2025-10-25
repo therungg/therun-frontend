@@ -5,6 +5,7 @@ import { AbortRaceButton } from "~app/races/components/buttons/abort-race-button
 import { Button } from "react-bootstrap";
 import { StartRaceButton } from "~app/races/components/buttons/start-race-button";
 import { KickUserForm } from "~app/races/components/forms/kick-user-form";
+import { SetTimeForUserForm } from "~app/races/components/forms/set-time-for-user-form";
 
 export const RaceAdminActions = ({
     race,
@@ -30,9 +31,13 @@ export const RaceAdminActions = ({
     const raceCanBeEdited = raceIsPending;
     const raceCanBeAborted = raceIsPending;
     const userCanBeKicked = raceIsPending || raceIsOngoing;
+    const userTimeCanBeSet = raceIsOngoing;
 
     const showAdminpanel =
-        raceCanBeEdited || raceCanBeAborted || userCanBeKicked;
+        raceCanBeEdited ||
+        raceCanBeAborted ||
+        userCanBeKicked ||
+        userTimeCanBeSet;
 
     if (!showAdminpanel) return;
 
@@ -69,6 +74,17 @@ export const RaceAdminActions = ({
                 <KickUserForm
                     raceId={race.raceId}
                     users={race.participants?.map((p) => p.user)}
+                />
+            )}
+            {userTimeCanBeSet && (
+                <SetTimeForUserForm
+                    raceId={race.raceId}
+                    currentRaceTime={
+                        new Date().getTime() -
+                        new Date(race.startTime).getTime()
+                    }
+                    users={race.participants?.map((p) => p.user)}
+                    times={race.participants?.map((p) => p.finalTime)}
                 />
             )}
         </div>

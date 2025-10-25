@@ -80,8 +80,6 @@ export async function setStoryPreferencesAction(
         },
     );
 
-    console.log(JSON.stringify(input));
-
     if (result.status !== 200) {
         const response = await result.text();
         return { message: response, type: "error" };

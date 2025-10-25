@@ -27,7 +27,7 @@ export const ConfirmFinalTimeForm = ({
 
     return (
         <div className="mb-4">
-            Please confirm your final time:
+            Please confirm your final time (HH:MM:SS):
             <Form action={confirmFinalTime}>
                 <input hidden name="raceId" value={raceId} readOnly />
 

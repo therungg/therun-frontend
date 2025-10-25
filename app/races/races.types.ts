@@ -235,6 +235,7 @@ export interface RaceMessageParticipantSplitData extends RaceMessageUserData {
 
 export interface RaceMessageParticipantTimeData extends RaceMessageUserData {
     time: number;
+    setBy: string;
 }
 
 export interface RaceMessageModeratorData extends RaceMessageData {
