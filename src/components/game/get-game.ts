@@ -1,8 +1,11 @@
-import { safeEncodeURI } from "~src/utils/uri";
+'use server';
+
+import { cacheLife } from 'next/dist/server/use-cache/cache-life';
+import { safeEncodeURI } from '~src/utils/uri';
 
 const fetchData = async (url: string, cacheRevalidateSeconds = 0) => {
     const res = await fetch(url, {
-        cache: cacheRevalidateSeconds === 0 ? "no-cache" : "force-cache",
+        cache: cacheRevalidateSeconds === 0 ? 'no-cache' : 'force-cache',
         next: { revalidate: cacheRevalidateSeconds },
     });
     const json = await res.json();
@@ -11,7 +14,10 @@ const fetchData = async (url: string, cacheRevalidateSeconds = 0) => {
 };
 
 export const getGame = async (game: string) => {
-    game = game.replace("   ", " + ").toLowerCase().replace(/\s/g, "");
+    'use cache';
+    cacheLife('hours');
+
+    game = game.replace('   ', ' + ').toLowerCase().replace(/\s/g, '');
     game = safeEncodeURI(game);
 
     const promises = [
@@ -24,8 +30,8 @@ export const getGame = async (game: string) => {
 
     const [gameData, globalGameData] = await Promise.all(promises);
 
-    if (!gameData && game.includes(" ")) {
-        return getGame(game.replace(" ", "+"));
+    if (!gameData && game.includes(' ')) {
+        return getGame(game.replace(' ', '+'));
     }
 
     if (!gameData.data) {
@@ -36,7 +42,10 @@ export const getGame = async (game: string) => {
 };
 
 export const getGameGlobal = async (game: string) => {
-    game = game.replace("   ", " + ");
+    'use cache';
+    cacheLife('days');
+
+    game = game.replace('   ', ' + ');
     game = safeEncodeURI(game);
 
     const globalGameData = await fetchData(
@@ -44,8 +53,8 @@ export const getGameGlobal = async (game: string) => {
         60 * 60 * 12,
     );
 
-    if (!globalGameData && game.includes(" ")) {
-        return getGame(game.replace(" ", "+"));
+    if (!globalGameData && game.includes(' ')) {
+        return getGame(game.replace(' ', '+'));
     }
 
     return { ...globalGameData };

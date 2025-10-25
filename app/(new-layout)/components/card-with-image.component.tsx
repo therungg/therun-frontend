@@ -1,29 +1,35 @@
-import Image from "next/image";
-import { FC, HTMLAttributes, PropsWithChildren } from "react";
+import clsx from 'clsx';
+import Image from 'next/image';
+import { FC, HTMLAttributes, PropsWithChildren } from 'react';
 
-interface PanelInterface extends HTMLAttributes<HTMLDivElement> {
+interface CardWithImageProps extends HTMLAttributes<HTMLDivElement> {
     imageUrl: string;
     imageAlt: string;
 }
 
-export const CardWithImage: FC<PropsWithChildren<PanelInterface>> = ({
+export const CardWithImage: FC<PropsWithChildren<CardWithImageProps>> = ({
     imageUrl,
     imageAlt,
     children,
     ...props
 }) => {
+    imageUrl =
+        imageUrl && imageUrl !== 'noimage'
+            ? imageUrl
+            : `/logo_dark_theme_no_text_transparent.png`;
     return (
         <div
             {...props}
-            className={
-                "border rounded-3 px-2 py-2 d-flex " + props.className || ""
-            }
+            className={clsx(
+                'border rounded-3 px-2 py-2 d-flex',
+                props.className,
+            )}
         >
             <div
                 style={{
                     width: 70,
                     height: 80,
-                    position: "relative",
+                    position: 'relative',
                     minWidth: 60,
                     minHeight: 80,
                 }}
@@ -32,7 +38,7 @@ export const CardWithImage: FC<PropsWithChildren<PanelInterface>> = ({
                     src={imageUrl}
                     fill
                     style={{
-                        objectFit: "contain",
+                        objectFit: 'contain',
                     }}
                     alt={imageAlt}
                     className="rounded-2 w-100"

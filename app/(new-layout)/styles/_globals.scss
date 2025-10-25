@@ -263,3 +263,19 @@ abbr[title] {
   text-decoration: none;
 
 }
+
+.CircularProgressbar-trail {
+  stroke: var(--bs-secondary) !important;
+}
+
+.CircularProgressbar-path {
+  stroke: var(--bs-primary) !important;
+}
+
+#twitch-player iframe {
+  border-radius: var(--bs-border-radius-xl) !important;
+}
+
+.pointer {
+  cursor: pointer !important;
+}

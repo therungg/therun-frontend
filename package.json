@@ -106,6 +106,7 @@
     "react-bootstrap": "^2.10.8",
     "react-bootstrap-icons": "^1.10.3",
     "react-chartjs-2": "^5.3.0",
+    "react-circular-progressbar": "^2.2.0",
     "react-content-loader": "^6.2.1",
     "react-countdown": "^2.3.5",
     "react-countup": "^6.5.3",

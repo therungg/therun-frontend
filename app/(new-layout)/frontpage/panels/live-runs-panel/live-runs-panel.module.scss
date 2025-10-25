@@ -1,0 +1,14 @@
+.userButton {
+    cursor: pointer;
+    background-color: var(--bs-secondary);
+}
+
+.userButton:hover {
+    background-color: var(--bs-primary);
+}
+
+.stream {
+    width: 16 * 30;
+    height: 9 * 30;
+    min-width: 16 * 30;
+}

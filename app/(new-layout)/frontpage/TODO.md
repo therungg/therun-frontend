@@ -1,19 +1,28 @@
 # General
 
 -   Build caching system with API route to revalidate cache
+-   New topbar
+-   New footer
+-   Light mode
 
 # Panels
 
 ## Recent Stats Panel
 
+-   Allow going back in time
+-   Allow showing monthly as well as weekly
+-   Allow searching stats of a different user (??)
+
+## Live Panel
+
 -   Do everything
 
-## All other panels
+## Recent PB's panel
 
 -   Do everything
 
 ## Race Panel
 
 -   Fix mobile view for game name + participant count (columns?)
--   Decide when to show finished races (if ever? Maybe show the last 3 finished next to each other always?)
 -   Show race info on hover
+-   Make font size responsive

@@ -1,19 +1,19 @@
-import React from "react";
-import { getSession } from "~src/actions/session.action";
-import buildMetadata from "~src/utils/metadata";
-import { Viewport } from "next";
-import { Providers } from "~app/(old-layout)/providers";
-import { Scripts } from "~app/(old-layout)/scripts";
-import { SessionErrorBoundary } from "~src/components/errors/session.error-boundary";
-import { Header } from "./header";
+import { Viewport } from 'next';
+import React, { Suspense } from 'react';
+import { Providers } from '~app/(old-layout)/providers';
+import { Scripts } from '~app/(old-layout)/scripts';
+import { getSession } from '~src/actions/session.action';
+import { SessionErrorBoundary } from '~src/components/errors/session.error-boundary';
+import buildMetadata from '~src/utils/metadata';
+import { Header } from './header';
 
-import "./styles/_imports.scss";
-import styles from "./layout.module.scss";
-import { Content } from "./content";
+import './styles/_imports.scss';
+import { Content } from './content';
+import styles from './layout.module.scss';
 
 export const metadata = buildMetadata();
 export const viewport: Viewport = {
-    themeColor: "#007c00",
+    themeColor: '#007c00',
 };
 export default async function RootLayout({
     // Layouts must accept a children prop.

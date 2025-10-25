@@ -1,25 +1,29 @@
 // theme-color-variables
 $primary: #608C59;
+$secondary: #273025;
+$tertiary: #273025;
 $highlight: #27a11b;
-$secondary: #fdc544;
 $success: #198754;
 $info: #0dcaf0;
 $warning: #ffc107;
 $danger: #dc3545;
 $light: #f8f9fa;
 $dark: #212529;
+$gold: #fdc544;
 
 // theme-colors-map
 $theme-colors: (
   "primary": $primary,
-  "highlight": $highlight,
   "secondary": $secondary,
+  "tertiary": $tertiary,
+  "highlight": $highlight,
   "success": $success,
   "info": $info,
   "warning": $warning,
   "danger": $danger,
   "light": $light,
-  "dark": $dark
+  "dark": $dark,
+  "gold": $gold,
 );
 
 // Body
@@ -29,13 +33,6 @@ $body-secondary-color: rgba($body-color, .6);
 $body-secondary-bg: #eee;
 $body-tertiary-color: rgba($body-color, .5);
 $body-tertiary-bg: #ddd;
-
-// Body Dark
-$body-color-dark: #ccc;
-$body-bg-dark: #131313;
-$body-secondary-color-dark: rgba($body-color-dark, .6);
-$body-secondary-bg-dark: #273025;
-$body-tertiary-bg-dark: #030303;
 
 // Links
 $link-color: $primary;
