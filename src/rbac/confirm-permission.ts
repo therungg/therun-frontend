@@ -45,7 +45,7 @@ export const isRaceModerator = (race: Race, user: User) => {
 };
 
 export const checkAdminPermission = (user: User) => {
-    confirmPermission(user, "moderate", "race");
+    confirmPermission(user, "admin", "race");
 };
 
 export const checkModeratorPermission = (race: Race, user: User) => {
@@ -69,7 +69,7 @@ export const checkModeratorPermission = (race: Race, user: User) => {
     }
 
     try {
-        confirmPermission(user, "edit", "race", race);
+        confirmPermission(user, "moderate", "race", race);
     } catch (_e) {
         throw Error(
             `Race Log: User is not allowed to moderate race ${race.raceId}, user: ${user.username}`,
