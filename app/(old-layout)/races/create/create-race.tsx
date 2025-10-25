@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { useFormStatus } from "react-dom";
-
-import { Accordion, Button, Col, Form, Row } from "react-bootstrap";
-import { createRace } from "~app/(old-layout)/races/actions/create-race.action";
-import React, { useState, useActionState } from "react";
+import React, { useActionState, useState } from 'react';
+import { Accordion, Col, Form, Row } from 'react-bootstrap';
+import { useFormStatus } from 'react-dom';
+import { createRace } from '~app/(old-layout)/races/actions/create-race.action';
+import { RaceStartMethodType } from '~app/(old-layout)/races/races.types';
+import { Button } from '~src/components/Button/Button';
 import {
     Breadcrumb,
     BreadcrumbItem,
-} from "~src/components/breadcrumbs/breadcrumb";
-import { UnderlineTooltip } from "~src/components/tooltip";
-import { GameCategoryInput } from "~src/components/form/game-input";
-import { RaceStartMethodType } from "~app/(old-layout)/races/races.types";
-import { Can } from "~src/rbac/Can.component";
+} from '~src/components/breadcrumbs/breadcrumb';
+import { GameCategoryInput } from '~src/components/form/game-input';
+import { UnderlineTooltip } from '~src/components/tooltip';
+import { Can } from '~src/rbac/Can.component';
 
 export default function CreateRace() {
     function getInitialStartDateInput() {
@@ -24,23 +24,23 @@ export default function CreateRace() {
         date.setMinutes(0);
         date.setSeconds(0);
         const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, "0"); // Months start at 0!
-        const day = String(date.getDate()).padStart(2, "0");
-        const hours = String(date.getHours()).padStart(2, "0");
-        const minutes = String(date.getMinutes()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months start at 0!
+        const day = String(date.getDate()).padStart(2, '0');
+        const hours = String(date.getHours()).padStart(2, '0');
+        const minutes = String(date.getMinutes()).padStart(2, '0');
 
         return `${year}-${month}-${day}T${hours}:${minutes}`;
     }
 
-    const [state, formAction] = useActionState(createRace, { message: "" });
+    const [state, formAction] = useActionState(createRace, { message: '' });
     const [showStartDate, setShowStartDate] = useState(false);
     const [startDateInput, setStartDateInput] = useState(
         getInitialStartDateInput(),
     );
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { content: "Races", href: "/races" },
-        { content: "Create a new Race" },
+        { content: 'Races', href: '/races' },
+        { content: 'Create a new Race' },
     ];
     return (
         <>
@@ -145,7 +145,7 @@ export default function CreateRace() {
                                             required={false}
                                             min={3}
                                             step={1}
-                                            max={60 * 60}
+                                            max={60}
                                             defaultValue={10}
                                         />
                                     </Form.Group>
@@ -156,18 +156,18 @@ export default function CreateRace() {
                                     </div>
                                     {(
                                         [
-                                            "everyone-ready",
-                                            "moderator",
-                                            "datetime",
+                                            'everyone-ready',
+                                            'moderator',
+                                            'datetime',
                                         ] as RaceStartMethodType[]
                                     ).map((type) => {
                                         const labels = {
-                                            "everyone-ready":
-                                                "Start countdown immediately when everyone is ready",
+                                            'everyone-ready':
+                                                'Start countdown immediately when everyone is ready',
                                             moderator:
-                                                "Start countdown manually after everyone is ready",
+                                                'Start countdown manually after everyone is ready',
                                             datetime:
-                                                "Start countdown at a specified time",
+                                                'Start countdown at a specified time',
                                         };
                                         return (
                                             <Form.Check
@@ -179,11 +179,11 @@ export default function CreateRace() {
                                                 id={type}
                                                 value={type}
                                                 defaultChecked={
-                                                    type === "everyone-ready"
+                                                    type === 'everyone-ready'
                                                 }
                                                 onChange={() => {
                                                     setShowStartDate(
-                                                        type === "datetime",
+                                                        type === 'datetime',
                                                     );
                                                 }}
                                             />
@@ -194,7 +194,7 @@ export default function CreateRace() {
                                             <input
                                                 className="form-control"
                                                 style={{
-                                                    width: "15rem",
+                                                    width: '15rem',
                                                 }}
                                                 type="datetime-local"
                                                 id="startTimeInput"
@@ -215,7 +215,7 @@ export default function CreateRace() {
                                                         ? new Date(
                                                               startDateInput,
                                                           ).toISOString()
-                                                        : ""
+                                                        : ''
                                                 }
                                             />
                                         </>
@@ -255,7 +255,7 @@ const SubmitButton = () => {
     const { pending } = useFormStatus();
     return (
         <Button disabled={pending} variant="primary" type="submit">
-            {!pending ? "Create Race" : "Creating Race..."}
+            {!pending ? 'Create Race' : 'Creating Race...'}
         </Button>
     );
 };

@@ -1,26 +1,26 @@
-import { CreateNextRace } from "~app/(old-layout)/races/[race]/create-next-race";
-import { ConfirmFinalTimeForm } from "~app/(old-layout)/races/components/forms/confirm-final-time-form";
-import { LeaveRaceButton } from "~app/(old-layout)/races/components/buttons/leave-race-button";
-import { ReadyRaceButton } from "~app/(old-layout)/races/components/buttons/ready-race-button";
-import { UnreadyRaceButton } from "~app/(old-layout)/races/components/buttons/unready-race-button";
-import { FinishRaceButton } from "~app/(old-layout)/races/components/buttons/finish-race-button";
-import { AbandonRaceButton } from "~app/(old-layout)/races/components/buttons/abandon-race-button";
-import React from "react";
-import { Race } from "~app/(old-layout)/races/races.types";
-import { User } from "../../../../types/session.types";
-import { CommentOnRaceForm } from "~app/(old-layout)/races/components/forms/race-comment-form";
-import { JoinRaceForm } from "~app/(old-layout)/races/components/forms/join-race-form";
-import { UndoAbandonRaceButton } from "~app/(old-layout)/races/components/buttons/undo-abandon-race-button";
-import { UndoConfirmButton } from "~app/(old-layout)/races/components/buttons/undo-confirm-button";
-import { UndoFinishButton } from "~app/(old-layout)/races/components/buttons/undo-finish-button";
-import { ResetAbandonedRaceButton } from "~app/(old-layout)/races/components/buttons/reset-abandoned-race-button";
-import { isRaceModerator } from "~src/rbac/confirm-permission";
+import React from 'react';
+import { CreateNextRace } from '~app/(old-layout)/races/[race]/create-next-race';
+import { AbandonRaceButton } from '~app/(old-layout)/races/components/buttons/abandon-race-button';
+import { FinishRaceButton } from '~app/(old-layout)/races/components/buttons/finish-race-button';
+import { LeaveRaceButton } from '~app/(old-layout)/races/components/buttons/leave-race-button';
+import { ReadyRaceButton } from '~app/(old-layout)/races/components/buttons/ready-race-button';
+import { ResetAbandonedRaceButton } from '~app/(old-layout)/races/components/buttons/reset-abandoned-race-button';
+import { UndoAbandonRaceButton } from '~app/(old-layout)/races/components/buttons/undo-abandon-race-button';
+import { UndoConfirmButton } from '~app/(old-layout)/races/components/buttons/undo-confirm-button';
+import { UndoFinishButton } from '~app/(old-layout)/races/components/buttons/undo-finish-button';
+import { UnreadyRaceButton } from '~app/(old-layout)/races/components/buttons/unready-race-button';
+import { ConfirmFinalTimeForm } from '~app/(old-layout)/races/components/forms/confirm-final-time-form';
+import { JoinRaceForm } from '~app/(old-layout)/races/components/forms/join-race-form';
+import { CommentOnRaceForm } from '~app/(old-layout)/races/components/forms/race-comment-form';
+import { Race } from '~app/(old-layout)/races/races.types';
+import { isRaceModerator } from '~src/rbac/confirm-permission';
+import { User } from '../../../../types/session.types';
 
 export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
     if (!user?.username) return null;
 
-    const raceIsPending = race.status === "pending";
-    const raceStarted = race.status === "progress";
+    const raceIsPending = race.status === 'pending';
+    const raceStarted = race.status === 'progress';
     const loggedinUserParticipation = user?.username
         ? race.participants?.find(
               (participant) => participant.user === user.username,
@@ -30,39 +30,43 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
     const userParticipates = !!loggedinUserParticipation;
 
     const userIsReady =
-        userParticipates && loggedinUserParticipation.status === "ready";
+        userParticipates && loggedinUserParticipation.status === 'ready';
 
     const userStarted =
-        userParticipates && loggedinUserParticipation.status === "started";
+        userParticipates && loggedinUserParticipation.status === 'started';
 
     const userFinished =
         userParticipates &&
-        loggedinUserParticipation.status === "finished" &&
+        loggedinUserParticipation.status === 'finished' &&
         loggedinUserParticipation.finalTime;
 
     const userConfirmed =
         userParticipates &&
-        loggedinUserParticipation.status === "confirmed" &&
+        loggedinUserParticipation.status === 'confirmed' &&
         loggedinUserParticipation.finalTime;
 
     const userAbandoned =
-        userParticipates && loggedinUserParticipation.status === "abandoned";
+        userParticipates && loggedinUserParticipation.status === 'abandoned';
 
     const userReset =
         userAbandoned &&
         loggedinUserParticipation.liveData &&
         loggedinUserParticipation.liveData.currentSplitIndex === -1;
 
+    const userWasDisqualified =
+        userAbandoned && loggedinUserParticipation.disqualifiedReason;
+
     const userCreatedRace = race.creator === user?.username;
 
-    if (race.status === "starting") return null;
-    if (race.status !== "pending" && !userParticipates && !userCreatedRace)
+    if (race.status === 'starting') return null;
+    if (race.status !== 'pending' && !userParticipates && !userCreatedRace)
         return null;
     if (userConfirmed && loggedinUserParticipation.comment && !userCreatedRace)
         return null;
+    if (userWasDisqualified) return null;
 
     const everyoneAbandoned = race.participants?.every(
-        (participant) => participant.status === "abandoned",
+        (participant) => participant.status === 'abandoned',
     );
 
     const raceWasAbandonedMoreThan10MinutesAgo =
@@ -86,6 +90,7 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
             )}
 
             {(userFinished || userConfirmed || userAbandoned) &&
+                !userWasDisqualified &&
                 !loggedinUserParticipation.comment && (
                     <CommentOnRaceForm raceId={race.raceId} />
                 )}

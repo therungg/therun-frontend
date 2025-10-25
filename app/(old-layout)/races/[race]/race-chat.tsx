@@ -1,3 +1,7 @@
+import dynamic from 'next/dynamic';
+import React, { useEffect, useId, useState } from 'react';
+import { Form } from 'react-bootstrap';
+import { SendChatMessageForm } from '~app/(old-layout)/races/components/forms/send-chat-message-form';
 import {
     Race,
     RaceMessage,
@@ -6,14 +10,10 @@ import {
     RaceMessageParticipantSplitData,
     RaceMessageParticipantTimeData,
     RaceMessageUserData,
-} from "~app/(old-layout)/races/races.types";
-import { SendChatMessageForm } from "~app/(old-layout)/races/components/forms/send-chat-message-form";
-import { Form } from "react-bootstrap";
-import { UserLink } from "~src/components/links/links";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import React, { useEffect, useId, useState } from "react";
-import dynamic from "next/dynamic";
-import { User } from "../../../../types/session.types";
+} from '~app/(old-layout)/races/races.types';
+import { UserLink } from '~src/components/links/links';
+import { DurationToFormatted } from '~src/components/util/datetime';
+import { User } from '../../../../types/session.types';
 
 interface FilterOptions {
     chat: boolean;
@@ -25,7 +25,7 @@ interface FilterOptions {
 const ChatMessageTime = dynamic(
     async () => {
         return (
-            await import("~app/(old-layout)/races/[race]/chat-message-time")
+            await import('~app/(old-layout)/races/[race]/chat-message-time')
         ).ChatMessageTime;
     },
     {
@@ -34,8 +34,8 @@ const ChatMessageTime = dynamic(
 );
 
 const MESSAGE_TYPE = {
-    CHAT: "chat",
-    PARTICIPANT_SPLIT: "participant-split",
+    CHAT: 'chat',
+    PARTICIPANT_SPLIT: 'participant-split',
 } as const;
 
 export const RaceChat = ({
@@ -71,12 +71,12 @@ export const RaceChat = ({
         if (!filterOptions.chat && message.type === MESSAGE_TYPE.CHAT) {
             return false;
         }
-        if (!filterOptions.race && message.type.startsWith("race-")) {
+        if (!filterOptions.race && message.type.startsWith('race-')) {
             return false;
         }
         if (
             !filterOptions.participants &&
-            message.type.startsWith("participant") &&
+            message.type.startsWith('participant') &&
             message.type !== MESSAGE_TYPE.PARTICIPANT_SPLIT
         ) {
             return false;
@@ -90,11 +90,11 @@ export const RaceChat = ({
     return (
         <div
             style={{
-                height: "24rem",
+                height: '24rem',
             }}
             className="rounded-3 px-4 py-2 mb-3 game-border bg-body-secondary"
         >
-            <div style={{ height: "2rem" }}>
+            <div style={{ height: '2rem' }}>
                 <ChatFilterOptions
                     filterOptions={filterOptions}
                     setFilterOptions={setFilterOptions}
@@ -118,10 +118,10 @@ const ChatFilterOptions = ({
     setFilterOptions: (_: FilterOptions) => void;
 }) => {
     const subjects: (keyof FilterOptions)[] = [
-        "chat",
-        "race",
-        "participants",
-        "splits",
+        'chat',
+        'race',
+        'participants',
+        'splits',
     ];
     return (
         <div className="d-flex">
@@ -178,7 +178,7 @@ const Chat = ({ raceMessages }: { raceMessages: RaceMessage[] }) => {
     return (
         <div
             className="d-flex flex-column-reverse overflow-y-scroll overflow-x-hidden px-2 py-1 game-border rounded-3 mb-2"
-            style={{ height: "18rem" }}
+            style={{ height: '18rem' }}
         >
             {raceMessages.map((message) => (
                 <Chatmessage key={message.time} message={message} />
@@ -203,69 +203,69 @@ const getRaceMessage = (message: RaceMessage) => {
     const user = customData?.user;
 
     switch (message.type) {
-        case "race-created":
-            return "Race was created";
-        case "race-edited":
+        case 'race-created':
+            return 'Race was created';
+        case 'race-edited':
             return `Race info was edited by ${user}`;
-        case "race-starting":
-            return "Countdown started!";
-        case "race-start-canceled":
-            return "The start was canceled";
-        case "race-started":
-            return "Race has started";
-        case "race-abort": {
+        case 'race-starting':
+            return 'Countdown started!';
+        case 'race-start-canceled':
+            return 'The start was canceled';
+        case 'race-started':
+            return 'Race has started';
+        case 'race-abort': {
             const data = message.data as RaceMessageModeratorData;
             return `Race was canceled by ${data.moderator}`;
         }
-        case "race-reset": {
+        case 'race-reset': {
             const data = message.data as RaceMessageModeratorData;
             return `Race was reset to starting state by ${data.moderator}. Starting over!`;
         }
-        case "race-moderator-start": {
+        case 'race-moderator-start': {
             const data = message.data as RaceMessageModeratorData;
             return `Race was started by ${data.moderator}`;
         }
-        case "race-finish":
-            return "Everyone is done. The race is finished";
-        case "race-rated":
-            return "Participant ratings have been updated";
-        case "race-stats-parsed":
-            return "Race statistics have been updated";
-        case "race-leaderboards-updated":
-            return "Race leaderboards have been updated";
-        case "participant-join":
+        case 'race-finish':
+            return 'Everyone is done. The race is finished';
+        case 'race-rated':
+            return 'Participant ratings have been updated';
+        case 'race-stats-parsed':
+            return 'Race statistics have been updated';
+        case 'race-leaderboards-updated':
+            return 'Race leaderboards have been updated';
+        case 'participant-join':
             return (
                 <>
                     <UserLink icon={false} username={user as string} /> has
                     joined the race
                 </>
             );
-        case "participant-unjoin":
+        case 'participant-unjoin':
             return (
                 <>
                     <UserLink icon={false} username={user as string} /> has left
                     the race
                 </>
             );
-        case "participant-ready":
+        case 'participant-ready':
             return (
                 <>
                     <UserLink icon={false} username={user as string} /> is ready
                 </>
             );
-        case "participant-unready":
+        case 'participant-unready':
             return (
                 <>
                     <UserLink icon={false} username={user as string} /> is not
                     ready
                 </>
             );
-        case "participant-split": {
+        case 'participant-split': {
             const data = message.data as RaceMessageParticipantSplitData;
             if (!data.splitName) {
                 return (
                     <>
-                        <UserLink icon={false} username={user as string} />{" "}
+                        <UserLink icon={false} username={user as string} />{' '}
                         split
                     </>
                 );
@@ -277,98 +277,99 @@ const getRaceMessage = (message: RaceMessage) => {
                             <UserLink icon={false} username={user as string} />
                         </span>
                         <small>
-                            <span className="fst-italic">{data.splitName}</span>{" "}
-                            | <DurationToFormatted duration={data.time} /> |{" "}
+                            <span className="fst-italic">{data.splitName}</span>{' '}
+                            | <DurationToFormatted duration={data.time} /> |{' '}
                             {(data.percentage * 100).toFixed(0)}%
                         </small>
                     </span>
                 </div>
             );
         }
-        case "participant-abandon":
+        case 'participant-abandon':
             return (
                 <>
-                    <UserLink icon={false} username={user as string} />{" "}
+                    <UserLink icon={false} username={user as string} />{' '}
                     abandoned the race
                 </>
             );
-        case "participant-undo-abandon":
+        case 'participant-undo-abandon':
             return (
                 <>
                     <UserLink icon={false} username={user as string} /> undid
                     their abandon
                 </>
             );
-        case "participant-comment": {
+        case 'participant-comment': {
             const data = message.data as RaceMessageParticipantCommentData;
             return (
                 <>
-                    <UserLink icon={false} username={user as string} />{" "}
-                    commented:{" "}
+                    <UserLink icon={false} username={user as string} />{' '}
+                    commented:{' '}
                     <span className="fst-italic">
                         &quot;{data.comment}&quot;
                     </span>
                 </>
             );
         }
-        case "participant-disqualified": {
+        case 'participant-disqualified': {
             return (
                 <>
                     <UserLink icon={false} username={user as string} /> was
-                    disqualified
+                    disqualified by {customData.disqualifiedBy}:{' '}
+                    {customData.reason}
                 </>
             );
         }
-        case "participant-finish": {
+        case 'participant-finish': {
             const data = message.data as RaceMessageParticipantTimeData;
             return (
                 <>
                     <UserLink icon={false} username={user as string} /> finished
-                    the race{" "}
+                    the race{' '}
                     {data.time && (
                         <span className="fw-bold">
-                            {" "}
+                            {' '}
                             - <DurationToFormatted duration={data.time} />
                         </span>
                     )}
                 </>
             );
         }
-        case "participant-confirm": {
+        case 'participant-confirm': {
             const data = message.data as RaceMessageParticipantTimeData;
             return (
                 <>
-                    <UserLink icon={false} username={user as string} />{" "}
-                    confirmed their time{" "}
+                    <UserLink icon={false} username={user as string} />{' '}
+                    confirmed their time{' '}
                     {data.time && (
                         <span className="fw-bold">
-                            {" "}
+                            {' '}
                             - <DurationToFormatted duration={data.time} />
                         </span>
                     )}
                 </>
             );
         }
-        case "participant-undo-finish": {
+        case 'participant-undo-finish': {
             return (
                 <>
-                    <UserLink icon={false} username={user as string} />{" "}
+                    <UserLink icon={false} username={user as string} />{' '}
                     unfinished
                 </>
             );
         }
-        case "participant-undo-confirm": {
+        case 'participant-undo-confirm': {
             return (
                 <>
-                    <UserLink icon={false} username={user as string} />{" "}
+                    <UserLink icon={false} username={user as string} />{' '}
                     unconfirmed
                 </>
             );
         }
-        case "chat":
+        case 'chat':
             return (
                 <>
-                    <UserLink icon={false} username={user as string} />:{" "}
+                    <UserLink icon={false} username={user as string} />:{' '}
                     {message.message}
                 </>
             );

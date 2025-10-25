@@ -1,21 +1,22 @@
 /* eslint-disable */
 // TODO: REFACTOR
-import { Attempt, RunHistory, SplitsHistory } from "~src/common/types";
+
+import React, { useEffect, useState } from 'react';
+import { Accordion, Card, Col, Pagination, Row, Table } from 'react-bootstrap';
+import DatePicker from 'react-datepicker';
+import { Attempt, RunHistory, SplitsHistory } from '~src/common/types';
+import runStyles from '../../css/Runs.module.scss';
+import styles from '../../css/Session.module.scss';
 import {
     Difference,
     DurationToFormatted,
     getFormattedString,
     IsoToFormatted,
     timeToMillis,
-} from "../../util/datetime";
-import { Accordion, Card, Col, Pagination, Row, Table } from "react-bootstrap";
-import React, { useEffect, useState } from "react";
-import styles from "../../css/Session.module.scss";
-import runStyles from "../../css/Runs.module.scss";
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import Switch from "react-switch";
-import moment from "moment/moment";
+} from '../../util/datetime';
+import 'react-datepicker/dist/react-datepicker.css';
+import moment from 'moment/moment';
+import Switch from 'react-switch';
 
 interface RunHistoryWithCurrentPb extends RunHistory {
     currentPb?: RunHistory;
@@ -31,9 +32,9 @@ export const History = ({
     history: RunHistoryWithCurrentPb[];
     splits: SplitsHistory[];
 }) => {
-    const [runsPast, setRunsPast] = useState("all");
+    const [runsPast, setRunsPast] = useState('all');
 
-    const [sortColumn, setSortColumn] = useState("ended-at");
+    const [sortColumn, setSortColumn] = useState('ended-at');
     const [sortAsc, setSortAsc] = useState(true);
 
     const [showFilters, setShowFilters] = useState(true);
@@ -42,26 +43,30 @@ export const History = ({
     const startFilter = history.filter((h) => !!h.startedAt);
 
     const start = new Date(
-        new Date(startFilter[0].startedAt).setHours(0, 0, 0),
+        startFilter.length > 0
+            ? new Date(startFilter[0].startedAt).setHours(0, 0, 0)
+            : 0,
     );
     const end = new Date(
-        new Date(startFilter[startFilter.length - 1].endedAt).setHours(
-            23,
-            59,
-            59,
-        ),
+        startFilter.length > 0
+            ? new Date(startFilter[startFilter.length - 1].endedAt).setHours(
+                  23,
+                  59,
+                  59,
+              )
+            : 0,
     );
 
     const [startDate, setStartDate] = useState(start);
     const [endDate, setEndDate] = useState(end);
 
     const [totalTime, setTotalTime] = useState(true);
-    const [splitFilter, setSplitFilter] = useState("none");
-    const [splitFilterType, setSplitFilterType] = useState("under");
+    const [splitFilter, setSplitFilter] = useState('none');
+    const [splitFilterType, setSplitFilterType] = useState('under');
     const [splitFilterOne, setSplitFilterOne] = useState(0);
     const [splitFilterTwo, setSplitFilterTwo] = useState(0);
-    const [displaySplitFilterOne, setDisplaySplitFilterOne] = useState("00:00");
-    const [displaySplitFilterTwo, setDisplaySplitFilterTwo] = useState("00:00");
+    const [displaySplitFilterOne, setDisplaySplitFilterOne] = useState('00:00');
+    const [displaySplitFilterTwo, setDisplaySplitFilterTwo] = useState('00:00');
 
     const startDateFilter = (date: Date) => {
         return date >= start && date < endDate;
@@ -117,20 +122,20 @@ export const History = ({
     };
 
     const getSortableClassName = (column: string): string => {
-        let classNames = "sortable";
+        let classNames = 'sortable';
 
         if (sortColumn === column) {
-            classNames += " active";
-            classNames += sortAsc ? " asc" : " desc";
+            classNames += ' active';
+            classNames += sortAsc ? ' asc' : ' desc';
         }
 
         return classNames;
     };
 
-    if (history.length > 0 && runsPast != "all") {
-        if (runsPast == "finished") {
+    if (history.length > 0 && runsPast != 'all') {
+        if (runsPast == 'finished') {
             history = history.filter((run) => !!run.time);
-        } else if (runsPast == "pb") {
+        } else if (runsPast == 'pb') {
             history = history.filter((run) => !!run.time);
 
             if (history.length > 0) {
@@ -155,12 +160,12 @@ export const History = ({
         newSplitFilter: string,
         newTotalTime: boolean,
     ) => {
-        if (newSplitFilter === "none") return;
+        if (newSplitFilter === 'none') return;
 
-        if (newSplitFilter === "duration")
+        if (newSplitFilter === 'duration')
             return updateSplitFiltersForDuration();
 
-        if (newSplitFilter === "full") newSplitFilter = splits.length - 1;
+        if (newSplitFilter === 'full') newSplitFilter = splits.length - 1;
 
         let min = 0;
         let max = 100000000000000000;
@@ -205,9 +210,9 @@ export const History = ({
         setDisplaySplitFilterTwo(getFormattedString(min.toString()));
     };
 
-    if (history.length > 0 && splitFilter !== "none" && splitFilterOne !== 0) {
+    if (history.length > 0 && splitFilter !== 'none' && splitFilterOne !== 0) {
         let currentSplitFilter = splitFilter;
-        if (currentSplitFilter === "full")
+        if (currentSplitFilter === 'full')
             currentSplitFilter = splits.length - 1;
 
         history = history.filter((run) => {
@@ -215,8 +220,8 @@ export const History = ({
 
             if (
                 !run.splits[currentSplitFilter] &&
-                splitFilter !== "full" &&
-                splitFilter !== "duration"
+                splitFilter !== 'full' &&
+                splitFilter !== 'duration'
             ) {
                 return false;
             }
@@ -224,19 +229,19 @@ export const History = ({
             if (run.splits.length === 0) return false;
 
             if (
-                (splitFilter === "full" || splitFilter === "duration") &&
+                (splitFilter === 'full' || splitFilter === 'duration') &&
                 !run.time
             ) {
                 return false;
             }
 
-            let time = "";
+            let time = '';
 
-            if (splitFilter === "duration") {
+            if (splitFilter === 'duration') {
                 time = run.duration;
             } else {
                 const situationalCurrentSplitFilter =
-                    splitFilter === "full"
+                    splitFilter === 'full'
                         ? run.splits.length - 1
                         : currentSplitFilter;
 
@@ -249,17 +254,17 @@ export const History = ({
 
             if (!parseInt(time) && parseInt(time) == 0) return false;
 
-            if (time == "0") return false;
+            if (time == '0') return false;
 
-            if (splitFilterType === "under") {
+            if (splitFilterType === 'under') {
                 include = parseInt(time) <= splitFilterTwo;
             }
 
-            if (splitFilterType === "over") {
+            if (splitFilterType === 'over') {
                 include = parseInt(time) >= splitFilterOne;
             }
 
-            if (splitFilterType === "between") {
+            if (splitFilterType === 'between') {
                 include =
                     parseInt(time) <= splitFilterTwo &&
                     parseInt(time) >= splitFilterOne;
@@ -272,23 +277,23 @@ export const History = ({
     history.sort((a, b) => {
         let res = 1;
 
-        if (sortColumn === "time") {
+        if (sortColumn === 'time') {
             if (a.time || b.time) {
                 if (a.time && !b.time) return 1;
                 if (b.time && !a.time) return -1;
                 res = parseInt(a.time) > parseInt(b.time) ? -1 : 1;
             }
         }
-        if (sortColumn === "ended-at") {
+        if (sortColumn === 'ended-at') {
             res = a.endedAt > b.endedAt ? 1 : -1;
         }
 
-        if (sortColumn === "reset-at") {
+        if (sortColumn === 'reset-at') {
             res = a.splits.length > b.splits.length ? 1 : -1;
         }
 
-        if (sortColumn == "split") {
-            if (splitFilter === "duration") {
+        if (sortColumn == 'split') {
+            if (splitFilter === 'duration') {
                 const aTime = a.duration;
                 const bTime = b.duration;
 
@@ -296,23 +301,23 @@ export const History = ({
             } else {
                 const aTime = totalTime
                     ? a.splits[
-                          splitFilter === "full"
+                          splitFilter === 'full'
                               ? a.splits.length - 1
                               : splitFilter
                       ].totalTime
                     : a.splits[
-                          splitFilter === "full"
+                          splitFilter === 'full'
                               ? a.splits.length - 1
                               : splitFilter
                       ].splitTime;
                 const bTime = totalTime
                     ? b.splits[
-                          splitFilter === "full"
+                          splitFilter === 'full'
                               ? b.splits.length - 1
                               : splitFilter
                       ].totalTime
                     : b.splits[
-                          splitFilter === "full"
+                          splitFilter === 'full'
                               ? b.splits.length - 1
                               : splitFilter
                       ].splitTime;
@@ -338,7 +343,7 @@ export const History = ({
     }, [active, last]);
 
     const onPaginationClick = (event): void => {
-        let target = "";
+        let target = '';
 
         if (event.target.text) {
             target = event.target.text;
@@ -348,13 +353,13 @@ export const History = ({
 
         if (!target) return;
 
-        if (target.includes("«")) {
+        if (target.includes('«')) {
             setActive(1);
-        } else if (target.includes("‹")) {
+        } else if (target.includes('‹')) {
             setActive(active == 1 ? 1 : active - 1);
-        } else if (target.includes("›")) {
+        } else if (target.includes('›')) {
             setActive(active == last ? last : active + 1);
-        } else if (target.includes("»")) {
+        } else if (target.includes('»')) {
             setActive(last);
         } else {
             if (parseInt(target)) setActive(parseInt(target));
@@ -366,11 +371,11 @@ export const History = ({
     let filterTextLastNRuns;
     let filterTextSplitFilter;
 
-    if (runsPast !== "all") {
-        if (runsPast === "finished") {
-            filterTextRunPast = "Finished runs";
-        } else if (runsPast === "pb") {
-            filterTextRunPast = "Personal bests";
+    if (runsPast !== 'all') {
+        if (runsPast === 'finished') {
+            filterTextRunPast = 'Finished runs';
+        } else if (runsPast === 'pb') {
+            filterTextRunPast = 'Personal bests';
         } else {
             filterTextRunPast = `Past ${splits[runsPast as number].name}`;
         }
@@ -379,37 +384,37 @@ export const History = ({
     }
 
     if (hasDateFilter) {
-        filterTextDate = `${moment(startDate).format("L")} - ${moment(
+        filterTextDate = `${moment(startDate).format('L')} - ${moment(
             endDate,
-        ).format("L")}`;
+        ).format('L')}`;
     }
 
     if (nRuns < totalCount) {
         filterTextLastNRuns = `Last ${nRuns} runs`;
     }
 
-    let splitName = "";
+    let splitName = '';
 
-    if (splitFilter !== "none") {
+    if (splitFilter !== 'none') {
         splitName =
-            splitFilter === "full"
-                ? "Full run time"
-                : splitFilter === "duration"
-                  ? "Run duration"
+            splitFilter === 'full'
+                ? 'Full run time'
+                : splitFilter === 'duration'
+                  ? 'Run duration'
                   : splits[splitFilter as number].name;
 
         filterTextSplitFilter = `${splitName} ${splitFilterType} `;
 
         switch (splitFilterType) {
-            case "between":
+            case 'between':
                 filterTextSplitFilter += `${getFormattedString(
                     splitFilterOne,
                 )} and ${getFormattedString(splitFilterTwo)}`;
                 break;
-            case "under":
+            case 'under':
                 filterTextSplitFilter += getFormattedString(splitFilterTwo);
                 break;
-            case "over":
+            case 'over':
                 filterTextSplitFilter += getFormattedString(splitFilterOne);
                 break;
         }
@@ -422,7 +427,7 @@ export const History = ({
         !!filterTextLastNRuns;
 
     const removeRunPastFilter = () => {
-        setRunsPast("all");
+        setRunsPast('all');
     };
 
     const removeRunDateFilter = () => {
@@ -436,26 +441,26 @@ export const History = ({
     };
 
     const removeSplitFilter = () => {
-        setSplitFilter("none");
+        setSplitFilter('none');
     };
 
     return (
         <div className="history-page">
-            <Row style={{ marginBottom: "0.5rem" }}>
+            <Row style={{ marginBottom: '0.5rem' }}>
                 <Col xl={6}>
-                    <h2 style={{ whiteSpace: "nowrap" }}>Run History</h2>
+                    <h2 style={{ whiteSpace: 'nowrap' }}>Run History</h2>
                 </Col>
                 <Col
                     xl={6}
-                    style={{ display: "flex", justifyContent: "flex-end" }}
+                    style={{ display: 'flex', justifyContent: 'flex-end' }}
                 >
                     <div
                         style={{
-                            alignSelf: "center",
-                            fontSize: "1.5rem",
+                            alignSelf: 'center',
+                            fontSize: '1.5rem',
                             textDecoration:
-                                "underline var(--bs-body-color) dotted",
-                            cursor: "pointer",
+                                'underline var(--bs-body-color) dotted',
+                            cursor: 'pointer',
                         }}
                         onClick={() => {
                             setShowFilters(!showFilters);
@@ -467,11 +472,11 @@ export const History = ({
             </Row>
             {hasFilters && (
                 <Row>
-                    <Col xl={10} style={{ display: "flex" }}>
+                    <Col xl={10} style={{ display: 'flex' }}>
                         <div
                             style={{
-                                marginRight: "1rem",
-                                marginBottom: "0.25rem",
+                                marginRight: '1rem',
+                                marginBottom: '0.25rem',
                             }}
                         >
                             Active filters:
@@ -510,7 +515,7 @@ export const History = ({
                         )}
                     </Col>
                     <Col
-                        style={{ display: "flex", justifyContent: "flex-end" }}
+                        style={{ display: 'flex', justifyContent: 'flex-end' }}
                     >
                         <div
                             className={styles.filter}
@@ -530,44 +535,44 @@ export const History = ({
             {showFilters && (
                 <div
                     style={{
-                        border: "1px var(--bs-secondary-bg) solid",
-                        marginBottom: "1rem",
-                        paddingTop: "1rem",
+                        border: '1px var(--bs-secondary-bg) solid',
+                        marginBottom: '1rem',
+                        paddingTop: '1rem',
                     }}
                 >
                     <Row>
                         <Col xl={4}>
                             <div
                                 style={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    fontSize: "1.5rem",
-                                    marginBottom: "-0.5rem",
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    fontSize: '1.5rem',
+                                    marginBottom: '-0.5rem',
                                 }}
                             >
                                 Split Times
                             </div>
                             <hr />
-                            <div style={{ padding: "0.5rem 1rem" }}>
+                            <div style={{ padding: '0.5rem 1rem' }}>
                                 <div
                                     style={{
-                                        display: "flex",
-                                        marginBottom: "1rem",
+                                        display: 'flex',
+                                        marginBottom: '1rem',
                                     }}
                                 >
                                     <label
                                         htmlFor="switch"
                                         style={{
-                                            marginRight: "0.5rem",
-                                            alignSelf: "center",
-                                            whiteSpace: "nowrap",
+                                            marginRight: '0.5rem',
+                                            alignSelf: 'center',
+                                            whiteSpace: 'nowrap',
                                         }}
                                     >
-                                        {" "}
-                                        {"Split filter: "}
+                                        {' '}
+                                        {'Split filter: '}
                                     </label>
 
-                                    <div style={{ alignSelf: "center" }}>
+                                    <div style={{ alignSelf: 'center' }}>
                                         <select
                                             className="form-select"
                                             onChange={(e) => {
@@ -579,9 +584,9 @@ export const History = ({
 
                                                 if (
                                                     e.currentTarget.value ===
-                                                        "full" ||
+                                                        'full' ||
                                                     e.currentTarget.value ===
-                                                        "duration"
+                                                        'duration'
                                                 ) {
                                                     currentTotalTime = true;
                                                     setTotalTime(
@@ -652,27 +657,27 @@ export const History = ({
                                 {/*               whiteSpace: 'nowrap'*/}
                                 {/*           }}> Range of Splits </label>*/}
                                 {/*</div>*/}
-                                {splitFilter !== "none" &&
-                                    splitFilter !== "full" && (
+                                {splitFilter !== 'none' &&
+                                    splitFilter !== 'full' && (
                                         <div
                                             style={{
-                                                display: "flex",
-                                                marginBottom: "1rem",
+                                                display: 'flex',
+                                                marginBottom: '1rem',
                                             }}
                                         >
                                             <label
                                                 htmlFor="switch"
                                                 style={{
-                                                    marginRight: "10px",
-                                                    alignSelf: "center",
-                                                    whiteSpace: "nowrap",
+                                                    marginRight: '10px',
+                                                    alignSelf: 'center',
+                                                    whiteSpace: 'nowrap',
                                                 }}
                                             >
-                                                {" "}
-                                                Segment time{" "}
+                                                {' '}
+                                                Segment time{' '}
                                             </label>
                                             <div
-                                                style={{ alignSelf: "center" }}
+                                                style={{ alignSelf: 'center' }}
                                             >
                                                 <Switch
                                                     className="normal-switch"
@@ -692,45 +697,45 @@ export const History = ({
                                             <label
                                                 htmlFor="switch"
                                                 style={{
-                                                    marginLeft: "10px",
-                                                    alignSelf: "center",
-                                                    whiteSpace: "nowrap",
+                                                    marginLeft: '10px',
+                                                    alignSelf: 'center',
+                                                    whiteSpace: 'nowrap',
                                                 }}
                                             >
-                                                {" "}
-                                                Total time{" "}
+                                                {' '}
+                                                Total time{' '}
                                             </label>
                                         </div>
                                     )}
-                                {splitFilter !== "none" && (
+                                {splitFilter !== 'none' && (
                                     <div
                                         style={{
-                                            display: "flex",
-                                            marginBottom: "1rem",
+                                            display: 'flex',
+                                            marginBottom: '1rem',
                                         }}
                                     >
                                         <label
                                             htmlFor="switch"
                                             style={{
-                                                marginRight: "0.5rem",
-                                                alignSelf: "center",
-                                                whiteSpace: "nowrap",
+                                                marginRight: '0.5rem',
+                                                alignSelf: 'center',
+                                                whiteSpace: 'nowrap',
                                             }}
                                         >
-                                            {" "}
-                                            {"Time "}
+                                            {' '}
+                                            {'Time '}
                                         </label>
                                         <select
                                             className="form-select"
                                             value={splitFilterType}
-                                            style={{ width: "8rem" }}
+                                            style={{ width: '8rem' }}
                                             onChange={(e) => {
                                                 setSplitFilterType(
                                                     e.currentTarget.value,
                                                 );
                                             }}
                                         >
-                                            {["under", "over", "between"].map(
+                                            {['under', 'over', 'between'].map(
                                                 (split) => {
                                                     return (
                                                         <option
@@ -744,15 +749,15 @@ export const History = ({
                                             )}
                                         </select>
 
-                                        {(splitFilterType === "between" ||
-                                            splitFilterType === "over") && (
+                                        {(splitFilterType === 'between' ||
+                                            splitFilterType === 'over') && (
                                             <input
                                                 type="text"
                                                 className={runStyles.datePicker}
                                                 style={{
-                                                    cursor: "revert",
-                                                    margin: "0 0.5rem",
-                                                    width: "7rem",
+                                                    cursor: 'revert',
+                                                    margin: '0 0.5rem',
+                                                    width: '7rem',
                                                 }}
                                                 value={displaySplitFilterOne}
                                                 onChange={(e) => {
@@ -766,16 +771,16 @@ export const History = ({
                                                 }}
                                             />
                                         )}
-                                        {(splitFilterType === "between" ||
-                                            splitFilterType === "under") && (
+                                        {(splitFilterType === 'between' ||
+                                            splitFilterType === 'under') && (
                                             <div
                                                 style={{
-                                                    display: "flex",
-                                                    alignItems: "center",
+                                                    display: 'flex',
+                                                    alignItems: 'center',
                                                 }}
                                             >
                                                 {splitFilterType ===
-                                                    "between" && "and"}
+                                                    'between' && 'and'}
 
                                                 <input
                                                     type="text"
@@ -783,9 +788,9 @@ export const History = ({
                                                         runStyles.datePicker
                                                     }
                                                     style={{
-                                                        cursor: "revert",
-                                                        margin: "0 0.5rem",
-                                                        width: "7rem",
+                                                        cursor: 'revert',
+                                                        margin: '0 0.5rem',
+                                                        width: '7rem',
                                                     }}
                                                     value={
                                                         displaySplitFilterTwo
@@ -810,35 +815,35 @@ export const History = ({
                         <Col xl={4}>
                             <div
                                 style={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    fontSize: "1.5rem",
-                                    marginBottom: "-0.5rem",
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    fontSize: '1.5rem',
+                                    marginBottom: '-0.5rem',
                                 }}
                             >
                                 Date
                             </div>
                             <hr />
 
-                            <div style={{ padding: "0.5rem 1rem" }}>
+                            <div style={{ padding: '0.5rem 1rem' }}>
                                 <div
                                     style={{
-                                        display: "flex",
-                                        marginBottom: "1rem",
+                                        display: 'flex',
+                                        marginBottom: '1rem',
                                     }}
                                 >
                                     <label
                                         htmlFor="switch"
                                         style={{
-                                            marginRight: "0.5rem",
-                                            alignSelf: "center",
-                                            whiteSpace: "nowrap",
+                                            marginRight: '0.5rem',
+                                            alignSelf: 'center',
+                                            whiteSpace: 'nowrap',
                                         }}
                                     >
-                                        {" "}
+                                        {' '}
                                         Started between:
                                     </label>
-                                    <div style={{ alignSelf: "center" }}>
+                                    <div style={{ alignSelf: 'center' }}>
                                         <DatePicker
                                             className={runStyles.datePicker}
                                             selected={startDate}
@@ -851,13 +856,13 @@ export const History = ({
                                     </div>
                                     <div
                                         style={{
-                                            alignSelf: "center",
-                                            margin: "0 0.5rem",
+                                            alignSelf: 'center',
+                                            margin: '0 0.5rem',
                                         }}
                                     >
                                         and
                                     </div>
-                                    <div style={{ alignSelf: "center" }}>
+                                    <div style={{ alignSelf: 'center' }}>
                                         <DatePicker
                                             className={runStyles.datePicker}
                                             selected={endDate}
@@ -872,9 +877,9 @@ export const History = ({
 
                                 <div
                                     style={{
-                                        display: "flex",
-                                        marginBottom: "1rem",
-                                        alignItems: "center",
+                                        display: 'flex',
+                                        marginBottom: '1rem',
+                                        alignItems: 'center',
                                     }}
                                 >
                                     Only show the last
@@ -882,9 +887,9 @@ export const History = ({
                                         type="number"
                                         className={runStyles.datePicker}
                                         style={{
-                                            cursor: "revert",
-                                            margin: "0 0.5rem",
-                                            width: "5rem",
+                                            cursor: 'revert',
+                                            margin: '0 0.5rem',
+                                            width: '5rem',
                                         }}
                                         value={nRuns}
                                         onChange={(e) => {
@@ -898,34 +903,34 @@ export const History = ({
                         <Col xl={4}>
                             <div
                                 style={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                    fontSize: "1.5rem",
-                                    marginBottom: "-0.5rem",
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    fontSize: '1.5rem',
+                                    marginBottom: '-0.5rem',
                                 }}
                             >
                                 Run Length
                             </div>
                             <hr />
-                            <div style={{ padding: "0.5rem 1rem" }}>
+                            <div style={{ padding: '0.5rem 1rem' }}>
                                 <div
                                     style={{
-                                        display: "flex",
-                                        marginBottom: "1rem",
+                                        display: 'flex',
+                                        marginBottom: '1rem',
                                     }}
                                 >
                                     <label
                                         htmlFor="switch"
                                         style={{
-                                            marginRight: "0.5rem",
-                                            alignSelf: "center",
-                                            whiteSpace: "nowrap",
+                                            marginRight: '0.5rem',
+                                            alignSelf: 'center',
+                                            whiteSpace: 'nowrap',
                                         }}
                                     >
-                                        {" "}
-                                        {"Completed split: "}
+                                        {' '}
+                                        {'Completed split: '}
                                     </label>
-                                    <div style={{ alignSelf: "center" }}>
+                                    <div style={{ alignSelf: 'center' }}>
                                         <select
                                             className="form-select"
                                             onChange={(e) => {
@@ -970,9 +975,9 @@ export const History = ({
                 <div>
                     <div
                         style={{
-                            float: "left",
-                            width: "98%",
-                            whiteSpace: "nowrap",
+                            float: 'left',
+                            width: '98%',
+                            whiteSpace: 'nowrap',
                         }}
                     >
                         <Row>
@@ -980,8 +985,8 @@ export const History = ({
                                 <b>+- Current PB</b>
                             </Col> */}
                             <Col
-                                className={getSortableClassName("time")}
-                                onClick={() => changeSort("time")}
+                                className={getSortableClassName('time')}
+                                onClick={() => changeSort('time')}
                             >
                                 <b> Final time</b>
                             </Col>
@@ -989,16 +994,16 @@ export const History = ({
                                 <b>Duration</b>
                             </Col>
                             <Col
-                                className={getSortableClassName("reset-at")}
-                                onClick={() => changeSort("reset-at")}
+                                className={getSortableClassName('reset-at')}
+                                onClick={() => changeSort('reset-at')}
                             >
                                 <b>Reset at</b>
                             </Col>
                             <Col
                                 className={`${
                                     styles.optionalColumn
-                                } ${getSortableClassName("ended-at")}`}
-                                onClick={() => changeSort("ended-at")}
+                                } ${getSortableClassName('ended-at')}`}
+                                onClick={() => changeSort('ended-at')}
                             >
                                 <b>Ended at</b>
                             </Col>
@@ -1006,15 +1011,15 @@ export const History = ({
                                 <Col
                                     className={`${
                                         styles.optionalColumn
-                                    } ${getSortableClassName("split")}`}
-                                    onClick={() => changeSort("split")}
+                                    } ${getSortableClassName('split')}`}
+                                    onClick={() => changeSort('split')}
                                 >
                                     <b>{splitName}</b>
                                 </Col>
                             )}
                         </Row>
                     </div>
-                    <div style={{ width: "1.25rem", float: "left" }} />
+                    <div style={{ width: '1.25rem', float: 'left' }} />
                 </div>
             </Card>
             <Accordion>
@@ -1022,19 +1027,19 @@ export const History = ({
                     .reverse()
                     .slice((active - 1) * 10, active * 10)
                     .map((run) => {
-                        let filterString = "";
-                        if (splitFilter === "duration") {
+                        let filterString = '';
+                        if (splitFilter === 'duration') {
                             filterString = getFormattedString(run.duration);
                         } else if (splitName) {
                             filterString = getFormattedString(
                                 totalTime
                                     ? run.splits[
-                                          splitFilter === "full"
+                                          splitFilter === 'full'
                                               ? run.splits.length - 1
                                               : splitFilter
                                       ].totalTime
                                     : run.splits[
-                                          splitFilter === "full"
+                                          splitFilter === 'full'
                                               ? run.splits.length - 1
                                               : splitFilter
                                       ].splitTime,
@@ -1053,7 +1058,7 @@ export const History = ({
                                 eventKey={run.endedAt}
                             >
                                 <Accordion.Header>
-                                    <div style={{ width: "100%" }}>
+                                    <div style={{ width: '100%' }}>
                                         <Row>
                                             {/* <Col xs={4}>
                                             <Line data={data} type={"line"}/>
@@ -1062,15 +1067,15 @@ export const History = ({
                                                 <div
                                                     style={
                                                         run.time
-                                                            ? { color: "green" }
-                                                            : { color: "red" }
+                                                            ? { color: 'green' }
+                                                            : { color: 'red' }
                                                     }
                                                 >
                                                     {run.time
                                                         ? getFormattedString(
                                                               run.time,
                                                           )
-                                                        : "Reset"}
+                                                        : 'Reset'}
                                                 </div>
                                             </Col>
                                             <Col>
@@ -1084,7 +1089,7 @@ export const History = ({
                                             </Col>
                                             <Col>
                                                 {run.time
-                                                    ? "Finished run!"
+                                                    ? 'Finished run!'
                                                     : run.splits.length ==
                                                         splits.length
                                                       ? splits[
@@ -1120,19 +1125,19 @@ export const History = ({
                                 >
                                     <Table
                                         className="table-striped table"
-                                        style={{ marginBottom: "0" }}
+                                        style={{ marginBottom: '0' }}
                                     >
                                         <thead>
                                             <tr>
                                                 <th
-                                                    style={{ width: "34%" }}
+                                                    style={{ width: '34%' }}
                                                 ></th>
-                                                <th style={{ width: "33%" }}>
+                                                <th style={{ width: '33%' }}>
                                                     <div
                                                         style={{
-                                                            display: "flex",
+                                                            display: 'flex',
                                                             justifyContent:
-                                                                "center",
+                                                                'center',
                                                         }}
                                                     >
                                                         Compared to Current PB (
@@ -1147,12 +1152,12 @@ export const History = ({
                                                         )
                                                     </div>
                                                 </th>
-                                                <th style={{ width: "33%" }}>
+                                                <th style={{ width: '33%' }}>
                                                     <div
                                                         style={{
-                                                            display: "flex",
+                                                            display: 'flex',
                                                             justifyContent:
-                                                                "center",
+                                                                'center',
                                                         }}
                                                     >
                                                         Compared to PB at the
@@ -1171,96 +1176,96 @@ export const History = ({
                                     </Table>
                                     <Table
                                         className="table-striped table"
-                                        style={{ marginBottom: "0" }}
+                                        style={{ marginBottom: '0' }}
                                     >
                                         <thead>
                                             <tr>
-                                                <th style={{ width: "20%" }}>
+                                                <th style={{ width: '20%' }}>
                                                     Split
                                                 </th>
-                                                <th style={{ width: "7%" }}>
+                                                <th style={{ width: '7%' }}>
                                                     <div
                                                         style={{
-                                                            display: "flex",
+                                                            display: 'flex',
                                                             justifyContent:
-                                                                "center",
+                                                                'center',
                                                         }}
                                                     >
                                                         Segment
                                                     </div>
                                                 </th>
-                                                <th style={{ width: "7%" }}>
+                                                <th style={{ width: '7%' }}>
                                                     <div
                                                         style={{
-                                                            display: "flex",
+                                                            display: 'flex',
                                                             justifyContent:
-                                                                "center",
+                                                                'center',
                                                         }}
                                                     >
                                                         Total
                                                     </div>
                                                 </th>
-                                                <th style={{ width: "11%" }}>
+                                                <th style={{ width: '11%' }}>
                                                     <div
                                                         style={{
-                                                            display: "flex",
+                                                            display: 'flex',
                                                             justifyContent:
-                                                                "center",
+                                                                'center',
                                                         }}
                                                     >
                                                         +- Current PB
                                                     </div>
                                                 </th>
-                                                <th style={{ width: "11%" }}>
+                                                <th style={{ width: '11%' }}>
                                                     <div
                                                         style={{
-                                                            display: "flex",
+                                                            display: 'flex',
                                                             justifyContent:
-                                                                "center",
+                                                                'center',
                                                         }}
                                                     >
                                                         Segment Time
                                                     </div>
                                                 </th>
-                                                <th style={{ width: "11%" }}>
+                                                <th style={{ width: '11%' }}>
                                                     <div
                                                         style={{
-                                                            display: "flex",
+                                                            display: 'flex',
                                                             justifyContent:
-                                                                "center",
+                                                                'center',
                                                         }}
                                                     >
                                                         Total Time
                                                     </div>
                                                 </th>
-                                                <th style={{ width: "11%" }}>
+                                                <th style={{ width: '11%' }}>
                                                     <div
                                                         style={{
-                                                            display: "flex",
+                                                            display: 'flex',
                                                             justifyContent:
-                                                                "center",
+                                                                'center',
                                                         }}
                                                     >
                                                         +- PB at the time
                                                     </div>
                                                 </th>
-                                                <th style={{ width: "11%" }}>
+                                                <th style={{ width: '11%' }}>
                                                     <div
                                                         style={{
-                                                            display: "flex",
+                                                            display: 'flex',
                                                             justifyContent:
-                                                                "center",
+                                                                'center',
                                                         }}
                                                     >
                                                         Segment Time
                                                     </div>
                                                 </th>
-                                                <th style={{ width: "11%" }}>
+                                                <th style={{ width: '11%' }}>
                                                     <div
                                                         style={{
-                                                            display: "flex",
+                                                            display: 'flex',
                                                             justifyContent:
-                                                                "center",
+                                                                'center',
                                                         }}
                                                     >
                                                         Total Time
@@ -1288,9 +1293,9 @@ export const History = ({
                                                                 <div
                                                                     style={{
                                                                         display:
-                                                                            "flex",
+                                                                            'flex',
                                                                         justifyContent:
-                                                                            "center",
+                                                                            'center',
                                                                     }}
                                                                 >
                                                                     {split.splitTime >
@@ -1304,22 +1309,22 @@ export const History = ({
                                                                             }
                                                                         />
                                                                     ) : (
-                                                                        "-"
+                                                                        '-'
                                                                     )}
                                                                 </div>
                                                             </td>
                                                             <td
                                                                 style={{
                                                                     borderRight:
-                                                                        "3px solid var(--bs-tertiary-bg)",
+                                                                        '3px solid var(--bs-tertiary-bg)',
                                                                 }}
                                                             >
                                                                 <div
                                                                     style={{
                                                                         display:
-                                                                            "flex",
+                                                                            'flex',
                                                                         justifyContent:
-                                                                            "center",
+                                                                            'center',
                                                                     }}
                                                                 >
                                                                     {split.totalTime >
@@ -1333,7 +1338,7 @@ export const History = ({
                                                                             }
                                                                         />
                                                                     ) : (
-                                                                        "-"
+                                                                        '-'
                                                                     )}
                                                                 </div>
                                                             </td>
@@ -1341,9 +1346,9 @@ export const History = ({
                                                                 <div
                                                                     style={{
                                                                         display:
-                                                                            "flex",
+                                                                            'flex',
                                                                         justifyContent:
-                                                                            "center",
+                                                                            'center',
                                                                     }}
                                                                 >
                                                                     {split.totalTime >
@@ -1364,7 +1369,7 @@ export const History = ({
                                                                             }
                                                                         />
                                                                     ) : (
-                                                                        "-"
+                                                                        '-'
                                                                     )}
                                                                 </div>
                                                             </td>
@@ -1372,9 +1377,9 @@ export const History = ({
                                                                 <div
                                                                     style={{
                                                                         display:
-                                                                            "flex",
+                                                                            'flex',
                                                                         justifyContent:
-                                                                            "center",
+                                                                            'center',
                                                                     }}
                                                                 >
                                                                     <DurationToFormatted
@@ -1394,15 +1399,15 @@ export const History = ({
                                                             <td
                                                                 style={{
                                                                     borderRight:
-                                                                        "1px solid var(--bs-tertiary-bg)",
+                                                                        '1px solid var(--bs-tertiary-bg)',
                                                                 }}
                                                             >
                                                                 <div
                                                                     style={{
                                                                         display:
-                                                                            "flex",
+                                                                            'flex',
                                                                         justifyContent:
-                                                                            "center",
+                                                                            'center',
                                                                     }}
                                                                 >
                                                                     <DurationToFormatted
@@ -1424,9 +1429,9 @@ export const History = ({
                                                                 <div
                                                                     style={{
                                                                         display:
-                                                                            "flex",
+                                                                            'flex',
                                                                         justifyContent:
-                                                                            "center",
+                                                                            'center',
                                                                     }}
                                                                 >
                                                                     {splitAtTheTime &&
@@ -1446,7 +1451,7 @@ export const History = ({
                                                                             }
                                                                         />
                                                                     ) : (
-                                                                        "-"
+                                                                        '-'
                                                                     )}
                                                                 </div>
                                                             </td>
@@ -1454,9 +1459,9 @@ export const History = ({
                                                                 <div
                                                                     style={{
                                                                         display:
-                                                                            "flex",
+                                                                            'flex',
                                                                         justifyContent:
-                                                                            "center",
+                                                                            'center',
                                                                     }}
                                                                 >
                                                                     {splitAtTheTime?.splitTime >
@@ -1470,7 +1475,7 @@ export const History = ({
                                                                             }
                                                                         />
                                                                     ) : (
-                                                                        "-"
+                                                                        '-'
                                                                     )}
                                                                 </div>
                                                             </td>
@@ -1478,9 +1483,9 @@ export const History = ({
                                                                 <div
                                                                     style={{
                                                                         display:
-                                                                            "flex",
+                                                                            'flex',
                                                                         justifyContent:
-                                                                            "center",
+                                                                            'center',
                                                                     }}
                                                                 >
                                                                     {splitAtTheTime?.splitTime >
@@ -1494,7 +1499,7 @@ export const History = ({
                                                                             }
                                                                         />
                                                                     ) : (
-                                                                        "-"
+                                                                        '-'
                                                                     )}
                                                                 </div>
                                                             </td>
@@ -1516,10 +1521,10 @@ export const History = ({
             >
                 {items}
             </Pagination>
-            <div style={{ display: "flex", justifyContent: "center" }}>
-                Showing {(active - 1) * 10 + 1} -{" "}
-                {active * 10 < history.length ? active * 10 : history.length}{" "}
-                out of {history.length} runs{" "}
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                Showing {(active - 1) * 10 + 1} -{' '}
+                {active * 10 < history.length ? active * 10 : history.length}{' '}
+                out of {history.length} runs{' '}
                 {totalCount !== history.length &&
                     ` (${totalCount} without filter)`}
             </div>
@@ -1571,21 +1576,21 @@ export const getLineGraphData = (run: RunHistory, splits: SplitsHistory[]) => {
             }),
         datasets: [
             {
-                label: "Recent runs",
+                label: 'Recent runs',
                 fill: false,
                 lineTension: 0.1,
-                backgroundColor: "rgba(75,192,192,0.4)",
-                borderColor: "rgba(75,192,192,1)",
-                borderCapStyle: "butt",
+                backgroundColor: 'rgba(75,192,192,0.4)',
+                borderColor: 'rgba(75,192,192,1)',
+                borderCapStyle: 'butt',
                 borderDash: [],
                 borderDashOffset: 0.0,
-                borderJoinStyle: "miter",
-                pointBorderColor: "rgba(75,192,192,1)",
-                pointBackgroundColor: "#fff",
+                borderJoinStyle: 'miter',
+                pointBorderColor: 'rgba(75,192,192,1)',
+                pointBackgroundColor: '#fff',
                 pointBorderWidth: 1,
                 pointHoverRadius: 5,
-                pointHoverBackgroundColor: "rgba(75,192,192,1)",
-                pointHoverBorderColor: "rgba(220,220,220,1)",
+                pointHoverBackgroundColor: 'rgba(75,192,192,1)',
+                pointHoverBorderColor: 'rgba(220,220,220,1)',
                 pointHoverBorderWidth: 2,
                 pointRadius: 1,
                 pointHitRadius: 10,
@@ -1614,7 +1619,7 @@ export const Filter = () => {
 };
 
 // TODO: Move this to icons directory
-export const XCircle = ({ color = "currentColor" }) => {
+export const XCircle = ({ color = 'currentColor' }) => {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -1622,7 +1627,7 @@ export const XCircle = ({ color = "currentColor" }) => {
             height="20"
             fill={color}
             className="bi bi-x-circle"
-            style={{ marginLeft: "0.2rem", paddingBottom: "0.2rem" }}
+            style={{ marginLeft: '0.2rem', paddingBottom: '0.2rem' }}
             viewBox="0 0 16 16"
         >
             <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />

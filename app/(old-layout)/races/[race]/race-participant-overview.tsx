@@ -1,15 +1,15 @@
+import { useAutoAnimate } from '@formkit/auto-animate/react';
+import { getPercentageDoneFromLiverun } from '~app/(old-layout)/races/[race]/get-percentage-done-from-liverun';
+import { RaceParticipantTimer } from '~app/(old-layout)/races/[race]/race-timer';
+import { sortRaceParticipants } from '~app/(old-layout)/races/[race]/sort-race-participants';
+import { RaceParticipantRatingDisplay } from '~app/(old-layout)/races/components/race-participant-rating-display';
 import {
     Race,
     RaceParticipantWithLiveData,
-} from "~app/(old-layout)/races/races.types";
-import { sortRaceParticipants } from "~app/(old-layout)/races/[race]/sort-race-participants";
-import { UserLink } from "~src/components/links/links";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import { getPercentageDoneFromLiverun } from "~app/(old-layout)/races/[race]/get-percentage-done-from-liverun";
-import { useAutoAnimate } from "@formkit/auto-animate/react";
-import { TrophyIcon } from "~src/icons/trophy-icon";
-import { RaceParticipantTimer } from "~app/(old-layout)/races/[race]/race-timer";
-import { RaceParticipantRatingDisplay } from "~app/(old-layout)/races/components/race-participant-rating-display";
+} from '~app/(old-layout)/races/races.types';
+import { UserLink } from '~src/components/links/links';
+import { DurationToFormatted } from '~src/components/util/datetime';
+import { TrophyIcon } from '~src/icons/trophy-icon';
 
 interface RaceParticipantOverviewProps {
     race: Race;
@@ -22,11 +22,11 @@ export const RaceParticipantOverview = ({
 
     const [parent] = useAutoAnimate({
         duration: 300,
-        easing: "ease-out",
+        easing: 'ease-out',
     });
 
     const firstAbandonedPlacing = participants.findIndex(
-        (participant) => participant.status === "abandoned",
+        (participant) => participant.status === 'abandoned',
     );
 
     return (
@@ -48,7 +48,7 @@ export const RaceParticipantOverview = ({
                 <tbody ref={parent}>
                     {participants?.map((participant, i) => {
                         const placing =
-                            participant.status === "abandoned"
+                            participant.status === 'abandoned'
                                 ? firstAbandonedPlacing + 1
                                 : i + 1;
                         return (
@@ -80,15 +80,15 @@ export const RaceParticipantItem = ({
         <>
             <tr>
                 <td className="text-start">
-                    {participant.status !== "abandoned" && `${placing}.`}
-                    {participant.status == "abandoned" && `-`}
+                    {participant.status !== 'abandoned' && `${placing}.`}
+                    {participant.status == 'abandoned' && `-`}
                 </td>
                 <td className="d-flex justify-self-end flex-grow-1">
                     <UserLink
                         username={participant.user}
                         url={`/${participant.user}/races`}
                     />
-                    {placing === 1 && participant.status === "confirmed" && (
+                    {placing === 1 && participant.status === 'confirmed' && (
                         <span className="ms-1">
                             <TrophyIcon />
                         </span>
@@ -101,7 +101,7 @@ export const RaceParticipantItem = ({
                 </td>
                 <td>
                     {percentage > 0 && `${percentage.toFixed(0)}%`}
-                    {percentage === 0 && "-"}
+                    {percentage === 0 && '-'}
                 </td>
                 <td className="text-nowrap">
                     <RaceParticipantStatus
@@ -126,15 +126,15 @@ const RaceParticipantStatus = ({
     //     new Date(race.startTime as string).getTime();
     return (
         <div>
-            {(participant.status === "finished" ||
-                participant.status === "confirmed") && (
+            {(participant.status === 'finished' ||
+                participant.status === 'confirmed') && (
                 <span className="fst-italic">
                     <DurationToFormatted
                         duration={participant.finalTime?.toString() as string}
                     />
                 </span>
             )}
-            {participant.status === "started" && (
+            {participant.status === 'started' && (
                 <div suppressHydrationWarning={true}>
                     <RaceParticipantTimer
                         raceParticipant={participant}
@@ -142,16 +142,24 @@ const RaceParticipantStatus = ({
                     />
                 </div>
             )}
-            {participant.status === "abandoned" && (
+            {participant.status === 'abandoned' &&
+                participant.disqualifiedReason && (
+                    <span>
+                        Disqualified
+                        {/*<DurationToFormatted duration={abandonedTime} />*/}
+                    </span>
+                )}
+            {participant.status === 'abandoned' &&
+                !participant.disqualifiedReason && (
+                    <span>
+                        DNF
+                        {/*<DurationToFormatted duration={abandonedTime} />*/}
+                    </span>
+                )}
+            {participant.status === 'ready' && (
                 <span>
-                    DNF
-                    {/*<DurationToFormatted duration={abandonedTime} />*/}
-                </span>
-            )}
-            {participant.status === "ready" && (
-                <span>
-                    {race.status === "progress" && <span>In Progress</span>}
-                    {race.status === "pending" && <span>Ready</span>}
+                    {race.status === 'progress' && <span>In Progress</span>}
+                    {race.status === 'pending' && <span>Ready</span>}
                 </span>
             )}
         </div>

@@ -1,11 +1,11 @@
+import { ResponsiveLine, Serie } from '@nivo/line';
+import { schemeCategory10 } from 'd3';
 import {
     Race,
     RaceMessage,
     RaceMessageParticipantSplitData,
-} from "~app/(old-layout)/races/races.types";
-import { ResponsiveLine, Serie } from "@nivo/line";
-import { getFormattedString } from "~src/components/util/datetime";
-import { schemeCategory10 } from "d3";
+} from '~app/(old-layout)/races/races.types';
+import { getFormattedString } from '~src/components/util/datetime';
 
 interface ProgressGraphDataPoint {
     percentage: number;
@@ -16,9 +16,9 @@ interface ProgressGraphDataPoint {
 const isRaceParticipantSplitMessage = (
     message: RaceMessage,
 ): message is RaceMessage<RaceMessageParticipantSplitData> =>
-    message.type === "participant-split" ||
-    message.type === "participant-finish" ||
-    message.type === "participant-confirm";
+    message.type === 'participant-split' ||
+    message.type === 'participant-finish' ||
+    message.type === 'participant-confirm';
 
 export const RaceProgressGraph = ({
     race,
@@ -27,27 +27,33 @@ export const RaceProgressGraph = ({
     race: Race;
     messages: RaceMessage[];
 }) => {
-    if (race.status !== "progress" && race.status !== "finished") return;
+    if (race.status !== 'progress' && race.status !== 'finished') return;
 
     const participantsMap = new Map<string, ProgressGraphDataPoint[]>();
 
+    let showGraph = false;
+
     race.participants?.forEach((participant) => {
         if (!participant.liveData) return;
+
+        showGraph = true;
 
         const values = [
             {
                 percentage: 0,
                 time: 0,
-                splitName: "",
+                splitName: '',
             },
         ];
 
         participantsMap.set(participant.user, values);
     });
 
+    if (!showGraph) return;
+
     let maxGraphTimeSeconds = 60 * 60;
 
-    if (race.status === "finished") {
+    if (race.status === 'finished') {
         const finishedParticipants = race.participants?.filter(
             (participant) => participant.finalTime,
         );
@@ -67,7 +73,7 @@ export const RaceProgressGraph = ({
             const minutes = highestPb / 60;
             const nextTenMinutes = Math.ceil(minutes / 10) * 10;
             maxGraphTimeSeconds = nextTenMinutes * 60;
-        } else if (race.status === "progress") {
+        } else if (race.status === 'progress') {
             maxGraphTimeSeconds =
                 (new Date().getTime() -
                     new Date(race.startTime as string).getTime()) /
@@ -125,20 +131,20 @@ export const RaceProgressGraph = ({
 
             times.push(time);
 
-            if (message.type === "participant-split") {
+            if (message.type === 'participant-split') {
                 current?.push({
                     percentage,
                     time,
                     splitName: message.data.splitName,
                 });
             } else if (
-                message.type === "participant-finish" ||
-                message.type === "participant-confirm"
+                message.type === 'participant-finish' ||
+                message.type === 'participant-confirm'
             ) {
                 current?.push({
                     percentage: 100,
                     time,
-                    splitName: "Finish",
+                    splitName: 'Finish',
                 });
             }
             participantsMap.set(message.data.user, current);
@@ -222,7 +228,7 @@ export const RaceProgressGraph = ({
     ];
 
     return (
-        <div style={{ height: "500px" }}>
+        <div style={{ height: '500px' }}>
             <MyResponsiveBump data={nivoData as Serie[]} ticks={graphTicks} />
         </div>
     );
@@ -242,31 +248,31 @@ const MyResponsiveBump = ({
                     fontSize: 16,
                     // TODO: Delete this
                     // eslint-disable-next-line sonarjs/no-duplicate-string
-                    fill: "var(--bs-body-color)",
-                    color: "var(--bs-body-color)",
+                    fill: 'var(--bs-body-color)',
+                    color: 'var(--bs-body-color)',
                 },
                 axis: {
                     ticks: {
                         line: {
-                            stroke: "var(--bs-body-color)",
+                            stroke: 'var(--bs-body-color)',
                             strokeWidth: 0,
                         },
                     },
                 },
                 grid: {
                     line: {
-                        stroke: "var(--bs-secondary-color)",
+                        stroke: 'var(--bs-secondary-color)',
                         opacity: 0.2,
                     },
                 },
             }}
             data={data}
-            colors={{ scheme: "category10" }}
+            colors={{ scheme: 'category10' }}
             lineWidth={0.8}
             pointSize={7}
-            pointColor={{ from: "color", modifiers: [] }}
+            pointColor={{ from: 'color', modifiers: [] }}
             pointBorderWidth={2}
-            pointBorderColor={{ from: "serie.color" }}
+            pointBorderColor={{ from: 'serie.color' }}
             pointLabelYOffset={-12}
             enableTouchCrosshair={true}
             useMesh={true}
@@ -274,8 +280,8 @@ const MyResponsiveBump = ({
             enableGridY={true}
             curve="natural"
             enablePoints={true}
-            xScale={{ type: "linear" }}
-            yScale={{ type: "linear" }}
+            xScale={{ type: 'linear' }}
+            yScale={{ type: 'linear' }}
             axisTop={null}
             axisRight={null}
             enableCrosshair={true}
@@ -302,7 +308,7 @@ const MyResponsiveBump = ({
                 tickPadding: 10,
                 tickRotation: 23,
                 legend: null,
-                legendPosition: "middle",
+                legendPosition: 'middle',
                 tickValues: ticks,
                 format: (a) => {
                     return getFormattedString((a * 1000).toString());
@@ -313,7 +319,7 @@ const MyResponsiveBump = ({
                 tickPadding: 10,
                 tickRotation: 0,
                 legend: null,
-                legendPosition: "middle",
+                legendPosition: 'middle',
                 legendOffset: -100,
                 truncateTickAt: 0,
                 tickValues: [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
@@ -324,19 +330,19 @@ const MyResponsiveBump = ({
             legends={[
                 {
                     toggleSerie: true,
-                    anchor: "top-left",
-                    direction: "column",
+                    anchor: 'top-left',
+                    direction: 'column',
                     justify: false,
                     translateX: 20,
                     translateY: 0,
                     itemsSpacing: 0,
-                    itemDirection: "left-to-right",
+                    itemDirection: 'left-to-right',
                     itemWidth: 80,
                     itemHeight: 20,
                     itemOpacity: 1,
                     symbolSize: 12,
-                    symbolShape: "circle",
-                    symbolBorderColor: "rgba(0, 0, 0, .5)",
+                    symbolShape: 'circle',
+                    symbolBorderColor: 'rgba(0, 0, 0, .5)',
                     data: data
                         .map((dataPoint, i) => {
                             return {
@@ -349,9 +355,9 @@ const MyResponsiveBump = ({
                         .reverse(),
                     effects: [
                         {
-                            on: "hover",
+                            on: 'hover',
                             style: {
-                                itemBackground: "rgba(0, 0, 0, .03)",
+                                itemBackground: 'rgba(0, 0, 0, .03)',
                                 itemOpacity: 1,
                             },
                         },

@@ -1,21 +1,21 @@
+import { useAutoAnimate } from '@formkit/auto-animate/react';
+import React from 'react';
+import { Col, Row } from 'react-bootstrap';
+import { Twitch as TwitchIcon } from 'react-bootstrap-icons';
+import { getPercentageDoneFromLiverun } from '~app/(old-layout)/races/[race]/get-percentage-done-from-liverun';
+import { RaceParticipantTimer } from '~app/(old-layout)/races/[race]/race-timer';
+import { readableRaceParticipantStatus } from '~app/(old-layout)/races/[race]/readable-race-status';
+import { RaceParticipantRatingDisplay } from '~app/(old-layout)/races/components/race-participant-rating-display';
 import {
     Race,
     RaceParticipantWithLiveData,
-} from "~app/(old-layout)/races/races.types";
-import { Col, Row } from "react-bootstrap";
-import React from "react";
-import { UserLink } from "~src/components/links/links";
-import { Twitch as TwitchIcon } from "react-bootstrap-icons";
-import styles from "../../../../src/components/css/LiveRun.module.scss";
-import { useAutoAnimate } from "@formkit/auto-animate/react";
+} from '~app/(old-layout)/races/races.types';
+import { UserLink } from '~src/components/links/links';
 import {
     DifferenceFromOne,
     DurationToFormatted,
-} from "~src/components/util/datetime";
-import { readableRaceParticipantStatus } from "~app/(old-layout)/races/[race]/readable-race-status";
-import { RaceParticipantTimer } from "~app/(old-layout)/races/[race]/race-timer";
-import { getPercentageDoneFromLiverun } from "~app/(old-layout)/races/[race]/get-percentage-done-from-liverun";
-import { RaceParticipantRatingDisplay } from "~app/(old-layout)/races/components/race-participant-rating-display";
+} from '~src/components/util/datetime';
+import styles from '../../../../src/components/css/LiveRun.module.scss';
 
 interface RaceParticipantDetailProps {
     race: Race;
@@ -39,7 +39,7 @@ const RaceParticipantDetailPagination = ({
 
     const [parent] = useAutoAnimate({
         duration: 300,
-        easing: "ease-out",
+        easing: 'ease-out',
     });
 
     return (
@@ -85,7 +85,7 @@ export const RaceParticipantDetailView = ({
     return (
         <div
             className={`px-4 pt-2 pb-1 card game-border h-100 ${
-                isHighlighted ? "bg-body-tertiary" : "bg-body-secondary"
+                isHighlighted ? 'bg-body-tertiary' : 'bg-body-secondary'
             } game-border mh-100 mb-3 ${
                 participant.liveData &&
                 participant.liveData.streaming &&
@@ -110,12 +110,12 @@ export const RaceParticipantDetailView = ({
                         )}
                     </span>
                     <span className="fs-5">
-                        {participant.status !== "abandoned" && (
+                        {participant.status !== 'abandoned' && (
                             <span className="justify-content-end">
                                 #{placing}
                             </span>
                         )}
-                        {participant.status === "abandoned" && (
+                        {participant.status === 'abandoned' && (
                             <span className="justify-content-end">-</span>
                         )}
                     </span>
@@ -125,7 +125,7 @@ export const RaceParticipantDetailView = ({
                 <span>
                     {participant.pb && (
                         <span>
-                            PB -{" "}
+                            PB -{' '}
                             <span className="fw-bold">
                                 <DurationToFormatted
                                     duration={participant.pb}
@@ -133,13 +133,13 @@ export const RaceParticipantDetailView = ({
                             </span>
                         </span>
                     )}
-                    {!participant.pb && "No PB"}
+                    {!participant.pb && 'No PB'}
                 </span>
                 <RaceParticipantRatingDisplay raceParticipant={participant} />
                 {readableRaceParticipantStatus(participant.status)}
             </div>
-            <hr style={{ margin: "0.7rem 0" }} />
-            <div style={{ minHeight: "5.2rem" }} className="d-flex">
+            <hr style={{ margin: '0.7rem 0' }} />
+            <div style={{ minHeight: '5.2rem' }} className="d-flex">
                 <RaceParticipantDetailBody
                     participant={participant}
                     race={race}
@@ -165,30 +165,30 @@ const RaceParticipantDetailBody = ({
     return (
         <div className="w-100">
             <span className="flex-center w-100 fs-5">
-                {participant.status === "abandoned" &&
+                {participant.status === 'abandoned' &&
                     !participant.disqualified && (
                         <>
-                            Abandoned -{" "}
+                            Abandoned -{' '}
                             <span className="ps-1">
                                 <DurationToFormatted duration={abandonedTime} />
                             </span>
                         </>
                     )}
-                {participant.status === "abandoned" &&
+                {participant.status === 'abandoned' &&
                     participant.disqualified && <>Disqualified</>}
-                {participant.status !== "abandoned" && (
+                {participant.status !== 'abandoned' && (
                     <RaceParticipantTimer
                         raceParticipant={participant}
                         race={race}
                     />
                 )}
             </span>
-            <hr style={{ margin: "0.7rem 0" }} />
-            {participant.liveData && participant.status === "started" && (
+            <hr style={{ margin: '0.7rem 0' }} />
+            {participant.liveData && participant.status === 'started' && (
                 <>
                     <div className="justify-content-between d-flex">
                         <span>
-                            BPT -{" "}
+                            BPT -{' '}
                             <span className="fw-bold">
                                 <DurationToFormatted
                                     duration={
@@ -207,16 +207,16 @@ const RaceParticipantDetailBody = ({
                     <div className="justify-content-between d-flex w-100 flex-grow-1 p-0 m-0">
                         <span className="text-truncate">
                             {participant.liveData.currentSplitIndex + 1}/
-                            {participant.liveData.totalSplits} -{" "}
+                            {participant.liveData.totalSplits} -{' '}
                             {participant.liveData.currentSplitName}
                         </span>
                         <span>{percentage}%</span>
                     </div>
                 </>
             )}
-            {race.status === "progress" && participant.status === "ready" && (
+            {race.status === 'progress' && participant.status === 'ready' && (
                 <div className="flex-center align-items-center fst-italic h-50">
-                    Awaiting Live Data...{" "}
+                    Awaiting Live Data...{' '}
                 </div>
             )}
             {participant.comment && !participant.disqualifiedReason && (
@@ -226,7 +226,8 @@ const RaceParticipantDetailBody = ({
             )}
             {participant.disqualifiedReason && (
                 <div className="fst-italic flex-center align-items-center h-50">
-                    &quot;{participant.disqualifiedReason}&quot;
+                    DQ by {participant.disqualifiedBy} with reason: &quot;
+                    {participant.disqualifiedReason}&quot;
                 </div>
             )}
         </div>
