@@ -251,6 +251,8 @@ export const getFormattedString = (
 };
 
 export const timeToMillis = (timeString: string) => {
+    if (!timeString) return 0;
+
     let time = 0;
 
     const millisSeperated = timeString.split(".");

@@ -101,7 +101,6 @@ export const SetTimeForUserForm = ({
                         value={finalTimeInput}
                         onChange={(event) => {
                             setFinalTimeInput(event.target.value);
-                            setFinalTimeInput();
                         }}
                     />
                     <input
