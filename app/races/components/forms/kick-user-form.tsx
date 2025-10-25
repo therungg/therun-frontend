@@ -33,6 +33,10 @@ export const KickUserForm = ({
         <div className="mb-4 mt-2">
             <Form action={kickUser} className="gap-2 mt-2">
                 <input hidden name="raceId" value={raceId} readOnly />
+                <div className="mb-2">
+                    You can kick a user from the race if they are AFK or if they
+                    submitted an incorrect time.
+                </div>
                 <div className="mb-1">Select a user to kick from the race:</div>
                 <select
                     className="form-select mb-2"

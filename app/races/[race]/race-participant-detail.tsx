@@ -223,7 +223,8 @@ const RaceParticipantDetailBody = ({
             )}
             {participant.disqualifiedReason && (
                 <div className="fst-italic flex-center align-items-center h-50">
-                    &quot;{participant.disqualifiedReason}&quot;
+                    DQ by {participant.disqualifiedBy} with reason: &quot;
+                    {participant.disqualifiedReason}&quot;
                 </div>
             )}
         </div>

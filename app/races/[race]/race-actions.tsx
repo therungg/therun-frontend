@@ -53,6 +53,9 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
         loggedinUserParticipation.liveData &&
         loggedinUserParticipation.liveData.currentSplitIndex === -1;
 
+    const userWasDisqualified =
+        userAbandoned && loggedinUserParticipation.disqualifiedReason;
+
     const userCreatedRace = race.creator === user?.username;
 
     if (race.status === "starting") return null;
@@ -60,6 +63,7 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
         return null;
     if (userConfirmed && loggedinUserParticipation.comment && !userCreatedRace)
         return null;
+    if (userWasDisqualified) return null;
 
     const everyoneAbandoned = race.participants?.every(
         (participant) => participant.status === "abandoned",
@@ -86,6 +90,7 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
             )}
 
             {(userFinished || userConfirmed || userAbandoned) &&
+                !userWasDisqualified &&
                 !loggedinUserParticipation.comment && (
                     <CommentOnRaceForm raceId={race.raceId} />
                 )}

@@ -139,12 +139,20 @@ const RaceParticipantStatus = ({
                     />
                 </div>
             )}
-            {participant.status === "abandoned" && (
-                <span>
-                    DNF
-                    {/*<DurationToFormatted duration={abandonedTime} />*/}
-                </span>
-            )}
+            {participant.status === "abandoned" &&
+                participant.disqualifiedReason && (
+                    <span>
+                        Disqualified
+                        {/*<DurationToFormatted duration={abandonedTime} />*/}
+                    </span>
+                )}
+            {participant.status === "abandoned" &&
+                !participant.disqualifiedReason && (
+                    <span>
+                        DNF
+                        {/*<DurationToFormatted duration={abandonedTime} />*/}
+                    </span>
+                )}
             {participant.status === "ready" && (
                 <span>
                     {race.status === "progress" && <span>In Progress</span>}

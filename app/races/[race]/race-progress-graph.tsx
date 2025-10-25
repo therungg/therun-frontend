@@ -31,8 +31,12 @@ export const RaceProgressGraph = ({
 
     const participantsMap = new Map<string, ProgressGraphDataPoint[]>();
 
+    let showGraph = false;
+
     race.participants?.forEach((participant) => {
         if (!participant.liveData) return;
+
+        showGraph = true;
 
         const values = [
             {
@@ -44,6 +48,8 @@ export const RaceProgressGraph = ({
 
         participantsMap.set(participant.user, values);
     });
+
+    if (!showGraph) return;
 
     let maxGraphTimeSeconds = 60 * 60;
 
