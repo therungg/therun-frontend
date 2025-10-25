@@ -6,10 +6,9 @@ const nextConfig = {
     typescript: {
         ignoreBuildErrors: true,
     },
+    reactCompiler: true,
     experimental: {
-        reactCompiler: true,
         useCache: true,
-        dynamicIO: true,
         serverActions: {
             bodySizeLimit: "25mb",
         },

@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { redirectTournamentsMiddleware } from "~src/middlewares/redirect-tournaments.middleware";
+import { NextRequest, NextResponse } from 'next/server';
+import { redirectTournamentsMiddleware } from '~src/middlewares/redirect-tournaments.middleware';
 
 // Only return the response when you need a redirect or something
 const middlewareList = [
@@ -19,8 +19,8 @@ function withMiddlewares(middlewares: MiddlewareFn[]) {
     return async (request: NextRequest) => {
         const response = NextResponse.next();
 
-        for (const middleware of middlewares) {
-            const result = await middleware(request, response);
+        for (const proxy of middlewares) {
+            const result = await proxy(request, response);
             if (result instanceof NextResponse) {
                 return result;
             }
@@ -30,4 +30,4 @@ function withMiddlewares(middlewares: MiddlewareFn[]) {
     };
 }
 
-export const middleware = withMiddlewares(middlewareList);
+export const proxy = withMiddlewares(middlewareList);
