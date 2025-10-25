@@ -17,10 +17,7 @@ export const RaceAdminActions = ({
         return <></>;
     }
     const raceIsPending = race.status === "pending";
-
-    if (!raceIsPending) {
-        return <></>;
-    }
+    const raceIsOngoing = race.status === "progress";
 
     const raceCanBeStarted =
         race.startMethod === "moderator" &&
@@ -29,6 +26,15 @@ export const RaceAdminActions = ({
         race.participants?.every(
             (participant) => participant.status === "ready",
         );
+
+    const raceCanBeEdited = raceIsPending;
+    const raceCanBeAborted = raceIsPending;
+    const userCanBeKicked = raceIsPending || raceIsOngoing;
+
+    const showAdminpanel =
+        raceCanBeEdited || raceCanBeAborted || userCanBeKicked;
+
+    if (!showAdminpanel) return;
 
     return (
         <div
@@ -45,22 +51,26 @@ export const RaceAdminActions = ({
                     className="w-100 fs-5 mt-2 mb-2"
                 />
             )}
-            <a href={`/races/${race.raceId}/edit`}>
-                <Button variant="primary" className="w-100 fs-5">
-                    Edit race
-                </Button>
-            </a>
-            {raceIsPending && (
+            {raceCanBeEdited && (
+                <a href={`/races/${race.raceId}/edit`}>
+                    <Button variant="primary" className="w-100 fs-5">
+                        Edit race
+                    </Button>
+                </a>
+            )}
+            {raceCanBeAborted && (
                 <AbortRaceButton
                     raceId={race.raceId}
                     variant="danger"
                     className="w-100 fs-5 mt-2"
                 />
             )}
-            <KickUserForm
-                raceId={race.raceId}
-                users={race.participants?.map((p) => p.user)}
-            />
+            {userCanBeKicked && (
+                <KickUserForm
+                    raceId={race.raceId}
+                    users={race.participants?.map((p) => p.user)}
+                />
+            )}
         </div>
     );
 };
