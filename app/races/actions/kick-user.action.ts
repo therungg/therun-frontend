@@ -2,6 +2,7 @@
 
 import { getSession } from "~src/actions/session.action";
 import { confirmPermission } from "~src/rbac/confirm-permission";
+import { getRaceByRaceId } from "~src/lib/races";
 
 const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
 
@@ -21,7 +22,9 @@ export async function kickUser(raceInput: FormData) {
         return;
     }
 
-    confirmPermission(session, "moderate", "race", raceId);
+    const race = await getRaceByRaceId(raceId);
+
+    confirmPermission(session, "moderate", "race", race);
 
     const url = `${racesApiUrl}/${raceId}/participants/${user}/disqualify`;
 
