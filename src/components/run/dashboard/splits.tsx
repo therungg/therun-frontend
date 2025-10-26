@@ -39,6 +39,7 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
     const splitToUse = totalTime ? "total" : "single";
     const splitsFile = decodeURIComponent(run.splitsFile as string)
         .replaceAll("%", "%25")
+        .replaceAll("+++", "+%2B+")
         .replaceAll("++", "%2B+")
         .replaceAll("NG+", "NG%2B");
 
