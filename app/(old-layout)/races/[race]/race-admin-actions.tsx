@@ -2,6 +2,7 @@ import { Button } from 'react-bootstrap';
 import { AbortRaceButton } from '~app/(old-layout)/races/components/buttons/abort-race-button';
 import { StartRaceButton } from '~app/(old-layout)/races/components/buttons/start-race-button';
 import { KickUserForm } from '~app/(old-layout)/races/components/forms/kick-user-form';
+import { SetTimeForUserForm } from '~app/(old-layout)/races/components/forms/set-time-for-user-form';
 import { Race } from '~app/(old-layout)/races/races.types';
 import { isRaceModerator } from '~src/rbac/confirm-permission';
 import { User } from '../../../../types/session.types';
@@ -30,9 +31,13 @@ export const RaceAdminActions = ({
     const raceCanBeEdited = raceIsPending;
     const raceCanBeAborted = raceIsPending;
     const userCanBeKicked = raceIsPending || raceIsOngoing;
+    const userTimeCanBeSet = raceIsOngoing;
 
     const showAdminpanel =
-        raceCanBeEdited || raceCanBeAborted || userCanBeKicked;
+        raceCanBeEdited ||
+        raceCanBeAborted ||
+        userCanBeKicked ||
+        userTimeCanBeSet;
 
     if (!showAdminpanel) return;
 
@@ -69,6 +74,17 @@ export const RaceAdminActions = ({
                 <KickUserForm
                     raceId={race.raceId}
                     users={race.participants?.map((p) => p.user)}
+                />
+            )}
+            {userTimeCanBeSet && (
+                <SetTimeForUserForm
+                    raceId={race.raceId}
+                    currentRaceTime={
+                        new Date().getTime() -
+                        new Date(race.startTime).getTime()
+                    }
+                    users={race.participants?.map((p) => p.user)}
+                    times={race.participants?.map((p) => p.finalTime)}
                 />
             )}
         </div>

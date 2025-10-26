@@ -337,6 +337,24 @@ const getRaceMessage = (message: RaceMessage) => {
         }
         case 'participant-confirm': {
             const data = message.data as RaceMessageParticipantTimeData;
+            const setBySomeoneElse = user !== data.setBy;
+
+            if (setBySomeoneElse) {
+                return (
+                    <>
+                        <UserLink icon={false} username={user as string} /> had
+                        their time set to{' '}
+                        {data.time && (
+                            <span className="fw-bold">
+                                {' '}
+                                <DurationToFormatted duration={data.time} />
+                            </span>
+                        )}{' '}
+                        by {data.setBy}
+                    </>
+                );
+            }
+
             return (
                 <>
                     <UserLink icon={false} username={user as string} />{' '}

@@ -1,12 +1,12 @@
-"use server";
+'use server';
 
+import Joi from 'joi';
 import {
     StoryElementType,
     StoryPreferences,
-} from "~app/(old-layout)/live/story.types";
-import Joi from "joi";
-import { getSession } from "~src/actions/session.action";
-import { getApiKey } from "~src/actions/api-key.action";
+} from '~app/(old-layout)/live/story.types';
+import { getApiKey } from '~src/actions/api-key.action';
+import { getSession } from '~src/actions/session.action';
 
 const apiUrl = process.env.NEXT_PUBLIC_STORIES_API_URL as string;
 
@@ -19,9 +19,9 @@ export async function setStoryPreferencesAction(
     const rawStories: StoryElementType[] = entries
         .filter(
             ([key, _]) =>
-                key.startsWith("stories.") && key.endsWith(".enabled"),
+                key.startsWith('stories.') && key.endsWith('.enabled'),
         )
-        .map(([key, _]) => key.split(".")[1] as StoryElementType);
+        .map(([key, _]) => key.split('.')[1] as StoryElementType);
 
     const disabledStories = rawStories.filter(
         (item) => rawStories.indexOf(item) === rawStories.lastIndexOf(item),
@@ -32,27 +32,27 @@ export async function setStoryPreferencesAction(
     entries
         .filter(
             ([key, _]) =>
-                key.startsWith("stories.") && key.endsWith(".cooldown"),
+                key.startsWith('stories.') && key.endsWith('.cooldown'),
         )
         .forEach(([key, value]) => {
-            cooldowns[key.split(".")[1] as StoryElementType] = Number(value);
+            cooldowns[key.split('.')[1] as StoryElementType] = Number(value);
         });
 
     const input: StoryPreferences = {
-        enabled: !!raceInput.get("enabled"),
-        disableNegativeStories: !!raceInput.get("disableNegativeStories"),
-        disableWelcomeStories: !!raceInput.get("disableWelcomeStories"),
+        enabled: !!raceInput.get('enabled'),
+        disableNegativeStories: !!raceInput.get('disableNegativeStories'),
+        disableWelcomeStories: !!raceInput.get('disableWelcomeStories'),
         allowAIRephrase: false,
-        translateLanguage: raceInput.get("translateLanguage") || "",
-        globalStoryCooldown: raceInput.get("globalStoryCooldown"),
+        translateLanguage: raceInput.get('translateLanguage') || '',
+        globalStoryCooldown: raceInput.get('globalStoryCooldown'),
         allowGlobalStoryCooldownOverride: !!raceInput.get(
-            "allowGlobalStoryCooldownOverride",
+            'allowGlobalStoryCooldownOverride',
         ),
-        changeGoldToRainbow: !!raceInput.get("changeGoldToRainbow"),
-        nameOverride: raceInput.get("nameOverride"),
-        pronounOverrideThey: raceInput.get("pronounOverrideThey"),
-        pronounOverrideThem: raceInput.get("pronounOverrideThem"),
-        pronounOverrideTheir: raceInput.get("pronounOverrideTheir"),
+        changeGoldToRainbow: !!raceInput.get('changeGoldToRainbow'),
+        nameOverride: raceInput.get('nameOverride'),
+        pronounOverrideThey: raceInput.get('pronounOverrideThey'),
+        pronounOverrideThem: raceInput.get('pronounOverrideThem'),
+        pronounOverrideTheir: raceInput.get('pronounOverrideTheir'),
         disabledStories,
         customCooldowns: cooldowns,
     };
@@ -62,7 +62,7 @@ export async function setStoryPreferencesAction(
     if (error) {
         return {
             message: error.message,
-            type: "error",
+            type: 'error',
         };
     }
 
@@ -74,25 +74,23 @@ export async function setStoryPreferencesAction(
     const result = await fetch(
         apiUrl + `/user/${session.username}/preferences`,
         {
-            method: "PUT",
+            method: 'PUT',
             headers: {
                 Authorization: `Bearer ${session.id}`,
-                "x-api-key": apiKey,
+                'x-api-key': apiKey,
             },
             body: JSON.stringify(input),
         },
     );
 
-    console.log(JSON.stringify(input));
-
     if (result.status !== 200) {
         const response = await result.text();
-        return { message: response, type: "error" };
+        return { message: response, type: 'error' };
     }
 
     return {
-        message: "Story preferences succesfully updated!",
-        type: "success",
+        message: 'Story preferences succesfully updated!',
+        type: 'success',
     };
 }
 

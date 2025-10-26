@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import moment from "moment/moment";
-import { useEffect, useMemo, useState } from "react";
+import moment from 'moment/moment';
+import { useEffect, useMemo, useState } from 'react';
 
 interface IsoToFormattedProps {
     iso: string | Date;
@@ -16,35 +16,35 @@ interface DurationToFormattedProps {
 }
 
 const monthNames = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
 ];
 
 export const getDateAsMonthDay = (date: Date) => {
-    return monthNames[date.getMonth()] + " " + date.getDate();
+    return monthNames[date.getMonth()] + ' ' + date.getDate();
 };
 
 export const getFullDate = (iso: string | Date) => {
-    return moment(iso).format("YYYY-MM-DD hh:mm:ss");
+    return moment(iso).format('YYYY-MM-DD hh:mm:ss');
 };
 
 export const getMonthDay = (iso: string | Date) => {
-    return moment(iso).format("YYYY-MM-DD");
+    return moment(iso).format('YYYY-MM-DD');
 };
 
 export const IsoToFormatted = ({ iso }: IsoToFormattedProps) => {
-    if (iso === "0") return <i>Unknown</i>;
-    return <>{moment(iso).format("L LT")}</>;
+    if (iso === '0') return <i>Unknown</i>;
+    return <>{moment(iso).format('L LT')}</>;
 };
 
 export const LocalizedTime = ({
@@ -90,7 +90,7 @@ export const Difference = ({
 
     if (diff > -60000 && diff < 60000) withMillis = true;
 
-    const formatted = `${diff <= 0 ? "-" : "+"}${getFormattedString(
+    const formatted = `${diff <= 0 ? '-' : '+'}${getFormattedString(
         Math.abs(diff).toString(),
         withMillis,
         false,
@@ -100,7 +100,7 @@ export const Difference = ({
 
     return (
         <abbr
-            title={`${diff <= 0 ? "-" : "+"}${getFormattedString(
+            title={`${diff <= 0 ? '-' : '+'}${getFormattedString(
                 Math.abs(diff).toString(),
                 true,
                 false,
@@ -112,12 +112,12 @@ export const Difference = ({
                 <span
                     style={{
                         color: isGold
-                            ? "var(--bs-secondary)"
+                            ? 'var(--bs-secondary)'
                             : diff <= 0
                               ? // eslint-disable-next-line sonarjs/no-duplicate-string
-                                "var(--bs-link-color)"
+                                'var(--bs-link-color)'
                               : // eslint-disable-next-line sonarjs/no-duplicate-string
-                                "var(--bs-red)",
+                                'var(--bs-red)',
                     }}
                 >
                     {formatted}
@@ -126,10 +126,10 @@ export const Difference = ({
                 <div
                     style={{
                         color: isGold
-                            ? "var(--bs-secondary)"
+                            ? 'var(--bs-secondary)'
                             : diff <= 0
-                              ? "var(--bs-link-color)"
-                              : "var(--bs-red)",
+                              ? 'var(--bs-link-color)'
+                              : 'var(--bs-red)',
                     }}
                 >
                     {formatted}
@@ -142,14 +142,14 @@ export const Difference = ({
 export const DifferenceFromOne = ({
     diff,
     withMillis = false,
-    className = "text-end",
+    className = 'text-end',
 }: {
     diff: number;
     withMillis?: boolean;
     className?: string;
 }) => {
     if (!diff && diff !== 0) return <></>;
-    const formatted = `${diff <= 0 ? "-" : "+"}${getFormattedString(
+    const formatted = `${diff <= 0 ? '-' : '+'}${getFormattedString(
         Math.abs(diff).toString(),
         withMillis,
         false,
@@ -158,7 +158,7 @@ export const DifferenceFromOne = ({
 
     return (
         <abbr
-            title={`${diff <= 0 ? "-" : "+"}${getFormattedString(
+            title={`${diff <= 0 ? '-' : '+'}${getFormattedString(
                 Math.abs(diff).toString(),
                 true,
                 false,
@@ -167,7 +167,7 @@ export const DifferenceFromOne = ({
             <div
                 className={className}
                 style={{
-                    color: diff <= 0 ? "var(--bs-link-color)" : "var(--bs-red)",
+                    color: diff <= 0 ? 'var(--bs-link-color)' : 'var(--bs-red)',
                 }}
             >
                 {formatted}
@@ -187,18 +187,18 @@ export const getNumberDifference = (one: number, two: number): string => {
 export const getPercentageDifference = (one: number, two: number): string => {
     const result = (one / two) * 100 - 100;
 
-    return `${(result > 0 ? "+" : "") + result.toFixed(0)}%`;
+    return `${(result > 0 ? '+' : '') + result.toFixed(0)}%`;
 };
 
 export const getDurationAsTimer = (duration: string) => {
     const formatNumber = (value: number): string => {
-        return String(value).padStart(2, "0");
+        return String(value).padStart(2, '0');
     };
 
     let milli = parseInt(duration);
     if (milli < 0) milli *= -1;
 
-    if (!milli && milli !== 0) return "-";
+    if (!milli && milli !== 0) return '-';
 
     const seconds = Math.floor((milli / 1000) % 60);
     const minutes = Math.floor((milli / (60 * 1000)) % 60);
@@ -220,13 +220,13 @@ export const getFormattedString = (
     let milli = parseInt(duration);
     if (milli < 0) milli *= -1;
 
-    if (!milli && milli !== 0) return "-";
+    if (!milli && milli !== 0) return '-';
 
-    const milliseconds = String(milli % 1000).padStart(3, "0");
-    const seconds = String(Math.floor((milli / 1000) % 60)).padStart(2, "0");
+    const milliseconds = String(milli % 1000).padStart(3, '0');
+    const seconds = String(Math.floor((milli / 1000) % 60)).padStart(2, '0');
     const minutes = String(Math.floor((milli / (60 * 1000)) % 60)).padStart(
         2,
-        "0",
+        '0',
     );
     const hours = Math.floor(milli / (60 * 60 * 1000));
     const days = Math.floor(hours / 24);
@@ -242,11 +242,11 @@ export const getFormattedString = (
             return `${padded ? hours.toLocaleString() : hours}h ${minutes}m`;
     }
 
-    let formatted = "";
+    let formatted = '';
 
     if (hours > 0) formatted += `${hours.toString()}:`;
     formatted +=
-        (difference && withMillis && milli < 60000 ? "" : `${minutes}:`) +
+        (difference && withMillis && milli < 60000 ? '' : `${minutes}:`) +
         seconds;
 
     if (withMillis) formatted += `.${milliseconds}`;
@@ -255,15 +255,17 @@ export const getFormattedString = (
 };
 
 export const timeToMillis = (timeString: string) => {
+    if (!timeString) return 0;
+
     let time = 0;
 
-    const millisSeperated = timeString.split(".");
+    const millisSeperated = timeString.split('.');
 
     if (millisSeperated.length > 1 && !!millisSeperated[1]) {
         time += parseInt(millisSeperated[1]);
     }
 
-    const seperated = millisSeperated[0].split(":").reverse();
+    const seperated = millisSeperated[0].split(':').reverse();
 
     time += parseInt(seperated[0]) * 1000;
 
@@ -336,7 +338,7 @@ export const DurationAsTimer = ({ duration }: { duration: string }) => {
 
 export const FromNow = ({ time }: { time: string | Date }) => {
     return (
-        <abbr title={moment(time).format("LLLL")}>
+        <abbr title={moment(time).format('LLLL')}>
             {moment(time).fromNow()}
         </abbr>
     );

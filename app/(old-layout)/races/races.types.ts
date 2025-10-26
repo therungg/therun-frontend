@@ -1,21 +1,21 @@
-import { PaginatedData } from "~src/components/pagination/pagination.types";
+import { PaginatedData } from '~src/components/pagination/pagination.types';
 
 export type RaceStatus =
-    | "pending"
-    | "starting"
-    | "progress"
-    | "finished"
-    | "aborted";
+    | 'pending'
+    | 'starting'
+    | 'progress'
+    | 'finished'
+    | 'aborted';
 export type RaceParticipantStatus =
-    | "joined"
-    | "ready"
-    | "started"
-    | "finished"
-    | "confirmed"
-    | "abandoned"
-    | "unjoined";
+    | 'joined'
+    | 'ready'
+    | 'started'
+    | 'finished'
+    | 'confirmed'
+    | 'abandoned'
+    | 'unjoined';
 
-export type RaceStartMethodType = "everyone-ready" | "datetime" | "moderator";
+export type RaceStartMethodType = 'everyone-ready' | 'datetime' | 'moderator';
 
 export interface Race {
     raceId: string;
@@ -144,9 +144,9 @@ export interface EditRaceInput {
 }
 
 export type WebsocketRaceMessageType =
-    | "raceUpdate"
-    | "participantUpdate"
-    | "message";
+    | 'raceUpdate'
+    | 'participantUpdate'
+    | 'message';
 
 export interface WebsocketRaceMessage<
     T extends Race | RaceParticipant | RaceMessage,
@@ -158,12 +158,12 @@ export interface WebsocketRaceMessage<
 export type PaginatedRaces = PaginatedData<Race>;
 
 export type RaceStatType =
-    | "global"
-    | "game"
-    | "game#category"
-    | "user"
-    | "game#user"
-    | "game#category#user";
+    | 'global'
+    | 'game'
+    | 'game#category'
+    | 'user'
+    | 'game#user'
+    | 'game#category#user';
 
 export interface Stats {
     type: RaceStatType;
@@ -175,8 +175,8 @@ export interface Stats {
 }
 
 export interface GlobalStats extends Stats {
-    type: "global";
-    value: "global";
+    type: 'global';
+    value: 'global';
     totalParticipations: number;
     totalFinishedParticipations: number;
 }
@@ -186,7 +186,7 @@ export interface SpecificStats extends Stats {
 }
 
 export interface GameStats extends SpecificStats {
-    type: "game" | "game#category";
+    type: 'game' | 'game#category';
     image: string;
     totalParticipations: number;
     totalFinishedParticipations: number;
@@ -203,9 +203,9 @@ export interface UserStats extends SpecificStats {
     racePb: number;
     image: string;
     rankings: [
-        RaceRanking<"mmr">,
-        RaceRanking<"time">,
-        RaceRanking<"timeMonth">,
+        RaceRanking<'mmr'>,
+        RaceRanking<'time'>,
+        RaceRanking<'timeMonth'>,
     ];
 }
 
@@ -235,6 +235,7 @@ export interface RaceMessageParticipantSplitData extends RaceMessageUserData {
 
 export interface RaceMessageParticipantTimeData extends RaceMessageUserData {
     time: number;
+    setBy: string;
 }
 
 export interface RaceMessageModeratorData extends RaceMessageData {
@@ -242,34 +243,34 @@ export interface RaceMessageModeratorData extends RaceMessageData {
 }
 
 export type RaceMessageType =
-    | "race-created"
-    | "race-edited"
-    | "race-starting"
-    | "race-start-canceled"
-    | "race-started"
-    | "race-abort"
-    | "race-finish"
-    | "race-rated"
-    | "race-stats-parsed"
-    | "race-leaderboards-updated"
-    | "race-reset"
-    | "race-moderator-start"
-    | "race-moderator-start-fail"
-    | "race-admin-kick"
-    | "participant-join"
-    | "participant-unjoin"
-    | "participant-ready"
-    | "participant-unready"
-    | "participant-split"
-    | "participant-abandon"
-    | "participant-disqualified"
-    | "participant-undo-abandon"
-    | "participant-finish"
-    | "participant-undo-finish"
-    | "participant-confirm"
-    | "participant-undo-confirm"
-    | "participant-comment"
-    | "chat";
+    | 'race-created'
+    | 'race-edited'
+    | 'race-starting'
+    | 'race-start-canceled'
+    | 'race-started'
+    | 'race-abort'
+    | 'race-finish'
+    | 'race-rated'
+    | 'race-stats-parsed'
+    | 'race-leaderboards-updated'
+    | 'race-reset'
+    | 'race-moderator-start'
+    | 'race-moderator-start-fail'
+    | 'race-admin-kick'
+    | 'participant-join'
+    | 'participant-unjoin'
+    | 'participant-ready'
+    | 'participant-unready'
+    | 'participant-split'
+    | 'participant-abandon'
+    | 'participant-disqualified'
+    | 'participant-undo-abandon'
+    | 'participant-finish'
+    | 'participant-undo-finish'
+    | 'participant-confirm'
+    | 'participant-undo-confirm'
+    | 'participant-comment'
+    | 'chat';
 
 /**
  * -------------- RESPONSES ------------------
@@ -308,7 +309,7 @@ export interface RaceMmrStat {
     mmr: number;
 }
 
-export interface RaceRanking<T extends "mmr" | "time" | "timeMonth"> {
+export interface RaceRanking<T extends 'mmr' | 'time' | 'timeMonth'> {
     score: number;
     rank: number;
     type: T;

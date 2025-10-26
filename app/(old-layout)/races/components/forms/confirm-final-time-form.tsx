@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Form } from "react-bootstrap";
-import { confirmFinalTime } from "~app/(old-layout)/races/actions/confirm-final-time.action";
+import { useEffect, useState } from 'react';
+import { Form } from 'react-bootstrap';
+import { confirmFinalTime } from '~app/(old-layout)/races/actions/confirm-final-time.action';
+import { SubmitButton } from '~src/components/Button/SubmitButton';
 import {
     getFormattedString,
     timeToMillis,
-} from "~src/components/util/datetime";
-import { SubmitButton } from "~src/components/Button/SubmitButton";
+} from '~src/components/util/datetime';
 
 export const ConfirmFinalTimeForm = ({
     raceId,
@@ -27,7 +27,7 @@ export const ConfirmFinalTimeForm = ({
 
     return (
         <div className="mb-4">
-            Please confirm your final time:
+            Please confirm your final time (HH:MM:SS):
             <Form action={confirmFinalTime}>
                 <input hidden name="raceId" value={raceId} readOnly />
 
