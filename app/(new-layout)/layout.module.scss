@@ -5,23 +5,47 @@ $secondary: var(--bs-secondary);
     position: relative;
     min-height: 100vh;
     z-index: 0;
+    background: var(--bs-body-bg)
 }
 
-/* 👇 This creates the mesh background */
-.background::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(at 30% 0%, $primary 0%, transparent 60%),
-        radial-gradient(at 70% 20%, $secondary 0%, transparent 50%);
-    /* overall visibility */
-    mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0));
-    background-size: cover;
-    opacity: 0.30;
-    z-index: -1;
-    pointer-events: none;
-}
+///* 👇 This creates the mesh background */
+//.background::before {
+//    content: "";
+//    position: absolute;
+//    inset: 0;
+//    opacity: 0.35;
+//    background: radial-gradient(
+//                    at 85.99706141639729% 25.09457755359395%,
+//                    #3074c2 0px,
+//                    transparent 50%
+//    ),
+//    radial-gradient(
+//                    at 30.25330590655304% 53.46784363177805%,
+//                    #3530c2 0px,
+//                    transparent 50%
+//    ),
+//    radial-gradient(
+//                    at 22.42962092271525% 30.012610340479196%,
+//                    #7e30c2 0px,
+//                    transparent 50%
+//    ),
+//    radial-gradient(
+//                    at 59.37672197391783% 28.96790980052038%,
+//                    #c27e30 0px,
+//                    transparent 50%
+//    ),
+//    radial-gradient(
+//                    at 83.95098442242261% 57.32870771899393%,
+//                    #74c230 0px,
+//                    transparent 50%
+//    );
+//    background-color: #131313;
+//    /* overall visibility */
+//    mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0));
+//    background-size: cover;
+//    z-index: -1;
+//    pointer-events: none;
+//}
 
 .header,
 .main,
