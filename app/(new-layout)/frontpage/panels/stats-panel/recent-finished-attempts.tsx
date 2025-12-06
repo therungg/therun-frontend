@@ -1,27 +1,35 @@
-import { Suspense } from 'react';
+"use client"
+
+import { Suspense, use, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { CardWithImage } from '~app/(new-layout)/components/card-with-image.component';
 import { getGameGlobal } from '~src/components/game/get-game';
 import { DurationToFormatted, FromNow } from '~src/components/util/datetime';
 import { SummaryFinishedRun, UserSummary } from '~src/types/summary.types';
 import styles from './stats-panel.module.scss';
+import { Button } from '~src/components/Button/Button';
 
-export const RecentFinishedAttempts = async ({
+const DEFAULT_SHOW_LIMIT = 4;
+
+export const RecentFinishedAttempts = ({
     stats,
 }: {
     stats: UserSummary;
 }) => {
+    const [showAll, setShowAll] = useState(false);
+
     return (
         <div className="w-100">
-            <h5>Recent Finished Runs</h5>
+            <h5>Finished Runs</h5>
             <div className="mt-2">
                 {stats.finishedRuns.length === 0 && <div></div>}
                 {stats.finishedRuns.length > 0 && (
                     <Row className="w-100 mx-0">
                         {stats.finishedRuns
                             .sort((a, b) => b.date - a.date)
-                            .slice(0, 2)
+                            .slice(0, showAll ? -1 : DEFAULT_SHOW_LIMIT)
                             .map((run) => {
+                                const gameData = getGameGlobal(run.game);
                                 return (
                                     <Col
                                         key={run.date}
@@ -35,6 +43,7 @@ export const RecentFinishedAttempts = async ({
                                             <RecentFinishedRun
                                                 key={run.date}
                                                 run={run}
+                                                gameData={gameData}
                                             />
                                         </Suspense>
                                     </Col>
@@ -43,16 +52,32 @@ export const RecentFinishedAttempts = async ({
                     </Row>
                 )}
             </div>
+            {!showAll && stats.finishedRuns.length > DEFAULT_SHOW_LIMIT && (
+                <div className="d-flex justify-content-center mt-2">
+                    <Button
+                        onClick={() => setShowAll(true)}
+                    >
+                        Show {stats.finishedRuns.length - DEFAULT_SHOW_LIMIT - 1} more runs
+                    </Button>
+                </div>
+            )}
+            {showAll && (
+                <div className="d-flex justify-content-center mt-2">
+                    <Button
+                        onClick={() => setShowAll(false)}
+                    >
+                        Show fewer runs
+                    </Button>
+                </div>
+            )}
         </div>
     );
 };
 
-const RecentFinishedRun = async ({ run }: { run: SummaryFinishedRun }) => {
-    const { game } = run;
+const RecentFinishedRun = ({ run, gameData }: { run: SummaryFinishedRun, gameData: Promise<any> }) => {
+    const gameDataUsed = use(gameData);
 
-    const gameData = await getGameGlobal(game);
-
-    const { image, display } = gameData;
+    const { image, display } = gameDataUsed;
 
     return (
         <CardWithImage

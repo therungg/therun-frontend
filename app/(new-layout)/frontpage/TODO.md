@@ -7,12 +7,6 @@
 
 # Panels
 
-## Recent Stats Panel
-
--   Allow going back in time
--   Allow showing monthly as well as weekly
--   Allow searching stats of a different user (??)
-
 ## Live Panel
 
 -   Do everything

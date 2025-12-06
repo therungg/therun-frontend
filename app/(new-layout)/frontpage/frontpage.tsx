@@ -1,4 +1,5 @@
 import { Panel } from '../components/panel.component';
+import { LatestPbsPanel } from './panels/latest-pbs-panel/latest-pbs-panel';
 import { LiveRunsPanel } from './panels/live-runs-panel/live-runs-panel';
 import RacePanel from './panels/race-panel/race-panel';
 import StatsPanel from './panels/stats-panel/stats-panel';
@@ -17,10 +18,7 @@ export default async function FrontPage() {
                 </div>
                 <div className="col col-lg-6 col-xl-5 col-12">
                     <RacePanel />
-                    <Panel subtitle="Subtitle" title="Title">
-                        <div>Item 1</div>
-                        <div>Item 2</div>
-                    </Panel>
+                    <LatestPbsPanel />
                 </div>
             </div>
         </div>

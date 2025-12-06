@@ -279,3 +279,26 @@ abbr[title] {
 .pointer {
   cursor: pointer !important;
 }
+
+button {
+
+  &.twitch {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #9147ff;
+    --bs-btn-border-color: #9147ff;
+    --bs-btn-hover-bg: #772ce8;
+    --bs-btn-active-bg: #772ce8;
+    --bs-btn-hover-border-color: #772ce8;
+    --bs-btn-active-border-color: #772ce8;
+  }
+
+  &.patreon {
+    --bs-btn-color: #fff;
+    --bs-btn-bg: #F96854;
+    --bs-btn-border-color: #F96854;
+    --bs-btn-hover-bg: #953e32;
+    --bs-btn-active-bg: #953e32;
+    --bs-btn-hover-border-color: #953e32;
+    --bs-btn-active-border-color: #953e32;
+  }
+}

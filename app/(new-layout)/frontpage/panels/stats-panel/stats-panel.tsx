@@ -1,41 +1,43 @@
-import { Col, Row } from 'react-bootstrap';
+// stats-panel.tsx (Server Component)
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import { getSession } from '~src/actions/session.action';
-import { getUserSummary } from '~src/lib/summary';
-import { ProgressChart } from './progress-chart';
-import { RecentFinishedAttempts } from './recent-finished-attempts';
-import { StatsHeader } from './stats-header';
+import { getDateOfFirstUserSummary, getUserSummary } from '~src/lib/summary';
+import { StatsContent } from './stats-content'; // Import the new Client Component
+import { UserSummaryType } from '~src/types/summary.types';
+
+const DEFAULT_SETTING: UserSummaryType = "month";
 
 export default async function StatsPanel() {
-    const user = await getSession();
-    const stats = await getUserSummary('Kally', 'week', 0);
+    const session = await getSession();
 
-    if (!stats || !user) return <div>Loading stats...</div>;
+    const user = session?.user || "Kally";
+
+    // Fetch initial data
+    let tries = 0;
+    let initialStats = await getUserSummary(user, DEFAULT_SETTING, tries++);
+
+    while (initialStats === undefined && tries < 3) {
+        initialStats = await getUserSummary(user, DEFAULT_SETTING, tries++);
+    }
+
+    const firstWeek = await getDateOfFirstUserSummary(user, 'week')
+    const firstMonth = await getDateOfFirstUserSummary(user, 'month')
+
+    if (!initialStats || !user) return <div>Loading stats...</div>;
 
     return (
         <Panel
             subtitle="Summary"
-            title="Your weekly recap"
+            title="Your Performance"
             className="p-3"
-            link={{ url: '/' + user.user, text: 'View All Stats' }}
+            link={{ url: '/' + user, text: 'View All Stats' }}
         >
-            <Row className="row-gap-3">
-                <Col
-                    xxl={6}
-                    xl={12}
-                    className="d-flex justify-content-center align-items-center order-xxl-1 order-2"
-                >
-                    <ProgressChart stats={stats} />
-                </Col>
-                <Col xxl={6} xl={12} className="order-xxl-2 order-1">
-                    <StatsHeader stats={stats} />
-                </Col>
-            </Row>
-            {stats.totalFinishedRuns > 0 && (
-                <div className="mt-3">
-                    <RecentFinishedAttempts stats={stats} />
-                </div>
-            )}
+            <StatsContent
+                initialStats={initialStats}
+                username={user}
+                firstWeek={firstWeek}
+                firstMonth={firstMonth}
+            />
         </Panel>
     );
 }

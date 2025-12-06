@@ -12,3 +12,25 @@
     height: 9 * 30;
     min-width: 16 * 30;
 }
+
+@media (min-width: 1600px) {
+
+    // Forces the column to take up 50% width, overriding the bootstrap 'col-12'
+    .ultraWideCol {
+        width: 50% !important;
+        flex: 0 0 auto !important;
+
+        // Reset the min-height so the flexbox h-100 works perfectly side-by-side
+        min-height: 0 !important;
+    }
+
+    // Forces the Stats to the Left (Order 1)
+    .ultraWideOrder1 {
+        order: 1 !important;
+    }
+
+    // Forces the Video to the Right (Order 2)
+    .ultraWideOrder2 {
+        order: 2 !important;
+    }
+}

@@ -64,7 +64,7 @@ export const LocalizedTime = ({
                 ? date.toLocaleDateString(undefined, options)
                 : date.toLocaleString(undefined, options),
         );
-    }, []);
+    }, [date]);
 
     return <>{stateDate}</>;
 };
@@ -114,9 +114,9 @@ export const Difference = ({
                         color: isGold
                             ? 'var(--bs-secondary)'
                             : diff <= 0
-                              ? // eslint-disable-next-line sonarjs/no-duplicate-string
+                                ? // eslint-disable-next-line sonarjs/no-duplicate-string
                                 'var(--bs-link-color)'
-                              : // eslint-disable-next-line sonarjs/no-duplicate-string
+                                : // eslint-disable-next-line sonarjs/no-duplicate-string
                                 'var(--bs-red)',
                     }}
                 >
@@ -128,8 +128,8 @@ export const Difference = ({
                         color: isGold
                             ? 'var(--bs-secondary)'
                             : diff <= 0
-                              ? 'var(--bs-link-color)'
-                              : 'var(--bs-red)',
+                                ? 'var(--bs-link-color)'
+                                : 'var(--bs-red)',
                     }}
                 >
                     {formatted}
@@ -289,42 +289,42 @@ export const DurationToFormatted: React.FunctionComponent<
     human = true,
     withDays = false,
 }) => {
-    const timeDuration = useMemo(() => {
-        return duration ?? 0;
-    }, [duration]);
-    if (withMillis)
+        const timeDuration = useMemo(() => {
+            return duration ?? 0;
+        }, [duration]);
+        if (withMillis)
+            return (
+                <>
+                    {getFormattedString(
+                        timeDuration.toString(),
+                        withMillis,
+                        padded,
+                        human,
+                    )}
+                </>
+            );
         return (
             <>
-                {getFormattedString(
-                    timeDuration.toString(),
-                    withMillis,
-                    padded,
-                    human,
-                )}
+                <abbr
+                    title={getFormattedString(
+                        timeDuration.toString(),
+                        true,
+                        padded,
+                        human,
+                    )}
+                >
+                    {getFormattedString(
+                        timeDuration.toString(),
+                        withMillis,
+                        padded,
+                        human,
+                        false,
+                        withDays,
+                    )}
+                </abbr>
             </>
         );
-    return (
-        <>
-            <abbr
-                title={getFormattedString(
-                    timeDuration.toString(),
-                    true,
-                    padded,
-                    human,
-                )}
-            >
-                {getFormattedString(
-                    timeDuration.toString(),
-                    withMillis,
-                    padded,
-                    human,
-                    false,
-                    withDays,
-                )}
-            </abbr>
-        </>
-    );
-};
+    };
 
 export const DurationAsTimer = ({ duration }: { duration: string }) => {
     return (
