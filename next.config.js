@@ -3,6 +3,7 @@ const withNextIntl = createNextIntlPlugin();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    cacheComponents: true,
     typescript: {
         ignoreBuildErrors: true,
     },

@@ -1,10 +1,11 @@
-import { getRun } from "~src/lib/get-run";
-import { getGameGlobal } from "~src/components/game/get-game";
-import { getLiveRunForUser } from "~src/lib/live-runs";
-import RunDetail from "~app/(old-layout)/[username]/[game]/[run]/run";
-import { Metadata } from "next";
-import buildMetadata, { getUserProfilePhoto } from "~src/utils/metadata";
-import { safeDecodeURI } from "~src/utils/uri";
+import { Metadata } from 'next';
+import { cacheLife } from 'next/cache';
+import RunDetail from '~app/(old-layout)/[username]/[game]/[run]/run';
+import { getGameGlobal } from '~src/components/game/get-game';
+import { getRun } from '~src/lib/get-run';
+import { getLiveRunForUser } from '~src/lib/live-runs';
+import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
+import { safeDecodeURI } from '~src/utils/uri';
 
 interface PageProps {
     params: Promise<{ username: string; game: string; run: string }>;
@@ -12,10 +13,13 @@ interface PageProps {
 }
 
 export default async function RunPage(props: PageProps) {
+    'use cache';
+    cacheLife('minutes');
+
     const searchParams = await props.searchParams;
     const params = await props.params;
     if (!params || !params.username || !params.game || !params.run)
-        throw new Error("Params not found");
+        throw new Error('Params not found');
 
     const username: string = params.username as string;
     const game: string = params.game as string;
@@ -25,7 +29,7 @@ export default async function RunPage(props: PageProps) {
 
     const [run, globalGameData] = await Promise.all(promises);
 
-    if (!run) throw new Error("Could not find run");
+    if (!run) throw new Error('Could not find run');
 
     const liveData = await getLiveRunForUser(username);
 

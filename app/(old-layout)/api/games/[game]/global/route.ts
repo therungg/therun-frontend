@@ -1,8 +1,7 @@
-import { NextRequest } from "next/server";
-import { getGameGlobal } from "~src/components/game/get-game";
-import { apiResponse } from "~app/(old-layout)/api/response";
-
-export const revalidate = 43200;
+import { cacheLife } from 'next/cache';
+import { NextRequest } from 'next/server';
+import { apiResponse } from '~app/(old-layout)/api/response';
+import { getGameGlobal } from '~src/components/game/get-game';
 
 export async function GET(
     _request: NextRequest,
@@ -10,12 +9,15 @@ export async function GET(
         params: Promise<{ game: string }>;
     },
 ) {
+    'use cache';
+    cacheLife('days');
+
     const params = await props.params;
     const { game } = params;
     const gameData = await getGameGlobal(game);
 
     return apiResponse({
         body: gameData,
-        cache: { maxAge: revalidate, swr: 43200 },
+        cache: { maxAge: 60, swr: 43200 },
     });
 }

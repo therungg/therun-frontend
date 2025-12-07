@@ -1,14 +1,13 @@
-import { apiResponse } from "../response";
-import { getAllPatrons } from "./get-all-patrons.action";
-
-export const revalidate = 600;
+import { cacheLife } from 'next/cache';
+import { apiResponse } from '../response';
+import { getAllPatrons } from './get-all-patrons.action';
 
 export async function GET() {
     const result = await getAllPatrons();
     return apiResponse({
         body: result,
         cache: {
-            maxAge: revalidate,
+            maxAge: 12000,
             swr: 12000,
         },
     });

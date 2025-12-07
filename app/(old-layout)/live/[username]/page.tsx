@@ -1,12 +1,10 @@
-import { getAllLiveRuns } from "~src/lib/live-runs";
-import { LiveRun } from "~app/(old-layout)/live/live.types";
-import { liveRunArrayToMap } from "~app/(old-layout)/live/utilities";
-import { Live } from "~app/(old-layout)/live/live";
-import { Metadata } from "next";
-import { getBaseUrl } from "~src/actions/base-url.action";
-import buildMetadata from "~src/utils/metadata";
-
-export const revalidate = 0;
+import { Metadata } from 'next';
+import { Live } from '~app/(old-layout)/live/live';
+import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { liveRunArrayToMap } from '~app/(old-layout)/live/utilities';
+import { getBaseUrl } from '~src/actions/base-url.action';
+import { getAllLiveRuns } from '~src/lib/live-runs';
+import buildMetadata from '~src/utils/metadata';
 
 interface PageProps {
     params: Promise<{ username: string }>;
@@ -50,7 +48,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
                       url: imageUrl,
                       secureUrl: imageUrl,
                       alt: `Profile photo of ${username}`,
-                      type: "image/png",
+                      type: 'image/png',
                       width: 300,
                       height: 300,
                   },

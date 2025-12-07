@@ -1,11 +1,11 @@
-import { Metadata } from "next";
-import { safeDecodeURI } from "~src/utils/uri";
-import { Game } from "./game";
-import buildMetadata, { getGameImage } from "~src/utils/metadata";
-import { getGame } from "~src/components/game/get-game";
-import Link from "next/link";
+import { Metadata } from 'next';
+import { cacheLife } from 'next/cache';
+import Link from 'next/link';
+import { getGame } from '~src/components/game/get-game';
+import buildMetadata, { getGameImage } from '~src/utils/metadata';
+import { safeDecodeURI } from '~src/utils/uri';
+import { Game } from './game';
 
-export const revalidate = 60;
 // Increase Games Page timeout to 60 seconds since the payloads are gigantic for some games like SM64
 export const maxDuration = 60;
 
@@ -14,11 +14,14 @@ interface PageProps {
 }
 
 export default async function GamePage(props: PageProps) {
+    'use cache';
+    cacheLife('minutes');
+
     const params = await props.params;
     const { game: gameName } = params;
 
     if (!gameName) {
-        throw new Error("Params not found");
+        throw new Error('Params not found');
     }
     const data = await getGame(gameName);
 
@@ -28,7 +31,7 @@ export default async function GamePage(props: PageProps) {
                 <h1>Game</h1>
                 Unfortunately, Nobody has uploaded runs for this game yet, or
                 the upload is not processed yet. If you have uploaded runs for
-                the game, but this page still shows, please{" "}
+                the game, but this page still shows, please{' '}
                 <Link href="/contact">contact me!</Link>
                 {JSON.stringify(data)}
             </>

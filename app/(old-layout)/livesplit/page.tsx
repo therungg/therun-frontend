@@ -1,10 +1,8 @@
-import { getSession } from "~src/actions/session.action";
-import { CopyUploadKey } from "./copy-upload-key.component";
-import { getBaseUrl } from "~src/actions/base-url.action";
-import buildMetadata from "~src/utils/metadata";
-import Link from "next/link";
-
-export const revalidate = 0;
+import Link from 'next/link';
+import { getBaseUrl } from '~src/actions/base-url.action';
+import { getSession } from '~src/actions/session.action';
+import buildMetadata from '~src/utils/metadata';
+import { CopyUploadKey } from './copy-upload-key.component';
 
 export default async function Livesplit() {
     const session = await getSession();
@@ -68,13 +66,13 @@ export default async function Livesplit() {
                 <p className="mb-4">
                     Now, you will never have to upload your runs again! In
                     addition, your live runs will show up in real time on your
-                    profile, and on the dedicated{" "}
+                    profile, and on the dedicated{' '}
                     <Link href="/live">Live page</Link>! It also allows you to
                     join Tournaments, or to participate in Races!
                 </p>
 
                 <p>
-                    The code for the component is freely available on{" "}
+                    The code for the component is freely available on{' '}
                     <a
                         target="_blank"
                         rel="noreferrer"
@@ -111,7 +109,7 @@ export default async function Livesplit() {
 }
 
 export const metadata = buildMetadata({
-    title: "Your LiveSplit Key",
+    title: 'Your LiveSplit Key',
     description:
         "Get your LiveSplit key to use in The Run's LiveSplit component from here.",
     index: false,

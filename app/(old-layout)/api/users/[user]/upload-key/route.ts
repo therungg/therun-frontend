@@ -1,8 +1,6 @@
-import { NextRequest } from "next/server";
-import { getUploadKey } from "~src/lib/get-upload-key";
-import { apiResponse } from "~app/(old-layout)/api/response";
-
-export const revalidate = 0;
+import { NextRequest } from 'next/server';
+import { apiResponse } from '~app/(old-layout)/api/response';
+import { getUploadKey } from '~src/lib/get-upload-key';
 
 export async function GET(
     _request: NextRequest,

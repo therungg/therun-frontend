@@ -1,11 +1,9 @@
-import { getWrappedForUser } from "~src/lib/get-wrapped-for-user";
-import { getSession } from "~src/actions/session.action";
-import { ContentLoadingWrapper } from "~app/(old-layout)/[username]/wrapped/content-loading-wrapper";
-import { TimezoneWarning } from "~app/(old-layout)/[username]/wrapped/timezone-warning";
-import { UserData } from "~src/lib/get-session-data";
-import { safeDecodeURI } from "~src/utils/uri";
-
-export const revalidate = 0;
+import { ContentLoadingWrapper } from '~app/(old-layout)/[username]/wrapped/content-loading-wrapper';
+import { TimezoneWarning } from '~app/(old-layout)/[username]/wrapped/timezone-warning';
+import { getSession } from '~src/actions/session.action';
+import { UserData } from '~src/lib/get-session-data';
+import { getWrappedForUser } from '~src/lib/get-wrapped-for-user';
+import { safeDecodeURI } from '~src/utils/uri';
 
 interface PageProps {
     params: Promise<{ username: string }>;
@@ -15,7 +13,7 @@ interface PageProps {
 export default async function Page(props: PageProps) {
     const searchParams = await props.searchParams;
     const params = await props.params;
-    if (!params || !params.username) throw new Error("Username not found");
+    if (!params || !params.username) throw new Error('Username not found');
 
     const username: string = params.username as string;
     const session = await getSession();

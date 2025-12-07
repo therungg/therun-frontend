@@ -1,8 +1,6 @@
-import { NextRequest } from "next/server";
-import { getLiveRunForUser } from "~src/lib/live-runs";
-import { apiResponse } from "~app/(old-layout)/api/response";
-
-export const revalidate = 0;
+import { NextRequest } from 'next/server';
+import { apiResponse } from '~app/(old-layout)/api/response';
+import { getLiveRunForUser } from '~src/lib/live-runs';
 
 export async function GET(
     _request: NextRequest,

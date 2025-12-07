@@ -1,8 +1,7 @@
-import { NextRequest } from "next/server";
-import { getGlobalUser } from "~src/lib/get-global-user";
-import { apiResponse } from "~app/(old-layout)/api/response";
-
-export const revalidate = 60;
+import { cacheLife } from 'next/cache';
+import { NextRequest } from 'next/server';
+import { apiResponse } from '~app/(old-layout)/api/response';
+import { getGlobalUser } from '~src/lib/get-global-user';
 
 export async function GET(
     _request: NextRequest,
@@ -10,6 +9,8 @@ export async function GET(
         params: Promise<{ user: string }>;
     },
 ) {
+    'use cache';
+    cacheLife('minutes');
     const params = await props.params;
     const { user } = params;
     const userData = await getGlobalUser(user);
@@ -17,7 +18,7 @@ export async function GET(
     return apiResponse({
         body: userData,
         cache: {
-            maxAge: revalidate,
+            maxAge: 60,
             swr: 15000,
         },
     });

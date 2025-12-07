@@ -1,20 +1,22 @@
-import { NextRequest } from "next/server";
-import { getTournamentByName } from "~src/components/tournament/getTournaments";
-import { apiResponse } from "~app/(old-layout)/api/response";
-
-export const revalidate = 30;
+import { cacheLife } from 'next/cache';
+import { NextRequest } from 'next/server';
+import { apiResponse } from '~app/(old-layout)/api/response';
+import { getTournamentByName } from '~src/components/tournament/getTournaments';
 
 export async function GET(
     _: NextRequest,
     props: { params: Promise<{ tournament: string }> },
 ) {
+    'use cache';
+    cacheLife('minutes');
+
     const params = await props.params;
     const result = await getTournamentByName(params.tournament);
 
     return apiResponse({
         body: result,
         cache: {
-            maxAge: revalidate,
+            maxAge: 60,
             swr: 1500,
         },
     });

@@ -1,22 +1,21 @@
-"use client";
-import React from "react";
-import { Col, Row, Tab, Tabs } from "react-bootstrap";
-import { CategoryOverview } from "~src/components/game/category-overview";
-import { RecentFinishedRuns } from "~src/components/game/recent-finished-runs";
-import GameLeaderboards from "~src/components/game/game-leaderboards";
-import { GameStats } from "~src/components/game/game-stats";
-import { GametimeForm } from "~src/components/gametime/gametime-form";
-import { BestRunnersForCategory } from "~src/components/game/best-runners-for-category";
-import { CategoryLeaderboards } from "~src/components/game/category-leaderboards";
-import styles from "~src/components/css/Game.module.scss";
-import CategoryRecordHistory from "~src/components/game/category-record-history";
-import LiveRunsForGame from "~src/components/game/live-runs-for-game";
-import { CategoryLeaderboard, StatsData } from "./game.types";
-import { GameHeader } from "./game-header.component";
-import { GameContext } from "./game.context";
-import { GameFilter } from "./game-filter.component";
-
-export const revalidate = 60;
+'use client';
+import { cacheLife } from 'next/cache';
+import React from 'react';
+import { Col, Row, Tab, Tabs } from 'react-bootstrap';
+import styles from '~src/components/css/Game.module.scss';
+import { BestRunnersForCategory } from '~src/components/game/best-runners-for-category';
+import { CategoryLeaderboards } from '~src/components/game/category-leaderboards';
+import { CategoryOverview } from '~src/components/game/category-overview';
+import CategoryRecordHistory from '~src/components/game/category-record-history';
+import GameLeaderboards from '~src/components/game/game-leaderboards';
+import { GameStats } from '~src/components/game/game-stats';
+import LiveRunsForGame from '~src/components/game/live-runs-for-game';
+import { RecentFinishedRuns } from '~src/components/game/recent-finished-runs';
+import { GametimeForm } from '~src/components/gametime/gametime-form';
+import { GameContext } from './game.context';
+import { CategoryLeaderboard, StatsData } from './game.types';
+import { GameFilter } from './game-filter.component';
+import { GameHeader } from './game-header.component';
 
 interface GameProps {
     // Did server-side validation
@@ -24,6 +23,9 @@ interface GameProps {
 }
 
 export const Game: React.FunctionComponent<GameProps> = ({ data }) => {
+    'use cache';
+    cacheLife('minutes');
+
     const { statsGameTime, stats: gameStats } = data;
 
     const [useGameTime, setUseGameTime] = React.useState(() => {
@@ -44,7 +46,7 @@ export const Game: React.FunctionComponent<GameProps> = ({ data }) => {
     }, [stats]);
 
     const initialCategory =
-        sortedCategories.length === 1 ? sortedCategories[0].categoryName : "*";
+        sortedCategories.length === 1 ? sortedCategories[0].categoryName : '*';
 
     const [currentCategory, setCurrentCategory] =
         React.useState(initialCategory);
@@ -83,21 +85,21 @@ export const Game: React.FunctionComponent<GameProps> = ({ data }) => {
                     className={
                         styles.tabsContainer +
                         (stats.categoryLeaderboards.length > 0 &&
-                            " with-filter")
+                            ' with-filter')
                     }
                 >
                     <Tab eventKey="dashboard" title="Dashboard">
                         <Row>
                             <GameStats
                                 stats={
-                                    currentCategory == "*"
+                                    currentCategory == '*'
                                         ? stats.gameLeaderboard.stats
                                         : currentCategoryLeaderboard?.stats
                                 }
                             />
                         </Row>
                         <Row>
-                            {currentCategory == "*" ? (
+                            {currentCategory == '*' ? (
                                 <Col lg={12} xl={7}>
                                     <h2>Categories</h2>
                                     <CategoryOverview
@@ -125,7 +127,7 @@ export const Game: React.FunctionComponent<GameProps> = ({ data }) => {
                                 <RecentFinishedRuns
                                     game={data.data.game.display}
                                     leaderboards={
-                                        currentCategory == "*"
+                                        currentCategory == '*'
                                             ? stats.gameLeaderboard
                                             : currentCategoryLeaderboard
                                     }
@@ -138,13 +140,13 @@ export const Game: React.FunctionComponent<GameProps> = ({ data }) => {
                         <LiveRunsForGame
                             game={data.data.game.display}
                             category={
-                                currentCategory == "*" ? null : currentCategory
+                                currentCategory == '*' ? null : currentCategory
                             }
                         />
                     </Tab>
                     <Tab eventKey="leaderboards" title="Leaderboards">
                         <h2>Leaderboards</h2>
-                        {currentCategory == "*" ? (
+                        {currentCategory == '*' ? (
                             <GameLeaderboards
                                 leaderboards={stats.gameLeaderboard}
                             />

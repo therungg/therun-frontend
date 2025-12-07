@@ -1,10 +1,8 @@
-import { NextRequest } from "next/server";
-import { apiResponse } from "~app/(old-layout)/api/response";
-import { safeDecodeURI, safeEncodeURI } from "~src/utils/uri";
-import { getRun } from "~src/lib/get-run";
-import { revalidateTag } from "next/cache";
-
-export const revalidate = 60;
+import { cacheLife, revalidateTag } from 'next/cache';
+import { NextRequest } from 'next/server';
+import { apiResponse } from '~app/(old-layout)/api/response';
+import { getRun } from '~src/lib/get-run';
+import { safeDecodeURI, safeEncodeURI } from '~src/utils/uri';
 
 export async function PUT(
     request: NextRequest,
@@ -22,30 +20,30 @@ export async function PUT(
     if (body.description) {
         if (body.description.length > 250) {
             return apiResponse({
-                body: { result: "Description too long" },
+                body: { result: 'Description too long' },
                 status: 400,
             });
         }
     } else {
-        body.description = "";
+        body.description = '';
     }
 
     if (body.vod) {
         if (body.vod.length > 100) {
             return apiResponse({
-                body: { result: "Vod too long" },
+                body: { result: 'Vod too long' },
                 status: 400,
             });
         }
 
-        if (!body.vod.includes("youtu") && !body.vod.includes("twitch")) {
+        if (!body.vod.includes('youtu') && !body.vod.includes('twitch')) {
             return apiResponse({
-                body: { result: "Youtube or Twitch url please" },
+                body: { result: 'Youtube or Twitch url please' },
                 status: 400,
             });
         }
     } else {
-        body.vod = "";
+        body.vod = '';
     }
 
     const runData = await edit(user, game, category, JSON.stringify(body));
@@ -59,6 +57,9 @@ export async function GET(
         params: Promise<{ user: string; game: string; run: string }>;
     },
 ) {
+    'use cache';
+    cacheLife('minutes');
+
     const params = await props.params;
     const { user } = params;
     const game = safeDecodeURI(params.game);
@@ -68,7 +69,7 @@ export async function GET(
 
     return apiResponse({
         body: { meta: gameData },
-        cache: { maxAge: revalidate, swr: revalidate },
+        cache: { maxAge: 60, swr: 60 },
     });
 }
 
@@ -85,7 +86,7 @@ export async function DELETE(
 
     const result = await remove(user, game, category);
 
-    const username = user.split("-")[1];
+    const username = user.split('-')[1];
 
     revalidateTag(`/users/${username}`);
 
@@ -98,7 +99,7 @@ const remove = async (user: string, game: string, category: string) => {
     }/users/${user}/${safeEncodeURI(game)}/${safeEncodeURI(category)}`;
 
     const res = await fetch(url, {
-        method: "DELETE",
+        method: 'DELETE',
     });
 
     return res.json();
@@ -114,7 +115,7 @@ const edit = async (
         process.env.NEXT_PUBLIC_DATA_URL
     }/users/${user}/${safeEncodeURI(game)}/${safeEncodeURI(category)}`;
     const res = await fetch(url, {
-        method: "PUT",
+        method: 'PUT',
         body,
     });
 

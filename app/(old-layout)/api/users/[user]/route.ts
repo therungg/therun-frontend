@@ -1,9 +1,8 @@
-import { NextRequest } from "next/server";
-import { getUserRuns } from "~src/lib/get-user-runs";
-import { apiResponse } from "~app/(old-layout)/api/response";
-import { editUser } from "~src/lib/edit-user";
-
-export const revalidate = 60;
+import { cacheLife } from 'next/cache';
+import { NextRequest } from 'next/server';
+import { apiResponse } from '~app/(old-layout)/api/response';
+import { editUser } from '~src/lib/edit-user';
+import { getUserRuns } from '~src/lib/get-user-runs';
 
 export async function GET(
     _: NextRequest,
@@ -11,6 +10,9 @@ export async function GET(
         params: Promise<{ user: string }>;
     },
 ) {
+    'use cache';
+    cacheLife('minutes');
+
     const params = await props.params;
     const { user } = params;
 
@@ -19,7 +21,7 @@ export async function GET(
     return apiResponse({
         body: result,
         cache: {
-            maxAge: revalidate,
+            maxAge: 60,
             swr: 1500,
         },
     });
@@ -38,6 +40,6 @@ export async function PUT(
 
     return apiResponse({
         body: result,
-        headers: { "Cache-Control": "no-cache" },
+        headers: { 'Cache-Control': 'no-cache' },
     });
 }

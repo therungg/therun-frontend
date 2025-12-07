@@ -1,10 +1,12 @@
-import { getPersonalBestRuns } from "~src/lib/get-personal-best-runs";
-import { getTabulatedGameStatsPopular } from "~src/components/game/get-tabulated-game-stats";
-import { apiResponse } from "~app/(old-layout)/api/response";
-
-export const revalidate = 10;
+import { cacheLife } from 'next/cache';
+import { apiResponse } from '~app/(old-layout)/api/response';
+import { getTabulatedGameStatsPopular } from '~src/components/game/get-tabulated-game-stats';
+import { getPersonalBestRuns } from '~src/lib/get-personal-best-runs';
 
 export async function GET() {
+    'use cache';
+    cacheLife('minutes');
+
     const runsPromise = getPersonalBestRuns();
     const gamestatsPromise = getTabulatedGameStatsPopular();
 
@@ -16,7 +18,7 @@ export async function GET() {
     return apiResponse({
         body: { runs, gamestats },
         cache: {
-            maxAge: revalidate,
+            maxAge: 60,
             swr: 1500,
         },
     });
