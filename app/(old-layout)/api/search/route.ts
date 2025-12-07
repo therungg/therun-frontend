@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     'use cache';
     cacheLife('minutes');
 
-    const { searchParams } = new URL(request.url);
+    const searchParams = request.nextUrl.searchParams;
 
     if (!searchParams.has('q')) {
         return NextResponse.json(

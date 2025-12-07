@@ -1,5 +1,4 @@
 'use client';
-import { cacheLife } from 'next/cache';
 import React from 'react';
 import { Col, Row, Tab, Tabs } from 'react-bootstrap';
 import styles from '~src/components/css/Game.module.scss';
@@ -23,9 +22,6 @@ interface GameProps {
 }
 
 export const Game: React.FunctionComponent<GameProps> = ({ data }) => {
-    'use cache';
-    cacheLife('minutes');
-
     const { statsGameTime, stats: gameStats } = data;
 
     const [useGameTime, setUseGameTime] = React.useState(() => {
