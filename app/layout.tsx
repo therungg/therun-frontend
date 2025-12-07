@@ -1,11 +1,11 @@
-import React from "react";
-import { getLocale } from "next-intl/server";
-import buildMetadata from "~src/utils/metadata";
-import { Viewport } from "next";
+import { Viewport } from 'next';
+import { getLocale } from 'next-intl/server';
+import React, { Suspense } from 'react';
+import buildMetadata from '~src/utils/metadata';
 
 export const metadata = buildMetadata();
 export const viewport: Viewport = {
-    themeColor: "#007c00",
+    themeColor: '#007c00',
 };
 export default async function RootLayout({
     // Layouts must accept a children prop.
@@ -17,7 +17,9 @@ export default async function RootLayout({
     const locale = await getLocale();
     return (
         <html lang={locale} suppressHydrationWarning>
-            <body>{children}</body>
+            <body>
+                <Suspense>{children}</Suspense>
+            </body>
         </html>
     );
 }
