@@ -1,20 +1,20 @@
-import { getUserRuns } from "~src/lib/get-user-runs";
-import { getRunmap } from "~app/(old-layout)/[username]/runmap.component";
-import { getGameGlobal } from "~src/components/game/get-game";
-import { getGlobalUser } from "~src/lib/get-global-user";
-import { GlobalGameData } from "~app/(old-layout)/[username]/[game]/[run]/run";
-import { getLiveRunForUser } from "~src/lib/live-runs";
-import { UserProfile } from "~app/(old-layout)/[username]/user-profile";
-import { getSession } from "~src/actions/session.action";
+import { Metadata } from 'next';
+import { GlobalGameData } from '~app/(old-layout)/[username]/[game]/[run]/run';
+import { getRunmap } from '~app/(old-layout)/[username]/runmap.component';
+import { UserProfile } from '~app/(old-layout)/[username]/user-profile';
+import { CombinedTournamentPage } from '~app/(old-layout)/tournaments/[tournament]/combined-tournament-page';
+import { TournamentPage } from '~app/(old-layout)/tournaments/[tournament]/page';
 import {
     getAllTournamentSlugs,
     getTournamentNameFromSlug,
-} from "~app/(old-layout)/tournaments/tournament-list";
-import { TournamentPage } from "~app/(old-layout)/tournaments/[tournament]/page";
-import { Metadata } from "next";
-import buildMetadata, { getUserProfilePhoto } from "~src/utils/metadata";
-import { CombinedTournamentPage } from "~app/(old-layout)/tournaments/[tournament]/combined-tournament-page";
-import { getUserRaceStats } from "~src/lib/races";
+} from '~app/(old-layout)/tournaments/tournament-list';
+import { getSession } from '~src/actions/session.action';
+import { getGameGlobal } from '~src/components/game/get-game';
+import { getGlobalUser } from '~src/lib/get-global-user';
+import { getUserRuns } from '~src/lib/get-user-runs';
+import { getLiveRunForUser } from '~src/lib/live-runs';
+import { getUserRaceStats } from '~src/lib/races';
+import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
 
 interface PageProps {
     params: Promise<{ username: string }>;
@@ -24,14 +24,14 @@ interface PageProps {
 export default async function Page(props: PageProps) {
     const searchParams = await props.searchParams;
     const params = await props.params;
-    if (!params || !params.username) throw new Error("Username not found");
+    if (!params || !params.username) throw new Error('Username not found');
 
     const username: string = params.username as string;
 
     const tournament = getTournamentNameFromSlug(username);
 
     if (tournament) {
-        if ("guidingTournament" in tournament) {
+        if ('guidingTournament' in tournament) {
             return CombinedTournamentPage({
                 params: tournament,
                 searchParams,
@@ -49,7 +49,7 @@ export default async function Page(props: PageProps) {
     const allRunsRunMap = getRunmap(runs);
 
     const promises = Array.from(allRunsRunMap.keys()).map((game) => {
-        game = game.split("#")[0];
+        game = game.split('#')[0];
         return getGameGlobal(game);
     });
 
@@ -97,12 +97,6 @@ export default async function Page(props: PageProps) {
     );
 }
 
-export async function generateStaticParams() {
-    return getAllTournamentSlugs().map((tournament) => {
-        return { username: tournament };
-    });
-}
-
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
     const params = await props.params;
     const username = params.username;
@@ -113,8 +107,8 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
 
     if (tournament) {
         return buildMetadata({
-            title: "Speedrun tournament " + tournament,
-            description: "Speedrun tournament " + tournament,
+            title: 'Speedrun tournament ' + tournament,
+            description: 'Speedrun tournament ' + tournament,
         });
     }
 
