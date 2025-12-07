@@ -268,7 +268,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                                     color: "var(--bs-link-color)",
                                                     textDecoration: "underline",
                                                     textDecorationColor:
-                                                        "var(--bs-secondary)",
+                                                        "var(--bs-gold)",
                                                 }}
                                             >
                                                 {mostPlayedGame}
@@ -313,7 +313,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                                 You got{" "}
                                                 <span
                                                     style={{
-                                                        color: "var(--bs-secondary)",
+                                                        color: "var(--bs-gold)",
                                                     }}
                                                 >
                                                     {pbsDuringStreak.length} PBs

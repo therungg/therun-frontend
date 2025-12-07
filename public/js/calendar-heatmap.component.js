@@ -101,7 +101,7 @@ class CalendarHeatmap extends React.Component {
     calcDimensions(updatedWidth) {
         let dayIndex = Math.round(
             (moment() - moment().subtract(1, "year").startOf("week")) /
-                86400000,
+            86400000,
         );
         let colIndex = Math.trunc(dayIndex / 7);
         let numWeeks = colIndex + 1;
@@ -270,7 +270,7 @@ class CalendarHeatmap extends React.Component {
             .attr("width", () => {
                 return (
                     (this.settings.width - this.settings.label_padding) /
-                        year_labels.length -
+                    year_labels.length -
                     this.settings.gutter * 5
                 );
             })
@@ -386,7 +386,7 @@ class CalendarHeatmap extends React.Component {
                 while (
                     this.settings.width - x <
                     this.settings.tooltip_width +
-                        this.settings.tooltip_padding * 5
+                    this.settings.tooltip_padding * 5
                 ) {
                     x -= 10;
                 }
@@ -553,7 +553,7 @@ class CalendarHeatmap extends React.Component {
             return (
                 this.settings.label_padding +
                 moment(d.date).weekday() *
-                    (this.settings.item_size + this.settings.gutter)
+                (this.settings.item_size + this.settings.gutter)
             );
         };
 
@@ -602,7 +602,7 @@ class CalendarHeatmap extends React.Component {
             .attr("fill", (d) => {
                 return d.total > 0
                     ? d.total == max_value
-                        ? "var(--bs-secondary)"
+                        ? "var(--bs-gold)"
                         : color(d.total)
                     : "transparent";
             })
@@ -623,7 +623,7 @@ class CalendarHeatmap extends React.Component {
                                 calcItemX(d) -
                                 (this.settings.item_size * 1.1 -
                                     this.settings.item_size) /
-                                    2
+                                2
                             );
                         })
                         .attr("y", (d) => {
@@ -631,7 +631,7 @@ class CalendarHeatmap extends React.Component {
                                 calcItemY(d) -
                                 (this.settings.item_size * 1.1 -
                                     this.settings.item_size) /
-                                    2
+                                2
                             );
                         })
                         .attr("width", this.settings.item_size * 1.1)
@@ -663,9 +663,8 @@ class CalendarHeatmap extends React.Component {
 
                 // Construct tooltip
                 let tooltip_html = "";
-                tooltip_html += `<span class="${styles.header}"><strong>${
-                    d.total ? this.formatTime(d.total) : "No time"
-                } playtime</strong></span>`;
+                tooltip_html += `<span class="${styles.header}"><strong>${d.total ? this.formatTime(d.total) : "No time"
+                    } playtime</strong></span>`;
                 tooltip_html +=
                     "<span>on " +
                     moment(d.date).format("dddd, MMM Do YYYY") +
@@ -690,7 +689,7 @@ class CalendarHeatmap extends React.Component {
                 if (
                     this.settings.width - x <
                     this.settings.tooltip_width +
-                        this.settings.tooltip_padding * 3
+                    this.settings.tooltip_padding * 3
                 ) {
                     x -=
                         this.settings.tooltip_width +
@@ -993,7 +992,7 @@ class CalendarHeatmap extends React.Component {
             .attr("width", () => {
                 return (
                     (this.settings.width - this.settings.label_padding) /
-                        week_labels.length -
+                    week_labels.length -
                     this.settings.gutter * 5
                 );
             })
@@ -1049,7 +1048,7 @@ class CalendarHeatmap extends React.Component {
 
         let item_width =
             (this.settings.width - this.settings.label_padding) /
-                week_labels.length -
+            week_labels.length -
             this.settings.gutter * 5;
         let itemScale = d3.scaleLinear().rangeRound([0, item_width]);
 
@@ -1120,7 +1119,7 @@ class CalendarHeatmap extends React.Component {
                 while (
                     this.settings.width - x <
                     this.settings.tooltip_width +
-                        this.settings.tooltip_padding * 3
+                    this.settings.tooltip_padding * 3
                 ) {
                     x -= 10;
                 }
@@ -1342,7 +1341,7 @@ class CalendarHeatmap extends React.Component {
             .attr("width", () => {
                 return (
                     (this.settings.width - this.settings.label_padding) /
-                        week_labels.length -
+                    week_labels.length -
                     this.settings.gutter * 5
                 );
             })
@@ -1398,7 +1397,7 @@ class CalendarHeatmap extends React.Component {
 
         let item_width =
             (this.settings.width - this.settings.label_padding) /
-                week_labels.length -
+            week_labels.length -
             this.settings.gutter * 5;
         let itemScale = d3.scaleLinear().rangeRound([0, item_width]);
 
@@ -1472,7 +1471,7 @@ class CalendarHeatmap extends React.Component {
                 while (
                     this.settings.width - x <
                     this.settings.tooltip_width +
-                        this.settings.tooltip_padding * 3
+                    this.settings.tooltip_padding * 3
                 ) {
                     x -= 10;
                 }
@@ -1714,7 +1713,7 @@ class CalendarHeatmap extends React.Component {
                 while (
                     this.settings.width - x <
                     this.settings.tooltip_width +
-                        this.settings.tooltip_padding * 3
+                    this.settings.tooltip_padding * 3
                 ) {
                     x -= 10;
                 }

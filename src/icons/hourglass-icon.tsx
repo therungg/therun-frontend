@@ -4,7 +4,7 @@ export const HourglassIcon = () => {
             xmlns="http://www.w3.org/2000/svg"
             width="18"
             height="18"
-            fill="var(--bs-secondary)"
+            fill="var(--bs-gold)"
             className="bi bi-pencil-fill"
             viewBox="-3 0 20 20"
         >

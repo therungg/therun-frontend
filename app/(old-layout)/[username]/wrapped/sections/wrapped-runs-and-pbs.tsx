@@ -150,9 +150,8 @@ export const WrappedRunsAndPbs: React.FC<WrappedRunsAndPbsProps> = ({
         <SectionWrapper>
             <SectionTitle
                 title="Here's a full overview of your runs this year!"
-                subtitle={`You finished ${wrapped.totalFinishedRuns} runs. ${
-                    wrapped.totalPbs
-                } - or ${pbPercentage.toFixed(2)}% - of them were a PB.`}
+                subtitle={`You finished ${wrapped.totalFinishedRuns} runs. ${wrapped.totalPbs
+                    } - or ${pbPercentage.toFixed(2)}% - of them were a PB.`}
                 extraRemark="We all know speedrunning is about records, not about having fun."
             />
             <SectionBody>
@@ -257,7 +256,7 @@ const GameOverview: React.FC<
                                                 style={{
                                                     textDecoration: "underline",
                                                     textDecorationColor:
-                                                        "var(--bs-secondary)",
+                                                        "var(--bs-gold)",
                                                 }}
                                             >
                                                 <TruncatedTextTooltip
@@ -271,8 +270,8 @@ const GameOverview: React.FC<
                                                                             ? "gold"
                                                                             : i ===
                                                                                 1
-                                                                              ? "silver"
-                                                                              : "bronze"
+                                                                                ? "silver"
+                                                                                : "bronze"
                                                                     }
                                                                 />
                                                             )}
@@ -480,7 +479,7 @@ const ShowGame: React.FC<
                                                     {categoryData.timeBefore &&
                                                         categoryData.pb &&
                                                         categoryData.timeBefore !==
-                                                            categoryData.pb && (
+                                                        categoryData.pb && (
                                                             <span className="h6">
                                                                 (
                                                                 <Difference
@@ -616,7 +615,7 @@ const ShowCategory: FC<
                                 </tr>
                                 {categoryData.timeBefore &&
                                     categoryData.timeBefore >
-                                        categoryData.pb && (
+                                    categoryData.pb && (
                                         <tr>
                                             <td>
                                                 <b>
@@ -635,7 +634,7 @@ const ShowCategory: FC<
                                     )}
                                 {categoryData.timeBefore &&
                                     categoryData.timeBefore <=
-                                        categoryData.pb && (
+                                    categoryData.pb && (
                                         <tr>
                                             <td>
                                                 <b>
@@ -691,7 +690,7 @@ const ShowCategory: FC<
                                                 style={{
                                                     color:
                                                         categoryData.finishedAttemptCount <=
-                                                        0
+                                                            0
                                                             ? "red"
                                                             : "var(--bs-link-color)",
                                                 }}
@@ -713,7 +712,7 @@ const ShowCategory: FC<
                                                 style={{
                                                     color:
                                                         categoryData.pbCount <=
-                                                        0
+                                                            0
                                                             ? "red"
                                                             : "var(--bs-link-color)",
                                                 }}

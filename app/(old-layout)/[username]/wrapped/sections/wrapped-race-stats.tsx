@@ -133,7 +133,7 @@ export const WrappedRaceStats = memo<WrappedRaceStatsProps>(({ wrapped }) => {
                                             You finished{" "}
                                             <span
                                                 style={{
-                                                    color: "var(--bs-secondary)",
+                                                    color: "var(--bs-gold)",
                                                 }}
                                             >
                                                 {

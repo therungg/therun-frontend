@@ -168,9 +168,8 @@ export const UserProfile = ({
             )}
             <Tabs
                 defaultActiveKey="overview"
-                className={`position-relative z-1 mb-3 pt-0 w-100 mw-md-66${
-                    allRunsRunMap.size > 1 ? " with-filter" : ""
-                }`}
+                className={`position-relative z-1 mb-3 pt-0 w-100 mw-md-66${allRunsRunMap.size > 1 ? " with-filter" : ""
+                    }`}
             >
                 <Tab eventKey="overview" title="Overview">
                     <Row>
@@ -216,7 +215,7 @@ export const UserProfile = ({
                                             <h2>Races</h2>
                                             <span
                                                 style={{
-                                                    color: "var(--bs-secondary)",
+                                                    color: "var(--bs-gold)",
                                                 }}
                                                 className="ms-2"
                                             >
@@ -253,8 +252,8 @@ export const UserProfile = ({
                             <SessionOverview
                                 sessions={
                                     hasGameTime &&
-                                    useGameTime &&
-                                    gameTimeSessions
+                                        useGameTime &&
+                                        gameTimeSessions
                                         ? gameTimeSessions
                                         : sessions
                                 }

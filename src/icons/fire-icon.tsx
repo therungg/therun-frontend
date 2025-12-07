@@ -4,7 +4,7 @@ export const FireIcon = () => {
             xmlns="http://www.w3.org/2000/svg"
             width="16"
             height="16"
-            fill="var(--bs-secondary)"
+            fill="var(--bs-gold)"
             className="bi bi-fire"
             viewBox="0 0 20 20"
         >

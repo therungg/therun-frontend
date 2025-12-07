@@ -204,7 +204,7 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                             url={
                                                 event.url ??
                                                 "https://therun.gg/events/" +
-                                                    event.slug
+                                                event.slug
                                             }
                                         />
                                         <EventLink
@@ -230,9 +230,9 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                         <EventLink
                                             text={
                                                 event.submissionsUrl &&
-                                                event.submissionsUrl
-                                                    .toLowerCase()
-                                                    .includes("oengus")
+                                                    event.submissionsUrl
+                                                        .toLowerCase()
+                                                        .includes("oengus")
                                                     ? "Oengus URL"
                                                     : "Submissions URL"
                                             }
@@ -346,7 +346,7 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
 
 const EventLink = ({ text, url }: { text: string; url: string | null }) => {
     let Icon = FaLink;
-    let iconColor = "var(--bs-secondary)";
+    let iconColor = "var(--bs-gold)";
 
     if (text.toLowerCase().includes("charity")) {
         Icon = FaHeart;

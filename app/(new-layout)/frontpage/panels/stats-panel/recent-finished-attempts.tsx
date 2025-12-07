@@ -18,6 +18,7 @@ export const RecentFinishedAttempts = ({
 }) => {
     const [showAll, setShowAll] = useState(false);
 
+    console.log(stats.finishedRuns)
     return (
         <div className="w-100">
             <h5>Finished Runs</h5>

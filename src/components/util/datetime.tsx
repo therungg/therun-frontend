@@ -112,7 +112,7 @@ export const Difference = ({
                 <span
                     style={{
                         color: isGold
-                            ? 'var(--bs-secondary)'
+                            ? 'var(--bs-gold)'
                             : diff <= 0
                                 ? // eslint-disable-next-line sonarjs/no-duplicate-string
                                 'var(--bs-link-color)'
@@ -126,7 +126,7 @@ export const Difference = ({
                 <div
                     style={{
                         color: isGold
-                            ? 'var(--bs-secondary)'
+                            ? 'var(--bs-gold)'
                             : diff <= 0
                                 ? 'var(--bs-link-color)'
                                 : 'var(--bs-red)',
