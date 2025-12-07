@@ -8,7 +8,7 @@ import LiveRunStats, { liveRunEvent } from "./live-run-stats";
 import { useEffect, useState } from "react";
 import SuggestedEvents from "./suggested-events";
 import { FreeInput } from "./free-input";
-import { LiveRun } from "~app/live/live.types";
+import { LiveRun } from "~app/(old-layout)/live/live.types";
 
 export const MarathonRun = ({
     runData,

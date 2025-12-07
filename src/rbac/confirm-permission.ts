@@ -1,7 +1,7 @@
-import { actions, defineAbilityFor, subjects } from "./ability";
-import { ForbiddenError, subject } from "@casl/ability";
-import { User } from "../../types/session.types";
-import { Race } from "~app/races/races.types";
+import { ForbiddenError, subject } from '@casl/ability';
+import { Race } from '~app/(old-layout)/races/races.types';
+import { User } from '../../types/session.types';
+import { actions, defineAbilityFor, subjects } from './ability';
 
 export const confirmPermission = (
     user: User | undefined | null,
@@ -10,10 +10,10 @@ export const confirmPermission = (
     subjectObject?: string | object,
 ) => {
     if (user === undefined || user === null || !user.username) {
-        throw new Error("No user found");
+        throw new Error('No user found');
     }
 
-    if (typeof subjectObject === "string") {
+    if (typeof subjectObject === 'string') {
         subjectObject = {
             [subjectName]: subjectObject,
         };
@@ -45,7 +45,7 @@ export const isRaceModerator = (race: Race, user: User) => {
 };
 
 export const checkAdminPermission = (user: User) => {
-    confirmPermission(user, "admin", "race");
+    confirmPermission(user, 'admin', 'race');
 };
 
 export const checkModeratorPermission = (race: Race, user: User) => {
@@ -69,7 +69,7 @@ export const checkModeratorPermission = (race: Race, user: User) => {
     }
 
     try {
-        confirmPermission(user, "moderate", "race", race);
+        confirmPermission(user, 'moderate', 'race', race);
     } catch (_e) {
         throw Error(
             `Race Log: User is not allowed to moderate race ${race.raceId}, user: ${user.username}`,

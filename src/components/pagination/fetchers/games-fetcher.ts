@@ -1,6 +1,6 @@
 "use client";
 
-import { Game } from "~app/games/games.types";
+import { Game } from "~app/(old-layout)/games/games.types";
 import { getBaseUrl } from "~src/actions/base-url.action";
 import {
     PaginatedData,

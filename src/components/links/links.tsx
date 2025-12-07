@@ -105,7 +105,6 @@ export const UserGameCategoryLink = ({
                           category,
                       )}`
             }
-            legacyBehavior
         >
             {children ? children : `${display(game)} - ${display(category)}`}
         </Link>

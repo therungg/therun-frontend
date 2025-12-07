@@ -1,11 +1,11 @@
 import moment from "moment";
-import { CategoryLeaderboard } from "~app/games/[game]/game.types";
+import { CategoryLeaderboard } from "~app/(old-layout)/games/[game]/game.types";
 import React from "react";
 import { Col, Form, Row, Table } from "react-bootstrap";
 import styles from "../css/Game.module.scss";
-import { PatreonBunnySvg } from "~app/patron/patreon-info";
+import { PatreonBunnySvg } from "~app/(old-layout)/patron/patreon-info";
 import { User } from "../../../types/session.types";
-import { increaseEndTimeByAnHour } from "~app/tournaments/actions/increase-end-time-by-an-hour";
+import { increaseEndTimeByAnHour } from "~app/(old-layout)/tournaments/actions/increase-end-time-by-an-hour";
 import { SubmitButton } from "~src/components/Button/SubmitButton";
 
 export interface Tournament {

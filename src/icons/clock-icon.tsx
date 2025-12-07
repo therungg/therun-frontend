@@ -1,5 +1,5 @@
 export const ClockIcon = ({
-    color = "var(--bs-secondary)",
+    color = "var(--bs-gold)",
 }: {
     color?: string;
 }) => {

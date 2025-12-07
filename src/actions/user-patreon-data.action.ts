@@ -1,9 +1,9 @@
-"use server";
+'use server';
 
-import { getSession } from "~src/actions/session.action";
-import { getBaseUrl } from "~src/actions/base-url.action";
-import { safeEncodeURI } from "~src/utils/uri";
-import type { UserPatreonData } from "~app/change-appearance/patreon-section";
+import type { UserPatreonData } from '~app/(old-layout)/change-appearance/patreon-section';
+import { getBaseUrl } from '~src/actions/base-url.action';
+import { getSession } from '~src/actions/session.action';
+import { safeEncodeURI } from '~src/utils/uri';
 
 const patreonApiBaseUrl = process.env.NEXT_PUBLIC_PATREON_API_URL;
 const patreonLoginUrl = process.env.NEXT_PUBLIC_PATREON_LOGIN_URL;

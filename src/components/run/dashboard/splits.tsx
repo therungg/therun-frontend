@@ -1,13 +1,13 @@
-import { Run, SplitsHistory, SplitTimes } from "../../../common/types";
-import { Difference, DurationToFormatted } from "../../util/datetime";
-import { Col, Row, Table } from "react-bootstrap";
-import React, { useState } from "react";
-import Switch from "react-switch";
-import styles from "../../css/User.module.scss";
-import SplitName from "../../transformers/split-name";
-import { ValueOf } from "next/dist/shared/lib/constants";
-import { Bounce, toast, ToastContainer } from "react-toastify";
-import { useTheme } from "next-themes";
+import { ValueOf } from 'next/dist/shared/lib/constants';
+import { useTheme } from 'next-themes';
+import React, { useState } from 'react';
+import { Col, Row, Table } from 'react-bootstrap';
+import Switch from 'react-switch';
+import { Bounce, ToastContainer, toast } from 'react-toastify';
+import { Run, SplitsHistory, SplitTimes } from '../../../common/types';
+import styles from '../../css/User.module.scss';
+import SplitName from '../../transformers/split-name';
+import { Difference, DurationToFormatted } from '../../util/datetime';
 
 interface SplitsProps {
     splits: SplitsHistory[];
@@ -16,9 +16,9 @@ interface SplitsProps {
 }
 
 const SPLIT_FILTERS = {
-    BEST_POSSIBLE: "Best Possible",
-    BEST_ACHIEVED: "Best Achieved",
-    AVERAGE: "Average",
+    BEST_POSSIBLE: 'Best Possible',
+    BEST_ACHIEVED: 'Best Achieved',
+    AVERAGE: 'Average',
 } as const;
 
 type SplitFilterValue = ValueOf<typeof SPLIT_FILTERS>;
@@ -33,15 +33,15 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
     const [selectedComparison, setSelectedComparison] =
         useState<SplitFilterValue>(SPLIT_FILTERS.BEST_POSSIBLE);
     const [selectedAlternative, setSelectedAlternative] = useState(
-        hasAlternatives ? splits[0].single.alternative[0].name : "",
+        hasAlternatives ? splits[0].single.alternative[0].name : '',
     );
 
-    const splitToUse = totalTime ? "total" : "single";
+    const splitToUse = totalTime ? 'total' : 'single';
     const splitsFile = decodeURIComponent(run.splitsFile as string)
-        .replaceAll("%", "%25")
-        .replaceAll("+++", "+%2B+")
-        .replaceAll("++", "%2B+")
-        .replaceAll("NG+", "NG%2B");
+        .replaceAll('%', '%25')
+        .replaceAll('+++', '+%2B+')
+        .replaceAll('++', '%2B+')
+        .replaceAll('NG+', 'NG%2B');
 
     const url = `${process.env.NEXT_PUBLIC_SPLITS_CLOUDFRONT_URL}/${splitsFile}`;
 
@@ -58,16 +58,16 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                 draggable
                 pauseOnHover
                 transition={Bounce}
-                theme={theme.theme || "dark"}
+                theme={theme.theme || 'dark'}
             />
             <Row>
-                <Col xl={9} style={{ whiteSpace: "nowrap", display: "flex" }}>
-                    <h2>Splits {gameTime && "(IGT)"}</h2>
+                <Col xl={9} style={{ whiteSpace: 'nowrap', display: 'flex' }}>
+                    <h2>Splits {gameTime && '(IGT)'}</h2>
                     {run.splitsFile && (
                         <a
                             rel="noreferrer"
                             target="_blank"
-                            style={{ marginLeft: "0.5rem" }}
+                            style={{ marginLeft: '0.5rem' }}
                             href={url}
                             download={`${run.user}_${run.game}_${run.run}.lss`}
                             onClick={() => {
@@ -80,7 +80,7 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                         </a>
                     )}
                 </Col>
-                <Col sm={3} style={{ display: "flex", justifyContent: "end" }}>
+                <Col sm={3} style={{ display: 'flex', justifyContent: 'end' }}>
                     <div className="d-flex justify-content-start align-items-center justify-content-lg-center">
                         <div className="me-2">Segment time</div>
                         <Switch
@@ -88,10 +88,10 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                             checkedIcon={false}
                             onColor={getComputedStyle(
                                 document.documentElement,
-                            ).getPropertyValue("--bs-link-color")}
+                            ).getPropertyValue('--bs-link-color')}
                             offColor={getComputedStyle(
                                 document.documentElement,
-                            ).getPropertyValue("--bs-link-color")}
+                            ).getPropertyValue('--bs-link-color')}
                             name="switch"
                             onChange={(checked) => {
                                 setTotalTime(checked);
@@ -105,14 +105,14 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
             <Table striped bordered hover responsive={true}>
                 <thead>
                     <tr>
-                        <th style={{ width: "25%" }}>Name</th>
-                        <th style={{ width: "15%" }}>Split</th>
+                        <th style={{ width: '25%' }}>Name</th>
+                        <th style={{ width: '15%' }}>Split</th>
                         <th
-                            style={{ width: "15%" }}
+                            style={{ width: '15%' }}
                             className={styles.splitComparisonOption}
                         >
                             <select
-                                style={{ padding: "0 2.25rem 0 0" }}
+                                style={{ padding: '0 2.25rem 0 0' }}
                                 className={`form-select ${styles.hideSelectArrow}`}
                                 value={selectedComparison}
                                 onChange={(e) => {
@@ -122,9 +122,9 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                                 }}
                             >
                                 {[
-                                    "Best Possible",
-                                    "Best Achieved",
-                                    "Average",
+                                    'Best Possible',
+                                    'Best Achieved',
+                                    'Average',
                                 ].map((alt) => {
                                     return (
                                         <option key={alt} value={alt}>
@@ -135,27 +135,27 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                             </select>
                         </th>
                         <th
-                            style={{ width: "15%" }}
+                            style={{ width: '15%' }}
                             className={styles.splitOptional}
                         >
                             Best possible
                         </th>
                         <th
-                            style={{ width: "15%" }}
+                            style={{ width: '15%' }}
                             className={styles.splitOptional}
                         >
                             Best achieved
                         </th>
                         <th
-                            style={{ width: "15%" }}
+                            style={{ width: '15%' }}
                             className={styles.splitOptional}
                         >
                             Average
                         </th>
                         {hasAlternatives && (
-                            <th style={{ width: "15%" }}>
+                            <th style={{ width: '15%' }}>
                                 <select
-                                    style={{ padding: "0 2.25rem 0 0" }}
+                                    style={{ padding: '0 2.25rem 0 0' }}
                                     className={
                                         `form-select` +
                                         ` ${styles.hideSelectArrow}`
@@ -185,7 +185,7 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                         const alternativeDuration =
                             split[splitToUse].alternative.find(
                                 (time) => time.name == selectedAlternative,
-                            )?.time || "";
+                            )?.time || '';
                         return (
                             <tr key={key}>
                                 <td>
@@ -239,13 +239,13 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
 
                                 {hasAlternatives && (
                                     <td>
-                                        <div style={{ float: "left" }}>
+                                        <div style={{ float: 'left' }}>
                                             <DurationToFormatted
                                                 duration={alternativeDuration}
                                                 withMillis={true}
                                             />
                                         </div>
-                                        <small style={{ float: "right" }}>
+                                        <small style={{ float: 'right' }}>
                                             {/*<sup>*/}
                                             <Difference
                                                 one={split[splitToUse].time}
@@ -266,7 +266,7 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
 };
 
 interface TimeCellProps {
-    name: Exclude<keyof SplitTimes, "alternative">;
+    name: Exclude<keyof SplitTimes, 'alternative'>;
     split: SplitTimes;
     optional?: boolean;
 }
@@ -283,10 +283,10 @@ const TimeCell: React.FunctionComponent<TimeCellProps> = ({
             }
         >
             <div>
-                <div style={{ float: "left" }}>
+                <div style={{ float: 'left' }}>
                     <DurationToFormatted duration={split[name]} />
                 </div>
-                <small style={{ float: "right" }}>
+                <small style={{ float: 'right' }}>
                     <Difference one={split.time} two={split[name]} />
                 </small>
             </div>

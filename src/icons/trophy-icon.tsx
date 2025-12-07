@@ -1,7 +1,7 @@
 type TrophyColor = "gold" | "silver" | "bronze";
 
 const trophyColors = {
-    gold: "var(--bs-secondary)",
+    gold: "var(--bs-gold)",
     silver: "silver",
     bronze: "#CD7F32",
 };

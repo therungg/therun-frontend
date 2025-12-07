@@ -1,11 +1,11 @@
-"use server";
+'use server';
 
-import { safeEncodeURI } from "~src/utils/uri";
-import { type Tournament } from "~src/components/tournament/tournament-info";
-import { type LiveRun } from "~app/live/live.types";
+import { type LiveRun } from '~app/(old-layout)/live/live.types';
+import { type Tournament } from '~src/components/tournament/tournament-info';
+import { safeEncodeURI } from '~src/utils/uri';
 
 const LIVE_RUN_URL =
-    "https://pokzhwoycl3uo7n5lzh6iltyoq0iaibq.lambda-url.eu-west-1.on.aws/";
+    'https://pokzhwoycl3uo7n5lzh6iltyoq0iaibq.lambda-url.eu-west-1.on.aws/';
 
 export const getAllLiveRuns = async (
     game: string | null = null,
@@ -56,7 +56,7 @@ export const getLiveRunForUser = async (username: string) => {
     return resolved;
 };
 
-export const getTopNLiveRuns = async (n = 5) => {
+export const getTopNLiveRuns = async (n = 5): Promise<LiveRun[]> => {
     const result = await fetch(`${LIVE_RUN_URL}?limit=${n}`);
 
     return result.json();

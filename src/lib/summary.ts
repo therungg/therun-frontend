@@ -1,5 +1,7 @@
 "use server";
 
+import { cacheLife } from 'next/cache'
+
 import { UserSummary, UserSummaryType } from "~src/types/summary.types";
 
 export const getUserSummary = async (
@@ -13,4 +15,25 @@ export const getUserSummary = async (
     const json = await res.json();
 
     return json.result as UserSummary | undefined;
+};
+
+
+export const getDateOfFirstUserSummary = async (
+    user: string,
+    type: UserSummaryType = "week",
+): Promise<string | undefined> => {
+    "use cache";
+    cacheLife("days")
+
+
+    const url = `${process.env.NEXT_PUBLIC_DATA_URL}/summary/${user}/${type}?first=true`;
+
+    const res = await fetch(url);
+    const json = await res.json();
+
+    const { result } = json;
+
+    if (!result) return undefined;
+
+    return result.replace(type + '#', '');
 };

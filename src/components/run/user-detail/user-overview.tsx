@@ -4,7 +4,7 @@ import React, { useEffect, useReducer, useState } from "react";
 import { DurationToFormatted, IsoToFormatted } from "../../util/datetime";
 import { GameLink, UserGameCategoryLink } from "../../links/links";
 import { EditRun } from "../dashboard/edit-run";
-import { GlobalGameData } from "~app/[username]/[game]/[run]/run";
+import { GlobalGameData } from "~app/(old-layout)/[username]/[game]/[run]/run";
 import styles from "../../css/User.module.scss";
 import { GameImage } from "~src/components/image/gameimage";
 import { getColorMode } from "~src/utils/colormode";

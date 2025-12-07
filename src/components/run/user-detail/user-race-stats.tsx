@@ -1,4 +1,4 @@
-import { UserStats } from "~app/races/races.types";
+import { UserStats } from "~app/(old-layout)/races/races.types";
 import { Table } from "react-bootstrap";
 import { DurationToFormatted } from "~src/components/util/datetime";
 

@@ -1,6 +1,6 @@
 "use server";
 
-import { type UserPatreonData } from "~app/change-appearance/patreon-section";
+import { type UserPatreonData } from "~app/(old-layout)/change-appearance/patreon-section";
 
 export const savePatreonSettings = async (
     user: string,

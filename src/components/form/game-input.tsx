@@ -1,7 +1,11 @@
 import { Form, FormGroupProps } from "react-bootstrap";
 import React, { useEffect, useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
-import { Category, Game, PaginatedGameResult } from "~app/games/games.types";
+import {
+    Category,
+    Game,
+    PaginatedGameResult,
+} from "~app/(old-layout)/games/games.types";
 import styles from "~src/components/css/LiveRun.module.scss";
 import { GameImage } from "~src/components/image/gameimage";
 

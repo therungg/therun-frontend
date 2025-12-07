@@ -4,9 +4,9 @@ import {
     StoryOption,
     StoryPreferences,
     StoryWithSplitsStories,
-} from "~app/live/story.types";
+} from "~app/(old-layout)/live/story.types";
 import { User } from "../../types/session.types";
-import { getPronounsFromString } from "~app/stories/manage/get-pronouns-from-string";
+import { getPronounsFromString } from "~app/(old-layout)/stories/manage/get-pronouns-from-string";
 
 export const getStoryByUser = async (username: string) => {
     const storyApiUrl = process.env.NEXT_PUBLIC_STORIES_API_URL as string;
