@@ -84,11 +84,11 @@ export default function About() {
                 </li>
                 <li>
                     Automatic uploads through a{" "}
-                    <Link href="/livesplit">LiveSplit Component </Link>
+                    <Link href="/livesplit" prefetch={false}>LiveSplit Component </Link>
                 </li>
                 <li>
                     Live Run tracking from the Component on the{" "}
-                    <Link href="/live">Runs page</Link>
+                    <Link href="/live" prefetch={false}>Runs page</Link>
                 </li>
                 <li>
                     A{" "}
@@ -123,7 +123,7 @@ export default function About() {
                     </li>
                     <li>
                         Upload your .lss file by going to the{" "}
-                        <Link href="/upload">Upload</Link> page.
+                        <Link href="/upload" prefetch={false}>Upload</Link> page.
                     </li>
                     <li>
                         Wait for 10 to 30 seconds for your splits to be

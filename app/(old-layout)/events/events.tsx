@@ -32,7 +32,7 @@ export const Events = ({
                     className="d-flex mt-3 mt-lg-0 justify-content-end align-items-center"
                 >
                     <Can I="create" an="event">
-                        <Link href="/events/create">
+                        <Link href="/events/create" prefetch={false}>
                             <IconButton
                                 icon={<PlusIcon />}
                                 iconPosition="right"
@@ -57,6 +57,7 @@ export const Events = ({
                                         <Link
                                             href={`/events/${event.slug}`}
                                             className="text-decoration-none"
+                                            prefetch={false}
                                         >
                                             <SpeedrunEventCard event={event} />
                                         </Link>

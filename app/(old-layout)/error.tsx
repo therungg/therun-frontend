@@ -40,6 +40,7 @@ export default function Error({
                         href={process.env.NEXT_PUBLIC_DISCORD_URL}
                         target="_blank"
                         rel="noreferrer"
+                        prefetch={false}
                     >
                         Discord
                     </Link>

@@ -18,7 +18,7 @@ export const GlobalRaceStats = ({
         <div className="bg-body-secondary mb-3 game-border px-4 py-3 rounded-3">
             <div className="justify-content-between w-100 d-flex align-items-center">
                 <span className="h3 m-0">Race Stats</span>
-                <Link href="/races/stats">View all stats</Link>
+                <Link href="/races/stats" prefetch={false}>View all stats</Link>
             </div>
             <hr />
             <div>

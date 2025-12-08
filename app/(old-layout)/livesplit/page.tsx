@@ -38,7 +38,7 @@ export default async function Livesplit() {
                     automatically updated after every run.
                 </p>
                 <p className="mb-4">
-                    Check out the <Link href="/live">Live page</Link> to see
+                    Check out the <Link href="/live" prefetch={false}>Live page</Link> to see
                     runs in progress!
                 </p>
                 <p>
@@ -67,7 +67,7 @@ export default async function Livesplit() {
                     Now, you will never have to upload your runs again! In
                     addition, your live runs will show up in real time on your
                     profile, and on the dedicated{' '}
-                    <Link href="/live">Live page</Link>! It also allows you to
+                    <Link href="/live" prefetch={false}>Live page</Link>! It also allows you to
                     join Tournaments, or to participate in Races!
                 </p>
 

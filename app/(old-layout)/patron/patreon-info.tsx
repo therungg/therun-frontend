@@ -30,6 +30,7 @@ export function PatreonInfo({ session }: { session: { username: string } }) {
                             target="_blank"
                             rel="noreferrer"
                             href="https://patreon.com/therungg"
+                            prefetch={false}
                         >
                             <Button
                                 variant="secondary"
@@ -51,6 +52,7 @@ export function PatreonInfo({ session }: { session: { username: string } }) {
                             target="_blank"
                             rel="noreferrer"
                             href={stripePaymentButton}
+                            prefetch={false}
                         >
                             <Button className="btn-lg border-2 px-3 h-3r fw-medium w-240p h-4r fs-large mw-100">
                                 Donate with Stripe

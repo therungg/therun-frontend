@@ -6,7 +6,7 @@ import Link from "next/link";
 export const CreateRaceButtons = () => {
     return (
         <Can I="create" a="race">
-            <Link href="/races/create">
+            <Link href="/races/create" prefetch={false}>
                 <IconButton icon={<PlusIcon />} iconPosition="right">
                     Create new race
                 </IconButton>

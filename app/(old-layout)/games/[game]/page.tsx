@@ -32,7 +32,7 @@ export default async function GamePage(props: PageProps) {
                 Unfortunately, Nobody has uploaded runs for this game yet, or
                 the upload is not processed yet. If you have uploaded runs for
                 the game, but this page still shows, please{' '}
-                <Link href="/contact">contact me!</Link>
+                <Link href="/contact" prefetch={false}>contact me!</Link>
                 {JSON.stringify(data)}
             </>
         );

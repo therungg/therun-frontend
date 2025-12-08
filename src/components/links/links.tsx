@@ -17,11 +17,11 @@ interface UserLinkProps extends ChildrenType {
     className?: string;
 }
 
-interface UserGameLinkProps extends UserLinkProps, GameLinkProps {}
+interface UserGameLinkProps extends UserLinkProps, GameLinkProps { }
 
 interface UserGameCategoryLinkProps
     extends UserLinkProps,
-        GameCategoryLinkProps {}
+    GameCategoryLinkProps { }
 
 interface GameLinkProps {
     game: string;
@@ -102,9 +102,10 @@ export const UserGameCategoryLink = ({
                 url
                     ? url
                     : `/${username}/${safeEncodeURI(game)}/${safeEncodeURI(
-                          category,
-                      )}`
+                        category,
+                    )}`
             }
+            prefetch={false}
         >
             {children ? children : `${display(game)} - ${display(category)}`}
         </Link>
@@ -115,7 +116,7 @@ export const GameLink: React.FunctionComponent<
     React.PropsWithChildren<GameLinkProps>
 > = ({ game, children }) => {
     return (
-        <Link href={`/games/${safeEncodeURI(game)}`}>
+        <Link href={`/games/${safeEncodeURI(game)}`} prefetch={false}>
             {children ? children : display(game)}
         </Link>
     );

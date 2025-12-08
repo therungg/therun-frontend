@@ -188,7 +188,7 @@ export const UserProfile = ({
                                 <div className="mb-3">
                                     <h2>
                                         Currently Live!&nbsp;
-                                        <Link href="/live">
+                                        <Link href="/live" prefetch={false}>
                                             <LiveIcon />
                                         </Link>
                                     </h2>
@@ -290,7 +290,7 @@ const NoRuns = (username: string, session: User, userData: UserData) => {
                 Unfortunately, {username} has not uploaded runs yet, or their
                 upload has not yet been processed (should not take long). If the
                 user has uploaded runs, but this page still shows, please{" "}
-                <Link href="/contact">contact me!</Link>
+                <Link href="/contact" prefetch={false}>contact me!</Link>
             </div>
         </>
     );

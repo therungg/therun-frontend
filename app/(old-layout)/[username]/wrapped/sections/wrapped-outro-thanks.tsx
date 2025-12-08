@@ -76,7 +76,7 @@ export const WrappedOutroThanks = memo<WrappedOutroThanksProps>(
                             do to support!
                         </p>
                         <p>
-                            <Link href="/patron">
+                            <Link href="/patron" prefetch={false}>
                                 <Button
                                     variant="secondary"
                                     className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"

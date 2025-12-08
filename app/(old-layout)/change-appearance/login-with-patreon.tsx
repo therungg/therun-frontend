@@ -36,7 +36,7 @@ export const LoginWithPatreon = ({
                 To match your Patreon with your therun.gg account, link your
                 Patreon account here!
             </p>
-            <Link passHref href={url}>
+            <Link passHref href={url} prefetch={false}>
                 <Button className="patreon">Link with Patreon</Button>
             </Link>
         </Container>

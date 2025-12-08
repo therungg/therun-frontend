@@ -22,7 +22,7 @@ export const Homepage = () => {
                         <div className="col-lg-6 mx-auto">
                             <p className="lead mb-4"></p>
                             <div className="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
-                                <Link href="/patron">
+                                <Link href="/patron" prefetch={false}>
                                     <IconButton
                                         icon={<BunnyIcon />}
                                         iconPosition="right"
@@ -32,7 +32,7 @@ export const Homepage = () => {
                                         Support
                                     </IconButton>
                                 </Link>
-                                <Link href="/about">
+                                <Link href="/about" prefetch={false}>
                                     <Button
                                         variant="primary"
                                         className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
@@ -40,7 +40,7 @@ export const Homepage = () => {
                                         Learn More
                                     </Button>
                                 </Link>
-                                <Link href="/livesplit">
+                                <Link href="/livesplit" prefetch={false}>
                                     <Button
                                         variant="primary"
                                         className="btn-lg px-3 w-160p h-3r fw-medium"

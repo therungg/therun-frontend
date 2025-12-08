@@ -103,7 +103,7 @@ export const Dragdrop = ({
                         <UserLink username={username}>Your profile</UserLink> in
                         around 1 minute. If your splits don&apos;t show up or
                         there seems to be something wrong with them, please{" "}
-                        <Link href="/contact">Contact me!</Link>
+                        <Link href="/contact" prefetch={false}>Contact me!</Link>
                     </p>
                 </Alert>
             ) : (

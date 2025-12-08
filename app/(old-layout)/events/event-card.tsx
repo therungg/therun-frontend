@@ -14,7 +14,7 @@ import { Col, Row } from "react-bootstrap";
 
 export const SpeedrunEventCard = ({ event }: { event: EventFromSearch }) => {
     return (
-        <Link href={`/events/${event.slug}`} className="text-decoration-none">
+        <Link href={`/events/${event.slug}`} className="text-decoration-none" prefetch={false}>
             <div
                 className={clsx(
                     "container-fluid p-0 game-border mt-3 rounded-4 d-flex align-items-center shadow-lg border",

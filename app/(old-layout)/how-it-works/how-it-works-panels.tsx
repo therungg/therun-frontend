@@ -34,7 +34,7 @@ export default function HowItWorksPanels({
                 {!session.username ? (
                     <p>Please login first!</p>
                 ) : (
-                    <Link href="/upload">
+                    <Link href="/upload" prefetch={false}>
                         <button>Upload now!</button>
                     </Link>
                 )}

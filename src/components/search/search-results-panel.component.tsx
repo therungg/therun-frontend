@@ -35,10 +35,9 @@ export const SearchResultsPanel = React.memo(
                             <React.Fragment key={index}>
                                 {showHeader && (
                                     <dt
-                                        className={`${
-                                            0 !== index &&
+                                        className={`${0 !== index &&
                                             "pt-1 mt-1 border-top"
-                                        } py-1 px-2 fw-semibold border-bottom text-truncate pe-none fs-smaller`}
+                                            } py-1 px-2 fw-semibold border-bottom text-truncate pe-none fs-smaller`}
                                     >
                                         {toTitleCase(type)}
                                     </dt>
@@ -83,6 +82,7 @@ const SearchResultItem = React.memo<SearchResultItemProps>(({ result }) => {
                 href={result.url ?? ""}
                 title={result.key}
                 className="list-group-item-action d-block text-decoration-none px-3 py-1 text-truncate text-body lh-sm"
+                prefetch={false}
             >
                 <FuzzyMatchHighlight
                     result={result.key}

@@ -51,7 +51,7 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
 
                 <div className="d-flex justify-content-end">
                     <Can I="edit" this={subject("event", event)}>
-                        <Link href={`/events/${event.id}/edit`}>
+                        <Link href={`/events/${event.id}/edit`} prefetch={false}>
                             <Button>Edit Event</Button>
                         </Link>
                     </Can>

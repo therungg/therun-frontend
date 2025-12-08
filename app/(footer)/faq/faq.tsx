@@ -76,10 +76,10 @@ export const Faq = () => {
                                 This site is still in beta, so there are a lot
                                 of feature that are still missing or implemented
                                 sub-optimally. You can check out the{" "}
-                                <Link href="/roadmap">Roadmap</Link> to see if
+                                <Link href="/roadmap" prefetch={false}>Roadmap</Link> to see if
                                 the feature you want is already on there. If
                                 not, don&apos;t hesitate to{" "}
-                                <Link href="/contact">contact me</Link> and
+                                <Link href="/contact" prefetch={false}>contact me</Link> and
                                 request the feature!
                             </p>
                         </AccordionBody>
@@ -160,7 +160,7 @@ export const Faq = () => {
                     <AccordionBody>
                         The system identifies you by your Twitch name. I can
                         copy your profile, please{" "}
-                        <Link href="/contact">Contact me</Link>!
+                        <Link href="/contact" prefetch={false}>Contact me</Link>!
                     </AccordionBody>
                 </AccordionItem>
             </Accordion>

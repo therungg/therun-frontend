@@ -227,7 +227,7 @@ export default function RunDetail({
                 <div className="mb-3 mw-550p">
                     <h2>
                         Currently Live!&nbsp;
-                        <Link href="/live">
+                        <Link href="/live" prefetch={false}>
                             <LiveIcon />
                         </Link>
                     </h2>

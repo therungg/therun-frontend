@@ -54,7 +54,7 @@ const GoToNextRace = (props: GoToNextRaceProps) => {
     return (
         <div className="mb-4">
             <span className="mb-2">A new race has been created!</span>
-            <Link href={url}>
+            <Link href={url} prefetch={false}>
                 <Button {...props} variant="primary">
                     Go to next race
                 </Button>
