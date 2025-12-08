@@ -1,13 +1,9 @@
-import { cacheLife } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 import { apiResponse } from '~app/(old-layout)/api/response';
 import { findUserOrRun } from '~src/components/search/find-user-or-run';
 
 export async function GET(request: NextRequest) {
-    'use cache';
-    cacheLife('minutes');
-
-    const searchParams = request.nextUrl.searchParams;
+    const { searchParams } = new URL(request.url);
 
     if (!searchParams.has('q')) {
         return NextResponse.json(

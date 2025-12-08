@@ -1,20 +1,20 @@
-import React from "react";
-import { getMessages } from "next-intl/server";
-import { NextIntlClientProvider } from "next-intl";
-import "~src/styles/_import.scss";
-import { Header } from "./header";
-import { Footer } from "./footer";
-import { Content } from "./content";
-import { Providers } from "./providers";
-import { Scripts } from "./scripts";
-import { getSession } from "~src/actions/session.action";
-import buildMetadata from "~src/utils/metadata";
-import { Viewport } from "next";
-import { SessionErrorBoundary } from "~src/components/errors/session.error-boundary";
+import { NextIntlClientProvider } from 'next-intl';
+import { getMessages } from 'next-intl/server';
+import React from 'react';
+import '~src/styles/_import.scss';
+import { Viewport } from 'next';
+import { getSession } from '~src/actions/session.action';
+import { SessionErrorBoundary } from '~src/components/errors/session.error-boundary';
+import buildMetadata from '~src/utils/metadata';
+import { Content } from './content';
+import { Footer } from './footer';
+import { Header } from './header';
+import { Providers } from './providers';
+import { Scripts } from './scripts';
 
 export const metadata = buildMetadata();
 export const viewport: Viewport = {
-    themeColor: "#007c00",
+    themeColor: '#007c00',
 };
 export default async function RootLayout({
     // Layouts must accept a children prop.
@@ -23,26 +23,16 @@ export default async function RootLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const [
-        session,
-        // Providing all messages to the client
-        // side is the easiest way to get started
-        messages,
-    ] = await Promise.all([getSession(), getMessages()]);
+    const [session] = await Promise.all([getSession()]);
     const sessionError = session.sessionError;
     return (
-        <NextIntlClientProvider messages={messages}>
-            <Providers user={session}>
-                <Scripts />
-                <Header
-                    username={session?.username}
-                    picture={session?.picture}
-                />
-                <Content>
-                    {sessionError ? <SessionErrorBoundary /> : children}
-                </Content>
-                <Footer />
-            </Providers>
-        </NextIntlClientProvider>
+        <Providers user={session}>
+            <Scripts />
+            <Header username={session?.username} picture={session?.picture} />
+            <Content>
+                {sessionError ? <SessionErrorBoundary /> : children}
+            </Content>
+            <Footer />
+        </Providers>
     );
 }

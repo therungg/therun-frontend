@@ -1,3 +1,5 @@
+import { cacheLife } from 'next/cache';
+
 export interface RunData {
     game: string;
     pb: string;
@@ -26,14 +28,17 @@ export const DEFAULT_SEARCH_RESULTS = {
 };
 
 export const findUserOrRun = async (term: string): Promise<SearchResults> => {
+    'use cache';
+    cacheLife('minutes');
+
     if (term.length < 2) return DEFAULT_SEARCH_RESULTS;
 
     const url = `${process.env.NEXT_PUBLIC_SEARCH_URL}?q=${term}`;
 
     const res = await fetch(url, {
-        method: "GET",
+        method: 'GET',
         headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
         },
     });
 

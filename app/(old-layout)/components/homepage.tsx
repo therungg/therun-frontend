@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
 import React from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { DataHolder } from '~app/(old-layout)/components/data-holder';
@@ -11,15 +10,15 @@ import { SkeletonPopularGames } from '~src/components/skeleton/index/skeleton-po
 import { BunnyIcon } from '~src/icons/bunny-icon';
 
 export const Homepage = () => {
-    const t = useTranslations('homepage');
-
     return (
         <div>
             <Row>
                 <Col xl={12}>
                     <div className="px-4 pt-5 mt-3 mb-5 text-center">
-                        <h1 className="display-1 fw-medium">{t('title')}</h1>
-                        <h2 className="display-6 mb-5">{t('subtitle')}</h2>
+                        <h1 className="display-1 fw-medium">The Run</h1>
+                        <h2 className="display-6 mb-5">
+                            Statistics for speedrunners
+                        </h2>
                         <div className="col-lg-6 mx-auto">
                             <p className="lead mb-4"></p>
                             <div className="d-grid gap-2 d-sm-flex justify-content-sm-center mb-5">
@@ -30,7 +29,7 @@ export const Homepage = () => {
                                         variant="secondary"
                                         className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
                                     >
-                                        {t('support')}
+                                        Support
                                     </IconButton>
                                 </Link>
                                 <Link href="/about">
@@ -38,7 +37,7 @@ export const Homepage = () => {
                                         variant="primary"
                                         className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
                                     >
-                                        {t('learnMore')}
+                                        Learn More
                                     </Button>
                                 </Link>
                                 <Link href="/livesplit">
@@ -46,7 +45,7 @@ export const Homepage = () => {
                                         variant="primary"
                                         className="btn-lg px-3 w-160p h-3r fw-medium"
                                     >
-                                        {t('liveSplitKey')}
+                                        LiveSplit Key
                                     </Button>
                                 </Link>
                             </div>
