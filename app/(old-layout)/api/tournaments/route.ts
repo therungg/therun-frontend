@@ -3,9 +3,6 @@ import { apiResponse } from '~app/(old-layout)/api/response';
 import { getTournaments } from '~src/components/tournament/getTournaments';
 
 export async function GET() {
-    'use cache';
-    cacheLife('minutes');
-
     const result = await getTournaments();
 
     return apiResponse({

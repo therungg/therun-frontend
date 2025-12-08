@@ -13,9 +13,6 @@ interface PageProps {
 }
 
 export default async function RunPage(props: PageProps) {
-    'use cache';
-    cacheLife('minutes');
-
     const searchParams = await props.searchParams;
     const params = await props.params;
     if (!params || !params.username || !params.game || !params.run)

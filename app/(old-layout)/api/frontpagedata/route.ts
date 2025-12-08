@@ -1,12 +1,8 @@
-import { cacheLife } from 'next/cache';
 import { apiResponse } from '~app/(old-layout)/api/response';
 import { getTabulatedGameStatsPopular } from '~src/components/game/get-tabulated-game-stats';
 import { getPersonalBestRuns } from '~src/lib/get-personal-best-runs';
 
 export async function GET() {
-    'use cache';
-    cacheLife('minutes');
-
     const runsPromise = getPersonalBestRuns();
     const gamestatsPromise = getTabulatedGameStatsPopular();
 

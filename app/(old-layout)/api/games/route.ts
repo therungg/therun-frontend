@@ -3,9 +3,6 @@ import { apiResponse } from '~app/(old-layout)/api/response';
 import { getGamesPagesFromSearchParams } from '~src/components/game/get-tabulated-game-stats';
 
 export async function GET(request: Request) {
-    'use cache';
-    cacheLife('hours');
-
     const { searchParams } = new URL(request.url);
     const result = await getGamesPagesFromSearchParams(searchParams);
 
