@@ -10,9 +10,6 @@ export async function GET(
         params: Promise<{ game: string; category: string }>;
     },
 ) {
-    'use cache';
-    cacheLife('days');
-
     const params = await props.params;
     const { game, category } = params;
 

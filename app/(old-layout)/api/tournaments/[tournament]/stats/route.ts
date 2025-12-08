@@ -7,8 +7,6 @@ export async function GET(
     _: NextRequest,
     props: { params: Promise<{ tournament: string }> },
 ) {
-    'use cache';
-    cacheLife('minutes');
     const params = await props.params;
     const result = await getTournamentStatsByName(params.tournament);
 

@@ -1,17 +1,21 @@
-"use server";
+'use server';
 
-import { type Run } from "../common/types";
+import { cacheLife } from 'next/cache';
+import { type Run } from '../common/types';
 
 export const getUserRuns = async (
     username: string,
     game?: string,
 ): Promise<Run[]> => {
+    'use cache';
+    cacheLife('minutes');
+
     const url = `${process.env.NEXT_PUBLIC_DATA_URL}/users/${username}${
-        game ? `/${game}` : ""
+        game ? `/${game}` : ''
     }`;
 
     const res = await fetch(url, {
-        cache: "force-cache",
+        cache: 'force-cache',
         next: {
             revalidate: 600,
             tags: [`/users/${username}`],

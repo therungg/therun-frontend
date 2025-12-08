@@ -26,6 +26,9 @@ export const getTournamentByName = async (name: string) => {
 };
 
 export const getTournamentStatsByName = async (name: string) => {
+    'use cache';
+    cacheLife('minutes');
+
     const url = `${
         process.env.NEXT_PUBLIC_DATA_URL
     }/tournaments/${safeEncodeURI(name)}/stats`;

@@ -1,11 +1,11 @@
-"use server";
+'use server';
 
-import { cacheLife } from "next/cache";
-import { type UserData } from "./get-session-data";
+import { cacheLife } from 'next/cache';
+import { type UserData } from './get-session-data';
 
 export const getGlobalUser = async (user: string) => {
     'use cache';
-    cacheLife('days');
+    cacheLife('hours');
     const url = `${process.env.NEXT_PUBLIC_DATA_URL}/users/global/${user}`;
 
     const res = await fetch(url);

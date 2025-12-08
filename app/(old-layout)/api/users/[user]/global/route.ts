@@ -1,4 +1,3 @@
-import { cacheLife } from 'next/cache';
 import { NextRequest } from 'next/server';
 import { apiResponse } from '~app/(old-layout)/api/response';
 import { getGlobalUser } from '~src/lib/get-global-user';
@@ -9,8 +8,6 @@ export async function GET(
         params: Promise<{ user: string }>;
     },
 ) {
-    'use cache';
-    cacheLife('minutes');
     const params = await props.params;
     const { user } = params;
     const userData = await getGlobalUser(user);

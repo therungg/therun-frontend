@@ -61,6 +61,9 @@ export const getGameGlobal = async (game: string) => {
 };
 
 export const getCategory = async (game: string, category: string) => {
+    'use cache';
+    cacheLife('days');
+
     game = safeEncodeURI(game);
     category = safeEncodeURI(category);
 

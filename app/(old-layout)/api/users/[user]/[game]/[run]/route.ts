@@ -57,9 +57,6 @@ export async function GET(
         params: Promise<{ user: string; game: string; run: string }>;
     },
 ) {
-    'use cache';
-    cacheLife('minutes');
-
     const params = await props.params;
     const { user } = params;
     const game = safeDecodeURI(params.game);

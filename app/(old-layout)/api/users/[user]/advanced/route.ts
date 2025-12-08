@@ -9,8 +9,6 @@ export async function GET(
         params: Promise<{ user: string }>;
     },
 ) {
-    'use cache';
-    cacheLife('minutes');
     const params = await props.params;
     const { user } = params;
     const userData = await getAdvancedUserStats(user, '0');

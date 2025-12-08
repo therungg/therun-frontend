@@ -1,5 +1,4 @@
 import { Viewport } from 'next';
-import { getLocale } from 'next-intl/server';
 import React, { Suspense } from 'react';
 import buildMetadata from '~src/utils/metadata';
 

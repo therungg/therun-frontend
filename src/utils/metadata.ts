@@ -1,7 +1,7 @@
-import { Metadata } from "next";
-import { OpenGraphType } from "next/dist/lib/metadata/types/opengraph-types";
-import { getBaseUrl } from "~src/actions/base-url.action";
-import { safeDecodeURI, safeEncodeURI } from "./uri";
+import { Metadata } from 'next';
+import { OpenGraphType } from 'next/dist/lib/metadata/types/opengraph-types';
+import { getBaseUrl } from '~src/actions/base-url.action';
+import { safeDecodeURI, safeEncodeURI } from './uri';
 
 declare type OpenGraphImage = {
     url: string | URL;
@@ -29,15 +29,15 @@ export interface MetadataProps {
  * @returns
  */
 export default function buildMetadata(props?: MetadataProps): Metadata {
-    const defaultImageUrl = "/therun-no-url-with-black-background.png";
+    const defaultImageUrl = '/therun-no-url-with-black-background.png';
     const title =
-        safeDecodeURI(props?.absoluteTitle || "") ||
+        safeDecodeURI(props?.absoluteTitle || '') ||
         `The Run | ${
-            safeDecodeURI(props?.title || "") || "Speedrun Statistics"
+            safeDecodeURI(props?.title || '') || 'Speedrun Statistics'
         }`;
     const description =
         props?.description ||
-        "The Run - a free tool for speedrun statistics. Explore leaderboards, check out live runs, and easily manage your own speedrun data!";
+        'The Run - a free tool for speedrun statistics. Explore leaderboards, check out live runs, and easily manage your own speedrun data!';
 
     // Resolving Twitter images
     let twitterImages: string[] = [];
@@ -49,27 +49,27 @@ export default function buildMetadata(props?: MetadataProps): Metadata {
     if (twitterImages.length === 0) twitterImages = [defaultImageUrl];
 
     return {
-        metadataBase: new URL("https://therun.gg"),
+        metadataBase: new URL('https://therun.gg'),
         title,
         description,
-        keywords: props?.keywords || ["TheRun", "Speedrun", "Statistics"],
-        manifest: "/site.webmanifest",
-        referrer: "strict-origin-when-cross-origin",
+        keywords: props?.keywords || ['TheRun', 'Speedrun', 'Statistics'],
+        manifest: '/site.webmanifest',
+        referrer: 'strict-origin-when-cross-origin',
         other: {
-            "msapplication-TileColor": "#007c00",
+            'msapplication-TileColor': '#007c00',
         },
         openGraph: {
             title,
             description,
-            url: "/",
-            siteName: "The Run",
-            locale: "en_US",
-            type: props?.type || "website",
+            url: '/',
+            siteName: 'The Run',
+            locale: 'en_US',
+            type: props?.type || 'website',
             images: props?.images || {
                 url: defaultImageUrl,
                 secureUrl: defaultImageUrl,
-                alt: "The Run logo",
-                type: "image/png",
+                alt: 'The Run logo',
+                type: 'image/png',
                 width: 800,
                 height: 600,
             },
@@ -77,10 +77,10 @@ export default function buildMetadata(props?: MetadataProps): Metadata {
         twitter: {
             title,
             description,
-            siteId: "1482414005138477061",
-            creator: "@therungg",
-            creatorId: "1482414005138477061",
-            card: "summary_large_image",
+            siteId: '1482414005138477061',
+            creator: '@therungg',
+            creatorId: '1482414005138477061',
+            card: 'summary_large_image',
             images: twitterImages,
         },
         robots: {
@@ -103,6 +103,7 @@ export async function getUserProfilePhoto(
             `${await getBaseUrl()}/api/users/${username}/global`,
         );
     } catch (_e) {
+        console.log(_e);
         return undefined;
     }
 
@@ -115,7 +116,7 @@ export async function getUserProfilePhoto(
             url: data.picture,
             secureUrl: data.picture,
             alt: `Profile photo of ${username}`,
-            type: "image/png",
+            type: 'image/png',
         },
     ];
 }
@@ -143,7 +144,7 @@ export async function getGameImage(
             url: data.image,
             secureUrl: data.image,
             alt: `${game} cover`,
-            type: "image/png",
+            type: 'image/png',
         },
     ];
 }
