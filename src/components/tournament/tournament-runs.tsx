@@ -1,20 +1,20 @@
-import React, { useEffect, useState } from "react";
-import { Form, Pagination, Table } from "react-bootstrap";
+import moment from 'moment';
+import React, { useEffect, useState } from 'react';
+import { Form, Pagination, Table } from 'react-bootstrap';
+import { Search as SearchIcon } from 'react-bootstrap-icons';
+import { addTime } from '~app/(old-layout)/tournaments/actions/add-time.action';
+import { excludeRun } from '~app/(old-layout)/tournaments/actions/exclude-run.action';
+import { SubmitButton } from '~src/components/Button/SubmitButton';
+import { UserLink } from '~src/components/links/links';
+import { Tournament } from '~src/components/tournament/tournament-info';
+import { User } from '../../../types/session.types';
+import { buildItems } from '../run/run-sessions/game-sessions';
 import {
     DurationToFormatted,
     getFormattedString,
     IsoToFormatted,
     timeToMillis,
-} from "../util/datetime";
-import moment from "moment";
-import { buildItems } from "../run/run-sessions/game-sessions";
-import { Search as SearchIcon } from "react-bootstrap-icons";
-import { UserLink } from "~src/components/links/links";
-import { User } from "../../../types/session.types";
-import { Tournament } from "~src/components/tournament/tournament-info";
-import { SubmitButton } from "~src/components/Button/SubmitButton";
-import { excludeRun } from "~app/(old-layout)/tournaments/actions/exclude-run.action";
-import { addTime } from "~app/(old-layout)/tournaments/actions/add-time.action";
+} from '../util/datetime';
 
 interface TournamentRunsProps {
     data: {
@@ -40,10 +40,10 @@ export const TournamentRuns: React.FunctionComponent<TournamentRunsProps> = ({
     useEffect(() => {
         setConfirmedFinalTime(timeToMillis(finalTimeInput));
     }, [finalTimeInput]);
-    const [sortColumn, setSortColumn] = useState("date");
+    const [sortColumn, setSortColumn] = useState('date');
     const [sortAsc, setSortAsc] = useState(true);
 
-    const [search, setSearch] = useState("");
+    const [search, setSearch] = useState('');
 
     const [active, setActive] = useState(1);
     const [items, setItems] = useState<React.ReactNode[]>();
@@ -53,7 +53,7 @@ export const TournamentRuns: React.FunctionComponent<TournamentRunsProps> = ({
     let [useRuns, setUseRuns] = useState([]);
 
     const isAdmin =
-        user.username && tournament.moderators?.includes(user.username);
+        user && user.username && tournament.moderators?.includes(user.username);
 
     useEffect(() => {
         if (data && data.runList && data.runList.length > 0) {
@@ -68,23 +68,23 @@ export const TournamentRuns: React.FunctionComponent<TournamentRunsProps> = ({
     if (search) {
         const accurateSearch = search
             .toLowerCase()
-            .replaceAll(" ", "")
-            .normalize("NFD")
-            .replace(/\p{Diacritic}/gu, "");
+            .replaceAll(' ', '')
+            .normalize('NFD')
+            .replace(/\p{Diacritic}/gu, '');
         useRuns = useRuns.filter((run) => {
             const accurateUser = run.user
                 .toLowerCase()
-                .replaceAll(" ", "")
-                .normalize("NFD")
-                .replace(/\p{Diacritic}/gu, "");
+                .replaceAll(' ', '')
+                .normalize('NFD')
+                .replace(/\p{Diacritic}/gu, '');
 
             const accurateGame = showGame
                 ? run.game
                       .toLowerCase()
-                      .replaceAll(" ", "")
-                      .normalize("NFD")
-                      .replace(/\p{Diacritic}/gu, "")
-                : "";
+                      .replaceAll(' ', '')
+                      .normalize('NFD')
+                      .replace(/\p{Diacritic}/gu, '')
+                : '';
 
             return (
                 accurateUser.includes(accurateSearch) ||
@@ -105,11 +105,11 @@ export const TournamentRuns: React.FunctionComponent<TournamentRunsProps> = ({
     };
 
     const getSortableClassName = (column: string): string => {
-        let classNames = "sortable";
+        let classNames = 'sortable';
 
         if (sortColumn === column) {
-            classNames += " active";
-            classNames += sortAsc ? " asc" : " desc";
+            classNames += ' active';
+            classNames += sortAsc ? ' asc' : ' desc';
         }
 
         return classNames;
@@ -120,7 +120,7 @@ export const TournamentRuns: React.FunctionComponent<TournamentRunsProps> = ({
     useRuns.sort((a, b) => {
         let res = 1;
 
-        if (sortColumn === "date") {
+        if (sortColumn === 'date') {
             if (!a.endedAt) return 1;
             if (!b.endedAt) return -1;
 
@@ -134,16 +134,16 @@ export const TournamentRuns: React.FunctionComponent<TournamentRunsProps> = ({
             res = parseInt(aDuration) < 0 ? 1 : -1;
         }
 
-        if (sortColumn === "user") {
+        if (sortColumn === 'user') {
             if (a.user == b.user) res = 0;
             else res = a.user > b.user ? 1 : -1;
         }
 
-        if (sortColumn === "time") {
+        if (sortColumn === 'time') {
             res = parseInt(a.time) > parseInt(b.time) ? 1 : -1;
         }
 
-        if (sortColumn === "game") {
+        if (sortColumn === 'game') {
             if (a.game === b.game)
                 res = parseInt(a.time) > parseInt(b.time) ? 1 : -1;
             else res = a.game > b.game ? 1 : -1;
@@ -154,7 +154,7 @@ export const TournamentRuns: React.FunctionComponent<TournamentRunsProps> = ({
     });
 
     const onPaginationClick = (event): void => {
-        let target = "";
+        let target = '';
 
         if (event.target.text) {
             target = event.target.text;
@@ -164,13 +164,13 @@ export const TournamentRuns: React.FunctionComponent<TournamentRunsProps> = ({
 
         if (!target) return;
 
-        if (target.includes("«")) {
+        if (target.includes('«')) {
             setActive(1);
-        } else if (target.includes("‹")) {
+        } else if (target.includes('‹')) {
             setActive(active == 1 ? 1 : active - 1);
-        } else if (target.includes("›")) {
+        } else if (target.includes('›')) {
             setActive(active == last ? last : active + 1);
-        } else if (target.includes("»")) {
+        } else if (target.includes('»')) {
             setActive(last);
         } else {
             if (parseInt(target)) setActive(parseInt(target));
@@ -186,7 +186,7 @@ export const TournamentRuns: React.FunctionComponent<TournamentRunsProps> = ({
                         className="input-group-text"
                         onClick={() => {
                             const searchElement =
-                                document.getElementById("gameSearch");
+                                document.getElementById('gameSearch');
                             if (document.activeElement !== search) {
                                 searchElement.focus();
                             }
@@ -198,7 +198,7 @@ export const TournamentRuns: React.FunctionComponent<TournamentRunsProps> = ({
                         type="search"
                         className="form-control"
                         placeholder={`Filter by user${
-                            showGame ? " or Game" : ""
+                            showGame ? ' or Game' : ''
                         }`}
                         onChange={(e) => {
                             setSearch(e.target.value);
@@ -265,28 +265,28 @@ export const TournamentRuns: React.FunctionComponent<TournamentRunsProps> = ({
                 <thead>
                     <tr>
                         <th
-                            className={getSortableClassName("user")}
-                            onClick={() => changeSort("user")}
+                            className={getSortableClassName('user')}
+                            onClick={() => changeSort('user')}
                         >
                             User
                         </th>
                         {showGame && (
                             <th
-                                className={getSortableClassName("game")}
-                                onClick={() => changeSort("game")}
+                                className={getSortableClassName('game')}
+                                onClick={() => changeSort('game')}
                             >
                                 Game
                             </th>
                         )}
                         <th
-                            className={getSortableClassName("time")}
-                            onClick={() => changeSort("time")}
+                            className={getSortableClassName('time')}
+                            onClick={() => changeSort('time')}
                         >
                             Time
                         </th>
                         <th
-                            className={getSortableClassName("date")}
-                            onClick={() => changeSort("date")}
+                            className={getSortableClassName('date')}
+                            onClick={() => changeSort('date')}
                         >
                             Date
                         </th>
@@ -355,10 +355,10 @@ export const TournamentRuns: React.FunctionComponent<TournamentRunsProps> = ({
                 {items}
             </Pagination>
 
-            <div style={{ display: "flex", justifyContent: "center" }}>
-                Showing {(active - 1) * 10 + 1} -{" "}
-                {active * 10 < useRuns.length ? active * 10 : useRuns.length}{" "}
-                out of {useRuns.length} runs{" "}
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                Showing {(active - 1) * 10 + 1} -{' '}
+                {active * 10 < useRuns.length ? active * 10 : useRuns.length}{' '}
+                out of {useRuns.length} runs{' '}
                 {totalCount !== useRuns.length &&
                     ` (${totalCount} without filter)`}
             </div>

@@ -1,33 +1,33 @@
-"use client";
+'use client';
 
-import { LiveDataMap } from "~app/(old-layout)/live/live.types";
-import {
-    Tournament,
-    TournamentInfo,
-} from "~src/components/tournament/tournament-info";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
+import { Button, Col, Row, Tab, Tabs } from 'react-bootstrap';
+import { Search as SearchIcon } from 'react-bootstrap-icons';
+import Countdown from 'react-countdown';
+import useSWR from 'swr';
+import { LiveDataMap } from '~app/(old-layout)/live/live.types';
 import {
     getRecommendedStream,
     liveRunIsInSearch,
-} from "~app/(old-layout)/live/utilities";
-import { useReconnectWebsocket } from "~src/components/websocket/use-reconnect-websocket";
-import { isLiveDataEligibleForTournaments } from "~app/(old-layout)/tournaments/[tournament]/is-live-data-eligible-for-tournament.component";
-import { liveRunArrayToMap } from "~app/(old-layout)/tournaments/[tournament]/live-run-array-to-map.component";
-import { Button, Col, Row, Tab, Tabs } from "react-bootstrap";
-import runStyles from "~src/components/css/LiveRun.module.scss";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import Countdown from "react-countdown";
-import { RecommendedStream } from "~src/components/live/recommended-stream";
-import { LiveUserRun } from "~src/components/live/live-user-run";
-import { CombinedEventLeaderboards } from "~app/(old-layout)/tournaments/[tournament]/combined-event-leaderboards.component";
-import { getCombinedTournamentLeaderboardComponent } from "~app/(old-layout)/tournaments/[tournament]/get-combined-tournament-leaderboard.component";
-import { CombinedTournamentSeedingTable } from "~app/(old-layout)/tournaments/[tournament]/combined-tournament-seeding-table";
-import { Search as SearchIcon } from "react-bootstrap-icons";
-import { equalsCaseInsensitive } from "~src/utils/string";
-import useSWR from "swr";
-import { multiFetcher } from "~src/utils/fetcher";
-import { safeEncodeURI } from "~src/utils/uri";
-import { TournamentRuns } from "~src/components/tournament/tournament-runs";
+} from '~app/(old-layout)/live/utilities';
+import { CombinedEventLeaderboards } from '~app/(old-layout)/tournaments/[tournament]/combined-event-leaderboards.component';
+import { CombinedTournamentSeedingTable } from '~app/(old-layout)/tournaments/[tournament]/combined-tournament-seeding-table';
+import { getCombinedTournamentLeaderboardComponent } from '~app/(old-layout)/tournaments/[tournament]/get-combined-tournament-leaderboard.component';
+import { isLiveDataEligibleForTournaments } from '~app/(old-layout)/tournaments/[tournament]/is-live-data-eligible-for-tournament.component';
+import { liveRunArrayToMap } from '~app/(old-layout)/tournaments/[tournament]/live-run-array-to-map.component';
+import runStyles from '~src/components/css/LiveRun.module.scss';
+import { LiveUserRun } from '~src/components/live/live-user-run';
+import { RecommendedStream } from '~src/components/live/recommended-stream';
+import {
+    Tournament,
+    TournamentInfo,
+} from '~src/components/tournament/tournament-info';
+import { TournamentRuns } from '~src/components/tournament/tournament-runs';
+import { DurationToFormatted } from '~src/components/util/datetime';
+import { useReconnectWebsocket } from '~src/components/websocket/use-reconnect-websocket';
+import { multiFetcher } from '~src/utils/fetcher';
+import { equalsCaseInsensitive } from '~src/utils/string';
+import { safeEncodeURI } from '~src/utils/uri';
 
 export const CombinedTournament = ({
     liveDataMap,
@@ -43,8 +43,8 @@ export const CombinedTournament = ({
     tab: string;
 }) => {
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
-    const [sort, setSort] = useState("seed");
-    const [search, setSearch] = useState("");
+    const [sort, setSort] = useState('seed');
+    const [search, setSearch] = useState('');
 
     const recommendedStream = getRecommendedStream(liveDataMap, username);
     const [currentlyViewing, setCurrentlyViewing] = useState(recommendedStream);
@@ -85,8 +85,9 @@ export const CombinedTournament = ({
     }, [data]);
 
     useEffect(() => {
-        if (lastMessage !== null) {
-            const newData = JSON.parse(lastMessage.data);
+        if (lastMessage !== null && lastMessage.data) {
+            console.log(lastMessage);
+            const newData = lastMessage.data;
             const user = newData.user;
 
             if (isLiveDataEligibleForTournaments(newData.run, tournaments)) {
@@ -94,11 +95,11 @@ export const CombinedTournament = ({
                     JSON.stringify(updatedLiveDataMap),
                 );
 
-                if (newData.type == "UPDATE") {
+                if (newData.type == 'UPDATE') {
                     newMap[user] = newData.run;
                 }
 
-                if (newData.type == "DELETE") {
+                if (newData.type == 'DELETE') {
                     delete newMap[user];
 
                     if (recommendedStream == user) {
@@ -149,9 +150,9 @@ export const CombinedTournament = ({
 
         return (
             <div>
-                {!!parseInt(days) && `${days} days, `}{" "}
-                {!!parseInt(hours) && `${hours} hours and `}{" "}
-                {`${minutes} minute${minutes === 1 ? "" : "s"} to go!`}
+                {!!parseInt(days) && `${days} days, `}{' '}
+                {!!parseInt(hours) && `${hours} hours and `}{' '}
+                {`${minutes} minute${minutes === 1 ? '' : 's'} to go!`}
             </div>
         );
     };
@@ -163,9 +164,9 @@ export const CombinedTournament = ({
 
         return (
             <div>
-                Event starts in {!!days && `${days} days, `}{" "}
-                {hours && `${hours} hours and `}{" "}
-                {`${minutes} minute${minutes === 1 ? "" : "s"}!`}
+                Event starts in {!!days && `${days} days, `}{' '}
+                {hours && `${hours} hours and `}{' '}
+                {`${minutes} minute${minutes === 1 ? '' : 's'}!`}
             </div>
         );
     };
@@ -177,7 +178,7 @@ export const CombinedTournament = ({
                     runStyles.tournamentInfo +
                     (guidingTournament.logoUrl
                         ? ` ${runStyles.tournamentInfoLogo}`
-                        : "")
+                        : '')
                 }
             >
                 <Col>
@@ -189,15 +190,15 @@ export const CombinedTournament = ({
                         tournamentLeaderboards.pbLeaderboard &&
                         tournamentLeaderboards.pbLeaderboard.length > 0 && (
                             <div>
-                                Current record:{" "}
-                                <span style={{ fontSize: "x-large" }}>
+                                Current record:{' '}
+                                <span style={{ fontSize: 'x-large' }}>
                                     <DurationToFormatted
                                         duration={
                                             tournamentLeaderboards
                                                 .pbLeaderboard[0].stat as string
                                         }
                                     />
-                                </span>{" "}
+                                </span>{' '}
                                 by&nbsp;
                                 {
                                     tournamentLeaderboards.pbLeaderboard[0]
@@ -208,7 +209,7 @@ export const CombinedTournament = ({
                     {guidingTournament.socials &&
                         guidingTournament.socials.twitch && (
                             <div>
-                                Watch live at{" "}
+                                Watch live at{' '}
                                 <a href={guidingTournament.socials.twitch.url}>
                                     {
                                         guidingTournament.socials.twitch
@@ -220,13 +221,13 @@ export const CombinedTournament = ({
                 </Col>
             </Row>
 
-            <div style={{ display: "flex", justifyContent: "center" }}>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
                 <h2 className={runStyles.tournamentTimer}>
                     <Countdown
                         date={
                             new Date(
                                 guidingTournament.eligiblePeriods &&
-                                guidingTournament.eligiblePeriods.length > 0
+                                    guidingTournament.eligiblePeriods.length > 0
                                     ? guidingTournament.eligiblePeriods[0]
                                           .startDate
                                     : guidingTournament.startDate,
@@ -238,7 +239,7 @@ export const CombinedTournament = ({
                         date={
                             new Date(
                                 guidingTournament.eligiblePeriods &&
-                                guidingTournament.eligiblePeriods.length > 1
+                                    guidingTournament.eligiblePeriods.length > 1
                                     ? guidingTournament.eligiblePeriods[1]
                                           .endDate
                                     : guidingTournament.endDate,
@@ -258,7 +259,7 @@ export const CombinedTournament = ({
             <Tabs
                 defaultActiveKey={tab}
                 className="mb-3"
-                style={{ position: "relative", zIndex: 0, maxWidth: "30rem" }}
+                style={{ position: 'relative', zIndex: 0, maxWidth: '30rem' }}
             >
                 <Tab title="Live" eventKey="live">
                     <Row className="g-3 my-3">
@@ -285,17 +286,17 @@ export const CombinedTournament = ({
                         </Col>
                         <Col xl={8} lg={12} md={12}>
                             <h3>Live Runs</h3>
-                            <Row style={{ marginBottom: "1rem" }}>
+                            <Row style={{ marginBottom: '1rem' }}>
                                 <Col>
                                     <Button
                                         className={
                                             runStyles.sortButton +
-                                            (sort === "time"
+                                            (sort === 'time'
                                                 ? ` ${runStyles.sortButtonActive}`
-                                                : "")
+                                                : '')
                                         }
                                         onClick={() => {
-                                            setSort("time");
+                                            setSort('time');
                                         }}
                                     >
                                         Sort by Current Time
@@ -305,12 +306,12 @@ export const CombinedTournament = ({
                                     <Button
                                         className={
                                             runStyles.sortButton +
-                                            (sort === "seed"
+                                            (sort === 'seed'
                                                 ? ` ${runStyles.sortButtonActive}`
-                                                : "")
+                                                : '')
                                         }
                                         onClick={() => {
-                                            setSort("seed");
+                                            setSort('seed');
                                         }}
                                     >
                                         Sort by Provisional Seed
@@ -320,12 +321,12 @@ export const CombinedTournament = ({
                                     <Button
                                         className={
                                             runStyles.sortButton +
-                                            (sort === "name"
+                                            (sort === 'name'
                                                 ? ` ${runStyles.sortButtonActive}`
-                                                : "")
+                                                : '')
                                         }
                                         onClick={() => {
-                                            setSort("name");
+                                            setSort('name');
                                         }}
                                     >
                                         Sort by Name
@@ -340,7 +341,7 @@ export const CombinedTournament = ({
                                         onClick={() => {
                                             const searchElement =
                                                 document.getElementById(
-                                                    "gameSearch",
+                                                    'gameSearch',
                                                 );
                                             if (
                                                 document.activeElement !==
@@ -401,7 +402,7 @@ export const CombinedTournament = ({
                                                 lg={6}
                                                 md={12}
                                                 key={liveRun.user}
-                                                style={{ marginBottom: "1rem" }}
+                                                style={{ marginBottom: '1rem' }}
                                                 onClick={() => {
                                                     setCurrentlyViewing(
                                                         liveRun.user,
