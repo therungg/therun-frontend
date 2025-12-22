@@ -401,7 +401,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                     className="d-flex flex-column min-vh-100-no-header text-center"
                 >
                     <div className="flex-grow-1 d-flex flex-column justify-content-end">
-                        <p className="display-5 mb-0">You had a great 2024!</p>
+                        <p className="display-5 mb-0">You had a great 2025!</p>
                         <WrappedTitle user={user} />
                         <p className="h3 mt-1 opacity-50">
                             Brought to you by{" "}
@@ -477,12 +477,12 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                     className={`sticky-bottom text-center end-0 me-4 position-fixed d-md-flex ${socialStyles.socialContainer}`}
                 >
                     <SocialShareSpeedDial
-                        title="Check out my 2024 The Run speedrunning recap!"
+                        title="Check out my 2025 The Run speedrunning recap!"
                         url={`https://therun.gg/${user}/wrapped`}
                     />
                 </div>
                 {sectionIndex + 1 === 0 ||
-                sectionIndex + 1 === sections.length ? null : (
+                    sectionIndex + 1 === sections.length ? null : (
                     <h2
                         style={{
                             bottom: FOOTER_HEIGHT,

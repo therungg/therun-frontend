@@ -8,6 +8,7 @@ import { getWrappedForUser } from "~src/lib/get-wrapped-for-user";
 import { User } from "types/session.types";
 import { BunnyHeartIcon } from "~src/icons/bunny-heart-icon";
 import { GlobalSearch } from "~src/components/search/global-search.component";
+import { confirmPermission } from "~src/rbac/confirm-permission";
 
 export default function Page() {
     const [session, setSession] = useState<User | null>(null);
@@ -35,17 +36,23 @@ export default function Page() {
                     }
                 }
                 // eslint-disable-next-line
-            } catch {}
+            } catch { }
         }
 
         fetchSession();
     }, []);
 
+    if (!session) {
+        return;
+    }
+
+    confirmPermission(session, "moderate", "admins");
+
     return (
         <Col width="100%">
             <div className="text-center">
                 <h1 className="display-2 mb-4">
-                    Your 2024 Recap from The Run is Here!
+                    Your 2025 Recap from The Run is Here!
                 </h1>
                 <div className="fs-5 mb-5">
                     <p>
@@ -59,7 +66,7 @@ export default function Page() {
                     </p>
                     <p>We think this is worth celebrating.</p>
                     <p>
-                        We've compiled your 2024 stats into a Recap which you
+                        We've compiled your 2025 stats into a Recap which you
                         can view and share with others in your community.
                     </p>
                     <p>
@@ -74,12 +81,12 @@ export default function Page() {
                             href={`/${session.user}/recap`}
                             className="btn btn-lg btn-primary mb-4"
                         >
-                            View your 2024 Recap
+                            View your 2025 Recap
                         </a>
                     ) : (
                         <>
                             <p className="fs-6 leading-relaxed mb-4">
-                                To view your 2024 Recap, please login with
+                                To view your 2025 Recap, please login with
                                 Twitch.
                             </p>
                             <TwitchLoginButton url="/api/recap" />

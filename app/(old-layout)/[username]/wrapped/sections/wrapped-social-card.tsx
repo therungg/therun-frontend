@@ -596,7 +596,7 @@ export function WrappedSocialCard({
                                 src={previewUrl}
                                 alt={`${safeDecodeURI(
                                     wrapped.user,
-                                )}'s 2024 The Run Recap summary image`}
+                                )}'s 5 The Run Recap summary image`}
                                 style={{ maxHeight: "640px" }}
                             />
                             <div className="d-flex flex-row align-items-center gap-4">

@@ -1,6 +1,7 @@
 import { ContentLoadingWrapper } from '~app/(old-layout)/[username]/wrapped/content-loading-wrapper';
 import { getSession } from '~src/actions/session.action';
 import { getWrappedForUser } from '~src/lib/get-wrapped-for-user';
+import { confirmPermission } from '~src/rbac/confirm-permission';
 import { safeDecodeURI } from '~src/utils/uri';
 
 interface PageProps {
@@ -19,6 +20,8 @@ export default async function Page(props: PageProps) {
     const decodedUser = safeDecodeURI(username);
 
     wrapped.user = decodedUser;
+
+    confirmPermission(session, "moderate", "admins");
 
     return (
         <ContentLoadingWrapper
