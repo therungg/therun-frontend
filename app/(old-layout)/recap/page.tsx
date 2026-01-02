@@ -46,8 +46,6 @@ export default function Page() {
         return;
     }
 
-    confirmPermission(session, "moderate", "admins");
-
     return (
         <Col width="100%">
             <div className="text-center">
