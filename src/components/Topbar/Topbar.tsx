@@ -100,6 +100,7 @@ export const Topbar = ({
                                 </Nav.Link>
                             )}
 
+                            <Nav.Link href="/races">Recap 2025</Nav.Link>
                             <Nav.Link href="/races">Races</Nav.Link>
                             <Nav.Link href="/live">Live</Nav.Link>
 
