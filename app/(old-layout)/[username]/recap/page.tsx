@@ -21,8 +21,6 @@ export default async function Page(props: PageProps) {
 
     wrapped.user = decodedUser;
 
-    confirmPermission(session, "moderate", "admins");
-
     return (
         <ContentLoadingWrapper
             user={decodedUser}
