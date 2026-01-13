@@ -7,7 +7,10 @@ import { UserSummary } from '~src/types/summary.types';
 import styles from './stats-panel.module.scss';
 
 export const ProgressChart = ({ stats }: { stats: UserSummary }) => {
-    const percentage = (stats.totalFinishedRuns / stats.totalRuns) * 100;
+    const percentage =
+        stats.totalRuns > 0
+            ? (stats.totalFinishedRuns / stats.totalRuns) * 100
+            : 0;
 
     const StatItem = ({
         icon: Icon,
@@ -30,6 +33,23 @@ export const ProgressChart = ({ stats }: { stats: UserSummary }) => {
             </div>
         </div>
     );
+
+    if (stats.totalRuns === 0) {
+        return (
+            <div className={styles.chartContainer}>
+                <div
+                    style={{
+                        textAlign: 'center',
+                        padding: '2rem',
+                        opacity: 0.7,
+                        fontSize: '0.95rem',
+                    }}
+                >
+                    <p>No runs recorded in this period</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className={styles.chartContainer}>
