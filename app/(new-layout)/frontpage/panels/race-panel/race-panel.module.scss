@@ -1,31 +1,39 @@
 .category {
     margin-top: -0.2rem;
     font-style: italic;
-    font-size: 87%;
+    font-size: 0.85rem;
     margin-left: 0.1rem;
+    opacity: 0.75;
 }
 
 .result {
     margin-top: -0.2rem;
-    font-size: 87%;
+    font-size: 0.85rem;
     margin-left: 0.2rem;
+    opacity: 0.8;
+    font-weight: 500;
 }
 
 .timer {
     font-weight: bold;
     font-family: var(--bs-font-monospace) !important;
-    font-size: large;
+    font-size: 1.05rem;
+    color: var(--bs-primary);
 }
 
 .link {
     color: inherit;
-    background-color: var(--bs-secondary);
-    width: 100%
-}
+    background-color: var(--bs-tertiary-bg);
+    width: 100%;
+    transition: all 0.15s ease-in-out;
+    border-radius: 0.5rem;
 
-.link:hover {
-    background-color: var(--bs-primary);
-    text-decoration: none;
+    &:hover {
+        background-color: var(--bs-secondary-bg);
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
 }
 
 .bottomContainer {
@@ -35,4 +43,21 @@
 .timerContainer {
     font-size: larger;
     display: flex;
+    background: rgba(96, 140, 89, 0.06);
+    border-radius: 0.4rem;
+    padding: 0.25rem 0.5rem;
+}
+
+// Live race indicator glow
+.liveIndicator {
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(96, 140, 89, 0);
+    }
+    50% {
+        box-shadow: 0 0 12px 2px rgba(96, 140, 89, 0.3);
+    }
 }

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import React from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { DataHolder } from '~app/(old-layout)/components/data-holder';
+import { NewLayoutCTA } from '~app/(old-layout)/components/new-layout-cta';
 import { Button } from '~src/components/Button/Button';
 import { IconButton } from '~src/components/Button/IconButton';
 import { PopularGames } from '~src/components/game/popular-games';
@@ -57,6 +58,9 @@ export const Homepage = () => {
                 {/*</Col>*/}
             </Row>
             <div>
+                <div className="px-4">
+                    <NewLayoutCTA />
+                </div>
                 <Row className="text-center">
                     <Col xl={6} className="mt-4">
                         <h2>Recent Personal Bests</h2>

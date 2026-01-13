@@ -1,0 +1,26 @@
+.heroSection {
+    padding: 1rem 0 2rem;
+}
+
+.title {
+    background: linear-gradient(135deg, var(--bs-primary) 0%, #7DA876 50%, var(--bs-primary) 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: gradient-shift 8s ease-in-out infinite;
+}
+
+.subtitle {
+    opacity: 0.8;
+    letter-spacing: 0.5px;
+}
+
+@keyframes gradient-shift {
+    0%, 100% {
+        background-position: 0% center;
+    }
+    50% {
+        background-position: 100% center;
+    }
+}

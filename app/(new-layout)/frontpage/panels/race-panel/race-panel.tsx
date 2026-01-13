@@ -53,19 +53,35 @@ export default async function RacePanel() {
             className="px-3 pb-3"
         >
             <div className="mt-2">
-                <div className="d-flex justify-content-between">
-                    <h5>Ongoing</h5>
-                    <span className="text-muted">
-                        Total ongoing: {progressRaces.length}
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                    <h5 className="m-0">Ongoing</h5>
+                    <span
+                        style={{
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            background: 'rgba(96, 140, 89, 0.1)',
+                            padding: '0.3rem 0.7rem',
+                            borderRadius: '0.4rem',
+                            color: 'var(--bs-primary)',
+                        }}
+                    >
+                        {progressRaces.length}
                     </span>
                 </div>
                 <Card className={clsx(styles.link)}>
                     <a href="/races/create" className={styles.link}>
                         {session && (
-                            <div className="d-flex align-items-center">
+                            <div
+                                className="d-flex align-items-center"
+                                style={{
+                                    color: 'var(--bs-primary)',
+                                    fontWeight: 600,
+                                    fontSize: '0.95rem',
+                                }}
+                            >
                                 <span>
-                                    <FaPlusCircle className="mb-1 me-1" /> Start
-                                    a new Race
+                                    <FaPlusCircle className="mb-1 me-2" /> Start
+                                    a New Race
                                 </span>
                             </div>
                         )}
@@ -77,10 +93,19 @@ export default async function RacePanel() {
             </div>
             {pendingRaces.length > 0 && (
                 <div className="mt-2">
-                    <div className="d-flex justify-content-between">
-                        <h5>Upcoming</h5>
-                        <span className="text-muted">
-                            Total upcoming: {pendingRaces.length}
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                        <h5 className="m-0">Upcoming</h5>
+                        <span
+                            style={{
+                                fontSize: '0.8rem',
+                                fontWeight: 600,
+                                background: 'rgba(96, 140, 89, 0.1)',
+                                padding: '0.3rem 0.7rem',
+                                borderRadius: '0.4rem',
+                                color: 'var(--bs-primary)',
+                            }}
+                        >
+                            {pendingRaces.length}
                         </span>
                     </div>
                     {pendingRaces.map((race, i) => (
@@ -94,10 +119,19 @@ export default async function RacePanel() {
             )}
             {finishedRaces.length > 0 && (
                 <div className="mt-2">
-                    <div className="d-flex justify-content-between">
-                        <h5>Finished</h5>
-                        <span className="text-muted">
-                            Total finished: {finishedRaceCount}
+                    <div className="d-flex justify-content-between align-items-center mb-2">
+                        <h5 className="m-0">Finished</h5>
+                        <span
+                            style={{
+                                fontSize: '0.8rem',
+                                fontWeight: 600,
+                                background: 'rgba(96, 140, 89, 0.1)',
+                                padding: '0.3rem 0.7rem',
+                                borderRadius: '0.4rem',
+                                color: 'var(--bs-primary)',
+                            }}
+                        >
+                            {finishedRaceCount}
                         </span>
                     </div>
                     {finishedRaces.map((race, i) => (

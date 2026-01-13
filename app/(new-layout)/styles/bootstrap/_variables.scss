@@ -1,8 +1,11 @@
-// theme-color-variables
-$primary: #608C59;
+// Green color palette - three harmonious greens based on primary #608C59
+$primary: #608C59;           // Main green - sage/forest
+$primary-light: #7DA876;     // Lighter green - for hovers, accents
+$primary-muted: #4A6B45;     // Darker/muted green - for subtle elements
+
 $secondary: #273025;
 $tertiary: #273025;
-$highlight: #27a11b;
+$highlight: #7DA876;         // Matches primary-light for consistency
 $success: #198754;
 $info: #0dcaf0;
 $warning: #ffc107;
@@ -14,6 +17,8 @@ $gold: #fdc544;
 // theme-colors-map
 $theme-colors: (
   "primary": $primary,
+  "primary-light": $primary-light,
+  "primary-muted": $primary-muted,
   "secondary": $secondary,
   "tertiary": $tertiary,
   "highlight": $highlight,

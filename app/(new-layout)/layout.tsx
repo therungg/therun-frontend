@@ -5,6 +5,7 @@ import { Scripts } from '~app/(old-layout)/scripts';
 import { getSession } from '~src/actions/session.action';
 import { SessionErrorBoundary } from '~src/components/errors/session.error-boundary';
 import buildMetadata from '~src/utils/metadata';
+import { LayoutSwitcher } from './components/layout-switcher';
 import { Header } from './header';
 
 import './styles/_imports.scss';
@@ -41,6 +42,7 @@ export default async function RootLayout({
                     </Content>
                 </main>
             </div>
+            <LayoutSwitcher />
         </Providers>
     );
 }

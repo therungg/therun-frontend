@@ -1,8 +1,82 @@
+diff --git a/node_modules/next/dist/esm/server/dev/hot-reloader-webpack.js b/node_modules/next/dist/esm/server/dev/hot-reloader-webpack.js
+index 4edc9a7..1426b0d 100644
+--- a/node_modules/next/dist/esm/server/dev/hot-reloader-webpack.js
++++ b/node_modules/next/dist/esm/server/dev/hot-reloader-webpack.js
+@@ -197,13 +197,15 @@ export default class HotReloaderWebpack {
+             if (!params) return {};
+             let decodedPagePath;
+             try {
+-                decodedPagePath = `/${params.path.map((param)=>decodeURIComponent(param)).join('/')}`;
++                decodedPagePath = `/${params.path.map((param)=>{
++                    try {
++                        return decodeURIComponent(param);
++                    } catch {
++                        return param;
++                    }
++                }).join('/')}`;
+             } catch (_) {
+-                throw Object.defineProperty(new DecodeError('failed to decode param'), "__NEXT_ERROR_CODE", {
+-                    value: "E528",
+-                    enumerable: false,
+-                    configurable: true
+-                });
++                decodedPagePath = `/${params.path.join('/')}`;
+             }
+             const page = denormalizePagePath(decodedPagePath);
+             if (page === '/_error' || BLOCKED_PAGES.indexOf(page) === -1) {
+diff --git a/node_modules/next/dist/esm/shared/lib/router/utils/route-matcher.js b/node_modules/next/dist/esm/shared/lib/router/utils/route-matcher.js
+index fb78575..a54d7a2 100644
+--- a/node_modules/next/dist/esm/shared/lib/router/utils/route-matcher.js
++++ b/node_modules/next/dist/esm/shared/lib/router/utils/route-matcher.js
+@@ -8,11 +8,12 @@ export function getRouteMatcher({ re, groups }) {
+             try {
+                 return decodeURIComponent(param);
+             } catch  {
+-                throw Object.defineProperty(new DecodeError('failed to decode param'), "__NEXT_ERROR_CODE", {
+-                    value: "E528",
+-                    enumerable: false,
+-                    configurable: true
+-                });
++                const encodedParam = encodeURIComponent(param)
++                try {
++                    return decodeURIComponent(encodedParam)
++                } catch {
++                    return param;
++                }
+             }
+         };
+         const params = {};
+diff --git a/node_modules/next/dist/server/dev/hot-reloader-webpack.js b/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+index 4d2b6c0..b9d2d56 100644
+--- a/node_modules/next/dist/server/dev/hot-reloader-webpack.js
++++ b/node_modules/next/dist/server/dev/hot-reloader-webpack.js
+@@ -265,13 +265,15 @@ class HotReloaderWebpack {
+             if (!params) return {};
+             let decodedPagePath;
+             try {
+-                decodedPagePath = `/${params.path.map((param)=>decodeURIComponent(param)).join('/')}`;
++                decodedPagePath = `/${params.path.map((param)=>{
++                    try {
++                        return decodeURIComponent(param);
++                    } catch {
++                        return param;
++                    }
++                }).join('/')}`;
+             } catch (_) {
+-                throw Object.defineProperty(new _utils1.DecodeError('failed to decode param'), "__NEXT_ERROR_CODE", {
+-                    value: "E528",
+-                    enumerable: false,
+-                    configurable: true
+-                });
++                decodedPagePath = `/${params.path.join('/')}`;
+             }
+             const page = (0, _denormalizepagepath.denormalizePagePath)(decodedPagePath);
+             if (page === '/_error' || _constants1.BLOCKED_PAGES.indexOf(page) === -1) {
 diff --git a/node_modules/next/dist/shared/lib/router/utils/route-matcher.js b/node_modules/next/dist/shared/lib/router/utils/route-matcher.js
-index 8263fb4..e7fc139 100644
+index 8263fb4..e96f72c 100644
 --- a/node_modules/next/dist/shared/lib/router/utils/route-matcher.js
 +++ b/node_modules/next/dist/shared/lib/router/utils/route-matcher.js
-@@ -4,33 +4,38 @@ Object.defineProperty(exports, "__esModule", {
+@@ -4,33 +4,34 @@ Object.defineProperty(exports, "__esModule", {
  });
  Object.defineProperty(exports, "getRouteMatcher", {
      enumerable: true,
@@ -33,11 +107,7 @@ index 8263fb4..e7fc139 100644
 +                try {
 +                    return decodeURIComponent(encodedParam)
 +                } catch {
-+                    throw Object.defineProperty(new _utils.DecodeError('failed to decode param'), "__NEXT_ERROR_CODE", {
-+                        value: "E528",
-+                        enumerable: false,
-+                        configurable: true
-+                    });
++                    return param;
 +                }
              }
          };

@@ -1,8 +1,11 @@
-// theme-color-variables
-$primary: #608C59;
-$secondary: #273025;
-$tertiary: #273025;
-$highlight: #27a11b;
+// Green color palette - three harmonious greens based on primary #608C59
+$primary: #608C59;           // Main green - sage/forest
+$primary-light: #7DA876;     // Lighter green - for hovers, accents
+$primary-muted: #4A6B45;     // Darker/muted green - for subtle elements
+
+$secondary: #2A332A;         // Dark green-gray for surfaces
+$tertiary: #1E2520;          // Darker green-gray for elevated surfaces
+$highlight: #8BBF84;         // Bright light green for highlights
 $success: #198754;
 $info: #0dcaf0;
 $warning: #ffc107;
@@ -14,6 +17,8 @@ $gold: #fdc544;
 // theme-colors-map
 $theme-colors: (
     "primary": $primary,
+    "primary-light": $primary-light,
+    "primary-muted": $primary-muted,
     "secondary": $secondary,
     "tertiary": $tertiary,
     "highlight": $highlight,
@@ -26,13 +31,14 @@ $theme-colors: (
     "gold": $gold,
 );
 
-$link-color-dark: $primary;
+$link-color-dark: $primary-light;
 $link-hover-color-dark: $highlight;
 
-$body-color-dark: #ccc;
-$btn-color-dark: #ccc;
-$btn-primary-color-dark: #ccc;
-$body-bg-dark: #131313;
-$body-secondary-color-dark: rgba($body-color-dark, .6);
-$body-secondary-bg-dark: rgba($body-bg-dark, .6);
-$body-tertiary-bg-dark: #030303;
+// Dark mode backgrounds - softer, not pure black, with subtle green undertone
+$body-color-dark: #E2E8E1;                   // Soft off-white with green tint
+$btn-color-dark: #E2E8E1;
+$btn-primary-color-dark: #E2E8E1;
+$body-bg-dark: #151A17;                      // Dark charcoal with green undertone
+$body-secondary-color-dark: rgba($body-color-dark, .7);
+$body-secondary-bg-dark: #1C221E;            // Slightly lighter surface
+$body-tertiary-bg-dark: #232A25;             // Elevated surface (cards, panels)

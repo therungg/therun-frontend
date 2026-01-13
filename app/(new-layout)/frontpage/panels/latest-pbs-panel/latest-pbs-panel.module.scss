@@ -1,0 +1,55 @@
+.pbItem {
+    transition: all 0.2s ease-in-out;
+    border-left-color: var(--bs-secondary) !important;
+
+    &:hover {
+        background-color: var(--bs-tertiary-bg);
+        border-left-color: var(--bs-primary) !important;
+        transform: translateX(4px);
+    }
+}
+
+.pbContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.gameImageWrapper {
+    flex-shrink: 0;
+    width: 50px;
+    height: 60px;
+    position: relative;
+    min-width: 50px;
+    min-height: 60px;
+}
+
+.gameImage {
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.metaInfo {
+    gap: 0.35rem;
+}
+
+.userInfo {
+    white-space: nowrap;
+}
+
+.userWithImage {
+    gap: 0.5rem;
+}
+
+.userImageWrapper {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    position: relative;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.userImage {
+    border-radius: 50%;
+}

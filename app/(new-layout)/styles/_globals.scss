@@ -52,7 +52,7 @@ footer {
   position: relative;
   z-index: 1;
   background: transparent;
-  color: white;
+  color: var(--bs-body-color);
 }
 
 .fs {
@@ -300,5 +300,82 @@ button {
     --bs-btn-active-bg: #953e32;
     --bs-btn-hover-border-color: #953e32;
     --bs-btn-active-border-color: #953e32;
+  }
+}
+
+// Custom background utilities that use body bg variables (theme-aware)
+.bg-body-secondary {
+  background-color: var(--bs-secondary-bg) !important;
+}
+
+.bg-body-tertiary {
+  background-color: var(--bs-tertiary-bg) !important;
+}
+
+// Global interactive element enhancements
+.btn {
+  transition: all 0.15s ease-in-out;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// Interactive card base class
+.interactive-card {
+  transition: all 0.2s ease-in-out;
+  border: 1px solid transparent;
+
+  &:hover {
+    border-color: var(--bs-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// Focus visible states for accessibility
+:focus-visible {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+// Link hover improvements
+a {
+  transition: color 0.15s ease-in-out;
+}
+
+// Smooth scrolling
+html {
+  scroll-behavior: smooth;
+}
+
+// Selection color
+::selection {
+  background-color: rgba(96, 140, 89, 0.3);
+  color: inherit;
+}
+
+// CircularProgressbar customization
+.CircularProgressbar {
+  .CircularProgressbar-path {
+    stroke: var(--bs-primary) !important;
+    stroke-width: 6 !important;
+    stroke-linecap: round !important;
+    filter: drop-shadow(0 2px 4px rgba(96, 140, 89, 0.2));
+    transition: stroke 0.3s ease-in-out;
+  }
+
+  .CircularProgressbar-trail {
+    stroke: var(--bs-tertiary-bg) !important;
+    stroke-width: 6 !important;
+    stroke-linecap: round !important;
+  }
+
+  .CircularProgressbar-text {
+    font-size: 2rem;
   }
 }

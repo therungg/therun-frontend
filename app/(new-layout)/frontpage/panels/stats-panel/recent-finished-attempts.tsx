@@ -1,24 +1,57 @@
-"use client"
+'use client';
 
-import { Suspense, use, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { CardWithImage } from '~app/(new-layout)/components/card-with-image.component';
+import { Button } from '~src/components/Button/Button';
 import { getGameGlobal } from '~src/components/game/get-game';
 import { DurationToFormatted, FromNow } from '~src/components/util/datetime';
 import { SummaryFinishedRun, UserSummary } from '~src/types/summary.types';
 import styles from './stats-panel.module.scss';
-import { Button } from '~src/components/Button/Button';
 
 const DEFAULT_SHOW_LIMIT = 4;
 
-export const RecentFinishedAttempts = ({
-    stats,
-}: {
-    stats: UserSummary;
-}) => {
-    const [showAll, setShowAll] = useState(false);
+interface GameData {
+    image?: string;
+    display?: string;
+}
 
-    console.log(stats.finishedRuns)
+export const RecentFinishedAttempts = ({ stats }: { stats: UserSummary }) => {
+    const [showAll, setShowAll] = useState(false);
+    const [gameDataMap, setGameDataMap] = useState<Record<string, GameData>>(
+        {},
+    );
+    const fetchedGamesRef = useRef<Set<string>>(new Set());
+
+    // Fetch game data after mount/when stats change
+    useEffect(() => {
+        const uniqueGames = [...new Set(stats.finishedRuns.map((r) => r.game))];
+        const missingGames = uniqueGames.filter(
+            (game) => !fetchedGamesRef.current.has(game),
+        );
+
+        if (missingGames.length === 0) return;
+
+        // Mark as fetching to prevent duplicate requests
+        for (const game of missingGames) {
+            fetchedGamesRef.current.add(game);
+        }
+
+        Promise.all(missingGames.map((game) => getGameGlobal(game))).then(
+            (results) => {
+                const newData: Record<string, GameData> = {};
+                missingGames.forEach((game, i) => {
+                    newData[game] = results[i] as GameData;
+                });
+                setGameDataMap((prev) => ({ ...prev, ...newData }));
+            },
+        );
+    }, [stats.finishedRuns]);
+
+    const sortedRuns = stats.finishedRuns
+        .sort((a, b) => b.date - a.date)
+        .slice(0, showAll ? undefined : DEFAULT_SHOW_LIMIT);
+
     return (
         <div className="w-100">
             <h5>Finished Runs</h5>
@@ -26,45 +59,42 @@ export const RecentFinishedAttempts = ({
                 {stats.finishedRuns.length === 0 && <div></div>}
                 {stats.finishedRuns.length > 0 && (
                     <Row className="w-100 mx-0">
-                        {stats.finishedRuns
-                            .sort((a, b) => b.date - a.date)
-                            .slice(0, showAll ? -1 : DEFAULT_SHOW_LIMIT)
-                            .map((run) => {
-                                const gameData = getGameGlobal(run.game);
-                                return (
-                                    <Col
-                                        key={run.date}
-                                        xxl={6}
-                                        xl={12}
-                                        className="mb-2 mx-0 px-1"
-                                    >
-                                        <Suspense
-                                            fallback={<div>Loading...</div>}
-                                        >
-                                            <RecentFinishedRun
-                                                key={run.date}
-                                                run={run}
-                                                gameData={gameData}
-                                            />
-                                        </Suspense>
-                                    </Col>
-                                );
-                            })}
+                        {sortedRuns.map((run) => (
+                            <Col
+                                key={run.date}
+                                xxl={6}
+                                xl={12}
+                                className="mb-2 mx-0 px-1"
+                            >
+                                <RecentFinishedRun
+                                    run={run}
+                                    gameData={gameDataMap[run.game]}
+                                />
+                            </Col>
+                        ))}
                     </Row>
                 )}
             </div>
             {!showAll && stats.finishedRuns.length > DEFAULT_SHOW_LIMIT && (
-                <div className="d-flex justify-content-center mt-2">
+                <div className="d-flex justify-content-center mt-3">
                     <Button
+                        variant="primary"
+                        className="px-4 py-2 rounded-3 fw-bold text-uppercase"
+                        style={{ letterSpacing: '0.5px', fontSize: '0.95rem' }}
                         onClick={() => setShowAll(true)}
                     >
-                        Show {stats.finishedRuns.length - DEFAULT_SHOW_LIMIT - 1} more runs
+                        Show{' '}
+                        {stats.finishedRuns.length - DEFAULT_SHOW_LIMIT - 1}{' '}
+                        more runs
                     </Button>
                 </div>
             )}
             {showAll && (
-                <div className="d-flex justify-content-center mt-2">
+                <div className="d-flex justify-content-center mt-3">
                     <Button
+                        variant="primary"
+                        className="px-4 py-2 rounded-3 fw-bold text-uppercase"
+                        style={{ letterSpacing: '0.5px', fontSize: '0.95rem' }}
                         onClick={() => setShowAll(false)}
                     >
                         Show fewer runs
@@ -75,14 +105,19 @@ export const RecentFinishedAttempts = ({
     );
 };
 
-const RecentFinishedRun = ({ run, gameData }: { run: SummaryFinishedRun, gameData: Promise<any> }) => {
-    const gameDataUsed = use(gameData);
-
-    const { image, display } = gameDataUsed;
+const RecentFinishedRun = ({
+    run,
+    gameData,
+}: {
+    run: SummaryFinishedRun;
+    gameData?: GameData;
+}) => {
+    const image = gameData?.image;
+    const display = gameData?.display ?? run.game;
 
     return (
         <CardWithImage
-            className="bg-tertiary"
+            className={`bg-body-tertiary ${styles.finishedRunCard}`}
             imageUrl={image}
             imageAlt={display}
         >

@@ -1,8 +1,9 @@
 'use client';
 
 import clsx from 'clsx';
-import { useEffect, useState, useCallback } from 'react';
-import { Col, Container, Row, Placeholder } from 'react-bootstrap';
+import Image from 'next/image';
+import { useCallback, useEffect, useState } from 'react';
+import { Col, Container, Placeholder, Row } from 'react-bootstrap';
 import { TwitchPlayer } from 'react-twitch-embed';
 import { LiveRun } from '~app/(old-layout)/live/live.types';
 import { LiveSplitTimerComponent } from '~app/(old-layout)/live/live-split-timer.component';
@@ -19,7 +20,7 @@ export const LiveRunsView = ({ liveRuns }: { liveRuns: LiveRun[] }) => {
 
     const handleNextRun = useCallback(() => {
         setShowedRunIndex((prevIndex) =>
-            prevIndex === liveRuns.length - 1 ? 0 : prevIndex + 1
+            prevIndex === liveRuns.length - 1 ? 0 : prevIndex + 1,
         );
     }, [liveRuns.length]);
 
@@ -74,7 +75,10 @@ export const LiveRunView = ({
     }
 
     return (
-        <Container fluid className="h-100 p-0 rounded-4 overflow-hidden border shadow-sm bg-body">
+        <Container
+            fluid
+            className="h-100 p-0 rounded-4 overflow-hidden border shadow-sm bg-body"
+        >
             <Row className="h-100 g-0">
                 <Col
                     xs={12}
@@ -93,7 +97,7 @@ export const LiveRunView = ({
                     xl={6}
                     className={clsx(
                         styles.streamWrapper,
-                        "bg-black order-1 order-xl-2 d-flex align-items-center justify-content-center"
+                        'bg-black order-1 order-xl-2 d-flex align-items-center justify-content-center',
                     )}
                 >
                     {/* Improvement: 16x9 Ratio lock */}
@@ -113,15 +117,51 @@ export const LiveRunView = ({
     );
 };
 
-const LiveRunStatsPanel = ({ run, onNext }: { run: LiveRun; onNext: () => void }) => {
+const LiveRunStatsPanel = ({
+    run,
+    onNext,
+}: {
+    run: LiveRun;
+    onNext: () => void;
+}) => {
     return (
         <>
             <div className="text-center">
-                <h3 className="w-100 m-0 text-break">{run.user}</h3>
+                <div
+                    className={`d-flex align-items-center justify-content-center gap-2 mb-2 ${styles.userHeader}`}
+                >
+                    {run.picture && (
+                        <div className={styles.userImageWrapper}>
+                            <Image
+                                src={run.picture}
+                                alt={run.user}
+                                fill
+                                style={{ objectFit: 'cover' }}
+                                className={styles.userImage}
+                            />
+                        </div>
+                    )}
+                    <h3 className="m-0 text-break">{run.user}</h3>
+                </div>
                 <span className="fs-smaller text-muted">is running</span>
-                <div className="text-break">
-                    <span className="fw-bold">{run.game}</span> -{' '}
-                    <span className="fst-italic">{run.category}</span>
+                <div
+                    className={`d-flex align-items-center justify-content-center gap-2 ${styles.gameInfo}`}
+                >
+                    {run.gameImage && (
+                        <div className={styles.gameImageWrapper}>
+                            <Image
+                                src={run.gameImage}
+                                alt={run.game}
+                                fill
+                                style={{ objectFit: 'contain' }}
+                                className={styles.gameImage}
+                            />
+                        </div>
+                    )}
+                    <div className="text-break">
+                        <span className="fw-bold">{run.game}</span> -{' '}
+                        <span className="fst-italic">{run.category}</span>
+                    </div>
                 </div>
             </div>
 
@@ -136,19 +176,28 @@ const LiveRunStatsPanel = ({ run, onNext }: { run: LiveRun; onNext: () => void }
 
             <Row className="mt-4 g-2">
                 <Col className="d-flex flex-column align-items-center">
-                    <span className="text-muted small text-uppercase">Personal Best</span>
+                    <span className="text-muted small text-uppercase">
+                        Personal Best
+                    </span>
                     <span className="fw-bold fs-5">
                         <DurationToFormatted duration={run.pb} />
                     </span>
                 </Col>
                 <Col className="d-flex flex-column align-items-center border-start border-end">
-                    <span className="text-muted small text-uppercase">Current Split</span>
-                    <span className="fw-bold text-break text-center text-truncate" style={{ maxWidth: '200px' }}>
-                        {run.currentSplitName || "Finished!"}
+                    <span className="text-muted small text-uppercase">
+                        Current Split
+                    </span>
+                    <span
+                        className="fw-bold text-break text-center text-truncate"
+                        style={{ maxWidth: '200px' }}
+                    >
+                        {run.currentSplitName || 'Finished!'}
                     </span>
                 </Col>
                 <Col className="d-flex flex-column align-items-center">
-                    <span className="text-muted small text-uppercase">+/- PB</span>
+                    <span className="text-muted small text-uppercase">
+                        +/- PB
+                    </span>
                     <span className="fw-bold">
                         <DifferenceFromOne diff={run.delta} />
                     </span>
@@ -158,7 +207,8 @@ const LiveRunStatsPanel = ({ run, onNext }: { run: LiveRun; onNext: () => void }
             <div className="mt-auto pt-4 text-center w-100">
                 <Button
                     variant="primary"
-                    className="w-100 py-2"
+                    className="w-100 py-2 rounded-3 fw-bold text-uppercase"
+                    style={{ letterSpacing: '0.5px', fontSize: '0.95rem' }}
                     onClick={onNext}
                     title="Press Right Arrow key to skip"
                 >
@@ -171,27 +221,53 @@ const LiveRunStatsPanel = ({ run, onNext }: { run: LiveRun; onNext: () => void }
 
 const LiveRunSkeleton = () => {
     return (
-        <Container fluid className="h-100 p-0 rounded-4 overflow-hidden border bg-body">
+        <Container
+            fluid
+            className="h-100 p-0 rounded-4 overflow-hidden border bg-body"
+        >
             <Row className="h-100 g-0">
                 {/* Skeleton Left */}
-                <Col xs={12} xl={6} className="p-4 d-flex flex-column justify-content-center order-2 order-xl-1">
+                <Col
+                    xs={12}
+                    xl={6}
+                    className="p-4 d-flex flex-column justify-content-center order-2 order-xl-1"
+                >
                     <div className="d-flex flex-column align-items-center w-100 placeholder-glow">
                         <Placeholder as="h3" xs={6} className="mb-2" />
                         <Placeholder xs={4} className="mb-3" />
                         <Placeholder xs={8} size="lg" className="my-3" />
                         <Row className="w-100 mt-4">
-                            <Col className="text-center"><Placeholder xs={8} /></Col>
-                            <Col className="text-center"><Placeholder xs={8} /></Col>
-                            <Col className="text-center"><Placeholder xs={8} /></Col>
+                            <Col className="text-center">
+                                <Placeholder xs={8} />
+                            </Col>
+                            <Col className="text-center">
+                                <Placeholder xs={8} />
+                            </Col>
+                            <Col className="text-center">
+                                <Placeholder xs={8} />
+                            </Col>
                         </Row>
-                        <Placeholder.Button variant="primary" xs={12} className="mt-5 py-2" />
+                        <Placeholder.Button
+                            variant="primary"
+                            xs={12}
+                            className="mt-5 py-2"
+                        />
                     </div>
                 </Col>
 
                 {/* Skeleton Right (Video) */}
-                <Col xs={12} xl={6} className="bg-secondary bg-opacity-10 order-1 order-xl-2 d-flex align-items-center justify-content-center">
-                    <div className="spinner-border text-secondary" role="status">
-                        <span className="visually-hidden">Loading stream...</span>
+                <Col
+                    xs={12}
+                    xl={6}
+                    className="bg-secondary bg-opacity-10 order-1 order-xl-2 d-flex align-items-center justify-content-center"
+                >
+                    <div
+                        className="spinner-border text-secondary"
+                        role="status"
+                    >
+                        <span className="visually-hidden">
+                            Loading stream...
+                        </span>
                     </div>
                 </Col>
             </Row>

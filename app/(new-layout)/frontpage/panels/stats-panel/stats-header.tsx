@@ -1,6 +1,7 @@
 'use client';
 
 import { UserSummary, UserSummaryType } from '~src/types/summary.types';
+import styles from './stats-header.module.scss';
 
 type PeriodOption = {
     label: string;
@@ -19,10 +20,11 @@ const getWeekNumber = (d: Date): number => {
     d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
     d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+    const weekNo = Math.ceil(
+        ((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7,
+    );
     return weekNo;
 };
-
 
 const generateMonthPeriods = (startMonth: string): PeriodOption[] => {
     const [startYear, startMonthIndex] = startMonth.split('-').map(Number);
@@ -35,7 +37,10 @@ const generateMonthPeriods = (startMonth: string): PeriodOption[] => {
         const month = currentDate.getMonth();
         const value = `${year}-${String(month + 1).padStart(2, '0')}`;
 
-        const monthNameYear = new Date(year, month, 1).toLocaleString('default', { month: 'long', year: 'numeric' });
+        const monthNameYear = new Date(year, month, 1).toLocaleString(
+            'default',
+            { month: 'long', year: 'numeric' },
+        );
 
         options.push({
             label: monthNameYear,
@@ -79,7 +84,6 @@ const generateWeekPeriods = (startWeek: string): PeriodOption[] => {
     return options;
 };
 
-
 interface StatsHeaderProps {
     stats: UserSummary;
     firstWeek?: string;
@@ -87,7 +91,12 @@ interface StatsHeaderProps {
     onRangeChange: (range: 'week' | 'month', newOffset?: number) => void;
 }
 
-export const StatsHeader = ({ stats, firstWeek, firstMonth, onRangeChange }: StatsHeaderProps) => {
+export const StatsHeader = ({
+    stats,
+    firstWeek,
+    firstMonth,
+    onRangeChange,
+}: StatsHeaderProps) => {
     let effectiveEndDate: Date;
 
     if (stats.type === 'month' && stats.value.length === 7) {
@@ -123,32 +132,36 @@ export const StatsHeader = ({ stats, firstWeek, firstMonth, onRangeChange }: Sta
         return options.reverse();
     };
 
-
-    const handlePeriodChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const handlePeriodChange = (
+        event: React.ChangeEvent<HTMLSelectElement>,
+    ) => {
         onRangeChange(stats.type, parseInt(event.target.value) - 1);
     };
 
     let selectedOptionLabel: string;
 
     if (stats.type === 'month') {
-        const monthNameYear = endDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+        const monthNameYear = endDate.toLocaleString('default', {
+            month: 'long',
+            year: 'numeric',
+        });
         selectedOptionLabel = `${monthNameYear}`;
     } else {
         const weekNumber = getWeekNumber(endDate);
         selectedOptionLabel = `Week ${weekNumber}: ${formatDate(startDate)} - ${formatDate(endDate)}`;
     }
 
-
     return (
         <div>
-            <div className='mb-1'>
+            <div className="mb-1">
                 <span className="fs-5 fw-bold text-primary">
-                    {stats.type === 'week' ? "Weekly" : "Monthly"} Speedrun Summary for {stats.user}
+                    {stats.type === 'week' ? 'Weekly' : 'Monthly'} Speedrun
+                    Summary for {stats.user}
                 </span>
             </div>
 
             <div
-                className="d-flex justify-content-center align-items-center fst-italic cursor-pointer py-2 border border-2 rounded position-relative"
+                className={`d-flex justify-content-center align-items-center fst-italic cursor-pointer py-2 border border-2 rounded position-relative ${styles.periodSelector}`}
             >
                 {selectedOptionLabel}
 

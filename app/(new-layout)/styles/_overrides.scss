@@ -1,0 +1,32 @@
+// Light mode overrides for better contrast and readability
+[data-bs-theme="light"] {
+    // Ensure buttons with primary/secondary bg have white text for good contrast
+    .btn-primary,
+    .btn-secondary {
+        color: white;
+
+        &:hover,
+        &:focus,
+        &:active {
+            color: white;
+        }
+    }
+
+    // Override bg-tertiary to use body tertiary background (light gray) instead of theme color
+    .bg-tertiary {
+        background-color: var(--bs-tertiary-bg) !important;
+    }
+
+    // Ensure border-secondary uses a visible color in light mode
+    .border-secondary {
+        border-color: var(--bs-primary) !important;
+    }
+}
+
+// Dark mode specific adjustments
+[data-bs-theme="dark"] {
+    // Use proper dark background for tertiary elements
+    .bg-tertiary {
+        background-color: var(--bs-tertiary-bg) !important;
+    }
+}
