@@ -1,15 +1,15 @@
-import { UserWithRoles } from "../../../types/users.types";
-import { PaginatedData } from "~src/components/pagination/pagination.types";
-import { UserSearch } from "~app/(old-layout)/roles/user-search";
-import { UserPagination } from "~app/(old-layout)/roles/user-pagination";
-import { RoleEntity } from "../../../types/roles.types";
-import { UserRoleFilter } from "./user-role-filter";
-import { UserRoleBadges } from "./user-role-badges";
-import { UserAddRole } from "~app/(old-layout)/roles/user-add-role";
+import { UserAddRole } from '~app/(old-layout)/admin/roles/user-add-role';
+import { UserPagination } from '~app/(old-layout)/admin/roles/user-pagination';
+import { UserSearch } from '~app/(old-layout)/admin/roles/user-search';
+import { PaginatedData } from '~src/components/pagination/pagination.types';
+import { RoleEntity } from '../../../../types/roles.types';
+import { UserWithRoles } from '../../../../types/users.types';
+import { UserRoleBadges } from './user-role-badges';
+import { UserRoleFilter } from './user-role-filter';
 
 export const UsersTable = ({
     userPagination,
-    searchQuery = "",
+    searchQuery = '',
     roles,
 }: {
     userPagination: PaginatedData<UserWithRoles>;

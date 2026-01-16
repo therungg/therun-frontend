@@ -1,25 +1,25 @@
-"use client";
+'use client';
 
-import { removeRoleFromUserAction } from "~app/(old-layout)/roles/actions/remove-role-from-user.action";
-import { UserWithRoles } from "../../../types/users.types";
-import { usePathname } from "next/navigation";
-import { useTransition } from "react";
-import { Can, subject } from "~src/rbac/Can.component";
-import { ManageableRole } from "../../../types/roles.types";
-import { Badge } from "react-bootstrap";
-import { toast } from "react-toastify";
+import { usePathname } from 'next/navigation';
+import { useTransition } from 'react';
+import { Badge } from 'react-bootstrap';
+import { toast } from 'react-toastify';
+import { removeRoleFromUserAction } from '~app/(old-layout)/admin/roles/actions/remove-role-from-user.action';
+import { Can, subject } from '~src/rbac/Can.component';
+import { ManageableRole } from '../../../../types/roles.types';
+import { UserWithRoles } from '../../../../types/users.types';
 
 const ROLE_ORDER: ManageableRole[] = [
-    "admin",
-    "role-admin",
-    "event-admin",
-    "event-creator",
-    "race-admin",
+    'admin',
+    'role-admin',
+    'event-admin',
+    'event-creator',
+    'race-admin',
 ];
 
 export const ROLE_COLORS: Partial<Record<ManageableRole, string>> = {
-    admin: "danger",
-    "role-admin": "dark",
+    admin: 'danger',
+    'role-admin': 'dark',
 };
 
 export const UserRoleBadges = ({ user }: { user: UserWithRoles }) => {
@@ -39,20 +39,20 @@ export const UserRoleBadges = ({ user }: { user: UserWithRoles }) => {
 
     return sortedRoles.length > 0 ? (
         sortedRoles.map((role) => {
-            const badgeColor = ROLE_COLORS[role as ManageableRole] || "success";
+            const badgeColor = ROLE_COLORS[role as ManageableRole] || 'success';
 
             return (
                 <Badge
                     pill
                     bg={badgeColor}
-                    key={user.username + "-" + role}
+                    key={user.username + '-' + role}
                     className="me-1 d-inline-flex align-items-center"
                     style={{
-                        height: "2rem",
+                        height: '2rem',
                     }}
                 >
                     {role}
-                    <Can I="moderate" this={subject("roles", { role })}>
+                    <Can I="moderate" this={subject('roles', { role })}>
                         <button
                             className="btn btn-link btn-sm text-white ms-1 p-0"
                             onClick={() => {

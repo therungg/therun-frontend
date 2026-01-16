@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { UserWithRoles } from "../../../types/users.types";
-import { useTransition } from "react";
-import { assignableRoles } from "../../../types/roles.types";
-import { usePathname } from "next/navigation";
-import { addRoleToUserAction } from "~app/(old-layout)/roles/actions/add-role-to-user.action";
-import { Badge } from "react-bootstrap";
-import { toast } from "react-toastify";
+import { usePathname } from 'next/navigation';
+import { useTransition } from 'react';
+import { Badge } from 'react-bootstrap';
+import { toast } from 'react-toastify';
+import { addRoleToUserAction } from '~app/(old-layout)/admin/roles/actions/add-role-to-user.action';
+import { assignableRoles } from '../../../../types/roles.types';
+import { UserWithRoles } from '../../../../types/users.types';
 
 export const UserAddRole = ({ user }: { user: UserWithRoles }) => {
     const [, startTransition] = useTransition();
@@ -21,10 +21,10 @@ export const UserAddRole = ({ user }: { user: UserWithRoles }) => {
                         <Badge
                             pill
                             bg="success"
-                            key={user.username + "-" + role}
+                            key={user.username + '-' + role}
                             className="me-1 d-inline-flex align-items-center cursor-pointer"
                             style={{
-                                height: "2rem",
+                                height: '2rem',
                             }}
                             onClick={() => {
                                 if (

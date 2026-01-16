@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useDebounceValue } from "usehooks-ts";
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useDebounceValue } from 'usehooks-ts';
 
 export const UserSearch = ({ searchQuery }: { searchQuery: string }) => {
     const [searchInput, setSearchInput] = useState(searchQuery);
@@ -10,13 +10,13 @@ export const UserSearch = ({ searchQuery }: { searchQuery: string }) => {
     const router = useRouter();
 
     useEffect(() => {
-        if (debouncedSearch !== searchQuery && searchInput !== "") {
+        if (debouncedSearch !== searchQuery && searchInput !== '') {
             router.push(`/admin/roles?page=1&search=${debouncedSearch}`);
         }
     }, [debouncedSearch, searchQuery, router]);
 
     useEffect(() => {
-        if (searchInput === "") {
+        if (searchInput === '') {
             router.push(`/admin/roles?page=1`);
         } else {
             setValue(searchInput);
@@ -24,7 +24,7 @@ export const UserSearch = ({ searchQuery }: { searchQuery: string }) => {
     }, [searchInput]);
 
     const clearSearch = () => {
-        setSearchInput("");
+        setSearchInput('');
     };
 
     return (

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { RoleEntity } from "../../../types/roles.types";
+import { useRouter } from 'next/navigation';
+import React, { useState } from 'react';
+import { RoleEntity } from '../../../../types/roles.types';
 
 interface RolesDropdownProps {
     roles: RoleEntity[];
@@ -21,7 +21,7 @@ export const UserRoleFilter: React.FC<RolesDropdownProps> = ({ roles }) => {
         <div className="mb-3">
             <select
                 className="form-select"
-                value={selectedRole || ""}
+                value={selectedRole || ''}
                 onChange={(e) => handleRoleChange(e.target.value)}
             >
                 <option value="">Filter by Role</option>

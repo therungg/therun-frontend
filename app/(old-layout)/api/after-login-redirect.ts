@@ -1,20 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
-import { createSession } from "~src/actions/session.action";
-import { getBaseUrl } from "~src/actions/base-url.action";
-import { revalidatePath } from "next/cache";
+import { revalidatePath } from 'next/cache';
+import { NextRequest, NextResponse } from 'next/server';
+import { getBaseUrl } from '~src/actions/base-url.action';
+import { createSession } from '~src/actions/session.action';
 
 const MAX_AGE = 30 * 60 * 60 * 24;
 
-export async function afterLoginRedirect(request: NextRequest, postfix = "") {
+export async function afterLoginRedirect(request: NextRequest, postfix = '') {
     const baseUrl = `${await getBaseUrl()}/${postfix}`;
 
-    const code = request.nextUrl.searchParams.get("code");
+    console.log('aaaaaaaaaaaaaaaa');
+
+    const code = request.nextUrl.searchParams.get('code');
     if (code) {
         const { id } = (await createSession(code)) || {};
         const headers = new Headers();
         if (id) {
             headers.append(
-                "Set-Cookie",
+                'Set-Cookie',
                 `session_id=${id}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${MAX_AGE};`,
             );
         }

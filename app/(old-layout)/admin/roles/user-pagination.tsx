@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { PaginatedData } from "~src/components/pagination/pagination.types";
-import { UserWithRoles } from "../../../types/users.types";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from 'next/navigation';
+import { PaginatedData } from '~src/components/pagination/pagination.types';
+import { UserWithRoles } from '../../../../types/users.types';
 
 export const UserPagination = ({
     userPagination,
@@ -18,8 +18,8 @@ export const UserPagination = ({
     const handlePageChange = (page: number) => {
         router.push(
             `/admin/roles?page=${page}&search=${
-                searchParams.get("search") || ""
-            }&role=${searchParams.get("role") || ""}`,
+                searchParams.get('search') || ''
+            }&role=${searchParams.get('role') || ''}`,
         );
     };
 

@@ -3,7 +3,7 @@ import { Panel } from '~app/(new-layout)/components/panel.component';
 import { getSession } from '~src/actions/session.action';
 import { getDateOfFirstUserSummary, getUserSummary } from '~src/lib/summary';
 import { UserSummaryType } from '~src/types/summary.types';
-import { StatsContent } from './stats-content';
+import { StatsContentWithSearch } from './stats-content-with-search';
 import { StatsSearch } from './stats-search';
 
 const DEFAULT_SETTING: UserSummaryType = 'month';
@@ -42,9 +42,9 @@ export default async function StatsPanel() {
             className="p-3"
             link={{ url: '/' + user, text: 'View All Stats' }}
         >
-            <StatsContent
+            <StatsContentWithSearch
                 initialStats={initialStats}
-                username={user}
+                loggedInUser={user}
                 firstWeek={firstWeek}
                 firstMonth={firstMonth}
             />
