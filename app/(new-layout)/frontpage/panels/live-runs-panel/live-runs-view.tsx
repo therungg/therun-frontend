@@ -130,7 +130,7 @@ const LiveRunStatsPanel = ({
                 <div
                     className={`d-flex align-items-center justify-content-center gap-2 mb-2 ${styles.userHeader}`}
                 >
-                    {run.picture && (
+                    {run.picture && run.picture !== 'noimage' && (
                         <div className={styles.userImageWrapper}>
                             <Image
                                 src={run.picture}
@@ -147,7 +147,7 @@ const LiveRunStatsPanel = ({
                 <div
                     className={`d-flex align-items-center justify-content-center gap-2 ${styles.gameInfo}`}
                 >
-                    {run.gameImage && (
+                    {run.gameImage && run.gameImage !== 'noimage' && (
                         <div className={styles.gameImageWrapper}>
                             <Image
                                 src={run.gameImage}
