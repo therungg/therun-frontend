@@ -1,0 +1,42 @@
+@import '../../styles/design-tokens';
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: $badge-font-size;
+    font-weight: $badge-font-weight;
+    padding: $badge-padding;
+    border-radius: $badge-radius;
+    transition: background $transition-fast;
+    white-space: nowrap;
+}
+
+.badge-default,
+.badge-primary {
+    background: $badge-bg;
+    color: $badge-color;
+
+    &:hover {
+        background: $badge-bg-hover;
+    }
+}
+
+.badge-info {
+    background: rgba(13, 202, 240, 0.12);
+    color: var(--bs-info);
+
+    &:hover {
+        background: rgba(13, 202, 240, 0.2);
+    }
+}
+
+.badge-secondary {
+    background: rgba(var(--bs-secondary-rgb), 0.25);
+    color: var(--bs-body-color);
+    font-weight: 700;
+
+    &:hover {
+        background: rgba(var(--bs-secondary-rgb), 0.35);
+    }
+}

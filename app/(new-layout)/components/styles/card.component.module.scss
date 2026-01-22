@@ -1,0 +1,19 @@
+@import '../../styles/design-tokens';
+@import '../../styles/mixins';
+
+.cardIconWrapper {
+    width: 70px;
+    position: relative;
+    min-width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card {
+    @include interactive-card-hover;
+}
+
+.cardSubtle {
+    @include subtle-hover;
+}

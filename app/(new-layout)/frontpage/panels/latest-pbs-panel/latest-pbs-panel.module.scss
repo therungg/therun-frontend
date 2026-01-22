@@ -1,11 +1,12 @@
+@import '../../../styles/design-tokens';
+@import '../../../styles/mixins';
+
 .pbItem {
-    transition: all 0.2s ease-in-out;
+    @include subtle-hover;
     border-left-color: var(--bs-secondary) !important;
 
     &:hover {
-        background-color: var(--bs-tertiary-bg);
         border-left-color: var(--bs-primary) !important;
-        transform: translateX(4px);
     }
 }
 

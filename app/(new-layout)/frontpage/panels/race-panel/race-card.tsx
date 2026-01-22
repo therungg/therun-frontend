@@ -70,7 +70,15 @@ export const RaceCard: FC<PropsWithChildren<RaceCardProps>> = ({
                         <div className={styles.category}>
                             {race.displayCategory}
                         </div>
-                        {firstPlace && (
+                        {race.status === 'pending' && (
+                            <span
+                                className={styles.result}
+                                style={{ opacity: 0.7 }}
+                            >
+                                by {race.creator}
+                            </span>
+                        )}
+                        {race.status !== 'pending' && firstPlace && (
                             <span className={styles.result}>
                                 {firstPlace.user}{' '}
                                 {firstPlaceFinished ? (

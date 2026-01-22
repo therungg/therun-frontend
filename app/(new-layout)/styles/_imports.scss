@@ -3,5 +3,7 @@
 
 @import "node_modules/react-toastify/scss/main.scss";
 
+@import "design-tokens";
+@import "mixins";
 @import "globals";
 @import "overrides";

@@ -1,5 +1,6 @@
 import clsx from 'clsx';
 import { FaPlusCircle } from 'react-icons/fa';
+import { Badge } from '~app/(new-layout)/components/badge.component';
 import { Card } from '~app/(new-layout)/components/card.component';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import { Race } from '~app/(old-layout)/races/races.types';
@@ -50,23 +51,12 @@ export default async function RacePanel() {
             subtitle="Race against friends"
             title="Races"
             link={{ url: '/races', text: 'View All Races' }}
-            className="px-3 pb-3"
+            className="p-4"
         >
-            <div className="mt-2">
-                <div className="d-flex justify-content-between align-items-center mb-2">
-                    <h5 className="m-0">Ongoing</h5>
-                    <span
-                        style={{
-                            fontSize: '0.8rem',
-                            fontWeight: 600,
-                            background: 'rgba(96, 140, 89, 0.1)',
-                            padding: '0.3rem 0.7rem',
-                            borderRadius: '0.4rem',
-                            color: 'var(--bs-primary)',
-                        }}
-                    >
-                        {progressRaces.length}
-                    </span>
+            <div className={styles.ongoingSection}>
+                <div className={styles.sectionHeader}>
+                    <h5>Ongoing</h5>
+                    <Badge variant="primary">{progressRaces.length}</Badge>
                 </div>
                 <Card className={clsx(styles.link)}>
                     <a href="/races/create" className={styles.link}>
@@ -87,26 +77,25 @@ export default async function RacePanel() {
                         )}
                     </a>
                 </Card>
-                {progressRaces.map((race, i) => (
-                    <RaceCard key={race.raceId} race={race} className="mt-2" />
-                ))}
+                {progressRaces.length > 0 ? (
+                    progressRaces.map((race) => (
+                        <RaceCard
+                            key={race.raceId}
+                            race={race}
+                            className="mt-2"
+                        />
+                    ))
+                ) : (
+                    <div className={styles.emptyState}>
+                        No races currently in progress
+                    </div>
+                )}
             </div>
             {pendingRaces.length > 0 && (
-                <div className="mt-2">
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                        <h5 className="m-0">Upcoming</h5>
-                        <span
-                            style={{
-                                fontSize: '0.8rem',
-                                fontWeight: 600,
-                                background: 'rgba(96, 140, 89, 0.1)',
-                                padding: '0.3rem 0.7rem',
-                                borderRadius: '0.4rem',
-                                color: 'var(--bs-primary)',
-                            }}
-                        >
-                            {pendingRaces.length}
-                        </span>
+                <div className={styles.upcomingSection}>
+                    <div className={styles.sectionHeader}>
+                        <h5>Upcoming</h5>
+                        <Badge variant="info">{pendingRaces.length}</Badge>
                     </div>
                     {pendingRaces.map((race, i) => (
                         <RaceCard
@@ -118,21 +107,10 @@ export default async function RacePanel() {
                 </div>
             )}
             {finishedRaces.length > 0 && (
-                <div className="mt-2">
-                    <div className="d-flex justify-content-between align-items-center mb-2">
-                        <h5 className="m-0">Finished</h5>
-                        <span
-                            style={{
-                                fontSize: '0.8rem',
-                                fontWeight: 600,
-                                background: 'rgba(96, 140, 89, 0.1)',
-                                padding: '0.3rem 0.7rem',
-                                borderRadius: '0.4rem',
-                                color: 'var(--bs-primary)',
-                            }}
-                        >
-                            {finishedRaceCount}
-                        </span>
+                <div className={styles.finishedSection}>
+                    <div className={styles.sectionHeader}>
+                        <h5>Finished</h5>
+                        <Badge variant="secondary">{finishedRaceCount}</Badge>
                     </div>
                     {finishedRaces.map((race, i) => (
                         <RaceCard

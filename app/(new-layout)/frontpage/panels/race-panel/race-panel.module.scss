@@ -1,16 +1,17 @@
+@import '../../../styles/design-tokens';
+@import '../../../styles/mixins';
+
 .category {
-    margin-top: -0.2rem;
-    font-style: italic;
-    font-size: 0.85rem;
-    margin-left: 0.1rem;
-    opacity: 0.75;
+    margin-top: 0.1rem;
+    font-size: 0.8rem;
+    opacity: 0.65;
+    font-weight: 500;
 }
 
 .result {
-    margin-top: -0.2rem;
-    font-size: 0.85rem;
-    margin-left: 0.2rem;
-    opacity: 0.8;
+    margin-top: 0.1rem;
+    font-size: 0.8rem;
+    opacity: 0.75;
     font-weight: 500;
 }
 
@@ -60,4 +61,31 @@
     50% {
         box-shadow: 0 0 12px 2px rgba(96, 140, 89, 0.3);
     }
+}
+
+.sectionHeader {
+    @include section-header;
+}
+
+.ongoingSection {
+    @include status-section($status-ongoing-color);
+    margin-bottom: $section-spacing-vertical;
+}
+
+.upcomingSection {
+    @include status-section($status-upcoming-color);
+    margin-bottom: $section-spacing-vertical;
+}
+
+.finishedSection {
+    @include status-section($status-finished-color);
+    margin-bottom: $section-spacing-vertical;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 1rem 0;
+    font-size: 0.85rem;
+    opacity: 0.5;
+    font-style: italic;
 }

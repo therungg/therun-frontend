@@ -1,0 +1,71 @@
+// ============================================
+// Design Tokens - Shared Design System
+// ============================================
+
+// Spacing Scale
+$spacing-xs: 0.25rem;      // 4px
+$spacing-sm: 0.5rem;       // 8px
+$spacing-md: 0.75rem;      // 12px
+$spacing-lg: 1rem;         // 16px
+$spacing-xl: 1.25rem;      // 20px
+$spacing-2xl: 1.5rem;      // 24px
+$spacing-3xl: 2rem;        // 32px
+
+// Section Spacing (for panel sections)
+$section-spacing-vertical: 1rem;
+$section-spacing-horizontal: 1rem;
+$item-spacing: 0.75rem;
+
+// Badge/Pill Design
+$badge-bg: rgba(96, 140, 89, 0.12);
+$badge-bg-hover: rgba(96, 140, 89, 0.2);
+$badge-color: var(--bs-primary);
+$badge-padding: 0.35rem 0.8rem;
+$badge-radius: 0.5rem;
+$badge-font-size: 0.85rem;
+$badge-font-weight: 600;
+
+// Status Colors
+$status-ongoing-color: var(--bs-primary);
+$status-upcoming-color: var(--bs-info);
+$status-finished-color: var(--bs-secondary);
+
+// Border Styles
+$section-border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+$status-border-width: 3px;
+
+// Typography
+$heading-font-weight: 600;
+$heading-letter-spacing: 0.02em;
+$body-line-height: 1.6;
+$label-font-weight: 500;
+$label-letter-spacing: 0.03em;
+
+// Shadows
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+$shadow-md: 0 2px 6px rgba(0, 0, 0, 0.1);
+$shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
+$shadow-xl: 0 6px 20px rgba(0, 0, 0, 0.2);
+
+// Dark mode shadow adjustments
+[data-bs-theme="dark"] {
+    $shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
+    $shadow-md: 0 2px 6px rgba(0, 0, 0, 0.25);
+    $shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.3);
+    $shadow-xl: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+// Transitions
+$transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-slow: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+// Border Radius
+$radius-sm: 0.375rem;
+$radius-md: 0.5rem;
+$radius-lg: 0.75rem;
+$radius-xl: 1rem;
+
+// Interactive States
+$hover-lift: -2px;
+$active-lift: 0px;

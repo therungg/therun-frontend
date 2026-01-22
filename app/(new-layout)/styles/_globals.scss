@@ -355,7 +355,7 @@ html {
 
 // Selection color
 ::selection {
-  background-color: rgba(96, 140, 89, 0.3);
+  background-color: rgba(50, 70, 45, 0.3);
   color: inherit;
 }
 
@@ -365,7 +365,7 @@ html {
     stroke: var(--bs-primary) !important;
     stroke-width: 6 !important;
     stroke-linecap: round !important;
-    filter: drop-shadow(0 2px 4px rgba(96, 140, 89, 0.2));
+    filter: drop-shadow(0 2px 4px rgba(50, 70, 45, 0.2));
     transition: stroke 0.3s ease-in-out;
   }
 
@@ -378,4 +378,30 @@ html {
   .CircularProgressbar-text {
     font-size: 2rem;
   }
+}
+
+// Monospace numbers and times
+.font-monospace {
+    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+.metric-value {
+    @extend .font-monospace;
+}
+
+// Improved readability
+.readable-text {
+    line-height: 1.6;
+}
+
+// Panel content should be readable
+.panel-content {
+    line-height: 1.6;
+
+    p, span, div {
+        line-height: inherit;
+    }
 }

@@ -1,15 +1,18 @@
 import clsx from 'clsx';
 import Image from 'next/image';
-import { FC, HTMLAttributes, PropsWithChildren } from 'react';
-import { IconType } from 'react-icons';
+import type { FC, HTMLAttributes, PropsWithChildren } from 'react';
+import type { IconType } from 'react-icons';
+import styles from './styles/card.component.module.scss';
 
 interface CardProps extends HTMLAttributes<HTMLDivElement> {
     Icon?: IconType;
+    interactive?: boolean;
 }
 
 export const Card: FC<PropsWithChildren<CardProps>> = ({
     Icon,
     children,
+    interactive = false,
     ...props
 }) => {
     return (
@@ -17,17 +20,12 @@ export const Card: FC<PropsWithChildren<CardProps>> = ({
             {...props}
             className={clsx(
                 'border rounded-3 px-2 py-2 d-flex',
+                interactive && styles.card,
                 props.className,
             )}
         >
             {Icon && (
-                <div
-                    style={{
-                        width: 70,
-                        position: 'relative',
-                        minWidth: 60,
-                    }}
-                >
+                <div className={styles.cardIconWrapper}>
                     <Icon className="mb-1 ms-1" />
                 </div>
             )}

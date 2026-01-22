@@ -14,7 +14,7 @@ export default async function StatsPanel() {
     // If no session, show search interface
     if (!session?.user) {
         return (
-            <Panel subtitle="Summary" title="Your Performance" className="p-3">
+            <Panel subtitle="Summary" title="Your Performance" className="p-4">
                 <StatsSearch />
             </Panel>
         );
@@ -39,7 +39,7 @@ export default async function StatsPanel() {
         <Panel
             subtitle="Summary"
             title="Your Performance"
-            className="p-3"
+            className="p-4"
             link={{ url: '/' + user, text: 'View All Stats' }}
         >
             <StatsContentWithSearch

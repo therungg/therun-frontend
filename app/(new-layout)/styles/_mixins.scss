@@ -1,0 +1,80 @@
+// ============================================
+// Mixins - Reusable Style Patterns
+// ============================================
+
+// Interactive Card Hover Effect
+@mixin interactive-card-hover {
+    transition: all $transition-base;
+    cursor: pointer;
+
+    &:hover {
+        transform: translateY($hover-lift);
+        box-shadow: $shadow-lg;
+        border-color: var(--bs-primary);
+    }
+
+    &:active {
+        transform: translateY($active-lift);
+    }
+}
+
+// Subtle Interactive Hover (for nested elements)
+@mixin subtle-hover {
+    transition: all $transition-fast;
+
+    &:hover {
+        background-color: var(--bs-tertiary-bg);
+        transform: translateX(4px);
+    }
+}
+
+// Status Badge
+@mixin status-badge {
+    font-size: $badge-font-size;
+    font-weight: $badge-font-weight;
+    background: $badge-bg;
+    padding: $badge-padding;
+    border-radius: $badge-radius;
+    color: $badge-color;
+    transition: background $transition-fast;
+
+    &:hover {
+        background: $badge-bg-hover;
+    }
+}
+
+// Section Header
+@mixin section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.25rem 0;
+    margin-bottom: $spacing-sm;
+
+    h5 {
+        font-weight: 600;
+        font-size: 0.8rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin: 0;
+        opacity: 0.6;
+    }
+}
+
+// Monospace Numbers/Times
+@mixin monospace-value {
+    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+}
+
+// Status Section Border
+@mixin status-section($color) {
+    border-left: 2px solid $color;
+    padding-left: $spacing-md;
+    border-radius: $radius-md;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+    border-left: 2px solid $color;
+    padding: $spacing-md;
+}

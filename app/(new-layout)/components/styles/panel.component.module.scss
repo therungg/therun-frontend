@@ -1,6 +1,9 @@
+@import '../../styles/bootstrap/variables-dark';
+
 $border-radius: 1.1rem;
 $border-width: 5px;
 $border-color: var(--bs-primary);
+$panel-bg: #141816;
 
 $tab-width: 10rem;
 $tab-height: 4rem;
@@ -11,7 +14,7 @@ $tab-height: 4rem;
     z-index: 2;
     border: $border-width solid $border-color;
     margin-top: $tab-height + 2rem;
-    background-color: var(--bs-body-bg);
+    background-color: $panel-bg;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     transition: box-shadow 0.3s ease-in-out;
 

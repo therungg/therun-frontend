@@ -1,7 +1,7 @@
 // components/stats-content.tsx
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { ProgressChart } from './progress-chart';
 import { RecentFinishedAttempts } from './recent-finished-attempts';
@@ -21,6 +21,12 @@ export function StatsContent({ initialStats, username, firstWeek, firstMonth }: 
     const [range, setRange] = useState<'week' | 'month'>(initialStats.type);
     const [offset, setOffset] = useState<number>(0);
     const [isPending, startTransition] = useTransition();
+
+    useEffect(() => {
+        setStats(initialStats);
+        setRange(initialStats.type);
+        setOffset(0);
+    }, [initialStats, username]);
 
     const handleRangeChange = (newRange: 'week' | 'month', newOffset: number = 0) => {
         if (range === newRange && newOffset == offset) return;
