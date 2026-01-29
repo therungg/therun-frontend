@@ -1,9 +1,10 @@
 import styles from './frontpage.module.scss';
+import CurrentUserLivePanel from './panels/current-user-live-panel/current-user-live-panel';
 import { LatestPbsPanel } from './panels/latest-pbs-panel/latest-pbs-panel';
 import { LiveRunsPanel } from './panels/live-runs-panel/live-runs-panel';
+import PatreonPanel from './panels/patreon-panel/patreon-panel';
 import RacePanel from './panels/race-panel/race-panel';
 import StatsPanel from './panels/stats-panel/stats-panel';
-import PatreonPanel from './panels/patreon-panel/patreon-panel';
 
 export default async function FrontPage() {
     return (
@@ -22,6 +23,7 @@ export default async function FrontPage() {
                     <StatsPanel />
                 </div>
                 <div className="col col-lg-6 col-xl-5 col-12">
+                    <CurrentUserLivePanel />
                     <RacePanel />
                     <PatreonPanel />
                     <LatestPbsPanel />
