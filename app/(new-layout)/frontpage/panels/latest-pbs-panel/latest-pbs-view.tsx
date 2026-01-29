@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { Container } from 'react-bootstrap';
+import { CardWithImage } from '~app/(new-layout)/components/card-with-image.component';
 import { Run } from '~src/common/types';
 import { UserGameCategoryLink, UserLink } from '~src/components/links/links';
 import { DurationToFormatted, FromNow } from '~src/components/util/datetime';
@@ -59,19 +60,12 @@ const LatestPb = ({ run, gameData, userData }: LatestPbProps) => {
             : '/logo_dark_theme_no_text_transparent.png';
 
     return (
-        <div
-            className={`d-flex gap-2 align-items-start p-1 border-start border-4 border-secondary rounded-2 ${styles.pbItem}`}
+        <CardWithImage
+            imageUrl={imageUrl}
+            imageAlt={gameData?.display || run.game}
+            className={styles.pbCard}
         >
-            <div className={styles.gameImageWrapper}>
-                <Image
-                    src={imageUrl}
-                    alt={gameData?.display || run.game}
-                    fill
-                    style={{ objectFit: 'contain' }}
-                    className={styles.gameImage}
-                />
-            </div>
-            <div className="flex-grow-1 d-flex flex-column">
+            <div className="d-flex flex-column">
                 <div className="fs-normal">
                     <UserGameCategoryLink
                         url={run.url}
@@ -114,6 +108,6 @@ const LatestPb = ({ run, gameData, userData }: LatestPbProps) => {
                     )}
                 </div>
             </div>
-        </div>
+        </CardWithImage>
     );
 };

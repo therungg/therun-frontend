@@ -13,7 +13,7 @@ interface PanelInterface extends HTMLAttributes<HTMLDivElement> {
     };
 }
 
-export const Panel: FC<PropsWithChildren<PanelInterface>> = async ({
+export const Panel: FC<PropsWithChildren<PanelInterface>> = ({
     title,
     subtitle,
     icon,

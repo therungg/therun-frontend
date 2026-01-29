@@ -1,33 +1,22 @@
 @import '../../../styles/design-tokens';
 @import '../../../styles/mixins';
 
-.pbItem {
-    @include subtle-hover;
-    border-left-color: var(--bs-secondary) !important;
+.pbCard {
+    background-color: var(--bs-tertiary-bg);
+    border-left: 2px solid var(--bs-primary) !important;
+    transition: all 0.15s ease-in-out;
 
     &:hover {
-        border-left-color: var(--bs-primary) !important;
+        background-color: var(--bs-secondary-bg);
+        transform: translateY(-2px);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
     }
 }
 
 .pbContainer {
     display: flex;
     flex-direction: column;
-    gap: 0.15rem;
-}
-
-.gameImageWrapper {
-    flex-shrink: 0;
-    width: 50px;
-    height: 60px;
-    position: relative;
-    min-width: 50px;
-    min-height: 60px;
-}
-
-.gameImage {
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    gap: 0.5rem;
 }
 
 .metaInfo {

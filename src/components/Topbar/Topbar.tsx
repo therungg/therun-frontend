@@ -1,25 +1,25 @@
-"use client";
-import { Container, Nav, Navbar, NavDropdown } from "react-bootstrap";
-import dynamic from "next/dynamic";
-import { useCallback, useState } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { TwitchUser } from "../twitch/TwitchUser";
-import { TwitchLoginButton } from "../twitch/TwitchLoginButton";
-import { Upload } from "react-bootstrap-icons";
-import { resetSession } from "~src/actions/reset-session.action";
-import { Button } from "~src/components/Button/Button";
-import { useTheme } from "next-themes";
-import { BunnyIcon } from "~src/icons/bunny-icon";
-import { Can } from "~src/rbac/Can.component";
+'use client';
+import dynamic from 'next/dynamic';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useTheme } from 'next-themes';
+import { useCallback, useEffect, useState } from 'react';
+import { Container, Nav, Navbar, NavDropdown } from 'react-bootstrap';
+import { Upload } from 'react-bootstrap-icons';
+import { resetSession } from '~src/actions/reset-session.action';
+import { Button } from '~src/components/Button/Button';
+import { BunnyIcon } from '~src/icons/bunny-icon';
+import { Can } from '~src/rbac/Can.component';
+import { TwitchLoginButton } from '../twitch/TwitchLoginButton';
+import { TwitchUser } from '../twitch/TwitchUser';
 
-const DarkModeSlider = dynamic(() => import("../dark-mode-slider"), {
+const DarkModeSlider = dynamic(() => import('../dark-mode-slider'), {
     ssr: false,
 });
 
 const GlobalSearch = dynamic(
     () =>
-        import("~src/components/search/global-search.component").then(
+        import('~src/components/search/global-search.component').then(
             (mod) => mod.GlobalSearch,
         ),
     {
@@ -39,8 +39,13 @@ export const Topbar = ({
     sessionError,
 }: Partial<TopbarProps>) => {
     const router = useRouter();
-    const { theme = "dark" } = useTheme();
+    const { theme = 'dark', resolvedTheme } = useTheme();
     const [show, setShow] = useState(false);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const handleResetSession = useCallback(async () => {
         await resetSession();
@@ -48,10 +53,10 @@ export const Topbar = ({
     }, []);
 
     async function logout() {
-        await fetch("/api/logout", {
-            method: "POST",
+        await fetch('/api/logout', {
+            method: 'POST',
         });
-        router.push("/");
+        router.push('/');
         router.refresh();
     }
     const showDropdown = () => {
@@ -61,25 +66,29 @@ export const Topbar = ({
         setShow(false);
     };
 
+    const currentTheme = mounted ? resolvedTheme || theme : 'dark';
+
     return (
         <>
             <Navbar
                 expand="lg"
                 onMouseLeave={hideDropdown}
-                data-bs-theme={theme}
+                data-bs-theme={currentTheme}
+                suppressHydrationWarning
             >
                 <Container>
                     <Navbar.Brand href="/" className="d-flex">
                         <Image
                             unoptimized
                             alt="TheRun"
-                            src={`/logo_${theme}_theme_no_text_transparent.png`}
+                            src={`/logo_${currentTheme}_theme_no_text_transparent.png`}
                             height="44"
                             width="44"
                             className="img-fluid align-self-start me-2"
+                            suppressHydrationWarning
                         />
                         <span className="align-self-center">
-                            The Run{" "}
+                            The Run{' '}
                             <i>
                                 <sup>beta</sup>
                             </i>
@@ -100,7 +109,6 @@ export const Topbar = ({
                                 </Nav.Link>
                             )}
 
-                            <Nav.Link href="/recap">Recap 2025</Nav.Link>
                             <Nav.Link href="/races">Races</Nav.Link>
                             <Nav.Link href="/live">Live</Nav.Link>
 
@@ -117,7 +125,7 @@ export const Topbar = ({
                             <GlobalSearch />
                         </Nav>
                         <Nav className="ml-auto">
-                            {" "}
+                            {' '}
                             <DarkModeSlider />
                         </Nav>
                         <Nav
@@ -131,7 +139,7 @@ export const Topbar = ({
                                     title={
                                         <TwitchUser
                                             username={username}
-                                            picture={picture || ""}
+                                            picture={picture || ''}
                                         />
                                     }
                                     id="basic-nav-dropdown"
@@ -182,4 +190,4 @@ export const Topbar = ({
         </>
     );
 };
-Topbar.displayName = "Topbar";
+Topbar.displayName = 'Topbar';

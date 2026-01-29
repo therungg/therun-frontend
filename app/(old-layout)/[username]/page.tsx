@@ -4,10 +4,7 @@ import { getRunmap } from '~app/(old-layout)/[username]/runmap.component';
 import { UserProfile } from '~app/(old-layout)/[username]/user-profile';
 import { CombinedTournamentPage } from '~app/(old-layout)/tournaments/[tournament]/combined-tournament-page';
 import { TournamentPage } from '~app/(old-layout)/tournaments/[tournament]/page';
-import {
-    getAllTournamentSlugs,
-    getTournamentNameFromSlug,
-} from '~app/(old-layout)/tournaments/tournament-list';
+import { getTournamentNameFromSlug } from '~app/(old-layout)/tournaments/tournament-list';
 import { getSession } from '~src/actions/session.action';
 import { getGameGlobal } from '~src/components/game/get-game';
 import { getGlobalUser } from '~src/lib/get-global-user';

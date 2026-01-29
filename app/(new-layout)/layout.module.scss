@@ -29,7 +29,12 @@ $secondary: var(--bs-secondary);
     z-index: -1;
 }
 
-.header,
+.header {
+    position: relative;
+    z-index: 10;
+    color: var(--bs-body-color);
+}
+
 .main,
 .footer {
     position: relative;

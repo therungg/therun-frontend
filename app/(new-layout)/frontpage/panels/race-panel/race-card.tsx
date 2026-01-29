@@ -128,12 +128,12 @@ export const RaceCard: FC<PropsWithChildren<RaceCardProps>> = ({
                                     'px-2 rounded-2 position-absolute bottom-0 start-50 translate-middle-x',
                                     styles.timerContainer,
                                 )}
-                                style={{ marginBottom: '-1rem' }}
+                                style={{ marginBottom: '-0.6rem' }}
                             >
                                 <span className={styles.timer}>
-                                    <div className="d-flex justify-content-center">
+                                    <div className="d-flex justify-content-center align-items-center">
                                         <RaceTimer race={race} />
-                                        <div className="ms-2 d-flex justify-content-start mt-2">
+                                        <div className="ms-2 d-flex justify-content-start">
                                             <PingAnimation />
                                         </div>
                                     </div>
@@ -175,7 +175,7 @@ export const RaceCard: FC<PropsWithChildren<RaceCardProps>> = ({
                                     'px-2 rounded-2 position-absolute bottom-0 start-50 translate-middle-x',
                                     styles.timerContainer,
                                 )}
-                                style={{ marginBottom: '-1rem' }}
+                                style={{ marginBottom: '-0.6rem' }}
                             >
                                 <span
                                     className={clsx(styles.timer, 'fst-italic')}

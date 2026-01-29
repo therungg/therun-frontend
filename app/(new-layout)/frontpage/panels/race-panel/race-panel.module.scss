@@ -18,7 +18,7 @@
 .timer {
     font-weight: bold;
     font-family: var(--bs-font-monospace) !important;
-    font-size: 1.05rem;
+    font-size: 0.85rem;
     color: var(--bs-primary);
 }
 
@@ -42,11 +42,11 @@
 }
 
 .timerContainer {
-    font-size: larger;
+    font-size: 0.9rem;
     display: flex;
     background: rgba(96, 140, 89, 0.06);
     border-radius: 0.4rem;
-    padding: 0.25rem 0.5rem;
+    padding: 0.1rem 0.5rem;
 }
 
 // Live race indicator glow

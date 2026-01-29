@@ -1,38 +1,9 @@
-// Green color palette - three harmonious greens based on primary #608C59
-$primary: #608C59;           // Main green - sage/forest
-$primary-light: #7DA876;     // Lighter green - for hovers, accents
-$primary-muted: #4A6B45;     // Darker/muted green - for subtle elements
+// Dark mode specific color overrides
+// Note: Do NOT redefine base colors like $primary, $secondary here as they override light mode values
+// Only define -dark suffixed variables that Bootstrap uses for dark mode
 
-$secondary: #2A332A;         // Dark green-gray for surfaces
-$tertiary: #1E2520;          // Darker green-gray for elevated surfaces
-$highlight: #8BBF84;         // Bright light green for highlights
-$success: #198754;
-$info: #0dcaf0;
-$warning: #ffc107;
-$danger: #dc3545;
-$light: #f8f9fa;
-$dark: #212529;
-$gold: #fdc544;
-
-// theme-colors-map
-$theme-colors: (
-    "primary": $primary,
-    "primary-light": $primary-light,
-    "primary-muted": $primary-muted,
-    "secondary": $secondary,
-    "tertiary": $tertiary,
-    "highlight": $highlight,
-    "success": $success,
-    "info": $info,
-    "warning": $warning,
-    "danger": $danger,
-    "light": $light,
-    "dark": $dark,
-    "gold": $gold,
-);
-
-$link-color-dark: $primary-light;
-$link-hover-color-dark: $highlight;
+$link-color-dark: #7DA876;      // Lighter green for links in dark mode
+$link-hover-color-dark: #8BBF84; // Bright light green for link hovers
 
 // Dark mode backgrounds - softer, not pure black, with subtle green undertone
 $body-color-dark: #E2E8E1;                   // Soft off-white with green tint

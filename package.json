@@ -128,6 +128,7 @@
     "@types/react-dom": "19.2.2",
     "@types/react-helmet-async": "^1.0.3",
     "@types/sanitize-html": "^2.13.0",
+    "baseline-browser-mapping": "^2.9.19",
     "drizzle-kit": "^0.30.4",
     "husky": "^8.0.3",
     "lint-staged": "^15.2.0",

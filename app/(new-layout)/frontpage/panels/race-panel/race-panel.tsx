@@ -9,7 +9,7 @@ import { getAllActiveRaces, getPaginatedFinishedRaces } from '~src/lib/races';
 import { RaceCard } from './race-card';
 import styles from './race-panel.module.scss';
 
-const FRONTPAGE_RACE_COUNT = 3;
+const FRONTPAGE_RACE_COUNT = 4;
 
 export default async function RacePanel() {
     const races = await getAllActiveRaces();
