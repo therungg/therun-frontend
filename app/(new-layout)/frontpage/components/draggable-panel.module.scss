@@ -1,0 +1,56 @@
+.draggablePanel {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.controls {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: flex;
+    gap: 0.5rem;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+
+    .draggablePanel:hover & {
+        opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+        opacity: 1;
+    }
+}
+
+.dragHandle,
+.hideButton {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.375rem;
+    padding: 0.375rem 0.5rem;
+    cursor: pointer;
+    color: var(--bs-body-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease-in-out;
+
+    &:hover:not(:disabled) {
+        background: var(--bs-primary);
+        color: white;
+        border-color: var(--bs-primary);
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+}
+
+.dragHandle {
+    cursor: grab;
+
+    &:active {
+        cursor: grabbing;
+    }
+}
