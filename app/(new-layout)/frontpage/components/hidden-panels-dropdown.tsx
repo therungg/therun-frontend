@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { FaEye } from 'react-icons/fa6';
-import { PANEL_METADATA } from '~src/lib/frontpage-panels';
+import { PANEL_METADATA } from '~src/lib/frontpage-panels-metadata';
 import { PanelId } from '../../../../types/frontpage-config.types';
 import styles from './hidden-panels-dropdown.module.scss';
 

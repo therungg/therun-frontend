@@ -112,6 +112,7 @@
     "react-twitch-embed": "^3.0.2",
     "react-use-websocket": "^4.5.0",
     "sanitize-html": "^2.15.0",
+    "server-only": "^0.0.1",
     "swr": "^2.2.4",
     "usehooks-ts": "^3.1.0",
     "victory": "^37.3.5"
