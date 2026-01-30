@@ -13,12 +13,12 @@ import { getSession } from './session.action';
 
 export async function getFrontpageConfig(): Promise<PanelConfig> {
     const session = await getSession();
-    if (!session?.id) return DEFAULT_FRONTPAGE_CONFIG;
+    if (!session?.username) return DEFAULT_FRONTPAGE_CONFIG;
 
     const result = await db
         .select()
         .from(users)
-        .where(eq(users.id, session.id))
+        .where(eq(users.username, session.username))
         .limit(1);
 
     const user = result[0];
@@ -33,7 +33,7 @@ export async function updateFrontpageConfig(
     config: PanelConfig,
 ): Promise<{ success: boolean; error?: string }> {
     const session = await getSession();
-    if (!session?.id) {
+    if (!session?.username) {
         return { success: false, error: 'Not authenticated' };
     }
 
@@ -55,7 +55,7 @@ export async function updateFrontpageConfig(
         await db
             .update(users)
             .set({ frontpageConfig: config })
-            .where(eq(users.id, session.id));
+            .where(eq(users.username, session.username));
 
         return { success: true };
     } catch (error) {
@@ -66,12 +66,12 @@ export async function updateFrontpageConfig(
 
 export async function resetFrontpageConfig(): Promise<void> {
     const session = await getSession();
-    if (!session?.id) {
+    if (!session?.username) {
         throw new Error('Not authenticated');
     }
 
     await db
         .update(users)
         .set({ frontpageConfig: null })
-        .where(eq(users.id, session.id));
+        .where(eq(users.username, session.username));
 }
