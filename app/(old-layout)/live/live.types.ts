@@ -85,3 +85,9 @@ export interface WebsocketLiveRunMessage {
 }
 
 export type SortOption = 'importance' | 'runtime' | 'runner' | 'game' | 'delta';
+
+export interface FilterState {
+    liveOnTwitch: boolean;
+    ongoing: boolean;
+    pbPace: boolean;
+}
