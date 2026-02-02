@@ -335,21 +335,46 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
             if (targetColumn && targetColumn !== activePanel.column) {
                 console.log('✨ Showing preview in:', targetColumn);
 
+                // Find insertion position based on where we're hovering
+                let insertIndex =
+                    targetColumn === 'left'
+                        ? leftPanels.length
+                        : rightPanels.length;
+
+                if (overPanel && overPanel.column === targetColumn) {
+                    // Insert at the hovered panel's position
+                    const targetPanels =
+                        targetColumn === 'left' ? leftPanels : rightPanels;
+                    insertIndex = targetPanels.findIndex(
+                        (p) => p.id === overPanel.id,
+                    );
+                }
+
                 const previewPanel = {
                     ...activePanel,
                     column: targetColumn,
-                    order:
-                        targetColumn === 'left'
-                            ? leftPanels.length
-                            : rightPanels.length,
+                    order: insertIndex,
                 };
 
-                console.log('👻 Adding preview panel:', previewPanel);
+                console.log(
+                    '👻 Adding preview panel at position:',
+                    insertIndex,
+                    previewPanel,
+                );
 
                 if (targetColumn === 'left') {
-                    leftPanels = [...leftPanels, previewPanel];
+                    // Insert at the correct position, not at the end
+                    leftPanels = [
+                        ...leftPanels.slice(0, insertIndex),
+                        previewPanel,
+                        ...leftPanels.slice(insertIndex),
+                    ];
                 } else {
-                    rightPanels = [...rightPanels, previewPanel];
+                    rightPanels = [
+                        ...rightPanels.slice(0, insertIndex),
+                        previewPanel,
+                        ...rightPanels.slice(insertIndex),
+                    ];
                 }
             }
         }
