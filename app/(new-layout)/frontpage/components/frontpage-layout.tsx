@@ -5,9 +5,9 @@ import {
     DndContext,
     DragEndEvent,
     PointerSensor,
+    useDroppable,
     useSensor,
     useSensors,
-    useDroppable,
 } from '@dnd-kit/core';
 import {
     SortableContext,
@@ -130,7 +130,10 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
         saveConfig(newConfig);
     };
 
-    const handleColumnDrop = (panelId: PanelId, targetColumn: 'left' | 'right') => {
+    const handleColumnDrop = (
+        panelId: PanelId,
+        targetColumn: 'left' | 'right',
+    ) => {
         const newPanels = [...config.panels];
         const panelIndex = newPanels.findIndex((p) => p.id === panelId);
 
@@ -234,42 +237,40 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                 onDragEnd={handleDragEnd}
             >
                 <div className="row d-flex flex-wrap">
-                    <div className="col col-lg-6 col-xl-7 col-12">
-                        <SortableContext
-                            items={leftPanels.map((p) => p.id)}
-                            strategy={verticalListSortingStrategy}
-                        >
-                            {leftPanels.map((panel) => (
-                                <DraggablePanel
-                                    key={panel.id}
-                                    id={panel.id}
-                                    onHide={() => handleHidePanel(panel.id)}
-                                    canHide={canHideMore}
-                                    isAuthenticated={isAuthenticated}
-                                >
-                                    {panels[panel.id]}
-                                </DraggablePanel>
-                            ))}
-                        </SortableContext>
-                    </div>
-                    <div className="col col-lg-6 col-xl-5 col-12">
-                        <SortableContext
-                            items={rightPanels.map((p) => p.id)}
-                            strategy={verticalListSortingStrategy}
-                        >
-                            {rightPanels.map((panel) => (
-                                <DraggablePanel
-                                    key={panel.id}
-                                    id={panel.id}
-                                    onHide={() => handleHidePanel(panel.id)}
-                                    canHide={canHideMore}
-                                    isAuthenticated={isAuthenticated}
-                                >
-                                    {panels[panel.id]}
-                                </DraggablePanel>
-                            ))}
-                        </SortableContext>
-                    </div>
+                    <DroppableColumn
+                        columnId="left"
+                        panels={leftPanels}
+                        className="col col-lg-6 col-xl-7 col-12"
+                    >
+                        {leftPanels.map((panel) => (
+                            <DraggablePanel
+                                key={panel.id}
+                                id={panel.id}
+                                onHide={() => handleHidePanel(panel.id)}
+                                canHide={canHideMore}
+                                isAuthenticated={isAuthenticated}
+                            >
+                                {panels[panel.id]}
+                            </DraggablePanel>
+                        ))}
+                    </DroppableColumn>
+                    <DroppableColumn
+                        columnId="right"
+                        panels={rightPanels}
+                        className="col col-lg-6 col-xl-5 col-12"
+                    >
+                        {rightPanels.map((panel) => (
+                            <DraggablePanel
+                                key={panel.id}
+                                id={panel.id}
+                                onHide={() => handleHidePanel(panel.id)}
+                                canHide={canHideMore}
+                                isAuthenticated={isAuthenticated}
+                            >
+                                {panels[panel.id]}
+                            </DraggablePanel>
+                        ))}
+                    </DroppableColumn>
                 </div>
             </DndContext>
         </>
