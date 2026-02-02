@@ -85,6 +85,51 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
         }
     };
 
+    const handlePanelDrop = (activeId: PanelId, overId: PanelId) => {
+        const newPanels = [...config.panels];
+        const activeIndex = newPanels.findIndex((p) => p.id === activeId);
+        const overIndex = newPanels.findIndex((p) => p.id === overId);
+
+        if (activeIndex === -1 || overIndex === -1) return;
+
+        const activePanel = newPanels[activeIndex];
+        const overPanel = newPanels[overIndex];
+
+        const targetColumn = overPanel.column;
+
+        newPanels[activeIndex] = { ...activePanel, column: targetColumn };
+
+        const sameColumnPanels = newPanels.filter(
+            (p) => p.column === targetColumn && p.visible,
+        );
+        const otherColumnPanels = newPanels.filter(
+            (p) => p.column !== targetColumn,
+        );
+
+        const reorderedSameColumn = [...sameColumnPanels];
+        const movedPanelIndex = reorderedSameColumn.findIndex(
+            (p) => p.id === activeId,
+        );
+        const targetPanelIndex = reorderedSameColumn.findIndex(
+            (p) => p.id === overId,
+        );
+
+        const [movedPanel] = reorderedSameColumn.splice(movedPanelIndex, 1);
+        reorderedSameColumn.splice(targetPanelIndex, 0, movedPanel);
+
+        const reorderedWithOrder = reorderedSameColumn.map((p, idx) => ({
+            ...p,
+            order: idx,
+        }));
+
+        const newConfig = {
+            panels: [...reorderedWithOrder, ...otherColumnPanels],
+        };
+
+        setConfig(newConfig);
+        saveConfig(newConfig);
+    };
+
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
 
