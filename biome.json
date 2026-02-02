@@ -64,7 +64,7 @@
                 "useYield": "error"
             },
             "style": {
-                "noCommonJs": "error",
+                "noCommonJs": "off",
                 "noNamespace": "warn",
                 "useArrayLiterals": "error",
                 "useAsConstAssertion": "error"
@@ -106,7 +106,7 @@
                 "useNamespaceKeyword": "error"
             }
         },
-        "includes": ["**", "**/vendor/", "public/js/", "**/next.config.js"]
+        "includes": ["**", "!**/vendor/", "!public/js/", "!**/next.config.js"]
     },
     "javascript": {
         "formatter": {
@@ -129,6 +129,7 @@
     },
     "overrides": [
         { "includes": ["*.config.js"], "linter": { "rules": {} } },
+        { "includes": ["public/js/**"], "linter": { "enabled": false } },
         {
             "includes": ["*.d.ts"],
             "linter": {
