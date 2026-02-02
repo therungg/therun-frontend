@@ -83,3 +83,5 @@ export interface WebsocketLiveRunMessage {
     run: LiveRun;
     time?: string;
 }
+
+export type SortOption = 'importance' | 'runtime' | 'runner' | 'game' | 'delta';
