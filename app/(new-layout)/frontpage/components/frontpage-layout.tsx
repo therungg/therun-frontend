@@ -16,7 +16,7 @@ import {
     SortableContext,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { ReactNode, useState } from 'react';
+import { ReactNode, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { updateFrontpageConfig } from '~src/actions/frontpage-config.action';
 import { PanelConfig, PanelId } from '../../../../types/frontpage-config.types';
@@ -292,93 +292,99 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
     const visibleCount = config.panels.filter((p) => p.visible).length;
     const canHideMore = visibleCount > 3;
 
-    let leftPanels = config.panels
+    const baseLeftPanels = config.panels
         .filter((p) => p.column === 'left' && p.visible)
         .sort((a, b) => a.order - b.order);
-    let rightPanels = config.panels
+    const baseRightPanels = config.panels
         .filter((p) => p.column === 'right' && p.visible)
         .sort((a, b) => a.order - b.order);
     const hiddenPanels = config.panels
         .filter((p) => !p.visible)
         .map((p) => p.id);
 
-    // Show preview when dragging over a column or panel in different column
-    if (activeId && overId && activeId !== overId) {
-        const activePanel = config.panels.find((p) => p.id === activeId);
-        const overPanel = config.panels.find((p) => p.id === overId);
-        const isOverColumn = overId.startsWith('column-');
+    // Use useMemo to compute panels with preview to avoid infinite loop
+    const { leftPanels, rightPanels } = useMemo(() => {
+        let left = baseLeftPanels;
+        let right = baseRightPanels;
 
-        console.log('🔮 Preview check:', {
-            activeId,
-            overId,
-            isOverColumn,
-            activePanel: activePanel?.id,
-            overPanel: overPanel?.id,
-            sourceColumn: activePanel?.column,
-            targetColumnFromPanel: overPanel?.column,
-        });
+        // Show preview when dragging over a column or panel in different column
+        if (activeId && overId && activeId !== overId) {
+            const activePanel = config.panels.find((p) => p.id === activeId);
+            const overPanel = config.panels.find((p) => p.id === overId);
+            const isOverColumn = overId.startsWith('column-');
 
-        if (activePanel) {
-            let targetColumn: 'left' | 'right' | null = null;
+            console.log('🔮 Preview check:', {
+                activeId,
+                overId,
+                isOverColumn,
+                activePanel: activePanel?.id,
+                overPanel: overPanel?.id,
+                sourceColumn: activePanel?.column,
+                targetColumnFromPanel: overPanel?.column,
+            });
 
-            // Check if hovering over column container
-            if (isOverColumn) {
-                targetColumn = overId.replace('column-', '') as
-                    | 'left'
-                    | 'right';
-            }
-            // Check if hovering over panel in different column
-            else if (overPanel && overPanel.column !== activePanel.column) {
-                targetColumn = overPanel.column;
-            }
+            if (activePanel) {
+                let targetColumn: 'left' | 'right' | null = null;
 
-            if (targetColumn && targetColumn !== activePanel.column) {
-                console.log('✨ Showing preview in:', targetColumn);
-
-                // Find insertion position based on where we're hovering
-                let insertIndex =
-                    targetColumn === 'left'
-                        ? leftPanels.length
-                        : rightPanels.length;
-
-                if (overPanel && overPanel.column === targetColumn) {
-                    // Insert at the hovered panel's position
-                    const targetPanels =
-                        targetColumn === 'left' ? leftPanels : rightPanels;
-                    insertIndex = targetPanels.findIndex(
-                        (p) => p.id === overPanel.id,
-                    );
+                // Check if hovering over column container
+                if (isOverColumn) {
+                    targetColumn = overId.replace('column-', '') as
+                        | 'left'
+                        | 'right';
+                }
+                // Check if hovering over panel in different column
+                else if (overPanel && overPanel.column !== activePanel.column) {
+                    targetColumn = overPanel.column;
                 }
 
-                const previewPanel = {
-                    ...activePanel,
-                    column: targetColumn,
-                    order: insertIndex,
-                };
+                if (targetColumn && targetColumn !== activePanel.column) {
+                    console.log('✨ Showing preview in:', targetColumn);
 
-                console.log(
-                    '👻 Adding preview panel at position:',
-                    insertIndex,
-                    previewPanel,
-                );
+                    // Find insertion position based on where we're hovering
+                    let insertIndex =
+                        targetColumn === 'left' ? left.length : right.length;
 
-                if (targetColumn === 'left') {
-                    // Insert at the correct position, not at the end
-                    leftPanels = [
-                        ...leftPanels.slice(0, insertIndex),
+                    if (overPanel && overPanel.column === targetColumn) {
+                        // Insert at the hovered panel's position
+                        const targetPanels =
+                            targetColumn === 'left' ? left : right;
+                        insertIndex = targetPanels.findIndex(
+                            (p) => p.id === overPanel.id,
+                        );
+                    }
+
+                    const previewPanel = {
+                        ...activePanel,
+                        column: targetColumn,
+                        order: insertIndex,
+                    };
+
+                    console.log(
+                        '👻 Adding preview panel at position:',
+                        insertIndex,
                         previewPanel,
-                        ...leftPanels.slice(insertIndex),
-                    ];
-                } else {
-                    rightPanels = [
-                        ...rightPanels.slice(0, insertIndex),
-                        previewPanel,
-                        ...rightPanels.slice(insertIndex),
-                    ];
+                    );
+
+                    if (targetColumn === 'left') {
+                        // Insert at the correct position, not at the end
+                        left = [
+                            ...left.slice(0, insertIndex),
+                            previewPanel,
+                            ...left.slice(insertIndex),
+                        ];
+                    } else {
+                        right = [
+                            ...right.slice(0, insertIndex),
+                            previewPanel,
+                            ...right.slice(insertIndex),
+                        ];
+                    }
                 }
             }
         }
-    }
+
+        return { leftPanels: left, rightPanels: right };
+    }, [activeId, overId, baseLeftPanels, baseRightPanels, config.panels]);
 
     return (
         <>
