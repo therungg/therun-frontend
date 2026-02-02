@@ -1,6 +1,8 @@
 import {
+    FilterState,
     LiveDataMap,
     LiveRun,
+    SortOption,
     WebsocketLiveRunMessage,
 } from '~app/(old-layout)/live/live.types';
 
@@ -103,4 +105,109 @@ export const isWebsocketDataProcessable = (
     if (!forceCategory) return true;
 
     return forceCategory.toLowerCase() == data.run.category.toLowerCase();
+};
+
+export const sortLiveRuns = (
+    liveRuns: LiveRun[],
+    sortOption: SortOption,
+): LiveRun[] => {
+    return [...liveRuns].sort((a, b) => {
+        switch (sortOption) {
+            case 'importance':
+                return b.importance - a.importance; // High to low
+
+            case 'runtime':
+                return b.currentTime - a.currentTime; // Long to short
+
+            case 'runner':
+                return a.user.localeCompare(b.user); // A to Z
+
+            case 'game':
+                return a.game.localeCompare(b.game); // A to Z
+
+            case 'delta': {
+                // Most negative first (furthest ahead of PB)
+                const deltaA = a.delta ?? Infinity;
+                const deltaB = b.delta ?? Infinity;
+                return deltaA - deltaB;
+            }
+
+            default:
+                return 0;
+        }
+    });
+};
+
+export const filterLiveRuns = (
+    liveRun: LiveRun,
+    filters: FilterState,
+): boolean => {
+    // If no filters are active, show all runs
+    if (!filters.liveOnTwitch && !filters.ongoing && !filters.pbPace) {
+        return true;
+    }
+
+    // Live on Twitch filter
+    if (filters.liveOnTwitch) {
+        if (!liveRun.currentlyStreaming) {
+            return false;
+        }
+    }
+
+    // Ongoing filter (currently active - not finished and actively progressing)
+    if (filters.ongoing) {
+        // Filter out runs that have ended
+        // if (liveRun.endedAt) {
+        //     return false;
+        // }
+        // Filter out runs that are in a reset state (currentSplitIndex -1 typically means reset/not started)
+        if (liveRun.currentSplitIndex < 0) {
+            return false;
+        }
+    }
+
+    // PB Pace filter (negative delta means ahead of PB)
+    if (filters.pbPace) {
+        // Exclude runs without delta or PB data
+        if (
+            liveRun.delta === null ||
+            liveRun.delta === undefined ||
+            liveRun.pb === null ||
+            liveRun.pb === undefined
+        ) {
+            return false;
+        }
+        if (liveRun.delta >= 0) {
+            return false;
+        }
+    }
+
+    return true;
+};
+
+export const parseFilterParams = (searchParams: string): FilterState => {
+    const params = new URLSearchParams(searchParams);
+    const filtersParam = params.get('filters');
+
+    if (!filtersParam) {
+        return { liveOnTwitch: false, ongoing: false, pbPace: false };
+    }
+
+    const filterArray = filtersParam.split(',');
+
+    return {
+        liveOnTwitch: filterArray.includes('live'),
+        ongoing: filterArray.includes('ongoing'),
+        pbPace: filterArray.includes('pbpace'),
+    };
+};
+
+export const serializeFilterParams = (filters: FilterState): string => {
+    const activeFilters: string[] = [];
+
+    if (filters.liveOnTwitch) activeFilters.push('live');
+    if (filters.ongoing) activeFilters.push('ongoing');
+    if (filters.pbPace) activeFilters.push('pbpace');
+
+    return activeFilters.length > 0 ? activeFilters.join(',') : '';
 };

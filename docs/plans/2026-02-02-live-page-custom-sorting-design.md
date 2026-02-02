@@ -1,7 +1,7 @@
 # Live Page Custom Sorting - Design Document
 
 **Date:** 2026-02-02
-**Status:** Design Complete
+**Status:** Implemented
 **Feature:** Add custom sorting options to the live runs page
 
 ## Overview

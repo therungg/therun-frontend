@@ -2,13 +2,24 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
-import { Search as SearchIcon } from 'react-bootstrap-icons';
-import { LiveDataMap, LiveProps } from '~app/(old-layout)/live/live.types';
+import { Funnel, Search as SearchIcon } from 'react-bootstrap-icons';
+import { FilterControl } from '~app/(old-layout)/live/filter-control';
 import {
+    FilterState,
+    LiveDataMap,
+    LiveProps,
+    SortOption,
+} from '~app/(old-layout)/live/live.types';
+import { SortControl } from '~app/(old-layout)/live/sort-control';
+import {
+    filterLiveRuns,
     getRecommendedStream,
     isWebsocketDataProcessable,
     liveRunArrayToMap,
     liveRunIsInSearch,
+    parseFilterParams,
+    serializeFilterParams,
+    sortLiveRuns,
 } from '~app/(old-layout)/live/utilities';
 import { LiveIcon, LiveUserRun } from '~src/components/live/live-user-run';
 import { RecommendedStream } from '~src/components/live/recommended-stream';
@@ -25,6 +36,12 @@ export const Live = ({
 }: LiveProps) => {
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
     const [search, setSearch] = useState('');
+    const [sortOption, setSortOption] = useState<SortOption>('importance');
+    const [filters, setFilters] = useState<FilterState>({
+        liveOnTwitch: false,
+        ongoing: false,
+        pbPace: false,
+    });
     const [currentlyViewing, setCurrentlyViewing] = useState(
         getRecommendedStream(liveDataMap, username),
     );
@@ -92,6 +109,30 @@ export const Live = ({
         }
     }, [currentlyViewing]);
 
+    // Sync filters from URL params on mount
+    useEffect(() => {
+        const parsedFilters = parseFilterParams(window.location.search);
+        setFilters(parsedFilters);
+    }, []);
+
+    // Update URL when filters change
+    useEffect(() => {
+        const serialized = serializeFilterParams(filters);
+        const params = new URLSearchParams(window.location.search);
+
+        if (serialized) {
+            params.set('filters', serialized);
+        } else {
+            params.delete('filters');
+        }
+
+        const newUrl = params.toString()
+            ? `${window.location.pathname}?${params.toString()}`
+            : window.location.pathname;
+
+        window.history.replaceState({}, '', newUrl);
+    }, [filters]);
+
     return (
         <>
             {showTitle && (
@@ -123,31 +164,61 @@ export const Live = ({
                         />
                     </Row>
                 )}
-            <Row className="g-3 my-3">
-                <div className="input-group mw-search">
-                    <span
-                        className="input-group-text"
-                        onClick={() => {
-                            const searchElement =
-                                document.getElementById('gameSearch');
-                            if (document.activeElement !== searchElement) {
-                                searchElement.focus();
-                            }
+            <Row className="g-3 mb-3">
+                <Col>
+                    <div
+                        className="d-flex align-items-center justify-content-between px-3 py-2 rounded-3 shadow-sm"
+                        style={{
+                            background: 'var(--bs-body-bg)',
+                            border: '1px solid var(--bs-border-color)',
+                            gap: '1.5rem',
                         }}
                     >
-                        <SearchIcon size={18} />
-                    </span>
-                    <input
-                        type="search"
-                        className="form-control"
-                        placeholder="Filter by game/category/user"
-                        onChange={(e) => {
-                            setSearch(e.target.value);
-                        }}
-                        value={search}
-                        id="gameSearch"
-                    />
-                </div>
+                        <SortControl
+                            value={sortOption}
+                            onChange={setSortOption}
+                        />
+                        <div
+                            className="input-group"
+                            style={{ maxWidth: '380px' }}
+                        >
+                            <span
+                                className="input-group-text bg-transparent border-end-0"
+                                onClick={() => {
+                                    const searchElement =
+                                        document.getElementById('gameSearch');
+                                    if (
+                                        document.activeElement !== searchElement
+                                    ) {
+                                        searchElement.focus();
+                                    }
+                                }}
+                            >
+                                <SearchIcon size={18} />
+                            </span>
+                            <input
+                                type="search"
+                                className="form-control border-start-0 bg-transparent"
+                                placeholder="Filter by game/category/user"
+                                onChange={(e) => {
+                                    setSearch(e.target.value);
+                                }}
+                                value={search}
+                                id="gameSearch"
+                                style={{
+                                    boxShadow: 'none',
+                                }}
+                            />
+                        </div>
+                        <div className="d-flex align-items-center gap-2">
+                            <Funnel size={16} className="text-muted" />
+                            <FilterControl
+                                filters={filters}
+                                onChange={setFilters}
+                            />
+                        </div>
+                    </div>
+                </Col>
             </Row>
             <Row xs={1} lg={2} xl={3} className="g-3">
                 {Object.values(updatedLiveDataMap).length == 0 && (
@@ -155,30 +226,43 @@ export const Live = ({
                 )}
 
                 {Object.values(updatedLiveDataMap).length > 0 &&
-                    Object.values(updatedLiveDataMap).filter((liveRun) =>
-                        liveRunIsInSearch(liveRun, search),
-                    ).length == 0 && <div>No runs matched your search!</div>}
+                    Object.values(updatedLiveDataMap)
+                        .filter((liveRun) => liveRunIsInSearch(liveRun, search))
+                        .filter((liveRun) => filterLiveRuns(liveRun, filters))
+                        .length == 0 && (
+                        <div>
+                            No runs matched your search
+                            {(filters.liveOnTwitch ||
+                                filters.ongoing ||
+                                filters.pbPace) &&
+                                ' and filters'}
+                            !
+                        </div>
+                    )}
 
-                {Object.values(updatedLiveDataMap)
-                    .filter((liveRun) => liveRunIsInSearch(liveRun, search))
-                    .map((liveRun) => {
-                        return (
-                            <Col
+                {sortLiveRuns(
+                    Object.values(updatedLiveDataMap)
+                        .filter((liveRun) => liveRunIsInSearch(liveRun, search))
+                        .filter((liveRun) => filterLiveRuns(liveRun, filters)),
+                    sortOption,
+                ).map((liveRun) => {
+                    return (
+                        <Col
+                            key={liveRun.user}
+                            onClick={() => {
+                                setCurrentlyViewing(liveRun.user);
+
+                                window.scrollTo(0, 0);
+                            }}
+                        >
+                            <LiveUserRun
+                                liveRun={liveRun}
+                                currentlyActive={currentlyViewing}
                                 key={liveRun.user}
-                                onClick={() => {
-                                    setCurrentlyViewing(liveRun.user);
-
-                                    window.scrollTo(0, 0);
-                                }}
-                            >
-                                <LiveUserRun
-                                    liveRun={liveRun}
-                                    currentlyActive={currentlyViewing}
-                                    key={liveRun.user}
-                                />
-                            </Col>
-                        );
-                    })}
+                            />
+                        </Col>
+                    );
+                })}
             </Row>
         </>
     );
