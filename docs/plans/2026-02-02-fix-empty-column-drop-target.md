@@ -1,7 +1,8 @@
 # Fix Empty Column Drop Target - Design Document
 
 **Date:** 2026-02-02
-**Status:** Approved
+**Status:** Implemented
+**Date Implemented:** 2026-02-02
 **Type:** Bug Fix
 **Related:** Configurable Frontpage Panels feature
 
