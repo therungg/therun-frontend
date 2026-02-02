@@ -317,6 +317,9 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
 
         // Show preview when dragging over a column or panel in different column
         if (activeId && overId && activeId !== overId) {
+            // First, remove activeId from both columns to avoid duplicate IDs
+            left = left.filter((p) => p.id !== activeId);
+            right = right.filter((p) => p.id !== activeId);
             const activePanel = config.panels.find((p) => p.id === activeId);
             const overPanel = config.panels.find((p) => p.id === overId);
             const isOverColumn = overId.startsWith('column-');
