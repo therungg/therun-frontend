@@ -109,6 +109,10 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
     const [config, setConfig] = useState<PanelConfig>(initialConfig);
     const [_isSaving, setIsSaving] = useState(false);
     const [activeId, setActiveId] = useState<PanelId | null>(null);
+    const [previewPosition, setPreviewPosition] = useState<{
+        column: 'left' | 'right';
+        index: number;
+    } | null>(null);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -214,6 +218,40 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
         setActiveId(event.active.id as PanelId);
     };
 
+    const handleDragOver = (event: DragOverEvent) => {
+        const { over } = event;
+        if (!over || !activeId) return;
+
+        const overId = over.id as string;
+        const activePanel = config.panels.find((p) => p.id === activeId);
+        const overPanel = config.panels.find((p) => p.id === overId);
+        const isOverColumn = overId.startsWith('column-');
+
+        if (!activePanel) return;
+
+        let targetColumn: 'left' | 'right' | null = null;
+        let insertIndex = 0;
+
+        if (isOverColumn) {
+            targetColumn = overId.replace('column-', '') as 'left' | 'right';
+            insertIndex =
+                targetColumn === 'left'
+                    ? baseLeftPanels.length
+                    : baseRightPanels.length;
+        } else if (overPanel && overPanel.column !== activePanel.column) {
+            targetColumn = overPanel.column;
+            const targetPanels =
+                targetColumn === 'left' ? baseLeftPanels : baseRightPanels;
+            insertIndex = targetPanels.findIndex((p) => p.id === overPanel.id);
+        }
+
+        if (targetColumn && targetColumn !== activePanel.column) {
+            setPreviewPosition({ column: targetColumn, index: insertIndex });
+        } else {
+            setPreviewPosition(null);
+        }
+    };
+
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
 
@@ -224,6 +262,7 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
         });
 
         setActiveId(null);
+        setPreviewPosition(null);
 
         if (!over || active.id === over.id) {
             console.log('❌ No valid drop target');
@@ -318,6 +357,7 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                 sensors={sensors}
                 collisionDetection={closestCorners}
                 onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
             >
                 <div className="row d-flex flex-wrap">
@@ -326,34 +366,90 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                         panels={leftPanels}
                         className="col col-lg-6 col-xl-7 col-12"
                     >
-                        {leftPanels.map((panel) => (
-                            <DraggablePanel
-                                key={panel.id}
-                                id={panel.id}
-                                onHide={() => handleHidePanel(panel.id)}
-                                canHide={canHideMore}
-                                isAuthenticated={isAuthenticated}
-                            >
-                                {panels[panel.id]}
-                            </DraggablePanel>
+                        {leftPanels.map((panel, idx) => (
+                            <>
+                                {previewPosition?.column === 'left' &&
+                                    previewPosition.index === idx && (
+                                        <div
+                                            style={{
+                                                height: '100px',
+                                                border: '2px dashed #4caf50',
+                                                borderRadius: '8px',
+                                                margin: '0.5rem 0',
+                                                backgroundColor:
+                                                    'rgba(76, 175, 80, 0.1)',
+                                            }}
+                                        />
+                                    )}
+                                <DraggablePanel
+                                    key={panel.id}
+                                    id={panel.id}
+                                    onHide={() => handleHidePanel(panel.id)}
+                                    canHide={canHideMore}
+                                    isAuthenticated={isAuthenticated}
+                                >
+                                    {panels[panel.id]}
+                                </DraggablePanel>
+                            </>
                         ))}
+                        {previewPosition?.column === 'left' &&
+                            previewPosition.index === leftPanels.length && (
+                                <div
+                                    style={{
+                                        height: '100px',
+                                        border: '2px dashed #4caf50',
+                                        borderRadius: '8px',
+                                        margin: '0.5rem 0',
+                                        backgroundColor:
+                                            'rgba(76, 175, 80, 0.1)',
+                                    }}
+                                />
+                            )}
                     </DroppableColumn>
                     <DroppableColumn
                         columnId="right"
                         panels={rightPanels}
                         className="col col-lg-6 col-xl-5 col-12"
                     >
-                        {rightPanels.map((panel) => (
-                            <DraggablePanel
-                                key={panel.id}
-                                id={panel.id}
-                                onHide={() => handleHidePanel(panel.id)}
-                                canHide={canHideMore}
-                                isAuthenticated={isAuthenticated}
-                            >
-                                {panels[panel.id]}
-                            </DraggablePanel>
+                        {rightPanels.map((panel, idx) => (
+                            <>
+                                {previewPosition?.column === 'right' &&
+                                    previewPosition.index === idx && (
+                                        <div
+                                            style={{
+                                                height: '100px',
+                                                border: '2px dashed #4caf50',
+                                                borderRadius: '8px',
+                                                margin: '0.5rem 0',
+                                                backgroundColor:
+                                                    'rgba(76, 175, 80, 0.1)',
+                                            }}
+                                        />
+                                    )}
+                                <DraggablePanel
+                                    key={panel.id}
+                                    id={panel.id}
+                                    onHide={() => handleHidePanel(panel.id)}
+                                    canHide={canHideMore}
+                                    isAuthenticated={isAuthenticated}
+                                >
+                                    {panels[panel.id]}
+                                </DraggablePanel>
+                            </>
                         ))}
+                        {previewPosition?.column === 'right' &&
+                            previewPosition.index === rightPanels.length && (
+                                <div
+                                    style={{
+                                        height: '100px',
+                                        border: '2px dashed #4caf50',
+                                        borderRadius: '8px',
+                                        margin: '0.5rem 0',
+                                        backgroundColor:
+                                            'rgba(76, 175, 80, 0.1)',
+                                    }}
+                                />
+                            )}
                     </DroppableColumn>
                 </div>
                 <DragOverlay>
