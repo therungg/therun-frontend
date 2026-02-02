@@ -1,11 +1,11 @@
-import { Race } from "~app/(old-layout)/races/races.types";
-import { Button } from "react-bootstrap";
-import Link from "next/link";
-import { User } from "../../../../types/session.types";
-import { CreateNextRaceButton } from "~app/(old-layout)/races/components/buttons/create-next-race-button";
-import { RaceActionProps } from "~app/(old-layout)/races/components/buttons/race-action-button";
+import Link from 'next/link';
+import { Button } from 'react-bootstrap';
+import { CreateNextRaceButton } from '~app/(old-layout)/races/components/buttons/create-next-race-button';
+import { RaceActionProps } from '~app/(old-layout)/races/components/buttons/race-action-button';
+import { Race } from '~app/(old-layout)/races/races.types';
+import { User } from '../../../../types/session.types';
 
-interface CreateNextRaceProps extends Omit<RaceActionProps, "raceId"> {
+interface CreateNextRaceProps extends Omit<RaceActionProps, 'raceId'> {
     user?: User;
     race: Race;
 }
@@ -33,7 +33,7 @@ export const CreateNextRace = (props: CreateNextRaceProps) => {
         );
     }
 
-    if (race.status === "pending" || race.status === "starting") return <></>;
+    if (race.status === 'pending' || race.status === 'starting') return <></>;
 
     if (!user || race.creator !== user.username) return <></>;
 
@@ -48,7 +48,7 @@ const GoToNextRace = (props: GoToNextRaceProps) => {
     let url = `/races/${props.raceId}`;
 
     if (props.allowedToSkipPassword) {
-        url += "?skipPasswordCheck=true";
+        url += '?skipPasswordCheck=true';
     }
 
     return (

@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { useStory } from "~app/(old-layout)/live/stories/use-story";
-import React, { useEffect, useRef } from "react";
-import { LiveRun, Split } from "~app/(old-layout)/live/live.types";
-import { Col, Row } from "react-bootstrap";
-import { SplitStory } from "~app/(old-layout)/live/story.types";
-import { Difference, DurationToFormatted } from "~src/components/util/datetime";
-import { Twitch as TwitchIcon } from "react-bootstrap-icons";
+import React, { useEffect, useRef } from 'react';
+import { Col, Row } from 'react-bootstrap';
+import { Twitch as TwitchIcon } from 'react-bootstrap-icons';
+import { LiveRun, Split } from '~app/(old-layout)/live/live.types';
+import { useStory } from '~app/(old-layout)/live/stories/use-story';
+import { SplitStory } from '~app/(old-layout)/live/story.types';
+import { Difference, DurationToFormatted } from '~src/components/util/datetime';
 
 export const RunStoryView = ({ liveRun }: { liveRun: LiveRun }) => {
     const { story, isLoaded } = useStory(liveRun.user);
@@ -24,7 +24,7 @@ export const RunStoryView = ({ liveRun }: { liveRun: LiveRun }) => {
             <>
                 No story currently available. Stories only get generated when
                 you have finished at least 3 runs, and started at least 20.
-                Otherwise there is not enough data to generate stories from.{" "}
+                Otherwise there is not enough data to generate stories from.{' '}
             </>
         );
 
@@ -34,7 +34,7 @@ export const RunStoryView = ({ liveRun }: { liveRun: LiveRun }) => {
             <Col className="mb m-0">
                 <Row
                     className="bg-body-secondary ps-3 h-100 m-0"
-                    style={{ minHeight: "15rem", maxHeight: "15rem" }}
+                    style={{ minHeight: '15rem', maxHeight: '15rem' }}
                 >
                     <Col xl={4} className="border-end border-tertiary p-0">
                         <div className="mt-2 me-2">
@@ -52,7 +52,7 @@ export const RunStoryView = ({ liveRun }: { liveRun: LiveRun }) => {
                             </p>
                             <p>
                                 You can enable and customize these stories in
-                                your{" "}
+                                your{' '}
                                 <a href="/stories/manage">Stories Dashboard</a>
                             </p>
                         </div>
@@ -60,7 +60,7 @@ export const RunStoryView = ({ liveRun }: { liveRun: LiveRun }) => {
                     <Col
                         xl={8}
                         className="h-100 py-1"
-                        style={{ minHeight: "15rem", maxHeight: "15rem" }}
+                        style={{ minHeight: '15rem', maxHeight: '15rem' }}
                     >
                         <div
                             ref={storyContainerRef}
@@ -70,8 +70,8 @@ export const RunStoryView = ({ liveRun }: { liveRun: LiveRun }) => {
                                 return (
                                     <RenderSplitsStory
                                         key={
-                                            "story-render-" +
-                                            storyElement["startedAt#index"]
+                                            'story-render-' +
+                                            storyElement['startedAt#index']
                                         }
                                         storyElement={storyElement}
                                         split={
@@ -100,12 +100,12 @@ const RenderSplitsStory = ({
     const showStories = storyElement.storyElements.filter((el) => el.selected);
 
     return (
-        <div key={"story-" + storyElement.splitIndex}>
+        <div key={'story-' + storyElement.splitIndex}>
             <Row className="overflow-x-hidden">
                 <Col xl={4}>
                     <div className="w-100 d-flex">
                         <span className="fs-large fw-bold ">
-                            {" "}
+                            {' '}
                             {storyElement.splitName}
                         </span>
                         {split && split.splitTime && (
@@ -119,7 +119,7 @@ const RenderSplitsStory = ({
                                     <Difference
                                         one={split.splitTime.toString()}
                                         two={
-                                            split.pbSplitTime?.toString() || ""
+                                            split.pbSplitTime?.toString() || ''
                                         }
                                     />
                                 </span>
@@ -134,7 +134,7 @@ const RenderSplitsStory = ({
                                 className="overflow-x-hidden"
                                 key={showStory.id + storyElement.splitIndex}
                             >
-                                {showStory.text}{" "}
+                                {showStory.text}{' '}
                                 {showStory.wasSentToTwitch && (
                                     <span className="ms-1">
                                         <TwitchIcon

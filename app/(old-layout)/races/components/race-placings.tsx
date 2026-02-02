@@ -1,11 +1,11 @@
-import { Race } from "~app/(old-layout)/races/races.types";
-import { TrophyIcon } from "~src/icons/trophy-icon";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import React from "react";
-import { sortRaceParticipants } from "~app/(old-layout)/races/[race]/sort-race-participants";
-import { FireIcon } from "~src/icons/fire-icon";
-import { RaceParticipantPercentage } from "~app/(old-layout)/races/components/race-participant-percentage";
-import { UserLink } from "~src/components/links/links";
+import React from 'react';
+import { sortRaceParticipants } from '~app/(old-layout)/races/[race]/sort-race-participants';
+import { RaceParticipantPercentage } from '~app/(old-layout)/races/components/race-participant-percentage';
+import { Race } from '~app/(old-layout)/races/races.types';
+import { UserLink } from '~src/components/links/links';
+import { DurationToFormatted } from '~src/components/util/datetime';
+import { FireIcon } from '~src/icons/fire-icon';
+import { TrophyIcon } from '~src/icons/trophy-icon';
 
 interface RacePlacingsProps {
     race: Race;
@@ -13,10 +13,10 @@ interface RacePlacingsProps {
 }
 
 export const RacePlacings = ({ race, amount = 1 }: RacePlacingsProps) => {
-    if (race.status === "finished")
+    if (race.status === 'finished')
         return <RacePlacingsFinishedRace race={race} amount={amount} />;
 
-    if (race.status === "progress")
+    if (race.status === 'progress')
         return <RacePlacingsProgressRace race={race} amount={amount} />;
 
     return <></>;
@@ -28,7 +28,7 @@ const RacePlacingsFinishedRace = ({ race, amount = 1 }: RacePlacingsProps) => {
     // }) as RaceResult[];
 
     // If we just need the first result and that person abandoned, we do not need to show it
-    if (race.results && amount === 1 && race.results[0].status === "abandoned")
+    if (race.results && amount === 1 && race.results[0].status === 'abandoned')
         return <></>;
 
     return (
@@ -36,14 +36,14 @@ const RacePlacingsFinishedRace = ({ race, amount = 1 }: RacePlacingsProps) => {
             {race.results?.slice(0, amount).map((result, i) => {
                 return (
                     <div key={result.name}>
-                        {result.status === "confirmed" && i < 3 && (
+                        {result.status === 'confirmed' && i < 3 && (
                             <TrophyIcon
                                 trophyColor={
                                     i === 0
-                                        ? "gold"
+                                        ? 'gold'
                                         : i === 1
-                                          ? "silver"
-                                          : "bronze"
+                                          ? 'silver'
+                                          : 'bronze'
                                 }
                             />
                         )}
@@ -54,7 +54,7 @@ const RacePlacingsFinishedRace = ({ race, amount = 1 }: RacePlacingsProps) => {
                                 />
                             </b>
                         )}
-                        {result.status === "abandoned" && <span>DNF</span>} -{" "}
+                        {result.status === 'abandoned' && <span>DNF</span>} -{' '}
                         <UserLink
                             username={result.name}
                             parentIsUrl={true}
@@ -72,13 +72,13 @@ export const RacePlacingsProgressRace = ({ race }: RacePlacingsProps) => {
 
     if (!firstPlace) return <></>;
 
-    if (firstPlace.status === "finished" || firstPlace.status === "confirmed") {
+    if (firstPlace.status === 'finished' || firstPlace.status === 'confirmed') {
         return (
             <>
                 <TrophyIcon />
                 <DurationToFormatted
                     duration={firstPlace.finalTime as number}
-                />{" "}
+                />{' '}
                 - <UserLink username={firstPlace.user} parentIsUrl={true} />
             </>
         );
@@ -95,7 +95,7 @@ export const RacePlacingsProgressRace = ({ race }: RacePlacingsProps) => {
     return (
         <>
             <FireIcon />
-            <RaceParticipantPercentage participant={firstPlace} /> -{" "}
+            <RaceParticipantPercentage participant={firstPlace} /> -{' '}
             <UserLink username={firstPlace.user} parentIsUrl={true} />
         </>
     );

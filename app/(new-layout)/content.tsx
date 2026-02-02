@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import React, { useEffect } from "react";
-import { AppProgressBar as ProgressBar } from "next-nprogress-bar";
-import { useTheme } from "next-themes";
-import { useProgressBar } from "~src/components/n-progress.component";
-import { Bounce, toast, ToastContainer } from "react-toastify";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams } from 'next/navigation';
+import { AppProgressBar as ProgressBar } from 'next-nprogress-bar';
+import { useTheme } from 'next-themes';
+import React, { useEffect } from 'react';
+import { Bounce, ToastContainer, toast } from 'react-toastify';
+import { useProgressBar } from '~src/components/n-progress.component';
 
 export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
     children,
@@ -14,19 +14,19 @@ export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
     useProgressBar();
     const query = useSearchParams();
 
-    const prefix = systemTheme === "dark" ? "" : "/lightmode";
+    const prefix = systemTheme === 'dark' ? '' : '/lightmode';
 
     useEffect(() => {
-        if (query.has("toast")) {
-            const type = query.has("toastType")
-                ? (query.get("toastType") as "success" | "error")
-                : "success";
+        if (query.has('toast')) {
+            const type = query.has('toastType')
+                ? (query.get('toastType') as 'success' | 'error')
+                : 'success';
 
-            console.log(query.get("toast"));
+            console.log(query.get('toast'));
 
-            toast[type](query.get("toast"));
+            toast[type](query.get('toast'));
         }
-    }, [query.get("toast")]);
+    }, [query.get('toast')]);
 
     return (
         <div className="my-4 pb-5 main-container container">
@@ -69,7 +69,7 @@ export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
                 draggable
                 pauseOnHover
                 transition={Bounce}
-                theme={systemTheme || "dark"}
+                theme={systemTheme || 'dark'}
             />
             {children}
         </div>

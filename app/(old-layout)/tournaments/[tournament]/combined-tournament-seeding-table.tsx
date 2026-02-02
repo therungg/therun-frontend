@@ -1,9 +1,9 @@
-import { CombinedLeaderboardStat } from "~app/(old-layout)/tournaments/[tournament]/get-combined-tournament-leaderboard.component";
-import { Tournament } from "~src/components/tournament/tournament-info";
-import { Table } from "react-bootstrap";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import { useState } from "react";
-import { UserLink } from "~src/components/links/links";
+import { useState } from 'react';
+import { Table } from 'react-bootstrap';
+import { CombinedLeaderboardStat } from '~app/(old-layout)/tournaments/[tournament]/get-combined-tournament-leaderboard.component';
+import { UserLink } from '~src/components/links/links';
+import { Tournament } from '~src/components/tournament/tournament-info';
+import { DurationToFormatted } from '~src/components/util/datetime';
 
 export const CombinedTournamentSeedingTable = ({
     tournaments,
@@ -12,7 +12,7 @@ export const CombinedTournamentSeedingTable = ({
     tournaments: Tournament[];
     leaderboards: CombinedLeaderboardStat[];
 }) => {
-    const [sortColumn, setSortColumn] = useState("seed");
+    const [sortColumn, setSortColumn] = useState('seed');
     const [sortAsc, setSortAsc] = useState(true);
 
     const changeSort = (column: string) => {
@@ -25,11 +25,11 @@ export const CombinedTournamentSeedingTable = ({
     };
 
     const getSortableClassName = (column: string): string => {
-        let classNames = "sortable";
+        let classNames = 'sortable';
 
         if (sortColumn === column) {
-            classNames += " active";
-            classNames += sortAsc ? " asc" : " desc";
+            classNames += ' active';
+            classNames += sortAsc ? ' asc' : ' desc';
         }
 
         return classNames;
@@ -38,8 +38,8 @@ export const CombinedTournamentSeedingTable = ({
     leaderboards.sort((a, b) => {
         let res = 1;
 
-        if (sortColumn === "seed") res = a.seed - b.seed;
-        if (sortColumn === "user") res = a.username < b.username ? -1 : 1;
+        if (sortColumn === 'seed') res = a.seed - b.seed;
+        if (sortColumn === 'user') res = a.username < b.username ? -1 : 1;
 
         tournaments.forEach((tournament) => {
             if (sortColumn === tournament.game) {
@@ -70,12 +70,12 @@ export const CombinedTournamentSeedingTable = ({
     });
 
     const gamesMap = new Map([
-        ["Super Mario 64", "SM64 70 Star"],
-        ["Super Mario Sunshine", "SMS Any%"],
-        ["Super Mario Galaxy", "SMG Any%"],
-        ["Super Mario Galaxy 2", "SMG2 Any%"],
-        ["Super Mario 3D World", "SM3DW Any%"],
-        ["Super Mario Odyssey", "SMO Any%"],
+        ['Super Mario 64', 'SM64 70 Star'],
+        ['Super Mario Sunshine', 'SMS Any%'],
+        ['Super Mario Galaxy', 'SMG Any%'],
+        ['Super Mario Galaxy 2', 'SMG2 Any%'],
+        ['Super Mario 3D World', 'SM3DW Any%'],
+        ['Super Mario Odyssey', 'SMO Any%'],
     ]);
     return (
         <div>
@@ -84,17 +84,17 @@ export const CombinedTournamentSeedingTable = ({
                 <thead>
                     <tr>
                         <th
-                            className={getSortableClassName("seed")}
+                            className={getSortableClassName('seed')}
                             onClick={() => {
-                                changeSort("seed");
+                                changeSort('seed');
                             }}
                         >
                             #
                         </th>
                         <th
-                            className={getSortableClassName("user")}
+                            className={getSortableClassName('user')}
                             onClick={() => {
-                                changeSort("user");
+                                changeSort('user');
                             }}
                         >
                             Participant
@@ -144,7 +144,7 @@ export const CombinedTournamentSeedingTable = ({
                                                     duration={
                                                         run.stat as string
                                                     }
-                                                />{" "}
+                                                />{' '}
                                                 (#{run.placing})
                                             </>
                                         )}

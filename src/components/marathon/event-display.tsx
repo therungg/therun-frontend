@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { type MarathonEvent } from "./send-marathon-data-button";
-import { useLiveRunsWebsocket } from "../websocket/use-reconnect-websocket";
-import { WebsocketLiveRunMessage } from "~app/(old-layout)/live/live.types";
+import { useEffect, useState } from 'react';
+import { WebsocketLiveRunMessage } from '~app/(old-layout)/live/live.types';
+import { useLiveRunsWebsocket } from '../websocket/use-reconnect-websocket';
+import { type MarathonEvent } from './send-marathon-data-button';
 
 interface ReceivedEvent extends WebsocketLiveRunMessage {
     time: string;

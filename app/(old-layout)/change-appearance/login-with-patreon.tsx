@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import React from "react";
-import { TwitchLoginButton } from "~src/components/twitch/TwitchLoginButton";
-import Link from "next/link";
-import { Button, Container, Row } from "react-bootstrap";
-import { User } from "../../../types/session.types";
+import Link from 'next/link';
+import React from 'react';
+import { Button, Container, Row } from 'react-bootstrap';
+import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
+import { User } from '../../../types/session.types';
 
 export const LoginWithPatreon = ({
     session,
@@ -26,7 +26,7 @@ export const LoginWithPatreon = ({
         );
     }
 
-    const redirectUri = `${baseUrl || "https://therun.gg"}%2fchange-appearance`;
+    const redirectUri = `${baseUrl || 'https://therun.gg'}%2fchange-appearance`;
 
     const url = `https://patreon.com/oauth2/authorize?response_type=code&client_id=QLyBxIC3dSTxWEVqx_YJZCJSHHWxyt3LhE8Nue4_aOXmYlMsq9whaL2-VcqyCf1n&scope=identity&redirect_uri=${redirectUri}`;
 

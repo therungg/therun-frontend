@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
+import { Col, Row } from 'react-bootstrap';
+import { CreateRaceButtons } from '~app/(old-layout)/races/create-race-buttons';
+import { GlobalRaceStats } from '~app/(old-layout)/races/global-race-stats';
+import { useRaces } from '~app/(old-layout)/races/hooks/use-race';
+import { InProgressRaces } from '~app/(old-layout)/races/in-progress-races';
+import { PendingRaces } from '~app/(old-layout)/races/pending-races';
+import { RaceFaq } from '~app/(old-layout)/races/race-faq';
 import {
     GameStats,
     GlobalStats,
     PaginatedRaces,
     Race,
-} from "~app/(old-layout)/races/races.types";
-import { Col, Row } from "react-bootstrap";
-import { InProgressRaces } from "~app/(old-layout)/races/in-progress-races";
-import { PendingRaces } from "~app/(old-layout)/races/pending-races";
-import { GlobalRaceStats } from "~app/(old-layout)/races/global-race-stats";
-import { CreateRaceButtons } from "~app/(old-layout)/races/create-race-buttons";
-import { useRaces } from "~app/(old-layout)/races/hooks/use-race";
-import { RecentlyFinishedRaces } from "~app/(old-layout)/races/recently-finished-races";
-import { RaceFaq } from "~app/(old-layout)/races/race-faq";
-import { RacesWelcomeMessage } from "~app/(old-layout)/races/races-welcome-message";
+} from '~app/(old-layout)/races/races.types';
+import { RacesWelcomeMessage } from '~app/(old-layout)/races/races-welcome-message';
+import { RecentlyFinishedRaces } from '~app/(old-layout)/races/recently-finished-races';
 
 interface RaceOverviewProps {
     races: Race[];
@@ -72,9 +72,9 @@ const getInProgressRaces = (races: Race[]): Race[] => {
     return races
         .filter((race) => {
             return (
-                race.status === "progress" ||
-                race.status === "starting" ||
-                race.status === "finished"
+                race.status === 'progress' ||
+                race.status === 'starting' ||
+                race.status === 'finished'
             );
         })
         .sort((a, b) => {
@@ -88,7 +88,7 @@ const getInProgressRaces = (races: Race[]): Race[] => {
 const getUpcomingRaces = (races: Race[]): Race[] => {
     return races
         .filter((race) => {
-            return race.status === "pending";
+            return race.status === 'pending';
         })
         .sort((a, b) => {
             return (

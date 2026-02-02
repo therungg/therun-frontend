@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { EditorProvider, useCurrentEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { Button } from "./Button/Button";
+import { EditorProvider, useCurrentEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { Button } from './Button/Button';
 
 interface TiptapProps {
     onChange: (content: string) => void;
@@ -18,8 +18,8 @@ const Tiptap: React.FC<TiptapProps> = ({ onChange, initialContent }) => {
             content={initialContent}
             editorProps={{
                 attributes: {
-                    class: "bg-body-tertiary px-3 py-2 rounded lg",
-                    style: "min-height: 15rem",
+                    class: 'bg-body-tertiary px-3 py-2 rounded lg',
+                    style: 'min-height: 15rem',
                 },
             }}
             onUpdate={(editor) => {
@@ -42,14 +42,14 @@ const MenuBar = () => {
         <div className="flex space-x-2 mb-2">
             <Button
                 onClick={() => editor.chain().focus().toggleBold().run()}
-                className={editor.isActive("bold") ? "active" : ""}
+                className={editor.isActive('bold') ? 'active' : ''}
                 variant="secondary"
             >
                 Bold
             </Button>
             <Button
                 onClick={() => editor.chain().focus().toggleItalic().run()}
-                className={editor.isActive("italic") ? "active" : ""}
+                className={editor.isActive('italic') ? 'active' : ''}
                 variant="secondary"
             >
                 Italic
@@ -59,7 +59,7 @@ const MenuBar = () => {
                     editor.chain().focus().toggleHeading({ level: 1 }).run()
                 }
                 className={
-                    editor.isActive("heading", { level: 1 }) ? "active" : ""
+                    editor.isActive('heading', { level: 1 }) ? 'active' : ''
                 }
                 variant="secondary"
             >
@@ -70,7 +70,7 @@ const MenuBar = () => {
                     editor.chain().focus().toggleHeading({ level: 2 }).run()
                 }
                 className={
-                    editor.isActive("heading", { level: 2 }) ? "active" : ""
+                    editor.isActive('heading', { level: 2 }) ? 'active' : ''
                 }
                 variant="secondary"
             >
@@ -78,21 +78,21 @@ const MenuBar = () => {
             </Button>
             <Button
                 onClick={() => editor.chain().focus().toggleBulletList().run()}
-                className={editor.isActive("bulletList") ? "active" : ""}
+                className={editor.isActive('bulletList') ? 'active' : ''}
                 variant="secondary"
             >
                 Bullet List
             </Button>
             <Button
                 onClick={() => editor.chain().focus().toggleOrderedList().run()}
-                className={editor.isActive("orderedList") ? "active" : ""}
+                className={editor.isActive('orderedList') ? 'active' : ''}
                 variant="secondary"
             >
                 Ordered List
             </Button>
             <Button
                 onClick={() => editor.chain().focus().setHorizontalRule().run()}
-                className={editor.isActive("horizontalRule") ? "active" : ""}
+                className={editor.isActive('horizontalRule') ? 'active' : ''}
                 variant="secondary"
             >
                 Divider

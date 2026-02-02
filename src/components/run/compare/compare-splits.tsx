@@ -1,13 +1,13 @@
-import { StatsData } from "~app/(old-layout)/games/[game]/game.types";
-import { getFormattedString } from "../../util/datetime";
-import React, { useState } from "react";
-import { ShowComparison } from "./show-comparison";
-import { Run, RunHistory, SplitsHistory } from "~src/common/types";
-import { Col, Row } from "react-bootstrap";
-import { UserLink } from "../../links/links";
-import { getSplitsHistoryUrl } from "~src/components/run/get-splits-history";
-import { AppContext } from "~src/common/app.context";
-import levenshtein from "js-levenshtein";
+import levenshtein from 'js-levenshtein';
+import React, { useState } from 'react';
+import { Col, Row } from 'react-bootstrap';
+import { StatsData } from '~app/(old-layout)/games/[game]/game.types';
+import { AppContext } from '~src/common/app.context';
+import { Run, RunHistory, SplitsHistory } from '~src/common/types';
+import { getSplitsHistoryUrl } from '~src/components/run/get-splits-history';
+import { UserLink } from '../../links/links';
+import { getFormattedString } from '../../util/datetime';
+import { ShowComparison } from './show-comparison';
 
 interface UserGameData {
     meta: {
@@ -17,7 +17,7 @@ interface UserGameData {
     stats: History;
 }
 
-const NO_SELECTION = "no-selection";
+const NO_SELECTION = 'no-selection';
 
 export const CompareSplits = ({
     statsData,
@@ -36,7 +36,7 @@ export const CompareSplits = ({
     runs: RunHistory[];
     gameTime: boolean;
 }) => {
-    const { baseUrl = "https://therun.gg" } = React.useContext(AppContext);
+    const { baseUrl = 'https://therun.gg' } = React.useContext(AppContext);
     const [currentUser, setCurrentUser] = useState(NO_SELECTION);
     const [userData, setUserData] = useState(new Map());
     const [loaded, setLoaded] = useState(true);
@@ -66,7 +66,7 @@ export const CompareSplits = ({
     const currentUserData =
         currentUser != NO_SELECTION && loaded
             ? userData.get(currentUser)[
-                  !gameTime ? "currentRuns" : "runsGameTime"
+                  !gameTime ? 'currentRuns' : 'runsGameTime'
               ]
             : null;
 
@@ -77,10 +77,10 @@ export const CompareSplits = ({
             <Row>
                 <Col>
                     <h2>
-                        Compare{" "}
+                        Compare{' '}
                         {currentUser &&
                             (currentUser != NO_SELECTION || currentUserData) &&
-                            "to "}
+                            'to '}
                         {currentUser &&
                             (currentUser != NO_SELECTION ||
                                 currentUserData) && (
@@ -91,13 +91,13 @@ export const CompareSplits = ({
             </Row>
             <select
                 className="form-select"
-                style={{ width: "40%", marginBottom: "1rem" }}
+                style={{ width: '40%', marginBottom: '1rem' }}
                 onChange={async (e) => {
-                    const selectedUser = e.currentTarget.value.split(" (")[0];
+                    const selectedUser = e.currentTarget.value.split(' (')[0];
                     const fullUser = catLeaderboard.pbLeaderboard.find(
                         (l) => l.username == selectedUser,
                     );
-                    const correctUrl = fullUser?.url || "";
+                    const correctUrl = fullUser?.url || '';
                     setCurrentUser(selectedUser);
 
                     try {
@@ -107,9 +107,9 @@ export const CompareSplits = ({
 
                             const gamesData: UserGameData = await (
                                 await fetch(url, {
-                                    method: "GET",
+                                    method: 'GET',
                                     headers: {
-                                        "Content-Type": "application/json",
+                                        'Content-Type': 'application/json',
                                     },
                                 })
                             ).json();
@@ -121,7 +121,7 @@ export const CompareSplits = ({
                                         false,
                                     ),
                                     {
-                                        mode: "cors",
+                                        mode: 'cors',
                                     },
                                 )
                             ).json();
@@ -136,7 +136,7 @@ export const CompareSplits = ({
                                             true,
                                         ),
                                         {
-                                            mode: "cors",
+                                            mode: 'cors',
                                         },
                                     )
                                 ).json();

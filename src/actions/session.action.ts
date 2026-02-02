@@ -1,19 +1,20 @@
-"use server";
+'use server';
 
-import { generateSession } from "~src/lib/generate-session";
-import { getSessionData } from "~src/lib/get-session-data";
-import { getBaseUrl } from "./base-url.action";
-import { loginWithTwitch } from "../components/twitch/login-with-twitch";
-import { cookies } from "next/headers";
-import { User } from "../../types/session.types";
-import { SessionError } from "~src/common/session.error";
-import { DEFAULT_SESSION } from "~src/common/constants";
-import { getOrCreateUser, getUserRoles } from "~src/lib/users";
+import { cookies } from 'next/headers';
+import { DEFAULT_SESSION } from '~src/common/constants';
+import { SessionError } from '~src/common/session.error';
+import { generateSession } from '~src/lib/generate-session';
+import { getSessionData } from '~src/lib/get-session-data';
+import { getOrCreateUser, getUserRoles } from '~src/lib/users';
+import { User } from '../../types/session.types';
+import { loginWithTwitch } from '../components/twitch/login-with-twitch';
+import { getBaseUrl } from './base-url.action';
 
 export const createSession = async (code: string) => {
     const baseUrl = await getBaseUrl();
-    let sessionId = (await cookies()).get("session_id")?.value ?? undefined;
-    if (sessionId === "undefined") sessionId = undefined;
+    let sessionId = (await cookies()).get('session_id')?.value ?? undefined;
+    console.log('sessionId', sessionId);
+    if (sessionId === 'undefined') sessionId = undefined;
 
     if (!code || sessionId) return;
 
@@ -21,6 +22,8 @@ export const createSession = async (code: string) => {
         `${baseUrl}/api`,
         code,
     );
+
+    console.log(loginData, userInfo);
 
     const twitchSessionId = await generateSession({
         accessToken: loginData.access_token,
@@ -31,6 +34,7 @@ export const createSession = async (code: string) => {
             picture: userInfo.picture,
         },
     });
+    console.log(twitchSessionId, 'twitch');
 
     if (twitchSessionId) {
         return {
@@ -42,8 +46,8 @@ export const createSession = async (code: string) => {
 };
 
 export const getSession = async (): Promise<User> => {
-    const sessionId = (await cookies()).get("session_id")?.value;
-    if (!sessionId || sessionId === "undefined") {
+    const sessionId = (await cookies()).get('session_id')?.value;
+    if (!sessionId || sessionId === 'undefined') {
         return DEFAULT_SESSION;
     }
     try {
@@ -56,6 +60,7 @@ export const getSession = async (): Promise<User> => {
             return { id: sessionId, ...session } as User;
         }
     } catch (error) {
+        console.log('ERROR', error);
         // For now we only want to handle _explicit_ failures when retrieving the session.
         if (error instanceof SessionError) {
             return {

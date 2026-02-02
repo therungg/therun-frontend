@@ -1,7 +1,7 @@
-import { Can } from "~src/rbac/Can.component";
-import { PlusIcon } from "~src/icons/plus-icon";
-import { IconButton } from "~src/components/Button/IconButton";
-import Link from "next/link";
+import Link from 'next/link';
+import { IconButton } from '~src/components/Button/IconButton';
+import { PlusIcon } from '~src/icons/plus-icon';
+import { Can } from '~src/rbac/Can.component';
 
 export const CreateRaceButtons = () => {
     return (

@@ -1,6 +1,6 @@
-"use server";
+'use server';
 
-import { SessionError } from "~src/common/session.error";
+import { SessionError } from '~src/common/session.error';
 
 export interface UserData {
     username: string;
@@ -34,11 +34,11 @@ export const getSessionData = async (sessionId: string) => {
         const session = result?.result?.data as UserData;
 
         if (!session) {
-            throw new SessionError("Session not found");
+            throw new SessionError('Session not found');
         }
 
         return session;
     } catch (_error) {
-        throw new SessionError("An error occurred recovering session data");
+        throw new SessionError('An error occurred recovering session data');
     }
 };

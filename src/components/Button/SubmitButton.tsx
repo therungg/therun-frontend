@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useFormStatus } from "react-dom";
-import { Button, ButtonProps } from "~src/components/Button/Button";
+import { useFormStatus } from 'react-dom';
+import { Button, ButtonProps } from '~src/components/Button/Button';
 
 export interface SubmitButtonProps extends ButtonProps {
     innerText: string;
@@ -11,7 +11,7 @@ export interface SubmitButtonProps extends ButtonProps {
 export const SubmitButton = ({
     innerText,
     pendingText,
-    variant = "primary",
+    variant = 'primary',
     ...buttonProps
 }: SubmitButtonProps) => {
     const { pending } = useFormStatus();

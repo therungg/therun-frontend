@@ -1,17 +1,17 @@
-import { Col, Image, Row } from "react-bootstrap";
-import styles from "../css/LiveRun.module.scss";
-import React, { useEffect, useState } from "react";
-import { UserLink } from "../links/links";
-import { usePatreons } from "../patreon/use-patreons";
-import patreonStyles from "../patreon/patreon-styles";
-import { DurationToFormatted } from "../util/datetime";
-import { LiveRun } from "~app/(old-layout)/live/live.types";
-import { LiveSplitTimerComponent } from "~app/(old-layout)/live/live-split-timer.component";
-import { GameImage } from "~src/components/image/gameimage";
-import { Twitch as TwitchIcon } from "react-bootstrap-icons";
-import { getColorMode } from "~src/utils/colormode";
-import { CombinedLeaderboardStat } from "~app/(old-layout)/tournaments/[tournament]/get-combined-tournament-leaderboard.component";
-import { Count } from "~app/(old-layout)/games/[game]/game.types";
+import React, { useEffect, useState } from 'react';
+import { Col, Image, Row } from 'react-bootstrap';
+import { Twitch as TwitchIcon } from 'react-bootstrap-icons';
+import { Count } from '~app/(old-layout)/games/[game]/game.types';
+import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { LiveSplitTimerComponent } from '~app/(old-layout)/live/live-split-timer.component';
+import { CombinedLeaderboardStat } from '~app/(old-layout)/tournaments/[tournament]/get-combined-tournament-leaderboard.component';
+import { GameImage } from '~src/components/image/gameimage';
+import { getColorMode } from '~src/utils/colormode';
+import styles from '../css/LiveRun.module.scss';
+import { UserLink } from '../links/links';
+import patreonStyles from '../patreon/patreon-styles';
+import { usePatreons } from '../patreon/use-patreons';
+import { DurationToFormatted } from '../util/datetime';
 
 export const LiveUserRun = ({
     liveRun,
@@ -32,17 +32,17 @@ export const LiveUserRun = ({
     const [liveUserStyles, setLiveUserStyles] = useState<{
         borderColor: string;
         gradient: string;
-    }>({ borderColor: "", gradient: "" });
+    }>({ borderColor: '', gradient: '' });
     const { data: patreons, isLoading } = usePatreons();
     useEffect(function () {
-        setDark(getColorMode() !== "light");
+        setDark(getColorMode() !== 'light');
     }, []);
 
     useEffect(() => {
         if (!isLoading && patreons && patreons[liveRun.user]) {
             const patreonData = patreons[liveRun.user];
-            let borderColor = "";
-            let gradient = "";
+            let borderColor = '';
+            let gradient = '';
 
             if (!patreonData.preferences || !patreonData.preferences.hide) {
                 const colors = patreonStyles();
@@ -57,7 +57,7 @@ export const LiveUserRun = ({
                     : lightStyle.backgroundImage;
             } else {
                 // TODO: Get rid of this.
-                borderColor = "var(--bs-link-color)";
+                borderColor = 'var(--bs-link-color)';
             }
             setLiveUserStyles({ borderColor, gradient });
         }
@@ -92,33 +92,33 @@ export const LiveUserRun = ({
                 styles.liveRunContainer
             } ${
                 liveRun.user == currentlyActive
-                    ? "bg-body-tertiary"
-                    : "bg-body-secondary"
+                    ? 'bg-body-tertiary'
+                    : 'bg-body-secondary'
             }`}
             style={
                 liveUserStyles.gradient
                     ? {
                           borderImageSource: liveUserStyles.gradient,
                           borderImageSlice: 1,
-                          borderWidth: "2px",
+                          borderWidth: '2px',
                       }
                     : {
                           borderColor: liveUserStyles.borderColor,
                           borderWidth:
                               liveUserStyles.gradient ||
                               liveUserStyles.borderColor
-                                  ? "2px"
-                                  : "",
+                                  ? '2px'
+                                  : '',
                       }
             }
         >
             {liveRun.gameImage &&
                 liveRun.gameImage.length > 0 &&
-                liveRun.gameImage != "noimage" && (
+                liveRun.gameImage != 'noimage' && (
                     <div
                         style={{
-                            minWidth: "81px",
-                            maxWidth: "81px",
+                            minWidth: '81px',
+                            maxWidth: '81px',
                         }}
                     >
                         <GameImage
@@ -131,7 +131,7 @@ export const LiveUserRun = ({
                                 liveUserStyles.gradient ||
                                 liveUserStyles.borderColor
                                     ? {
-                                          height: "106px",
+                                          height: '106px',
                                       }
                                     : {}
                             }
@@ -140,19 +140,19 @@ export const LiveUserRun = ({
                 )}
             {(!liveRun.gameImage ||
                 liveRun.gameImage.length < 1 ||
-                liveRun.gameImage == "noimage") && (
+                liveRun.gameImage == 'noimage') && (
                 <div
                     style={{
-                        minWidth: "81px",
-                        maxWidth: "81px",
+                        minWidth: '81px',
+                        maxWidth: '81px',
                     }}
                 >
                     <Image
                         alt="Logo"
                         src={
                             dark
-                                ? "/logo_dark_theme_no_text_transparent.png"
-                                : "/logo_light_theme_no_text_transparent.png"
+                                ? '/logo_dark_theme_no_text_transparent.png'
+                                : '/logo_light_theme_no_text_transparent.png'
                         }
                         width="75px"
                         height="75px"
@@ -164,8 +164,8 @@ export const LiveUserRun = ({
             <Row
                 className="h-100 py-2 px-3 flex-1 w-100 justify-content-between"
                 style={{
-                    minWidth: "calc(100% - 81px + var(--bs-gutter-x))",
-                    maxWidth: "calc(100% - 81px + var(--bs-gutter-x))",
+                    minWidth: 'calc(100% - 81px + var(--bs-gutter-x))',
+                    maxWidth: 'calc(100% - 81px + var(--bs-gutter-x))',
                 }}
             >
                 <Col xs={7} className="mw-350p ps-3">
@@ -201,7 +201,7 @@ export const LiveUserRun = ({
 
                     {!showGameCategory && tournamentPb && (
                         <div className="text-truncate">
-                            Tournament PB -{" "}
+                            Tournament PB -{' '}
                             {!!tournamentPb && (
                                 <DurationToFormatted duration={tournamentPb} />
                             )}
@@ -213,7 +213,7 @@ export const LiveUserRun = ({
                         Math.trunc(liveRun.pb) !==
                             Math.trunc(Number(tournamentPb)) && (
                             <div className="text-truncate">
-                                Personal Best -{" "}
+                                Personal Best -{' '}
                                 <DurationToFormatted duration={liveRun.pb} />
                             </div>
                         )}
@@ -233,20 +233,20 @@ export const LiveIcon = ({ height = 16, dark = false }) => {
     return (
         <Image
             alt="Live Icon"
-            src={!dark ? "/LiveTR-light.png" : "/LiveTR-dark.png"}
+            src={!dark ? '/LiveTR-light.png' : '/LiveTR-dark.png'}
             height={height}
         />
     );
 };
 
-export const Flag = ({ className = "", height = 16, dark = false }) => {
+export const Flag = ({ className = '', height = 16, dark = false }) => {
     return (
         <Image
             alt="Flag"
             src={
                 !dark
-                    ? "/Flag finish greenTR-darktransparant.png"
-                    : "/Flag finish greenTR-lighttransparant(1).png"
+                    ? '/Flag finish greenTR-darktransparant.png'
+                    : '/Flag finish greenTR-lighttransparant(1).png'
             }
             height={height}
             className={`mt-2 ${className}`}

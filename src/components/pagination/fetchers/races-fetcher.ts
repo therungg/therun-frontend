@@ -1,9 +1,9 @@
-import { Race, RaceParticipant } from "~app/(old-layout)/races/races.types";
+import { Race, RaceParticipant } from '~app/(old-layout)/races/races.types';
 import {
     PaginatedData,
     PaginationFetcher,
-} from "~src/components/pagination/pagination.types";
-import { getRacesByIds } from "~src/lib/races";
+} from '~src/components/pagination/pagination.types';
+import { getRacesByIds } from '~src/lib/races';
 
 export const racesFetcher: PaginationFetcher<Race> = async (
     page: number,

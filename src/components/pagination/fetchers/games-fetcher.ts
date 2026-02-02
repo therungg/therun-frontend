@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { Game } from "~app/(old-layout)/games/games.types";
-import { getBaseUrl } from "~src/actions/base-url.action";
+import { Game } from '~app/(old-layout)/games/games.types';
+import { getBaseUrl } from '~src/actions/base-url.action';
 import {
     PaginatedData,
     PaginationFetcher,
-} from "~src/components/pagination/pagination.types";
+} from '~src/components/pagination/pagination.types';
 
 export const gamesFetcher: PaginationFetcher<Game> = async (
     page: number,

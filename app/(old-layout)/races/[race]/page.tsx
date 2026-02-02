@@ -1,15 +1,15 @@
-"use server";
+'use server';
+import { Metadata } from 'next';
+import { RaceDetail } from '~app/(old-layout)/races/[race]/race-view';
+import { sortRaceParticipants } from '~app/(old-layout)/races/[race]/sort-race-participants';
+import { getSession } from '~src/actions/session.action';
 import {
     getRaceByRaceId,
     getRaceMessages,
     getTimeAndMmrLeaderboards,
-} from "~src/lib/races";
-import { RaceDetail } from "~app/(old-layout)/races/[race]/race-view";
-import { getSession } from "~src/actions/session.action";
-import { sortRaceParticipants } from "~app/(old-layout)/races/[race]/sort-race-participants";
-import { Metadata } from "next";
-import buildMetadata from "~src/utils/metadata";
-import { safeEncodeURI } from "~src/utils/uri";
+} from '~src/lib/races';
+import buildMetadata from '~src/utils/metadata';
+import { safeEncodeURI } from '~src/utils/uri';
 
 interface PageProps {
     params: Promise<{ race: string }>;
@@ -59,13 +59,13 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
         title: `Race for ${game} - ${category}`,
         description: `A race between ${participantCount} people speedrunning ${game} - ${category} on therun.gg. Come check it out!`,
         images:
-            race.gameImage && race.gameImage !== "noimage"
+            race.gameImage && race.gameImage !== 'noimage'
                 ? [
                       {
                           url: race.gameImage,
                           secureUrl: race.gameImage,
                           alt: `Game image of ${game}`,
-                          type: "image/png",
+                          type: 'image/png',
                           width: 300,
                           height: 300,
                       },

@@ -1,33 +1,33 @@
+import React from 'react';
+import { Card, Col, Row } from 'react-bootstrap';
+import { RaceParticipantStatusOverview } from '~app/(old-layout)/races/components/race-participant-status-overview';
+import { RacePlacings } from '~app/(old-layout)/races/components/race-placings';
 import {
     Race,
     RaceParticipantWithLiveData,
-} from "~app/(old-layout)/races/races.types";
-import React from "react";
-import { PersonIcon } from "~src/icons/person-icon";
-import { Card, Col, Row } from "react-bootstrap";
-import { RaceParticipantStatusOverview } from "~app/(old-layout)/races/components/race-participant-status-overview";
-import { RacePlacings } from "~app/(old-layout)/races/components/race-placings";
-import { LocalizedTime } from "~src/components/util/datetime";
-import { safeEncodeURI } from "~src/utils/uri";
+} from '~app/(old-layout)/races/races.types';
+import { LocalizedTime } from '~src/components/util/datetime';
+import { PersonIcon } from '~src/icons/person-icon';
+import { safeEncodeURI } from '~src/utils/uri';
 
 export const RaceHeader = ({ race }: { race: Race }) => {
     return (
         <div
             className="bg-body-secondary mh-100 game-border card border-0"
-            style={{ borderColor: race.status === "aborted" ? "red" : "" }}
+            style={{ borderColor: race.status === 'aborted' ? 'red' : '' }}
         >
             <Card className="game-border h-100">
-                <Row style={{ minHeight: "10rem" }}>
+                <Row style={{ minHeight: '10rem' }}>
                     <Col xs={4} sm={2}>
                         <Card.Img
                             className="rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
                             style={{
-                                minWidth: "5rem",
-                                maxHeight: "18rem",
-                                maxWidth: "10rem",
+                                minWidth: '5rem',
+                                maxHeight: '18rem',
+                                maxWidth: '10rem',
                             }}
                             src={
-                                race.gameImage && race.gameImage !== "noimage"
+                                race.gameImage && race.gameImage !== 'noimage'
                                     ? race.gameImage
                                     : `/logo_dark_theme_no_text_transparent.png`
                             }
@@ -44,7 +44,7 @@ export const RaceHeader = ({ race }: { race: Race }) => {
                             <Card.Title
                                 className="m-0 p-0 h5 text-truncate"
                                 style={{
-                                    color: "var(--bs-link-color)",
+                                    color: 'var(--bs-link-color)',
                                 }}
                             >
                                 <a
@@ -67,15 +67,15 @@ export const RaceHeader = ({ race }: { race: Race }) => {
                             <div className="pb-0 mb-0 w-100 fst-italic text-truncate">
                                 {race.displayCategory}
                             </div>
-                            {race.status === "aborted" && (
+                            {race.status === 'aborted' && (
                                 <div
                                     className="text-nowrap"
-                                    style={{ color: "red" }}
+                                    style={{ color: 'red' }}
                                 >
                                     Race was aborted
                                 </div>
                             )}
-                            {race.status !== "aborted" && !race.ranked && (
+                            {race.status !== 'aborted' && !race.ranked && (
                                 <div className="text-nowrap fst-italic">
                                     Unranked
                                 </div>
@@ -93,7 +93,7 @@ export const RaceHeader = ({ race }: { race: Race }) => {
                             <Card.Text
                                 className="text-truncate"
                                 style={{
-                                    whiteSpace: "pre-line",
+                                    whiteSpace: 'pre-line',
                                 }}
                             >
                                 {race.description}
@@ -109,11 +109,11 @@ export const RaceHeader = ({ race }: { race: Race }) => {
                             </div>
 
                             <div className="d-flex align-items-end text-truncate">
-                                {race.status === "pending" &&
+                                {race.status === 'pending' &&
                                     race.willStartAt &&
-                                    race.startMethod === "datetime" && (
+                                    race.startMethod === 'datetime' && (
                                         <span suppressHydrationWarning={true}>
-                                            Start time:{" "}
+                                            Start time:{' '}
                                             <LocalizedTime
                                                 date={
                                                     new Date(race.willStartAt)

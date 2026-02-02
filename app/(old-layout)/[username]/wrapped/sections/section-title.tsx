@@ -1,5 +1,5 @@
-import React, { ReactNode } from "react";
-import { Row } from "react-bootstrap";
+import React, { ReactNode } from 'react';
+import { Row } from 'react-bootstrap';
 
 interface SectionTitleProps {
     title: ReactNode;

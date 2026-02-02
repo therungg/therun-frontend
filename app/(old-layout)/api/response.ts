@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 
 interface ApiResponse<Body = unknown> {
     body: Body;
@@ -23,8 +23,8 @@ export const apiResponse = ({
 }: ApiResponse) => {
     return NextResponse.json(body, {
         headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Cache-Control": `s-maxage=${cache?.maxAge}, stale-while-revalidate=${cache?.swr}`,
+            'Access-Control-Allow-Origin': '*',
+            'Cache-Control': `s-maxage=${cache?.maxAge}, stale-while-revalidate=${cache?.swr}`,
             ...headers,
         },
         status,

@@ -1,4 +1,4 @@
-import { RaceParticipantWithLiveData } from "~app/(old-layout)/races/races.types";
+import { RaceParticipantWithLiveData } from '~app/(old-layout)/races/races.types';
 
 export const substitutePercentageWithLiveData = (
     participant: RaceParticipantWithLiveData,

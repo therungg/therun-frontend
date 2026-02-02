@@ -1,6 +1,6 @@
-import { Tournament } from "~src/components/tournament/tournament-info";
-import Countdown from "react-countdown";
-import React from "react";
+import React from 'react';
+import Countdown from 'react-countdown';
+import { Tournament } from '~src/components/tournament/tournament-info';
 
 export const TournamentTimer = ({ tournament }: { tournament: Tournament }) => {
     const now = new Date();
@@ -30,9 +30,9 @@ export const TournamentTimer = ({ tournament }: { tournament: Tournament }) => {
             return <span>Now</span>;
         }
 
-        const dayString = parseInt(days) > 0 ? `${days}d, ` : "";
+        const dayString = parseInt(days) > 0 ? `${days}d, ` : '';
         const hourString =
-            parseInt(hours) > 0 || parseInt(days) > 0 ? `${hours}h ` : "";
+            parseInt(hours) > 0 || parseInt(days) > 0 ? `${hours}h ` : '';
 
         const minuteString = `${minutes}m`;
 
@@ -48,7 +48,7 @@ export const TournamentTimer = ({ tournament }: { tournament: Tournament }) => {
     if (!eventStarted) {
         return (
             <>
-                Event starts{" "}
+                Event starts{' '}
                 <Countdown
                     date={new Date(tournament.startDate)}
                     renderer={renderCountdown}
@@ -69,13 +69,12 @@ export const TournamentTimer = ({ tournament }: { tournament: Tournament }) => {
             return (
                 <>
                     Day {currentHeatIndex + 1}/
-                    {tournament.eligiblePeriods.length} ends{" "}
+                    {tournament.eligiblePeriods.length} ends{' '}
                     <Countdown
                         date={
                             new Date(
-                                tournament.eligiblePeriods[
-                                    currentHeatIndex
-                                ].endDate,
+                                tournament.eligiblePeriods[currentHeatIndex]
+                                    .endDate,
                             )
                         }
                         renderer={renderCountdown}
@@ -85,8 +84,8 @@ export const TournamentTimer = ({ tournament }: { tournament: Tournament }) => {
         } else {
             return (
                 <>
-                    Day {nextHeat + 1}/{tournament.eligiblePeriods.length}{" "}
-                    starts{" "}
+                    Day {nextHeat + 1}/{tournament.eligiblePeriods.length}{' '}
+                    starts{' '}
                     <Countdown
                         date={
                             new Date(
@@ -103,7 +102,7 @@ export const TournamentTimer = ({ tournament }: { tournament: Tournament }) => {
 
     return (
         <>
-            Event ends{" "}
+            Event ends{' '}
             <Countdown
                 date={new Date(tournament.endDate)}
                 renderer={renderCountdown}

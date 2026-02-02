@@ -1,17 +1,17 @@
-import {
-    getMmrLeaderboards,
-    getRaceCategoryStats,
-    getTimeLeaderboards,
-} from "~src/lib/races";
-import { CategoryStats } from "~app/(old-layout)/races/stats/[game]/[category]/category-stats";
-import { Metadata } from "next";
-import buildMetadata from "~src/utils/metadata";
+import { Metadata } from 'next';
 import {
     PaginatedRaceMmrStats,
     PaginatedRaceTimeStats,
     RaceGameStatsByCategory,
-} from "~app/(old-layout)/races/races.types";
-import { LeaderboardData } from "~app/(old-layout)/races/stats/[game]/[category]/category-leaderboards";
+} from '~app/(old-layout)/races/races.types';
+import { LeaderboardData } from '~app/(old-layout)/races/stats/[game]/[category]/category-leaderboards';
+import { CategoryStats } from '~app/(old-layout)/races/stats/[game]/[category]/category-stats';
+import {
+    getMmrLeaderboards,
+    getRaceCategoryStats,
+    getTimeLeaderboards,
+} from '~src/lib/races';
+import buildMetadata from '~src/utils/metadata';
 
 interface PageProps {
     params: Promise<{ game: string; category: string }>;
@@ -61,18 +61,18 @@ export default async function RaceCategoryStatsPage(props: PageProps) {
     ];
 
     const keys = [
-        "top10-month-unique",
-        "top10-time",
-        "top10-mmr",
-        "top10-unique",
-        "top10-month",
+        'top10-month-unique',
+        'top10-time',
+        'top10-mmr',
+        'top10-unique',
+        'top10-month',
     ];
     const titles = [
-        "Top 10 Players This Month",
-        "Top 10 Times This Month",
-        "Top 10 Ratings",
-        "Top 10 Players All Time",
-        "Top 10 Times All Time",
+        'Top 10 Players This Month',
+        'Top 10 Times This Month',
+        'Top 10 Ratings',
+        'Top 10 Players All Time',
+        'Top 10 Times All Time',
     ];
 
     const leaderboards = [
@@ -106,19 +106,19 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
 
     const categoryStats = await getRaceCategoryStats(gameName, categoryName);
 
-    const [game, category] = categoryStats.stats.displayValue.split("#");
+    const [game, category] = categoryStats.stats.displayValue.split('#');
 
     return buildMetadata({
         title: `${game} - ${category} Race Statistics`,
         description: `So far, ${categoryStats.stats.totalRaces} races have been completed on therun.gg for ${game} - ${category}.`,
         images:
-            categoryStats.stats.image && categoryStats.stats.image !== "noimage"
+            categoryStats.stats.image && categoryStats.stats.image !== 'noimage'
                 ? [
                       {
                           url: categoryStats.stats.image,
                           secureUrl: categoryStats.stats.image,
                           alt: `Game image of ${game}`,
-                          type: "image/png",
+                          type: 'image/png',
                           width: 300,
                           height: 300,
                       },

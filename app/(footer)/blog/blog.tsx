@@ -1,10 +1,10 @@
-"use client";
-import { FromNow } from "~src/components/util/datetime";
-import React, { ReactElement } from "react";
-import { Button, Col, Row } from "react-bootstrap";
-import Image from "next/image";
-import Link from "next/link";
-import { BunnyIcon } from "~src/icons/bunny-icon";
+'use client';
+import Image from 'next/image';
+import Link from 'next/link';
+import React, { ReactElement } from 'react';
+import { Button, Col, Row } from 'react-bootstrap';
+import { FromNow } from '~src/components/util/datetime';
+import { BunnyIcon } from '~src/icons/bunny-icon';
 
 export interface BlogInterface {
     title: string;
@@ -19,7 +19,7 @@ export const Blog = () => {
     return (
         <div>
             <h1>Blog</h1>
-            <p style={{ textAlign: "center", marginTop: "5rem" }}>
+            <p style={{ textAlign: 'center', marginTop: '5rem' }}>
                 <small>The latest news and updates</small>
             </p>
 
@@ -33,19 +33,19 @@ export const Blog = () => {
                                 return (
                                     <div key={blog.title}>
                                         <hr />
-                                        <div style={{ textAlign: "center" }}>
+                                        <div style={{ textAlign: 'center' }}>
                                             <h2>
                                                 <a href={blog.url}>
                                                     {blog.title}
                                                 </a>
                                             </h2>
                                             <small>
-                                                {blog.date.toDateString()},{" "}
+                                                {blog.date.toDateString()},{' '}
                                                 <FromNow time={blog.date} />
                                             </small>
                                         </div>
 
-                                        <p style={{ marginTop: "1rem" }}>
+                                        <p style={{ marginTop: '1rem' }}>
                                             {blog.short}
                                         </p>
                                         <a href={blog.url}>Read more...</a>
@@ -63,12 +63,12 @@ export const Blog = () => {
 export const getBlogs = (): BlogInterface[] => {
     return [
         {
-            title: "Welcome to The Run!",
-            date: new Date("2022-07-01"),
+            title: 'Welcome to The Run!',
+            date: new Date('2022-07-01'),
             short: (
                 <>
                     About 2 weeks ago, I launched the first version of The Run,
-                    a new speedrun statistics tool. I posted about it on{" "}
+                    a new speedrun statistics tool. I posted about it on{' '}
                     <a href="https://www.reddit.com/r/speedrun/comments/veivgh/introducing_therungg_a_new_free_speedrun/">
                         Reddit
                     </a>
@@ -83,7 +83,7 @@ export const getBlogs = (): BlogInterface[] => {
                     <p>
                         About 2 weeks ago, I launched the first version of The
                         Run, a new speedrun statistics tool. I posted about it
-                        on{" "}
+                        on{' '}
                         <a href="https://www.reddit.com/r/speedrun/comments/veivgh/introducing_therungg_a_new_free_speedrun/">
                             Reddit
                         </a>
@@ -93,14 +93,14 @@ export const getBlogs = (): BlogInterface[] => {
                     </p>
                     <h2>About me</h2>
                     <p>
-                        I am a{" "}
+                        I am a{' '}
                         <a
                             href="https://www.speedrun.com/user/joeys64"
                             rel="noreferrer"
                             target="_blank"
                         >
-                            former Super Mario 64 speedrunner{" "}
-                        </a>{" "}
+                            former Super Mario 64 speedrunner{' '}
+                        </a>{' '}
                         turned programmer (if you&apos;re reading this, good
                         odds that you are too!) from the Netherlands who loves
                         to build hobby projects. Since I also watch a bunch of
@@ -117,8 +117,8 @@ export const getBlogs = (): BlogInterface[] => {
                         <li>Everything completely free, no ads.</li>
                         <li>
                             One-to-one user mapping with Twitch. This way,
-                            viewers can replace twitch.tv{"/<username>"} with
-                            therun.gg{"/<username>"} and see the stats of the
+                            viewers can replace twitch.tv{'/<username>'} with
+                            therun.gg{'/<username>'} and see the stats of the
                             streamer they are watching.
                         </li>
                         <li>
@@ -150,7 +150,7 @@ export const getBlogs = (): BlogInterface[] => {
                     <p>
                         I am already thrilled to see so many people using the
                         tool, either by uploading runs or checking out stats. If
-                        you want to help in other ways, following The Run on{" "}
+                        you want to help in other ways, following The Run on{' '}
                         <a
                             href={process.env.NEXT_PUBLIC_TWITTER_URL}
                             target="_blank"
@@ -158,14 +158,14 @@ export const getBlogs = (): BlogInterface[] => {
                         >
                             Twitter
                         </a>
-                        , joining the{" "}
+                        , joining the{' '}
                         <a
                             href={process.env.NEXT_PUBLIC_DISCORD_URL}
                             target="_blank"
                             rel="noreferrer"
                         >
                             Discord
-                        </a>{" "}
+                        </a>{' '}
                         or, if you want to take it a step further, tell your
                         favorite streamer about the project and ask them to
                         upload their splits!
@@ -183,11 +183,13 @@ export const getBlogs = (): BlogInterface[] => {
                     <p>
                         Now that the tool is pretty much stable (almost no
                         uploads have failed for a couple of weeks now, most bugs
-                        are gone), I can start working on the{" "}
-                        <Link href="/roadmap" prefetch={false}>Toadmap</Link> (Roadmap, but
-                        funny. Get it? Please laugh) I put together again.
-                        Here&apos;s what I&apos;m looking forward to building
-                        next:
+                        are gone), I can start working on the{' '}
+                        <Link href="/roadmap" prefetch={false}>
+                            Toadmap
+                        </Link>{' '}
+                        (Roadmap, but funny. Get it? Please laugh) I put
+                        together again. Here&apos;s what I&apos;m looking
+                        forward to building next:
                     </p>
                     <ul>
                         <li>
@@ -259,19 +261,21 @@ export const getBlogs = (): BlogInterface[] => {
                         so well and that so many people are already enjoying it.
                         Thanks so much to everyone who uploaded, gave feedback
                         or just checked out the tool. If you have any feedback,
-                        remarks or just want to talk, please do not hesitate to{" "}
-                        <Link href="/contact" prefetch={false}>contact me</Link>. Let&apos;s keep
-                        working to make this thing used by many for a long time
-                        to come!
+                        remarks or just want to talk, please do not hesitate to{' '}
+                        <Link href="/contact" prefetch={false}>
+                            contact me
+                        </Link>
+                        . Let&apos;s keep working to make this thing used by
+                        many for a long time to come!
                     </p>
                 </div>
             ),
-            url: "/blog/welcome-to-the-run",
+            url: '/blog/welcome-to-the-run',
         },
 
         {
-            title: "Twitch extension!",
-            date: new Date("2022-08-02 14:00:00"),
+            title: 'Twitch extension!',
+            date: new Date('2022-08-02 14:00:00'),
             short: (
                 <>
                     Today, I released a Twitch Extension that allows your
@@ -296,7 +300,7 @@ export const getBlogs = (): BlogInterface[] => {
                         Installing the extension is super easy. All you have to
                         do is go to your Creator Dashboard on Twitch, find the
                         Extensions menu item, and search for The Run. (Or just
-                        go{" "}
+                        go{' '}
                         <a
                             href="https://dashboard.twitch.tv/extensions/gl1gra1r6ucnkchrswmdsefomfwxai-0.1.0"
                             target="_blank"
@@ -323,9 +327,9 @@ export const getBlogs = (): BlogInterface[] => {
                         it out here:
                         <span
                             style={{
-                                display: "flex",
-                                justifyContent: "center",
-                                marginTop: "1rem",
+                                display: 'flex',
+                                justifyContent: 'center',
+                                marginTop: '1rem',
                             }}
                         >
                             <a
@@ -338,8 +342,8 @@ export const getBlogs = (): BlogInterface[] => {
                                     src="/media/speedruns.png"
                                     alt="component"
                                     style={{
-                                        maxWidth: "100%",
-                                        height: "auto",
+                                        maxWidth: '100%',
+                                        height: 'auto',
                                     }}
                                     width="200"
                                     height="250"
@@ -406,11 +410,11 @@ export const getBlogs = (): BlogInterface[] => {
                     </p>
                 </div>
             ),
-            url: "/blog/twitch-extension",
+            url: '/blog/twitch-extension',
         },
         {
-            title: "The Run Live and Automatic Uploading!",
-            date: new Date("2022-10-26"),
+            title: 'The Run Live and Automatic Uploading!',
+            date: new Date('2022-10-26'),
             short: (
                 <>
                     I launched a huge update today, which includes Automatic
@@ -430,23 +434,28 @@ export const getBlogs = (): BlogInterface[] => {
                         Uploading and a The Run Live. All this is is powered by
                         a <b>custom built LiveSplit Component</b>. The component
                         will track your live runs and display them in real time,
-                        along with your stream, on the{" "}
-                        <Link href="/live" prefetch={false}>Live Page</Link>. Furthermore, it
-                        will upload your splits after every reset.{" "}
+                        along with your stream, on the{' '}
+                        <Link href="/live" prefetch={false}>
+                            Live Page
+                        </Link>
+                        . Furthermore, it will upload your splits after every
+                        reset.{' '}
                         <b>
                             You never have to manually upload your runs again!
                         </b>
                     </p>
                     <h2>How does it work?</h2>
                     <p>
-                        It is simple! Just follow the instructions on{" "}
-                        <Link href="/livesplit" prefetch={false}>this page</Link> and you are
-                        done! Forever! Never upload manually again. All your
-                        stats will be tracked forever, and you will be featured
-                        on the Live page forever!
+                        It is simple! Just follow the instructions on{' '}
+                        <Link href="/livesplit" prefetch={false}>
+                            this page
+                        </Link>{' '}
+                        and you are done! Forever! Never upload manually again.
+                        All your stats will be tracked forever, and you will be
+                        featured on the Live page forever!
                     </p>
                     <p>
-                        In short, you install the LiveSplit Component{" "}
+                        In short, you install the LiveSplit Component{' '}
                         <a
                             rel="noreferrer"
                             target="_blank"
@@ -455,9 +464,11 @@ export const getBlogs = (): BlogInterface[] => {
                             from GitHub
                         </a>
                         . Plug the .dll file into your Components folder. Then,
-                        get the upload-key from the{" "}
-                        <Link href="/upload-key" prefetch={false}>upload-key page</Link> and plug
-                        that into the LiveSplit Layout. Done!
+                        get the upload-key from the{' '}
+                        <Link href="/upload-key" prefetch={false}>
+                            upload-key page
+                        </Link>{' '}
+                        and plug that into the LiveSplit Layout. Done!
                     </p>
                     <h2>Features</h2>
                     <p>
@@ -470,18 +481,20 @@ export const getBlogs = (): BlogInterface[] => {
                         The second part is <b>The Run Live</b>. All runs are
                         tracked in real-time. When you are running, your current
                         run will be displayed on your profile, your run detail
-                        page, but most importantly: on the{" "}
-                        <Link href="/live" prefetch={false}>Live Page!</Link>
+                        page, but most importantly: on the{' '}
+                        <Link href="/live" prefetch={false}>
+                            Live Page!
+                        </Link>
                     </p>
                     <p>
-                        The live page was inspired by{" "}
+                        The live page was inspired by{' '}
                         <a
                             rel="noreferrer"
                             target="_blank"
                             href="https://speedrunslive.com"
                         >
                             SRL
-                        </a>{" "}
+                        </a>{' '}
                         and shows every runner who currently is running. The
                         little panels on the bottom of the page each denote one
                         runner. It shows their timer, what they are running and
@@ -520,7 +533,7 @@ export const getBlogs = (): BlogInterface[] => {
                         I hope you will enjoy the new features. If you want
                         something added, changed, or want to let me know that
                         you like (or do not like) something, do not hesitate to
-                        contact me on{" "}
+                        contact me on{' '}
                         <a
                             rel="noreferrer"
                             target="_blank"
@@ -537,33 +550,33 @@ export const getBlogs = (): BlogInterface[] => {
                     <h2>Thanks</h2>
                     <p>
                         I would like to thank everyone who helped me building
-                        this new project, like{" "}
+                        this new project, like{' '}
                         <a
                             rel="noreferrer"
                             target="_blank"
                             href="https://twitter.com/mini54_"
                         >
                             Mini
-                        </a>{" "}
+                        </a>{' '}
                         for creating a first skeleton of the LiveSplit
-                        Component, and{" "}
+                        Component, and{' '}
                         <a
                             rel="noreferrer"
                             target="_blank"
                             href="https://twitter.com/CryZe107"
                         >
                             CryZe
-                        </a>{" "}
+                        </a>{' '}
                         and the rest of the LiveSplit team for creating
                         LiveSplit and supporting me along the way!
                     </p>
                 </div>
             ),
-            url: "/blog/the-run-live",
+            url: '/blog/the-run-live',
         },
         {
-            title: "New major feature: The Run Racing!",
-            date: new Date("2024-03-15 14:00:00"),
+            title: 'New major feature: The Run Racing!',
+            date: new Date('2024-03-15 14:00:00'),
             short: (
                 <>
                     It has been a while since the last update, since updates are
@@ -577,8 +590,12 @@ export const getBlogs = (): BlogInterface[] => {
             full: (
                 <>
                     <p>
-                        tl;dr:{" "}
-                        <Link href="/races" className="fst-italic" prefetch={false}>
+                        tl;dr:{' '}
+                        <Link
+                            href="/races"
+                            className="fst-italic"
+                            prefetch={false}
+                        >
                             Race on therun.gg, in real time, with cool stats,
                             graphs. Easy, fun, and fully free.
                         </Link>
@@ -588,7 +605,7 @@ export const getBlogs = (): BlogInterface[] => {
                         are mostly done through Discord and Twitter. Today is
                         special however. You can now do speedrun races on
                         therun.gg! Races are fully real-time, so you can track
-                        your position and status live during the race, all{" "}
+                        your position and status live during the race, all{' '}
                         <b>tracked automatically</b> by LiveSplit.
                     </p>
                     <h2>About 2023</h2>
@@ -601,7 +618,7 @@ export const getBlogs = (): BlogInterface[] => {
                         improvements on the site, but took it a lot slower.
                     </p>
                     <p>
-                        Thankfully, due to{" "}
+                        Thankfully, due to{' '}
                         <a href="/patron" target="_blank" rel="noreferrer">
                             our fantastic supporters
                         </a>
@@ -611,14 +628,18 @@ export const getBlogs = (): BlogInterface[] => {
                         Races!
                     </p>
                     <p>
-                        The site is completely free and has no ads.{" "}
+                        The site is completely free and has no ads.{' '}
                         <b>
                             If you can afford it, please consider supporting us.
-                        </b>{" "}
+                        </b>{' '}
                         It keeps the site running and allows me to build more
                         cool stuff!
-                    </p>{" "}
-                    <Link href="/patron" className="w-100 flex-center" prefetch={false}>
+                    </p>{' '}
+                    <Link
+                        href="/patron"
+                        className="w-100 flex-center"
+                        prefetch={false}
+                    >
                         <Button
                             variant="secondary"
                             className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
@@ -728,7 +749,7 @@ export const getBlogs = (): BlogInterface[] => {
                     </p>
                     <h5>With the LiveSplit Component</h5>
                     <p>
-                        I recommend using the{" "}
+                        I recommend using the{' '}
                         <Link href="/upload-key" prefetch={false}>
                             therun.gg LiveSplit Component
                         </Link>
@@ -813,7 +834,7 @@ export const getBlogs = (): BlogInterface[] => {
                     <p>Joey</p>
                 </>
             ),
-            url: "/blog/the-run-racing",
+            url: '/blog/the-run-racing',
         },
     ];
 };

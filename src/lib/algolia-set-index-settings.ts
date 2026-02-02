@@ -1,7 +1,7 @@
-import * as dotenv from "dotenv";
-import { getAlgoliaApiClient } from "./algolia";
+import * as dotenv from 'dotenv';
+import { getAlgoliaApiClient } from './algolia';
 
-dotenv.config({ path: "./.env.development" });
+dotenv.config({ path: './.env.development' });
 
 const main = async () => {
     const indexName = process.env
@@ -12,34 +12,34 @@ const main = async () => {
         indexName,
         indexSettings: {
             searchableAttributes: [
-                "name",
-                "organizer",
-                "location",
-                "language",
-                "type",
-                "tags",
+                'name',
+                'organizer',
+                'location',
+                'language',
+                'type',
+                'tags',
             ],
-            ranking: ["asc(startsAt)", "desc(tier)"],
+            ranking: ['asc(startsAt)', 'desc(tier)'],
             typoTolerance: true,
             minWordSizefor1Typo: 4,
             minWordSizefor2Typos: 7,
             allowTyposOnNumericTokens: false,
             ignorePlurals: true,
             attributesForFaceting: [
-                "organizer",
-                "type",
-                "location",
-                "language",
-                "tier",
-                "isOffline",
-                "isForCharity",
+                'organizer',
+                'type',
+                'location',
+                'language',
+                'tier',
+                'isOffline',
+                'isForCharity',
             ],
             numericAttributesForFiltering: [
-                "startsAtTimeStamp",
-                "endsAtTimeStamp",
+                'startsAtTimeStamp',
+                'endsAtTimeStamp',
             ],
             maxValuesPerFacet: 100,
-            sortFacetValuesBy: "count",
+            sortFacetValuesBy: 'count',
             maxFacetHits: 10,
             hitsPerPage: 10,
             paginationLimitedTo: 1000,

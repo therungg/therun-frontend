@@ -1,7 +1,7 @@
-import { getPaginatedFinishedRaces } from "~src/lib/races";
-import { FinishedRaces } from "~app/(old-layout)/races/finished/finished-races-page";
-import { Metadata } from "next";
-import buildMetadata from "~src/utils/metadata";
+import { Metadata } from 'next';
+import { FinishedRaces } from '~app/(old-layout)/races/finished/finished-races-page';
+import { getPaginatedFinishedRaces } from '~src/lib/races';
+import buildMetadata from '~src/utils/metadata';
 
 export default async function FinishedRacesPage() {
     const finishedRaces = await getPaginatedFinishedRaces(1, 12);

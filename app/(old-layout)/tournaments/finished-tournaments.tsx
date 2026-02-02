@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { Tournament } from "~src/components/tournament/tournament-info";
-import { PaginationContextProvider } from "~src/components/pagination/pagination.context-provider";
-import usePagination from "~src/components/pagination/use-pagination";
-import PaginationControl from "~src/components/pagination/pagination-control";
-import { PaginationSearch } from "~src/components/pagination/pagination-search";
-import { Table } from "react-bootstrap";
-import { safeEncodeURI } from "~src/utils/uri";
-import { FromNow } from "~src/components/util/datetime";
-import { useContext } from "react";
-import { PaginationContext } from "~src/components/pagination/pagination.context";
+import { useContext } from 'react';
+import { Table } from 'react-bootstrap';
+import { PaginationContext } from '~src/components/pagination/pagination.context';
+import { PaginationContextProvider } from '~src/components/pagination/pagination.context-provider';
+import PaginationControl from '~src/components/pagination/pagination-control';
+import { PaginationSearch } from '~src/components/pagination/pagination-search';
+import usePagination from '~src/components/pagination/use-pagination';
+import { Tournament } from '~src/components/tournament/tournament-info';
+import { FromNow } from '~src/components/util/datetime';
+import { safeEncodeURI } from '~src/utils/uri';
 
 export const FinishedTournaments = ({
     tournaments,
@@ -72,17 +72,17 @@ export const FinishedTournamentsPaginated = ({
                                             tournament.eligibleRuns[0]
                                                 ? tournament.eligibleRuns[0]
                                                       .game
-                                                : "",
+                                                : '',
                                         );
                                     }}
                                 >
                                     {tournament.eligibleRuns[0]
                                         ? tournament.eligibleRuns[0].game
-                                        : ""}{" "}
-                                    -{" "}
+                                        : ''}{' '}
+                                    -{' '}
                                     {tournament.eligibleRuns[0]
                                         ? tournament.eligibleRuns[0].category
-                                        : ""}
+                                        : ''}
                                 </td>
                                 <td className="text-truncate">
                                     <FromNow time={tournament.endDate} />

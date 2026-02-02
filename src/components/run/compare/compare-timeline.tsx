@@ -1,9 +1,9 @@
-import { Col, Row } from "react-bootstrap";
-import Switch from "react-switch";
-import { useState } from "react";
-import { RunHistory } from "../../../common/types";
-import { getFormattedString } from "../../util/datetime";
-import { Line } from "react-chartjs-2";
+import { useState } from 'react';
+import { Col, Row } from 'react-bootstrap';
+import { Line } from 'react-chartjs-2';
+import Switch from 'react-switch';
+import { RunHistory } from '../../../common/types';
+import { getFormattedString } from '../../util/datetime';
 
 type LineProps = React.ComponentProps<typeof Line>;
 
@@ -51,7 +51,7 @@ export const CompareTimeline = ({
     const labelRun =
         runToShow.length > runToShowTwo.length ? runToShow : runToShowTwo;
 
-    const data: LineProps["data"] = {
+    const data: LineProps['data'] = {
         labels: labelRun.map((_attempt: RunHistory, key: number) => {
             return `Run #${key + 1}`;
         }),
@@ -59,18 +59,18 @@ export const CompareTimeline = ({
             {
                 label: userOne,
                 fill: false,
-                backgroundColor: "green",
-                borderColor: "green",
-                borderCapStyle: "butt",
+                backgroundColor: 'green',
+                borderColor: 'green',
+                borderCapStyle: 'butt',
                 borderDash: [],
                 borderDashOffset: 0.0,
-                borderJoinStyle: "miter",
-                pointBorderColor: "green",
-                pointBackgroundColor: "#fff",
+                borderJoinStyle: 'miter',
+                pointBorderColor: 'green',
+                pointBackgroundColor: '#fff',
                 pointBorderWidth: 1,
                 pointHoverRadius: 5,
-                pointHoverBackgroundColor: "green",
-                pointHoverBorderColor: "green",
+                pointHoverBackgroundColor: 'green',
+                pointHoverBorderColor: 'green',
                 pointHoverBorderWidth: 2,
                 pointRadius: 1,
                 pointHitRadius: 10,
@@ -79,18 +79,18 @@ export const CompareTimeline = ({
             {
                 label: userTwo,
                 fill: false,
-                backgroundColor: "red",
-                borderColor: "red",
-                borderCapStyle: "butt",
+                backgroundColor: 'red',
+                borderColor: 'red',
+                borderCapStyle: 'butt',
                 borderDash: [],
                 borderDashOffset: 0.0,
-                borderJoinStyle: "miter",
-                pointBorderColor: "red",
-                pointBackgroundColor: "#fff",
+                borderJoinStyle: 'miter',
+                pointBorderColor: 'red',
+                pointBackgroundColor: '#fff',
                 pointBorderWidth: 1,
                 pointHoverRadius: 5,
-                pointHoverBackgroundColor: "red",
-                pointHoverBorderColor: "red",
+                pointHoverBackgroundColor: 'red',
+                pointHoverBorderColor: 'red',
                 pointHoverBorderWidth: 2,
                 pointRadius: 1,
                 pointHitRadius: 10,
@@ -111,8 +111,8 @@ export const CompareTimeline = ({
             legend: { display: true },
             title: {
                 display: false,
-                text: "Recent runs",
-                position: "top",
+                text: 'Recent runs',
+                position: 'top',
             },
         },
         scales: {
@@ -124,7 +124,7 @@ export const CompareTimeline = ({
                 },
             },
         },
-    } as LineProps["options"];
+    } as LineProps['options'];
 
     return (
         <div>
@@ -137,12 +137,12 @@ export const CompareTimeline = ({
                         <label
                             htmlFor="switch"
                             style={{
-                                marginRight: "10px",
-                                alignSelf: "center",
+                                marginRight: '10px',
+                                alignSelf: 'center',
                             }}
                         >
-                            {" "}
-                            {"Show only PBs"}{" "}
+                            {' '}
+                            {'Show only PBs'}{' '}
                         </label>
                         <Switch
                             name="switch"
@@ -154,7 +154,7 @@ export const CompareTimeline = ({
                     </div>
                 </Col>
             </Row>
-            <Col style={{ minWidth: "15rem" }}>
+            <Col style={{ minWidth: '15rem' }}>
                 <Line data={data} options={options} />
             </Col>
         </div>

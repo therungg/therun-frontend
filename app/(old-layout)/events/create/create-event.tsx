@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
 import React, {
     FormEvent,
     startTransition,
     useActionState,
     useEffect,
-} from "react";
-import { createEventAction } from "~app/(old-layout)/events/actions/create-event.action";
+} from 'react';
+import { Alert, Form } from 'react-bootstrap';
+import { createEventAction } from '~app/(old-layout)/events/actions/create-event.action';
+import { EventForm } from '~app/(old-layout)/events/form/event-form';
 import {
     Breadcrumb,
     BreadcrumbItem,
-} from "~src/components/breadcrumbs/breadcrumb";
-import { Alert, Form } from "react-bootstrap";
-import { EventForm } from "~app/(old-layout)/events/form/event-form";
+} from '~src/components/breadcrumbs/breadcrumb';
 
 export const CreateEvent = () => {
     const [state, formAction] = useActionState(createEventAction, {
-        message: "",
+        message: '',
     });
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { content: "Events", href: "/events" },
-        { content: "Create a new Event" },
+        { content: 'Events', href: '/events' },
+        { content: 'Create a new Event' },
     ];
 
     function handleSubmit(event: FormEvent<HTMLFormElement>) {

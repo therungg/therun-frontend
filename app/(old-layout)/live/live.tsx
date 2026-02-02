@@ -1,20 +1,20 @@
 /* eslint-disable */
-"use client";
-import { LiveIcon, LiveUserRun } from "~src/components/live/live-user-run";
-import React, { useEffect, useState } from "react";
-import { Button, Col, Row } from "react-bootstrap";
-import { RecommendedStream } from "~src/components/live/recommended-stream";
-import { useLiveRunsWebsocket } from "~src/components/websocket/use-reconnect-websocket";
+'use client';
+import React, { useEffect, useState } from 'react';
+import { Button, Col, Row } from 'react-bootstrap';
+import { Search as SearchIcon } from 'react-bootstrap-icons';
+import { LiveDataMap, LiveProps } from '~app/(old-layout)/live/live.types';
 import {
     getRecommendedStream,
     isWebsocketDataProcessable,
     liveRunArrayToMap,
     liveRunIsInSearch,
-} from "~app/(old-layout)/live/utilities";
-import { LiveDataMap, LiveProps } from "~app/(old-layout)/live/live.types";
-import { getLiveRunForUser } from "~src/lib/live-runs";
-import { SkeletonLiveRun } from "~src/components/skeleton/live/skeleton-live-run";
-import { Search as SearchIcon } from "react-bootstrap-icons";
+} from '~app/(old-layout)/live/utilities';
+import { LiveIcon, LiveUserRun } from '~src/components/live/live-user-run';
+import { RecommendedStream } from '~src/components/live/recommended-stream';
+import { SkeletonLiveRun } from '~src/components/skeleton/live/skeleton-live-run';
+import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
+import { getLiveRunForUser } from '~src/lib/live-runs';
 
 export const Live = ({
     liveDataMap,
@@ -24,7 +24,7 @@ export const Live = ({
     forceCategory = null,
 }: LiveProps) => {
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
-    const [search, setSearch] = useState("");
+    const [search, setSearch] = useState('');
     const [currentlyViewing, setCurrentlyViewing] = useState(
         getRecommendedStream(liveDataMap, username),
     );
@@ -46,11 +46,11 @@ export const Live = ({
                     JSON.stringify(updatedLiveDataMap),
                 );
 
-                if (lastMessage.type == "UPDATE") {
+                if (lastMessage.type == 'UPDATE') {
                     newMap[user] = lastMessage.run;
                 }
 
-                if (lastMessage.type == "DELETE") {
+                if (lastMessage.type == 'DELETE') {
                     delete newMap[user];
 
                     if (currentlyViewing == user) {
@@ -64,7 +64,7 @@ export const Live = ({
     }, [lastMessage]);
 
     useEffect(() => {
-        setSearch(forceCategory || "");
+        setSearch(forceCategory || '');
     }, [forceCategory]);
 
     useEffect(() => {
@@ -102,9 +102,9 @@ export const Live = ({
                         </h1>
                     </Col>
                     <Col xs="auto" className="flex-grow-1 text-end">
-                        <a href={"/livesplit"}>
+                        <a href={'/livesplit'}>
                             <Button
-                                variant={"primary"}
+                                variant={'primary'}
                                 className="btn-lg px-3 w-240p h-3r fw-medium"
                             >
                                 How does this work?
@@ -129,7 +129,7 @@ export const Live = ({
                         className="input-group-text"
                         onClick={() => {
                             const searchElement =
-                                document.getElementById("gameSearch");
+                                document.getElementById('gameSearch');
                             if (document.activeElement !== searchElement) {
                                 searchElement.focus();
                             }

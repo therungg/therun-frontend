@@ -1,4 +1,4 @@
-import { Run, RunSession } from "~src/common/types";
+import { Run, RunSession } from '~src/common/types';
 
 export const prepareSessions = (
     runs: Run[],

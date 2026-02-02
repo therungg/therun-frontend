@@ -1,12 +1,12 @@
+import { useEffect, useState } from 'react';
 import {
     SplitStory,
     Story,
     StoryWithSplitsStories,
     WebsocketStoryMessage,
-} from "~app/(old-layout)/live/story.types";
-import { useStoryWebsocket } from "~src/components/websocket/use-reconnect-websocket";
-import { useEffect, useState } from "react";
-import { getStoryByUser } from "~src/lib/stories";
+} from '~app/(old-layout)/live/story.types';
+import { useStoryWebsocket } from '~src/components/websocket/use-reconnect-websocket';
+import { getStoryByUser } from '~src/lib/stories';
 
 const storyMessageIsValid = (
     message: WebsocketStoryMessage<Story | SplitStory>,
@@ -35,15 +35,15 @@ export const useStory = (user: string) => {
     useEffect(() => {
         if (storyState && storyMessageIsValid(lastMessage)) {
             const story = lastMessage.data as Story;
-            if (lastMessage.type === "story") {
+            if (lastMessage.type === 'story') {
                 const newStory: StoryWithSplitsStories = {
                     ...story,
                     stories: [],
                 };
                 setStoryState(newStory);
-            } else if (lastMessage.type === "split") {
+            } else if (lastMessage.type === 'split') {
                 if (lastMessage.storyId !== storyState.increment) {
-                    console.log("This should not happen..");
+                    console.log('This should not happen..');
                 }
 
                 const splitStory = lastMessage.data as SplitStory;

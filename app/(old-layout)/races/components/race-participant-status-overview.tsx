@@ -1,7 +1,7 @@
-import { RaceParticipantWithLiveData } from "~app/(old-layout)/races/races.types";
-import { HourglassIcon } from "~src/icons/hourglass-icon";
-import { FlagIcon } from "~src/icons/flag-icon";
-import { LogoutIcon } from "~src/icons/logout-icon";
+import { RaceParticipantWithLiveData } from '~app/(old-layout)/races/races.types';
+import { FlagIcon } from '~src/icons/flag-icon';
+import { HourglassIcon } from '~src/icons/hourglass-icon';
+import { LogoutIcon } from '~src/icons/logout-icon';
 
 export const RaceParticipantStatusOverview = ({
     participants,
@@ -9,16 +9,16 @@ export const RaceParticipantStatusOverview = ({
     participants: RaceParticipantWithLiveData[];
 }) => {
     const abandonded = participants.filter(
-        (participant) => participant.status === "abandoned",
+        (participant) => participant.status === 'abandoned',
     ).length;
     const progress = participants.filter(
         (participant) =>
-            participant.status === "ready" || participant.status === "started",
+            participant.status === 'ready' || participant.status === 'started',
     ).length;
     const finished = participants.filter(
         (participant) =>
-            participant.status === "finished" ||
-            participant.status === "confirmed",
+            participant.status === 'finished' ||
+            participant.status === 'confirmed',
     ).length;
 
     return (

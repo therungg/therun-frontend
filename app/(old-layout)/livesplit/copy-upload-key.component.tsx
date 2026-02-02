@@ -1,6 +1,6 @@
-"use client";
-import React from "react";
-import { Clipboard } from "react-bootstrap-icons";
+'use client';
+import React from 'react';
+import { Clipboard } from 'react-bootstrap-icons';
 
 interface CopyUploadKeyProps {
     uploadKey: string;

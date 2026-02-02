@@ -1,10 +1,10 @@
-import { getLeaderboard } from "~src/components/game/game-leaderboards";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import React, { useState } from "react";
-import { Tournament } from "~src/components/tournament/tournament-info";
-import { PaginatedGameLeaderboard } from "~src/components/game/paginated-game-leaderboard";
-import { Row } from "react-bootstrap";
-import { CategoryLeaderboard } from "~app/(old-layout)/games/[game]/game.types";
+import React, { useState } from 'react';
+import { Row } from 'react-bootstrap';
+import { CategoryLeaderboard } from '~app/(old-layout)/games/[game]/game.types';
+import { getLeaderboard } from '~src/components/game/game-leaderboards';
+import { PaginatedGameLeaderboard } from '~src/components/game/paginated-game-leaderboard';
+import { Tournament } from '~src/components/tournament/tournament-info';
+import { DurationToFormatted } from '~src/components/util/datetime';
 
 export const EventLeaderboards = ({
     tournament,
@@ -18,7 +18,7 @@ export const EventLeaderboards = ({
     qualifierData: unknown;
     tournamentLeaderboards: CategoryLeaderboard;
 }) => {
-    const [leaderboard, setLeaderboard] = useState(gameTime ? "pbIGT" : "pb");
+    const [leaderboard, setLeaderboard] = useState(gameTime ? 'pbIGT' : 'pb');
 
     return (
         <Row className="g-4">
@@ -87,8 +87,8 @@ export const EventLeaderboards = ({
             </div>
             {tournamentLeaderboards && (
                 <>
-                    {" "}
-                    {leaderboard == "pbIGT" && (
+                    {' '}
+                    {leaderboard == 'pbIGT' && (
                         <PaginatedGameLeaderboard
                             name="Tournament PB (IGT)"
                             leaderboard={tournamentLeaderboards.pbLeaderboard}
@@ -101,7 +101,7 @@ export const EventLeaderboards = ({
                             }}
                         />
                     )}
-                    {leaderboard == "pb" &&
+                    {leaderboard == 'pb' &&
                         tournament.leaderboards?.pbLeaderboard && (
                             <PaginatedGameLeaderboard
                                 name="Personal Best"
@@ -118,12 +118,12 @@ export const EventLeaderboards = ({
                             />
                         )}
                     {tournament.pointDistribution?.length &&
-                        leaderboard == "points" && (
+                        leaderboard == 'points' && (
                             <div>
                                 {getLeaderboard(
-                                    "Qualification Points",
+                                    'Qualification Points',
                                     tournamentLeaderboards.pbLeaderboard,
-                                    "",
+                                    '',
                                     (_stat, key) => {
                                         if (
                                             tournament?.pointDistribution
@@ -142,16 +142,16 @@ export const EventLeaderboards = ({
                         )}
                     {qualifierData &&
                         qualifierData.leaderboards &&
-                        leaderboard == "qualifier" && (
+                        leaderboard == 'qualifier' && (
                             <div>
                                 {getLeaderboard(
-                                    "Qualifier PB",
+                                    'Qualifier PB',
                                     tournament.gameTime
                                         ? qualifierData.leaderboards.gameTime
                                               .pbLeaderboard
                                         : qualifierData.leaderboards
                                               .pbLeaderboard,
-                                    "",
+                                    '',
                                     (stat) => {
                                         return (
                                             <DurationToFormatted
@@ -162,7 +162,7 @@ export const EventLeaderboards = ({
                                 )}
                             </div>
                         )}
-                    {leaderboard == "sob" && (
+                    {leaderboard == 'sob' && (
                         <PaginatedGameLeaderboard
                             name="Sum of Bests"
                             leaderboard={
@@ -177,7 +177,7 @@ export const EventLeaderboards = ({
                             }}
                         />
                     )}
-                    {leaderboard == "attempts" && (
+                    {leaderboard == 'attempts' && (
                         <PaginatedGameLeaderboard
                             name="Total Attempts"
                             leaderboard={
@@ -188,7 +188,7 @@ export const EventLeaderboards = ({
                             }}
                         />
                     )}
-                    {leaderboard == "finishedAttempts" && (
+                    {leaderboard == 'finishedAttempts' && (
                         <PaginatedGameLeaderboard
                             name="Finished Attempts"
                             leaderboard={
@@ -199,7 +199,7 @@ export const EventLeaderboards = ({
                             }}
                         />
                     )}
-                    {leaderboard == "playtime" && (
+                    {leaderboard == 'playtime' && (
                         <PaginatedGameLeaderboard
                             name="Total Playtime"
                             leaderboard={

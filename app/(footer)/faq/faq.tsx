@@ -1,9 +1,9 @@
-"use client";
-import { Accordion } from "react-bootstrap";
-import AccordionHeader from "react-bootstrap/AccordionHeader";
-import AccordionBody from "react-bootstrap/AccordionBody";
-import AccordionItem from "react-bootstrap/AccordionItem";
-import Link from "next/link";
+'use client';
+import Link from 'next/link';
+import { Accordion } from 'react-bootstrap';
+import AccordionBody from 'react-bootstrap/AccordionBody';
+import AccordionHeader from 'react-bootstrap/AccordionHeader';
+import AccordionItem from 'react-bootstrap/AccordionItem';
 
 export const Faq = () => {
     return (
@@ -21,7 +21,7 @@ export const Faq = () => {
                             I am already thrilled to see so many people using
                             the tool, either by uploading runs or checking out
                             stats. If you want to help in other ways, following
-                            The Run on{" "}
+                            The Run on{' '}
                             <a
                                 href={process.env.NEXT_PUBLIC_TWITTER_URL}
                                 target="_blank"
@@ -29,14 +29,14 @@ export const Faq = () => {
                             >
                                 Twitter
                             </a>
-                            , joining the{" "}
+                            , joining the{' '}
                             <a
                                 href={process.env.NEXT_PUBLIC_DISCORD_URL}
                                 target="_blank"
                                 rel="noreferrer"
                             >
                                 Discord
-                            </a>{" "}
+                            </a>{' '}
                             or, if you want to take it a step further, tell your
                             favorite streamer about the project and ask them to
                             upload their splits!
@@ -65,7 +65,7 @@ export const Faq = () => {
                         </p>
                     </AccordionBody>
                 </AccordionItem>
-                <h2 style={{ marginTop: "1rem" }}>Troubleshooting</h2>
+                <h2 style={{ marginTop: '1rem' }}>Troubleshooting</h2>
                 <AccordionItem eventKey="a">
                     <AccordionItem eventKey="features">
                         <AccordionHeader>
@@ -75,12 +75,16 @@ export const Faq = () => {
                             <p>
                                 This site is still in beta, so there are a lot
                                 of feature that are still missing or implemented
-                                sub-optimally. You can check out the{" "}
-                                <Link href="/roadmap" prefetch={false}>Roadmap</Link> to see if
-                                the feature you want is already on there. If
-                                not, don&apos;t hesitate to{" "}
-                                <Link href="/contact" prefetch={false}>contact me</Link> and
-                                request the feature!
+                                sub-optimally. You can check out the{' '}
+                                <Link href="/roadmap" prefetch={false}>
+                                    Roadmap
+                                </Link>{' '}
+                                to see if the feature you want is already on
+                                there. If not, don&apos;t hesitate to{' '}
+                                <Link href="/contact" prefetch={false}>
+                                    contact me
+                                </Link>{' '}
+                                and request the feature!
                             </p>
                         </AccordionBody>
                     </AccordionItem>
@@ -159,8 +163,11 @@ export const Faq = () => {
                     </AccordionHeader>
                     <AccordionBody>
                         The system identifies you by your Twitch name. I can
-                        copy your profile, please{" "}
-                        <Link href="/contact" prefetch={false}>Contact me</Link>!
+                        copy your profile, please{' '}
+                        <Link href="/contact" prefetch={false}>
+                            Contact me
+                        </Link>
+                        !
                     </AccordionBody>
                 </AccordionItem>
             </Accordion>

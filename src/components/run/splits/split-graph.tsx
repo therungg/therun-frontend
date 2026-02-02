@@ -1,8 +1,8 @@
-import { Bar } from "react-chartjs-2";
-import { RunHistory, SplitsHistory } from "../../../common/types";
-import { isOutlier } from "./split-stats";
-import { getFormattedString } from "../../util/datetime";
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
+import { Bar } from 'react-chartjs-2';
+import { RunHistory, SplitsHistory } from '../../../common/types';
+import { getFormattedString } from '../../util/datetime';
+import { isOutlier } from './split-stats';
 
 export const SplitGraph = ({
     history,
@@ -14,13 +14,13 @@ export const SplitGraph = ({
     total?: boolean;
 }) => {
     const [splitTimeKey, setSplitTimeKey] = useState(
-        total ? "totalTime" : "splitTime",
+        total ? 'totalTime' : 'splitTime',
     );
-    const [groupKey, setGroupKey] = useState(total ? "total" : "single");
+    const [groupKey, setGroupKey] = useState(total ? 'total' : 'single');
 
     useEffect(() => {
-        setSplitTimeKey(total ? "totalTime" : "splitTime");
-        setGroupKey(total ? "total" : "single");
+        setSplitTimeKey(total ? 'totalTime' : 'splitTime');
+        setGroupKey(total ? 'total' : 'single');
     }, [total]);
     const key = split.id;
 
@@ -38,7 +38,7 @@ export const SplitGraph = ({
 
             if (
                 !currentSplit ||
-                currentSplit[splitTimeKey] == "0" ||
+                currentSplit[splitTimeKey] == '0' ||
                 isOutlier(
                     parseInt(split[groupKey].averageTime),
                     parseInt(split[groupKey].stdDev),
@@ -85,12 +85,12 @@ export const SplitGraph = ({
                     responsive: true,
                     plugins: {
                         legend: {
-                            position: "top" as const,
+                            position: 'top' as const,
                             display: false,
                         },
                         title: {
                             display: false,
-                            text: "Chart.js Bar Chart",
+                            text: 'Chart.js Bar Chart',
                         },
                     },
                 }}
@@ -104,7 +104,7 @@ export const SplitGraph = ({
                             barThickness: 6,
                             maxBarThickness: 8,
                             minBarLength: 0,
-                            backgroundColor: "green",
+                            backgroundColor: 'green',
                             data: Array.from(sorted.values()),
                         },
                     ],

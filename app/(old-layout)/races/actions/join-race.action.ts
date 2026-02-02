@@ -1,13 +1,13 @@
-"use server";
+'use server';
 
-import { getSession } from "~src/actions/session.action";
-import { redirect } from "next/navigation";
+import { redirect } from 'next/navigation';
+import { getSession } from '~src/actions/session.action';
 
 const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
 
 export async function joinRace(_prevState: unknown, raceInput: FormData) {
-    const raceId = raceInput.get("raceId") as string;
-    const password = raceInput.get("password") as string;
+    const raceId = raceInput.get('raceId') as string;
+    const password = raceInput.get('password') as string;
     const session = await getSession();
 
     if (!session.id) {
@@ -17,7 +17,7 @@ export async function joinRace(_prevState: unknown, raceInput: FormData) {
     const url = `${racesApiUrl}/${raceId}/participants`;
 
     const result = await fetch(url, {
-        method: "POST",
+        method: 'POST',
         headers: {
             Authorization: `Bearer ${session.id}`,
         },

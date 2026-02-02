@@ -8,11 +8,11 @@ const MAX_AGE = 30 * 60 * 60 * 24;
 export async function afterLoginRedirect(request: NextRequest, postfix = '') {
     const baseUrl = `${await getBaseUrl()}/${postfix}`;
 
-    console.log('aaaaaaaaaaaaaaaa');
-
     const code = request.nextUrl.searchParams.get('code');
+    console.log('aaaaaaaaaaaaaaaa code', code);
     if (code) {
         const { id } = (await createSession(code)) || {};
+        console.log(id);
         const headers = new Headers();
         if (id) {
             headers.append(

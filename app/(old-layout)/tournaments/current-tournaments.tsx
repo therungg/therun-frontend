@@ -1,8 +1,8 @@
-import { Tournament } from "~src/components/tournament/tournament-info";
-import { Card, Col, Row } from "react-bootstrap";
-import styles from "~src/components/css/LiveRun.module.scss";
-import { safeEncodeURI } from "~src/utils/uri";
-import { FromNow } from "~src/components/util/datetime";
+import { Card, Col, Row } from 'react-bootstrap';
+import styles from '~src/components/css/LiveRun.module.scss';
+import { Tournament } from '~src/components/tournament/tournament-info';
+import { FromNow } from '~src/components/util/datetime';
+import { safeEncodeURI } from '~src/utils/uri';
 
 export const CurrentTournaments = ({
     tournaments,
@@ -31,7 +31,7 @@ export const CurrentTournaments = ({
                                                 src={
                                                     tournament.gameImage &&
                                                     tournament.gameImage !==
-                                                        "noimage"
+                                                        'noimage'
                                                         ? tournament.gameImage
                                                         : `/logo_dark_theme_no_text_transparent.png`
                                                 }
@@ -47,7 +47,7 @@ export const CurrentTournaments = ({
                                                 <Card.Title
                                                     className="m-0 p-0 h5 text-truncate"
                                                     style={{
-                                                        color: "var(--bs-link-color)",
+                                                        color: 'var(--bs-link-color)',
                                                     }}
                                                 >
                                                     {tournament.shortName}
@@ -71,7 +71,7 @@ export const CurrentTournaments = ({
                                             </div>
                                             <div className="h-100 d-flex align-items-end justify-content-between">
                                                 <div>
-                                                    Started{" "}
+                                                    Started{' '}
                                                     <FromNow
                                                         time={
                                                             tournament.startDate
@@ -79,7 +79,7 @@ export const CurrentTournaments = ({
                                                     />
                                                 </div>
                                                 <div>
-                                                    Ends{" "}
+                                                    Ends{' '}
                                                     <FromNow
                                                         time={
                                                             tournament.endDate

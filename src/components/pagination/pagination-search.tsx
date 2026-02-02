@@ -1,6 +1,6 @@
-import React, { useContext } from "react";
-import { PaginationContext } from "~src/components/pagination/pagination.context";
-import { Search as SearchIcon } from "react-bootstrap-icons";
+import React, { useContext } from 'react';
+import { Search as SearchIcon } from 'react-bootstrap-icons';
+import { PaginationContext } from '~src/components/pagination/pagination.context';
 
 export const PaginationSearch = ({ text }: { text: string }) => {
     const { search, setSearch } = useContext(PaginationContext);

@@ -14,7 +14,7 @@ type CompareLocales<T extends readonly unknown[]> = T extends [
 ]
     ? Rest extends [infer Second, ...infer Remaining]
         ? Exact<First, Second> extends never
-            ? "Error: Not all locales are the same shape. Check the locale files."
+            ? 'Error: Not all locales are the same shape. Check the locale files.'
             : CompareLocales<[Second, ...Remaining]>
         : true
     : true;

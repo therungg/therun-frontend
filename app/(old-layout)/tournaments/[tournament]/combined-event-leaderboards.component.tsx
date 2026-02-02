@@ -1,8 +1,8 @@
-import { Tournament } from "~src/components/tournament/tournament-info";
-import React, { useState } from "react";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import { PaginatedGameLeaderboard } from "~src/components/game/paginated-game-leaderboard";
-import { CombinedLeaderboardStat } from "~app/(old-layout)/tournaments/[tournament]/get-combined-tournament-leaderboard.component";
+import React, { useState } from 'react';
+import { CombinedLeaderboardStat } from '~app/(old-layout)/tournaments/[tournament]/get-combined-tournament-leaderboard.component';
+import { PaginatedGameLeaderboard } from '~src/components/game/paginated-game-leaderboard';
+import { Tournament } from '~src/components/tournament/tournament-info';
+import { DurationToFormatted } from '~src/components/util/datetime';
 
 export const CombinedEventLeaderboards = ({
     tournaments,
@@ -11,14 +11,14 @@ export const CombinedEventLeaderboards = ({
     tournaments: Tournament[];
     seedingTable: CombinedLeaderboardStat[];
 }) => {
-    const [leaderboard, setLeaderboard] = useState("Seed");
+    const [leaderboard, setLeaderboard] = useState('Seed');
 
     const metaLeaderboards = generateMetaDataCombinedLeaderboards(tournaments);
 
     return (
         <div>
             <h3>Event Leaderboards</h3>
-            <div style={{ marginBottom: "1rem" }}>
+            <div style={{ marginBottom: '1rem' }}>
                 <select
                     className="form-select"
                     onChange={(e) => {
@@ -54,7 +54,7 @@ export const CombinedEventLeaderboards = ({
                     </option>
                 </select>
             </div>
-            {leaderboard === "Seed" && (
+            {leaderboard === 'Seed' && (
                 <PaginatedGameLeaderboard
                     name="Completed Games"
                     leaderboard={seedingTable.map((seed) => {
@@ -88,19 +88,19 @@ export const CombinedEventLeaderboards = ({
                     />
                 );
             })}
-            {leaderboard === "Attempts" && (
+            {leaderboard === 'Attempts' && (
                 <PaginatedGameLeaderboard
                     name="Attempts"
                     leaderboard={metaLeaderboards.attemptsLeaderboard}
                 />
             )}
-            {leaderboard === "Finished Attempts" && (
+            {leaderboard === 'Finished Attempts' && (
                 <PaginatedGameLeaderboard
                     name="Finished Attempts"
                     leaderboard={metaLeaderboards.finishedAttemptsLeaderboard}
                 />
             )}
-            {leaderboard === "Playtime" && (
+            {leaderboard === 'Playtime' && (
                 <PaginatedGameLeaderboard
                     name="Playtime"
                     leaderboard={metaLeaderboards.playTimeLeaderboard}

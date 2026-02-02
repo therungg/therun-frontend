@@ -1,13 +1,13 @@
-import React, { memo, useMemo } from "react";
-import { WrappedWithData } from "../wrapped-types";
-import { WrappedCounter } from "../wrapped-counter";
-import { SectionWrapper } from "./section-wrapper";
-import { SectionBody } from "./section-body";
-import { SectionTitle } from "./section-title";
-import { groupCategoryStatsByGame } from "~app/(old-layout)/[username]/races/group-category-stats-by-game";
-import { UserRaceStatsByGameWithoutUrls } from "~app/(old-layout)/[username]/races/user-race-stats-by-game";
-import { Col, Row, Table } from "react-bootstrap";
-import { DurationToFormatted } from "~src/components/util/datetime";
+import React, { memo, useMemo } from 'react';
+import { Col, Row, Table } from 'react-bootstrap';
+import { groupCategoryStatsByGame } from '~app/(old-layout)/[username]/races/group-category-stats-by-game';
+import { UserRaceStatsByGameWithoutUrls } from '~app/(old-layout)/[username]/races/user-race-stats-by-game';
+import { DurationToFormatted } from '~src/components/util/datetime';
+import { WrappedCounter } from '../wrapped-counter';
+import { WrappedWithData } from '../wrapped-types';
+import { SectionBody } from './section-body';
+import { SectionTitle } from './section-title';
+import { SectionWrapper } from './section-wrapper';
 
 interface WrappedRaceStatsProps {
     wrapped: WrappedWithData;
@@ -23,41 +23,41 @@ export const WrappedRaceStats = memo<WrappedRaceStatsProps>(({ wrapped }) => {
         if (finishedRaces < 10) {
             return "Pretty good! That's more than like 99% people";
         }
-        return "Thank you for doing so many! You keep this site alive!";
+        return 'Thank you for doing so many! You keep this site alive!';
     };
 
     const getExtraText = (finishedRaces: number) => {
         if (finishedRaces < 4) {
-            return "But who are we kidding...";
+            return 'But who are we kidding...';
         }
         if (finishedRaces < 10) {
             return "(idk the actual stat i haven't counted)";
         }
-        return "(i love you please keep it going next year!!!!)";
+        return '(i love you please keep it going next year!!!!)';
     };
 
     const { title, subtitle, extraRemark } = useMemo(() => {
         if (raceData.globalStats.totalRaces === 1) {
             return {
-                title: "This year you only participated in 1 race!",
+                title: 'This year you only participated in 1 race!',
                 subtitle: "Maybe we'll do more next year!",
-                extraRemark: "But who are we kidding",
+                extraRemark: 'But who are we kidding',
             };
         }
 
         return {
             title: (
                 <>
-                    This year you participated in{" "}
+                    This year you participated in{' '}
                     <WrappedCounter
                         id="total-races-count"
                         end={raceData.globalStats.totalRaces}
-                    />{" "}
-                    races - you finished{" "}
+                    />{' '}
+                    races - you finished{' '}
                     <WrappedCounter
                         id="total-finished-races-count"
                         end={raceData.globalStats.totalFinishedRaces}
-                    />{" "}
+                    />{' '}
                     of them!
                 </>
             ),
@@ -74,7 +74,7 @@ export const WrappedRaceStats = memo<WrappedRaceStatsProps>(({ wrapped }) => {
     const racedGames = [
         ...new Set(
             raceData.categoryStats.map((stat) => {
-                return stat.displayValue.split("#")[0];
+                return stat.displayValue.split('#')[0];
             }),
         ),
     ];
@@ -102,44 +102,44 @@ export const WrappedRaceStats = memo<WrappedRaceStatsProps>(({ wrapped }) => {
                                 <tbody>
                                     <tr>
                                         <td>
-                                            You spent a total time of{" "}
+                                            You spent a total time of{' '}
                                             <DurationToFormatted
                                                 duration={
                                                     raceData.globalStats
                                                         .totalRaceTime
                                                 }
-                                            />{" "}
+                                            />{' '}
                                             racing!
                                         </td>
                                     </tr>
                                     <tr>
                                         <td>
-                                            You started a total of{" "}
+                                            You started a total of{' '}
                                             <span
                                                 style={{
-                                                    color: "var(--bs-link-color)",
+                                                    color: 'var(--bs-link-color)',
                                                 }}
                                             >
                                                 {
                                                     raceData.globalStats
                                                         .totalRaces
-                                                }{" "}
+                                                }{' '}
                                                 races
                                             </span>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td>
-                                            You finished{" "}
+                                            You finished{' '}
                                             <span
                                                 style={{
-                                                    color: "var(--bs-gold)",
+                                                    color: 'var(--bs-gold)',
                                                 }}
                                             >
                                                 {
                                                     raceData.globalStats
                                                         .totalFinishedRaces
-                                                }{" "}
+                                                }{' '}
                                                 of them
                                             </span>
                                         </td>
@@ -147,7 +147,7 @@ export const WrappedRaceStats = memo<WrappedRaceStatsProps>(({ wrapped }) => {
                                     <tr>
                                         <td>
                                             That gives you a race finish
-                                            percentage of{" "}
+                                            percentage of{' '}
                                             <span>
                                                 {(
                                                     (raceData.globalStats
@@ -162,16 +162,16 @@ export const WrappedRaceStats = memo<WrappedRaceStatsProps>(({ wrapped }) => {
                                     </tr>
                                     <tr>
                                         <td>
-                                            You did races in a total of{" "}
-                                            {racedGames.length} games and{" "}
-                                            {raceData.categoryStats.length}{" "}
+                                            You did races in a total of{' '}
+                                            {racedGames.length} games and{' '}
+                                            {raceData.categoryStats.length}{' '}
                                             categories!
                                         </td>
                                     </tr>
                                     {numberOneMmrCount > 0 && (
                                         <tr>
                                             <td>
-                                                You were the #1 ranked racer for{" "}
+                                                You were the #1 ranked racer for{' '}
                                                 {numberOneMmrCount} categories!
                                             </td>
                                         </tr>
@@ -181,7 +181,7 @@ export const WrappedRaceStats = memo<WrappedRaceStatsProps>(({ wrapped }) => {
                                         <tr>
                                             <td>
                                                 You got the best time out of
-                                                everyone in a race for{" "}
+                                                everyone in a race for{' '}
                                                 {numberOneTimeCount} categories!
                                             </td>
                                         </tr>
@@ -197,7 +197,7 @@ export const WrappedRaceStats = memo<WrappedRaceStatsProps>(({ wrapped }) => {
                         <div
                             className="overflow-y-auto"
                             style={{
-                                maxHeight: "50vh",
+                                maxHeight: '50vh',
                             }}
                         >
                             <UserRaceStatsByGameWithoutUrls
@@ -210,4 +210,4 @@ export const WrappedRaceStats = memo<WrappedRaceStatsProps>(({ wrapped }) => {
         </SectionWrapper>
     );
 });
-WrappedRaceStats.displayName = "WrappedRaceStats";
+WrappedRaceStats.displayName = 'WrappedRaceStats';

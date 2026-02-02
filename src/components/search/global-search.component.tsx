@@ -1,24 +1,25 @@
-"use client";
-import React, { useState } from "react";
-import { SearchResults } from "./find-user-or-run";
-import useSWR from "swr";
-import { useDebounceValue } from "usehooks-ts";
-import { useAggregatedResults } from "./use-aggregated-results";
+'use client';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import React, { useState } from 'react';
+import useSWR from 'swr';
+import { useDebounceValue } from 'usehooks-ts';
+import { fetcher } from '~src/utils/fetcher';
+import { SearchResults } from './find-user-or-run';
+import { SearchInput } from './search-input.component';
+import { SearchResultsPanel } from './search-results-panel.component';
+import { useAggregatedResults } from './use-aggregated-results';
 import {
     type SearchItem,
     type SearchItemKind,
     useFilteredFuzzySearch,
     useFuseSearch,
-} from "./use-fuzzy-search";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { SearchInput } from "./search-input.component";
-import { SearchResultsPanel } from "./search-results-panel.component";
-import { fetcher } from "~src/utils/fetcher";
+} from './use-fuzzy-search';
+
 // import { getFormattedString } from "../util/datetime";
 
 const MAX_SEARCH_RESULTS = 15;
 
-const DEFAULT_FILTER_VALUES = ["user", "game"] as SearchItemKind[];
+const DEFAULT_FILTER_VALUES = ['user', 'game'] as SearchItemKind[];
 
 type SearchResultEntries = [SearchItemKind, SearchItem[]][];
 interface SearchProps {
@@ -35,7 +36,7 @@ export const GlobalSearch = React.memo<SearchProps>(
         const searchParams = useSearchParams();
         const router = useRouter();
 
-        const [query, setQuery] = useState(searchParams.get("q") ?? "");
+        const [query, setQuery] = useState(searchParams.get('q') ?? '');
         const [isResultsPanelOpen, setIsResultsPanelOpen] = useState(false);
         const searchRef = React.useRef<HTMLInputElement>(null);
         const resultsPanelRef = React.useRef<HTMLDivElement>(null);
@@ -56,16 +57,16 @@ export const GlobalSearch = React.memo<SearchProps>(
         React.useEffect(() => {
             const params = new URLSearchParams(searchParams.toString());
             if (!query) {
-                params.delete("q");
+                params.delete('q');
             } else {
-                params.set("q", encodeURIComponent(query));
+                params.set('q', encodeURIComponent(query));
             }
             const url =
-                `${pathname}` + (params.size ? `?${params.toString()}` : "");
+                `${pathname}` + (params.size ? `?${params.toString()}` : '');
 
             window.history.replaceState(
                 { ...window.history.state, as: url, url },
-                "",
+                '',
                 url,
             );
         }, [pathname, query, router, searchParams]);
@@ -96,7 +97,7 @@ export const GlobalSearch = React.memo<SearchProps>(
                 // Then go through the search results and add a URL for them
                 .map(([type, items]) => {
                     const getItemUrl = (item: SearchItem) =>
-                        item.type === "user"
+                        item.type === 'user'
                             ? `/${item.key}`
                             : `/games/${item.key}`;
                     const itemsWithUrl = items.map((item) => ({
@@ -147,9 +148,9 @@ export const GlobalSearch = React.memo<SearchProps>(
                 }
             };
 
-            document.addEventListener("mousedown", handleClickOutside);
+            document.addEventListener('mousedown', handleClickOutside);
             return () => {
-                document.removeEventListener("mousedown", handleClickOutside);
+                document.removeEventListener('mousedown', handleClickOutside);
             };
         }, []);
 
@@ -194,4 +195,4 @@ export const GlobalSearch = React.memo<SearchProps>(
     },
 );
 
-GlobalSearch.displayName = "GlobalSearch";
+GlobalSearch.displayName = 'GlobalSearch';

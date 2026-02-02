@@ -1,27 +1,27 @@
-"use client";
+'use client';
 
-import { Run, RunSession } from "~src/common/types";
-import { UserOverview } from "~src/components/run/user-detail/user-overview";
-import { Col, Row, Tab, Tabs } from "react-bootstrap";
-import { SessionOverview } from "~src/components/run/user-detail/session-overview";
-import { UserStats } from "~src/components/run/user-detail/user-stats";
-import React, { useEffect, useReducer, useState } from "react";
-import { GametimeForm } from "~src/components/gametime/gametime-form";
-import Link from "next/link";
-import { Userform } from "~src/components/user/userform";
-import { HighlightedRun } from "~src/components/run/dashboard/highlighted-run";
-import { LiveIcon, LiveUserRun } from "~src/components/live/live-user-run";
-import Stats from "~src/components/user/stats";
-import { useLiveRunsWebsocket } from "~src/components/websocket/use-reconnect-websocket";
-import { LiveRun } from "~app/(old-layout)/live/live.types";
-import { getRunmap } from "~app/(old-layout)/[username]/runmap.component";
-import { prepareSessions } from "~app/(old-layout)/[username]/prepare-sessions.component";
-import { GlobalGameData } from "~app/(old-layout)/[username]/[game]/[run]/run";
-import { TwitchEmbed } from "react-twitch-embed";
-import { UserStats as UserRaceStats } from "~app/(old-layout)/races/races.types";
-import { UserRaceStatsTable } from "~src/components/run/user-detail/user-race-stats";
-import type { User as IUser, User } from "types/session.types";
-import type { UserData } from "~src/lib/get-session-data";
+import Link from 'next/link';
+import React, { useEffect, useReducer, useState } from 'react';
+import { Col, Row, Tab, Tabs } from 'react-bootstrap';
+import { TwitchEmbed } from 'react-twitch-embed';
+import type { User as IUser, User } from 'types/session.types';
+import { GlobalGameData } from '~app/(old-layout)/[username]/[game]/[run]/run';
+import { prepareSessions } from '~app/(old-layout)/[username]/prepare-sessions.component';
+import { getRunmap } from '~app/(old-layout)/[username]/runmap.component';
+import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { UserStats as UserRaceStats } from '~app/(old-layout)/races/races.types';
+import { Run, RunSession } from '~src/common/types';
+import { GametimeForm } from '~src/components/gametime/gametime-form';
+import { LiveIcon, LiveUserRun } from '~src/components/live/live-user-run';
+import { HighlightedRun } from '~src/components/run/dashboard/highlighted-run';
+import { SessionOverview } from '~src/components/run/user-detail/session-overview';
+import { UserOverview } from '~src/components/run/user-detail/user-overview';
+import { UserRaceStatsTable } from '~src/components/run/user-detail/user-race-stats';
+import { UserStats } from '~src/components/run/user-detail/user-stats';
+import Stats from '~src/components/user/stats';
+import { Userform } from '~src/components/user/userform';
+import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
+import type { UserData } from '~src/lib/get-session-data';
 
 export interface UserPageProps {
     runs: Run[];
@@ -49,7 +49,7 @@ export const UserProfile = ({
     const [useGameTime, setUseGameTime] = useState(
         hasGameTime && defaultGameTime,
     );
-    const [currentGame, setCurrentGame] = useState("all-games");
+    const [currentGame, setCurrentGame] = useState('all-games');
     const [, forceUpdate] = useReducer((x) => x + 1, 0);
     const [liveRun, setLiveRun] = useState(liveData);
 
@@ -57,11 +57,11 @@ export const UserProfile = ({
 
     useEffect(() => {
         if (lastMessage !== null) {
-            if (lastMessage.type === "UPDATE") {
+            if (lastMessage.type === 'UPDATE') {
                 setLiveRun(lastMessage.run);
             }
 
-            if (lastMessage.type === "DELETE") {
+            if (lastMessage.type === 'DELETE') {
                 setLiveRun(undefined);
             }
         }
@@ -83,7 +83,7 @@ export const UserProfile = ({
     });
 
     const currentRuns =
-        currentGame === "all-games"
+        currentGame === 'all-games'
             ? runs
             : filterRunsByGame(runs, currentGame);
 
@@ -134,7 +134,7 @@ export const UserProfile = ({
                         <select
                             className="form-select"
                             onChange={(e) => {
-                                setCurrentGame(e.target.value.split("#")[0]);
+                                setCurrentGame(e.target.value.split('#')[0]);
                             }}
                         >
                             <option
@@ -151,14 +151,14 @@ export const UserProfile = ({
                                     const previous = arr[i - 1];
 
                                     return (
-                                        game.split("#")[0] !==
-                                        previous.split("#")[0]
+                                        game.split('#')[0] !==
+                                        previous.split('#')[0]
                                     );
                                 })
                                 .map((game: string) => {
                                     return (
                                         <option key={game} value={game}>
-                                            {game.split("#")[0]}
+                                            {game.split('#')[0]}
                                         </option>
                                     );
                                 })}
@@ -168,8 +168,9 @@ export const UserProfile = ({
             )}
             <Tabs
                 defaultActiveKey="overview"
-                className={`position-relative z-1 mb-3 pt-0 w-100 mw-md-66${allRunsRunMap.size > 1 ? " with-filter" : ""
-                    }`}
+                className={`position-relative z-1 mb-3 pt-0 w-100 mw-md-66${
+                    allRunsRunMap.size > 1 ? ' with-filter' : ''
+                }`}
             >
                 <Tab eventKey="overview" title="Overview">
                     <Row>
@@ -215,7 +216,7 @@ export const UserProfile = ({
                                             <h2>Races</h2>
                                             <span
                                                 style={{
-                                                    color: "var(--bs-gold)",
+                                                    color: 'var(--bs-gold)',
                                                 }}
                                                 className="ms-2"
                                             >
@@ -252,8 +253,8 @@ export const UserProfile = ({
                             <SessionOverview
                                 sessions={
                                     hasGameTime &&
-                                        useGameTime &&
-                                        gameTimeSessions
+                                    useGameTime &&
+                                    gameTimeSessions
                                         ? gameTimeSessions
                                         : sessions
                                 }
@@ -289,8 +290,10 @@ const NoRuns = (username: string, session: User, userData: UserData) => {
             <div>
                 Unfortunately, {username} has not uploaded runs yet, or their
                 upload has not yet been processed (should not take long). If the
-                user has uploaded runs, but this page still shows, please{" "}
-                <Link href="/contact" prefetch={false}>contact me!</Link>
+                user has uploaded runs, but this page still shows, please{' '}
+                <Link href="/contact" prefetch={false}>
+                    contact me!
+                </Link>
             </div>
         </>
     );

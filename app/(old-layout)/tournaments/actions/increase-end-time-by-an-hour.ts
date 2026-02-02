@@ -1,12 +1,12 @@
-"use server";
+'use server';
 
-import { getSession } from "~src/actions/session.action";
-import { revalidateTag } from "next/cache";
+import { revalidateTag } from 'next/cache';
+import { getSession } from '~src/actions/session.action';
 
 export async function increaseEndTimeByAnHour(addTimeInput: FormData) {
-    const tournamentName = addTimeInput.get("tournament") as string;
-    const date = addTimeInput.get("date") as string;
-    const heat = addTimeInput.get("heat") as string;
+    const tournamentName = addTimeInput.get('tournament') as string;
+    const date = addTimeInput.get('date') as string;
+    const heat = addTimeInput.get('heat') as string;
     const session = await getSession();
 
     if (!session.id) {
@@ -18,7 +18,7 @@ export async function increaseEndTimeByAnHour(addTimeInput: FormData) {
     }/tournaments/${encodeURIComponent(tournamentName)}/setEndtime`;
 
     await fetch(url, {
-        method: "POST",
+        method: 'POST',
         headers: {
             Authorization: `Bearer ${session.id}`,
         },

@@ -1,3 +1,7 @@
+import { useGSAP } from '@gsap/react';
+import { gsap } from 'gsap';
+import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import {
     lazy,
     PropsWithChildren,
@@ -7,67 +11,63 @@ import {
     useMemo,
     useRef,
     useState,
-} from "react";
-import { WrappedWithData } from "~app/(old-layout)/[username]/wrapped/wrapped-types";
-import { WrappedTitle } from "~app/(old-layout)/[username]/wrapped/wrapped-title";
-import { ScrollDown } from "~src/components/scroll-down";
-import { gsap } from "gsap";
-import { useGSAP } from "@gsap/react";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ScrollToPlugin } from "gsap/ScrollToPlugin";
-import { Button, Spinner } from "react-bootstrap";
-import { ArrowDownCircleFill, ArrowUpCircleFill } from "react-bootstrap-icons";
-import { isDefined } from "~src/utils/isDefined";
-import styles from "./mesh-background.module.scss";
-import wrappedStyles from "./wrapped.module.scss";
-import socialStyles from "./social-icons.module.scss";
-import { useResizeObserver, useDebounceCallback } from "usehooks-ts";
-import { SocialShareSpeedDial } from "./social-share-dial";
-import { PatreonBunnySvg } from "~app/(old-layout)/patron/patreon-info";
-import { WrappedSocialCard } from "./sections/wrapped-social-card";
-import { safeDecodeURI } from "~src/utils/uri";
+} from 'react';
+import { Button, Spinner } from 'react-bootstrap';
+import { ArrowDownCircleFill, ArrowUpCircleFill } from 'react-bootstrap-icons';
+import { useDebounceCallback, useResizeObserver } from 'usehooks-ts';
+import { WrappedTitle } from '~app/(old-layout)/[username]/wrapped/wrapped-title';
+import { WrappedWithData } from '~app/(old-layout)/[username]/wrapped/wrapped-types';
+import { PatreonBunnySvg } from '~app/(old-layout)/patron/patreon-info';
+import { ScrollDown } from '~src/components/scroll-down';
+import { isDefined } from '~src/utils/isDefined';
+import { safeDecodeURI } from '~src/utils/uri';
+import styles from './mesh-background.module.scss';
+import { WrappedSocialCard } from './sections/wrapped-social-card';
+import socialStyles from './social-icons.module.scss';
+import { SocialShareSpeedDial } from './social-share-dial';
+import wrappedStyles from './wrapped.module.scss';
 
 gsap.registerPlugin(useGSAP);
 gsap.registerPlugin(ScrollTrigger);
 gsap.registerPlugin(ScrollToPlugin);
 
 const WrappedStreak = lazy(() =>
-    import("./sections/wrapped-streak").then((module) => ({
+    import('./sections/wrapped-streak').then((module) => ({
         default: module.WrappedStreak,
     })),
 );
 const WrappedTopGames = lazy(() =>
-    import("./sections/wrapped-top-games").then((module) => ({
+    import('./sections/wrapped-top-games').then((module) => ({
         default: module.WrappedTopGames,
     })),
 );
 const WrappedOutroThanks = lazy(() =>
-    import("./sections/wrapped-outro-thanks").then((module) => ({
+    import('./sections/wrapped-outro-thanks').then((module) => ({
         default: module.WrappedOutroThanks,
     })),
 );
 
 const WrappedStatsOverview = lazy(() =>
-    import("./sections/wrapped-stats-overview").then((module) => ({
+    import('./sections/wrapped-stats-overview').then((module) => ({
         default: module.WrappedStatsOverview,
     })),
 );
 
 const WrappedActivityGraphs = lazy(() =>
     import(
-        "~app/(old-layout)/[username]/wrapped/sections/wrapped-activity-graphs"
+        '~app/(old-layout)/[username]/wrapped/sections/wrapped-activity-graphs'
     ).then((module) => ({ default: module.WrappedActivityGraphs })),
 );
 
 const WrappedRaceStats = lazy(() =>
-    import("./sections/wrapped-race-stats").then((module) => ({
+    import('./sections/wrapped-race-stats').then((module) => ({
         default: module.WrappedRaceStats,
     })),
 );
 
 const WrappedRunsAndPbs = lazy(() =>
     import(
-        "~app/(old-layout)/[username]/wrapped/sections/wrapped-runs-and-pbs"
+        '~app/(old-layout)/[username]/wrapped/sections/wrapped-runs-and-pbs'
     ).then((module) => ({
         default: module.WrappedRunsAndPbs,
     })),
@@ -97,7 +97,7 @@ interface WrappedSectionProps {
 
 const WrappedSection: React.FC<PropsWithChildren<WrappedSectionProps>> = ({
     children,
-    id = "",
+    id = '',
     ready,
     ignoreReady = false,
 }) => {
@@ -149,7 +149,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
 
     const downloadSocialImage = () => {
         if (!socialImageUrl) return;
-        const link = document.createElement("a");
+        const link = document.createElement('a');
         link.href = socialImageUrl;
         link.download = `TheRun-Recap-${wrapped.year}-${safeDecodeURI(
             wrapped.user,
@@ -262,7 +262,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
             if (!wrapped.hasEnoughRuns) return;
 
             const sections: gsap.DOMTarget[] =
-                gsap.utils.toArray(".animated-section");
+                gsap.utils.toArray('.animated-section');
 
             const matchMedia = gsap.matchMedia();
             matchMedia.add(`(min-width: ${MOBILE_BREAKPOINT}px)`, () => {
@@ -352,10 +352,10 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
 
     const scrollToSection = contextSafe((index: number) => {
         const animatedSections: gsap.DOMTarget[] =
-            gsap.utils.toArray(".animated-section");
+            gsap.utils.toArray('.animated-section');
         let targetSection = animatedSections[index];
         // TODO: There's a bug where it won't scroll back to the intro
-        if (!targetSection && index === -1) targetSection = "#wrapped-intro";
+        if (!targetSection && index === -1) targetSection = '#wrapped-intro';
         gsap.to(window, {
             scrollTo: (targetSection || animatedSections[0]) as Element,
             onComplete: () => {
@@ -404,10 +404,10 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                         <p className="display-5 mb-0">You had a great 2025!</p>
                         <WrappedTitle user={user} />
                         <p className="h3 mt-1 opacity-50">
-                            Brought to you by{" "}
+                            Brought to you by{' '}
                             <span
                                 className="me-1"
-                                style={{ color: "var(--bs-link-color)" }}
+                                style={{ color: 'var(--bs-link-color)' }}
                             >
                                 therun.gg
                             </span>
@@ -420,7 +420,7 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                         </p>
                         <p className="fs-5 mb-3">
                             If you are impatient, you can download your recap as
-                            a cool little image here.{" "}
+                            a cool little image here.{' '}
                             <span className="opacity-25">
                                 Promise you'll share on socials?
                             </span>
@@ -482,12 +482,12 @@ export const TheRunWrapped = ({ wrapped, user }: TheRunWrappedProps) => {
                     />
                 </div>
                 {sectionIndex + 1 === 0 ||
-                    sectionIndex + 1 === sections.length ? null : (
+                sectionIndex + 1 === sections.length ? null : (
                     <h2
                         style={{
                             bottom: FOOTER_HEIGHT,
                             opacity: 0.66,
-                            marginRight: "-8rem",
+                            marginRight: '-8rem',
                         }}
                         className="sticky-bottom text-end end-0 me-4 position-fixed d-none d-md-flex"
                     >

@@ -1,4 +1,4 @@
-import { Tournament } from "~src/components/tournament/tournament-info";
+import { Tournament } from '~src/components/tournament/tournament-info';
 
 export interface AllTournamentsProps {
     finishedTournaments: Tournament[];

@@ -1,9 +1,9 @@
-import { useRef, useCallback } from "react";
-import { useNavigationEvent } from "./use-navigation-event";
+import { useCallback, useRef } from 'react';
+import { useNavigationEvent } from './use-navigation-event';
 
 export const useSessionVisits = () => {
-    const STORAGE_KEY = "session_visits";
-    const previousUrlRef = useRef("");
+    const STORAGE_KEY = 'session_visits';
+    const previousUrlRef = useRef('');
 
     const trackRouteVisit = useCallback(() => {
         const previousUrl = previousUrlRef.current;

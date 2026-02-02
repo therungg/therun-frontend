@@ -3,12 +3,12 @@ export const SplitName = ({ splitName }: { splitName: string }) => {
 
     splitName = splitName.toString();
 
-    if (splitName.startsWith("-")) splitName = splitName.replace("-", "");
+    if (splitName.startsWith('-')) splitName = splitName.replace('-', '');
 
-    if (splitName.startsWith("{") && splitName.includes("}")) {
-        splitName = splitName.replace("{", "");
+    if (splitName.startsWith('{') && splitName.includes('}')) {
+        splitName = splitName.replace('{', '');
 
-        const [fullSegmentName, subsplitName] = splitName.split("}");
+        const [fullSegmentName, subsplitName] = splitName.split('}');
 
         return (
             <>
@@ -24,16 +24,16 @@ export const SplitName = ({ splitName }: { splitName: string }) => {
 };
 
 export const convertSplitName = (splitName: string) => {
-    if (!splitName || splitName.length < 1) return "";
+    if (!splitName || splitName.length < 1) return '';
 
     splitName = splitName.toString();
 
-    if (splitName.startsWith("-")) splitName = splitName.replace("-", "");
+    if (splitName.startsWith('-')) splitName = splitName.replace('-', '');
 
-    if (splitName.startsWith("{") && splitName.includes("}")) {
-        splitName = splitName.replace("{", "");
+    if (splitName.startsWith('{') && splitName.includes('}')) {
+        splitName = splitName.replace('{', '');
 
-        const [fullSegmentName, subsplitName] = splitName.split("}");
+        const [fullSegmentName, subsplitName] = splitName.split('}');
 
         return `${fullSegmentName} - ${subsplitName}`;
     }

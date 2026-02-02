@@ -1,4 +1,3 @@
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     cacheComponents: true,
@@ -9,7 +8,7 @@ const nextConfig = {
     experimental: {
         useCache: true,
         serverActions: {
-            bodySizeLimit: "25mb",
+            bodySizeLimit: '25mb',
         },
     },
     productionBrowserSourceMaps: true,
@@ -17,34 +16,34 @@ const nextConfig = {
     images: {
         remotePatterns: [
             {
-                protocol: "https",
-                hostname: "usevk6e5826mt9j6.public.blob.vercel-storage.com",
-                port: "",
+                protocol: 'https',
+                hostname: 'usevk6e5826mt9j6.public.blob.vercel-storage.com',
+                port: '',
             },
             {
-                protocol: "https",
-                hostname: "adflsi3tfe9nexsk.public.blob.vercel-storage.com",
-                port: "",
+                protocol: 'https',
+                hostname: 'adflsi3tfe9nexsk.public.blob.vercel-storage.com',
+                port: '',
             },
             {
-                protocol: "https",
-                hostname: "images.igdb.com",
+                protocol: 'https',
+                hostname: 'images.igdb.com',
             },
             {
-                protocol: "https",
-                hostname: "raw.githubusercontent.com",
+                protocol: 'https',
+                hostname: 'raw.githubusercontent.com',
             },
             {
-                protocol: "https",
-                hostname: "static-cdn.jtvnw.net",
+                protocol: 'https',
+                hostname: 'static-cdn.jtvnw.net',
             },
         ],
     },
     async redirects() {
         return [
             {
-                source: "/game/:path*",
-                destination: "/games/:path*",
+                source: '/game/:path*',
+                destination: '/games/:path*',
                 permanent: true,
             },
         ];

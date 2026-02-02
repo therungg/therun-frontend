@@ -1,6 +1,6 @@
-import { NextRequest } from "next/server";
-import { banUserFromTournament } from "~src/components/tournament/getTournaments";
-import { apiResponse } from "~app/(old-layout)/api/response";
+import { NextRequest } from 'next/server';
+import { apiResponse } from '~app/(old-layout)/api/response';
+import { banUserFromTournament } from '~src/components/tournament/getTournaments';
 
 export async function GET(
     _: NextRequest,

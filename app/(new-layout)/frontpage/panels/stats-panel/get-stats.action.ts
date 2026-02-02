@@ -2,7 +2,11 @@
 
 import { getUserSummary } from '~src/lib/summary';
 
-export async function fetchStatsAction(user: string, range: 'week' | 'month', offset: number = 0) {
+export async function fetchStatsAction(
+    user: string,
+    range: 'week' | 'month',
+    offset: number = 0,
+) {
     let tries = offset;
     let stats = await getUserSummary(user, range, tries++);
 

@@ -1,9 +1,9 @@
-import buildMetadata from "~src/utils/metadata";
+import buildMetadata from '~src/utils/metadata';
 
 export const metadata = buildMetadata({
-    title: "Roadmap",
+    title: 'Roadmap',
     description:
-        "See a list of planned features for The Run that could be coming soon!",
+        'See a list of planned features for The Run that could be coming soon!',
 });
 
 // TODO: Link to the Github Issues or other project planning in the future

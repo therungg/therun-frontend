@@ -2,7 +2,7 @@ import {
     LiveDataMap,
     LiveRun,
     WebsocketLiveRunMessage,
-} from "~app/(old-layout)/live/live.types";
+} from '~app/(old-layout)/live/live.types';
 
 export const liveRunArrayToMap = (liveData: LiveRun[]) => {
     liveData.sort((a, b) => {
@@ -20,7 +20,7 @@ export const liveRunArrayToMap = (liveData: LiveRun[]) => {
         const firstLetter = user[0];
 
         //TODO:: This breaks the sorting if not done this way. Figure out why.
-        if (firstLetter <= "9" && firstLetter >= "0") {
+        if (firstLetter <= '9' && firstLetter >= '0') {
             user = ` ${user}`;
         }
 
@@ -33,9 +33,9 @@ export const liveRunArrayToMap = (liveData: LiveRun[]) => {
 export const liveRunIsInSearch = (liveRun: LiveRun, search: string) => {
     search = search
         .toLowerCase()
-        .replaceAll(" ", "")
-        .normalize("NFD")
-        .replace(/\p{Diacritic}/gu, "");
+        .replaceAll(' ', '')
+        .normalize('NFD')
+        .replace(/\p{Diacritic}/gu, '');
     let inSearch = false;
 
     [liveRun.user, liveRun.game, liveRun.category].forEach((val) => {
@@ -43,9 +43,9 @@ export const liveRunIsInSearch = (liveRun: LiveRun, search: string) => {
 
         const correctValue = val
             .toLowerCase()
-            .replaceAll(" ", "")
-            .normalize("NFD")
-            .replace(/\p{Diacritic}/gu, "");
+            .replaceAll(' ', '')
+            .normalize('NFD')
+            .replace(/\p{Diacritic}/gu, '');
 
         if (correctValue.includes(search)) inSearch = true;
     });
@@ -57,7 +57,7 @@ export const getRecommendedStream = (
     liveDataMap: LiveDataMap,
     username?: string,
 ): string => {
-    let recommendedStream = "";
+    let recommendedStream = '';
     const lowercaseUsername = username?.toLowerCase();
 
     if (lowercaseUsername) {
@@ -65,7 +65,7 @@ export const getRecommendedStream = (
             (data) =>
                 data.user && data.user.toLowerCase() === lowercaseUsername,
         );
-        recommendedStream = user?.user || "";
+        recommendedStream = user?.user || '';
     }
 
     if (!recommendedStream) {
@@ -90,7 +90,7 @@ export const isWebsocketDataProcessable = (
 ): boolean => {
     if (!data) return false;
 
-    if (data.type === "DELETE") return true;
+    if (data.type === 'DELETE') return true;
 
     if (!data.run) return false;
 

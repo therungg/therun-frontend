@@ -1,19 +1,19 @@
-import React, { ReactNode, useMemo, useRef } from "react";
-import { WrappedWithData } from "../wrapped-types";
-import { GameImage } from "~src/components/image/gameimage";
-import { TotalStat } from "~src/components/user/stats";
-// import { useHeartsAnimation } from "../use-hearts-animation.hook";
-import { WrappedCounter } from "../wrapped-counter";
-import { SectionTitle } from "~app/(old-layout)/[username]/wrapped/sections/section-title";
-import { SectionWrapper } from "~app/(old-layout)/[username]/wrapped/sections/section-wrapper";
-import { SectionBody } from "~app/(old-layout)/[username]/wrapped/sections/section-body";
+import React, { ReactNode, useMemo, useRef } from 'react';
+import { Col, Row, Table } from 'react-bootstrap';
+import { SectionBody } from '~app/(old-layout)/[username]/wrapped/sections/section-body';
+import { SectionTitle } from '~app/(old-layout)/[username]/wrapped/sections/section-title';
+import { SectionWrapper } from '~app/(old-layout)/[username]/wrapped/sections/section-wrapper';
+import { GameImage } from '~src/components/image/gameimage';
+import { TruncatedTextTooltip } from '~src/components/tooltip';
+import { TotalStat } from '~src/components/user/stats';
 import {
     DurationToFormatted,
     getDateAsMonthDay,
-} from "~src/components/util/datetime";
-import { Col, Row, Table } from "react-bootstrap";
-import styles from "../hearts.module.scss";
-import { TruncatedTextTooltip } from "~src/components/tooltip";
+} from '~src/components/util/datetime';
+import styles from '../hearts.module.scss';
+// import { useHeartsAnimation } from "../use-hearts-animation.hook";
+import { WrappedCounter } from '../wrapped-counter';
+import { WrappedWithData } from '../wrapped-types';
 
 export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
     const streakInDays = wrapped.streak.length;
@@ -26,7 +26,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
         const lastDate = new Date(endDate);
 
         while (currentDate <= lastDate) {
-            dates.push(currentDate.toISOString().split("T")[0]);
+            dates.push(currentDate.toISOString().split('T')[0]);
             currentDate.setDate(currentDate.getDate() + 1);
         }
 
@@ -85,26 +85,26 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
             }
         }
 
-        return "";
+        return '';
     }, [sortedGameFrequencyMap]);
 
     const getStreakMessage = (streakInDays: number) => {
         if (streakInDays >= 2 && streakInDays <= 7) {
-            return "You were on fire!";
+            return 'You were on fire!';
         } else if (streakInDays > 7 && streakInDays <= 14) {
-            return "You were locked in for a while there!";
+            return 'You were locked in for a while there!';
         } else if (streakInDays >= 15) {
-            return "You are simply BUILT DIFFERENT.";
+            return 'You are simply BUILT DIFFERENT.';
         }
     };
 
     const getExtraRemark = (streakInDays: number) => {
         if (streakInDays >= 2 && streakInDays <= 7) {
-            return "(those are rookie numbers)";
+            return '(those are rookie numbers)';
         } else if (streakInDays > 7 && streakInDays <= 14) {
-            return "(but i want to see a higher number next year)";
+            return '(but i want to see a higher number next year)';
         } else if (streakInDays >= 15) {
-            return "(addict)";
+            return '(addict)';
         }
     };
 
@@ -154,7 +154,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
 
         wrapped.runData.forEach((run) => {
             run.runs.forEach((finishedRun) => {
-                const endedAt = finishedRun.endedAt.split("T")[0];
+                const endedAt = finishedRun.endedAt.split('T')[0];
 
                 if (
                     endedAt >= wrapped.streak.start &&
@@ -187,7 +187,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
             run.pbs.forEach((finishedRun) => {
                 const endedAt = new Date(finishedRun.endedAt)
                     .toISOString()
-                    .split("T")[0];
+                    .split('T')[0];
 
                 if (
                     endedAt >= wrapped.streak.start &&
@@ -211,11 +211,11 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
             <SectionTitle
                 title={
                     <>
-                        Your longest daily streak for runs was{" "}
+                        Your longest daily streak for runs was{' '}
                         <WrappedCounter
                             id="streak-in-days"
                             end={streakInDays}
-                        />{" "}
+                        />{' '}
                         days
                     </>
                 }
@@ -237,7 +237,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                         ref={heartContainerRef}
                                         className="position-absolute w-100 h-100"
                                         style={{
-                                            pointerEvents: "none",
+                                            pointerEvents: 'none',
                                             zIndex: 1,
                                         }}
                                     />
@@ -251,7 +251,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                             streak...
                                         </div>
                                         <div className="game-image">
-                                            {gameData && "noimage" && (
+                                            {gameData && 'noimage' && (
                                                 <GameImage
                                                     alt={gameData.display}
                                                     src={gameData.image}
@@ -265,10 +265,10 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                                 className="fw-bold"
                                                 style={{
                                                     // eslint-disable-next-line sonarjs/no-duplicate-string
-                                                    color: "var(--bs-link-color)",
-                                                    textDecoration: "underline",
+                                                    color: 'var(--bs-link-color)',
+                                                    textDecoration: 'underline',
                                                     textDecorationColor:
-                                                        "var(--bs-gold)",
+                                                        'var(--bs-gold)',
                                                 }}
                                             >
                                                 {mostPlayedGame}
@@ -287,37 +287,37 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                     <StreakStatItem
                                         stat={
                                             finishedRunsDuringStreak.length +
-                                            " finished runs"
+                                            ' finished runs'
                                         }
                                         explanation={
                                             <>
-                                                You finished{" "}
+                                                You finished{' '}
                                                 <span
                                                     style={{
-                                                        color: "var(--bs-link-color)",
+                                                        color: 'var(--bs-link-color)',
                                                     }}
                                                 >
                                                     {
                                                         finishedRunsDuringStreak.length
-                                                    }{" "}
+                                                    }{' '}
                                                     runs
-                                                </span>{" "}
+                                                </span>{' '}
                                                 during your streak.
                                             </>
                                         }
                                     />
                                     <StreakStatItem
-                                        stat={pbsDuringStreak.length + " PBs"}
+                                        stat={pbsDuringStreak.length + ' PBs'}
                                         explanation={
                                             <>
-                                                You got{" "}
+                                                You got{' '}
                                                 <span
                                                     style={{
-                                                        color: "var(--bs-gold)",
+                                                        color: 'var(--bs-gold)',
                                                     }}
                                                 >
                                                     {pbsDuringStreak.length} PBs
-                                                </span>{" "}
+                                                </span>{' '}
                                                 during your streak.
                                             </>
                                         }
@@ -330,10 +330,10 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                         }
                                         explanation={
                                             <>
-                                                You played for a total of{" "}
+                                                You played for a total of{' '}
                                                 <DurationToFormatted
                                                     duration={totalPlaytime}
-                                                />{" "}
+                                                />{' '}
                                                 during this streak.
                                             </>
                                         }
@@ -349,13 +349,13 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                         }
                                         explanation={
                                             <>
-                                                That means you ran{" "}
+                                                That means you ran{' '}
                                                 <DurationToFormatted
                                                     duration={
                                                         totalPlaytime /
                                                         wrapped.streak.length
                                                     }
-                                                />{" "}
+                                                />{' '}
                                                 on average per day.
                                             </>
                                         }
@@ -380,7 +380,7 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                         xl={4}
                         className="overflow-y-auto"
                         style={{
-                            maxHeight: "60vh",
+                            maxHeight: '60vh',
                         }}
                     >
                         <i>Finished runs during your sick streak below</i>
@@ -409,13 +409,13 @@ export const WrappedStreak = ({ wrapped }: { wrapped: WrappedWithData }) => {
                                             </td>
                                             <td
                                                 style={{
-                                                    maxWidth: "18rem",
+                                                    maxWidth: '18rem',
                                                 }}
                                             >
                                                 <div
                                                     className="h5 mb-1 mt-0"
                                                     style={{
-                                                        color: "var(--bs-link-color)",
+                                                        color: 'var(--bs-link-color)',
                                                     }}
                                                 >
                                                     <TruncatedTextTooltip

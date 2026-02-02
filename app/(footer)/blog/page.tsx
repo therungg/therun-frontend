@@ -1,9 +1,9 @@
-import { Blog } from "./blog";
-import buildMetadata from "~src/utils/metadata";
+import buildMetadata from '~src/utils/metadata';
+import { Blog } from './blog';
 
 export const metadata = buildMetadata({
-    title: "Blog",
-    description: "See updates The Run posts about new and upcoming features.",
+    title: 'Blog',
+    description: 'See updates The Run posts about new and upcoming features.',
 });
 
 export default function BlogPage() {

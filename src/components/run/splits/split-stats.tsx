@@ -1,15 +1,14 @@
-import React from "react";
-import { RunHistory, SplitsHistory } from "~src/common/types";
-import { Accordion, Card, Col, Row } from "react-bootstrap";
-import { Difference, DurationToFormatted } from "../../util/datetime";
-import { GoldProgressionGraph } from "./gold-progression-graph";
-import { SplitOverTimeGraph } from "./split-over-time-graph";
-import Switch from "react-switch";
-import { useState } from "react";
-import { SplitGraph } from "./split-graph";
-import styles from "../../css/SplitStats.module.scss";
-import SplitName from "../../transformers/split-name";
-import { UnderlineTooltip } from "../../tooltip";
+import React, { useState } from 'react';
+import { Accordion, Card, Col, Row } from 'react-bootstrap';
+import Switch from 'react-switch';
+import { RunHistory, SplitsHistory } from '~src/common/types';
+import styles from '../../css/SplitStats.module.scss';
+import { UnderlineTooltip } from '../../tooltip';
+import SplitName from '../../transformers/split-name';
+import { Difference, DurationToFormatted } from '../../util/datetime';
+import { GoldProgressionGraph } from './gold-progression-graph';
+import { SplitGraph } from './split-graph';
+import { SplitOverTimeGraph } from './split-over-time-graph';
 
 export const SplitStats = ({
     history,
@@ -23,7 +22,7 @@ export const SplitStats = ({
     const [showDifference, setShowDifference] = useState(false);
     const [showTotal, setShowTotal] = useState(false);
     const [openAccs, setOpenAccs] = useState<boolean[]>([]);
-    const [selectedComparison, setSelectedComparison] = useState("Best ever");
+    const [selectedComparison, setSelectedComparison] = useState('Best ever');
 
     const idSplits = splits.map((split, key) => {
         split.id = key;
@@ -41,7 +40,7 @@ export const SplitStats = ({
         <>
             <Row>
                 <Col xl={9}>
-                    <h2 style={{ whiteSpace: "nowrap" }}>Splits Stats</h2>
+                    <h2 style={{ whiteSpace: 'nowrap' }}>Splits Stats</h2>
                 </Col>
                 <Col
                     xl={3}
@@ -49,16 +48,16 @@ export const SplitStats = ({
                 >
                     <div className="me-2">Show Delta to PB</div>
 
-                    <div style={{ alignSelf: "center" }}>
+                    <div style={{ alignSelf: 'center' }}>
                         <Switch
                             uncheckedIcon={false}
                             checkedIcon={false}
                             onColor={getComputedStyle(
                                 document.documentElement,
-                            ).getPropertyValue("--bs-link-color")}
+                            ).getPropertyValue('--bs-link-color')}
                             offColor={getComputedStyle(
                                 document.documentElement,
-                            ).getPropertyValue("--bs-link-color")}
+                            ).getPropertyValue('--bs-link-color')}
                             name="switch"
                             onChange={(checked) => {
                                 setShowDifference(checked);
@@ -71,9 +70,9 @@ export const SplitStats = ({
             </Row>
             <Card body>
                 <div>
-                    <div style={{ float: "left", width: "98%" }}>
-                        <Row style={{ whiteSpace: "nowrap" }}>
-                            <Col style={{ minWidth: "25%" }}>
+                    <div style={{ float: 'left', width: '98%' }}>
+                        <Row style={{ whiteSpace: 'nowrap' }}>
+                            <Col style={{ minWidth: '25%' }}>
                                 <b>Split</b>
                             </Col>
                             <Col>
@@ -81,7 +80,7 @@ export const SplitStats = ({
                             </Col>
                             <Col className={styles.splitComparisonOption}>
                                 <select
-                                    style={{ padding: "0 2.25rem 0 0" }}
+                                    style={{ padding: '0 2.25rem 0 0' }}
                                     className={
                                         `form-select` +
                                         ` ${styles.hideSelectArrow}`
@@ -92,13 +91,13 @@ export const SplitStats = ({
                                     }}
                                 >
                                     {[
-                                        "Best ever",
-                                        "Average",
-                                        "Reached #",
-                                        "Reset %",
-                                        "Completion %",
-                                        "Standard Deviation",
-                                        "Consistency",
+                                        'Best ever',
+                                        'Average',
+                                        'Reached #',
+                                        'Reset %',
+                                        'Completion %',
+                                        'Standard Deviation',
+                                        'Consistency',
                                     ].map((alt) => {
                                         return (
                                             <option key={alt} value={alt}>
@@ -128,13 +127,13 @@ export const SplitStats = ({
                             </Col>
                             <Col
                                 className={styles.splitDetailColumn}
-                                style={{ minWidth: "10%" }}
+                                style={{ minWidth: '10%' }}
                             >
                                 <b>Consistency</b>
                             </Col>
                         </Row>
                     </div>
-                    <div style={{ width: "1.25rem", float: "left" }} />
+                    <div style={{ width: '1.25rem', float: 'left' }} />
                 </div>
             </Card>
             {idSplits.map((split, key) => {
@@ -174,12 +173,12 @@ export const SplitStats = ({
                                 <Accordion.Header
                                     onClick={() => handleAccordionChange(key)}
                                 >
-                                    <div style={{ width: "100%" }}>
+                                    <div style={{ width: '100%' }}>
                                         <Row>
                                             <Col
                                                 style={{
-                                                    whiteSpace: "nowrap",
-                                                    minWidth: "25%",
+                                                    whiteSpace: 'nowrap',
+                                                    minWidth: '25%',
                                                 }}
                                             >
                                                 <strong>
@@ -241,33 +240,33 @@ export const SplitStats = ({
                                             <div>
                                                 <div
                                                     style={{
-                                                        display: "flex",
+                                                        display: 'flex',
                                                         justifyContent:
-                                                            "flex-end",
+                                                            'flex-end',
                                                     }}
                                                 >
                                                     <label
                                                         htmlFor="switch"
                                                         style={{
-                                                            marginRight: "10px",
-                                                            alignSelf: "center",
+                                                            marginRight: '10px',
+                                                            alignSelf: 'center',
                                                             whiteSpace:
-                                                                "nowrap",
+                                                                'nowrap',
                                                         }}
                                                     >
-                                                        {" "}
+                                                        {' '}
                                                         <UnderlineTooltip
                                                             title="Total/split time"
                                                             content={
-                                                                "These graphs can be in two forms: Total time or Split time. " +
-                                                                "Total time means it will show you the full split time, including previous splits. Split time will only show the time for this specific segment."
+                                                                'These graphs can be in two forms: Total time or Split time. ' +
+                                                                'Total time means it will show you the full split time, including previous splits. Split time will only show the time for this specific segment.'
                                                             }
                                                             element="Show total time"
                                                         />
                                                     </label>
                                                     <div
                                                         style={{
-                                                            alignSelf: "center",
+                                                            alignSelf: 'center',
                                                         }}
                                                     >
                                                         <Switch
@@ -342,33 +341,33 @@ const calculateConsistencyScore = (
 
 // TODO: Consider changing these colors for theme variables
 const consistencyScoreIndication = (score: number) => {
-    let phrase: string = "";
-    let color: string = "";
+    let phrase: string = '';
+    let color: string = '';
 
     if (score < 3) {
-        phrase = "Weak";
-        color = "#FF0000";
+        phrase = 'Weak';
+        color = '#FF0000';
     } else if (score < 6) {
-        phrase = "Could be better";
-        color = "#CC5000";
+        phrase = 'Could be better';
+        color = '#CC5000';
     } else if (score < 11) {
-        phrase = "Decent";
-        color = "#AA9000";
+        phrase = 'Decent';
+        color = '#AA9000';
     } else if (score < 22) {
-        phrase = "Good";
-        color = "#90AA00";
+        phrase = 'Good';
+        color = '#90AA00';
     } else if (score < 32) {
-        phrase = "Very good";
-        color = "#60CC00";
+        phrase = 'Very good';
+        color = '#60CC00';
     } else if (score < 40) {
-        phrase = "Excellent";
-        color = "#30DD00";
+        phrase = 'Excellent';
+        color = '#30DD00';
     } else if (score < 100) {
-        phrase = "Amazing";
-        color = "#00FF00";
+        phrase = 'Amazing';
+        color = '#00FF00';
     } else {
-        phrase = "Insane";
-        color = "goldenrod";
+        phrase = 'Insane';
+        color = 'goldenrod';
     }
 
     return (
@@ -411,11 +410,11 @@ export const OptionalColumns = ({
     return (
         <>
             <Col
-                style={{ color: "goldenrod" }}
-                className={selected == "Best ever" && optional ? "" : style}
+                style={{ color: 'goldenrod' }}
+                className={selected == 'Best ever' && optional ? '' : style}
             >
                 {!showDifference ? (
-                    <div style={{ float: "left" }}>
+                    <div style={{ float: 'left' }}>
                         <DurationToFormatted
                             duration={split.single.bestPossibleTime}
                             withMillis={true}
@@ -423,7 +422,7 @@ export const OptionalColumns = ({
                         />
                     </div>
                 ) : (
-                    <div style={{ float: "left" }}>
+                    <div style={{ float: 'left' }}>
                         <Difference
                             one={split.single.bestPossibleTime}
                             two={split.single.time}
@@ -432,9 +431,9 @@ export const OptionalColumns = ({
                     </div>
                 )}
             </Col>
-            <Col className={selected == "Average" && optional ? "" : style}>
+            <Col className={selected == 'Average' && optional ? '' : style}>
                 {!showDifference ? (
-                    <div style={{ float: "left" }}>
+                    <div style={{ float: 'left' }}>
                         <DurationToFormatted
                             duration={split.single.averageTime}
                             withMillis={true}
@@ -442,7 +441,7 @@ export const OptionalColumns = ({
                         />
                     </div>
                 ) : (
-                    <div style={{ float: "left" }}>
+                    <div style={{ float: 'left' }}>
                         <Difference
                             one={split.single.averageTime}
                             two={split.single.time}
@@ -451,10 +450,10 @@ export const OptionalColumns = ({
                     </div>
                 )}
             </Col>
-            <Col className={selected == "Reached #" && optional ? "" : style}>
+            <Col className={selected == 'Reached #' && optional ? '' : style}>
                 {reachedSplitCount}
             </Col>
-            <Col className={selected == "Reset %" && optional ? "" : style}>
+            <Col className={selected == 'Reset %' && optional ? '' : style}>
                 {(
                     (totalResetsOnSplit / (totalResetsOnSplit + totalSplits)) *
                     100
@@ -462,13 +461,13 @@ export const OptionalColumns = ({
                 %
             </Col>
             <Col
-                className={selected == "Completion %" && optional ? "" : style}
+                className={selected == 'Completion %' && optional ? '' : style}
             >
                 {((totalSplits / history.length) * 100).toFixed(2)}%
             </Col>
             <Col
                 className={
-                    selected == "Standard Deviation" && optional ? "" : style
+                    selected == 'Standard Deviation' && optional ? '' : style
                 }
             >
                 <DurationToFormatted
@@ -477,8 +476,8 @@ export const OptionalColumns = ({
                 />
             </Col>
             <Col
-                style={{ minWidth: "10%" }}
-                className={selected == "Consistency" && optional ? "" : style}
+                style={{ minWidth: '10%' }}
+                className={selected == 'Consistency' && optional ? '' : style}
             >
                 {consistencyScoreIndication(consistencyScore)}
             </Col>

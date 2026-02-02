@@ -1,19 +1,10 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { EventWithOrganizerName } from "../../../../types/events.types";
-import { Can, subject } from "~src/rbac/Can.component";
-import { Button } from "~src/components/Button/Button";
-import Link from "next/link";
-import { deleteEventAction } from "../actions/delete-event.action";
-import { redirect, usePathname } from "next/navigation";
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-} from "~src/components/breadcrumbs/breadcrumb";
-import { EventDates } from "../event-dates";
-import { EventBadges } from "../event-badges";
-import { Badge, Col, Row } from "react-bootstrap";
+import clsx from 'clsx';
+import Image from 'next/image';
+import Link from 'next/link';
+import { redirect, usePathname } from 'next/navigation';
+import { Badge, Col, Row } from 'react-bootstrap';
 import {
     FaCalendarAlt,
     FaFileAlt,
@@ -22,10 +13,7 @@ import {
     FaMapMarkerAlt,
     FaTags,
     FaUserAlt,
-} from "react-icons/fa";
-import { EventLocation } from "../event-location";
-import styles from "../event.styles.module.css";
-import clsx from "clsx";
+} from 'react-icons/fa';
 import {
     FaBluesky,
     FaDiscord,
@@ -33,12 +21,24 @@ import {
     FaRocket,
     FaTwitch,
     FaTwitter,
-} from "react-icons/fa6";
+} from 'react-icons/fa6';
+import { Button } from '~src/components/Button/Button';
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+} from '~src/components/breadcrumbs/breadcrumb';
+import { Can, subject } from '~src/rbac/Can.component';
+import { EventWithOrganizerName } from '../../../../types/events.types';
+import { deleteEventAction } from '../actions/delete-event.action';
+import styles from '../event.styles.module.css';
+import { EventBadges } from '../event-badges';
+import { EventDates } from '../event-dates';
+import { EventLocation } from '../event-location';
 
 export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
     const breadcrumbs: BreadcrumbItem[] = [
-        { content: "Events", href: "/events" },
-        { content: event.name, href: "/events/" + event.id },
+        { content: 'Events', href: '/events' },
+        { content: event.name, href: '/events/' + event.id },
     ];
     const pathname = usePathname();
 
@@ -50,24 +50,27 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                 <Breadcrumb breadcrumbs={breadcrumbs} />
 
                 <div className="d-flex justify-content-end">
-                    <Can I="edit" this={subject("event", event)}>
-                        <Link href={`/events/${event.id}/edit`} prefetch={false}>
+                    <Can I="edit" this={subject('event', event)}>
+                        <Link
+                            href={`/events/${event.id}/edit`}
+                            prefetch={false}
+                        >
                             <Button>Edit Event</Button>
                         </Link>
                     </Can>
-                    <Can I="delete" this={subject("event", event)}>
+                    <Can I="delete" this={subject('event', event)}>
                         <Button
                             className="ms-2"
                             variant="danger"
                             onClick={async () => {
                                 if (
                                     confirm(
-                                        "Are you sure you want to delete this event?",
+                                        'Are you sure you want to delete this event?',
                                     )
                                 ) {
                                     await deleteEventAction(event.id);
 
-                                    redirect("/events");
+                                    redirect('/events');
                                 }
                             }}
                         >
@@ -79,22 +82,22 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
             <div className="mt-3">
                 <div
                     className={clsx(
-                        "container-fluid p-0 game-border mt-3 rounded-4 d-flex align-items-center shadow-lg border border-secondary",
-                        styles["event-card"],
+                        'container-fluid p-0 game-border mt-3 rounded-4 d-flex align-items-center shadow-lg border border-secondary',
+                        styles['event-card'],
                     )}
                 >
-                    <Row className={clsx(styles["event-card-row"])}>
+                    <Row className={clsx(styles['event-card-row'])}>
                         <Col xl={2} lg={3} md={4} sm={5}>
                             <div className="w-100 d-flex justify-content-center align-items-center">
                                 <Image
                                     alt={event.name}
                                     src={
                                         event.imageUrl ??
-                                        "/logo_dark_theme_no_text_transparent.png"
+                                        '/logo_dark_theme_no_text_transparent.png'
                                     }
                                     height={200}
                                     width={200}
-                                    style={{ objectFit: "contain" }}
+                                    style={{ objectFit: 'contain' }}
                                     className="rounded-4 ms-xl-1"
                                 />
                             </div>
@@ -128,9 +131,9 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                 <div
                                     className="card-text border rounded-2 p-3 bg-body-tertiary"
                                     style={{
-                                        maxHeight: "50rem",
-                                        overflowY: "auto",
-                                        backgroundColor: "var(--bg-body)",
+                                        maxHeight: '50rem',
+                                        overflowY: 'auto',
+                                        backgroundColor: 'var(--bg-body)',
                                     }}
                                     dangerouslySetInnerHTML={{
                                         __html: event.description,
@@ -185,7 +188,7 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                                 <div className="fw-bold fs-5">
                                                     <div className="fw-bold fs-5">
                                                         {event.charityName ||
-                                                            "Event is for charity!"}
+                                                            'Event is for charity!'}
                                                     </div>
                                                 </div>
                                             </div>
@@ -194,7 +197,7 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                 </div>
                                 <div className="mt-2">
                                     <h3 className="card-title mb-2">
-                                        <FaLink className="text-primary" />{" "}
+                                        <FaLink className="text-primary" />{' '}
                                         Links
                                     </h3>
 
@@ -203,8 +206,8 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                             text="Event URL"
                                             url={
                                                 event.url ??
-                                                "https://therun.gg/events/" +
-                                                event.slug
+                                                'https://therun.gg/events/' +
+                                                    event.slug
                                             }
                                         />
                                         <EventLink
@@ -230,11 +233,11 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                         <EventLink
                                             text={
                                                 event.submissionsUrl &&
-                                                    event.submissionsUrl
-                                                        .toLowerCase()
-                                                        .includes("oengus")
-                                                    ? "Oengus URL"
-                                                    : "Submissions URL"
+                                                event.submissionsUrl
+                                                    .toLowerCase()
+                                                    .includes('oengus')
+                                                    ? 'Oengus URL'
+                                                    : 'Submissions URL'
                                             }
                                             url={event.submissionsUrl}
                                         />
@@ -247,7 +250,7 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                         event.restreams.length > 0 && (
                                             <div className="mt-2">
                                                 <h3 className="card-title mb-2">
-                                                    <FaRetweet className="text-primary" />{" "}
+                                                    <FaRetweet className="text-primary" />{' '}
                                                     Restreams
                                                 </h3>
 
@@ -272,9 +275,9 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                                                         <div>
                                                                             {
                                                                                 restream.language
-                                                                            }{" "}
+                                                                            }{' '}
                                                                             restream
-                                                                            by{" "}
+                                                                            by{' '}
                                                                             {
                                                                                 restream.organizer
                                                                             }
@@ -282,7 +285,7 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                                                         <div
                                                                             className="fw-bold fs-6"
                                                                             style={{
-                                                                                width: "100%",
+                                                                                width: '100%',
                                                                             }}
                                                                         >
                                                                             <a
@@ -293,13 +296,13 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                                                                 rel="noreferrer"
                                                                                 target="_blank"
                                                                                 style={{
-                                                                                    width: "100%",
+                                                                                    width: '100%',
                                                                                     overflow:
-                                                                                        "hidden",
+                                                                                        'hidden',
                                                                                     textOverflow:
-                                                                                        "ellipsis",
+                                                                                        'ellipsis',
                                                                                     whiteSpace:
-                                                                                        "nowrap",
+                                                                                        'nowrap',
                                                                                 }}
                                                                             >
                                                                                 {
@@ -330,7 +333,7 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                         bg="primary"
                                         className="ms-2 pt-2 pb-2 px-3 mt-2"
                                         pill={true}
-                                        style={{ fillOpacity: "50%" }}
+                                        style={{ fillOpacity: '50%' }}
                                     >
                                         <span className="fs-6">{tag}</span>
                                     </Badge>
@@ -346,34 +349,34 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
 
 const EventLink = ({ text, url }: { text: string; url: string | null }) => {
     let Icon = FaLink;
-    let iconColor = "var(--bs-gold)";
+    let iconColor = 'var(--bs-gold)';
 
-    if (text.toLowerCase().includes("charity")) {
+    if (text.toLowerCase().includes('charity')) {
         Icon = FaHeart;
-        iconColor = "var(--bs-danger)";
+        iconColor = 'var(--bs-danger)';
     }
-    if (text.toLowerCase().includes("bluesky")) {
+    if (text.toLowerCase().includes('bluesky')) {
         Icon = FaBluesky;
-        iconColor = "#36c";
+        iconColor = '#36c';
     }
-    if (text.toLowerCase().includes("discord")) {
+    if (text.toLowerCase().includes('discord')) {
         Icon = FaDiscord;
-        iconColor = "#7289d9";
+        iconColor = '#7289d9';
     }
-    if (text.toLowerCase().includes("twitch")) {
+    if (text.toLowerCase().includes('twitch')) {
         Icon = FaTwitch;
-        iconColor = "#6441a5";
+        iconColor = '#6441a5';
     }
-    if (text.toLowerCase().includes("twitter")) {
+    if (text.toLowerCase().includes('twitter')) {
         Icon = FaTwitter;
-        iconColor = "#1DA1F2";
+        iconColor = '#1DA1F2';
     }
     if (
-        text.toLowerCase().includes("submissions") ||
-        text.toLowerCase().includes("oengus")
+        text.toLowerCase().includes('submissions') ||
+        text.toLowerCase().includes('oengus')
     ) {
         Icon = FaRocket;
-        iconColor = "var(--bs-primary)";
+        iconColor = 'var(--bs-primary)';
     }
 
     return (
@@ -386,18 +389,18 @@ const EventLink = ({ text, url }: { text: string; url: string | null }) => {
                     />
                     <div className="ms-2 mb-1" style={{ minWidth: 0, flex: 1 }}>
                         <div>{text}</div>
-                        <div className="fw-bold fs-6" style={{ width: "100%" }}>
+                        <div className="fw-bold fs-6" style={{ width: '100%' }}>
                             <a
                                 href={url}
                                 className="color-text"
                                 rel="noreferrer"
                                 target="_blank"
                                 style={{
-                                    display: "block",
-                                    width: "100%",
-                                    overflow: "hidden",
-                                    textOverflow: "ellipsis",
-                                    whiteSpace: "nowrap",
+                                    display: 'block',
+                                    width: '100%',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
                                 }}
                             >
                                 {url}
