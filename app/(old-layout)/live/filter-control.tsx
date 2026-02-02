@@ -30,7 +30,7 @@ export const FilterControl = ({ filters, onChange }: FilterControlProps) => {
         },
         {
             key: 'pbPace',
-            label: '⚡ PB Pace',
+            label: '⚡ Ahead of PB',
             color: '#198754',
             ariaLabel: 'Filter by runs ahead of personal best',
         },
