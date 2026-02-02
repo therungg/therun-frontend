@@ -302,9 +302,10 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
         .filter((p) => !p.visible)
         .map((p) => p.id);
 
-    // Show preview when dragging over a column
-    if (activeId && overId) {
+    // Show preview when dragging over a column or panel in different column
+    if (activeId && overId && activeId !== overId) {
         const activePanel = config.panels.find((p) => p.id === activeId);
+        const overPanel = config.panels.find((p) => p.id === overId);
         const isOverColumn = overId.startsWith('column-');
 
         console.log('🔮 Preview check:', {
@@ -312,23 +313,28 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
             overId,
             isOverColumn,
             activePanel: activePanel?.id,
+            overPanel: overPanel?.id,
             sourceColumn: activePanel?.column,
+            targetColumnFromPanel: overPanel?.column,
         });
 
-        if (activePanel && isOverColumn) {
-            const targetColumn = overId.replace('column-', '') as
-                | 'left'
-                | 'right';
-            const sourceColumn = activePanel.column;
+        if (activePanel) {
+            let targetColumn: 'left' | 'right' | null = null;
 
-            console.log('✨ Preview conditions:', {
-                targetColumn,
-                sourceColumn,
-                isDifferent: targetColumn !== sourceColumn,
-            });
+            // Check if hovering over column container
+            if (isOverColumn) {
+                targetColumn = overId.replace('column-', '') as
+                    | 'left'
+                    | 'right';
+            }
+            // Check if hovering over panel in different column
+            else if (overPanel && overPanel.column !== activePanel.column) {
+                targetColumn = overPanel.column;
+            }
 
-            // Only show preview if dragging to different column
-            if (targetColumn !== sourceColumn) {
+            if (targetColumn && targetColumn !== activePanel.column) {
+                console.log('✨ Showing preview in:', targetColumn);
+
                 const previewPanel = {
                     ...activePanel,
                     column: targetColumn,
