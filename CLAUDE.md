@@ -76,3 +76,13 @@ The app uses Next.js route groups to manage different layouts:
 ### React Compiler
 
 The project uses React Compiler (babel-plugin-react-compiler) enabled via `reactCompiler: true` in next.config.js. This auto-memoizes components.
+
+## Workflow Guidelines
+
+### After Completing Work
+
+Before finishing a session or implementation:
+1. **Stop the dev server** - Run `pkill -f "next dev"` to kill any running development servers
+2. **Clear build cache** - Run `rm -rf .next` if there were significant changes
+3. **Verify commits** - Ensure all changes are committed with proper messages
+4. **Update documentation** - Mark design documents as implemented if applicable
