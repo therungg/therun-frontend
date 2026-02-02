@@ -16,7 +16,7 @@ import {
     SortableContext,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { ReactNode, useMemo, useState } from 'react';
+import React, { ReactNode, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { updateFrontpageConfig } from '~src/actions/frontpage-config.action';
 import { PanelConfig, PanelId } from '../../../../types/frontpage-config.types';
@@ -373,7 +373,7 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                         className="col col-lg-6 col-xl-7 col-12"
                     >
                         {leftPanels.map((panel, idx) => (
-                            <>
+                            <React.Fragment key={panel.id}>
                                 {previewPosition?.column === 'left' &&
                                     previewPosition.index === idx &&
                                     activeId && (
@@ -388,7 +388,6 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                                         </div>
                                     )}
                                 <DraggablePanel
-                                    key={panel.id}
                                     id={panel.id}
                                     onHide={() => handleHidePanel(panel.id)}
                                     canHide={canHideMore}
@@ -396,7 +395,7 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                                 >
                                     {panels[panel.id]}
                                 </DraggablePanel>
-                            </>
+                            </React.Fragment>
                         ))}
                         {previewPosition?.column === 'left' &&
                             previewPosition.index === leftPanels.length &&
@@ -418,7 +417,7 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                         className="col col-lg-6 col-xl-5 col-12"
                     >
                         {rightPanels.map((panel, idx) => (
-                            <>
+                            <React.Fragment key={panel.id}>
                                 {previewPosition?.column === 'right' &&
                                     previewPosition.index === idx &&
                                     activeId && (
@@ -433,7 +432,6 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                                         </div>
                                     )}
                                 <DraggablePanel
-                                    key={panel.id}
                                     id={panel.id}
                                     onHide={() => handleHidePanel(panel.id)}
                                     canHide={canHideMore}
@@ -441,7 +439,7 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                                 >
                                     {panels[panel.id]}
                                 </DraggablePanel>
-                            </>
+                            </React.Fragment>
                         ))}
                         {previewPosition?.column === 'right' &&
                             previewPosition.index === rightPanels.length &&
