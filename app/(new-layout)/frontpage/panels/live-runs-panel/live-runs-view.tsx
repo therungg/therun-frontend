@@ -97,7 +97,7 @@ export const LiveRunView = ({
                     xl={6}
                     className={clsx(
                         styles.streamWrapper,
-                        'bg-black order-1 order-xl-2 d-flex align-items-center justify-content-center',
+                        'bg-body order-1 order-xl-2 d-flex align-items-center justify-content-center',
                     )}
                 >
                     {/* Improvement: 16x9 Ratio lock */}
