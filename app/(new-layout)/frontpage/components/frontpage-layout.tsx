@@ -4,6 +4,8 @@ import {
     closestCorners,
     DndContext,
     DragEndEvent,
+    DragOverlay,
+    DragStartEvent,
     PointerSensor,
     useDroppable,
     useSensor,
@@ -105,6 +107,7 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
 }) => {
     const [config, setConfig] = useState<PanelConfig>(initialConfig);
     const [_isSaving, setIsSaving] = useState(false);
+    const [activeId, setActiveId] = useState<PanelId | null>(null);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -206,6 +209,10 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
         saveConfig(newConfig);
     };
 
+    const handleDragStart = (event: DragStartEvent) => {
+        setActiveId(event.active.id as PanelId);
+    };
+
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
 
@@ -214,6 +221,8 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
             overId: over?.id,
             overData: over?.data,
         });
+
+        setActiveId(null);
 
         if (!over || active.id === over.id) {
             console.log('❌ No valid drop target');
@@ -295,6 +304,7 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
             <DndContext
                 sensors={sensors}
                 collisionDetection={closestCorners}
+                onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
             >
                 <div className="row d-flex flex-wrap">
@@ -333,6 +343,19 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                         ))}
                     </DroppableColumn>
                 </div>
+                <DragOverlay>
+                    {activeId ? (
+                        <div
+                            style={{
+                                opacity: 0.9,
+                                transform: 'rotate(3deg)',
+                                cursor: 'grabbing',
+                            }}
+                        >
+                            {panels[activeId]}
+                        </div>
+                    ) : null}
+                </DragOverlay>
             </DndContext>
         </>
     );
