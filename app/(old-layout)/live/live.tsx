@@ -132,34 +132,60 @@ export const Live = ({
                 )}
             <Row className="g-3 mb-3">
                 <Col>
-                    <SortControl value={sortOption} onChange={setSortOption} />
-                </Col>
-            </Row>
-            <Row className="g-3 my-3">
-                <div className="input-group mw-search">
-                    <span
-                        className="input-group-text"
-                        onClick={() => {
-                            const searchElement =
-                                document.getElementById('gameSearch');
-                            if (document.activeElement !== searchElement) {
-                                searchElement.focus();
-                            }
+                    <div
+                        className="d-flex flex-wrap align-items-center gap-3 p-3 rounded-3 shadow-sm"
+                        style={{
+                            background: 'var(--bs-body-bg)',
+                            border: '1px solid var(--bs-border-color)',
                         }}
                     >
-                        <SearchIcon size={18} />
-                    </span>
-                    <input
-                        type="search"
-                        className="form-control"
-                        placeholder="Filter by game/category/user"
-                        onChange={(e) => {
-                            setSearch(e.target.value);
-                        }}
-                        value={search}
-                        id="gameSearch"
-                    />
-                </div>
+                        <SortControl
+                            value={sortOption}
+                            onChange={setSortOption}
+                        />
+                        <div
+                            style={{
+                                width: '1px',
+                                height: '32px',
+                                background: 'var(--bs-border-color)',
+                                opacity: 0.5,
+                            }}
+                        />
+                        <div
+                            className="input-group flex-grow-1"
+                            style={{ maxWidth: '400px' }}
+                        >
+                            <span
+                                className="input-group-text bg-transparent border-end-0"
+                                onClick={() => {
+                                    const searchElement =
+                                        document.getElementById('gameSearch');
+                                    if (
+                                        document.activeElement !== searchElement
+                                    ) {
+                                        searchElement.focus();
+                                    }
+                                }}
+                            >
+                                <SearchIcon size={18} />
+                            </span>
+                            <input
+                                type="search"
+                                className="form-control border-start-0 bg-transparent"
+                                placeholder="Filter by game/category/user"
+                                onChange={(e) => {
+                                    setSearch(e.target.value);
+                                }}
+                                value={search}
+                                id="gameSearch"
+                                style={{
+                                    boxShadow: 'none',
+                                }}
+                            />
+                        </div>
+                        {/* Future filters will be added here */}
+                    </div>
+                </Col>
             </Row>
             <Row xs={1} lg={2} xl={3} className="g-3">
                 {Object.values(updatedLiveDataMap).length == 0 && (
