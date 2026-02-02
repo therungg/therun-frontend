@@ -10,7 +10,7 @@ interface SortControlProps {
 
 export const SortControl = ({ value, onChange }: SortControlProps) => {
     const options = [
-        { value: 'importance' as const, label: '🔥 Most Important' },
+        { value: 'importance' as const, label: '🔥 Most Hype' },
         { value: 'runtime' as const, label: '⏱️ Longest Runs' },
         { value: 'runner' as const, label: '👤 Runner (A-Z)' },
         { value: 'game' as const, label: '🎮 Game (A-Z)' },
