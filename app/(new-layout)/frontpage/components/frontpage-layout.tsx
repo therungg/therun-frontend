@@ -130,6 +130,37 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
         saveConfig(newConfig);
     };
 
+    const handleColumnDrop = (panelId: PanelId, targetColumn: 'left' | 'right') => {
+        const newPanels = [...config.panels];
+        const panelIndex = newPanels.findIndex((p) => p.id === panelId);
+
+        if (panelIndex === -1) return;
+
+        // Move panel to target column
+        newPanels[panelIndex] = {
+            ...newPanels[panelIndex],
+            column: targetColumn,
+        };
+
+        // Get all visible panels in target column (after moving the panel)
+        const columnPanels = newPanels.filter(
+            (p) => p.column === targetColumn && p.visible && p.id !== panelId,
+        );
+
+        // Find max order, or -1 if column was empty
+        const maxOrder =
+            columnPanels.length > 0
+                ? Math.max(...columnPanels.map((p) => p.order))
+                : -1;
+
+        // Place at end (or at 0 if column was empty)
+        newPanels[panelIndex].order = maxOrder + 1;
+
+        const newConfig = { panels: newPanels };
+        setConfig(newConfig);
+        saveConfig(newConfig);
+    };
+
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
 
