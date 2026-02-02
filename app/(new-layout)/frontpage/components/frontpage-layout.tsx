@@ -4,6 +4,7 @@ import {
     closestCorners,
     DndContext,
     DragEndEvent,
+    DragOverEvent,
     DragOverlay,
     DragStartEvent,
     PointerSensor,
@@ -108,6 +109,7 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
     const [config, setConfig] = useState<PanelConfig>(initialConfig);
     const [_isSaving, setIsSaving] = useState(false);
     const [activeId, setActiveId] = useState<PanelId | null>(null);
+    const [overId, setOverId] = useState<string | null>(null);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -213,6 +215,10 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
         setActiveId(event.active.id as PanelId);
     };
 
+    const handleDragOver = (event: DragOverEvent) => {
+        setOverId(event.over?.id as string | null);
+    };
+
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
 
@@ -223,6 +229,7 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
         });
 
         setActiveId(null);
+        setOverId(null);
 
         if (!over || active.id === over.id) {
             console.log('❌ No valid drop target');
@@ -283,15 +290,46 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
     const visibleCount = config.panels.filter((p) => p.visible).length;
     const canHideMore = visibleCount > 3;
 
-    const leftPanels = config.panels
+    let leftPanels = config.panels
         .filter((p) => p.column === 'left' && p.visible)
         .sort((a, b) => a.order - b.order);
-    const rightPanels = config.panels
+    let rightPanels = config.panels
         .filter((p) => p.column === 'right' && p.visible)
         .sort((a, b) => a.order - b.order);
     const hiddenPanels = config.panels
         .filter((p) => !p.visible)
         .map((p) => p.id);
+
+    // Show preview when dragging over a column
+    if (activeId && overId) {
+        const activePanel = config.panels.find((p) => p.id === activeId);
+        const isOverColumn = overId.startsWith('column-');
+
+        if (activePanel && isOverColumn) {
+            const targetColumn = overId.replace('column-', '') as
+                | 'left'
+                | 'right';
+            const sourceColumn = activePanel.column;
+
+            // Only show preview if dragging to different column
+            if (targetColumn !== sourceColumn) {
+                const previewPanel = {
+                    ...activePanel,
+                    column: targetColumn,
+                    order:
+                        targetColumn === 'left'
+                            ? leftPanels.length
+                            : rightPanels.length,
+                };
+
+                if (targetColumn === 'left') {
+                    leftPanels = [...leftPanels, previewPanel];
+                } else {
+                    rightPanels = [...rightPanels, previewPanel];
+                }
+            }
+        }
+    }
 
     return (
         <>
@@ -305,6 +343,7 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                 sensors={sensors}
                 collisionDetection={closestCorners}
                 onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
             >
                 <div className="row d-flex flex-wrap">
