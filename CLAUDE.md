@@ -79,6 +79,10 @@ The project uses React Compiler (babel-plugin-react-compiler) enabled via `react
 
 ## Workflow Guidelines
 
+### Implementation Execution Preference
+
+**Subagent-Driven Development:** When given the choice between subagent-driven (this session) vs parallel session (separate) execution, always choose **subagent-driven** for this project. This allows for task-by-task execution with review between tasks in the current session.
+
 ### After Completing Work
 
 **IMPORTANT:** Always complete these steps when finishing a feature or session:
