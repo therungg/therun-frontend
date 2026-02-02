@@ -109,7 +109,6 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
     const [config, setConfig] = useState<PanelConfig>(initialConfig);
     const [_isSaving, setIsSaving] = useState(false);
     const [activeId, setActiveId] = useState<PanelId | null>(null);
-    const [overId, setOverId] = useState<string | null>(null);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -215,12 +214,6 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
         setActiveId(event.active.id as PanelId);
     };
 
-    const handleDragOver = (event: DragOverEvent) => {
-        const newOverId = event.over?.id as string | null;
-        console.log('🎯 DragOver:', { overId: newOverId, activeId });
-        setOverId(newOverId);
-    };
-
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
 
@@ -231,7 +224,6 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
         });
 
         setActiveId(null);
-        setOverId(null);
 
         if (!over || active.id === over.id) {
             console.log('❌ No valid drop target');
@@ -310,92 +302,9 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
         .filter((p) => !p.visible)
         .map((p) => p.id);
 
-    // Use useMemo to compute panels with preview to avoid infinite loop
-    const { leftPanels, rightPanels } = useMemo(() => {
-        let left = baseLeftPanels;
-        let right = baseRightPanels;
-
-        // Show preview when dragging over a column or panel in different column
-        if (activeId && overId && activeId !== overId) {
-            // First, remove activeId from both columns to avoid duplicate IDs
-            left = left.filter((p) => p.id !== activeId);
-            right = right.filter((p) => p.id !== activeId);
-            const activePanel = config.panels.find((p) => p.id === activeId);
-            const overPanel = config.panels.find((p) => p.id === overId);
-            const isOverColumn = overId.startsWith('column-');
-
-            console.log('🔮 Preview check:', {
-                activeId,
-                overId,
-                isOverColumn,
-                activePanel: activePanel?.id,
-                overPanel: overPanel?.id,
-                sourceColumn: activePanel?.column,
-                targetColumnFromPanel: overPanel?.column,
-            });
-
-            if (activePanel) {
-                let targetColumn: 'left' | 'right' | null = null;
-
-                // Check if hovering over column container
-                if (isOverColumn) {
-                    targetColumn = overId.replace('column-', '') as
-                        | 'left'
-                        | 'right';
-                }
-                // Check if hovering over panel in different column
-                else if (overPanel && overPanel.column !== activePanel.column) {
-                    targetColumn = overPanel.column;
-                }
-
-                if (targetColumn && targetColumn !== activePanel.column) {
-                    console.log('✨ Showing preview in:', targetColumn);
-
-                    // Find insertion position based on where we're hovering
-                    let insertIndex =
-                        targetColumn === 'left' ? left.length : right.length;
-
-                    if (overPanel && overPanel.column === targetColumn) {
-                        // Insert at the hovered panel's position
-                        const targetPanels =
-                            targetColumn === 'left' ? left : right;
-                        insertIndex = targetPanels.findIndex(
-                            (p) => p.id === overPanel.id,
-                        );
-                    }
-
-                    const previewPanel = {
-                        ...activePanel,
-                        column: targetColumn,
-                        order: insertIndex,
-                    };
-
-                    console.log(
-                        '👻 Adding preview panel at position:',
-                        insertIndex,
-                        previewPanel,
-                    );
-
-                    if (targetColumn === 'left') {
-                        // Insert at the correct position, not at the end
-                        left = [
-                            ...left.slice(0, insertIndex),
-                            previewPanel,
-                            ...left.slice(insertIndex),
-                        ];
-                    } else {
-                        right = [
-                            ...right.slice(0, insertIndex),
-                            previewPanel,
-                            ...right.slice(insertIndex),
-                        ];
-                    }
-                }
-            }
-        }
-
-        return { leftPanels: left, rightPanels: right };
-    }, [activeId, overId, baseLeftPanels, baseRightPanels, config.panels]);
+    // Temporarily disable preview to debug infinite loop
+    const leftPanels = baseLeftPanels;
+    const rightPanels = baseRightPanels;
 
     return (
         <>
@@ -409,7 +318,6 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                 sensors={sensors}
                 collisionDetection={closestCorners}
                 onDragStart={handleDragStart}
-                onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
             >
                 <div className="row d-flex flex-wrap">
