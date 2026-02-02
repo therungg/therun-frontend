@@ -167,50 +167,23 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
         if (!over || active.id === over.id) return;
 
         const activeId = active.id as PanelId;
-        const overId = over.id as PanelId;
+        const overId = over.id as string;
 
-        const newPanels = [...config.panels];
-        const activeIndex = newPanels.findIndex((p) => p.id === activeId);
-        const overIndex = newPanels.findIndex((p) => p.id === overId);
+        // Check if dropped on a column container vs a panel
+        const isColumnDrop =
+            typeof overId === 'string' && overId.startsWith('column-');
 
-        if (activeIndex === -1 || overIndex === -1) return;
-
-        const activePanel = newPanels[activeIndex];
-        const overPanel = newPanels[overIndex];
-
-        const targetColumn = overPanel.column;
-
-        newPanels[activeIndex] = { ...activePanel, column: targetColumn };
-
-        const sameColumnPanels = newPanels.filter(
-            (p) => p.column === targetColumn && p.visible,
-        );
-        const otherColumnPanels = newPanels.filter(
-            (p) => p.column !== targetColumn,
-        );
-
-        const reorderedSameColumn = [...sameColumnPanels];
-        const movedPanelIndex = reorderedSameColumn.findIndex(
-            (p) => p.id === activeId,
-        );
-        const targetPanelIndex = reorderedSameColumn.findIndex(
-            (p) => p.id === overId,
-        );
-
-        const [movedPanel] = reorderedSameColumn.splice(movedPanelIndex, 1);
-        reorderedSameColumn.splice(targetPanelIndex, 0, movedPanel);
-
-        const reorderedWithOrder = reorderedSameColumn.map((p, idx) => ({
-            ...p,
-            order: idx,
-        }));
-
-        const newConfig = {
-            panels: [...reorderedWithOrder, ...otherColumnPanels],
-        };
-
-        setConfig(newConfig);
-        saveConfig(newConfig);
+        if (isColumnDrop) {
+            const targetColumn = over.data.current?.columnId as
+                | 'left'
+                | 'right'
+                | undefined;
+            if (targetColumn) {
+                handleColumnDrop(activeId, targetColumn);
+            }
+        } else {
+            handlePanelDrop(activeId, overId as PanelId);
+        }
     };
 
     const handleHidePanel = (panelId: PanelId) => {
