@@ -375,17 +375,17 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                         {leftPanels.map((panel, idx) => (
                             <>
                                 {previewPosition?.column === 'left' &&
-                                    previewPosition.index === idx && (
+                                    previewPosition.index === idx &&
+                                    activeId && (
                                         <div
                                             style={{
-                                                height: '100px',
-                                                border: '2px dashed #4caf50',
-                                                borderRadius: '8px',
-                                                margin: '0.5rem 0',
-                                                backgroundColor:
-                                                    'rgba(76, 175, 80, 0.1)',
+                                                opacity: 0.5,
+                                                pointerEvents: 'none',
+                                                transform: 'scale(0.98)',
                                             }}
-                                        />
+                                        >
+                                            {panels[activeId]}
+                                        </div>
                                     )}
                                 <DraggablePanel
                                     key={panel.id}
@@ -399,17 +399,17 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                             </>
                         ))}
                         {previewPosition?.column === 'left' &&
-                            previewPosition.index === leftPanels.length && (
+                            previewPosition.index === leftPanels.length &&
+                            activeId && (
                                 <div
                                     style={{
-                                        height: '100px',
-                                        border: '2px dashed #4caf50',
-                                        borderRadius: '8px',
-                                        margin: '0.5rem 0',
-                                        backgroundColor:
-                                            'rgba(76, 175, 80, 0.1)',
+                                        opacity: 0.5,
+                                        pointerEvents: 'none',
+                                        transform: 'scale(0.98)',
                                     }}
-                                />
+                                >
+                                    {panels[activeId]}
+                                </div>
                             )}
                     </DroppableColumn>
                     <DroppableColumn
@@ -420,17 +420,17 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                         {rightPanels.map((panel, idx) => (
                             <>
                                 {previewPosition?.column === 'right' &&
-                                    previewPosition.index === idx && (
+                                    previewPosition.index === idx &&
+                                    activeId && (
                                         <div
                                             style={{
-                                                height: '100px',
-                                                border: '2px dashed #4caf50',
-                                                borderRadius: '8px',
-                                                margin: '0.5rem 0',
-                                                backgroundColor:
-                                                    'rgba(76, 175, 80, 0.1)',
+                                                opacity: 0.5,
+                                                pointerEvents: 'none',
+                                                transform: 'scale(0.98)',
                                             }}
-                                        />
+                                        >
+                                            {panels[activeId]}
+                                        </div>
                                     )}
                                 <DraggablePanel
                                     key={panel.id}
@@ -444,17 +444,17 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                             </>
                         ))}
                         {previewPosition?.column === 'right' &&
-                            previewPosition.index === rightPanels.length && (
+                            previewPosition.index === rightPanels.length &&
+                            activeId && (
                                 <div
                                     style={{
-                                        height: '100px',
-                                        border: '2px dashed #4caf50',
-                                        borderRadius: '8px',
-                                        margin: '0.5rem 0',
-                                        backgroundColor:
-                                            'rgba(76, 175, 80, 0.1)',
+                                        opacity: 0.5,
+                                        pointerEvents: 'none',
+                                        transform: 'scale(0.98)',
                                     }}
-                                />
+                                >
+                                    {panels[activeId]}
+                                </div>
                             )}
                     </DroppableColumn>
                 </div>
