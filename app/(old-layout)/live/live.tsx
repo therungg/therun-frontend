@@ -3,12 +3,18 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
 import { Search as SearchIcon } from 'react-bootstrap-icons';
-import { LiveDataMap, LiveProps } from '~app/(old-layout)/live/live.types';
+import {
+    LiveDataMap,
+    LiveProps,
+    SortOption,
+} from '~app/(old-layout)/live/live.types';
+import { SortControl } from '~app/(old-layout)/live/sort-control';
 import {
     getRecommendedStream,
     isWebsocketDataProcessable,
     liveRunArrayToMap,
     liveRunIsInSearch,
+    sortLiveRuns,
 } from '~app/(old-layout)/live/utilities';
 import { LiveIcon, LiveUserRun } from '~src/components/live/live-user-run';
 import { RecommendedStream } from '~src/components/live/recommended-stream';
@@ -25,6 +31,7 @@ export const Live = ({
 }: LiveProps) => {
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
     const [search, setSearch] = useState('');
+    const [sortOption, setSortOption] = useState<SortOption>('importance');
     const [currentlyViewing, setCurrentlyViewing] = useState(
         getRecommendedStream(liveDataMap, username),
     );
@@ -113,6 +120,11 @@ export const Live = ({
                     </Col>
                 </Row>
             )}
+            <Row className="g-3 mb-3">
+                <Col>
+                    <SortControl value={sortOption} onChange={setSortOption} />
+                </Col>
+            </Row>
             {loadingUserData && <SkeletonLiveRun />}
             {!loadingUserData &&
                 currentlyViewing &&
@@ -159,26 +171,29 @@ export const Live = ({
                         liveRunIsInSearch(liveRun, search),
                     ).length == 0 && <div>No runs matched your search!</div>}
 
-                {Object.values(updatedLiveDataMap)
-                    .filter((liveRun) => liveRunIsInSearch(liveRun, search))
-                    .map((liveRun) => {
-                        return (
-                            <Col
-                                key={liveRun.user}
-                                onClick={() => {
-                                    setCurrentlyViewing(liveRun.user);
+                {sortLiveRuns(
+                    Object.values(updatedLiveDataMap).filter((liveRun) =>
+                        liveRunIsInSearch(liveRun, search),
+                    ),
+                    sortOption,
+                ).map((liveRun) => {
+                    return (
+                        <Col
+                            key={liveRun.user}
+                            onClick={() => {
+                                setCurrentlyViewing(liveRun.user);
 
-                                    window.scrollTo(0, 0);
-                                }}
-                            >
-                                <LiveUserRun
-                                    liveRun={liveRun}
-                                    currentlyActive={currentlyViewing}
-                                    key={liveRun.user}
-                                />
-                            </Col>
-                        );
-                    })}
+                                window.scrollTo(0, 0);
+                            }}
+                        >
+                            <LiveUserRun
+                                liveRun={liveRun}
+                                currentlyActive={currentlyViewing}
+                                key={liveRun.user}
+                            />
+                        </Col>
+                    );
+                })}
             </Row>
         </>
     );
