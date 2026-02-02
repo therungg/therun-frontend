@@ -160,11 +160,17 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
         const movedPanelIndex = reorderedSameColumn.findIndex(
             (p) => p.id === activeId,
         );
-        const targetPanelIndex = reorderedSameColumn.findIndex(
+        let targetPanelIndex = reorderedSameColumn.findIndex(
             (p) => p.id === overId,
         );
 
         const [movedPanel] = reorderedSameColumn.splice(movedPanelIndex, 1);
+
+        // Adjust target index if we removed an element before it
+        if (movedPanelIndex < targetPanelIndex) {
+            targetPanelIndex--;
+        }
+
         reorderedSameColumn.splice(targetPanelIndex, 0, movedPanel);
 
         const reorderedWithOrder = reorderedSameColumn.map((p, idx) => ({
