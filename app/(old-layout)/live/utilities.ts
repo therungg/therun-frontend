@@ -1,4 +1,5 @@
 import {
+    FilterState,
     LiveDataMap,
     LiveRun,
     SortOption,
@@ -135,4 +136,73 @@ export const sortLiveRuns = (
                 return 0;
         }
     });
+};
+
+export const filterLiveRuns = (
+    liveRun: LiveRun,
+    filters: FilterState,
+): boolean => {
+    // If no filters are active, show all runs
+    if (!filters.liveOnTwitch && !filters.ongoing && !filters.pbPace) {
+        return true;
+    }
+
+    // Live on Twitch filter
+    if (filters.liveOnTwitch) {
+        if (!liveRun.currentlyStreaming) {
+            return false;
+        }
+    }
+
+    // Ongoing filter (not reset and not finished)
+    if (filters.ongoing) {
+        if (liveRun.hasReset || liveRun.endedAt) {
+            return false;
+        }
+    }
+
+    // PB Pace filter (negative delta means ahead of PB)
+    if (filters.pbPace) {
+        // Exclude runs without delta or PB data
+        if (
+            liveRun.delta === null ||
+            liveRun.delta === undefined ||
+            liveRun.pb === null ||
+            liveRun.pb === undefined
+        ) {
+            return false;
+        }
+        if (liveRun.delta >= 0) {
+            return false;
+        }
+    }
+
+    return true;
+};
+
+export const parseFilterParams = (searchParams: string): FilterState => {
+    const params = new URLSearchParams(searchParams);
+    const filtersParam = params.get('filters');
+
+    if (!filtersParam) {
+        return { liveOnTwitch: false, ongoing: false, pbPace: false };
+    }
+
+    const filterArray = filtersParam.split(',');
+
+    return {
+        liveOnTwitch: filterArray.includes('live'),
+        ongoing: filterArray.includes('ongoing'),
+        pbPace: filterArray.includes('pbpace'),
+    };
+};
+
+export const serializeFilterParams = (filters: FilterState): string => {
+    const activeFilters: string[] = [];
+
+    if (filters.liveOnTwitch) activeFilters.push('live');
+    if (filters.ongoing) activeFilters.push('ongoing');
+    if (filters.pbPace) activeFilters.push('pbpace');
+
+    return activeFilters.length > 0 ? activeFilters.join(',') : '';
 };
