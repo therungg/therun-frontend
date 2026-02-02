@@ -7,6 +7,7 @@ import {
     PointerSensor,
     useSensor,
     useSensors,
+    useDroppable,
 } from '@dnd-kit/core';
 import {
     SortableContext,
@@ -18,6 +19,36 @@ import { updateFrontpageConfig } from '~src/actions/frontpage-config.action';
 import { PanelConfig, PanelId } from '../../../../types/frontpage-config.types';
 import { DraggablePanel } from './draggable-panel';
 import { HiddenPanelsDropdown } from './hidden-panels-dropdown';
+
+interface DroppableColumnProps {
+    columnId: 'left' | 'right';
+    panels: Array<{ id: PanelId; order: number }>;
+    className: string;
+    children: ReactNode;
+}
+
+const DroppableColumn: React.FC<DroppableColumnProps> = ({
+    columnId,
+    panels,
+    className,
+    children,
+}) => {
+    const { setNodeRef } = useDroppable({
+        id: `column-${columnId}`,
+        data: { type: 'column', columnId },
+    });
+
+    return (
+        <div ref={setNodeRef} className={className}>
+            <SortableContext
+                items={panels.map((p) => p.id)}
+                strategy={verticalListSortingStrategy}
+            >
+                {children}
+            </SortableContext>
+        </div>
+    );
+};
 
 interface FrontpageLayoutProps {
     initialConfig: PanelConfig;
