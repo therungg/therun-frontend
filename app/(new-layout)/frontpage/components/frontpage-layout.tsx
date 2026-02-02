@@ -216,7 +216,9 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
     };
 
     const handleDragOver = (event: DragOverEvent) => {
-        setOverId(event.over?.id as string | null);
+        const newOverId = event.over?.id as string | null;
+        console.log('🎯 DragOver:', { overId: newOverId, activeId });
+        setOverId(newOverId);
     };
 
     const handleDragEnd = (event: DragEndEvent) => {
@@ -305,11 +307,25 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
         const activePanel = config.panels.find((p) => p.id === activeId);
         const isOverColumn = overId.startsWith('column-');
 
+        console.log('🔮 Preview check:', {
+            activeId,
+            overId,
+            isOverColumn,
+            activePanel: activePanel?.id,
+            sourceColumn: activePanel?.column,
+        });
+
         if (activePanel && isOverColumn) {
             const targetColumn = overId.replace('column-', '') as
                 | 'left'
                 | 'right';
             const sourceColumn = activePanel.column;
+
+            console.log('✨ Preview conditions:', {
+                targetColumn,
+                sourceColumn,
+                isDifferent: targetColumn !== sourceColumn,
+            });
 
             // Only show preview if dragging to different column
             if (targetColumn !== sourceColumn) {
@@ -321,6 +337,8 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                             ? leftPanels.length
                             : rightPanels.length,
                 };
+
+                console.log('👻 Adding preview panel:', previewPanel);
 
                 if (targetColumn === 'left') {
                     leftPanels = [...leftPanels, previewPanel];
