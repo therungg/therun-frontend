@@ -18,20 +18,22 @@ export const SortControl = ({ value, onChange }: SortControlProps) => {
 
     return (
         <div className="d-flex align-items-center gap-2">
-            <span className="text-muted">Sort by:</span>
-            <div className="btn-group" role="group" aria-label="Sort options">
+            <label htmlFor="sort-select" className="text-muted mb-0">
+                Sort by:
+            </label>
+            <select
+                id="sort-select"
+                className="form-select form-select-sm w-auto"
+                value={value}
+                onChange={(e) => onChange(e.target.value as SortOption)}
+                aria-label="Sort live runs"
+            >
                 {options.map((option) => (
-                    <button
-                        key={option.value}
-                        type="button"
-                        className={`btn ${value === option.value ? 'btn-primary' : 'btn-outline-primary'}`}
-                        onClick={() => onChange(option.value)}
-                        aria-pressed={value === option.value}
-                    >
+                    <option key={option.value} value={option.value}>
                         {option.label}
-                    </button>
+                    </option>
                 ))}
-            </div>
+            </select>
         </div>
     );
 };

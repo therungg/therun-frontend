@@ -120,11 +120,6 @@ export const Live = ({
                     </Col>
                 </Row>
             )}
-            <Row className="g-3 mb-3">
-                <Col>
-                    <SortControl value={sortOption} onChange={setSortOption} />
-                </Col>
-            </Row>
             {loadingUserData && <SkeletonLiveRun />}
             {!loadingUserData &&
                 currentlyViewing &&
@@ -135,6 +130,11 @@ export const Live = ({
                         />
                     </Row>
                 )}
+            <Row className="g-3 mb-3">
+                <Col>
+                    <SortControl value={sortOption} onChange={setSortOption} />
+                </Col>
+            </Row>
             <Row className="g-3 my-3">
                 <div className="input-group mw-search">
                     <span
