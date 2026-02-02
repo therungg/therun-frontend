@@ -18,56 +18,39 @@ export const SortControl = ({ value, onChange }: SortControlProps) => {
     ];
 
     return (
-        <div
-            className="d-flex align-items-center justify-content-center gap-3 p-4 rounded-3"
-            style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-            }}
-        >
-            <div className="d-flex align-items-center gap-3">
-                <SortDown
-                    size={24}
-                    className="text-primary"
-                    style={{ opacity: 0.8 }}
-                />
-                <select
-                    id="sort-select"
-                    className="form-select border-0 shadow"
-                    value={value}
-                    onChange={(e) => onChange(e.target.value as SortOption)}
-                    aria-label="Sort live runs"
-                    style={{
-                        width: 'auto',
-                        minWidth: '240px',
-                        cursor: 'pointer',
-                        fontSize: '1.05rem',
-                        fontWeight: '600',
-                        borderRadius: '12px',
-                        padding: '0.85rem 1.25rem',
-                        background: 'rgba(255, 255, 255, 0.95)',
-                        transition: 'all 0.2s ease',
-                        fontFamily:
-                            '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-                    }}
-                    onMouseEnter={(e) => {
-                        e.currentTarget.style.transform = 'translateY(-1px)';
-                        e.currentTarget.style.boxShadow =
-                            '0 8px 16px rgba(0,0,0,0.15)';
-                    }}
-                    onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'translateY(0)';
-                        e.currentTarget.style.boxShadow = '';
-                    }}
-                >
-                    {options.map((option) => (
-                        <option key={option.value} value={option.value}>
-                            {option.label}
-                        </option>
-                    ))}
-                </select>
-            </div>
+        <div className="d-flex align-items-center gap-2">
+            <SortDown size={20} className="text-muted" />
+            <select
+                id="sort-select"
+                className="form-select form-select-sm shadow-sm"
+                value={value}
+                onChange={(e) => onChange(e.target.value as SortOption)}
+                aria-label="Sort live runs"
+                style={{
+                    width: 'auto',
+                    minWidth: '200px',
+                    cursor: 'pointer',
+                    fontSize: '0.95rem',
+                    fontWeight: '500',
+                    borderRadius: '10px',
+                    padding: '0.6rem 1rem',
+                    transition: 'all 0.15s ease',
+                    fontFamily:
+                        '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+                }}
+                onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.01)';
+                }}
+                onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                }}
+            >
+                {options.map((option) => (
+                    <option key={option.value} value={option.value}>
+                        {option.label}
+                    </option>
+                ))}
+            </select>
         </div>
     );
 };
