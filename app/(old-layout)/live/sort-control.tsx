@@ -14,7 +14,7 @@ export const SortControl = ({ value, onChange }: SortControlProps) => {
         { value: 'runtime' as const, label: '⏱️ Longest Runs' },
         { value: 'runner' as const, label: '👤 Runner (A-Z)' },
         { value: 'game' as const, label: '🎮 Game (A-Z)' },
-        { value: 'delta' as const, label: '⚡ Best Pace' },
+        { value: 'delta' as const, label: '⚡ Delta to PB' },
     ];
 
     return (
