@@ -167,7 +167,7 @@ export const Live = ({
             <Row className="g-3 mb-3">
                 <Col>
                     <div
-                        className="d-flex flex-wrap align-items-center gap-3 p-3 rounded-3 shadow-sm"
+                        className="d-flex flex-wrap align-items-center gap-4 p-4 rounded-3 shadow-sm"
                         style={{
                             background: 'var(--bs-body-bg)',
                             border: '1px solid var(--bs-border-color)',
@@ -177,18 +177,7 @@ export const Live = ({
                             value={sortOption}
                             onChange={setSortOption}
                         />
-                        <div
-                            style={{
-                                width: '1px',
-                                height: '32px',
-                                background: 'var(--bs-border-color)',
-                                opacity: 0.5,
-                            }}
-                        />
-                        <div
-                            className="input-group flex-grow-1"
-                            style={{ maxWidth: '400px' }}
-                        >
+                        <div className="input-group flex-grow-1">
                             <span
                                 className="input-group-text bg-transparent border-end-0"
                                 onClick={() => {
@@ -217,10 +206,12 @@ export const Live = ({
                                 }}
                             />
                         </div>
-                        <FilterControl
-                            filters={filters}
-                            onChange={setFilters}
-                        />
+                        <div style={{ marginLeft: 'auto' }}>
+                            <FilterControl
+                                filters={filters}
+                                onChange={setFilters}
+                            />
+                        </div>
                     </div>
                 </Col>
             </Row>
