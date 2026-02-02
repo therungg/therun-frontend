@@ -39,7 +39,11 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
     });
 
     return (
-        <div ref={setNodeRef} className={className}>
+        <div
+            ref={setNodeRef}
+            className={className}
+            style={{ minHeight: panels.length === 0 ? '200px' : undefined }}
+        >
             <SortableContext
                 items={panels.map((p) => p.id)}
                 strategy={verticalListSortingStrategy}
