@@ -48,44 +48,46 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
     const isEmpty = panels.length === 0;
 
     return (
-        <div
-            ref={setNodeRef}
-            className={className}
-            style={{
-                minHeight: isEmpty ? '200px' : undefined,
-                border: isEmpty ? '2px dashed #ccc' : undefined,
-                borderRadius: isEmpty ? '8px' : undefined,
-                backgroundColor: isOver
-                    ? '#f0f0f0'
-                    : isEmpty
-                      ? '#fafafa'
-                      : undefined,
-                display: 'flex',
-                flexDirection: 'column',
-                padding: isEmpty ? '1rem' : undefined,
-                transition: 'background-color 0.2s ease',
-            }}
-        >
-            {isEmpty && (
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        height: '100%',
-                        color: '#999',
-                        fontSize: '0.9rem',
-                    }}
-                >
-                    Drop panels here
-                </div>
-            )}
-            <SortableContext
-                items={panels.map((p) => p.id)}
-                strategy={verticalListSortingStrategy}
+        <div className={className}>
+            <div
+                ref={setNodeRef}
+                style={{
+                    minHeight: isEmpty ? '300px' : '100%',
+                    border: isEmpty ? '2px dashed #999' : undefined,
+                    borderRadius: isEmpty ? '8px' : undefined,
+                    backgroundColor: isOver
+                        ? '#e8f5e9'
+                        : isEmpty
+                          ? '#f5f5f5'
+                          : undefined,
+                    display: isEmpty ? 'flex' : undefined,
+                    alignItems: isEmpty ? 'center' : undefined,
+                    justifyContent: isEmpty ? 'center' : undefined,
+                    padding: isEmpty ? '2rem' : undefined,
+                    transition: 'all 0.2s ease',
+                    position: 'relative',
+                }}
             >
-                {children}
-            </SortableContext>
+                {isEmpty && (
+                    <div
+                        style={{
+                            color: '#666',
+                            fontSize: '1rem',
+                            fontWeight: 500,
+                            textAlign: 'center',
+                            pointerEvents: 'none',
+                        }}
+                    >
+                        Drop panels here
+                    </div>
+                )}
+                <SortableContext
+                    items={panels.map((p) => p.id)}
+                    strategy={verticalListSortingStrategy}
+                >
+                    {children}
+                </SortableContext>
+            </div>
         </div>
     );
 };
