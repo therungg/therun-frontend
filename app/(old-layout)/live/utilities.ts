@@ -154,9 +154,14 @@ export const filterLiveRuns = (
         }
     }
 
-    // Ongoing filter (not reset and not finished)
+    // Ongoing filter (currently active - not finished and actively progressing)
     if (filters.ongoing) {
-        if (liveRun.hasReset || liveRun.endedAt) {
+        // Filter out runs that have ended
+        // if (liveRun.endedAt) {
+        //     return false;
+        // }
+        // Filter out runs that are in a reset state (currentSplitIndex -1 typically means reset/not started)
+        if (liveRun.currentSplitIndex < 0) {
             return false;
         }
     }
