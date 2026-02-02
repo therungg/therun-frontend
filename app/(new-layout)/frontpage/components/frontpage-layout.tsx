@@ -33,17 +33,46 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
     className,
     children,
 }) => {
-    const { setNodeRef } = useDroppable({
+    const { setNodeRef, isOver } = useDroppable({
         id: `column-${columnId}`,
         data: { type: 'column', columnId },
     });
+
+    const isEmpty = panels.length === 0;
 
     return (
         <div
             ref={setNodeRef}
             className={className}
-            style={{ minHeight: panels.length === 0 ? '200px' : undefined }}
+            style={{
+                minHeight: isEmpty ? '200px' : undefined,
+                border: isEmpty ? '2px dashed #ccc' : undefined,
+                borderRadius: isEmpty ? '8px' : undefined,
+                backgroundColor: isOver
+                    ? '#f0f0f0'
+                    : isEmpty
+                      ? '#fafafa'
+                      : undefined,
+                display: 'flex',
+                flexDirection: 'column',
+                padding: isEmpty ? '1rem' : undefined,
+                transition: 'background-color 0.2s ease',
+            }}
         >
+            {isEmpty && (
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%',
+                        color: '#999',
+                        fontSize: '0.9rem',
+                    }}
+                >
+                    Drop panels here
+                </div>
+            )}
             <SortableContext
                 items={panels.map((p) => p.id)}
                 strategy={verticalListSortingStrategy}
