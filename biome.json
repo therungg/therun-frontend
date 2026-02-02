@@ -19,7 +19,8 @@
 			"!**/.idea",
 			"!**/.next",
 			"!**/node_modules",
-			"!**/vendor"
+			"!**/vendor",
+			"!.eslintrc.json"
 		]
 	},
 	"linter": {
