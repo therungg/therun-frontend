@@ -19,13 +19,14 @@ export const SortControl = ({ value, onChange }: SortControlProps) => {
     return (
         <div className="d-flex align-items-center gap-2">
             <span className="text-muted">Sort by:</span>
-            <div className="btn-group" role="group">
+            <div className="btn-group" role="group" aria-label="Sort options">
                 {options.map((option) => (
                     <button
                         key={option.value}
                         type="button"
                         className={`btn ${value === option.value ? 'btn-primary' : 'btn-outline-primary'}`}
                         onClick={() => onChange(option.value)}
+                        aria-pressed={value === option.value}
                     >
                         {option.label}
                     </button>
