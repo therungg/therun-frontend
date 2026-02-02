@@ -1,15 +1,15 @@
-import { Run } from "../../../common/types";
-import { Col, Image, Row, Table } from "react-bootstrap";
-import React, { useEffect, useReducer, useState } from "react";
-import { DurationToFormatted, IsoToFormatted } from "../../util/datetime";
-import { GameLink, UserGameCategoryLink } from "../../links/links";
-import { EditRun } from "../dashboard/edit-run";
-import { GlobalGameData } from "~app/(old-layout)/[username]/[game]/[run]/run";
-import styles from "../../css/User.module.scss";
-import { GameImage } from "~src/components/image/gameimage";
-import { getColorMode } from "~src/utils/colormode";
-import { Can, subject } from "~src/rbac/Can.component";
-import { useRouter } from "next/navigation";
+import { useRouter } from 'next/navigation';
+import React, { useEffect, useReducer, useState } from 'react';
+import { Col, Image, Row, Table } from 'react-bootstrap';
+import { GlobalGameData } from '~app/(old-layout)/[username]/[game]/[run]/run';
+import { GameImage } from '~src/components/image/gameimage';
+import { Can, subject } from '~src/rbac/Can.component';
+import { getColorMode } from '~src/utils/colormode';
+import { Run } from '../../../common/types';
+import styles from '../../css/User.module.scss';
+import { GameLink, UserGameCategoryLink } from '../../links/links';
+import { DurationToFormatted, IsoToFormatted } from '../../util/datetime';
+import { EditRun } from '../dashboard/edit-run';
 
 export const UserOverview = ({
     runs,
@@ -32,16 +32,16 @@ export const UserOverview = ({
     const router = useRouter();
 
     useEffect(function () {
-        setDark(getColorMode() !== "light");
+        setDark(getColorMode() !== 'light');
     }, []);
 
     const images = Array.from(runs).filter(([game]) => {
-        game = game.split("#")[0];
+        game = game.split('#')[0];
         const globalData = allGlobalGameData.find(
             (data) => data.display.toLowerCase() == game.toLowerCase(),
         );
 
-        return globalData && globalData.image && globalData.image != "noimage";
+        return globalData && globalData.image && globalData.image != 'noimage';
     });
 
     let lastGame = null;
@@ -51,8 +51,8 @@ export const UserOverview = ({
     return (
         <div>
             {Array.from(runs).map(([game, orderedRuns], n) => {
-                let lastVars = "";
-                const split = game.split("#");
+                let lastVars = '';
+                const split = game.split('#');
                 const originalGame = game;
 
                 game = split[0];
@@ -66,7 +66,7 @@ export const UserOverview = ({
                 const varsCopy = vars;
 
                 vars = vars.filter((variable) => {
-                    const splitVariables = variable.split(":");
+                    const splitVariables = variable.split(':');
                     const k = splitVariables[0];
 
                     if (usedVars.includes(k)) return false;
@@ -75,7 +75,7 @@ export const UserOverview = ({
 
                     if (lastVars.includes(variable)) return false;
 
-                    return k != "Verified";
+                    return k != 'Verified';
                 });
 
                 lastVars = varsCopy;
@@ -97,19 +97,19 @@ export const UserOverview = ({
                         style={{
                             marginLeft:
                                 sameGame && globalData && images.length > 0
-                                    ? "117px"
-                                    : "0",
+                                    ? '117px'
+                                    : '0',
                         }}
                     >
                         {!sameGame && globalData && images.length > 0 && (
                             <div
                                 className={styles.image}
-                                style={{ cursor: "pointer" }}
+                                style={{ cursor: 'pointer' }}
                             >
                                 {!sameGame && (
                                     <a href={`/games/${game}`}>
                                         {globalData.image &&
-                                            globalData.image != "noimage" && (
+                                            globalData.image != 'noimage' && (
                                                 <GameImage
                                                     alt={globalData.display}
                                                     src={globalData.image}
@@ -119,13 +119,13 @@ export const UserOverview = ({
                                                 />
                                             )}
                                         {(!globalData.image ||
-                                            globalData.image == "noimage") && (
+                                            globalData.image == 'noimage') && (
                                             <Image
                                                 alt="Logo"
                                                 src={
                                                     dark
-                                                        ? "/logo_dark_theme_no_text_transparent.png"
-                                                        : "/logo_light_theme_no_text_transparent.png"
+                                                        ? '/logo_dark_theme_no_text_transparent.png'
+                                                        : '/logo_light_theme_no_text_transparent.png'
                                                 }
                                                 height={0}
                                                 width={0}
@@ -141,26 +141,26 @@ export const UserOverview = ({
                         {vars.length > 0 && (
                             <small
                                 style={{
-                                    display: "flex",
-                                    marginBottom: "0.3rem",
+                                    display: 'flex',
+                                    marginBottom: '0.3rem',
                                 }}
                             >
-                                <Row style={{ width: "100%" }}>
+                                <Row style={{ width: '100%' }}>
                                     {vars.map((variable) => {
                                         const splitVariables =
-                                            variable.split(":");
+                                            variable.split(':');
                                         const k = splitVariables[0];
                                         const v = splitVariables
                                             .splice(1)
-                                            .join(":");
+                                            .join(':');
 
                                         return (
                                             <Col
                                                 xl={xl}
                                                 key={k}
-                                                style={{ whiteSpace: "nowrap" }}
+                                                style={{ whiteSpace: 'nowrap' }}
                                             >
-                                                <i>{k}</i>:{" "}
+                                                <i>{k}</i>:{' '}
                                                 <b className="fs-15p">{v}</b>
                                             </Col>
                                         );
@@ -171,18 +171,18 @@ export const UserOverview = ({
                         <Table key={game} bordered hover responsive>
                             <thead
                                 className={
-                                    sameGame ? styles.sameGameRunHeader : ""
+                                    sameGame ? styles.sameGameRunHeader : ''
                                 }
                             >
                                 <tr>
-                                    <th style={{ width: "40%" }}>Run</th>
-                                    <th style={{ width: "13%" }}>PB</th>
-                                    <th style={{ width: "13%" }}>Attempts</th>
-                                    <th style={{ width: "13%" }}>Played</th>
-                                    <th style={{ width: "29%" }}>PB Time</th>
+                                    <th style={{ width: '40%' }}>Run</th>
+                                    <th style={{ width: '13%' }}>PB</th>
+                                    <th style={{ width: '13%' }}>Attempts</th>
+                                    <th style={{ width: '13%' }}>Played</th>
+                                    <th style={{ width: '29%' }}>PB Time</th>
                                     <Can
                                         I="delete"
-                                        this={subject("run", username)}
+                                        this={subject('run', username)}
                                     >
                                         <th>Delete</th>
                                         <th>Edit</th>
@@ -205,9 +205,9 @@ export const UserOverview = ({
 
                                     return (
                                         <tr key={run.uploadTime.toString()}>
-                                            <td style={{ width: "40%" }}>
+                                            <td style={{ width: '40%' }}>
                                                 <div
-                                                    style={{ display: "flex" }}
+                                                    style={{ display: 'flex' }}
                                                 >
                                                     <UserGameCategoryLink
                                                         username={run.user}
@@ -226,7 +226,7 @@ export const UserOverview = ({
                                                         <div
                                                             style={{
                                                                 marginLeft:
-                                                                    "0.5rem",
+                                                                    '0.5rem',
                                                             }}
                                                         >
                                                             <StarFilledInIcon />
@@ -234,7 +234,7 @@ export const UserOverview = ({
                                                     )}
                                                 </div>
                                             </td>
-                                            <td style={{ width: "13%" }}>
+                                            <td style={{ width: '13%' }}>
                                                 <DurationToFormatted
                                                     duration={
                                                         useRun.personalBest
@@ -245,24 +245,24 @@ export const UserOverview = ({
                                                             ?.personalBest &&
                                                         !forceRealTime
                                                     }
-                                                />{" "}
+                                                />{' '}
                                                 {gameTime &&
                                                     !forceRealTime &&
                                                     !!run.gameTimeData
                                                         ?.personalBest &&
-                                                    "(IGT)"}
+                                                    '(IGT)'}
                                             </td>
-                                            <td style={{ width: "13%" }}>
+                                            <td style={{ width: '13%' }}>
                                                 {run.attemptCount}
                                             </td>
-                                            <td style={{ width: "13%" }}>
+                                            <td style={{ width: '13%' }}>
                                                 <DurationToFormatted
                                                     duration={run.totalRunTime}
                                                 />
                                             </td>
                                             <td
                                                 className="text-nowrap"
-                                                style={{ width: "29%" }}
+                                                style={{ width: '29%' }}
                                             >
                                                 <IsoToFormatted
                                                     iso={
@@ -277,15 +277,15 @@ export const UserOverview = ({
                                             </td>
                                             <Can
                                                 I="delete"
-                                                this={subject("run", username)}
+                                                this={subject('run', username)}
                                             >
                                                 <td>
                                                     <div
                                                         style={{
-                                                            display: "flex",
+                                                            display: 'flex',
                                                             justifyContent:
-                                                                "center",
-                                                            cursor: "pointer",
+                                                                'center',
+                                                            cursor: 'pointer',
                                                         }}
                                                         onClick={async () => {
                                                             if (
@@ -302,7 +302,7 @@ export const UserOverview = ({
                                                                 await fetch(
                                                                     `/api/users/${deleteUrl}`,
                                                                     {
-                                                                        method: "DELETE",
+                                                                        method: 'DELETE',
                                                                     },
                                                                 );
 
@@ -321,14 +321,14 @@ export const UserOverview = ({
                                                 <td>
                                                     <div
                                                         style={{
-                                                            display: "flex",
+                                                            display: 'flex',
                                                             justifyContent:
-                                                                "center",
+                                                                'center',
                                                         }}
                                                     >
                                                         <div
                                                             style={{
-                                                                cursor: "pointer",
+                                                                cursor: 'pointer',
                                                             }}
                                                             onClick={() => {
                                                                 if (
@@ -357,14 +357,14 @@ export const UserOverview = ({
                                                 <td>
                                                     <div
                                                         style={{
-                                                            display: "flex",
+                                                            display: 'flex',
                                                             justifyContent:
-                                                                "center",
+                                                                'center',
                                                         }}
                                                     >
                                                         <div
                                                             style={{
-                                                                cursor: "pointer",
+                                                                cursor: 'pointer',
                                                             }}
                                                             onClick={async () => {
                                                                 const userIdentifier = `${session.id}-${username}`;
@@ -377,7 +377,7 @@ export const UserOverview = ({
                                                                     await fetch(
                                                                         `/api/users/${editUrl}/highlight`,
                                                                         {
-                                                                            method: "PUT",
+                                                                            method: 'PUT',
                                                                         },
                                                                     );
 

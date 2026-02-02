@@ -1,20 +1,20 @@
-"use server";
+'use server';
 
 import {
     StoryOption,
     StoryPreferences,
     StoryWithSplitsStories,
-} from "~app/(old-layout)/live/story.types";
-import { User } from "../../types/session.types";
-import { getPronounsFromString } from "~app/(old-layout)/stories/manage/get-pronouns-from-string";
+} from '~app/(old-layout)/live/story.types';
+import { getPronounsFromString } from '~app/(old-layout)/stories/manage/get-pronouns-from-string';
+import { User } from '../../types/session.types';
 
 export const getStoryByUser = async (username: string) => {
     const storyApiUrl = process.env.NEXT_PUBLIC_STORIES_API_URL as string;
 
-    const url = storyApiUrl + "/user/" + encodeURIComponent(username) + "/live";
+    const url = storyApiUrl + '/user/' + encodeURIComponent(username) + '/live';
 
     const story = await fetch(url, {
-        method: "GET",
+        method: 'GET',
     });
 
     return (await story.json()).result as StoryWithSplitsStories;
@@ -23,10 +23,10 @@ export const getStoryByUser = async (username: string) => {
 export const getStoryOptions = async () => {
     const storyApiUrl = process.env.NEXT_PUBLIC_STORIES_API_URL as string;
 
-    const url = storyApiUrl + "/story-options";
+    const url = storyApiUrl + '/story-options';
 
     const options = await fetch(url, {
-        method: "GET",
+        method: 'GET',
     });
 
     return (await options.json()).result as StoryOption[];
@@ -37,12 +37,12 @@ export const getStoryPreferencesByUser = async (user: User) => {
 
     const url =
         storyApiUrl +
-        "/user/" +
+        '/user/' +
         encodeURIComponent(user.username) +
-        "/preferences";
+        '/preferences';
 
     const story = await fetch(url, {
-        method: "GET",
+        method: 'GET',
     });
 
     const result = (await story.json()).result as StoryPreferences | undefined;

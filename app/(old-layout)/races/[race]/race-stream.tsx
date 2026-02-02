@@ -1,6 +1,6 @@
-import { TwitchEmbed } from "react-twitch-embed";
-import React, { useState } from "react";
-import { Form } from "react-bootstrap";
+import React, { useState } from 'react';
+import { Form } from 'react-bootstrap';
+import { TwitchEmbed } from 'react-twitch-embed';
 
 export const RaceStream = ({ stream }: { stream: string }) => {
     const [showStream, setShowStream] = useState(!!stream);

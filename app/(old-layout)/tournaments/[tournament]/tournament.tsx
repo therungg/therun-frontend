@@ -1,39 +1,39 @@
-"use client";
+'use client';
 
-import React, { createRef, useCallback, useEffect, useState } from "react";
-import { Card, Col, Row, Tab, Tabs } from "react-bootstrap";
-import { LiveUserRun } from "~src/components/live/live-user-run";
-import { RecommendedStream } from "~src/components/live/recommended-stream";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import useSWR from "swr";
-import { fetcher } from "~src/utils/fetcher";
-import TournamentStats from "~src/components/tournament/tournament-stats";
-import {
-    Tournament,
-    TournamentInfo,
-} from "~src/components/tournament/tournament-info";
-import { TournamentRuns } from "~src/components/tournament/tournament-runs";
-import { useLiveRunsWebsocket } from "~src/components/websocket/use-reconnect-websocket";
-import { LiveDataMap } from "~app/(old-layout)/live/live.types";
+import React, { createRef, useCallback, useEffect, useState } from 'react';
+import { Card, Col, Row, Tab, Tabs } from 'react-bootstrap';
+import { Search as SearchIcon } from 'react-bootstrap-icons';
+import useSWR from 'swr';
+import { User } from 'types/session.types';
+import { CategoryLeaderboard } from '~app/(old-layout)/games/[game]/game.types';
+import { LiveDataMap } from '~app/(old-layout)/live/live.types';
 import {
     getRecommendedStream,
     liveRunIsInSearch,
-} from "~app/(old-layout)/live/utilities";
-import { isLiveDataEligibleForTournament } from "~app/(old-layout)/tournaments/[tournament]/is-live-data-eligible-for-tournament.component";
-import { liveRunArrayToMap } from "~app/(old-layout)/tournaments/[tournament]/live-run-array-to-map.component";
-import { EventLeaderboards } from "~app/(old-layout)/tournaments/[tournament]/event-leaderboards.component";
-import { Search as SearchIcon } from "react-bootstrap-icons";
-import { TournamentTimer } from "~app/(old-layout)/tournaments/[tournament]/tournament-timer";
-import { TournamentStandings } from "~src/components/tournament/tournament-standings";
+} from '~app/(old-layout)/live/utilities';
+import { EventLeaderboards } from '~app/(old-layout)/tournaments/[tournament]/event-leaderboards.component';
+import { isLiveDataEligibleForTournament } from '~app/(old-layout)/tournaments/[tournament]/is-live-data-eligible-for-tournament.component';
+import { liveRunArrayToMap } from '~app/(old-layout)/tournaments/[tournament]/live-run-array-to-map.component';
+import { TournamentTimer } from '~app/(old-layout)/tournaments/[tournament]/tournament-timer';
 import {
     Breadcrumb,
     BreadcrumbItem,
-} from "~src/components/breadcrumbs/breadcrumb";
-import { CategoryLeaderboard } from "~app/(old-layout)/games/[game]/game.types";
-import { GameLink, UserLink } from "~src/components/links/links";
-import { getLiveRunForUser } from "~src/lib/live-runs";
-import { SkeletonLiveRun } from "~src/components/skeleton/live/skeleton-live-run";
-import { User } from "types/session.types";
+} from '~src/components/breadcrumbs/breadcrumb';
+import { GameLink, UserLink } from '~src/components/links/links';
+import { LiveUserRun } from '~src/components/live/live-user-run';
+import { RecommendedStream } from '~src/components/live/recommended-stream';
+import { SkeletonLiveRun } from '~src/components/skeleton/live/skeleton-live-run';
+import {
+    Tournament,
+    TournamentInfo,
+} from '~src/components/tournament/tournament-info';
+import { TournamentRuns } from '~src/components/tournament/tournament-runs';
+import { TournamentStandings } from '~src/components/tournament/tournament-standings';
+import TournamentStats from '~src/components/tournament/tournament-stats';
+import { DurationToFormatted } from '~src/components/util/datetime';
+import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
+import { getLiveRunForUser } from '~src/lib/live-runs';
+import { fetcher } from '~src/utils/fetcher';
 
 export const GenericTournament = ({
     liveDataMap,
@@ -51,8 +51,8 @@ export const GenericTournament = ({
     const gameTime = !!tournament.gameTime;
 
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
-    const [selectedSort, setSelectedSort] = useState("pb");
-    const [search, setSearch] = useState("");
+    const [selectedSort, setSelectedSort] = useState('pb');
+    const [search, setSearch] = useState('');
 
     const recommendedStream = getRecommendedStream(liveDataMap, username);
     const [currentlyViewing, setCurrentlyViewing] = useState(recommendedStream);
@@ -100,11 +100,11 @@ export const GenericTournament = ({
                     JSON.stringify(updatedLiveDataMap),
                 );
 
-                if (newData.type == "UPDATE") {
+                if (newData.type == 'UPDATE') {
                     newMap[user] = newData.run;
                 }
 
-                if (newData.type == "DELETE") {
+                if (newData.type == 'DELETE') {
                     delete newMap[user];
 
                     if (recommendedStream == user) {
@@ -172,8 +172,8 @@ export const GenericTournament = ({
     }, [currentlyViewing]);
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { content: "Tournaments", href: "/tournaments" },
-        { content: tournament.shortName || "" },
+        { content: 'Tournaments', href: '/tournaments' },
+        { content: tournament.shortName || '' },
     ];
 
     return (
@@ -197,15 +197,15 @@ export const GenericTournament = ({
                 )}
             </div>
             <Card className="game-border h-100 mb-3">
-                <Row style={{ minHeight: "10rem" }}>
+                <Row style={{ minHeight: '10rem' }}>
                     <Col xs={4} sm={3} md="auto">
                         {tournament.logoUrl && (
                             <Card.Img
                                 className="rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
                                 style={{
-                                    minWidth: "5rem",
-                                    maxHeight: "18rem",
-                                    maxWidth: "10rem",
+                                    minWidth: '5rem',
+                                    maxHeight: '18rem',
+                                    maxWidth: '10rem',
                                 }}
                                 src={`/${tournament.logoUrl}`}
                                 alt="Tournament Logo"
@@ -217,9 +217,9 @@ export const GenericTournament = ({
                             <Card.Img
                                 className="rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
                                 style={{
-                                    minWidth: "5rem",
-                                    maxHeight: "18rem",
-                                    maxWidth: "10rem",
+                                    minWidth: '5rem',
+                                    maxHeight: '18rem',
+                                    maxWidth: '10rem',
                                 }}
                                 src={tournament.gameImage}
                                 alt="Tournament Logo"
@@ -239,7 +239,7 @@ export const GenericTournament = ({
 
                         <div className="d-flex justify-content-between gap-3 mb-0 pb-2 mb-2 w-100 border-bottom">
                             <div className="pb-0 mb-0 w-100 fst-italic">
-                                <GameLink game={tournament.game} /> -{" "}
+                                <GameLink game={tournament.game} /> -{' '}
                                 {tournament.category}
                             </div>
                         </div>
@@ -248,7 +248,7 @@ export const GenericTournament = ({
                             tournamentLeaderboards.pbLeaderboard &&
                             tournamentLeaderboards.pbLeaderboard.length > 0 && (
                                 <div className="flex-grow-1">
-                                    Current record:{" "}
+                                    Current record:{' '}
                                     <span className="fs-4">
                                         <DurationToFormatted
                                             duration={
@@ -257,7 +257,7 @@ export const GenericTournament = ({
                                                     .stat as string
                                             }
                                         />
-                                    </span>{" "}
+                                    </span>{' '}
                                     by&nbsp;
                                     <UserLink
                                         username={
@@ -269,7 +269,7 @@ export const GenericTournament = ({
                             )}
                         {tournament.socials && tournament.socials.twitch && (
                             <div>
-                                Watch live at{" "}
+                                Watch live at{' '}
                                 <a href={tournament.socials.twitch.url}>
                                     {tournament.socials.twitch.urlDisplay}
                                 </a>

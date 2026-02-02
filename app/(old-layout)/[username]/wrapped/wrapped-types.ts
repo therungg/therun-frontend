@@ -1,9 +1,9 @@
-import { PlaytimeStats } from "~src/components/user/stats";
-import { DetailedUserStats } from "~app/(old-layout)/races/races.types";
+import { DetailedUserStats } from '~app/(old-layout)/races/races.types';
+import { PlaytimeStats } from '~src/components/user/stats';
 
 export interface Wrapped {
     user: string;
-    "start#end": string;
+    'start#end': string;
     version: string;
     // -1 is error, 0 is processing, 1 is done
     status: -1 | 0 | 1;

@@ -1,11 +1,11 @@
-import { WrappedCounter } from "../wrapped-counter";
-import { CSSProperties, memo } from "react";
-import { UseCountUpProps } from "react-countup/build/useCountUp";
+import { CSSProperties, memo } from 'react';
+import { UseCountUpProps } from 'react-countup/build/useCountUp';
+import { WrappedCounter } from '../wrapped-counter';
 
 interface SectionStatsCardProps {
     stat: number;
     statDescription: React.ReactNode;
-    statFormatter?: UseCountUpProps["formattingFn"];
+    statFormatter?: UseCountUpProps['formattingFn'];
     style?: CSSProperties;
 }
 
@@ -30,4 +30,4 @@ export const SectionStatsCard = memo<SectionStatsCardProps>(
         );
     },
 );
-SectionStatsCard.displayName = "SectionStatsCard";
+SectionStatsCard.displayName = 'SectionStatsCard';

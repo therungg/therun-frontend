@@ -1,8 +1,8 @@
+import { startRace } from '~app/(old-layout)/races/actions/start-race.action';
 import {
     RaceActionButton,
     RaceActionProps,
-} from "~app/(old-layout)/races/components/buttons/race-action-button";
-import { startRace } from "~app/(old-layout)/races/actions/start-race.action";
+} from '~app/(old-layout)/races/components/buttons/race-action-button';
 
 export const StartRaceButton = (props: RaceActionProps) => {
     return (

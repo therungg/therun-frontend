@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { Can } from "~src/rbac/Can.component";
-import Link from "next/link";
-import { IconButton } from "~src/components/Button/IconButton";
-import { PlusIcon } from "~src/icons/plus-icon";
-import { Col, Row } from "react-bootstrap";
-import { EventFromSearch } from "../../../types/events.types";
-import { SpeedrunEventCard } from "./event-card";
-import { Paginate } from "~src/components/server-pagination/Paginate";
-import { PaginatedData } from "~src/components/pagination/pagination.types";
-import { SearchResponse } from "algoliasearch";
-import { EventSearch } from "./event-search";
-import { EventFilters } from "./event-filters";
+import { SearchResponse } from 'algoliasearch';
+import Link from 'next/link';
+import { Col, Row } from 'react-bootstrap';
+import { IconButton } from '~src/components/Button/IconButton';
+import { PaginatedData } from '~src/components/pagination/pagination.types';
+import { Paginate } from '~src/components/server-pagination/Paginate';
+import { PlusIcon } from '~src/icons/plus-icon';
+import { Can } from '~src/rbac/Can.component';
+import { EventFromSearch } from '../../../types/events.types';
+import { SpeedrunEventCard } from './event-card';
+import { EventFilters } from './event-filters';
+import { EventSearch } from './event-search';
 
 export const Events = ({
     events,

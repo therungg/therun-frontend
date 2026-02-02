@@ -1,9 +1,9 @@
-"use client";
-import React from "react";
-import { Card } from "react-bootstrap";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import { getGameUrl } from "./utilities";
-import { Game } from "~app/(old-layout)/games/games.types";
+'use client';
+import React from 'react';
+import { Card } from 'react-bootstrap';
+import { Game } from '~app/(old-layout)/games/games.types';
+import { DurationToFormatted } from '~src/components/util/datetime';
+import { getGameUrl } from './utilities';
 
 interface AllGamesCardHeaderProps {
     game: Game;

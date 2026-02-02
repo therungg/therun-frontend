@@ -1,6 +1,6 @@
-import { UserStats } from "~app/(old-layout)/races/races.types";
-import { Table } from "react-bootstrap";
-import { DurationToFormatted } from "~src/components/util/datetime";
+import { Table } from 'react-bootstrap';
+import { UserStats } from '~app/(old-layout)/races/races.types';
+import { DurationToFormatted } from '~src/components/util/datetime';
 
 export const UserRaceStatsTable = ({ raceStats }: { raceStats: UserStats }) => {
     return (
@@ -9,25 +9,25 @@ export const UserRaceStatsTable = ({ raceStats }: { raceStats: UserStats }) => {
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th style={{ textAlign: "right" }}>Value</th>
+                        <th style={{ textAlign: 'right' }}>Value</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td>Total Races</td>
-                        <td style={{ textAlign: "right" }}>
+                        <td style={{ textAlign: 'right' }}>
                             {raceStats.totalRaces}
                         </td>
                     </tr>
                     <tr>
                         <td>Finished Races</td>
-                        <td style={{ textAlign: "right" }}>
+                        <td style={{ textAlign: 'right' }}>
                             {raceStats.totalFinishedRaces}
                         </td>
                     </tr>
                     <tr>
                         <td>Finished %</td>
-                        <td style={{ textAlign: "right" }}>
+                        <td style={{ textAlign: 'right' }}>
                             {(
                                 (raceStats.totalFinishedRaces /
                                     raceStats.totalRaces) *
@@ -38,7 +38,7 @@ export const UserRaceStatsTable = ({ raceStats }: { raceStats: UserStats }) => {
                     </tr>
                     <tr>
                         <td>Total Race Time</td>
-                        <td style={{ textAlign: "right" }}>
+                        <td style={{ textAlign: 'right' }}>
                             <DurationToFormatted
                                 duration={raceStats.totalRaceTime}
                             />

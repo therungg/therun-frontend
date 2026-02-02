@@ -1,9 +1,9 @@
-"use server";
+'use server';
 
-import { db } from "~src/db";
-import { roles, userRoles } from "~src/db/schema";
-import { ManageableRole, RoleEntity } from "../../types/roles.types";
-import { and, eq } from "drizzle-orm";
+import { and, eq } from 'drizzle-orm';
+import { db } from '~src/db';
+import { roles, userRoles } from '~src/db/schema';
+import { ManageableRole, RoleEntity } from '../../types/roles.types';
 
 export const getAllRoles = async () => {
     return (await db.select().from(roles)) as RoleEntity[];
@@ -19,7 +19,7 @@ export const addRoleToUser = async (userId: number, role: ManageableRole) => {
     const roleEntity = await getRoleByName(role);
 
     if (!roleEntity) {
-        throw new Error("Role not found");
+        throw new Error('Role not found');
     }
 
     await db.insert(userRoles).values({
@@ -35,7 +35,7 @@ export const removeRoleFromUser = async (
     const roleEntity = await getRoleByName(role);
 
     if (!roleEntity) {
-        throw new Error("Role not found");
+        throw new Error('Role not found');
     }
 
     await db

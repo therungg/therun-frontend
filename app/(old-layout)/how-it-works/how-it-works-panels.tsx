@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { TwitchLoginButton } from "~src/components/twitch/TwitchLoginButton";
-import Link from "next/link";
+import Link from 'next/link';
+import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
 
 export default function HowItWorksPanels({
     session,
@@ -15,12 +15,12 @@ export default function HowItWorksPanels({
                 <h3>Login with Twitch</h3>
                 <p>
                     By logging in with Twitch, Therun.gg can use your username
-                    to link your profile. This way, you can go to{" "}
+                    to link your profile. This way, you can go to{' '}
                     <i>therun.gg/YourName</i> to view your stats!
                 </p>
                 {session.username ? (
                     <p>
-                        You are already logged in as{" "}
+                        You are already logged in as{' '}
                         <strong>{session.username}</strong>!
                     </p>
                 ) : (
@@ -51,12 +51,12 @@ export default function HowItWorksPanels({
                     sessions and splits directly!
                 </p>
                 <p>
-                    Visit{" "}
+                    Visit{' '}
                     {session.username ? (
                         <a href={`/${session.username}`}> your page </a>
                     ) : (
-                        "your page"
-                    )}{" "}
+                        'your page'
+                    )}{' '}
                     to view them.
                 </p>
                 {session.username ? (
@@ -71,7 +71,7 @@ export default function HowItWorksPanels({
                 <h2>04</h2>
                 <h3>Share your page</h3>
                 <p>
-                    Anyone can now visit your page by replacing <i>twitch.tv</i>{" "}
+                    Anyone can now visit your page by replacing <i>twitch.tv</i>{' '}
                     with <i>therun.gg</i>! Have fun!
                 </p>
             </li>

@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { WrappedWithData } from "~app/(old-layout)/[username]/wrapped/wrapped-types";
-import { User } from "../../../../types/session.types";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { TheRunWrapped } from "~app/(old-layout)/[username]/wrapped/the-run-wrapped";
-import useSWR from "swr";
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import useSWR from 'swr';
+import { TheRunWrapped } from '~app/(old-layout)/[username]/wrapped/the-run-wrapped';
+import { WrappedWithData } from '~app/(old-layout)/[username]/wrapped/wrapped-types';
+import { User } from '../../../../types/session.types';
 
 interface ContentLoadingWrapperProps {
     user: string;

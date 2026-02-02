@@ -1,22 +1,22 @@
-"use client";
+'use client';
 
+import React from 'react';
+import { Card, Col, Row } from 'react-bootstrap';
+import { RaceParticipantTimer } from '~app/(old-layout)/races/[race]/race-timer';
+import { RacePlacings } from '~app/(old-layout)/races/components/race-placings';
 import {
     Race,
     RaceParticipant,
     RaceParticipantWithLiveData,
-} from "~app/(old-layout)/races/races.types";
-import { PaginationContextProvider } from "~src/components/pagination/pagination.context-provider";
-import usePagination from "~src/components/pagination/use-pagination";
-import { racesFetcher } from "~src/components/pagination/fetchers/races-fetcher";
-import PaginationControl from "~src/components/pagination/pagination-control";
-import { paginateArray } from "~src/components/pagination/paginate-array";
-import { Card, Col, Row } from "react-bootstrap";
-import React from "react";
-import { RaceParticipantTimer } from "~app/(old-layout)/races/[race]/race-timer";
-import styles from "~src/components/css/LiveRun.module.scss";
-import { PersonIcon } from "~src/icons/person-icon";
-import { FromNow } from "~src/components/util/datetime";
-import { RacePlacings } from "~app/(old-layout)/races/components/race-placings";
+} from '~app/(old-layout)/races/races.types';
+import styles from '~src/components/css/LiveRun.module.scss';
+import { racesFetcher } from '~src/components/pagination/fetchers/races-fetcher';
+import { paginateArray } from '~src/components/pagination/paginate-array';
+import { PaginationContextProvider } from '~src/components/pagination/pagination.context-provider';
+import PaginationControl from '~src/components/pagination/pagination-control';
+import usePagination from '~src/components/pagination/use-pagination';
+import { FromNow } from '~src/components/util/datetime';
+import { PersonIcon } from '~src/icons/person-icon';
 
 export const UserRaces = ({
     participations,
@@ -107,7 +107,7 @@ export const ViewUserRaces = ({
                                                 className="rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
                                                 src={
                                                     race.gameImage &&
-                                                    race.gameImage !== "noimage"
+                                                    race.gameImage !== 'noimage'
                                                         ? race.gameImage
                                                         : `/logo_dark_theme_no_text_transparent.png`
                                                 }
@@ -124,7 +124,7 @@ export const ViewUserRaces = ({
                                                 <span
                                                     className="h4 text-truncate"
                                                     style={{
-                                                        color: "var(--bs-link-color)",
+                                                        color: 'var(--bs-link-color)',
                                                     }}
                                                 >
                                                     {race.displayGame}
@@ -158,17 +158,17 @@ export const ViewUserRace = ({
     race: Race;
     participation: RaceParticipant;
 }) => {
-    if (race.status === "aborted") {
+    if (race.status === 'aborted') {
         return <div className="pt-2">Race was aborted</div>;
     }
     return (
         <div className="pt-2">
-            {participation.status === "abandoned" && "Abandoned"}
-            {participation.status !== "abandoned" && (
+            {participation.status === 'abandoned' && 'Abandoned'}
+            {participation.status !== 'abandoned' && (
                 <div>
                     <div className="d-flex justify-content-between">
                         <div>
-                            Time:{" "}
+                            Time:{' '}
                             <span className="fst-italic">
                                 <RaceParticipantTimer
                                     raceParticipant={participation}

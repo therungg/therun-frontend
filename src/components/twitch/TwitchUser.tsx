@@ -1,7 +1,7 @@
-import React from "react";
-import Image from "next/image";
-import { Nav } from "react-bootstrap";
-import { NameAsPatreon } from "~src/components/patreon/patreon-name";
+import Image from 'next/image';
+import React from 'react';
+import { Nav } from 'react-bootstrap';
+import { NameAsPatreon } from '~src/components/patreon/patreon-name';
 
 interface TwitchUserProps {
     username: string;

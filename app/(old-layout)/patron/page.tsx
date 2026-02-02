@@ -1,7 +1,7 @@
-import React from "react";
-import { PatreonInfo } from "~app/(old-layout)/patron/patreon-info";
-import { getSession } from "~src/actions/session.action";
-import buildMetadata from "~src/utils/metadata";
+import React from 'react';
+import { PatreonInfo } from '~app/(old-layout)/patron/patreon-info';
+import { getSession } from '~src/actions/session.action';
+import buildMetadata from '~src/utils/metadata';
 
 export default async function PatronPage() {
     const session = await getSession();
@@ -9,7 +9,7 @@ export default async function PatronPage() {
 }
 
 export const metadata = buildMetadata({
-    title: "Support",
+    title: 'Support',
     description:
-        "Like The Run and find it useful? Consider supporting it today by becoming a Patron and get some visual perks for doing so!",
+        'Like The Run and find it useful? Consider supporting it today by becoming a Patron and get some visual perks for doing so!',
 });

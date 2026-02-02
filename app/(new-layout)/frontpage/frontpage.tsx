@@ -1,12 +1,31 @@
+import { getFrontpageConfig } from '~src/actions/frontpage-config.action';
+import { getSession } from '~src/actions/session.action';
+import { PANEL_REGISTRY } from '~src/lib/frontpage-panels';
+import { PanelId } from '../../../types/frontpage-config.types';
+import { FrontpageLayout } from './components/frontpage-layout';
 import styles from './frontpage.module.scss';
-import CurrentUserLivePanel from './panels/current-user-live-panel/current-user-live-panel';
-import { LatestPbsPanel } from './panels/latest-pbs-panel/latest-pbs-panel';
-import { LiveRunsPanel } from './panels/live-runs-panel/live-runs-panel';
-import PatreonPanel from './panels/patreon-panel/patreon-panel';
-import RacePanel from './panels/race-panel/race-panel';
-import StatsPanel from './panels/stats-panel/stats-panel';
 
 export default async function FrontPage() {
+    const session = await getSession();
+    const config = await getFrontpageConfig();
+    const isAuthenticated = !!session?.id;
+
+    const LiveRunsComponent = PANEL_REGISTRY['live-runs'];
+    const StatsComponent = PANEL_REGISTRY['stats'];
+    const CurrentUserLiveComponent = PANEL_REGISTRY['current-user-live'];
+    const RaceComponent = PANEL_REGISTRY['race'];
+    const PatreonComponent = PANEL_REGISTRY['patreon'];
+    const LatestPbsComponent = PANEL_REGISTRY['latest-pbs'];
+
+    const panelComponents: Record<PanelId, React.ReactNode> = {
+        'live-runs': <LiveRunsComponent />,
+        stats: <StatsComponent />,
+        'current-user-live': <CurrentUserLiveComponent />,
+        race: <RaceComponent />,
+        patreon: <PatreonComponent />,
+        'latest-pbs': <LatestPbsComponent />,
+    };
+
     return (
         <div>
             <div className={`text-center mb-3 ${styles.heroSection}`}>
@@ -17,18 +36,11 @@ export default async function FrontPage() {
                     Everything Speedrunning
                 </h2>
             </div>
-            <div className="row d-flex flex-wrap">
-                <div className="col col-lg-6 col-xl-7 col-12">
-                    <LiveRunsPanel />
-                    <StatsPanel />
-                </div>
-                <div className="col col-lg-6 col-xl-5 col-12">
-                    <CurrentUserLivePanel />
-                    <RacePanel />
-                    <PatreonPanel />
-                    <LatestPbsPanel />
-                </div>
-            </div>
+            <FrontpageLayout
+                initialConfig={config}
+                panels={panelComponents}
+                isAuthenticated={isAuthenticated}
+            />
         </div>
     );
 }

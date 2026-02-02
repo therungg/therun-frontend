@@ -1,5 +1,5 @@
-import useSWRMutation, { MutationFetcher } from "swr/mutation";
-import { safeEncodeURI } from "~src/utils/uri";
+import useSWRMutation, { MutationFetcher } from 'swr/mutation';
+import { safeEncodeURI } from '~src/utils/uri';
 
 interface UseUploadMutationParams {
     file: File;
@@ -16,16 +16,16 @@ export const uploadFile: MutationFetcher<
     UseUploadMutationParams
 > = async (url, { arg: { contents, file, sessionId } }) => {
     if (file.size > 50 * 1000 * 1000) {
-        throw new Error("File must be smaller than 50MB");
+        throw new Error('File must be smaller than 50MB');
     }
 
     const uploadUrl = `${url}?filename=${safeEncodeURI(
         file.name,
     )}&sessionId=${sessionId}`;
     const presignedUrl = await fetch(uploadUrl, {
-        method: "GET",
+        method: 'GET',
         headers: {
-            "Content-Disposition": "attachment",
+            'Content-Disposition': 'attachment',
         },
     });
 
@@ -34,10 +34,10 @@ export const uploadFile: MutationFetcher<
     const postUrl = result.url;
 
     await fetch(postUrl, {
-        method: "PUT",
+        method: 'PUT',
         body: contents,
         headers: {
-            "Content-Disposition": "attachment",
+            'Content-Disposition': 'attachment',
         },
     });
 };

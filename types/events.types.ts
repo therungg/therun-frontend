@@ -1,5 +1,5 @@
-import { eventOrganizers, events } from "~src/db/schema";
-import { InferInsertModel, InferSelectModel } from "drizzle-orm";
+import { InferInsertModel, InferSelectModel } from 'drizzle-orm';
+import { eventOrganizers, events } from '~src/db/schema';
 
 export type Event = InferSelectModel<typeof events> & {
     tags: string[];
@@ -8,7 +8,7 @@ export type Event = InferSelectModel<typeof events> & {
 export type EventWithOrganizerName = Event & { organizerName: string };
 
 export interface EventFromSearch
-    extends Omit<Event, "startsAt" | "endsAt" | "createdAt"> {
+    extends Omit<Event, 'startsAt' | 'endsAt' | 'createdAt'> {
     startsAt: string;
     endsAt: string;
     createdAt: string;
@@ -17,7 +17,7 @@ export interface EventFromSearch
 }
 
 export type CreateEventInput = InferInsertModel<typeof events>;
-export type EditEventInput = Omit<CreateEventInput, "createdBy">;
+export type EditEventInput = Omit<CreateEventInput, 'createdBy'>;
 
 export type EventOrganizer = InferSelectModel<typeof eventOrganizers>;
 export type CreateEventOrganizerInput = InferInsertModel<
@@ -25,21 +25,21 @@ export type CreateEventOrganizerInput = InferInsertModel<
 >;
 
 export type EventType =
-    | "Marathon"
-    | "Tournament"
-    | "Race"
-    | "Showcase"
-    | "Relay"
-    | "Community Meetup"
-    | "Other";
+    | 'Marathon'
+    | 'Tournament'
+    | 'Race'
+    | 'Showcase'
+    | 'Relay'
+    | 'Community Meetup'
+    | 'Other';
 export const eventTypes: EventType[] = [
-    "Marathon",
-    "Tournament",
-    "Race",
-    "Showcase",
-    "Relay",
-    "Community Meetup",
-    "Other",
+    'Marathon',
+    'Tournament',
+    'Race',
+    'Showcase',
+    'Relay',
+    'Community Meetup',
+    'Other',
 ];
 
 export interface EventRestream {
@@ -57,15 +57,15 @@ export const eventTiers: EventTier[] = [
 ];
 
 export const eventTierShortNames: Record<EventTier, string> = {
-    1: "Premium",
-    2: "Major",
-    3: "Minor",
-    4: "Local",
+    1: 'Premium',
+    2: 'Major',
+    3: 'Minor',
+    4: 'Local',
 };
 
 export const eventTierNames: Partial<Record<EventTier, string>> = {
-    1: "Premium (Among the biggest 10 events in the world. GDQ, Speedons, RTA In Japan, etc.)",
-    2: "Major (Among the biggest 100 events in the world)",
-    3: "Minor",
+    1: 'Premium (Among the biggest 10 events in the world. GDQ, Speedons, RTA In Japan, etc.)',
+    2: 'Major (Among the biggest 100 events in the world)',
+    3: 'Minor',
     // 4: "Local (Small events, races, small community tournaments etc.)",
 };

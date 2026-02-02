@@ -1,6 +1,6 @@
-import { Split } from "~src/common/types";
+import { Split } from '~src/common/types';
 
-export type Status = "future" | "current" | "skipped" | "completed";
+export type Status = 'future' | 'current' | 'skipped' | 'completed';
 
 export interface SplitStatus {
     time: number | undefined;

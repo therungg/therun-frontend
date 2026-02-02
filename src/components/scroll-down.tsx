@@ -1,4 +1,4 @@
-import styles from "./css/ScrollDown.module.scss";
+import styles from './css/ScrollDown.module.scss';
 
 // TODO: Move this to icons.
 export const ScrollDown = () => {

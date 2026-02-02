@@ -1,17 +1,17 @@
-import { RaceGameStatsByCategory } from "~app/(old-layout)/races/races.types";
-import React from "react";
-import { CategoryStatsHeader } from "~app/(old-layout)/races/stats/[game]/[category]/category-stats-header";
-import { Col, Row } from "react-bootstrap";
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-} from "~src/components/breadcrumbs/breadcrumb";
-import RaceGameContextProvider from "~app/(old-layout)/races/context/race-game-context-provider";
-import { CategoryUserTable } from "~app/(old-layout)/races/stats/[game]/[category]/category-user-table";
+import React from 'react';
+import { Col, Row } from 'react-bootstrap';
+import RaceGameContextProvider from '~app/(old-layout)/races/context/race-game-context-provider';
+import { RaceGameStatsByCategory } from '~app/(old-layout)/races/races.types';
 import {
     CategoryLeaderboards,
     LeaderboardData,
-} from "~app/(old-layout)/races/stats/[game]/[category]/category-leaderboards";
+} from '~app/(old-layout)/races/stats/[game]/[category]/category-leaderboards';
+import { CategoryStatsHeader } from '~app/(old-layout)/races/stats/[game]/[category]/category-stats-header';
+import { CategoryUserTable } from '~app/(old-layout)/races/stats/[game]/[category]/category-user-table';
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+} from '~src/components/breadcrumbs/breadcrumb';
 
 export const CategoryStats = ({
     categoryStats,
@@ -21,10 +21,10 @@ export const CategoryStats = ({
     leaderboards: LeaderboardData[];
 }) => {
     const { stats, users } = categoryStats;
-    const [game, category] = stats.displayValue.split("#");
+    const [game, category] = stats.displayValue.split('#');
     const breadcrumbs: BreadcrumbItem[] = [
-        { content: "Races", href: "/races" },
-        { content: "Race Stats", href: "/races/stats" },
+        { content: 'Races', href: '/races' },
+        { content: 'Race Stats', href: '/races/stats' },
         {
             content: game,
             href: `/races/stats/${game}`,

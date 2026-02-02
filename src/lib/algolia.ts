@@ -1,9 +1,9 @@
-"use server";
+'use server';
 
-import { algoliasearch, SearchResponse } from "algoliasearch";
-import { Event, EventOrganizer } from "types/events.types";
-import { getAllEventOrganizers } from "./events";
-import { PaginatedData } from "~src/components/pagination/pagination.types";
+import { algoliasearch, SearchResponse } from 'algoliasearch';
+import { Event, EventOrganizer } from 'types/events.types';
+import { PaginatedData } from '~src/components/pagination/pagination.types';
+import { getAllEventOrganizers } from './events';
 
 const appID = process.env.NEXT_PUBLIC_ALGOLIA_APPLICATION_ID;
 const apiKey = process.env.ALGOLIA_API_KEY;
@@ -11,7 +11,7 @@ const indexName = process.env.NEXT_PUBLIC_ALGOLIA_EVENTS_INDEX_NAME as string;
 
 export const getAlgoliaApiClient = async () => {
     if (!appID || !apiKey || !indexName) {
-        throw new Error("Algolia credentials not found");
+        throw new Error('Algolia credentials not found');
     }
 
     return algoliasearch(appID, apiKey);
@@ -19,16 +19,16 @@ export const getAlgoliaApiClient = async () => {
 
 export async function searchAlgoliaEvents<T>(
     page = 1,
-    search = "",
-    filters = "",
+    search = '',
+    filters = '',
 ) {
     const client = await getAlgoliaApiClient();
     const params = new URLSearchParams();
 
-    params.set("facets", "*");
-    params.set("page", (page - 1).toString());
-    params.set("query", search);
-    params.set("filters", filters);
+    params.set('facets', '*');
+    params.set('page', (page - 1).toString());
+    params.set('query', search);
+    params.set('filters', filters);
 
     return client.searchSingleIndex<T>({
         indexName,
@@ -81,7 +81,7 @@ export const insertEventsToAlgolia = async (events: Event[]) => {
         indexName,
         batchWriteParams: {
             requests: inputs.map((input) => ({
-                action: "addObject",
+                action: 'addObject',
                 body: input,
             })),
         },

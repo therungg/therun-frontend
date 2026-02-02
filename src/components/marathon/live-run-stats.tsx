@@ -1,22 +1,22 @@
-import { Table } from "react-bootstrap";
-import { useEffect, useState } from "react";
+import moment from 'moment/moment';
+import { useEffect, useState } from 'react';
+import { Table } from 'react-bootstrap';
+import { LiveRun } from '~app/(old-layout)/live/live.types';
 import {
     DifferenceFromOne,
     DurationToFormatted,
     IsoToFormatted,
-} from "../util/datetime";
+} from '../util/datetime';
 import {
     MarathonEvent,
     SendMarathonDataButton,
-} from "./send-marathon-data-button";
-import moment from "moment/moment";
-import { LiveRun } from "~app/(old-layout)/live/live.types";
+} from './send-marathon-data-button';
 
 interface LiveRunEvent extends MarathonEvent {
     data: LiveRunEventData;
-    type: "live_data_event";
-    name: "Live Run Data";
-    description: "Contains data about the currently in progress run from this runner.";
+    type: 'live_data_event';
+    name: 'Live Run Data';
+    description: 'Contains data about the currently in progress run from this runner.';
 }
 
 interface LiveRunEventData {
@@ -153,7 +153,7 @@ export const LiveRunStats = ({
                         <td>Split</td>
                         <td>
                             {currentLiveRun.currentSplitName} (
-                            {currentLiveRun.currentSplitIndex + 1} /{" "}
+                            {currentLiveRun.currentSplitIndex + 1} /{' '}
                             {currentLiveRun.splits.length})
                         </td>
                         <td>
@@ -170,7 +170,7 @@ export const LiveRunStats = ({
                         <td>
                             {currentLiveRun.currentSplitIndex + 1 >=
                             currentLiveRun.splits.length
-                                ? "Last split"
+                                ? 'Last split'
                                 : currentLiveRun.splits[
                                       currentLiveRun.currentSplitIndex + 1
                                   ].name}
@@ -195,10 +195,10 @@ export const LiveRunStats = ({
 
 export const liveRunEvent = (liveRun: LiveRun): LiveRunEvent => {
     return {
-        type: "live_data_event",
-        name: "Live Run Data",
+        type: 'live_data_event',
+        name: 'Live Run Data',
         description:
-            "Contains data about the currently in progress run from this runner.",
+            'Contains data about the currently in progress run from this runner.',
         time: new Date().toISOString(),
         game: liveRun.game,
         category: liveRun.category,
@@ -231,9 +231,9 @@ export const liveRunEvent = (liveRun: LiveRun): LiveRunEvent => {
 
 export const currentPbEvent = (liveRun: LiveRun): MarathonEvent => {
     return {
-        type: "current_pb_event",
-        name: "Current PB",
-        description: "Contains the runners current PB.",
+        type: 'current_pb_event',
+        name: 'Current PB',
+        description: 'Contains the runners current PB.',
         time: new Date().toISOString(),
         game: liveRun.game,
         category: liveRun.category,
@@ -247,9 +247,9 @@ export const currentPbEvent = (liveRun: LiveRun): MarathonEvent => {
 
 export const currentPredictionEvent = (liveRun: LiveRun): MarathonEvent => {
     return {
-        type: "current_prediction_event",
-        name: "Current Prediction",
-        description: "Contains the runners current predicted end time.",
+        type: 'current_prediction_event',
+        name: 'Current Prediction',
+        description: 'Contains the runners current predicted end time.',
         time: new Date().toISOString(),
         game: liveRun.game,
         category: liveRun.category,
@@ -267,9 +267,9 @@ export const currentPredictionEvent = (liveRun: LiveRun): MarathonEvent => {
 
 export const currentSobEvent = (liveRun: LiveRun): MarathonEvent => {
     return {
-        type: "current_sob_event",
-        name: "Current SOB",
-        description: "Contains the runners current SOB.",
+        type: 'current_sob_event',
+        name: 'Current SOB',
+        description: 'Contains the runners current SOB.',
         time: new Date().toISOString(),
         game: liveRun.game,
         category: liveRun.category,
@@ -282,9 +282,9 @@ export const currentSobEvent = (liveRun: LiveRun): MarathonEvent => {
 
 export const currentBestPossibleEvent = (liveRun: LiveRun): MarathonEvent => {
     return {
-        type: "current_best_possible_event",
-        name: "Current Best Possible Time",
-        description: "Contains the runners current Best Possible Time.",
+        type: 'current_best_possible_event',
+        name: 'Current Best Possible Time',
+        description: 'Contains the runners current Best Possible Time.',
         time: new Date().toISOString(),
         game: liveRun.game,
         category: liveRun.category,
@@ -299,9 +299,9 @@ export const currentBestPossibleEvent = (liveRun: LiveRun): MarathonEvent => {
 
 export const currentSplitEvent = (liveRun: LiveRun): MarathonEvent => {
     return {
-        type: "current_split_event",
-        name: "Current Split",
-        description: "Contains the runners current Split.",
+        type: 'current_split_event',
+        name: 'Current Split',
+        description: 'Contains the runners current Split.',
         time: new Date().toISOString(),
         game: liveRun.game,
         category: liveRun.category,

@@ -1,9 +1,9 @@
-"use client";
-import Link from "next/link";
-import { ReactNode } from "react";
-import { usePatreons } from "../patreon/use-patreons";
-import PatreonName from "../patreon/patreon-name";
-import { safeEncodeURI } from "~src/utils/uri";
+'use client';
+import Link from 'next/link';
+import { ReactNode } from 'react';
+import { safeEncodeURI } from '~src/utils/uri';
+import PatreonName from '../patreon/patreon-name';
+import { usePatreons } from '../patreon/use-patreons';
 
 interface ChildrenType {
     children?: ReactNode;
@@ -17,11 +17,11 @@ interface UserLinkProps extends ChildrenType {
     className?: string;
 }
 
-interface UserGameLinkProps extends UserLinkProps, GameLinkProps { }
+interface UserGameLinkProps extends UserLinkProps, GameLinkProps {}
 
 interface UserGameCategoryLinkProps
     extends UserLinkProps,
-    GameCategoryLinkProps { }
+        GameCategoryLinkProps {}
 
 interface GameLinkProps {
     game: string;
@@ -35,17 +35,17 @@ export const UserLink = ({
     username,
     children,
     icon = true,
-    url = "",
+    url = '',
     parentIsUrl = false,
 }: UserLinkProps) => {
     const { data: patreons, isLoading } = usePatreons();
 
-    if (!username.startsWith("/")) username = `/${username}`;
+    if (!username.startsWith('/')) username = `/${username}`;
 
     username = decodeURIComponent(username);
-    let withoutSlash = username.replace("/", "");
+    let withoutSlash = username.replace('/', '');
 
-    if (url === "") url = username;
+    if (url === '') url = username;
 
     if (!isLoading && patreons && patreons[withoutSlash]) {
         let color = 0;
@@ -102,8 +102,8 @@ export const UserGameCategoryLink = ({
                 url
                     ? url
                     : `/${username}/${safeEncodeURI(game)}/${safeEncodeURI(
-                        category,
-                    )}`
+                          category,
+                      )}`
             }
             prefetch={false}
         >
@@ -134,9 +134,9 @@ export const GameCategoryLink = ({
 
 export const display = (subject: string): string => {
     return subject
-        .replace(/&nbsp;/gi, " ")
-        .replace(/&amp;/gi, "&")
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/&amp;/gi, '&')
         .replace(/&quot;/gi, '"')
-        .replace(/&lt;/gi, "<")
-        .replace(/&gt;/gi, ">");
+        .replace(/&lt;/gi, '<')
+        .replace(/&gt;/gi, '>');
 };

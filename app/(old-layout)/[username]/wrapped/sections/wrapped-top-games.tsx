@@ -1,14 +1,14 @@
-import React, { memo, useMemo } from "react";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import { GameImage } from "~src/components/image/gameimage";
-import { Row } from "react-bootstrap";
-import { WrappedWithData } from "../wrapped-types";
-import { WrappedCounter } from "../wrapped-counter";
-import { SectionWrapper } from "./section-wrapper";
-import { SectionBody } from "./section-body";
-import { SectionTitle } from "./section-title";
-import { TrophyIcon } from "~src/icons/trophy-icon";
-import { TruncatedTextTooltip } from "~src/components/tooltip";
+import React, { memo, useMemo } from 'react';
+import { Row } from 'react-bootstrap';
+import { GameImage } from '~src/components/image/gameimage';
+import { TruncatedTextTooltip } from '~src/components/tooltip';
+import { DurationToFormatted } from '~src/components/util/datetime';
+import { TrophyIcon } from '~src/icons/trophy-icon';
+import { WrappedCounter } from '../wrapped-counter';
+import { WrappedWithData } from '../wrapped-types';
+import { SectionBody } from './section-body';
+import { SectionTitle } from './section-title';
+import { SectionWrapper } from './section-wrapper';
 
 interface WrappedTopGamesProps {
     wrapped: WrappedWithData;
@@ -59,16 +59,16 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
             return {
                 title: (
                     <>
-                        {" "}
-                        This year, you did runs for{" "}
+                        {' '}
+                        This year, you did runs for{' '}
                         <WrappedCounter
                             id="game-entries-count"
                             end={wrapped.totalGames}
-                        />{" "}
+                        />{' '}
                         games.
                     </>
                 ),
-                subtitle: "Here are your favourites.",
+                subtitle: 'Here are your favourites.',
                 extraRemark:
                     "(actually, they might be your least favourite. but you played them a lot, so hey, that's on you.)",
             };
@@ -78,7 +78,7 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
             title: <span>This year, you only ran one single game.</span>,
             subtitle: "I'm not going to judge you on that",
             extraRemark:
-                "(but i designed this section to show multiple games, so you kind of ruined that for me)",
+                '(but i designed this section to show multiple games, so you kind of ruined that for me)',
         };
     }, [gameEntries]);
 
@@ -104,15 +104,15 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
                                                 size={34}
                                                 trophyColor={
                                                     i === 0
-                                                        ? "gold"
+                                                        ? 'gold'
                                                         : i === 1
-                                                          ? "silver"
-                                                          : "bronze"
+                                                          ? 'silver'
+                                                          : 'bronze'
                                                 }
                                             />
                                         </span>
                                         <div>
-                                            Total playtime:{" "}
+                                            Total playtime:{' '}
                                             <b>
                                                 <DurationToFormatted
                                                     duration={total}
@@ -122,7 +122,7 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
                                     </div>
                                     <GameImage
                                         alt={display}
-                                        src={image || ""}
+                                        src={image || ''}
                                         quality="sd"
                                         className="card-img-top h-100"
                                         autosize
@@ -130,7 +130,7 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
                                     <div className="card-footer fw-bold">
                                         <h3>
                                             <TruncatedTextTooltip
-                                                text={display ?? ""}
+                                                text={display ?? ''}
                                             />
                                         </h3>
                                     </div>
@@ -143,4 +143,4 @@ export const WrappedTopGames = memo<WrappedTopGamesProps>(({ wrapped }) => {
         </SectionWrapper>
     );
 });
-WrappedTopGames.displayName = "WrappedTopGames";
+WrappedTopGames.displayName = 'WrappedTopGames';

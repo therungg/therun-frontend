@@ -1,7 +1,7 @@
-import React from "react";
-import type { SearchItem } from "./use-fuzzy-search";
-import Link from "next/link";
-import { FuzzyMatchHighlight } from "./fuzzy-match-highlight.component";
+import Link from 'next/link';
+import React from 'react';
+import { FuzzyMatchHighlight } from './fuzzy-match-highlight.component';
+import type { SearchItem } from './use-fuzzy-search';
 
 interface SearchResultsPanelProps {
     searchResults: [string, SearchItem[]][];
@@ -35,9 +35,10 @@ export const SearchResultsPanel = React.memo(
                             <React.Fragment key={index}>
                                 {showHeader && (
                                     <dt
-                                        className={`${0 !== index &&
-                                            "pt-1 mt-1 border-top"
-                                            } py-1 px-2 fw-semibold border-bottom text-truncate pe-none fs-smaller`}
+                                        className={`${
+                                            0 !== index &&
+                                            'pt-1 mt-1 border-top'
+                                        } py-1 px-2 fw-semibold border-bottom text-truncate pe-none fs-smaller`}
                                     >
                                         {toTitleCase(type)}
                                     </dt>
@@ -69,7 +70,7 @@ export const SearchResultsPanel = React.memo(
     ),
 );
 
-SearchResultsPanel.displayName = "SearchResultsPanel";
+SearchResultsPanel.displayName = 'SearchResultsPanel';
 
 interface SearchResultItemProps {
     result: SearchItem;
@@ -79,7 +80,7 @@ const SearchResultItem = React.memo<SearchResultItemProps>(({ result }) => {
     return (
         <dd className="m-0">
             <Link
-                href={result.url ?? ""}
+                href={result.url ?? ''}
                 title={result.key}
                 className="list-group-item-action d-block text-decoration-none px-3 py-1 text-truncate text-body lh-sm"
                 prefetch={false}
@@ -93,4 +94,4 @@ const SearchResultItem = React.memo<SearchResultItemProps>(({ result }) => {
     );
 });
 
-SearchResultItem.displayName = "SearchResultItem";
+SearchResultItem.displayName = 'SearchResultItem';

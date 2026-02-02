@@ -1,9 +1,9 @@
-"use client";
-import React from "react";
-import { SearchResults } from "./find-user-or-run";
+'use client';
+import React from 'react';
+import { SearchResults } from './find-user-or-run';
 
-export type AggregatedResults = Omit<SearchResults, "categories">;
-export const STORAGE_KEY = "globalSearchResults";
+export type AggregatedResults = Omit<SearchResults, 'categories'>;
+export const STORAGE_KEY = 'globalSearchResults';
 
 const DEFAULT_AGGREGATED_RESULTS: AggregatedResults = {
     users: {},

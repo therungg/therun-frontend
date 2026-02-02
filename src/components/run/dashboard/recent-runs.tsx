@@ -1,5 +1,3 @@
-import { RunHistory } from "../../../common/types";
-import { getFormattedString, getMonthDay } from "../../util/datetime";
 import {
     BarController,
     BarElement,
@@ -11,11 +9,13 @@ import {
     PointElement,
     Title,
     Tooltip,
-} from "chart.js";
-import { Line } from "react-chartjs-2";
-import { useState } from "react";
-import { Col, Row } from "react-bootstrap";
-import Switch from "react-switch";
+} from 'chart.js';
+import { useState } from 'react';
+import { Col, Row } from 'react-bootstrap';
+import { Line } from 'react-chartjs-2';
+import Switch from 'react-switch';
+import { RunHistory } from '../../../common/types';
+import { getFormattedString, getMonthDay } from '../../util/datetime';
 
 // TODO: Move this to a centralized file.
 ChartJS.register(
@@ -87,40 +87,40 @@ export const RecentRuns = ({
         }),
         datasets: [
             {
-                label: "Recent runs",
+                label: 'Recent runs',
                 fill: false,
                 backgroundColor:
                     getComputedStyle(document.documentElement).getPropertyValue(
                         // TODO: Get rid of this
                         // eslint-disable-next-line sonarjs/no-duplicate-string
-                        "--bs-link-color",
-                    ) || "",
+                        '--bs-link-color',
+                    ) || '',
                 borderColor: getComputedStyle(
                     document.documentElement,
-                ).getPropertyValue("--bs-link-color"),
-                borderCapStyle: "butt",
+                ).getPropertyValue('--bs-link-color'),
+                borderCapStyle: 'butt',
                 borderDash: [],
                 borderDashOffset: 0.0,
-                borderJoinStyle: "miter",
+                borderJoinStyle: 'miter',
                 pointBorderColor: getComputedStyle(
                     document.documentElement,
-                ).getPropertyValue("--bs-link-color"),
-                pointBackgroundColor: "#fff",
+                ).getPropertyValue('--bs-link-color'),
+                pointBackgroundColor: '#fff',
                 pointBorderWidth: 1,
                 pointHoverRadius: 5,
                 pointHoverBackgroundColor: getComputedStyle(
                     document.documentElement,
-                ).getPropertyValue("--bs-link-color"),
+                ).getPropertyValue('--bs-link-color'),
                 pointHoverBorderColor: getComputedStyle(
                     document.documentElement,
-                ).getPropertyValue("--bs-link-color"),
+                ).getPropertyValue('--bs-link-color'),
                 pointHoverBorderWidth: 2,
                 pointRadius: 1,
                 pointHitRadius: 10,
                 data: runToShow.map((attempt: RunHistory) => attempt.time),
             },
         ],
-    } as LineProps["data"];
+    } as LineProps['data'];
 
     const options = {
         plugins: {
@@ -134,8 +134,8 @@ export const RecentRuns = ({
             legend: { display: false },
             title: {
                 display: false,
-                text: "Recent runs",
-                position: "top",
+                text: 'Recent runs',
+                position: 'top',
             },
         },
         scales: {
@@ -147,7 +147,7 @@ export const RecentRuns = ({
                 },
             },
         },
-    } as LineProps["options"];
+    } as LineProps['options'];
 
     return (
         <div>
@@ -155,23 +155,23 @@ export const RecentRuns = ({
                 <Col>
                     <h2>Finished Runs</h2>
                 </Col>
-                <Col style={{ display: "flex", justifyContent: "end" }}>
+                <Col style={{ display: 'flex', justifyContent: 'end' }}>
                     <div
                         style={{
-                            display: "flex",
-                            justifyContent: "end",
-                            alignSelf: "center",
+                            display: 'flex',
+                            justifyContent: 'end',
+                            alignSelf: 'center',
                         }}
                     >
                         <label
                             htmlFor="switch"
                             style={{
-                                marginRight: "10px",
-                                alignSelf: "center",
+                                marginRight: '10px',
+                                alignSelf: 'center',
                             }}
                         >
-                            {" "}
-                            {pbOnly ? "Show only PBs" : "Show All"}{" "}
+                            {' '}
+                            {pbOnly ? 'Show only PBs' : 'Show All'}{' '}
                         </label>
                         <Switch
                             name="switch"

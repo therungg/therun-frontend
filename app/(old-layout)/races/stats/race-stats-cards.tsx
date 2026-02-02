@@ -1,7 +1,7 @@
-import { GlobalStats } from "~app/(old-layout)/races/races.types";
-import { Card, Col, Row } from "react-bootstrap";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import React, { ReactElement } from "react";
+import React, { ReactElement } from 'react';
+import { Card, Col, Row } from 'react-bootstrap';
+import { GlobalStats } from '~app/(old-layout)/races/races.types';
+import { DurationToFormatted } from '~src/components/util/datetime';
 
 export const RaceStatsCards = ({
     globalRaceStats,
@@ -12,7 +12,7 @@ export const RaceStatsCards = ({
         <Row>
             <Col lg={12} xl={6}>
                 <StatsCard
-                    keys={["Total Races", "Total Time", "Average Time"]}
+                    keys={['Total Races', 'Total Time', 'Average Time']}
                     values={[
                         // eslint-disable-next-line react/jsx-key
                         <span>{globalRaceStats.totalRaces}</span>,
@@ -33,7 +33,7 @@ export const RaceStatsCards = ({
             </Col>
             <Col>
                 <StatsCard
-                    keys={["Races Joined", "Races Finished", "Finish %"]}
+                    keys={['Races Joined', 'Races Finished', 'Finish %']}
                     values={[
                         // eslint-disable-next-line react/jsx-key
                         <span>{globalRaceStats.totalParticipations}</span>,
@@ -64,7 +64,7 @@ const StatsCard = ({
     return (
         <Card
             className="bg-body-secondary mb-3 game-border px-4 py-3 rounded-3"
-            style={{ minHeight: "8rem" }}
+            style={{ minHeight: '8rem' }}
         >
             <Row>
                 {keys.map((key, i) => {

@@ -1,8 +1,8 @@
+import { leaveRace } from '~app/(old-layout)/races/actions/leave-race.action';
 import {
     RaceActionButton,
     RaceActionProps,
-} from "~app/(old-layout)/races/components/buttons/race-action-button";
-import { leaveRace } from "~app/(old-layout)/races/actions/leave-race.action";
+} from '~app/(old-layout)/races/components/buttons/race-action-button';
 
 export const AbandonRaceButton = (props: RaceActionProps) => {
     return (

@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { UserData } from "~src/lib/get-session-data";
-import { Userform } from "~src/components/user/userform";
-import { NameAsPatreon } from "~src/components/patreon/patreon-name";
-import { WrappedTitle } from "~app/(old-layout)/[username]/wrapped/wrapped-title";
-import { Button } from "react-bootstrap";
-import React from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter } from 'next/navigation';
+import React from 'react';
+import { Button } from 'react-bootstrap';
+import { WrappedTitle } from '~app/(old-layout)/[username]/wrapped/wrapped-title';
+import { NameAsPatreon } from '~src/components/patreon/patreon-name';
+import { Userform } from '~src/components/user/userform';
+import { UserData } from '~src/lib/get-session-data';
 
 export const TimezoneWarning = ({ user }: { user: UserData }) => {
     const router = useRouter();
@@ -28,9 +28,9 @@ export const TimezoneWarning = ({ user }: { user: UserData }) => {
                     <Button
                         variant="secondary"
                         className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
-                        style={{ minWidth: "20rem", minHeight: "5rem" }}
+                        style={{ minWidth: '20rem', minHeight: '5rem' }}
                         onClick={() => {
-                            router.push(pathname + "?ignoreTimezone=true");
+                            router.push(pathname + '?ignoreTimezone=true');
                         }}
                     >
                         <span className="h3">Wrap it up!</span>

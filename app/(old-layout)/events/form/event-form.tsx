@@ -1,31 +1,31 @@
-"use client";
+'use client';
 
-import { Col, Form, Modal, Row } from "react-bootstrap";
-import { Button } from "~src/components/Button/Button";
-import React, { ReactElement, useEffect, useState } from "react";
+import Image from 'next/image';
+import React, { ReactElement, useEffect, useState } from 'react';
+import { Col, Form, Modal, Row } from 'react-bootstrap';
+import { toast } from 'react-toastify';
+import { countries } from '~src/common/countries';
+import { languages } from '~src/common/languages';
+import { Button } from '~src/components/Button/Button';
+import Tiptap from '~src/components/TipTap';
+import { createEventOrganizer, getAllEventOrganizers } from '~src/lib/events';
 import {
     Event,
     EventOrganizer,
-    eventTypes,
-    eventTierNames,
     EventRestream,
-} from "../../../../types/events.types";
-import { createEventOrganizer, getAllEventOrganizers } from "~src/lib/events";
-import { toast } from "react-toastify";
-import { countries } from "~src/common/countries";
-import { languages } from "~src/common/languages";
-import Tiptap from "~src/components/TipTap";
-import Image from "next/image";
-import { EventTagInput } from "./inputs/event-tag-input";
-import { EventFieldRequired } from "./event-field-required";
+    eventTierNames,
+    eventTypes,
+} from '../../../../types/events.types';
+import { EventFieldRequired } from './event-field-required';
+import { EventTagInput } from './inputs/event-tag-input';
 
 export const EventForm = ({ event }: { event?: Event }) => {
     const [eventOrganizers, setEventOrganizers] = useState<EventOrganizer[]>(
         [],
     );
-    const [newOrganizerName, setNewOrganizerName] = useState("");
+    const [newOrganizerName, setNewOrganizerName] = useState('');
     const [selectedOrganizerId, setSelectedOrganizerId] = useState(
-        event?.organizerId || "",
+        event?.organizerId || '',
     );
     const [selectedIsOffline, setSelectedIsOffline] = useState(
         event?.isOffline || false,
@@ -34,21 +34,21 @@ export const EventForm = ({ event }: { event?: Event }) => {
         event?.isForCharity || false,
     );
     const [editorContent, setEditorContent] = useState<string>(
-        event?.description || "",
+        event?.description || '',
     );
-    const [slug, setSlug] = useState<string>(event?.slug || "");
+    const [slug, setSlug] = useState<string>(event?.slug || '');
 
     // --- Restream State ---
     // Initialize with one empty restream row, or existing data if available
     // For simplicity, assuming event.restreams is the correct structure if it exists
     const [restreams, setRestreams] = useState<EventRestream[]>(
         (event?.restreams as EventRestream[]) || [
-            { language: "", url: "", organizer: "" },
+            { language: '', url: '', organizer: '' },
         ],
     );
     // --- End Restream State ---
 
-    const [showModal, setShowModal] = useState("");
+    const [showModal, setShowModal] = useState('');
 
     const fetchEventOrganizers = async () => {
         const organizers = await getAllEventOrganizers();
@@ -65,16 +65,16 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 const newOrganizer = await createEventOrganizer({
                     name: newOrganizerName.trim(),
                 });
-                setNewOrganizerName("");
+                setNewOrganizerName('');
                 await fetchEventOrganizers(); // Refetch to update the list
-                toast.success("Organizer added successfully");
+                toast.success('Organizer added successfully');
                 // Automatically select the newly added organizer
                 if (newOrganizer) {
                     setSelectedOrganizerId(newOrganizer.id);
                 }
             } catch (error) {
-                toast.error("Failed to add organizer.");
-                console.error("Error adding organizer:", error);
+                toast.error('Failed to add organizer.');
+                console.error('Error adding organizer:', error);
             }
         }
     };
@@ -97,10 +97,10 @@ export const EventForm = ({ event }: { event?: Event }) => {
         if (restreams.length < 10) {
             setRestreams([
                 ...restreams,
-                { language: "", url: "", organizer: "" },
+                { language: '', url: '', organizer: '' },
             ]);
         } else {
-            toast.warn("Maximum of 10 restreams allowed.");
+            toast.warn('Maximum of 10 restreams allowed.');
         }
     };
 
@@ -116,7 +116,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
         header: string;
         text: string | ReactElement;
     }) => {
-        const handleClose = () => setShowModal("");
+        const handleClose = () => setShowModal('');
         const handleShow = () => setShowModal(header);
 
         return (
@@ -168,7 +168,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
             <Row>
                 <Col md={6} lg={3}>
                     <Form.Group>
-                        {" "}
+                        {' '}
                         {/* Added mb-3 */}
                         <Form.Label htmlFor="eventName">
                             Event Name <EventFieldRequired />
@@ -177,14 +177,14 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             id="eventName"
                             type="text"
                             name="name"
-                            defaultValue={event?.name || ""}
+                            defaultValue={event?.name || ''}
                             required
                         />
                     </Form.Group>
                 </Col>
                 <Col md={6} lg={3}>
                     <Form.Group>
-                        {" "}
+                        {' '}
                         {/* Added mb-3 */}
                         <Form.Label htmlFor="slug">
                             URL (therun.gg/events/{slug}) <EventFieldRequired />
@@ -200,19 +200,19 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             onChange={(e) => {
                                 const value = e.target.value
                                     .toLowerCase()
-                                    .replace(/\s+/g, "-")
-                                    .replace(/[^a-z0-9-]/g, "");
+                                    .replace(/\s+/g, '-')
+                                    .replace(/[^a-z0-9-]/g, '');
                                 setSlug(value);
                             }}
                         />
                         <Form.Text>
-                            {"https://therun.gg/events/<the-url-you-input>"}
+                            {'https://therun.gg/events/<the-url-you-input>'}
                         </Form.Text>
                     </Form.Group>
                 </Col>
                 <Col md={6} lg={3}>
                     <Form.Group>
-                        {" "}
+                        {' '}
                         {/* Added mb-3 */}
                         <Form.Label htmlFor="eventType">
                             Type <EventFieldRequired />
@@ -220,7 +220,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                         <Form.Select
                             id="eventType"
                             name="type"
-                            defaultValue={event?.type || ""}
+                            defaultValue={event?.type || ''}
                             required
                         >
                             <option value="">Select Type</option>
@@ -234,7 +234,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 </Col>
                 <Col md={6} lg={3}>
                     <Form.Group>
-                        {" "}
+                        {' '}
                         {/* Added mb-3 */}
                         <Form.Label htmlFor="eventTier">
                             Tier <EventFieldRequired />
@@ -247,7 +247,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                         <Form.Select
                             id="eventTier"
                             name="tier"
-                            defaultValue={event?.tier || ""}
+                            defaultValue={event?.tier || ''}
                             required
                         >
                             <option value="">Select Tier</option>
@@ -296,7 +296,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                         <Form.Select
                             id="language"
                             name="language"
-                            defaultValue={event?.language || "English"}
+                            defaultValue={event?.language || 'English'}
                             required // Added required
                         >
                             {/* Removed placeholder option as defaultValue is set */}
@@ -318,13 +318,13 @@ export const EventForm = ({ event }: { event?: Event }) => {
                     {selectedIsOffline && (
                         <Form.Group>
                             <Form.Label htmlFor="location">
-                                Location (Country) <EventFieldRequired />{" "}
+                                Location (Country) <EventFieldRequired />{' '}
                                 {/* Added required indication */}
                             </Form.Label>
                             <Form.Select
                                 id="location"
                                 name="location"
-                                defaultValue={event?.location || ""}
+                                defaultValue={event?.location || ''}
                                 disabled={!selectedIsOffline}
                                 required={selectedIsOffline} // Conditionally required
                             >
@@ -346,7 +346,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
             <Row>
                 <Col md={6}>
                     <Form.Group>
-                        {" "}
+                        {' '}
                         {/* Added mb-3 */}
                         <Form.Label htmlFor="startsAt">
                             Start Date & Time <EventFieldRequired />
@@ -364,7 +364,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                                       ) // Adjust for local timezone for input default
                                           .toISOString()
                                           .slice(0, 16)
-                                    : ""
+                                    : ''
                             }
                             required
                         />
@@ -372,7 +372,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 </Col>
                 <Col md={6}>
                     <Form.Group>
-                        {" "}
+                        {' '}
                         {/* Added mb-3 */}
                         <Form.Label htmlFor="endsAt">
                             End Date & Time <EventFieldRequired />
@@ -390,7 +390,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                                       ) // Adjust for local timezone
                                           .toISOString()
                                           .slice(0, 16)
-                                    : ""
+                                    : ''
                             }
                             required
                         />
@@ -402,7 +402,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
 
             <h5>3. Organization</h5>
             <Row className="align-items-end mb-3">
-                {" "}
+                {' '}
                 {/* Added mb-3 */}
                 <Col md={6}>
                     <Form.Group>
@@ -479,7 +479,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             type="url"
                             name="url"
                             placeholder="https://..."
-                            defaultValue={event?.url || ""}
+                            defaultValue={event?.url || ''}
                         />
                     </Form.Group>
                 </Col>
@@ -493,7 +493,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             type="url"
                             name="scheduleUrl"
                             placeholder="https://horaro.org/..."
-                            defaultValue={event?.scheduleUrl || ""}
+                            defaultValue={event?.scheduleUrl || ''}
                         />
                     </Form.Group>
                 </Col>
@@ -505,7 +505,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             type="url"
                             name="twitch"
                             placeholder="https://twitch.tv/..."
-                            defaultValue={event?.twitch || ""}
+                            defaultValue={event?.twitch || ''}
                         />
                     </Form.Group>
                 </Col>
@@ -513,7 +513,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
             <Row>
                 <Col md={3}>
                     <Form.Group>
-                        {" "}
+                        {' '}
                         {/* Added mb-3 */}
                         <Form.Label htmlFor="discord">Discord URL </Form.Label>
                         <Form.Control
@@ -521,13 +521,13 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             type="url"
                             name="discord"
                             placeholder="https://discord.gg/..."
-                            defaultValue={event?.discord || ""}
+                            defaultValue={event?.discord || ''}
                         />
                     </Form.Group>
                 </Col>
                 <Col md={3}>
                     <Form.Group>
-                        {" "}
+                        {' '}
                         {/* Added mb-3 */}
                         <Form.Label htmlFor="twitter">Twitter URL </Form.Label>
                         <Form.Control
@@ -535,23 +535,23 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             type="url"
                             name="twitter"
                             placeholder="https://twitter.com/..."
-                            defaultValue={event?.twitter || ""}
+                            defaultValue={event?.twitter || ''}
                         />
                     </Form.Group>
                 </Col>
                 <Col md={3}>
                     <Form.Group>
-                        {" "}
+                        {' '}
                         {/* Added mb-3 */}
                         <Form.Label htmlFor="submissionsUrl">
-                            Submissions URL{" "}
+                            Submissions URL{' '}
                         </Form.Label>
                         <Form.Control
                             id="submissionsUrl"
                             type="url"
                             name="submissionsUrl"
                             placeholder="https://oengus.io/..."
-                            defaultValue={event?.submissionsUrl || ""}
+                            defaultValue={event?.submissionsUrl || ''}
                         />
                     </Form.Group>
                 </Col>
@@ -563,7 +563,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             type="url"
                             name="bluesky"
                             placeholder="https://bsky.app/..."
-                            defaultValue={event?.bluesky || ""}
+                            defaultValue={event?.bluesky || ''}
                         />
                     </Form.Group>
                 </Col>
@@ -584,7 +584,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                                 onChange={(e) =>
                                     handleRestreamChange(
                                         index,
-                                        "language",
+                                        'language',
                                         e.target.value,
                                     )
                                 }
@@ -613,7 +613,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                                 onChange={(e) =>
                                     handleRestreamChange(
                                         index,
-                                        "url",
+                                        'url',
                                         e.target.value,
                                     )
                                 }
@@ -635,7 +635,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                                 onChange={(e) =>
                                     handleRestreamChange(
                                         index,
-                                        "organizer",
+                                        'organizer',
                                         e.target.value,
                                     )
                                 }
@@ -681,7 +681,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                 <Col>
                     <Form.Group>
                         <Form.Label htmlFor="shortDescription">
-                            Short Description (Summary/Teaser){" "}
+                            Short Description (Summary/Teaser){' '}
                             <EventFieldRequired />
                         </Form.Label>
                         <Form.Control
@@ -689,7 +689,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             as="textarea"
                             rows={2}
                             name="shortDescription"
-                            defaultValue={event?.shortDescription || ""}
+                            defaultValue={event?.shortDescription || ''}
                             required
                             maxLength={255}
                         />
@@ -711,7 +711,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                         />
                         <input
                             required={
-                                !editorContent || editorContent === "<p></p>"
+                                !editorContent || editorContent === '<p></p>'
                             }
                             type="hidden"
                             id="description"
@@ -748,7 +748,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
 
             <h5>6. Charity</h5>
             <Row className="align-items-center mb-3">
-                {" "}
+                {' '}
                 {/* Added mb-3 */}
                 <Col md={4}>
                     <Form.Group>
@@ -778,7 +778,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
                                     id="charityName"
                                     type="text"
                                     name="charityName"
-                                    defaultValue={event?.charityName || ""}
+                                    defaultValue={event?.charityName || ''}
                                     required={selectedIsForCharity}
                                 />
                             </Form.Group>
@@ -786,14 +786,14 @@ export const EventForm = ({ event }: { event?: Event }) => {
                         <Col md={4}>
                             <Form.Group>
                                 <Form.Label htmlFor="charityUrl">
-                                    Charity URL{" "}
+                                    Charity URL{' '}
                                 </Form.Label>
                                 <Form.Control
                                     id="charityUrl"
                                     type="url"
                                     name="charityUrl"
                                     placeholder="https://..."
-                                    defaultValue={event?.charityUrl || ""}
+                                    defaultValue={event?.charityUrl || ''}
                                 />
                             </Form.Group>
                         </Col>
@@ -809,8 +809,8 @@ export const EventForm = ({ event }: { event?: Event }) => {
                     <Form.Group>
                         <Form.Label htmlFor="eventImage">
                             {event?.imageUrl
-                                ? "Upload New Event Logo (Optional)"
-                                : "Upload Event Logo"}
+                                ? 'Upload New Event Logo (Optional)'
+                                : 'Upload Event Logo'}
                         </Form.Label>
                         <Form.Control
                             id="eventImage"
@@ -834,12 +834,12 @@ export const EventForm = ({ event }: { event?: Event }) => {
                             src={event.imageUrl}
                             alt={`${event.name} current logo`}
                             style={{
-                                objectFit: "contain",
-                                maxWidth: "100%",
-                                height: "auto",
-                                border: "1px solid #dee2e6",
-                                borderRadius: "0.25rem",
-                                marginTop: "0.5rem",
+                                objectFit: 'contain',
+                                maxWidth: '100%',
+                                height: 'auto',
+                                border: '1px solid #dee2e6',
+                                borderRadius: '0.25rem',
+                                marginTop: '0.5rem',
                             }}
                         />
                     </Col>
@@ -849,7 +849,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
             <Row>
                 <Col className="text-end">
                     <Button variant="primary" type="submit">
-                        {event ? "Save Changes" : "Create Event"}
+                        {event ? 'Save Changes' : 'Create Event'}
                     </Button>
                 </Col>
             </Row>

@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { FinishedRaceTable } from "~app/(old-layout)/races/finished/finished-races-table";
-import { getPaginatedFinishedRacesByGame } from "~src/lib/races";
-import { PaginatedRaces } from "~app/(old-layout)/races/races.types";
+import { FinishedRaceTable } from '~app/(old-layout)/races/finished/finished-races-table';
+import { PaginatedRaces } from '~app/(old-layout)/races/races.types';
+import { getPaginatedFinishedRacesByGame } from '~src/lib/races';
 
 export const FinishedRacesByGameTable = ({
     game,

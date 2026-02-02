@@ -1,6 +1,6 @@
-import { Col, Row } from "react-bootstrap";
-import { DurationToFormatted } from "../util/datetime";
-import React from "react";
+import React from 'react';
+import { Col, Row } from 'react-bootstrap';
+import { DurationToFormatted } from '../util/datetime';
 
 export const GeneralStats = ({ liveRun, currentSessionStarted, sessions }) => {
     let bestFinishedRun = null;
@@ -26,7 +26,7 @@ export const GeneralStats = ({ liveRun, currentSessionStarted, sessions }) => {
                     <Col xs={7}>Attempts (Finished)</Col>
                     <Col
                         xs={5}
-                        style={{ display: "flex", justifyContent: "flex-end" }}
+                        style={{ display: 'flex', justifyContent: 'flex-end' }}
                     >
                         {liveRun.gameData.attemptCount} (
                         {liveRun.gameData.finishedAttemptCount})
@@ -36,7 +36,7 @@ export const GeneralStats = ({ liveRun, currentSessionStarted, sessions }) => {
                     <Col xs={7}>PB</Col>
                     <Col
                         xs={5}
-                        style={{ display: "flex", justifyContent: "flex-end" }}
+                        style={{ display: 'flex', justifyContent: 'flex-end' }}
                     >
                         <DurationToFormatted duration={gameData.personalBest} />
                     </Col>
@@ -45,7 +45,7 @@ export const GeneralStats = ({ liveRun, currentSessionStarted, sessions }) => {
                     <Col xs={7}>SOB</Col>
                     <Col
                         xs={5}
-                        style={{ display: "flex", justifyContent: "flex-end" }}
+                        style={{ display: 'flex', justifyContent: 'flex-end' }}
                     >
                         <DurationToFormatted duration={gameData.sumOfBests} />
                     </Col>
@@ -54,7 +54,7 @@ export const GeneralStats = ({ liveRun, currentSessionStarted, sessions }) => {
                     <Col xs={7}>Total Run Time</Col>
                     <Col
                         xs={5}
-                        style={{ display: "flex", justifyContent: "flex-end" }}
+                        style={{ display: 'flex', justifyContent: 'flex-end' }}
                     >
                         <DurationToFormatted
                             duration={liveRun.gameData?.totalRunTime}
@@ -63,20 +63,20 @@ export const GeneralStats = ({ liveRun, currentSessionStarted, sessions }) => {
                 </Row>
             </div>
             {currentSessionStarted && (
-                <div style={{ marginTop: "0.5rem" }}>
+                <div style={{ marginTop: '0.5rem' }}>
                     Current session started {currentSessionStarted.fromNow()},
-                    attempted{" "}
+                    attempted{' '}
                     {sessions[sessions.length - 1].runIds.last -
                         sessions[sessions.length - 1].runIds.first +
-                        1}{" "}
-                    runs, finished{" "}
+                        1}{' '}
+                    runs, finished{' '}
                     {sessions[sessions.length - 1].finishedRuns.length}.
                 </div>
             )}
 
             {sessions[sessions.length - 1].finishedRuns.length > 0 && (
                 <div>
-                    Best finished run:{" "}
+                    Best finished run:{' '}
                     <DurationToFormatted
                         duration={bestFinishedRun}
                         withMillis={true}

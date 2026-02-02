@@ -1,7 +1,7 @@
-import React, { useContext } from "react";
-import { PaginationContext } from "~src/components/pagination/pagination.context";
-import { Pagination } from "react-bootstrap";
-import { PaginationHook } from "~src/components/pagination/pagination.types";
+import React, { useContext } from 'react';
+import { Pagination } from 'react-bootstrap';
+import { PaginationContext } from '~src/components/pagination/pagination.context';
+import { PaginationHook } from '~src/components/pagination/pagination.types';
 
 export default function PaginationControl<T>({
     totalItems,
@@ -13,7 +13,7 @@ export default function PaginationControl<T>({
     const { setCurrentPage } = useContext(PaginationContext);
 
     const onPaginationClick = (event): void => {
-        let target = "";
+        let target = '';
 
         if (event.target.text) {
             target = event.target.text;
@@ -23,13 +23,13 @@ export default function PaginationControl<T>({
 
         if (!target) return;
 
-        if (target.includes("«")) {
+        if (target.includes('«')) {
             setCurrentPage(1);
-        } else if (target.includes("‹")) {
+        } else if (target.includes('‹')) {
             setCurrentPage(page == 1 ? 1 : page - 1);
-        } else if (target.includes("›")) {
+        } else if (target.includes('›')) {
             setCurrentPage(page == totalPages ? totalPages : page + 1);
-        } else if (target.includes("»")) {
+        } else if (target.includes('»')) {
             setCurrentPage(totalPages);
         } else {
             if (parseInt(target)) setCurrentPage(parseInt(target));
@@ -45,9 +45,9 @@ export default function PaginationControl<T>({
             >
                 {buildItems(page, totalPages, minimalLayout)}
             </Pagination>
-            <div style={{ display: "flex", justifyContent: "center" }}>
-                Showing {(page - 1) * pageSize + 1} -{" "}
-                {page * pageSize > totalItems ? totalItems : page * pageSize}{" "}
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                Showing {(page - 1) * pageSize + 1} -{' '}
+                {page * pageSize > totalItems ? totalItems : page * pageSize}{' '}
                 out of {totalItems}
             </div>
         </>

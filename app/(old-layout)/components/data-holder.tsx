@@ -1,9 +1,9 @@
-"use server";
-import React from "react";
-import { Col, Row, Table } from "react-bootstrap";
-import { RunPreview } from "./run-preview";
-import { type Run } from "~src/common/types";
-import { getPersonalBestRuns } from "~src/lib/get-personal-best-runs";
+'use server';
+import React from 'react';
+import { Col, Row, Table } from 'react-bootstrap';
+import { type Run } from '~src/common/types';
+import { getPersonalBestRuns } from '~src/lib/get-personal-best-runs';
+import { RunPreview } from './run-preview';
 
 export const DataHolder = async () => {
     const runs = await getPersonalBestRuns();
@@ -16,7 +16,7 @@ export const DataHolder = async () => {
                             .filter(
                                 (run) =>
                                     run.personalBestTime != undefined &&
-                                    run.personalBestTime != "0",
+                                    run.personalBestTime != '0',
                             )
                             .map((run: Run) => {
                                 return (

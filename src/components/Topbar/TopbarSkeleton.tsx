@@ -1,21 +1,21 @@
-"use client";
-import React, { useEffect, useRef } from "react";
-import ContentLoader from "react-content-loader";
+'use client';
+import React, { useEffect, useRef } from 'react';
+import ContentLoader from 'react-content-loader';
 
 export const TopbarSkeleton = (
     props: React.ComponentProps<typeof ContentLoader>,
 ) => {
     const skeletonRef = useRef<HTMLElement>(null);
     const contentLoaderProps = {
-        id: "skeleton-topbar",
+        id: 'skeleton-topbar',
         speed: 2,
-        title: "Loading Topbar",
-        backgroundColor: "var(--bs-secondary-bg)",
-        foregroundColor: "var(--bs-body-bg)",
-        width: "100%", // Full width of the viewport
-        height: "70", // Height remains fixed for the topbar
-        viewBox: "0 0 100 7", // Using percentages for the viewBox
-        preserveAspectRatio: "none",
+        title: 'Loading Topbar',
+        backgroundColor: 'var(--bs-secondary-bg)',
+        foregroundColor: 'var(--bs-body-bg)',
+        width: '100%', // Full width of the viewport
+        height: '70', // Height remains fixed for the topbar
+        viewBox: '0 0 100 7', // Using percentages for the viewBox
+        preserveAspectRatio: 'none',
         ...props,
     };
     useEffect(() => {

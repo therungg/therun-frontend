@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { usePathname, useSearchParams } from "next/navigation";
-import { PaginatedData } from "../pagination/pagination.types";
-import { Pagination } from "react-bootstrap";
+import { usePathname, useSearchParams } from 'next/navigation';
+import { Pagination } from 'react-bootstrap';
+import { PaginatedData } from '../pagination/pagination.types';
 
 export function Paginate<T>({ data }: { data: PaginatedData<T> }) {
     return (
@@ -29,7 +29,7 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({
     const maxPageNumbersToShow = 5;
 
     const getHref = (page: number) => {
-        params.set("page", page.toString());
+        params.set('page', page.toString());
 
         return `${pathname}?${params.toString()}`;
     };

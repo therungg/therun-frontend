@@ -1,5 +1,5 @@
-import React from "react";
-import { FuseResultMatch } from "fuse.js";
+import { FuseResultMatch } from 'fuse.js';
+import React from 'react';
 
 interface FuzzyMatchHighlightProps {
     result: string;
@@ -27,7 +27,7 @@ export const FuzzyMatchHighlight = React.memo<FuzzyMatchHighlightProps>(
         );
 
         const parts = React.useMemo(() => {
-            return result.split("").reduce((results, character, index) => {
+            return result.split('').reduce((results, character, index) => {
                 const isHighlighted = highlightIndices.some(
                     ({ start, end }) => index >= start && index < end,
                 );
@@ -52,7 +52,7 @@ export const FuzzyMatchHighlight = React.memo<FuzzyMatchHighlightProps>(
     },
 );
 
-FuzzyMatchHighlight.displayName = "FuzzyMatchHighlight";
+FuzzyMatchHighlight.displayName = 'FuzzyMatchHighlight';
 
 interface HighlightCharacterProps {
     character: string;
@@ -66,4 +66,4 @@ const HighlightCharacter = React.memo<HighlightCharacterProps>(
     ),
 );
 
-HighlightCharacter.displayName = "HighlightCharacter";
+HighlightCharacter.displayName = 'HighlightCharacter';

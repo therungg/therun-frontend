@@ -1,10 +1,10 @@
-import { Table } from "react-bootstrap";
-import { Run } from "../../../common/types";
-import { DurationToFormatted, IsoToFormatted } from "../../util/datetime";
+import { Table } from 'react-bootstrap';
+import { Run } from '../../../common/types';
+import { DurationToFormatted, IsoToFormatted } from '../../util/datetime';
 
 export const UserStats = ({ runs }: { runs: Run[] }) => {
     const totalPlayTime = runs
-        .filter((run) => !!run.totalRunTime && run.totalRunTime != "NaN")
+        .filter((run) => !!run.totalRunTime && run.totalRunTime != 'NaN')
         .map((run) => parseInt(run.totalRunTime))
         .reduce((a, b) => a + b, 0)
         .toString();
@@ -29,37 +29,37 @@ export const UserStats = ({ runs }: { runs: Run[] }) => {
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th style={{ textAlign: "right" }}>Value</th>
+                        <th style={{ textAlign: 'right' }}>Value</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td>Total Games</td>
-                        <td style={{ textAlign: "right" }}>{games}</td>
+                        <td style={{ textAlign: 'right' }}>{games}</td>
                     </tr>
                     <tr>
                         <td>Total Categories</td>
-                        <td style={{ textAlign: "right" }}>{runs.length}</td>
+                        <td style={{ textAlign: 'right' }}>{runs.length}</td>
                     </tr>
                     <tr>
                         <td>Total time played</td>
-                        <td style={{ textAlign: "right" }}>
+                        <td style={{ textAlign: 'right' }}>
                             <DurationToFormatted duration={totalPlayTime} />
                         </td>
                     </tr>
                     <tr>
                         <td>Total attempts</td>
-                        <td style={{ textAlign: "right" }}>{totalAttempts}</td>
+                        <td style={{ textAlign: 'right' }}>{totalAttempts}</td>
                     </tr>
                     <tr>
                         <td>Total completed attempts</td>
-                        <td style={{ textAlign: "right" }}>
+                        <td style={{ textAlign: 'right' }}>
                             {totalFinishedAttempts}
                         </td>
                     </tr>
                     <tr>
                         <td>Total completion %</td>
-                        <td style={{ textAlign: "right" }}>
+                        <td style={{ textAlign: 'right' }}>
                             {(
                                 (parseInt(totalFinishedAttempts) /
                                     totalAttempts) *
@@ -70,7 +70,7 @@ export const UserStats = ({ runs }: { runs: Run[] }) => {
                     </tr>
                     <tr>
                         <td>Last active</td>
-                        <td style={{ textAlign: "right" }}>
+                        <td style={{ textAlign: 'right' }}>
                             <IsoToFormatted iso={lastSessionTime} />
                         </td>
                     </tr>

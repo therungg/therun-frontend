@@ -1,7 +1,7 @@
-import { LiveRun } from "~app/(old-layout)/live/live.types";
-import { Tournament } from "~src/components/tournament/tournament-info";
-import { equalsCaseInsensitive } from "~src/utils/string";
-import { includesCaseInsensitive } from "~src/utils/array";
+import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { Tournament } from '~src/components/tournament/tournament-info';
+import { includesCaseInsensitive } from '~src/utils/array';
+import { equalsCaseInsensitive } from '~src/utils/string';
 
 export const isLiveDataEligibleForTournament = (
     data: LiveRun,

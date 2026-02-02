@@ -1,20 +1,21 @@
 /* eslint-disable  */
 // TODO: REFACTOR
-import { RunHistory, SplitsHistory } from "~src/common/types";
+
+import moment from 'moment/moment';
+import { useEffect, useState } from 'react';
+import { Col, Pagination, Row, Table } from 'react-bootstrap';
+import { RunHistory, SplitsHistory } from '~src/common/types';
+import { UnderlineTooltip } from '../../tooltip';
+import { convertSplitName, SplitName } from '../../transformers/split-name';
+import { DurationToFormatted, IsoToFormatted } from '../../util/datetime';
+import { buildItems } from '../run-sessions/game-sessions';
+import { BestAchievedGraph } from '../splits/best-achieved-graph';
 import {
     GoldHistory,
     GoldProgressionGraph,
     GoldSplit,
-} from "../splits/gold-progression-graph";
-import { Col, Pagination, Row, Table } from "react-bootstrap";
-import { DurationToFormatted, IsoToFormatted } from "../../util/datetime";
-import moment from "moment/moment";
-import { useEffect, useState } from "react";
-import { buildItems } from "../run-sessions/game-sessions";
-import { BestAchievedGraph } from "../splits/best-achieved-graph";
-import { UnderlineTooltip } from "../../tooltip";
-import { isOutlier } from "../splits/split-stats";
-import { convertSplitName, SplitName } from "../../transformers/split-name";
+} from '../splits/gold-progression-graph';
+import { isOutlier } from '../splits/split-stats';
 
 // This whole page is a shitshow. It's slow, crashes on large split files (30k+ splits) due to the json parse stringify stuff,
 // and the undoing split merge is fully broken. Have to fix somewhere along the line.
@@ -27,8 +28,8 @@ export const Golds = ({
     history: RunHistory[];
     splits: SplitsHistory[];
 }) => {
-    const [splitFilter, setSplitFilter] = useState("no-filter");
-    const [sortColumn, setSortColumn] = useState("date");
+    const [splitFilter, setSplitFilter] = useState('no-filter');
+    const [sortColumn, setSortColumn] = useState('date');
     const [sortAsc, setSortAsc] = useState(true);
     const [useHistory, setUseHistory] = useState(
         history.length > 10000
@@ -41,7 +42,7 @@ export const Golds = ({
     const [hasMergedSplits, setHasMergedSplits] = useState(false);
 
     const subsplits = useSplits.filter((split: SplitsHistory) => {
-        return split.name.toString().startsWith("-");
+        return split.name.toString().startsWith('-');
     });
 
     const hasSubsplits =
@@ -57,11 +58,11 @@ export const Golds = ({
     };
 
     const getSortableClassName = (column: string): string => {
-        let classNames = "sortable";
+        let classNames = 'sortable';
 
         if (sortColumn === column) {
-            classNames += " active";
-            classNames += sortAsc ? " asc" : " desc";
+            classNames += ' active';
+            classNames += sortAsc ? ' asc' : ' desc';
         }
 
         return classNames;
@@ -101,7 +102,7 @@ export const Golds = ({
                     })
                     .reduce((a, partial) => a + partial, 0);
 
-                if (!currentSplit || currentSplit.splitTime == "0")
+                if (!currentSplit || currentSplit.splitTime == '0')
                     return false;
 
                 if (parseInt(currentSplit.splitTime) < bestPossibleTime)
@@ -145,7 +146,7 @@ export const Golds = ({
     allGoldsSorted.sort((a, b) => {
         let res = 1;
 
-        if (sortColumn === "date") {
+        if (sortColumn === 'date') {
             if (!a.date) return 1;
             if (!b.date) return -1;
 
@@ -157,12 +158,12 @@ export const Golds = ({
             res = parseInt(aDuration) < 0 ? 1 : -1;
         }
 
-        if (sortColumn === "split") {
+        if (sortColumn === 'split') {
             if (a.splitKey == b.splitKey) res = 0;
             else res = a.splitKey > b.splitKey ? 1 : -1;
         }
 
-        if (sortColumn === "improved") {
+        if (sortColumn === 'improved') {
             const aprevSplit = goldRuns[a.splitKey as number][a.nthGold - 1];
             const bprevSplit = goldRuns[b.splitKey as number][b.nthGold - 1];
 
@@ -184,7 +185,7 @@ export const Golds = ({
         return res;
     });
 
-    if (splitFilter !== "no-filter") {
+    if (splitFilter !== 'no-filter') {
         allGoldsSorted = allGoldsSorted.filter(
             (gold) => gold.split === splitFilter,
         );
@@ -199,7 +200,7 @@ export const Golds = ({
     }, [active, last]);
 
     const onPaginationClick = (event): void => {
-        let target = "";
+        let target = '';
 
         if (event.target.text) {
             target = event.target.text;
@@ -209,13 +210,13 @@ export const Golds = ({
 
         if (!target) return;
 
-        if (target.includes("«")) {
+        if (target.includes('«')) {
             setActive(1);
-        } else if (target.includes("‹")) {
+        } else if (target.includes('‹')) {
             setActive(active == 1 ? 1 : active - 1);
-        } else if (target.includes("›")) {
+        } else if (target.includes('›')) {
             setActive(active == last ? last : active + 1);
-        } else if (target.includes("»")) {
+        } else if (target.includes('»')) {
             setActive(last);
         } else {
             if (parseInt(target)) setActive(parseInt(target));
@@ -240,15 +241,15 @@ export const Golds = ({
                 return runHistory;
             }
 
-            if (prevSplit.splitTime == "0" || currentSplit.splitTime == "0") {
-                currentSplit.splitTime = "0";
+            if (prevSplit.splitTime == '0' || currentSplit.splitTime == '0') {
+                currentSplit.splitTime = '0';
             } else if (
                 parseInt(prevSplit.splitTime) <
                     parseInt(useSplits[n].single.bestPossibleTime) ||
                 parseInt(currentSplit.splitTime) <
                     parseInt(useSplits[n + 1].single.bestPossibleTime)
             ) {
-                currentSplit.splitTime = "0";
+                currentSplit.splitTime = '0';
             } else {
                 currentSplit.splitTime = (
                     parseInt(prevSplit.splitTime) +
@@ -294,14 +295,14 @@ export const Golds = ({
 
     const collapseSubsplits = async () => {
         let firstSubSplit = useSplits.findIndex((split: SplitsHistory) =>
-            split.name.toString().startsWith("-"),
+            split.name.toString().startsWith('-'),
         );
 
         while (firstSubSplit !== -1) {
             removeSplit(firstSubSplit);
             // await new Promise(r => setTimeout(r, 5));
             firstSubSplit = useSplits.findIndex((split: SplitsHistory) =>
-                split.name.toString().startsWith("-"),
+                split.name.toString().startsWith('-'),
             );
         }
     };
@@ -310,14 +311,14 @@ export const Golds = ({
         <div>
             <Row>
                 <Col md={6} sm={12}>
-                    <h2 style={{ width: "18rem" }}>
-                        {splitFilter == "no-filter" ? (
-                            "Gold Explorer"
+                    <h2 style={{ width: '18rem' }}>
+                        {splitFilter == 'no-filter' ? (
+                            'Gold Explorer'
                         ) : (
                             <a
                                 href="#"
                                 onClick={() => {
-                                    setSplitFilter("no-filter");
+                                    setSplitFilter('no-filter');
                                 }}
                             >
                                 Gold Explorer
@@ -328,15 +329,15 @@ export const Golds = ({
                 <Col>
                     <div
                         style={{
-                            width: "100%",
-                            display: "flex",
-                            justifyContent: "flex-end",
-                            alignItems: "center",
-                            marginBottom: "0.5rem",
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'flex-end',
+                            alignItems: 'center',
+                            marginBottom: '0.5rem',
                         }}
                     >
                         <select
-                            style={{ width: "20rem" }}
+                            style={{ width: '20rem' }}
                             className="form-select"
                             onChange={(e) => {
                                 setSplitFilter(e.target.value);
@@ -380,14 +381,14 @@ export const Golds = ({
                         <Col>
                             <h3>Stats</h3>
                         </Col>
-                        {splitFilter == "no-filter" && hasMergedSplits && (
+                        {splitFilter == 'no-filter' && hasMergedSplits && (
                             <Col
                                 style={{
-                                    display: "flex",
-                                    justifyContent: "flex-end",
-                                    alignItems: "center",
-                                    color: "var(--bs-link-color)",
-                                    cursor: "pointer",
+                                    display: 'flex',
+                                    justifyContent: 'flex-end',
+                                    alignItems: 'center',
+                                    color: 'var(--bs-link-color)',
+                                    cursor: 'pointer',
                                 }}
                                 onClick={() => {
                                     setUseSplits(
@@ -410,16 +411,16 @@ export const Golds = ({
                                 />
                             </Col>
                         )}
-                        {splitFilter == "no-filter" &&
+                        {splitFilter == 'no-filter' &&
                             !hasMergedSplits &&
                             hasSubsplits && (
                                 <Col
                                     style={{
-                                        display: "flex",
-                                        justifyContent: "flex-end",
-                                        alignItems: "center",
-                                        color: "var(--bs-link-color)",
-                                        cursor: "pointer",
+                                        display: 'flex',
+                                        justifyContent: 'flex-end',
+                                        alignItems: 'center',
+                                        color: 'var(--bs-link-color)',
+                                        cursor: 'pointer',
                                     }}
                                     onClick={async () => {
                                         await collapseSubsplits();
@@ -442,18 +443,18 @@ export const Golds = ({
                                 <th>Achieved at</th>
                                 <th
                                     style={{
-                                        display: "flex",
-                                        justifyContent: "center",
+                                        display: 'flex',
+                                        justifyContent: 'center',
                                     }}
                                 >
                                     <UnderlineTooltip
                                         title="Grouping splits"
                                         content={
-                                            "This tool allows you to group multiple splits together. " +
-                                            "When you press the arrow behind a split, it will be grouped with the split after it." +
-                                            " The gold will then be recalculated, and you will see the best time you got these two splits in a run." +
-                                            " This allows you to group the run into custom segments. " +
-                                            "Clicking Reset merged splits resets all splits."
+                                            'This tool allows you to group multiple splits together. ' +
+                                            'When you press the arrow behind a split, it will be grouped with the split after it.' +
+                                            ' The gold will then be recalculated, and you will see the best time you got these two splits in a run.' +
+                                            ' This allows you to group the run into custom segments. ' +
+                                            'Clicking Reset merged splits resets all splits.'
                                         }
                                         element="Merge"
                                     />
@@ -463,7 +464,7 @@ export const Golds = ({
                         <tbody>
                             {goldRuns
                                 .filter((golds: GoldSplit[]) => {
-                                    if (splitFilter == "no-filter") return true;
+                                    if (splitFilter == 'no-filter') return true;
                                     const best = golds.at(-1);
 
                                     return best && splitFilter == best.split;
@@ -480,8 +481,8 @@ export const Golds = ({
                                                 best.totalTime
                                             }
                                         >
-                                            <td style={{ display: "flex" }}>
-                                                {splitFilter === "no-filter" ? (
+                                            <td style={{ display: 'flex' }}>
+                                                {splitFilter === 'no-filter' ? (
                                                     <a
                                                         href="#"
                                                         onClick={() => {
@@ -505,7 +506,7 @@ export const Golds = ({
                                                     <div
                                                         style={{
                                                             marginLeft:
-                                                                "0.2rem",
+                                                                '0.2rem',
                                                         }}
                                                     >
                                                         <UnderlineTooltip
@@ -549,7 +550,7 @@ export const Golds = ({
                                                     iso={moment(best.date)
                                                         .add(
                                                             best.totalTime,
-                                                            "milliseconds",
+                                                            'milliseconds',
                                                         )
                                                         .toISOString()}
                                                 />
@@ -563,11 +564,11 @@ export const Golds = ({
                                                 >
                                                     <div
                                                         style={{
-                                                            display: "flex",
-                                                            cursor: "pointer",
-                                                            color: "var(--bs-link-color)",
+                                                            display: 'flex',
+                                                            cursor: 'pointer',
+                                                            color: 'var(--bs-link-color)',
                                                             justifyContent:
-                                                                "center",
+                                                                'center',
                                                         }}
                                                     >
                                                         <DownArrow />
@@ -580,7 +581,7 @@ export const Golds = ({
                                 })}
                         </tbody>
                     </Table>
-                    {splitFilter !== "no-filter" && (
+                    {splitFilter !== 'no-filter' && (
                         <Row>
                             <Col xl={6} lg={12}>
                                 <div>
@@ -613,26 +614,26 @@ export const Golds = ({
                         <thead>
                             <tr>
                                 <th
-                                    className={getSortableClassName("date")}
-                                    onClick={() => changeSort("date")}
+                                    className={getSortableClassName('date')}
+                                    onClick={() => changeSort('date')}
                                 >
                                     Date
                                 </th>
                                 <th
-                                    className={getSortableClassName("split")}
-                                    onClick={() => changeSort("split")}
+                                    className={getSortableClassName('split')}
+                                    onClick={() => changeSort('split')}
                                 >
                                     Split
                                 </th>
                                 <th
-                                    className={getSortableClassName("date")}
-                                    onClick={() => changeSort("date")}
+                                    className={getSortableClassName('date')}
+                                    onClick={() => changeSort('date')}
                                 >
                                     Time
                                 </th>
                                 <th
-                                    className={getSortableClassName("improved")}
-                                    onClick={() => changeSort("improved")}
+                                    className={getSortableClassName('improved')}
+                                    onClick={() => changeSort('improved')}
                                 >
                                     Improved
                                 </th>
@@ -665,7 +666,7 @@ export const Golds = ({
                                                     iso={moment(gold.date)
                                                         .add(
                                                             gold.totalTime,
-                                                            "milliseconds",
+                                                            'milliseconds',
                                                         )
                                                         .toISOString()}
                                                 />
@@ -679,11 +680,11 @@ export const Golds = ({
                                             </td>
                                             <td>
                                                 {diff === null ? (
-                                                    "First split"
+                                                    'First split'
                                                 ) : (
                                                     <div
                                                         style={{
-                                                            color: "var(--bs-link-color)",
+                                                            color: 'var(--bs-link-color)',
                                                         }}
                                                     >
                                                         -
@@ -708,12 +709,12 @@ export const Golds = ({
                         {items}
                     </Pagination>
 
-                    <div style={{ display: "flex", justifyContent: "center" }}>
-                        Showing {(active - 1) * 10 + 1} -{" "}
+                    <div style={{ display: 'flex', justifyContent: 'center' }}>
+                        Showing {(active - 1) * 10 + 1} -{' '}
                         {active * 10 < allGoldsSorted.length
                             ? active * 10
-                            : allGoldsSorted.length}{" "}
-                        out of {allGoldsSorted.length} golds{" "}
+                            : allGoldsSorted.length}{' '}
+                        out of {allGoldsSorted.length} golds{' '}
                         {totalCount !== allGoldsSorted.length &&
                             ` (${totalCount} without filter)`}
                     </div>

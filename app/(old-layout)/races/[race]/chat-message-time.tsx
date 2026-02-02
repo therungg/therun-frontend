@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo, useMemo } from 'react';
 
 interface ChatMessageTimeProps {
     time: string;
@@ -8,8 +8,8 @@ export const ChatMessageTime = memo<ChatMessageTimeProps>(({ time }) => {
     const title = useMemo(() => new Date(time).toLocaleTimeString(), [time]);
     const formattedTime = useMemo(() => {
         return new Date(time).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
+            hour: '2-digit',
+            minute: '2-digit',
         });
     }, [time]);
 
@@ -20,4 +20,4 @@ export const ChatMessageTime = memo<ChatMessageTimeProps>(({ time }) => {
     );
 });
 
-ChatMessageTime.displayName = "ChatMessageTime";
+ChatMessageTime.displayName = 'ChatMessageTime';

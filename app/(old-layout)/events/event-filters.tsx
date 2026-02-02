@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { FC, PropsWithChildren, ReactNode, useState } from "react";
-import { Form, Button } from "react-bootstrap";
-import { eventTierShortNames } from "types/events.types";
-import { EventLocation } from "./event-location";
-import styles from "./event.styles.module.css";
-import clsx from "clsx";
-import { FaFilter } from "react-icons/fa";
-import { FaHeart } from "react-icons/fa6";
+import clsx from 'clsx';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { FC, PropsWithChildren, ReactNode, useState } from 'react';
+import { Button, Form } from 'react-bootstrap';
+import { FaFilter } from 'react-icons/fa';
+import { FaHeart } from 'react-icons/fa6';
+import { eventTierShortNames } from 'types/events.types';
+import styles from './event.styles.module.css';
+import { EventLocation } from './event-location';
 
 const VIEW_MORE_THRESHOLD = 5;
 
@@ -44,18 +44,18 @@ export const EventFilters: FC<PropsWithChildren<FilterInput>> = ({
                     )}
                 </Button>
             </div>
-            <div className={`${showFilters ? "d-block" : "d-none"} d-sm-block`}>
+            <div className={`${showFilters ? 'd-block' : 'd-none'} d-sm-block`}>
                 <DateFilter />
                 {Object.entries(filters)
                     .sort(([a], [b]) => {
                         const order = [
-                            "organizer",
-                            "tier",
-                            "type",
-                            "isOffline",
-                            "location",
-                            "language",
-                            "isForCharity",
+                            'organizer',
+                            'tier',
+                            'type',
+                            'isOffline',
+                            'location',
+                            'language',
+                            'isForCharity',
                         ];
                         return order.indexOf(a) - order.indexOf(b);
                     })
@@ -82,11 +82,11 @@ const Filter = ({
         key,
         value,
     }));
-    const [search, setSearch] = useState("");
+    const [search, setSearch] = useState('');
 
     const filteredValues = values.filter(({ key }) => {
-        if (categoryKey.toLowerCase().includes("charity")) {
-            return key === "true";
+        if (categoryKey.toLowerCase().includes('charity')) {
+            return key === 'true';
         }
 
         return key.toLowerCase().includes(search.toLowerCase());
@@ -166,9 +166,9 @@ const EventFilter = ({
     const router = useRouter();
 
     const categoryKeyValue = `${categoryKey}-${label}`;
-    const existingFilter = searchParams.get("filter." + categoryKey);
+    const existingFilter = searchParams.get('filter.' + categoryKey);
     const isChecked = existingFilter
-        ? existingFilter.split(",").includes(label)
+        ? existingFilter.split(',').includes(label)
         : false;
     return (
         <Form.Check
@@ -208,13 +208,13 @@ const FilterBody: FC<PropsWithChildren<{ header: string }>> = ({
                     className="cursor-pointer text-muted w-sm-75"
                     onClick={() => setHidden(!hidden)}
                 >
-                    {hidden ? "▲" : "▼"}
+                    {hidden ? '▲' : '▼'}
                 </span>
             </div>
             <hr
                 className={clsx(
-                    "mt-0 mb-2 ms-1 me-4",
-                    styles["event-filter-divider"],
+                    'mt-0 mb-2 ms-1 me-4',
+                    styles['event-filter-divider'],
                 )}
             />
             {!hidden && children}
@@ -225,22 +225,22 @@ const FilterBody: FC<PropsWithChildren<{ header: string }>> = ({
 const DateFilter = () => {
     const searchParams = new URLSearchParams(useSearchParams());
     const router = useRouter();
-    const categoryKey = "date";
+    const categoryKey = 'date';
 
     const values = {
-        upcoming: "Recent and Upcoming",
-        current: "Live Now",
-        all: "All Events",
+        upcoming: 'Recent and Upcoming',
+        current: 'Live Now',
+        all: 'All Events',
     };
 
     const existingFilter =
-        searchParams.get("filter." + categoryKey) || "upcoming";
+        searchParams.get('filter.' + categoryKey) || 'upcoming';
 
     return (
         <FilterBody header="Start Date">
             {Object.entries(values).map(([key, value]) => {
                 const isChecked = existingFilter
-                    ? existingFilter.split(",").includes(key)
+                    ? existingFilter.split(',').includes(key)
                     : false;
 
                 return (
@@ -249,7 +249,7 @@ const DateFilter = () => {
                         key={key}
                         type="radio"
                         label={<span className="cursor-pointer">{value}</span>}
-                        id={"date" + "-" + key}
+                        id={'date' + '-' + key}
                         name="date"
                         defaultChecked={isChecked}
                         onChange={() => {
@@ -272,15 +272,15 @@ const changeFilter = (
     category: string,
     key: string,
 ) => {
-    category = "filter." + category;
+    category = 'filter.' + category;
     const currentCategoryFilter = params.get(category);
-    if (currentCategoryFilter && category !== "filter.date") {
-        const keyIsSet = currentCategoryFilter.split(",").includes(key);
+    if (currentCategoryFilter && category !== 'filter.date') {
+        const keyIsSet = currentCategoryFilter.split(',').includes(key);
         if (keyIsSet) {
             const newCategoryFilter = currentCategoryFilter
-                .split(",")
+                .split(',')
                 .filter((item) => item !== key)
-                .join(",");
+                .join(',');
             if (newCategoryFilter) {
                 params.set(category, newCategoryFilter);
             } else {
@@ -298,12 +298,12 @@ const changeFilter = (
 };
 
 const FilterCategory = ({ category }: { category: string }) => {
-    if (category.toLowerCase() === "isoffline") {
-        category = "Venue/Online";
+    if (category.toLowerCase() === 'isoffline') {
+        category = 'Venue/Online';
     }
 
-    if (category.toLowerCase() === "isforcharity") {
-        category = "For Charity";
+    if (category.toLowerCase() === 'isforcharity') {
+        category = 'For Charity';
     }
 
     return <span className="fw-bold text-capitalize">{category}</span>;
@@ -319,30 +319,30 @@ const FilterValue = ({
     filterValue: number;
 }) => {
     switch (category) {
-        case "tier":
+        case 'tier':
             filterKey =
                 eventTierShortNames[
                     filterKey as keyof typeof eventTierShortNames
                 ] || filterKey;
             break;
-        case "location":
+        case 'location':
             filterKey = <EventLocation location={filterKey as string} />;
             break;
-        case "isOffline":
+        case 'isOffline':
             filterKey =
-                filterKey === "true"
-                    ? "Event has a venue"
-                    : "Event is online only";
+                filterKey === 'true'
+                    ? 'Event has a venue'
+                    : 'Event is online only';
 
             break;
-        case "isForCharity":
+        case 'isForCharity':
             filterKey =
-                filterKey === "true" ? (
+                filterKey === 'true' ? (
                     <>
                         Yes! <FaHeart />
                     </>
                 ) : (
-                    "No"
+                    'No'
                 );
 
             break;
@@ -351,12 +351,12 @@ const FilterValue = ({
     }
 
     return (
-        <span className={styles["event-filter"]}>
-            {filterKey}{" "}
+        <span className={styles['event-filter']}>
+            {filterKey}{' '}
             <span
                 className={clsx(
-                    "text-muted fs-smaller",
-                    styles["event-filter"],
+                    'text-muted fs-smaller',
+                    styles['event-filter'],
                 )}
             >
                 ({filterValue})

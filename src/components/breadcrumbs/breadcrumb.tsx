@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { Breadcrumb as BootstrapBreadCrumb } from "react-bootstrap";
+import { Breadcrumb as BootstrapBreadCrumb } from 'react-bootstrap';
 
 export interface BreadcrumbItem {
     href?: string;
@@ -17,7 +17,7 @@ export const Breadcrumb = ({
     return (
         <BootstrapBreadCrumb className={className}>
             {breadcrumbs.map((breadcrumb, i) => {
-                const href = breadcrumb.href || "#";
+                const href = breadcrumb.href || '#';
                 return (
                     <BootstrapBreadCrumb.Item
                         active={i + 1 === breadcrumbs.length}

@@ -1,5 +1,5 @@
-import { ReactNode, memo } from "react";
-import { OverlayTrigger, Popover, Tooltip } from "react-bootstrap";
+import { memo, ReactNode } from 'react';
+import { OverlayTrigger, Popover, Tooltip } from 'react-bootstrap';
 
 export const InfoTooltip = ({
     title,
@@ -44,9 +44,9 @@ export const UnderlineTooltip = ({
         <OverlayTrigger key="timesave" placement="top" overlay={popover}>
             <div
                 style={{
-                    textDecoration: "underline",
-                    textDecorationStyle: "dotted",
-                    display: "flex",
+                    textDecoration: 'underline',
+                    textDecorationStyle: 'dotted',
+                    display: 'flex',
                 }}
             >
                 {element}
@@ -81,9 +81,9 @@ export const TruncatedTextTooltip = memo<TruncatedTextTooltipProps>(
             <div
                 style={{
                     maxWidth: maxWidth,
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
                 }}
             >
                 <OverlayTrigger
@@ -96,4 +96,4 @@ export const TruncatedTextTooltip = memo<TruncatedTextTooltipProps>(
         );
     },
 );
-TruncatedTextTooltip.displayName = "TruncatedTextTooltip";
+TruncatedTextTooltip.displayName = 'TruncatedTextTooltip';

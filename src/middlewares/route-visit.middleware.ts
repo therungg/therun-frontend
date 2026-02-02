@@ -1,21 +1,21 @@
-import { NextRequest, NextResponse } from "next/server";
-import { COOKIE_KEY, parseCookie } from "~src/utils/cookies";
+import { NextRequest, NextResponse } from 'next/server';
+import { COOKIE_KEY, parseCookie } from '~src/utils/cookies';
 
 const fileTypes = [
-    "png",
-    "jpg",
-    "jpeg",
-    "gif",
-    "svg",
-    "css",
-    "js",
-    "map",
-    "woff",
-    "woff2",
-    "ttf",
-    "ico",
-    "webp",
-    "webmanifest",
+    'png',
+    'jpg',
+    'jpeg',
+    'gif',
+    'svg',
+    'css',
+    'js',
+    'map',
+    'woff',
+    'woff2',
+    'ttf',
+    'ico',
+    'webp',
+    'webmanifest',
 ];
 
 export const routeVisitMiddleware = (
@@ -27,9 +27,9 @@ export const routeVisitMiddleware = (
 
     // Exclude API and resource routes
     if (
-        visitPath.startsWith("/api") ||
-        visitPath.startsWith("/_next") ||
-        new RegExp(`.(${fileTypes.join("|")})$`).test(visitPath)
+        visitPath.startsWith('/api') ||
+        visitPath.startsWith('/_next') ||
+        new RegExp(`.(${fileTypes.join('|')})$`).test(visitPath)
     ) {
         return;
     }

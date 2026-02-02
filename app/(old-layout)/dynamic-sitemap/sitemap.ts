@@ -1,14 +1,14 @@
-import { MetadataRoute } from "next";
-import { Race, RaceGameStatsByGame } from "~app/(old-layout)/races/races.types";
-import { getAllTournamentSlugs } from "~app/(old-layout)/tournaments/tournament-list";
-import { getAllEvents } from "~src/lib/events";
+import { MetadataRoute } from 'next';
+import { Race, RaceGameStatsByGame } from '~app/(old-layout)/races/races.types';
+import { getAllTournamentSlugs } from '~app/(old-layout)/tournaments/tournament-list';
+import { getAllEvents } from '~src/lib/events';
 import {
     getPaginatedFinishedRaces,
     getRaceGameStats,
     getRaceGameStatsByGame,
-} from "~src/lib/races";
-import { getPaginatedUsers } from "~src/lib/users";
-import { safeEncodeURI } from "~src/utils/uri";
+} from '~src/lib/races';
+import { getPaginatedUsers } from '~src/lib/users';
+import { safeEncodeURI } from '~src/utils/uri';
 
 export const maxDuration = 120;
 
@@ -53,9 +53,9 @@ const sitemapForRaces = async (): Promise<MetadataRoute.Sitemap> => {
 
     return allItems.map((race) => {
         return {
-            url: "https://therun.gg/races/" + race.raceId,
+            url: 'https://therun.gg/races/' + race.raceId,
             lastModified: new Date(),
-            changeFrequency: "weekly",
+            changeFrequency: 'weekly',
             priority: 0.4,
         };
     });
@@ -68,9 +68,9 @@ const sitemapForUsers = async (): Promise<MetadataRoute.Sitemap> => {
         .map((user) => {
             try {
                 return {
-                    url: "https://therun.gg/" + user.username,
+                    url: 'https://therun.gg/' + user.username,
                     lastModified: new Date(),
-                    changeFrequency: "weekly",
+                    changeFrequency: 'weekly',
                     priority: 0.8,
                 };
             } catch (_) {
@@ -96,10 +96,10 @@ const sitemapForRaceStats = async (): Promise<MetadataRoute.Sitemap> => {
 
             return {
                 url:
-                    "https://therun.gg/races/stats/" +
+                    'https://therun.gg/races/stats/' +
                     safeEncodeURI(stat.displayValue),
                 lastModified: new Date(),
-                changeFrequency: "daily",
+                changeFrequency: 'daily',
                 priority: 0.7,
             };
         })
@@ -115,7 +115,7 @@ const sitemapForRaceStats = async (): Promise<MetadataRoute.Sitemap> => {
         categories.forEach((categoryStat) => {
             if (!categoryStat.displayValue) return;
 
-            const split = categoryStat.displayValue.split("#");
+            const split = categoryStat.displayValue.split('#');
 
             if (split.length !== 2) return;
 
@@ -123,12 +123,12 @@ const sitemapForRaceStats = async (): Promise<MetadataRoute.Sitemap> => {
 
             categoryStatsUrls.push({
                 url:
-                    "https://therun.gg/races/stats/" +
+                    'https://therun.gg/races/stats/' +
                     safeEncodeURI(game) +
-                    "/" +
+                    '/' +
                     safeEncodeURI(category),
                 lastModified: new Date(),
-                changeFrequency: "daily",
+                changeFrequency: 'daily',
                 priority: 0.6,
             });
         });
@@ -142,9 +142,9 @@ const sitemapForTournaments = async (): Promise<MetadataRoute.Sitemap> => {
 
     return tournaments.map((tournament) => {
         return {
-            url: "https://therun.gg/" + tournament,
+            url: 'https://therun.gg/' + tournament,
             lastModified: new Date(),
-            changeFrequency: "daily",
+            changeFrequency: 'daily',
             priority: 0.6,
         };
     });
@@ -155,9 +155,9 @@ const sitemapForEvents = async (): Promise<MetadataRoute.Sitemap> => {
 
     return allEvents.map((event) => {
         return {
-            url: "https://therun.gg/events/" + event.slug,
+            url: 'https://therun.gg/events/' + event.slug,
             lastModified: new Date(),
-            changeFrequency: "weekly",
+            changeFrequency: 'weekly',
             priority: 0.4,
         };
     });

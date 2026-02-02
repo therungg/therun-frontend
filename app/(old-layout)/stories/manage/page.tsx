@@ -1,7 +1,7 @@
-"use server";
+'use server';
 
-import { getSession } from "~src/actions/session.action";
-import ManageStories from "~app/(old-layout)/stories/manage/manage-stories";
+import ManageStories from '~app/(old-layout)/stories/manage/manage-stories';
+import { getSession } from '~src/actions/session.action';
 
 const ManageStoriesPage = async () => {
     const session = await getSession();

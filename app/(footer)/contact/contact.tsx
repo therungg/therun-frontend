@@ -1,6 +1,6 @@
-"use client";
-import { Image } from "react-bootstrap";
-import type React from "react";
+'use client';
+import type React from 'react';
+import { Image } from 'react-bootstrap';
 
 export const Contact = () => {
     return (
@@ -28,14 +28,14 @@ export const Contact = () => {
                 >
                     Twitter
                 </a>
-                {", "}
+                {', '}
                 <a
                     rel="noreferrer"
                     target="_blank"
                     href={process.env.NEXT_PUBLIC_BLUESKY_URL}
                 >
                     Bluesky
-                </a>{" "}
+                </a>{' '}
                 or send me an email at&nbsp;
                 <a
                     rel="noreferrer"

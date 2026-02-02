@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useState } from "react";
+import { useState } from 'react';
 
 export const RacesWelcomeMessage = () => {
     const [show, setShow] = useState(false);

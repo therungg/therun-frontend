@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from "react";
+import React, { PropsWithChildren } from 'react';
 
 export const SectionBody = React.forwardRef<HTMLDivElement, PropsWithChildren>(
     ({ children }, ref) => {
@@ -12,4 +12,4 @@ export const SectionBody = React.forwardRef<HTMLDivElement, PropsWithChildren>(
         );
     },
 );
-SectionBody.displayName = "SectionBody";
+SectionBody.displayName = 'SectionBody';

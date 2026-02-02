@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Form } from "react-bootstrap";
-import { MultiValue } from "react-select";
-import CreatableSelect from "react-select/creatable";
-import { Event } from "types/events.types";
+import { useState } from 'react';
+import { Form } from 'react-bootstrap';
+import { MultiValue } from 'react-select';
+import CreatableSelect from 'react-select/creatable';
+import { Event } from 'types/events.types';
 
 export const EventTagInput = ({ event }: { event?: Event }) => {
     const [tags, setTags] = useState<MultiValue<{ value: string }>>(
@@ -15,7 +15,7 @@ export const EventTagInput = ({ event }: { event?: Event }) => {
             };
         }) || [],
     );
-    const [inputValue, setInputValue] = useState("");
+    const [inputValue, setInputValue] = useState('');
 
     const handleChange = (newValue: MultiValue<{ value: string }>) => {
         setTags(newValue);
@@ -27,7 +27,7 @@ export const EventTagInput = ({ event }: { event?: Event }) => {
     }) => {
         if (!inputValue) return;
 
-        if (event.key === "Enter") {
+        if (event.key === 'Enter') {
             const alreadyExists = tags.some((tag) => tag.value === inputValue);
             if (!alreadyExists) {
                 const newTag = {
@@ -36,7 +36,7 @@ export const EventTagInput = ({ event }: { event?: Event }) => {
                 };
                 setTags((prev) => [...prev, newTag]);
             }
-            setInputValue(""); // clear input
+            setInputValue(''); // clear input
             event.preventDefault(); // prevent form submit
         }
     };
@@ -45,18 +45,18 @@ export const EventTagInput = ({ event }: { event?: Event }) => {
         <div>
             <Form.Group>
                 <Form.Label htmlFor="tags" className="mb-2">
-                    Tags/Keywords{" "}
+                    Tags/Keywords{' '}
                 </Form.Label>
                 <CreatableSelect
                     classNames={{
                         control: () =>
-                            "cursor-text bg-body-tertiary border border-none",
+                            'cursor-text bg-body-tertiary border border-none',
                         menu: () =>
-                            "pointer bg-body-tertiary border border-none",
-                        input: () => "color-text ms-1",
-                        multiValueLabel: () => "color-text",
-                        multiValue: () => "bg-body-secondary ms-1",
-                        indicatorsContainer: () => "d-none",
+                            'pointer bg-body-tertiary border border-none',
+                        input: () => 'color-text ms-1',
+                        multiValueLabel: () => 'color-text',
+                        multiValue: () => 'bg-body-secondary ms-1',
+                        indicatorsContainer: () => 'd-none',
                     }}
                     isMulti
                     menuIsOpen={false}
@@ -70,7 +70,7 @@ export const EventTagInput = ({ event }: { event?: Event }) => {
                 />
                 <input
                     hidden
-                    value={tags.map((tag) => tag.value).join(",")}
+                    value={tags.map((tag) => tag.value).join(',')}
                     name="tags"
                     id="tags"
                 />

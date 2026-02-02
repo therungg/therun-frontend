@@ -1,9 +1,9 @@
-import { RunHistory, SplitsHistory } from "../../../common/types";
-import { Line } from "react-chartjs-2";
-import { getFormattedString, getMonthDay } from "../../util/datetime";
-import { Row } from "react-bootstrap";
-import { isOutlier } from "./split-stats";
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
+import { Row } from 'react-bootstrap';
+import { Line } from 'react-chartjs-2';
+import { RunHistory, SplitsHistory } from '../../../common/types';
+import { getFormattedString, getMonthDay } from '../../util/datetime';
+import { isOutlier } from './split-stats';
 
 type redHistory = redSplit[];
 
@@ -22,13 +22,13 @@ export const SplitOverTimeGraph = ({
     total?: boolean;
 }) => {
     const [splitTimeKey, setSplitTimeKey] = useState(
-        total ? "totalTime" : "splitTime",
+        total ? 'totalTime' : 'splitTime',
     );
-    const [groupKey, setGroupKey] = useState(total ? "total" : "single");
+    const [groupKey, setGroupKey] = useState(total ? 'total' : 'single');
 
     useEffect(() => {
-        setSplitTimeKey(total ? "totalTime" : "splitTime");
-        setGroupKey(total ? "total" : "single");
+        setSplitTimeKey(total ? 'totalTime' : 'splitTime');
+        setGroupKey(total ? 'total' : 'single');
     }, [total]);
 
     const key = split.id;
@@ -49,7 +49,7 @@ export const SplitOverTimeGraph = ({
 
             if (
                 !currentSplit ||
-                currentSplit[splitTimeKey] == "0" ||
+                currentSplit[splitTimeKey] == '0' ||
                 isOutlier(
                     parseInt(split[groupKey].averageTime),
                     parseInt(split[groupKey].stdDev),
@@ -96,22 +96,22 @@ export const SplitOverTimeGraph = ({
         }),
         datasets: [
             {
-                label: "Splits",
+                label: 'Splits',
                 fill: false,
                 lineTension: 0.1,
                 borderWidth: 0.5,
-                backgroundColor: "red",
-                borderColor: "red",
-                borderCapStyle: "",
+                backgroundColor: 'red',
+                borderColor: 'red',
+                borderCapStyle: '',
                 borderDash: [],
                 borderDashOffset: 0.0,
-                borderJoinStyle: "",
-                pointBorderColor: "red",
-                pointBackgroundColor: "#fff",
+                borderJoinStyle: '',
+                pointBorderColor: 'red',
+                pointBackgroundColor: '#fff',
                 pointBorderWidth: 1,
                 pointHoverRadius: 5,
-                pointHoverBackgroundColor: "red",
-                pointHoverBorderColor: "black",
+                pointHoverBackgroundColor: 'red',
+                pointHoverBorderColor: 'black',
                 pointHoverBorderWidth: 2,
                 pointRadius: 1,
                 pointHitRadius: 10,
@@ -134,8 +134,8 @@ export const SplitOverTimeGraph = ({
             legend: { display: false },
             title: {
                 display: false,
-                text: "Recent runs",
-                position: "top",
+                text: 'Recent runs',
+                position: 'top',
             },
         },
         scales: {

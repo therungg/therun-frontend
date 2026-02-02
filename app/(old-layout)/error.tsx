@@ -1,8 +1,8 @@
-"use client"; // Error components must be Client Components
+'use client'; // Error components must be Client Components
 
-import Link from "next/link";
-import React from "react";
-import { Button } from "~src/components/Button/Button";
+import Link from 'next/link';
+import React from 'react';
+import { Button } from '~src/components/Button/Button';
 
 export default function Error({
     error,

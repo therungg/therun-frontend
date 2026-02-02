@@ -1,11 +1,11 @@
-"use server";
+'use server';
 
-import ShowRunStory from "~app/(old-layout)/stories/manage/show-run-story";
-import { getSession } from "~src/actions/session.action";
-import { SetStoryPreferences } from "~app/(old-layout)/stories/manage/set-story-preferences";
-import { getStoryOptions, getStoryPreferencesByUser } from "~src/lib/stories";
-import { getLiveRunForUser } from "~src/lib/live-runs";
-import React from "react";
+import React from 'react';
+import { SetStoryPreferences } from '~app/(old-layout)/stories/manage/set-story-preferences';
+import ShowRunStory from '~app/(old-layout)/stories/manage/show-run-story';
+import { getSession } from '~src/actions/session.action';
+import { getLiveRunForUser } from '~src/lib/live-runs';
+import { getStoryOptions, getStoryPreferencesByUser } from '~src/lib/stories';
 
 const ManageStories = async () => {
     const session = await getSession();
@@ -20,14 +20,14 @@ const ManageStories = async () => {
                 <div className="w-100 text-center align-self-center align-content-center flex-center">
                     <div className="w-75">
                         <h3>Story Mode by therun.gg</h3>
-                        <div style={{ fontSize: "large" }}>
+                        <div style={{ fontSize: 'large' }}>
                             <p>
                                 Welcome to <b>Story Mode</b>, {session.username}
                                 . Thanks for checking it out!
                             </p>
                             <p>
                                 Please note that the Twitch bot will only
-                                activate if you have at least <b>14 started</b>{" "}
+                                activate if you have at least <b>14 started</b>{' '}
                                 and <b>4 finished</b> attempts for the category.
                             </p>
                             <p>

@@ -1,11 +1,11 @@
-import { Count } from "~app/(old-layout)/games/[game]/game.types";
-import React, { memo, useMemo, ReactElement } from "react";
-import { PaginationContextProvider } from "~src/components/pagination/pagination.context-provider";
-import usePagination from "~src/components/pagination/use-pagination";
-import { leaderboardFetcher } from "~src/components/pagination/fetchers/leaderboard-fetcher";
-import { getLeaderboard } from "~src/components/game/game-leaderboards";
-import PaginationControl from "~src/components/pagination/pagination-control";
-import { PaginationSearch } from "~src/components/pagination/pagination-search";
+import React, { memo, ReactElement, useMemo } from 'react';
+import { Count } from '~app/(old-layout)/games/[game]/game.types';
+import { getLeaderboard } from '~src/components/game/game-leaderboards';
+import { leaderboardFetcher } from '~src/components/pagination/fetchers/leaderboard-fetcher';
+import { PaginationContextProvider } from '~src/components/pagination/pagination.context-provider';
+import PaginationControl from '~src/components/pagination/pagination-control';
+import { PaginationSearch } from '~src/components/pagination/pagination-search';
+import usePagination from '~src/components/pagination/use-pagination';
 
 export interface PaginatedGameLeaderboardProps {
     name: string;
@@ -26,7 +26,7 @@ export const PaginatedGameLeaderboard = memo(
     },
 );
 
-PaginatedGameLeaderboard.displayName = "PaginatedGameLeaderboard";
+PaginatedGameLeaderboard.displayName = 'PaginatedGameLeaderboard';
 
 const PaginatedGameLeaderboardComponent = memo(
     ({ name, leaderboard = [], transform }: PaginatedGameLeaderboardProps) => {
@@ -37,7 +37,7 @@ const PaginatedGameLeaderboardComponent = memo(
         );
 
         const Leaderboard = useMemo(
-            () => getLeaderboard(name, pagination.data, "", transform),
+            () => getLeaderboard(name, pagination.data, '', transform),
             [name, pagination.data, transform],
         );
 
@@ -54,4 +54,4 @@ const PaginatedGameLeaderboardComponent = memo(
 );
 
 PaginatedGameLeaderboardComponent.displayName =
-    "PaginatedGameLeaderboardComponent";
+    'PaginatedGameLeaderboardComponent';

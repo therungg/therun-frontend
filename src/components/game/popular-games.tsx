@@ -1,9 +1,9 @@
-import { Row, Table } from "react-bootstrap";
-import { GameLink, UserLink } from "../links/links";
-import { DurationToFormatted } from "../util/datetime";
-import React from "react";
-import { GameImage } from "~src/components/image/gameimage";
-import { getTabulatedGameStatsPopular } from "./get-tabulated-game-stats";
+import React from 'react';
+import { Row, Table } from 'react-bootstrap';
+import { GameImage } from '~src/components/image/gameimage';
+import { GameLink, UserLink } from '../links/links';
+import { DurationToFormatted } from '../util/datetime';
+import { getTabulatedGameStatsPopular } from './get-tabulated-game-stats';
 
 export const PopularGames = async () => {
     const gamestats = await getTabulatedGameStatsPopular();
@@ -17,10 +17,10 @@ export const PopularGames = async () => {
                                 <Row className="g-0 flex-nowrap">
                                     <div
                                         key={game.game}
-                                        style={{ flex: "0 0 48px" }}
+                                        style={{ flex: '0 0 48px' }}
                                     >
                                         {game.image &&
-                                            game.image !== "noimage" && (
+                                            game.image !== 'noimage' && (
                                                 <a
                                                     href={`/games/${game.display}`}
                                                 >
@@ -37,7 +37,7 @@ export const PopularGames = async () => {
                                     <div
                                         className="p-2"
                                         style={{
-                                            flex: "0 0 calc(100% - 96px)",
+                                            flex: '0 0 calc(100% - 96px)',
                                         }}
                                     >
                                         <div className="fs-larger">
@@ -46,7 +46,7 @@ export const PopularGames = async () => {
                                             </GameLink>
                                         </div>
                                         <div className="fs-smaller">
-                                            {game.categories[0].display} in{" "}
+                                            {game.categories[0].display} in{' '}
                                             {game.categories[0].gameTime ? (
                                                 <DurationToFormatted
                                                     duration={
@@ -62,8 +62,8 @@ export const PopularGames = async () => {
                                                             .bestTime
                                                     }
                                                 />
-                                            )}{" "}
-                                            by{" "}
+                                            )}{' '}
+                                            by{' '}
                                             <UserLink
                                                 username={
                                                     game.categories[0].gameTime

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import React from "react";
-import { Nav } from "react-bootstrap";
-import { getTwitchOAuthURL } from "./twitch-oauth";
-import { Button } from "~src/components/Button/Button";
+import React from 'react';
+import { Nav } from 'react-bootstrap';
+import { Button } from '~src/components/Button/Button';
+import { getTwitchOAuthURL } from './twitch-oauth';
 
 interface TwitchLoginButtonProps {
     url?: string;
@@ -11,7 +11,7 @@ interface TwitchLoginButtonProps {
 
 export const TwitchLoginButton: React.FunctionComponent<
     TwitchLoginButtonProps
-> = ({ url = "" }) => {
+> = ({ url = '' }) => {
     const loginUrl = getTwitchOAuthURL({ redirect: url });
     return (
         <Nav.Link href={loginUrl.href}>

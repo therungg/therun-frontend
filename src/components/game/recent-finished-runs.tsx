@@ -1,8 +1,8 @@
-import { GameLeaderboard } from "~app/(old-layout)/games/[game]/game.types";
-import { Table } from "react-bootstrap";
-import { DurationToFormatted, FromNow } from "../util/datetime";
-import { UserGameCategoryLink, UserLink } from "../links/links";
-import React from "react";
+import React from 'react';
+import { Table } from 'react-bootstrap';
+import { GameLeaderboard } from '~app/(old-layout)/games/[game]/game.types';
+import { UserGameCategoryLink, UserLink } from '../links/links';
+import { DurationToFormatted, FromNow } from '../util/datetime';
 
 interface Props {
     game: string;
@@ -18,8 +18,8 @@ export const RecentFinishedRuns: React.FC<Props> = ({
     const runs = leaderboards.recentRuns.filter(
         (run) =>
             !!run.achievedAt &&
-            run.achievedAt !== "null" &&
-            run.achievedAt !== "ended.toISOString()",
+            run.achievedAt !== 'null' &&
+            run.achievedAt !== 'ended.toISOString()',
     );
 
     const runRows = runs
@@ -50,7 +50,7 @@ export const RecentFinishedRuns: React.FC<Props> = ({
             <thead>
                 <tr>
                     <th>Time Ago</th>
-                    <th>{showCategory && "Category"}</th>
+                    <th>{showCategory && 'Category'}</th>
                     {showCategory && <th>Runner</th>}
                     <th>Time</th>
                 </tr>

@@ -15,7 +15,7 @@ interface UserInfo {
 }
 
 const getUserInfo = async (oauthToken: string) => {
-    return fetch("https://id.twitch.tv/oauth2/userinfo", {
+    return fetch('https://id.twitch.tv/oauth2/userinfo', {
         headers: {
             Authorization: `Bearer ${oauthToken}`,
         },
@@ -35,15 +35,15 @@ export const loginWithTwitch = async (
 
     const loginData = await (
         await fetch(uri, {
-            method: "POST",
+            method: 'POST',
             headers: {
-                "Content-Type": "application/json",
+                'Content-Type': 'application/json',
             },
             body: JSON.stringify({
                 client_id: clientId,
                 client_secret: clientSecret,
                 code,
-                grant_type: "authorization_code",
+                grant_type: 'authorization_code',
                 redirect_uri: baseUrl,
             }),
         })

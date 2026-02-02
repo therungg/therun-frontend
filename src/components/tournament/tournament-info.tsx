@@ -1,12 +1,12 @@
-import moment from "moment";
-import { CategoryLeaderboard } from "~app/(old-layout)/games/[game]/game.types";
-import React from "react";
-import { Col, Form, Row, Table } from "react-bootstrap";
-import styles from "../css/Game.module.scss";
-import { PatreonBunnySvg } from "~app/(old-layout)/patron/patreon-info";
-import { User } from "../../../types/session.types";
-import { increaseEndTimeByAnHour } from "~app/(old-layout)/tournaments/actions/increase-end-time-by-an-hour";
-import { SubmitButton } from "~src/components/Button/SubmitButton";
+import moment from 'moment';
+import React from 'react';
+import { Col, Form, Row, Table } from 'react-bootstrap';
+import { CategoryLeaderboard } from '~app/(old-layout)/games/[game]/game.types';
+import { PatreonBunnySvg } from '~app/(old-layout)/patron/patreon-info';
+import { increaseEndTimeByAnHour } from '~app/(old-layout)/tournaments/actions/increase-end-time-by-an-hour';
+import { SubmitButton } from '~src/components/Button/SubmitButton';
+import { User } from '../../../types/session.types';
+import styles from '../css/Game.module.scss';
 
 export interface Tournament {
     name: string;
@@ -102,7 +102,7 @@ export const TournamentInfo = ({
                 responsive
                 borderless
                 className={styles.tableVertical}
-                style={{ marginBottom: "2rem" }}
+                style={{ marginBottom: '2rem' }}
             >
                 <tbody>
                     {tournament.eligiblePeriods.length === 1 && (
@@ -113,13 +113,13 @@ export const TournamentInfo = ({
                             <tr>
                                 <th>Starting at</th>
                                 <td>
-                                    {moment(tournament.startDate).format("LLL")}
+                                    {moment(tournament.startDate).format('LLL')}
                                 </td>
                             </tr>
                             <tr>
                                 <th>Ending at</th>
                                 <td>
-                                    {moment(tournament.endDate).format("LLL")}
+                                    {moment(tournament.endDate).format('LLL')}
                                     {isAdmin && (
                                         <Form
                                             suppressHydrationWarning
@@ -184,10 +184,10 @@ export const TournamentInfo = ({
                                             <td className="d-flex">
                                                 {moment(
                                                     period.startDate,
-                                                ).format("LLL")}{" "}
-                                                -{" "}
+                                                ).format('LLL')}{' '}
+                                                -{' '}
                                                 {moment(period.endDate).format(
-                                                    "LLL",
+                                                    'LLL',
                                                 )}
                                                 {isAdmin && (
                                                     <div>
@@ -312,17 +312,17 @@ export const TournamentInfo = ({
                             <ul>
                                 {tournament.pointDistribution.map(
                                     (points, key) => {
-                                        let extension = "th";
-                                        if (key === 0) extension = "st";
-                                        if (key === 1) extension = "nd";
-                                        if (key === 2) extension = "rd";
+                                        let extension = 'th';
+                                        if (key === 0) extension = 'st';
+                                        if (key === 1) extension = 'nd';
+                                        if (key === 2) extension = 'rd';
                                         const displayKey = key + 1 + extension;
 
                                         return (
                                             <li key={key}>
-                                                {displayKey}:{" "}
+                                                {displayKey}:{' '}
                                                 <span>
-                                                    <strong>{points}</strong>{" "}
+                                                    <strong>{points}</strong>{' '}
                                                     points
                                                 </span>
                                             </li>

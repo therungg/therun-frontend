@@ -1,14 +1,14 @@
-"use server";
+'use server';
 
-import { redirect } from "next/navigation";
-import { CreateEventInput } from "../../../../types/events.types";
-import { getSession } from "~src/actions/session.action";
-import { confirmPermission } from "~src/rbac/confirm-permission";
-import { createEvent } from "~src/lib/events";
-import { formInputToEventInput } from "~app/(old-layout)/events/actions/form-input-to-event-input";
-import { validateEventInput } from "~app/(old-layout)/events/actions/validate-event-input";
-import { insertLog } from "~src/lib/logs";
-import { getOrCreateUser } from "~src/lib/users";
+import { redirect } from 'next/navigation';
+import { formInputToEventInput } from '~app/(old-layout)/events/actions/form-input-to-event-input';
+import { validateEventInput } from '~app/(old-layout)/events/actions/validate-event-input';
+import { getSession } from '~src/actions/session.action';
+import { createEvent } from '~src/lib/events';
+import { insertLog } from '~src/lib/logs';
+import { getOrCreateUser } from '~src/lib/users';
+import { confirmPermission } from '~src/rbac/confirm-permission';
+import { CreateEventInput } from '../../../../types/events.types';
 
 export async function createEventAction(
     _prevState: unknown,
@@ -18,7 +18,7 @@ export async function createEventAction(
 
     if (!session.id) return;
 
-    confirmPermission(session, "create", "event");
+    confirmPermission(session, 'create', 'event');
 
     let baseInput = undefined;
 
@@ -48,20 +48,20 @@ export async function createEventAction(
         eventId = await createEvent(input);
         await insertLog({
             userId: await getOrCreateUser(session.username),
-            action: "create-event",
-            entity: "event",
+            action: 'create-event',
+            entity: 'event',
             target: eventId.toString(),
             data: { eventId, input },
         });
     } catch (error: unknown) {
         let message = (error as { message: string }).message;
 
-        if (message.includes("events_name")) {
-            message = "The name is already taken";
+        if (message.includes('events_name')) {
+            message = 'The name is already taken';
         }
 
-        if (message.includes("events_slug")) {
-            message = "The slug is already taken";
+        if (message.includes('events_slug')) {
+            message = 'The slug is already taken';
         }
 
         return { message };

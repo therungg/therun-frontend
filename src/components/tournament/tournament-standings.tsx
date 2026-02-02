@@ -1,22 +1,22 @@
-import { Tournament } from "./tournament-info";
-import React from "react";
-import { getLeaderboard } from "../game/game-leaderboards";
-import { Col, Row } from "react-bootstrap";
-import { DurationToFormatted, LocalizedTime } from "../util/datetime";
-import useSWR from "swr";
-import { fetcher } from "~src/utils/fetcher";
+import React from 'react';
+import { Col, Row } from 'react-bootstrap';
+import useSWR from 'swr';
+import { fetcher } from '~src/utils/fetcher';
+import { getLeaderboard } from '../game/game-leaderboards';
+import { DurationToFormatted, LocalizedTime } from '../util/datetime';
+import { Tournament } from './tournament-info';
 
 export const TournamentStandings = () => {
     const { data: tournament1Data }: { data: Tournament } = useSWR(
-        "/api/tournaments/PACE Fall 2024 Qualifiers 1",
+        '/api/tournaments/PACE Fall 2024 Qualifiers 1',
         fetcher,
     );
     const { data: tournament2Data }: { data: Tournament } = useSWR(
-        "/api/tournaments/PACE Fall 2024 Qualifiers 2",
+        '/api/tournaments/PACE Fall 2024 Qualifiers 2',
         fetcher,
     );
     const { data: tournament3Data }: { data: Tournament } = useSWR(
-        "/api/tournaments/PACE Fall 2024 Qualifiers 3",
+        '/api/tournaments/PACE Fall 2024 Qualifiers 3',
         fetcher,
     );
 
@@ -82,14 +82,14 @@ export const TournamentStandings = () => {
                     <h2>Total Live Standings</h2>
 
                     {getLeaderboard(
-                        "Total points",
+                        'Total points',
                         pointsLeaderboard.map((board, i) => {
                             return {
                                 ...board,
                                 placing: i + 1,
                             };
                         }),
-                        "",
+                        '',
                         (stat) => {
                             return stat;
                         },
@@ -117,7 +117,7 @@ export const TournamentStandings = () => {
                                     <h2>Heat {tournamentIndex + 1}</h2>
                                 </div>
                                 <div>
-                                    Starts{" "}
+                                    Starts{' '}
                                     <LocalizedTime
                                         date={new Date(data.startDate)}
                                         asDate={true}
@@ -126,7 +126,7 @@ export const TournamentStandings = () => {
                             </div>
 
                             {getLeaderboard(
-                                "Points Heat " + (tournamentIndex + 1),
+                                'Points Heat ' + (tournamentIndex + 1),
                                 leaderboard &&
                                     leaderboard.length >
                                         pointDistribution.length
@@ -139,18 +139,18 @@ export const TournamentStandings = () => {
                                               return leaderboard[index];
                                           }
                                           return {
-                                              username: "",
+                                              username: '',
                                               stat: 0,
                                               placing: index + 1,
                                           };
                                       }),
-                                "",
+                                '',
                                 (stat, key) => {
                                     return (
                                         <div>
                                             {(
                                                 data.pointDistribution as number[]
-                                            )[key] || 0}{" "}
+                                            )[key] || 0}{' '}
                                             {stat > 0 && (
                                                 <span>
                                                     (

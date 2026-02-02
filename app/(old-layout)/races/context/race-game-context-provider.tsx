@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { createContext, PropsWithChildren } from "react";
+import { createContext, PropsWithChildren } from 'react';
 
 interface ContextProps {
     game: string | null;

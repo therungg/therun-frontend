@@ -1,11 +1,11 @@
-import { Col, Row } from "react-bootstrap";
-import React from "react";
+import React from 'react';
+import { Col, Row } from 'react-bootstrap';
+import { LiveRun } from '~app/(old-layout)/live/live.types';
 import {
     Difference,
     DifferenceFromOne,
     DurationToFormatted,
-} from "../util/datetime";
-import { LiveRun } from "~app/(old-layout)/live/live.types";
+} from '../util/datetime';
 
 type CurrentRunDetailsProps = {
     liveRun: LiveRun;
@@ -41,13 +41,13 @@ export const CurrentRunDetails: React.FunctionComponent<
                 <Col xs={7}>Current Split</Col>
                 <Col
                     xs={5}
-                    style={{ display: "flex", justifyContent: "flex-end" }}
+                    style={{ display: 'flex', justifyContent: 'flex-end' }}
                 >
                     <div
                         style={{
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
                         }}
                     >
                         {currentSplitName || splits[0].name}
@@ -58,7 +58,7 @@ export const CurrentRunDetails: React.FunctionComponent<
                 <Col xs={7}>+- PB</Col>
                 <Col
                     xs={5}
-                    style={{ display: "flex", justifyContent: "flex-end" }}
+                    style={{ display: 'flex', justifyContent: 'flex-end' }}
                 >
                     <DurationToFormatted duration={pb} />
                     &nbsp;
@@ -67,12 +67,12 @@ export const CurrentRunDetails: React.FunctionComponent<
                             one={
                                 splits[
                                     currentSplitIndex - 1
-                                ].splitTime?.toString() || ""
+                                ].splitTime?.toString() || ''
                             }
                             two={
                                 splits[
                                     currentSplitIndex - 1
-                                ].pbSplitTime?.toString() || ""
+                                ].pbSplitTime?.toString() || ''
                             }
                         />
                     ) : (
@@ -84,7 +84,7 @@ export const CurrentRunDetails: React.FunctionComponent<
                 <Col xs={7}>Best Possible Time</Col>
                 <Col
                     xs={5}
-                    style={{ display: "flex", justifyContent: "flex-end" }}
+                    style={{ display: 'flex', justifyContent: 'flex-end' }}
                 >
                     <DurationToFormatted duration={bestPossible} />
                     &nbsp;
@@ -100,12 +100,12 @@ export const CurrentRunDetails: React.FunctionComponent<
                 <Col xs={7}>Top % run</Col>
                 <Col
                     xs={5}
-                    style={{ display: "flex", justifyContent: "flex-end" }}
+                    style={{ display: 'flex', justifyContent: 'flex-end' }}
                 >
                     {percentile === 0
-                        ? "Best run ever!"
+                        ? 'Best run ever!'
                         : percentile === null
-                          ? "-"
+                          ? '-'
                           : `Top ${percentile.toFixed(1)}% run`}
                 </Col>
             </Row>

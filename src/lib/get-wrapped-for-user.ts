@@ -1,6 +1,6 @@
-"use server";
+'use server';
 
-import { WrappedWithData } from "~app/(old-layout)/[username]/wrapped/wrapped-types";
+import { WrappedWithData } from '~app/(old-layout)/[username]/wrapped/wrapped-types';
 
 export const getWrappedForUser = async (
     user: string,

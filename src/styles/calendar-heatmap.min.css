@@ -10,7 +10,11 @@
 .calendar-heatmap .label {
     cursor: pointer;
     fill: #aaa;
-    font-family: Helvetica, arial, Open Sans, sans-serif;
+    font-family:
+        Helvetica,
+        arial,
+        Open Sans,
+        sans-serif;
 }
 .calendar-heatmap .button {
     cursor: pointer;
@@ -34,7 +38,11 @@
     font-size: 12px;
     line-height: 14px;
     color: #333;
-    font-family: Helvetica, arial, Open Sans, sans-serif;
+    font-family:
+        Helvetica,
+        arial,
+        Open Sans,
+        sans-serif;
     background: hsla(0, 0%, 100%, 0.75);
 }
 .calendar-heatmap .heatmap-tooltip .header strong {

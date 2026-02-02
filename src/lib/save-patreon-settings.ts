@@ -1,6 +1,6 @@
-"use server";
+'use server';
 
-import { type UserPatreonData } from "~app/(old-layout)/change-appearance/patreon-section";
+import { type UserPatreonData } from '~app/(old-layout)/change-appearance/patreon-section';
 
 export const savePatreonSettings = async (
     user: string,
@@ -9,7 +9,7 @@ export const savePatreonSettings = async (
     const url = `${process.env.NEXT_PUBLIC_DATA_URL}/users/patreon/${user}`;
 
     const res = await fetch(url, {
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify(preferences),
     });
 

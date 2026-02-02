@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import React, { useActionState, useEffect } from "react";
-import { Button, Col, Form, Row, Tab, Table, Tabs } from "react-bootstrap";
-import { useFormStatus } from "react-dom";
-import { setStoryPreferencesAction } from "~app/(old-layout)/stories/actions/set-story-preferences.action";
+import React, { useActionState, useEffect } from 'react';
+import { Button, Col, Form, Row, Tab, Table, Tabs } from 'react-bootstrap';
+import { useFormStatus } from 'react-dom';
+import { toast } from 'react-toastify';
 import {
     StoryElementCategory,
     StoryOption,
     StoryPreferences,
-} from "~app/(old-layout)/live/story.types";
-import { UnderlineTooltip } from "~src/components/tooltip";
-import { User } from "../../../../types/session.types";
-import { getPronounsFromString } from "~app/(old-layout)/stories/manage/get-pronouns-from-string";
-import { toast } from "react-toastify";
+} from '~app/(old-layout)/live/story.types';
+import { setStoryPreferencesAction } from '~app/(old-layout)/stories/actions/set-story-preferences.action';
+import { getPronounsFromString } from '~app/(old-layout)/stories/manage/get-pronouns-from-string';
+import { UnderlineTooltip } from '~src/components/tooltip';
+import { User } from '../../../../types/session.types';
 
 export const SetStoryPreferences = ({
     storyPreferences,
@@ -24,8 +24,8 @@ export const SetStoryPreferences = ({
     storyOptions: StoryOption[];
 }) => {
     const [state, formAction] = useActionState(setStoryPreferencesAction, {
-        message: "",
-        type: "",
+        message: '',
+        type: '',
     });
 
     useEffect(() => {
@@ -263,9 +263,9 @@ const ManageStories = ({
     storyOptions: StoryOption[];
 }) => {
     const categoryMap = new Map<StoryElementCategory, string>([
-        ["generic", "Stories not specific to the current run, fun facts"],
-        ["previous", "Stories about the previous split"],
-        ["next", "Stories about the upcoming split"],
+        ['generic', 'Stories not specific to the current run, fun facts'],
+        ['previous', 'Stories about the previous split'],
+        ['next', 'Stories about the upcoming split'],
     ]);
     return (
         <div className="mb-3">
@@ -369,7 +369,7 @@ const showExampleStory = (
     storyPreferences: StoryPreferences,
 ): string => {
     return example.replaceAll(
-        "[user]",
+        '[user]',
         storyPreferences.nameOverride || user.username,
     );
 };
@@ -378,7 +378,7 @@ const SubmitButton = () => {
     const { pending } = useFormStatus();
     return (
         <Button disabled={pending} variant="primary" type="submit">
-            {!pending ? "Set Preferences" : "Setting Preferences..."}
+            {!pending ? 'Set Preferences' : 'Setting Preferences...'}
         </Button>
     );
 };
@@ -387,13 +387,13 @@ const numberInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (
         !(
             event.code !== null &&
-            (eventCode.includes("digit") ||
-                eventCode.includes("arrow") ||
-                eventCode.includes("home") ||
-                eventCode.includes("end") ||
-                eventCode.includes("backspace") ||
-                eventCode.includes("tab") ||
-                (eventCode.includes("numpad") && eventCode.length === 7))
+            (eventCode.includes('digit') ||
+                eventCode.includes('arrow') ||
+                eventCode.includes('home') ||
+                eventCode.includes('end') ||
+                eventCode.includes('backspace') ||
+                eventCode.includes('tab') ||
+                (eventCode.includes('numpad') && eventCode.length === 7))
         )
     ) {
         event.preventDefault();

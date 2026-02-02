@@ -1,6 +1,6 @@
-"use client";
-import React, { useCallback } from "react";
-import { resetSession } from "~src/actions/reset-session.action";
+'use client';
+import React, { useCallback } from 'react';
+import { resetSession } from '~src/actions/reset-session.action';
 
 export const SessionErrorBoundary = () => {
     const handleResetSession = useCallback(async () => {

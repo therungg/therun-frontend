@@ -1,10 +1,10 @@
-import { Race } from "~app/(old-layout)/races/races.types";
-import styles from "~src/components/css/LiveRun.module.scss";
-import { GameImage } from "~src/components/image/gameimage";
-import React from "react";
-import { PersonIcon } from "~src/icons/person-icon";
-import { RacePlacings } from "~app/(old-layout)/races/components/race-placings";
-import { FromNow } from "~src/components/util/datetime";
+import React from 'react';
+import { RacePlacings } from '~app/(old-layout)/races/components/race-placings';
+import { Race } from '~app/(old-layout)/races/races.types';
+import styles from '~src/components/css/LiveRun.module.scss';
+import { GameImage } from '~src/components/image/gameimage';
+import { FromNow } from '~src/components/util/datetime';
+import { PersonIcon } from '~src/icons/person-icon';
 
 export const RecentlyFinishedRaces = ({ races }: { races: Race[] }) => {
     return (
@@ -31,7 +31,7 @@ export const RecentlyFinishedRace = ({ race }: { race: Race }) => {
             <div
                 key={race.raceId}
                 className={`d-flex mb-3 ${styles.liveRunContainer} rounded-3 h-100`}
-                style={{ color: "var(--bs-body-color)" }}
+                style={{ color: 'var(--bs-body-color)' }}
             >
                 <GameImage
                     alt={`Image for ${race.displayGame}`}
@@ -46,7 +46,7 @@ export const RecentlyFinishedRace = ({ race }: { race: Race }) => {
                         <div
                             className="h5 m-0 p-0"
                             style={{
-                                color: "var(--bs-link-color)",
+                                color: 'var(--bs-link-color)',
                             }}
                         >
                             {race.displayGame}

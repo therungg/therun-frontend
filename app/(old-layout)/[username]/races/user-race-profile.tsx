@@ -1,19 +1,19 @@
-"use client";
+'use client';
 
+import React from 'react';
+import { Col, Row } from 'react-bootstrap';
+import { UserRaceStatsByGame } from '~app/(old-layout)/[username]/races/user-race-stats-by-game';
+import { UserRaces } from '~app/(old-layout)/[username]/races/user-races';
 import {
     Race,
     RaceParticipant,
     UserStats,
-} from "~app/(old-layout)/races/races.types";
+} from '~app/(old-layout)/races/races.types';
 import {
     Breadcrumb,
     BreadcrumbItem,
-} from "~src/components/breadcrumbs/breadcrumb";
-import React from "react";
-import { UserRaceStatsTable } from "~src/components/run/user-detail/user-race-stats";
-import { UserRaceStatsByGame } from "~app/(old-layout)/[username]/races/user-race-stats-by-game";
-import { Col, Row } from "react-bootstrap";
-import { UserRaces } from "~app/(old-layout)/[username]/races/user-races";
+} from '~src/components/breadcrumbs/breadcrumb';
+import { UserRaceStatsTable } from '~src/components/run/user-detail/user-race-stats';
 
 interface UserRaceProfileProps {
     username: string;
@@ -32,7 +32,7 @@ export const UserRaceProfile = ({
 }: UserRaceProfileProps) => {
     const breadcrumbs: BreadcrumbItem[] = [
         { content: username, href: `/${username}` },
-        { content: "Race Stats" },
+        { content: 'Race Stats' },
     ];
 
     if (!participations || participations.length === 0) {

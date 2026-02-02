@@ -1,8 +1,8 @@
-import React from "react";
-import { UserStats } from "~app/(old-layout)/races/races.types";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import styles from "~src/components/css/LiveRun.module.scss";
-import Image from "next/image";
+import Image from 'next/image';
+import React from 'react';
+import { UserStats } from '~app/(old-layout)/races/races.types';
+import styles from '~src/components/css/LiveRun.module.scss';
+import { DurationToFormatted } from '~src/components/util/datetime';
 
 export const UserRaceStatsByGame = ({ stats }: { stats: UserStats[][] }) => {
     return (
@@ -35,17 +35,17 @@ export const UserRaceStatsByGameWithoutUrls = ({
 
 export const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
     const useStat = stats[0];
-    const game = useStat.displayValue.split("#")[0];
-    const favoriteCategory = useStat.displayValue.split("#")[1];
+    const game = useStat.displayValue.split('#')[0];
+    const favoriteCategory = useStat.displayValue.split('#')[1];
     return (
         <div>
             <div
                 key={useStat.displayValue}
                 className="mb-3 rounded-3 w-100 game-border bg-body-secondary"
-                style={{ color: "var(--bs-body-color)" }}
+                style={{ color: 'var(--bs-body-color)' }}
             >
                 <div className="d-flex">
-                    {useStat.image && useStat.image !== "noimage" && (
+                    {useStat.image && useStat.image !== 'noimage' && (
                         <Image
                             unoptimized
                             alt={`Image for ${useStat.displayValue}`}
@@ -54,8 +54,8 @@ export const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
                             width={48 * 2.3}
                             className={`${
                                 stats.length > 1
-                                    ? "rounded-top-3 rounded-end-0"
-                                    : "rounded-3"
+                                    ? 'rounded-top-3 rounded-end-0'
+                                    : 'rounded-3'
                             }`}
                         />
                     )}
@@ -74,7 +74,7 @@ export const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
                                 favoriteCategory,
                             )}`}
                             className="text-decoration-none"
-                            style={{ color: "inherit" }}
+                            style={{ color: 'inherit' }}
                         >
                             <ShowUserCategoryStats category={useStat} />
                         </a>
@@ -83,7 +83,7 @@ export const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
                 <div className="h-100">
                     {stats.slice(1, stats.length).map((category) => {
                         const categoryName =
-                            category.displayValue.split("#")[1];
+                            category.displayValue.split('#')[1];
                         return (
                             <div
                                 key={game + category.displayValue}
@@ -94,14 +94,14 @@ export const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
                                         game,
                                     )}/${encodeURI(categoryName)}`}
                                     className="text-decoration-none"
-                                    style={{ color: "inherit" }}
+                                    style={{ color: 'inherit' }}
                                 >
                                     <div className="d-flex h-100">
                                         <div className="ps-2 d-flex align-items-center border-end">
                                             <span
                                                 className="text-truncate"
                                                 style={{
-                                                    width: "6.34rem",
+                                                    width: '6.34rem',
                                                 }}
                                             >
                                                 {categoryName}
@@ -127,17 +127,17 @@ export const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
 
 const UserRaceStatsForGameWithoutUrls = ({ stats }: { stats: UserStats[] }) => {
     const useStat = stats[0];
-    const game = useStat.displayValue.split("#")[0];
-    const favoriteCategory = useStat.displayValue.split("#")[1];
+    const game = useStat.displayValue.split('#')[0];
+    const favoriteCategory = useStat.displayValue.split('#')[1];
     return (
         <>
             <div
                 key={useStat.displayValue}
                 className="mb-3 rounded-3 w-100 game-border border-secondary bg-body-secondary overflow-hidden"
-                style={{ color: "var(--bs-body-color)" }}
+                style={{ color: 'var(--bs-body-color)' }}
             >
                 <div className="d-flex">
-                    {useStat.image && useStat.image !== "noimage" && (
+                    {useStat.image && useStat.image !== 'noimage' && (
                         <Image
                             unoptimized
                             alt={`Image for ${useStat.displayValue}`}
@@ -146,8 +146,8 @@ const UserRaceStatsForGameWithoutUrls = ({ stats }: { stats: UserStats[] }) => {
                             width={48 * 2.3}
                             className={`${
                                 stats.length > 1
-                                    ? "rounded-top-3 rounded-end-0"
-                                    : "rounded-3"
+                                    ? 'rounded-top-3 rounded-end-0'
+                                    : 'rounded-3'
                             }`}
                         />
                     )}
@@ -156,7 +156,7 @@ const UserRaceStatsForGameWithoutUrls = ({ stats }: { stats: UserStats[] }) => {
                             <div
                                 className="h5 pt-2 text-truncate mb-0"
                                 style={{
-                                    color: "var(--bs-link-color)",
+                                    color: 'var(--bs-link-color)',
                                 }}
                             >
                                 {game}
@@ -170,7 +170,7 @@ const UserRaceStatsForGameWithoutUrls = ({ stats }: { stats: UserStats[] }) => {
                 <div className="h-100">
                     {stats.slice(1, stats.length).map((category) => {
                         const categoryName =
-                            category.displayValue.split("#")[1];
+                            category.displayValue.split('#')[1];
                         return (
                             <div
                                 key={game + category.displayValue}
@@ -181,7 +181,7 @@ const UserRaceStatsForGameWithoutUrls = ({ stats }: { stats: UserStats[] }) => {
                                         <span
                                             className="text-truncate"
                                             style={{
-                                                width: "6.34rem",
+                                                width: '6.34rem',
                                             }}
                                         >
                                             {categoryName}
@@ -221,7 +221,7 @@ export const ShowUserCategoryStats = ({
                     Finished: <b>{category.totalFinishedRaces}</b>
                 </div>
                 <div>
-                    Time:{" "}
+                    Time:{' '}
                     <b>
                         <DurationToFormatted
                             duration={category.totalRaceTime}
@@ -231,7 +231,7 @@ export const ShowUserCategoryStats = ({
             </div>
             <div>
                 <div className="d-flex justify-content-end">
-                    Rating: <b className="px-1">{category.rankings[0].score}</b>{" "}
+                    Rating: <b className="px-1">{category.rankings[0].score}</b>{' '}
                     - #{category.rankings[0].rank + 1}
                 </div>
                 <div className="d-flex justify-content-end">

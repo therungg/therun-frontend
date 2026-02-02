@@ -9,7 +9,10 @@ import {
     PointElement,
     Title,
     Tooltip,
-} from "chart.js";
+} from 'chart.js';
+import moment from 'moment';
+import { useState } from 'react';
+import { Col, Row } from 'react-bootstrap';
 import {
     VictoryAxis,
     VictoryChart,
@@ -17,12 +20,9 @@ import {
     VictoryScatter,
     VictoryTheme,
     VictoryTooltip,
-} from "victory";
-import { Col, Row } from "react-bootstrap";
-import { getFormattedString } from "../util/datetime";
-import moment from "moment";
-import { UnderlineTooltip } from "../tooltip";
-import { useState } from "react";
+} from 'victory';
+import { UnderlineTooltip } from '../tooltip';
+import { getFormattedString } from '../util/datetime';
 
 // TODO: Centralize charts
 ChartJS.register(
@@ -62,58 +62,58 @@ export const WrHistory = ({
     if (!maxEnd) maxEnd = new Date();
 
     const availableShapes = [
-        "circle",
-        "diamond",
-        "square",
-        "star",
-        "triangleUp",
-        "triangleDown",
-        "plus",
-        "circle",
-        "diamond",
-        "square",
-        "star",
-        "triangleUp",
-        "triangleDown",
-        "plus",
-        "circle",
-        "diamond",
-        "square",
-        "star",
-        "triangleUp",
-        "triangleDown",
-        "plus",
+        'circle',
+        'diamond',
+        'square',
+        'star',
+        'triangleUp',
+        'triangleDown',
+        'plus',
+        'circle',
+        'diamond',
+        'square',
+        'star',
+        'triangleUp',
+        'triangleDown',
+        'plus',
+        'circle',
+        'diamond',
+        'square',
+        'star',
+        'triangleUp',
+        'triangleDown',
+        'plus',
     ];
 
     const availableColors = [
-        "#006ddb",
-        "#ffff6d",
-        "#24ff24",
-        "#FF2C2CFF",
-        "#ff6db6",
-        "#009292",
-        "#ffb6db",
-        "#490092",
-        "#b66dff",
-        "#6db6ff",
-        "#b6dbff",
-        "#924900",
-        "#db6d00",
-        "#000000",
-        "#006ddb",
-        "#ffff6d",
-        "#24ff24",
-        "#FF2C2CFF",
-        "#ff6db6",
-        "#009292",
-        "#ffb6db",
-        "#490092",
-        "#b66dff",
-        "#6db6ff",
-        "#b6dbff",
-        "#924900",
-        "#db6d00",
-        "#000000",
+        '#006ddb',
+        '#ffff6d',
+        '#24ff24',
+        '#FF2C2CFF',
+        '#ff6db6',
+        '#009292',
+        '#ffb6db',
+        '#490092',
+        '#b66dff',
+        '#6db6ff',
+        '#b6dbff',
+        '#924900',
+        '#db6d00',
+        '#000000',
+        '#006ddb',
+        '#ffff6d',
+        '#24ff24',
+        '#FF2C2CFF',
+        '#ff6db6',
+        '#009292',
+        '#ffb6db',
+        '#490092',
+        '#b66dff',
+        '#6db6ff',
+        '#b6dbff',
+        '#924900',
+        '#db6d00',
+        '#000000',
     ];
 
     const players = [];
@@ -160,11 +160,11 @@ export const WrHistory = ({
                                     fontSize: 10,
                                     // TODO: BYE BYE
                                     // eslint-disable-next-line sonarjs/no-duplicate-string
-                                    color: "var(--bs-body-color)",
-                                    fill: "var(--bs-body-color)",
+                                    color: 'var(--bs-body-color)',
+                                    fill: 'var(--bs-body-color)',
                                 },
                                 axis: {
-                                    stroke: "var(--bs-body-color)",
+                                    stroke: 'var(--bs-body-color)',
                                 },
                             }}
                             data={victoryData}
@@ -183,16 +183,16 @@ export const WrHistory = ({
                             style={{
                                 tickLabels: {
                                     fontSize: 10,
-                                    color: "var(--bs-body-color)",
-                                    fill: "var(--bs-body-color)",
+                                    color: 'var(--bs-body-color)',
+                                    fill: 'var(--bs-body-color)',
                                     angle: 75,
                                     padding: 26,
                                 },
                                 axis: {
-                                    color: "var(--bs-body-color)",
-                                    borderColor: "var(--bs-body-color)",
-                                    fill: "var(--bs-body-color)",
-                                    stroke: "var(--bs-body-color)",
+                                    color: 'var(--bs-body-color)',
+                                    borderColor: 'var(--bs-body-color)',
+                                    fill: 'var(--bs-body-color)',
+                                    stroke: 'var(--bs-body-color)',
                                 },
                             }}
                             data={victoryData}
@@ -207,7 +207,7 @@ export const WrHistory = ({
                                 victoryDataPoint.push({
                                     x: maxEnd,
                                     y: data.y,
-                                    symbol: "",
+                                    symbol: '',
                                 });
                             }
                             const currentHistoryData = historyData[n];
@@ -223,7 +223,7 @@ export const WrHistory = ({
                                     theme={VictoryTheme.material}
                                     data={victoryDataPoint}
                                     style={{
-                                        parent: { border: "1px solid" },
+                                        parent: { border: '1px solid' },
                                         data: {
                                             stroke: user.color,
                                             strokeWidth: 1,
@@ -238,7 +238,7 @@ export const WrHistory = ({
                                 const wr = historyData[index];
                                 return `${wr.user}\n${getFormattedString(
                                     wr.time,
-                                )}\n${moment(wr.endedAt).format("L LT")}`;
+                                )}\n${moment(wr.endedAt).format('L LT')}`;
                             }}
                             labelComponent={
                                 <VictoryTooltip
@@ -267,11 +267,11 @@ export const WrHistory = ({
                 <Col xl={3}>
                     <div
                         style={{
-                            width: "100%",
-                            display: "flex",
-                            justifyContent: "flex-start",
-                            alignItems: "center",
-                            marginBottom: "0.5rem",
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'flex-start',
+                            alignItems: 'center',
+                            marginBottom: '0.5rem',
                         }}
                     >
                         <UnderlineTooltip
@@ -286,7 +286,7 @@ export const WrHistory = ({
                                 let val =
                                     e.target.value > maxLength
                                         ? maxLength
-                                        : e.target.value.replace(/\D/g, "");
+                                        : e.target.value.replace(/\D/g, '');
                                 if (val < 1) val = maxLength;
                                 setLastN(val);
                             }}
@@ -301,15 +301,15 @@ export const WrHistory = ({
                                 key={username}
                                 style={{
                                     color,
-                                    display: "flex",
-                                    alignItems: "flex-end",
-                                    height: "3rem",
+                                    display: 'flex',
+                                    alignItems: 'flex-end',
+                                    height: '3rem',
                                 }}
                             >
-                                <div style={{ fontSize: "x-large" }}>
+                                <div style={{ fontSize: 'x-large' }}>
                                     {username}
                                 </div>
-                                <div style={{ height: "3rem", width: "3rem" }}>
+                                <div style={{ height: '3rem', width: '3rem' }}>
                                     <VictoryScatter
                                         padding={0}
                                         width={80}

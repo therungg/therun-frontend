@@ -1,5 +1,5 @@
-import React from "react";
-import { CategoryLeaderboard } from "./game.types";
+import React from 'react';
+import { CategoryLeaderboard } from './game.types';
 
 interface GameContextProps {
     category: string;
@@ -8,7 +8,7 @@ interface GameContextProps {
 }
 
 export const GameContext = React.createContext<GameContextProps>({
-    category: "",
+    category: '',
     categories: [],
     setCategory: () => {},
 });

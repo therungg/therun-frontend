@@ -1,7 +1,7 @@
-"use server";
+'use server';
 
-import { getEventById } from "~src/lib/events";
-import { ViewEvent } from "./view-event";
+import { getEventById } from '~src/lib/events';
+import { ViewEvent } from './view-event';
 
 interface PageProps {
     params: Promise<{ event: number }>;

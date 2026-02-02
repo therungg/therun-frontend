@@ -1,23 +1,23 @@
-import { CategoryLeaderboard } from "~app/(old-layout)/games/[game]/game.types";
-import { DurationToFormatted, getFormattedString } from "../util/datetime";
+import { useState } from 'react';
+import { Col, Nav, Row, Tab } from 'react-bootstrap';
+import { Search as SearchIcon } from 'react-bootstrap-icons';
+import { CategoryLeaderboard } from '~app/(old-layout)/games/[game]/game.types';
+import { DurationToFormatted, getFormattedString } from '../util/datetime';
 import {
     getAverageFromLeaderboard,
     getLeaderboard,
     getStatsTable,
-} from "./game-leaderboards";
-import { Col, Nav, Row, Tab } from "react-bootstrap";
-import { useState } from "react";
-import { Search as SearchIcon } from "react-bootstrap-icons";
+} from './game-leaderboards';
 
 export const CategoryLeaderboards = ({
     leaderboards,
 }: {
     leaderboards: CategoryLeaderboard;
 }) => {
-    const [search, setSearch] = useState("");
+    const [search, setSearch] = useState('');
 
     const completePercentageLeaderboard = getLeaderboard(
-        "Completion %",
+        'Completion %',
         leaderboards.completePercentageLeaderboard,
         search,
         (stat) => {
@@ -25,7 +25,7 @@ export const CategoryLeaderboards = ({
         },
     );
     const playtimeLeaderboard = getLeaderboard(
-        "Total Playtime",
+        'Total Playtime',
         leaderboards.totalRunTimeLeaderboard,
         search,
         (stat) => {
@@ -33,7 +33,7 @@ export const CategoryLeaderboards = ({
         },
     );
     const pbLeaderboard = getLeaderboard(
-        "Personal Best",
+        'Personal Best',
         leaderboards.pbLeaderboard,
         search,
         (stat) => {
@@ -41,7 +41,7 @@ export const CategoryLeaderboards = ({
         },
     );
     const sobLeaderboard = getLeaderboard(
-        "Sum of bests",
+        'Sum of bests',
         leaderboards.sumOfBestsLeaderboard,
         search,
         (stat) => {
@@ -102,7 +102,7 @@ export const CategoryLeaderboards = ({
                                     {getStatsTable(
                                         new Map<string, string>([
                                             [
-                                                "Best",
+                                                'Best',
                                                 getFormattedString(
                                                     leaderboards.pbLeaderboard[0].stat.toString(),
                                                     false,
@@ -110,7 +110,7 @@ export const CategoryLeaderboards = ({
                                                 ),
                                             ],
                                             [
-                                                "Average",
+                                                'Average',
                                                 getFormattedString(
                                                     getAverageFromLeaderboard(
                                                         leaderboards.pbLeaderboard,
@@ -128,7 +128,7 @@ export const CategoryLeaderboards = ({
                                     {getStatsTable(
                                         new Map<string, string>([
                                             [
-                                                "Best",
+                                                'Best',
                                                 getFormattedString(
                                                     leaderboards.sumOfBestsLeaderboard[0].stat.toString(),
                                                     false,
@@ -136,7 +136,7 @@ export const CategoryLeaderboards = ({
                                                 ),
                                             ],
                                             [
-                                                "Average",
+                                                'Average',
                                                 getFormattedString(
                                                     getAverageFromLeaderboard(
                                                         leaderboards.sumOfBestsLeaderboard,
@@ -155,7 +155,7 @@ export const CategoryLeaderboards = ({
                                     {getStatsTable(
                                         new Map<string, string>([
                                             [
-                                                "Combined",
+                                                'Combined',
                                                 getFormattedString(
                                                     leaderboards.stats.totalRunTime.toString(),
                                                     false,
@@ -163,7 +163,7 @@ export const CategoryLeaderboards = ({
                                                 ),
                                             ],
                                             [
-                                                "Highest",
+                                                'Highest',
                                                 getFormattedString(
                                                     leaderboards.totalRunTimeLeaderboard[0].stat.toString(),
                                                     false,
@@ -171,7 +171,7 @@ export const CategoryLeaderboards = ({
                                                 ),
                                             ],
                                             [
-                                                "Average",
+                                                'Average',
                                                 getFormattedString(
                                                     getAverageFromLeaderboard(
                                                         leaderboards.totalRunTimeLeaderboard,
@@ -188,21 +188,21 @@ export const CategoryLeaderboards = ({
                                 {getStatsTable(
                                     new Map<string, string>([
                                         [
-                                            "Average %",
+                                            'Average %',
                                             `${(
                                                 (leaderboards.stats
                                                     .finishedAttemptCount /
                                                     leaderboards.stats
                                                         .attemptCount) *
-                                                100
+                                                    100
                                             ).toFixed(2)}%`,
                                         ],
                                         [
-                                            "Total attempts",
+                                            'Total attempts',
                                             leaderboards.stats.attemptCount.toLocaleString(),
                                         ],
                                         [
-                                            "Finished attempts",
+                                            'Finished attempts',
                                             leaderboards.stats.finishedAttemptCount.toLocaleString(),
                                         ],
                                     ]),
@@ -213,15 +213,15 @@ export const CategoryLeaderboards = ({
                                     {getStatsTable(
                                         new Map<string, string>([
                                             [
-                                                "Combined",
+                                                'Combined',
                                                 leaderboards.stats.uploadCount.toLocaleString(),
                                             ],
                                             [
-                                                "Highest",
+                                                'Highest',
                                                 leaderboards.uploadLeaderboard[0].stat.toLocaleString(),
                                             ],
                                             [
-                                                "Average",
+                                                'Average',
                                                 parseInt(
                                                     getAverageFromLeaderboard(
                                                         leaderboards.uploadLeaderboard,
@@ -238,15 +238,15 @@ export const CategoryLeaderboards = ({
                                     {getStatsTable(
                                         new Map<string, string>([
                                             [
-                                                "Combined",
+                                                'Combined',
                                                 leaderboards.stats.attemptCount.toLocaleString(),
                                             ],
                                             [
-                                                "Highest",
+                                                'Highest',
                                                 leaderboards.attemptCountLeaderboard[0].stat.toLocaleString(),
                                             ],
                                             [
-                                                "Average",
+                                                'Average',
                                                 parseInt(
                                                     getAverageFromLeaderboard(
                                                         leaderboards.attemptCountLeaderboard,
@@ -263,15 +263,15 @@ export const CategoryLeaderboards = ({
                                     {getStatsTable(
                                         new Map<string, string>([
                                             [
-                                                "Combined",
+                                                'Combined',
                                                 leaderboards.stats.finishedAttemptCount.toLocaleString(),
                                             ],
                                             [
-                                                "Highest",
+                                                'Highest',
                                                 leaderboards.finishedAttemptCountLeaderboard[0].stat.toLocaleString(),
                                             ],
                                             [
-                                                "Average",
+                                                'Average',
                                                 parseInt(
                                                     getAverageFromLeaderboard(
                                                         leaderboards.finishedAttemptCountLeaderboard,
@@ -292,7 +292,7 @@ export const CategoryLeaderboards = ({
                                 className="input-group-text"
                                 onClick={() => {
                                     const searchElement =
-                                        document.getElementById("gameSearch");
+                                        document.getElementById('gameSearch');
                                     if (
                                         document.activeElement !== searchElement
                                     ) {
@@ -329,21 +329,21 @@ export const CategoryLeaderboards = ({
                         </Tab.Pane>
                         <Tab.Pane eventKey="category-uploads">
                             {getLeaderboard(
-                                "Total Uploads",
+                                'Total Uploads',
                                 leaderboards.uploadLeaderboard,
                                 search,
                             )}
                         </Tab.Pane>
                         <Tab.Pane eventKey="category-attempts">
                             {getLeaderboard(
-                                "Total Attempts",
+                                'Total Attempts',
                                 leaderboards.attemptCountLeaderboard,
                                 search,
                             )}
                         </Tab.Pane>
                         <Tab.Pane eventKey="category-finished-attempts">
                             {getLeaderboard(
-                                "Total Finished Runs",
+                                'Total Finished Runs',
                                 leaderboards.finishedAttemptCountLeaderboard,
                                 search,
                             )}

@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getAllTournamentSlugs } from "~app/(old-layout)/tournaments/tournament-list";
+import { NextRequest, NextResponse } from 'next/server';
+import { getAllTournamentSlugs } from '~app/(old-layout)/tournaments/tournament-list';
 
 export const redirectTournamentsMiddleware = (
     request: NextRequest,
@@ -15,7 +15,7 @@ export const redirectTournamentsMiddleware = (
     };
 
     const redirect = reroutes.find((reroute) =>
-        shouldReroute(reroute, request.nextUrl.pathname.replace("/", "")),
+        shouldReroute(reroute, request.nextUrl.pathname.replace('/', '')),
     );
 
     if (redirect) {

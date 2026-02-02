@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { memo, useCallback, useRef, useState } from "react";
+import React, { memo, useCallback, useRef, useState } from 'react';
 import {
-    TwitterShareButton,
-    TwitterIcon,
-    RedditShareButton,
-    RedditIcon,
-} from "react-share";
-import {
-    ClipboardHeartFill,
     ClipboardCheckFill,
+    ClipboardHeartFill,
     ClipboardXFill,
     ShareFill,
-} from "react-bootstrap-icons/";
-import socialStyles from "./social-icons.module.scss";
-import { useOnClickOutside } from "usehooks-ts";
+} from 'react-bootstrap-icons/';
+import {
+    RedditIcon,
+    RedditShareButton,
+    TwitterIcon,
+    TwitterShareButton,
+} from 'react-share';
+import { useOnClickOutside } from 'usehooks-ts';
+import socialStyles from './social-icons.module.scss';
 
 interface SocialShareSpeedDialProps {
     url: string;
@@ -25,8 +25,8 @@ export const SocialShareSpeedDial = memo<SocialShareSpeedDialProps>(
     ({ url, title }) => {
         const containerRef = useRef<HTMLButtonElement>(null);
         const [isOpen, setIsOpen] = useState(false);
-        const [copied, setCopied] = useState<"PENDING" | "SUCCESS" | "ERROR">(
-            "PENDING",
+        const [copied, setCopied] = useState<'PENDING' | 'SUCCESS' | 'ERROR'>(
+            'PENDING',
         );
         const onOutsideClick = useCallback(() => setIsOpen(false), []);
         const toggleSpeedDial = useCallback(
@@ -40,11 +40,11 @@ export const SocialShareSpeedDial = memo<SocialShareSpeedDialProps>(
             navigator.clipboard
                 .writeText(url || window.location.href)
                 .then(() => {
-                    setCopied("SUCCESS");
-                    setTimeout(() => setCopied("PENDING"), 2000); // Reset "copied" after 2 seconds
+                    setCopied('SUCCESS');
+                    setTimeout(() => setCopied('PENDING'), 2000); // Reset "copied" after 2 seconds
                 })
                 .catch(() => {
-                    setCopied("ERROR");
+                    setCopied('ERROR');
                 });
         };
 
@@ -56,9 +56,9 @@ export const SocialShareSpeedDial = memo<SocialShareSpeedDialProps>(
             >
                 <button
                     className={`btn btn-primary rounded-circle d-flex justify-content-center align-items-center shadow ${
-                        isOpen ? "rotate-icon" : ""
+                        isOpen ? 'rotate-icon' : ''
                     }`}
-                    style={{ width: "50px", height: "50px" }}
+                    style={{ width: '50px', height: '50px' }}
                     onClick={toggleSpeedDial}
                     aria-label="Toggle share options"
                 >
@@ -67,28 +67,28 @@ export const SocialShareSpeedDial = memo<SocialShareSpeedDialProps>(
 
                 <div
                     className={`d-flex flex-column align-items-center gap-2 position-absolute bottom-100 ${
-                        isOpen ? "opacity-100" : "opacity-0"
+                        isOpen ? 'opacity-100' : 'opacity-0'
                     }`}
                     style={{
-                        transition: "opacity 0.3s",
-                        pointerEvents: isOpen ? "auto" : "none",
+                        transition: 'opacity 0.3s',
+                        pointerEvents: isOpen ? 'auto' : 'none',
                     }}
                 >
                     <div className={socialStyles.socialIcon}>
                         <div
                             className="rounded-circle d-flex justify-content-center align-items-center"
                             style={{
-                                width: "40px",
-                                height: "40px",
-                                backgroundColor: "#007bff",
-                                cursor: "pointer",
+                                width: '40px',
+                                height: '40px',
+                                backgroundColor: '#007bff',
+                                cursor: 'pointer',
                             }}
                             onClick={handleCopy}
                             title="Copy link to clipboard"
                         >
-                            {copied === "SUCCESS" ? (
+                            {copied === 'SUCCESS' ? (
                                 <ClipboardCheckFill size={24} color="#fff" />
-                            ) : copied === "ERROR" ? (
+                            ) : copied === 'ERROR' ? (
                                 <ClipboardXFill size={24} color="#fff" />
                             ) : (
                                 // Pending state
@@ -124,10 +124,10 @@ export const SocialShareSpeedDial = memo<SocialShareSpeedDialProps>(
                             rel="noopener noreferrer"
                             className="rounded-circle d-flex justify-content-center align-items-center"
                             style={{
-                                width: "40px",
-                                height: "40px",
-                                backgroundColor: "#fff",
-                                cursor: "pointer",
+                                width: '40px',
+                                height: '40px',
+                                backgroundColor: '#fff',
+                                cursor: 'pointer',
                             }}
                             title="Share on Bluesky"
                         >
@@ -145,4 +145,4 @@ export const SocialShareSpeedDial = memo<SocialShareSpeedDialProps>(
     },
 );
 
-SocialShareSpeedDial.displayName = "SocialShareSpeedDial";
+SocialShareSpeedDial.displayName = 'SocialShareSpeedDial';

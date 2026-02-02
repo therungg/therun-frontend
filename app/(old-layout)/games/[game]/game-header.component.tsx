@@ -1,10 +1,10 @@
-"use client";
-import React from "react";
-import { Title } from "~src/components/title";
-import { GameContext } from "./game.context";
-import { StatsData } from "./game.types";
-import { GameImage } from "~src/components/image/gameimage";
-import { Row } from "react-bootstrap";
+'use client';
+import React from 'react';
+import { Row } from 'react-bootstrap';
+import { GameImage } from '~src/components/image/gameimage';
+import { Title } from '~src/components/title';
+import { GameContext } from './game.context';
+import { StatsData } from './game.types';
 
 interface GameHeaderProps {
     data: Required<StatsData>;
@@ -18,7 +18,7 @@ export const GameHeader: React.FunctionComponent<GameHeaderProps> = ({
     return (
         <Row>
             <div className="col-auto">
-                {global.image && global.image != "noimage" && (
+                {global.image && global.image != 'noimage' && (
                     <GameImage
                         alt={global.display}
                         src={global.image}
@@ -30,22 +30,24 @@ export const GameHeader: React.FunctionComponent<GameHeaderProps> = ({
             </div>
             <div className="col-auto align-self-center ps-1">
                 <Title>
-                    {category === "*" ? (
+                    {category === '*' ? (
                         data.data.game.display
                     ) : (
                         <a
                             href="#"
                             onClick={() => {
-                                setCategory("*");
+                                setCategory('*');
                             }}
                         >
                             {data.data.game.display}
                         </a>
                     )}
-                    {category !== "*" &&
-                        ` - ${categories.find(
-                            (cat) => cat.categoryName === category,
-                        )?.categoryNameDisplay}`}
+                    {category !== '*' &&
+                        ` - ${
+                            categories.find(
+                                (cat) => cat.categoryName === category,
+                            )?.categoryNameDisplay
+                        }`}
                 </Title>
             </div>
         </Row>

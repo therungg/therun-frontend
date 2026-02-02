@@ -1,19 +1,19 @@
-import { safeEncodeURI } from "~src/utils/uri";
+import { safeEncodeURI } from '~src/utils/uri';
 
 export const getSplitsHistoryUrl = (
     filename: string,
     hasGameTime = false,
 ): string => {
     filename = filename
-        .split("/")
+        .split('/')
         .map((name, key) => {
             if (key > 2) return name;
             return safeEncodeURI(name);
         })
-        .join("/");
+        .join('/');
 
     if (hasGameTime) {
-        filename = filename.replace("history.json", "history-gametime.json");
+        filename = filename.replace('history.json', 'history-gametime.json');
     }
 
     return `https://d1qsrp2avfthuv.cloudfront.net/${filename}`;
