@@ -3,17 +3,22 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
 import { Search as SearchIcon } from 'react-bootstrap-icons';
+import { FilterControl } from '~app/(old-layout)/live/filter-control';
 import {
+    FilterState,
     LiveDataMap,
     LiveProps,
     SortOption,
 } from '~app/(old-layout)/live/live.types';
 import { SortControl } from '~app/(old-layout)/live/sort-control';
 import {
+    filterLiveRuns,
     getRecommendedStream,
     isWebsocketDataProcessable,
     liveRunArrayToMap,
     liveRunIsInSearch,
+    parseFilterParams,
+    serializeFilterParams,
     sortLiveRuns,
 } from '~app/(old-layout)/live/utilities';
 import { LiveIcon, LiveUserRun } from '~src/components/live/live-user-run';
@@ -32,6 +37,11 @@ export const Live = ({
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
     const [search, setSearch] = useState('');
     const [sortOption, setSortOption] = useState<SortOption>('importance');
+    const [filters, setFilters] = useState<FilterState>({
+        liveOnTwitch: false,
+        ongoing: false,
+        pbPace: false,
+    });
     const [currentlyViewing, setCurrentlyViewing] = useState(
         getRecommendedStream(liveDataMap, username),
     );
@@ -98,6 +108,30 @@ export const Live = ({
             setLoadingUserData(false);
         }
     }, [currentlyViewing]);
+
+    // Sync filters from URL params on mount
+    useEffect(() => {
+        const parsedFilters = parseFilterParams(window.location.search);
+        setFilters(parsedFilters);
+    }, []);
+
+    // Update URL when filters change
+    useEffect(() => {
+        const serialized = serializeFilterParams(filters);
+        const params = new URLSearchParams(window.location.search);
+
+        if (serialized) {
+            params.set('filters', serialized);
+        } else {
+            params.delete('filters');
+        }
+
+        const newUrl = params.toString()
+            ? `${window.location.pathname}?${params.toString()}`
+            : window.location.pathname;
+
+        window.history.replaceState({}, '', newUrl);
+    }, [filters]);
 
     return (
         <>
@@ -183,7 +217,10 @@ export const Live = ({
                                 }}
                             />
                         </div>
-                        {/* Future filters will be added here */}
+                        <FilterControl
+                            filters={filters}
+                            onChange={setFilters}
+                        />
                     </div>
                 </Col>
             </Row>
@@ -193,14 +230,24 @@ export const Live = ({
                 )}
 
                 {Object.values(updatedLiveDataMap).length > 0 &&
-                    Object.values(updatedLiveDataMap).filter((liveRun) =>
-                        liveRunIsInSearch(liveRun, search),
-                    ).length == 0 && <div>No runs matched your search!</div>}
+                    Object.values(updatedLiveDataMap)
+                        .filter((liveRun) => liveRunIsInSearch(liveRun, search))
+                        .filter((liveRun) => filterLiveRuns(liveRun, filters))
+                        .length == 0 && (
+                        <div>
+                            No runs matched your search
+                            {(filters.liveOnTwitch ||
+                                filters.ongoing ||
+                                filters.pbPace) &&
+                                ' and filters'}
+                            !
+                        </div>
+                    )}
 
                 {sortLiveRuns(
-                    Object.values(updatedLiveDataMap).filter((liveRun) =>
-                        liveRunIsInSearch(liveRun, search),
-                    ),
+                    Object.values(updatedLiveDataMap)
+                        .filter((liveRun) => liveRunIsInSearch(liveRun, search))
+                        .filter((liveRun) => filterLiveRuns(liveRun, filters)),
                     sortOption,
                 ).map((liveRun) => {
                     return (
