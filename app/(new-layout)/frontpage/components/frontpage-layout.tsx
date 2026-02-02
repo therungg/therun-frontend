@@ -292,12 +292,20 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
     const visibleCount = config.panels.filter((p) => p.visible).length;
     const canHideMore = visibleCount > 3;
 
-    const baseLeftPanels = config.panels
-        .filter((p) => p.column === 'left' && p.visible)
-        .sort((a, b) => a.order - b.order);
-    const baseRightPanels = config.panels
-        .filter((p) => p.column === 'right' && p.visible)
-        .sort((a, b) => a.order - b.order);
+    const baseLeftPanels = useMemo(
+        () =>
+            config.panels
+                .filter((p) => p.column === 'left' && p.visible)
+                .sort((a, b) => a.order - b.order),
+        [config.panels],
+    );
+    const baseRightPanels = useMemo(
+        () =>
+            config.panels
+                .filter((p) => p.column === 'right' && p.visible)
+                .sort((a, b) => a.order - b.order),
+        [config.panels],
+    );
     const hiddenPanels = config.panels
         .filter((p) => !p.visible)
         .map((p) => p.id);
