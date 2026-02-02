@@ -13,6 +13,7 @@ import {
     useSensors,
 } from '@dnd-kit/core';
 import {
+    arrayMove,
     SortableContext,
     verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
@@ -156,22 +157,18 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
             (p) => p.column !== targetColumn,
         );
 
-        const reorderedSameColumn = [...sameColumnPanels];
-        const movedPanelIndex = reorderedSameColumn.findIndex(
+        const movedPanelIndex = sameColumnPanels.findIndex(
             (p) => p.id === activeId,
         );
-        let targetPanelIndex = reorderedSameColumn.findIndex(
+        const targetPanelIndex = sameColumnPanels.findIndex(
             (p) => p.id === overId,
         );
 
-        const [movedPanel] = reorderedSameColumn.splice(movedPanelIndex, 1);
-
-        // Adjust target index if we removed an element before it
-        if (movedPanelIndex < targetPanelIndex) {
-            targetPanelIndex--;
-        }
-
-        reorderedSameColumn.splice(targetPanelIndex, 0, movedPanel);
+        const reorderedSameColumn = arrayMove(
+            sameColumnPanels,
+            movedPanelIndex,
+            targetPanelIndex,
+        );
 
         const reorderedWithOrder = reorderedSameColumn.map((p, idx) => ({
             ...p,
