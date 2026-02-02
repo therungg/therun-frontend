@@ -2,7 +2,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
-import { Search as SearchIcon } from 'react-bootstrap-icons';
+import { Funnel, Search as SearchIcon } from 'react-bootstrap-icons';
 import { FilterControl } from '~app/(old-layout)/live/filter-control';
 import {
     FilterState,
@@ -167,17 +167,21 @@ export const Live = ({
             <Row className="g-3 mb-3">
                 <Col>
                     <div
-                        className="d-flex flex-wrap align-items-center gap-4 p-4 rounded-3 shadow-sm"
+                        className="d-flex align-items-center justify-content-between px-3 py-2 rounded-3 shadow-sm"
                         style={{
                             background: 'var(--bs-body-bg)',
                             border: '1px solid var(--bs-border-color)',
+                            gap: '1.5rem',
                         }}
                     >
                         <SortControl
                             value={sortOption}
                             onChange={setSortOption}
                         />
-                        <div className="input-group flex-grow-1">
+                        <div
+                            className="input-group"
+                            style={{ maxWidth: '380px' }}
+                        >
                             <span
                                 className="input-group-text bg-transparent border-end-0"
                                 onClick={() => {
@@ -206,7 +210,8 @@ export const Live = ({
                                 }}
                             />
                         </div>
-                        <div style={{ marginLeft: 'auto' }}>
+                        <div className="d-flex align-items-center gap-2">
+                            <Funnel size={16} className="text-muted" />
                             <FilterControl
                                 filters={filters}
                                 onChange={setFilters}
