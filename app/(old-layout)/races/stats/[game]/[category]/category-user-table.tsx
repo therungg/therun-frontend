@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { PaginationContextProvider } from "~src/components/pagination/pagination.context-provider";
-import React, { useState } from "react";
-import { UserStats } from "~app/(old-layout)/races/races.types";
-import usePagination from "~src/components/pagination/use-pagination";
-import { genericFetcher } from "~src/components/pagination/fetchers/generic-fetcher";
-import { Table } from "react-bootstrap";
-import { UserLink } from "~src/components/links/links";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import { PaginationSearch } from "~src/components/pagination/pagination-search";
-import { TrophyIcon } from "~src/icons/trophy-icon";
+import React, { useState } from 'react';
+import { Table } from 'react-bootstrap';
+import { UserStats } from '~app/(old-layout)/races/races.types';
+import { UserLink } from '~src/components/links/links';
+import { genericFetcher } from '~src/components/pagination/fetchers/generic-fetcher';
+import { PaginationContextProvider } from '~src/components/pagination/pagination.context-provider';
+import { PaginationSearch } from '~src/components/pagination/pagination-search';
+import usePagination from '~src/components/pagination/use-pagination';
+import { DurationToFormatted } from '~src/components/util/datetime';
+import { TrophyIcon } from '~src/icons/trophy-icon';
 
 type UserStatsWithRanking = UserStats & { ranking: number };
 
@@ -39,7 +39,7 @@ const CategoryUserTableDisplay = ({
         100000,
         1,
     );
-    const [sortColumn, setSortColumn] = useState("rating");
+    const [sortColumn, setSortColumn] = useState('rating');
     const [sortAsc, setSortAsc] = useState(true);
 
     const changeSort = (column: string) => {
@@ -52,11 +52,11 @@ const CategoryUserTableDisplay = ({
     };
 
     const getSortableClassName = (column: string): string => {
-        let classNames = "sortable";
+        let classNames = 'sortable';
 
         if (sortColumn === column) {
-            classNames += " active";
-            classNames += sortAsc ? " asc" : " desc";
+            classNames += ' active';
+            classNames += sortAsc ? ' asc' : ' desc';
         }
 
         return classNames;
@@ -65,16 +65,16 @@ const CategoryUserTableDisplay = ({
     const data = pagination.data.sort((a, b) => {
         let res = 1;
 
-        if (sortColumn === "rating") {
+        if (sortColumn === 'rating') {
             res = b.rating - a.rating;
         }
-        if (sortColumn === "raceCount") {
+        if (sortColumn === 'raceCount') {
             res = b.totalRaces - a.totalRaces;
         }
-        if (sortColumn === "totalTime") {
+        if (sortColumn === 'totalTime') {
             res = b.totalRaceTime - a.totalRaceTime;
         }
-        if (sortColumn === "racePb") {
+        if (sortColumn === 'racePb') {
             if (b.racePb === 0 || a.racePb === 0) res = -1;
             else res = a.racePb - b.racePb;
         }
@@ -89,36 +89,36 @@ const CategoryUserTableDisplay = ({
             <div className="mb-3">
                 <PaginationSearch text="Search player" />
             </div>
-            {data.length === 0 && "No results"}
+            {data.length === 0 && 'No results'}
             {data.length > 0 && (
                 <Table responsive hover bordered striped className="rounded-3">
                     <thead>
                         <tr>
-                            <th style={{ width: "2rem" }}>#</th>
+                            <th style={{ width: '2rem' }}>#</th>
                             <th>Name</th>
                             <th
-                                className={getSortableClassName("rating")}
-                                onClick={() => changeSort("rating")}
-                                style={{ width: "3rem" }}
+                                className={getSortableClassName('rating')}
+                                onClick={() => changeSort('rating')}
+                                style={{ width: '3rem' }}
                             >
                                 Rating
                             </th>
                             <th
-                                className={getSortableClassName("raceCount")}
-                                onClick={() => changeSort("raceCount")}
+                                className={getSortableClassName('raceCount')}
+                                onClick={() => changeSort('raceCount')}
                             >
                                 Races
                             </th>
                             <th>Finish %</th>
                             <th
-                                className={getSortableClassName("totalTime")}
-                                onClick={() => changeSort("totalTime")}
+                                className={getSortableClassName('totalTime')}
+                                onClick={() => changeSort('totalTime')}
                             >
                                 Total Time
                             </th>
                             <th
-                                className={getSortableClassName("racePb")}
-                                onClick={() => changeSort("racePb")}
+                                className={getSortableClassName('racePb')}
+                                onClick={() => changeSort('racePb')}
                             >
                                 Race PB
                             </th>
@@ -126,7 +126,7 @@ const CategoryUserTableDisplay = ({
                     </thead>
                     <tbody>
                         {pagination.data.map((user) => {
-                            const username = user.displayValue.split("#")[2];
+                            const username = user.displayValue.split('#')[2];
                             return (
                                 <tr key={user.displayValue}>
                                     <td>
@@ -134,10 +134,10 @@ const CategoryUserTableDisplay = ({
                                             <TrophyIcon
                                                 trophyColor={
                                                     user.ranking === 1
-                                                        ? "gold"
+                                                        ? 'gold'
                                                         : user.ranking === 2
-                                                          ? "silver"
-                                                          : "bronze"
+                                                          ? 'silver'
+                                                          : 'bronze'
                                                 }
                                             />
                                         ) : (
@@ -171,7 +171,7 @@ const CategoryUserTableDisplay = ({
                                                 duration={user.racePb}
                                             />
                                         )}
-                                        {!user.racePb && "-"}
+                                        {!user.racePb && '-'}
                                     </td>
                                 </tr>
                             );

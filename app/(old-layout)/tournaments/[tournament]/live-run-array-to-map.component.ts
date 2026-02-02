@@ -1,16 +1,16 @@
-import { CategoryLeaderboard } from "~app/(old-layout)/games/[game]/game.types";
-import { LiveRun } from "~app/(old-layout)/live/live.types";
-import { CombinedLeaderboardStat } from "~app/(old-layout)/tournaments/[tournament]/get-combined-tournament-leaderboard.component";
+import { CategoryLeaderboard } from '~app/(old-layout)/games/[game]/game.types';
+import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { CombinedLeaderboardStat } from '~app/(old-layout)/tournaments/[tournament]/get-combined-tournament-leaderboard.component';
 
 export const liveRunArrayToMap = (
     liveData: LiveRun[],
-    sort = "pb",
+    sort = 'pb',
     leaderboards: CategoryLeaderboard | null = null,
     leaderboardsRta = null,
     seedingTable: CombinedLeaderboardStat[] | null = null,
 ) => {
     liveData.sort((a, b) => {
-        if (sort === "time") {
+        if (sort === 'time') {
             if (a.currentSplitIndex < 0) return 1;
             if (b.currentSplitIndex < 0) return -1;
 
@@ -23,12 +23,12 @@ export const liveRunArrayToMap = (
             if (aTime > bTime) return 1;
             return -1;
         }
-        if (sort === "name") {
+        if (sort === 'name') {
             if (a.user.toLowerCase() < b.user.toLowerCase()) return -1;
             if (a.user.toLowerCase() == b.user.toLowerCase()) return 0;
             return 1;
         }
-        if (sort === "prediction") {
+        if (sort === 'prediction') {
             if (
                 !b.currentPrediction ||
                 !b.currentTime ||
@@ -49,14 +49,14 @@ export const liveRunArrayToMap = (
                 return -1;
             return 1;
         }
-        if (sort === "personalBest") {
+        if (sort === 'personalBest') {
             if (!a.pb) return 1;
             if (!b.pb) return -1;
             if (a.pb < b.pb) return -1;
             if (a.pb == b.pb) return 0;
             return 1;
         }
-        if (sort === "tournamentPb" || sort === "pb") {
+        if (sort === 'tournamentPb' || sort === 'pb') {
             if (!leaderboards || !leaderboards.pbLeaderboard) {
                 if (a.pb < b.pb) return -1;
                 if (a.pb == b.pb) return 0;
@@ -103,7 +103,7 @@ export const liveRunArrayToMap = (
             if (aLeaderboardRanking < bLeaderboardRanking) return -1;
             return 1;
         }
-        if (sort === "seed") {
+        if (sort === 'seed') {
             const aStat = seedingTable?.findIndex(
                 (value) => value.username === a.user,
             );

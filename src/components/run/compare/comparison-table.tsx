@@ -1,12 +1,12 @@
+import { Table } from 'react-bootstrap';
+import { Run } from '../../../common/types';
+import { UserLink } from '../../links/links';
 import {
     Difference,
     DurationToFormatted,
     getNumberDifference,
     getPercentageDifference,
-} from "../../util/datetime";
-import { Table } from "react-bootstrap";
-import { Run } from "../../../common/types";
-import { UserLink } from "../../links/links";
+} from '../../util/datetime';
 
 export const ComparisonTable = ({
     userOne,
@@ -67,8 +67,8 @@ export const ComparisonTable = ({
                         style={{
                             color:
                                 runOne.attemptCount - runTwo.attemptCount < 0
-                                    ? "red"
-                                    : "green",
+                                    ? 'red'
+                                    : 'green',
                         }}
                     >
                         {getNumberDifference(
@@ -90,8 +90,8 @@ export const ComparisonTable = ({
                                 parseInt(runOne.finishedAttemptCount) -
                                     parseInt(runTwo.finishedAttemptCount) <
                                 0
-                                    ? "red"
-                                    : "green",
+                                    ? 'red'
+                                    : 'green',
                         }}
                     >
                         {getNumberDifference(
@@ -120,8 +120,8 @@ export const ComparisonTable = ({
                                     parseInt(runTwo.finishedAttemptCount) /
                                         runTwo.attemptCount <
                                 0
-                                    ? "red"
-                                    : "green",
+                                    ? 'red'
+                                    : 'green',
                         }}
                     >
                         {getPercentageDifference(
@@ -189,15 +189,15 @@ export const ComparisonTable = ({
                                 parseInt(runOne.totalRunTime) -
                                     parseInt(runTwo.totalRunTime) <
                                 0
-                                    ? "red"
-                                    : "green",
+                                    ? 'red'
+                                    : 'green',
                         }}
                     >
                         {parseInt(runOne.totalRunTime) -
                             parseInt(runTwo.totalRunTime) <
                         0
-                            ? "-"
-                            : "+"}
+                            ? '-'
+                            : '+'}
                         <DurationToFormatted
                             duration={(
                                 parseInt(runOne.totalRunTime) -

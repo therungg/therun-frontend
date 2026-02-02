@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import { CategoryStats } from "~app/(old-layout)/races/races.types";
-import styles from "~src/components/css/LiveRun.module.scss";
-import { PaginationContextProvider } from "~src/components/pagination/pagination.context-provider";
-import usePagination from "~src/components/pagination/use-pagination";
-import { PaginationSearch } from "~src/components/pagination/pagination-search";
-import PaginationControl from "~src/components/pagination/pagination-control";
-import React from "react";
-import { genericFetcher } from "~src/components/pagination/fetchers/generic-fetcher";
-import { safeEncodeURI } from "~src/utils/uri";
-import { TrophyIcon } from "~src/icons/trophy-icon";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import { Col, Row } from "react-bootstrap";
+import React from 'react';
+import { Col, Row } from 'react-bootstrap';
+import { CategoryStats } from '~app/(old-layout)/races/races.types';
+import styles from '~src/components/css/LiveRun.module.scss';
+import { genericFetcher } from '~src/components/pagination/fetchers/generic-fetcher';
+import { PaginationContextProvider } from '~src/components/pagination/pagination.context-provider';
+import PaginationControl from '~src/components/pagination/pagination-control';
+import { PaginationSearch } from '~src/components/pagination/pagination-search';
+import usePagination from '~src/components/pagination/use-pagination';
+import { DurationToFormatted } from '~src/components/util/datetime';
+import { TrophyIcon } from '~src/icons/trophy-icon';
+import { safeEncodeURI } from '~src/utils/uri';
 
 export const CategoryStatsList = ({ stats }: { stats: CategoryStats[] }) => {
     return (
@@ -52,7 +52,7 @@ export const CategoryStatsListDisplay = ({
 };
 
 export const CategoryStatsPanel = ({ stats }: { stats: CategoryStats }) => {
-    const [game, category] = stats.displayValue.split("#");
+    const [game, category] = stats.displayValue.split('#');
     return (
         <a
             href={`/races/stats/${safeEncodeURI(game)}/${safeEncodeURI(
@@ -80,7 +80,7 @@ export const CategoryStatsBody = ({ stats }: { stats: CategoryStats }) => {
             <Col lg={4} className="mb-3 mb-md-1">
                 <div className="fs-5 mb-1">Stats</div>
                 <div>
-                    Total Time:{" "}
+                    Total Time:{' '}
                     <b>
                         <DurationToFormatted duration={stats.totalRaceTime} />
                     </b>
@@ -100,10 +100,10 @@ export const CategoryStatsBody = ({ stats }: { stats: CategoryStats }) => {
                             <TrophyIcon
                                 trophyColor={
                                     i === 0
-                                        ? "gold"
+                                        ? 'gold'
                                         : i === 1
-                                          ? "silver"
-                                          : "bronze"
+                                          ? 'silver'
+                                          : 'bronze'
                                 }
                             />
                             <b>{stat.mmr}</b> - {stat.user}
@@ -119,15 +119,15 @@ export const CategoryStatsBody = ({ stats }: { stats: CategoryStats }) => {
                             <TrophyIcon
                                 trophyColor={
                                     i === 0
-                                        ? "gold"
+                                        ? 'gold'
                                         : i === 1
-                                          ? "silver"
-                                          : "bronze"
+                                          ? 'silver'
+                                          : 'bronze'
                                 }
                             />
                             <b>
                                 <DurationToFormatted duration={stat.time} />
-                            </b>{" "}
+                            </b>{' '}
                             - {stat.user}
                         </div>
                     );

@@ -1,9 +1,11 @@
-"use server";
+'use server';
 
-import { desc, eq, sql } from "drizzle-orm";
-import { db } from "~src/db";
-import { eventOrganizers, events } from "~src/db/schema";
-import { PaginatedData } from "~src/components/pagination/pagination.types";
+import { desc, eq, sql } from 'drizzle-orm';
+import { getSession } from '~src/actions/session.action';
+import { PaginatedData } from '~src/components/pagination/pagination.types';
+import { db } from '~src/db';
+import { eventOrganizers, events } from '~src/db/schema';
+import { confirmPermission } from '~src/rbac/confirm-permission';
 import {
     CreateEventInput,
     CreateEventOrganizerInput,
@@ -11,12 +13,10 @@ import {
     Event,
     EventOrganizer,
     EventWithOrganizerName,
-} from "../../types/events.types";
-import { deleteEventFromAlgolia, insertEventToAlgolia } from "./algolia";
-import { insertLog } from "./logs";
-import { getSession } from "~src/actions/session.action";
-import { confirmPermission } from "~src/rbac/confirm-permission";
-import { getOrCreateUser } from "./users";
+} from '../../types/events.types';
+import { deleteEventFromAlgolia, insertEventToAlgolia } from './algolia';
+import { insertLog } from './logs';
+import { getOrCreateUser } from './users';
 
 interface EventDbResult {
     events: Event;
@@ -38,7 +38,7 @@ export const getEventById = async (
         );
 
     if (!result[0]) {
-        throw new Error("Event not found");
+        throw new Error('Event not found');
     }
 
     return addOrganizerNameToEvent(result[0]);
@@ -93,7 +93,7 @@ export const createEvent = async (input: CreateEventInput) => {
     const id = insertedEvent[0]?.id;
 
     if (!id) {
-        throw new Error("Failed to create event");
+        throw new Error('Failed to create event');
     }
 
     await insertEventToAlgolia(insertedEvent[0]);
@@ -108,7 +108,7 @@ export const editEvent = async (eventId: number, input: EditEventInput) => {
         .where(eq(events.id, eventId))
         .returning();
     if (!updatedEvent[0]) {
-        throw new Error("Failed to update event");
+        throw new Error('Failed to update event');
     }
 
     await insertEventToAlgolia(updatedEvent[0]);
@@ -130,7 +130,7 @@ export const createEventOrganizer = async (
 
     if (!session.id) return;
 
-    confirmPermission(session, "create", "event");
+    confirmPermission(session, 'create', 'event');
 
     const insertedEventOrganizer = await db
         .insert(eventOrganizers)
@@ -139,8 +139,8 @@ export const createEventOrganizer = async (
 
     await insertLog({
         userId: await getOrCreateUser(session.username),
-        action: "create-event-organizer",
-        entity: "eventOrganizer",
+        action: 'create-event-organizer',
+        entity: 'eventOrganizer',
         target: insertedEventOrganizer[0].toString(),
         data: { insertedEventOrganizer, input },
     });

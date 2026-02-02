@@ -1,9 +1,9 @@
-import { Run } from "~src/common/types";
-import { Form } from "react-bootstrap";
-import styles from "../../../components/css/Userform.module.scss";
-import { useState } from "react";
-import { User } from "types/session.types";
-import { Button } from "~src/components/Button/Button";
+import { useState } from 'react';
+import { Form } from 'react-bootstrap';
+import { User } from 'types/session.types';
+import { Run } from '~src/common/types';
+import { Button } from '~src/components/Button/Button';
+import styles from '../../../components/css/Userform.module.scss';
 
 export const EditRun = ({
     run,
@@ -22,14 +22,14 @@ export const EditRun = ({
         description: run.description,
         vod: run.vod,
         customUrl: run.originalRun?.endsWith(run.customUrl as string)
-            ? ""
+            ? ''
             : run.customUrl,
     });
 
     const [valid, setValid] = useState(true);
 
     return (
-        <div style={{ marginBottom: "2rem" }}>
+        <div style={{ marginBottom: '2rem' }}>
             <Form>
                 <fieldset className={`border p ${styles.fieldset}`}>
                     <legend className="w-auto">
@@ -42,7 +42,7 @@ export const EditRun = ({
                         </Form.Label>
                         <Form.Control
                             defaultValue={form.vod}
-                            style={{ width: "30rem" }}
+                            style={{ width: '30rem' }}
                             maxLength={250}
                             type="text"
                             placeholder="eg. https://www.twitch.tv/videos/40861387"
@@ -51,7 +51,7 @@ export const EditRun = ({
                             }
                         />
                         {!valid && (
-                            <div style={{ color: "red" }}>
+                            <div style={{ color: 'red' }}>
                                 This does not appear to be a twitch or youtube
                                 url...
                             </div>
@@ -64,7 +64,7 @@ export const EditRun = ({
                         </Form.Label>
                         <Form.Control
                             as="textarea"
-                            style={{ height: "6rem" }}
+                            style={{ height: '6rem' }}
                             maxLength={250}
                             type="textarea"
                             defaultValue={form.description}
@@ -77,14 +77,14 @@ export const EditRun = ({
                             }
                         />
                     </Form.Group>
-                    <div style={{ display: "flex" }}>
+                    <div style={{ display: 'flex' }}>
                         <div
                             style={{
-                                display: "flex",
-                                alignContent: "flex-end",
-                                alignSelf: "flex-end",
-                                marginBottom: "1.3rem",
-                                marginRight: "1rem",
+                                display: 'flex',
+                                alignContent: 'flex-end',
+                                alignSelf: 'flex-end',
+                                marginBottom: '1.3rem',
+                                marginRight: '1rem',
                             }}
                         >
                             therun.gg/{username}/
@@ -95,7 +95,7 @@ export const EditRun = ({
                                 Custom URL (max. 50 characters)
                             </Form.Label>
                             <Form.Control
-                                style={{ width: "30rem" }}
+                                style={{ width: '30rem' }}
                                 maxLength={50}
                                 type="text"
                                 defaultValue={form.customUrl}
@@ -110,7 +110,7 @@ export const EditRun = ({
                         </Form.Group>
                     </div>
                 </fieldset>
-                <div style={{ marginTop: "1rem" }}>
+                <div style={{ marginTop: '1rem' }}>
                     <Button
                         className={styles.editInfoButton}
                         onClick={async () => {
@@ -121,7 +121,7 @@ export const EditRun = ({
                             );
 
                             const res = await fetch(`/api/users/${deleteUrl}`, {
-                                method: "PUT",
+                                method: 'PUT',
                                 body: JSON.stringify(form),
                             });
 

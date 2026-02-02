@@ -1,24 +1,24 @@
-import { Form, FormGroupProps } from "react-bootstrap";
-import React, { useEffect, useState } from "react";
-import { useDebounceValue } from "usehooks-ts";
+import React, { useEffect, useState } from 'react';
+import { Form, FormGroupProps } from 'react-bootstrap';
+import { useDebounceValue } from 'usehooks-ts';
 import {
     Category,
     Game,
     PaginatedGameResult,
-} from "~app/(old-layout)/games/games.types";
-import styles from "~src/components/css/LiveRun.module.scss";
-import { GameImage } from "~src/components/image/gameimage";
+} from '~app/(old-layout)/games/games.types';
+import styles from '~src/components/css/LiveRun.module.scss';
+import { GameImage } from '~src/components/image/gameimage';
 
 export const GameCategoryInput = (props: FormGroupProps) => {
-    const [inputValue, setInputValue] = useState("");
+    const [inputValue, setInputValue] = useState('');
     const [suggestions, setSuggestions] = useState<Game[]>([]);
     const [categorySuggestions, setCategorySuggesions] = useState<Category[]>(
         [],
     );
-    const [categoryInput, setCategoryInput] = useState("");
+    const [categoryInput, setCategoryInput] = useState('');
     const [clickedGame, setClickedGame] = useState(false);
     const [clickedCategory, setClickedCategory] = useState(false);
-    const [selectedGameImage, setSelectedGameImage] = useState("");
+    const [selectedGameImage, setSelectedGameImage] = useState('');
 
     const [search] = useDebounceValue(inputValue, 300);
 
@@ -32,7 +32,7 @@ export const GameCategoryInput = (props: FormGroupProps) => {
         const foundCategory = categorySuggestions.find((category) => {
             return (
                 category.category ===
-                categoryInput.toLowerCase().replace(/\s/g, "")
+                categoryInput.toLowerCase().replace(/\s/g, '')
             );
         });
         if (foundCategory) {
@@ -51,7 +51,7 @@ export const GameCategoryInput = (props: FormGroupProps) => {
         const data = (await response.json()) as PaginatedGameResult;
         setSuggestions(data.items || []);
         const foundGame = data.items.find((game) => {
-            return game.game === search.toLowerCase().replace(/\s/g, "");
+            return game.game === search.toLowerCase().replace(/\s/g, '');
         });
         if (foundGame) {
             setSuggestedGame(foundGame);
@@ -65,7 +65,7 @@ export const GameCategoryInput = (props: FormGroupProps) => {
         setClickedGame(true);
         setInputValue(game.display);
         setCategorySuggesions(game.categories);
-        setSelectedGameImage(game.image || "");
+        setSelectedGameImage(game.image || '');
     };
 
     const setSuggestedCategory = (category: Category) => {
@@ -85,25 +85,25 @@ export const GameCategoryInput = (props: FormGroupProps) => {
                     {!clickedCategory && <span>Game</span>}
                     <div
                         className={`d-flex mt-1 bg-body-secondary game-border rounded-3 p-0 ${styles.liveRunContainer}`}
-                        style={{ height: "5rem" }}
+                        style={{ height: '5rem' }}
                         onClick={() => {
                             unsetSuggestedGameCategory();
                         }}
                     >
                         <GameImage
-                            src={selectedGameImage ? selectedGameImage : ""}
+                            src={selectedGameImage ? selectedGameImage : ''}
                             width={60}
                             height={50}
                             className="rounded-3"
                             quality="large"
                         />
-                        <span style={{ height: "5rem" }} className="d-flex">
+                        <span style={{ height: '5rem' }} className="d-flex">
                             <div>
                                 <span className="ps-3 h-100 align-items-center d-flex fs-6">
                                     <div>
                                         <span
                                             style={{
-                                                color: "var(--bs-link-color)",
+                                                color: 'var(--bs-link-color)',
                                             }}
                                         >
                                             {inputValue}
@@ -123,7 +123,7 @@ export const GameCategoryInput = (props: FormGroupProps) => {
             <Form.Group
                 {...props}
                 controlId="game"
-                className={`col-md-6${clickedGame ? " d-none" : ""}`}
+                className={`col-md-6${clickedGame ? ' d-none' : ''}`}
             >
                 <Form.Label>Game</Form.Label>
                 <Form.Control
@@ -148,7 +148,7 @@ export const GameCategoryInput = (props: FormGroupProps) => {
                 )}
             </Form.Group>
             <Form.Group
-                className={`col-md-6${clickedCategory ? " d-none" : ""}`}
+                className={`col-md-6${clickedCategory ? ' d-none' : ''}`}
                 controlId="category"
             >
                 <Form.Label>Category</Form.Label>
@@ -192,12 +192,12 @@ const SuggestedGamesList = ({
                             setGame(game);
                         }}
                     >
-                        <span style={{ height: "5rem" }} className="d-flex">
+                        <span style={{ height: '5rem' }} className="d-flex">
                             <GameImage
                                 src={
-                                    game.image && game.image !== "noimage"
+                                    game.image && game.image !== 'noimage'
                                         ? game.image
-                                        : ""
+                                        : ''
                                 }
                                 width={60}
                                 height={50}
@@ -205,7 +205,7 @@ const SuggestedGamesList = ({
                                 quality="large"
                             />
                             <span
-                                style={{ color: "var(--bs-link-color)" }}
+                                style={{ color: 'var(--bs-link-color)' }}
                                 className="ps-3 h-100 align-items-center d-flex fs-6"
                             >
                                 {game.display}

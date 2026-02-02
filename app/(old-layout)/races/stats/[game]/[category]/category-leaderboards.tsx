@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
-import { RaceMmrStat, RaceTimeStat } from "~app/(old-layout)/races/races.types";
-import React, { useState } from "react";
-import { Table } from "react-bootstrap";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import { UserLink } from "~src/components/links/links";
-import { TrophyIcon } from "~src/icons/trophy-icon";
+import React, { useState } from 'react';
+import { Table } from 'react-bootstrap';
+import { RaceMmrStat, RaceTimeStat } from '~app/(old-layout)/races/races.types';
+import { UserLink } from '~src/components/links/links';
+import { DurationToFormatted } from '~src/components/util/datetime';
+import { TrophyIcon } from '~src/icons/trophy-icon';
 
 export interface LeaderboardData {
     items: RaceMmrStat[] | RaceTimeStat[];
@@ -22,7 +22,7 @@ export const CategoryLeaderboards = ({
         leaderboards[0],
     );
 
-    const isMmrLeaderboard = currentLeaderboard.key.includes("mmr");
+    const isMmrLeaderboard = currentLeaderboard.key.includes('mmr');
 
     return (
         <div>
@@ -55,9 +55,9 @@ export const CategoryLeaderboards = ({
                 <Table bordered striped hover responsive>
                     <thead>
                         <tr className="text-center">
-                            <th style={{ width: "10%" }}>#</th>
+                            <th style={{ width: '10%' }}>#</th>
                             <th>User</th>
-                            <th>{isMmrLeaderboard ? "Rating" : "Time"}</th>
+                            <th>{isMmrLeaderboard ? 'Rating' : 'Time'}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -71,10 +71,10 @@ export const CategoryLeaderboards = ({
                                             <TrophyIcon
                                                 trophyColor={
                                                     i === 0
-                                                        ? "gold"
+                                                        ? 'gold'
                                                         : i === 1
-                                                          ? "silver"
-                                                          : "bronze"
+                                                          ? 'silver'
+                                                          : 'bronze'
                                                 }
                                             />
                                         ) : (
@@ -88,7 +88,7 @@ export const CategoryLeaderboards = ({
                                         />
                                     </td>
                                     <td>
-                                        {"mmr" in leaderboard ? (
+                                        {'mmr' in leaderboard ? (
                                             leaderboard.mmr
                                         ) : (
                                             <DurationToFormatted

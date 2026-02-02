@@ -1,11 +1,11 @@
-"use client";
-import React from "react";
-import ContentLoader from "react-content-loader";
-import { PropsFrom } from "../../../../types/utility.types";
-import styles from "./skeleton.module.scss";
+'use client';
+import React from 'react';
+import ContentLoader from 'react-content-loader';
+import { PropsFrom } from '../../../../types/utility.types';
+import styles from './skeleton.module.scss';
 
 export const SkeletonLiveRun = (props: PropsFrom<typeof ContentLoader>) => {
-    const itemHeight = "100%";
+    const itemHeight = '100%';
 
     return (
         <ContentLoader

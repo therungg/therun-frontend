@@ -1,28 +1,27 @@
-"use client";
+'use client';
 
-import { Form } from "react-bootstrap";
-import { SubmitButton } from "~src/components/Button/SubmitButton";
-import { joinRace } from "~app/(old-layout)/races/actions/join-race.action";
-import { useState, useActionState } from "react";
-import { Race } from "~app/(old-layout)/races/races.types";
-
-import { useSearchParams } from "next/navigation";
+import { useSearchParams } from 'next/navigation';
+import { useActionState, useState } from 'react';
+import { Form } from 'react-bootstrap';
+import { joinRace } from '~app/(old-layout)/races/actions/join-race.action';
+import { Race } from '~app/(old-layout)/races/races.types';
+import { SubmitButton } from '~src/components/Button/SubmitButton';
 
 export const JoinRaceForm = ({ race }: { race: Race }) => {
-    const [state, formAction] = useActionState(joinRace, { message: "" });
-    const [passwordInput, setPasswordInput] = useState("");
+    const [state, formAction] = useActionState(joinRace, { message: '' });
+    const [passwordInput, setPasswordInput] = useState('');
 
     const searchParams = useSearchParams();
-    const skipPasswordCheck = searchParams.get("skipPasswordCheck");
+    const skipPasswordCheck = searchParams.get('skipPasswordCheck');
 
     const { raceId, requiresPassword } = race;
 
-    const askForPassword = requiresPassword && skipPasswordCheck !== "true";
+    const askForPassword = requiresPassword && skipPasswordCheck !== 'true';
 
     return (
         <div className="w-100">
             {state?.message && (
-                <span style={{ color: "red" }}>{state.message} </span>
+                <span style={{ color: 'red' }}>{state.message} </span>
             )}
 
             {askForPassword && (

@@ -1,14 +1,14 @@
-import { LiveRun } from "~app/(old-layout)/live/live.types";
-import { RunHistory, SplitsHistory } from "../../common/types";
-import SplitName from "../transformers/split-name";
-import { getSplitStatus } from "./recommended-stream";
-import { Table } from "react-bootstrap";
-import { DurationToFormatted } from "../util/datetime";
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
+import { Table } from 'react-bootstrap';
+import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { RunHistory, SplitsHistory } from '../../common/types';
+import SplitName from '../transformers/split-name';
+import { DurationToFormatted } from '../util/datetime';
+import { getSplitStatus } from './recommended-stream';
 
 const SPLIT_KIND = {
-    PERSONAL_BEST: "Personal Best",
-    BEST_SEGMENTS: "Best Segments",
+    PERSONAL_BEST: 'Personal Best',
+    BEST_SEGMENTS: 'Best Segments',
 };
 
 export const SplitDetails = ({
@@ -84,12 +84,12 @@ export const SplitDetails = ({
 
     return (
         <div>
-            <div style={{ display: "flex" }}>
+            <div style={{ display: 'flex' }}>
                 <span
                     style={{
-                        width: "100%",
-                        fontSize: "1.3rem",
-                        marginBottom: "0.5rem",
+                        width: '100%',
+                        fontSize: '1.3rem',
+                        marginBottom: '0.5rem',
                     }}
                 >
                     <SplitName splitName={splits[selectedSplit].name} />
@@ -97,9 +97,9 @@ export const SplitDetails = ({
                 {liveRun.splits[selectedSplit].splitTime && (
                     <span
                         style={{
-                            width: "100%",
-                            display: "flex",
-                            justifyContent: "flex-end",
+                            width: '100%',
+                            display: 'flex',
+                            justifyContent: 'flex-end',
                         }}
                     >
                         Current run:&nbsp;
@@ -107,7 +107,7 @@ export const SplitDetails = ({
                             duration={
                                 liveRun.splits[
                                     selectedSplit
-                                ].splitTime?.toString() || ""
+                                ].splitTime?.toString() || ''
                             }
                             withMillis={true}
                         />
@@ -119,14 +119,14 @@ export const SplitDetails = ({
                 bordered
                 hover
                 responsive
-                style={{ marginBottom: "0.3rem" }}
+                style={{ marginBottom: '0.3rem' }}
             >
                 <thead>
                     <tr>
-                        <th style={{ width: "22%" }}></th>
-                        <th style={{ width: "26%" }}>PB</th>
-                        <th style={{ width: "26%" }}>Possible</th>
-                        <th style={{ width: "26%" }}>Best Ever</th>
+                        <th style={{ width: '22%' }}></th>
+                        <th style={{ width: '26%' }}>PB</th>
+                        <th style={{ width: '26%' }}>Possible</th>
+                        <th style={{ width: '26%' }}>Best Ever</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -141,7 +141,7 @@ export const SplitDetails = ({
                                     duration={
                                         splitStatus?.comparisons[
                                             SPLIT_KIND.PERSONAL_BEST
-                                        ]?.singleTime?.toString() || ""
+                                        ]?.singleTime?.toString() || ''
                                     }
                                 />
                             )}

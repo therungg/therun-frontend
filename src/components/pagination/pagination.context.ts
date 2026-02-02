@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface PaginationContextProps {
     search: string;
@@ -8,7 +8,7 @@ interface PaginationContextProps {
 }
 
 export const PaginationContext = React.createContext<PaginationContextProps>({
-    search: "",
+    search: '',
     setSearch: () => {},
     currentPage: 1,
     setCurrentPage: () => {},

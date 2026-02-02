@@ -1,12 +1,12 @@
-import { LiveRun } from "~app/(old-layout)/live/live.types";
-import React, { useEffect, useState } from "react";
-import { getSplitsHistoryUrl } from "../run/get-splits-history";
-import { Runs } from "~app/(old-layout)/[username]/[game]/[run]/run";
-import { UserLink } from "../links/links";
-import moment from "moment/moment";
-import { GeneralStats } from "./general-stats";
-import { SplitDetails } from "./split-details";
-import { CurrentRunDetails } from "./current-run-details";
+import moment from 'moment/moment';
+import React, { useEffect, useState } from 'react';
+import { Runs } from '~app/(old-layout)/[username]/[game]/[run]/run';
+import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { UserLink } from '../links/links';
+import { getSplitsHistoryUrl } from '../run/get-splits-history';
+import { CurrentRunDetails } from './current-run-details';
+import { GeneralStats } from './general-stats';
+import { SplitDetails } from './split-details';
 
 interface LiverunStatsPanelProps {
     liveRun: LiveRun;
@@ -19,7 +19,7 @@ export const LiverunStatsPanel: React.FunctionComponent<
     const [useGameTime, setUseGameTime] = useState(liveRun.gameTime);
     const [gameData, setGameData] = useState<{ [user: string]: Runs }>({});
     const [dataLoading, setDataLoading] = useState(false);
-    const [selectedStats, setSelectedStats] = useState("current-run-detail");
+    const [selectedStats, setSelectedStats] = useState('current-run-detail');
 
     const data = liveRun.gameData;
 
@@ -33,7 +33,7 @@ export const LiverunStatsPanel: React.FunctionComponent<
             setUseGameTime(liveRun.gameTime);
             setDataLoading(true);
             fetch(getSplitsHistoryUrl(data.historyFilename, useGameTime), {
-                mode: "cors",
+                mode: 'cors',
             })
                 .then((res) => res.json())
                 .then((newData: Runs) => {
@@ -112,7 +112,7 @@ export const LiverunStatsPanel: React.FunctionComponent<
             </div>
             <hr className="mb-2" />
 
-            {selectedStats == "general" && (
+            {selectedStats == 'general' && (
                 <GeneralStats
                     liveRun={liveRun}
                     sessions={sessions}
@@ -120,7 +120,7 @@ export const LiverunStatsPanel: React.FunctionComponent<
                 />
             )}
 
-            {selectedStats == "split-detail" && (
+            {selectedStats == 'split-detail' && (
                 <SplitDetails
                     liveRun={liveRun}
                     splits={splits}
@@ -128,7 +128,7 @@ export const LiverunStatsPanel: React.FunctionComponent<
                     selectedSplit={selectedSplit}
                 />
             )}
-            {selectedStats == "current-run-detail" && (
+            {selectedStats == 'current-run-detail' && (
                 <CurrentRunDetails liveRun={liveRun} />
             )}
         </>

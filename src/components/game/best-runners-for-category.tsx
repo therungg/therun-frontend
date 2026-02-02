@@ -1,8 +1,8 @@
-import { CategoryLeaderboard } from "~app/(old-layout)/games/[game]/game.types";
-import { Table } from "react-bootstrap";
-import { DurationToFormatted, FromNow } from "../util/datetime";
-import { UserLink } from "../links/links";
-import React from "react";
+import React from 'react';
+import { Table } from 'react-bootstrap';
+import { CategoryLeaderboard } from '~app/(old-layout)/games/[game]/game.types';
+import { UserLink } from '../links/links';
+import { DurationToFormatted, FromNow } from '../util/datetime';
 
 interface Props {
     data: CategoryLeaderboard;
@@ -32,7 +32,7 @@ export const BestRunnersForCategory: React.FC<Props> = ({ data }) => {
                                     username={leaderboard.username}
                                 />
                             </td>
-                            <td style={{ fontWeight: "bolder" }}>
+                            <td style={{ fontWeight: 'bolder' }}>
                                 <DurationToFormatted
                                     duration={leaderboard.stat as string}
                                 />

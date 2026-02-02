@@ -1,5 +1,5 @@
-import { getAllPatrons } from "~app/(old-layout)/api/patreons/get-all-patrons.action";
-import { PatreonPanelView } from "./patreon-panel-view";
+import { getAllPatrons } from '~app/(old-layout)/api/patreons/get-all-patrons.action';
+import { PatreonPanelView } from './patreon-panel-view';
 
 interface FeaturedPatron {
     name: string;

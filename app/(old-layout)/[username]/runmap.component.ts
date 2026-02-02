@@ -1,4 +1,4 @@
-import { Run } from "~src/common/types";
+import { Run } from '~src/common/types';
 
 export const getRunmap = (runs: Run[]): Map<string, Run[]> => {
     const runMap: Map<string, Run[]> = new Map();
@@ -14,7 +14,7 @@ export const getRunmap = (runs: Run[]): Map<string, Run[]> => {
         }
 
         if (run.emulator) {
-            variants.push("Uses Emulator: Yes");
+            variants.push('Uses Emulator: Yes');
         }
 
         if (run.gameregion) {
@@ -30,7 +30,7 @@ export const getRunmap = (runs: Run[]): Map<string, Run[]> => {
         let runName = run.game;
 
         if (variants.length > 0) {
-            runName += `#${variants.join("#")}`;
+            runName += `#${variants.join('#')}`;
 
             if (!uniqueVariantCount.has(run.game)) {
                 uniqueVariantCount.set(run.game, []);

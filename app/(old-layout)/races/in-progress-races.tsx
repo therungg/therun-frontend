@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { Card, Col, Row } from "react-bootstrap";
-import { RaceTimer } from "~app/(old-layout)/races/[race]/race-timer";
-import { RaceParticipantStatusOverview } from "~app/(old-layout)/races/components/race-participant-status-overview";
-import { RacePlacings } from "~app/(old-layout)/races/components/race-placings";
+import { Card, Col, Row } from 'react-bootstrap';
+import { RaceTimer } from '~app/(old-layout)/races/[race]/race-timer';
+import { RaceParticipantStatusOverview } from '~app/(old-layout)/races/components/race-participant-status-overview';
+import { RacePlacings } from '~app/(old-layout)/races/components/race-placings';
 import {
     Race,
     RaceParticipantWithLiveData,
-} from "~app/(old-layout)/races/races.types";
-import { ClockIcon } from "~src/icons/clock-icon";
-import { PersonIcon } from "~src/icons/person-icon";
-import styles from "../../../src/components/css/LiveRun.module.scss";
+} from '~app/(old-layout)/races/races.types';
+import { ClockIcon } from '~src/icons/clock-icon';
+import { PersonIcon } from '~src/icons/person-icon';
+import styles from '../../../src/components/css/LiveRun.module.scss';
 
 export const InProgressRaces = ({ races }: { races: Race[] }) => {
     if (races.length === 0) {
@@ -44,7 +44,7 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
                                             className="rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
                                             src={
                                                 race.gameImage &&
-                                                race.gameImage !== "noimage"
+                                                race.gameImage !== 'noimage'
                                                     ? race.gameImage
                                                     : `/logo_dark_theme_no_text_transparent.png`
                                             }
@@ -60,7 +60,7 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
                                             <Card.Title
                                                 className="m-0 p-0 h5 text-truncate"
                                                 style={{
-                                                    color: "var(--bs-link-color)",
+                                                    color: 'var(--bs-link-color)',
                                                 }}
                                             >
                                                 {race.displayGame}

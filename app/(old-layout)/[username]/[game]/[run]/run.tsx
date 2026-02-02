@@ -1,29 +1,29 @@
-"use client";
-import { Run, RunHistory, RunSession, SplitsHistory } from "~src/common/types";
-import { LiveRun } from "~app/(old-layout)/live/live.types";
-import React, { useEffect, useState } from "react";
-import { AppContext } from "~src/common/app.context";
-import { useLiveRunsWebsocket } from "~src/components/websocket/use-reconnect-websocket";
-import { StatsData } from "~app/(old-layout)/games/[game]/game.types";
-import { getSplitsHistoryUrl } from "~src/components/run/get-splits-history";
-import { Col, Row, Tab, Tabs } from "react-bootstrap";
-import { Title } from "~src/components/title";
-import { UserGameLink, UserLink } from "~src/components/links/links";
-import { GametimeForm } from "~src/components/gametime/gametime-form";
-import { LiveIcon, LiveUserRun } from "~src/components/live/live-user-run";
-import { Splits } from "~src/components/run/dashboard/splits";
-import { Stats } from "~src/components/run/dashboard/stats";
-import { RecentRuns } from "~src/components/run/dashboard/recent-runs";
-import { Activity } from "~src/components/run/dashboard/activity";
-import { SplitStats } from "~src/components/run/splits/split-stats";
-import { GameSessions } from "~src/components/run/run-sessions/game-sessions";
-import { History } from "~src/components/run/history/history";
-import TimeSaves from "~src/components/run/dashboard/timesaves";
-import { CompareSplits } from "~src/components/run/compare/compare-splits";
-import { Vod } from "~src/components/run/dashboard/vod";
-import Golds from "~src/components/run/dashboard/golds";
-import { safeEncodeURI } from "~src/utils/uri";
-import Link from "next/link";
+'use client';
+import Link from 'next/link';
+import React, { useEffect, useState } from 'react';
+import { Col, Row, Tab, Tabs } from 'react-bootstrap';
+import { StatsData } from '~app/(old-layout)/games/[game]/game.types';
+import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { AppContext } from '~src/common/app.context';
+import { Run, RunHistory, RunSession, SplitsHistory } from '~src/common/types';
+import { GametimeForm } from '~src/components/gametime/gametime-form';
+import { UserGameLink, UserLink } from '~src/components/links/links';
+import { LiveIcon, LiveUserRun } from '~src/components/live/live-user-run';
+import { CompareSplits } from '~src/components/run/compare/compare-splits';
+import { Activity } from '~src/components/run/dashboard/activity';
+import Golds from '~src/components/run/dashboard/golds';
+import { RecentRuns } from '~src/components/run/dashboard/recent-runs';
+import { Splits } from '~src/components/run/dashboard/splits';
+import { Stats } from '~src/components/run/dashboard/stats';
+import TimeSaves from '~src/components/run/dashboard/timesaves';
+import { Vod } from '~src/components/run/dashboard/vod';
+import { getSplitsHistoryUrl } from '~src/components/run/get-splits-history';
+import { History } from '~src/components/run/history/history';
+import { GameSessions } from '~src/components/run/run-sessions/game-sessions';
+import { SplitStats } from '~src/components/run/splits/split-stats';
+import { Title } from '~src/components/title';
+import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
+import { safeEncodeURI } from '~src/utils/uri';
 
 interface RunPageProps {
     run: Run;
@@ -54,7 +54,7 @@ export default function RunDetail({
     runName,
     globalGameData,
     liveData,
-    tab = "dashboard",
+    tab = 'dashboard',
 }: RunPageProps) {
     const { baseUrl } = React.useContext(AppContext);
     const forceRealTime = !!globalGameData.forceRealTime;
@@ -78,11 +78,11 @@ export default function RunDetail({
 
     useEffect(() => {
         if (lastMessage !== null) {
-            if (lastMessage.type === "UPDATE") {
+            if (lastMessage.type === 'UPDATE') {
                 setLiveRun(lastMessage.run);
             }
 
-            if (lastMessage.type === "DELETE") {
+            if (lastMessage.type === 'DELETE') {
                 setLiveRun(null);
             }
         }
@@ -96,9 +96,9 @@ export default function RunDetail({
         const url = `${baseUrl}/api/games/${gameName}`;
         const gamesData: StatsData = await (
             await fetch(url, {
-                method: "GET",
+                method: 'GET',
                 headers: {
-                    "Content-Type": "application/json",
+                    'Content-Type': 'application/json',
                 },
             })
         ).json();
@@ -111,7 +111,7 @@ export default function RunDetail({
             const fetchSplitsData = async (gameTime: boolean) => {
                 const url = getSplitsHistoryUrl(run.historyFilename, gameTime);
 
-                const res = await fetch(url, { mode: "cors" });
+                const res = await fetch(url, { mode: 'cors' });
                 const data = await res.json();
 
                 if (gameTime) {
@@ -154,9 +154,9 @@ export default function RunDetail({
     // This implementation of the variables is pretty ugly. Should refactor code + UI
     const varsMap: { [key: string]: string } = {};
 
-    if (run.platform) varsMap["Platform"] = run.platform;
-    if (run.gameregion) varsMap["Region"] = run.gameregion;
-    if (run.emulator) varsMap["Uses Emulator"] = "Yes";
+    if (run.platform) varsMap['Platform'] = run.platform;
+    if (run.gameregion) varsMap['Region'] = run.gameregion;
+    if (run.emulator) varsMap['Uses Emulator'] = 'Yes';
 
     if (run.variables) {
         Object.entries(run.variables).forEach(([a, b]) => {
@@ -166,14 +166,14 @@ export default function RunDetail({
 
     let vars = Object.entries(varsMap);
 
-    vars = vars.filter((variable) => variable[0] !== "Verified");
+    vars = vars.filter((variable) => variable[0] !== 'Verified');
 
     return (
         <>
             <Row>
                 <Col xl={9}>
                     <Title>
-                        <UserGameLink game={run.game} username={username} /> -{" "}
+                        <UserGameLink game={run.game} username={username} /> -{' '}
                         {runName} by <UserLink username={username} />
                     </Title>
                     <i>{run.description}</i>
@@ -204,7 +204,7 @@ export default function RunDetail({
 
                                     return (
                                         <Col xl={xl} key={k}>
-                                            <i>{k}</i>:{" "}
+                                            <i>{k}</i>:{' '}
                                             <b className="fs-15p">{v}</b>
                                         </Col>
                                     );
@@ -247,7 +247,7 @@ export default function RunDetail({
                 defaultActiveKey={tab}
                 className="mb-3"
                 onSelect={async (e) => {
-                    if (e !== "compare" || !!gameData) return;
+                    if (e !== 'compare' || !!gameData) return;
 
                     await loadCompare();
                 }}
@@ -269,7 +269,7 @@ export default function RunDetail({
                                 pb={
                                     (useGameTime
                                         ? run.gameTimeData?.personalBest
-                                        : run.personalBest) || ""
+                                        : run.personalBest) || ''
                                 }
                             />
                             <hr />
@@ -321,7 +321,7 @@ export default function RunDetail({
                             gameTime={useGameTime as boolean}
                         />
                     ) : (
-                        "Loading Game Data..."
+                        'Loading Game Data...'
                     )}
                 </Tab>
                 {run.vod && (

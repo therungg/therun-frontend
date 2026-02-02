@@ -1,8 +1,8 @@
-import { put } from "@vercel/blob";
+import { put } from '@vercel/blob';
 
 export const uploadEventImage = async (file: File, path: string) => {
     const blob = await put(path, file, {
-        access: "public",
+        access: 'public',
     });
 
     return blob.url;

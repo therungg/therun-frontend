@@ -1,12 +1,12 @@
-import { MarathonEvent } from "../send-marathon-data-button";
-import { Run } from "../../../common/types";
-import { getFormattedString } from "../../util/datetime";
-import { LiveRun } from "~app/(old-layout)/live/live.types";
+import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { Run } from '../../../common/types';
+import { getFormattedString } from '../../util/datetime';
+import { MarathonEvent } from '../send-marathon-data-button';
 
 interface GeneralDataEvent extends MarathonEvent {
-    type: "general_data_event";
-    name: "General Data";
-    description: "Contains general data about the current runner.";
+    type: 'general_data_event';
+    name: 'General Data';
+    description: 'Contains general data about the current runner.';
     data: GeneralData;
 }
 
@@ -26,9 +26,9 @@ export const generalDataEvent = (liveRun: LiveRun): GeneralDataEvent => {
     const run = liveRun.gameData as Run;
 
     return {
-        type: "general_data_event",
-        name: "General Data",
-        description: "Contains general data about the current runner.",
+        type: 'general_data_event',
+        name: 'General Data',
+        description: 'Contains general data about the current runner.',
         time: new Date().toISOString(),
         game: liveRun.game,
         category: liveRun.category,

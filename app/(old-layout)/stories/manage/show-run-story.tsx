@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { LiveRun } from "~app/(old-layout)/live/live.types";
-import React, { useEffect, useState } from "react";
-import { useLiveRunsWebsocket } from "~src/components/websocket/use-reconnect-websocket";
-import { RunStoryView } from "~app/(old-layout)/live/stories/run-story-view";
+import React, { useEffect, useState } from 'react';
+import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { RunStoryView } from '~app/(old-layout)/live/stories/run-story-view';
+import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
 
 const ShowRunStory = ({
     username,
@@ -18,11 +18,11 @@ const ShowRunStory = ({
 
     useEffect(() => {
         if (lastMessage !== null) {
-            if (lastMessage.type === "UPDATE") {
+            if (lastMessage.type === 'UPDATE') {
                 setLiveRun(lastMessage.run);
             }
 
-            if (lastMessage.type === "DELETE") {
+            if (lastMessage.type === 'DELETE') {
                 setLiveRun(undefined);
             }
         }

@@ -1,35 +1,34 @@
-"use client";
+'use client';
 
-import { Button, Form } from "react-bootstrap";
-import { Race } from "~app/(old-layout)/races/races.types";
-import { isRaceModerator } from "~src/rbac/confirm-permission";
-import { User } from "../../../../../types/session.types";
-
-import { useFormStatus } from "react-dom";
-import { editRace } from "~app/(old-layout)/races/actions/edit-race.action";
+import React, { useActionState } from 'react';
+import { Button, Form } from 'react-bootstrap';
+import { useFormStatus } from 'react-dom';
+import { editRace } from '~app/(old-layout)/races/actions/edit-race.action';
+import { Race } from '~app/(old-layout)/races/races.types';
 import {
     Breadcrumb,
     BreadcrumbItem,
-} from "~src/components/breadcrumbs/breadcrumb";
-import { UnderlineTooltip } from "~src/components/tooltip";
-import React, { useActionState } from "react";
+} from '~src/components/breadcrumbs/breadcrumb';
+import { UnderlineTooltip } from '~src/components/tooltip';
+import { isRaceModerator } from '~src/rbac/confirm-permission';
+import { User } from '../../../../../types/session.types';
 
 export const EditRace = ({ race, user }: { race: Race; user: User }) => {
-    const [state, formAction] = useActionState(editRace, { message: "" });
+    const [state, formAction] = useActionState(editRace, { message: '' });
 
     if (!isRaceModerator(race, user)) {
-        throw Error("You are not a moderator of this race");
+        throw Error('You are not a moderator of this race');
     }
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { content: "Races", href: "/races" },
+        { content: 'Races', href: '/races' },
         {
             content:
                 race.customName ||
                 `${race.displayGame} - ${race.displayCategory}`,
             href: `/races/${race.raceId}`,
         },
-        { content: "Edit Race Data", href: `/races/${race.raceId}/edit` },
+        { content: 'Edit Race Data', href: `/races/${race.raceId}/edit` },
     ];
 
     return (
@@ -113,7 +112,7 @@ const SubmitButton = () => {
     const { pending } = useFormStatus();
     return (
         <Button disabled={pending} variant="primary" type="submit">
-            {!pending ? "Edit Race" : "Editing Race..."}
+            {!pending ? 'Edit Race' : 'Editing Race...'}
         </Button>
     );
 };

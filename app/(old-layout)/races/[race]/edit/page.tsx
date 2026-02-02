@@ -1,8 +1,8 @@
-import { getRaceByRaceId } from "~src/lib/races";
-import { getSession } from "~src/actions/session.action";
-import { Race } from "~app/(old-layout)/races/races.types";
-import { EditRace } from "~app/(old-layout)/races/[race]/edit/edit-race";
-import { User } from "../../../../../types/session.types";
+import { EditRace } from '~app/(old-layout)/races/[race]/edit/edit-race';
+import { Race } from '~app/(old-layout)/races/races.types';
+import { getSession } from '~src/actions/session.action';
+import { getRaceByRaceId } from '~src/lib/races';
+import { User } from '../../../../../types/session.types';
 
 interface PageProps {
     params: Promise<{ race: string }>;

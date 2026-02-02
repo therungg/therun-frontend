@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
-import { LiveDataMap, LiveRun } from "~app/(old-layout)/live/live.types";
-import { useEffect, useState } from "react";
-import { useLiveRunsWebsocket } from "~src/components/websocket/use-reconnect-websocket";
-import { liveRunArrayToMap } from "~app/(old-layout)/live/utilities";
-import MarathonRun from "~src/components/marathon/marathon-run";
-import { Col, Row } from "react-bootstrap";
-import { User } from "types/session.types";
+import { useEffect, useState } from 'react';
+import { Col, Row } from 'react-bootstrap';
+import { User } from 'types/session.types';
+import { LiveDataMap, LiveRun } from '~app/(old-layout)/live/live.types';
+import { liveRunArrayToMap } from '~app/(old-layout)/live/utilities';
+import MarathonRun from '~src/components/marathon/marathon-run';
+import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
 
 export default function ShowMarathon({
     liveDataMap,
@@ -16,7 +16,7 @@ export default function ShowMarathon({
     session: User;
 }) {
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
-    const [selectedUser, setSelectedUser] = useState("");
+    const [selectedUser, setSelectedUser] = useState('');
     const [currentUserData, setCurrentUserData] = useState<LiveRun>();
 
     const lastMessage = useLiveRunsWebsocket();
@@ -28,11 +28,11 @@ export default function ShowMarathon({
                 JSON.stringify(updatedLiveDataMap),
             );
 
-            if (lastMessage.type == "UPDATE") {
+            if (lastMessage.type == 'UPDATE') {
                 newMap[user] = lastMessage.run;
             }
 
-            if (lastMessage.type == "DELETE") {
+            if (lastMessage.type == 'DELETE') {
                 delete newMap[user];
             }
 

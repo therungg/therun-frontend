@@ -1,12 +1,12 @@
-import { Race } from "~app/(old-layout)/races/races.types";
-import React from "react";
-import { GameImage } from "~src/components/image/gameimage";
-import styles from "../../../src/components/css/LiveRun.module.scss";
-import { PersonIcon } from "~src/icons/person-icon";
-import { PencilIcon } from "~src/icons/pencil-icon";
-import { UserLink } from "~src/components/links/links";
-import { FromNow } from "~src/components/util/datetime";
-import { ClockIcon } from "~src/icons/clock-icon";
+import React from 'react';
+import { Race } from '~app/(old-layout)/races/races.types';
+import { GameImage } from '~src/components/image/gameimage';
+import { UserLink } from '~src/components/links/links';
+import { FromNow } from '~src/components/util/datetime';
+import { ClockIcon } from '~src/icons/clock-icon';
+import { PencilIcon } from '~src/icons/pencil-icon';
+import { PersonIcon } from '~src/icons/person-icon';
+import styles from '../../../src/components/css/LiveRun.module.scss';
 
 export const PendingRaces = ({ races }: { races: Race[] }) => {
     return (
@@ -28,7 +28,7 @@ export const PendingRace = ({ race }: { race: Race }) => {
             <div
                 key={race.raceId}
                 className={`d-flex mb-3 ${styles.liveRunContainer} rounded-3`}
-                style={{ color: "var(--bs-body-color)" }}
+                style={{ color: 'var(--bs-body-color)' }}
             >
                 <GameImage
                     alt={`Image for ${race.displayGame}`}
@@ -43,14 +43,14 @@ export const PendingRace = ({ race }: { race: Race }) => {
                         <div
                             className="h5 m-0 p-0"
                             style={{
-                                color: "var(--bs-link-color)",
+                                color: 'var(--bs-link-color)',
                             }}
                         >
                             {race.displayGame}
                         </div>
                         <span className="text-nowrap">
                             <span className="me-1">
-                                {race.startMethod !== "datetime" && (
+                                {race.startMethod !== 'datetime' && (
                                     <span>{race.readyParticipantCount}/</span>
                                 )}
                                 {race.participantCount}
@@ -71,11 +71,11 @@ export const PendingRace = ({ race }: { race: Race }) => {
                             <PencilIcon />
                         </span>
                     </div>
-                    {race.startMethod === "datetime" && (
+                    {race.startMethod === 'datetime' && (
                         <div className="d-flex justify-content-between">
                             <div></div>
                             <div>
-                                Starts{" "}
+                                Starts{' '}
                                 <FromNow
                                     time={new Date(race.willStartAt as string)}
                                 />

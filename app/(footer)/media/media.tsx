@@ -1,12 +1,12 @@
-"use client";
-import { Title } from "~src/components/title";
-import { Button, Col, Image, Row } from "react-bootstrap";
-import Switch from "react-switch";
-import { useEffect, useState } from "react";
+'use client';
+import { useEffect, useState } from 'react';
+import { Button, Col, Image, Row } from 'react-bootstrap';
+import Switch from 'react-switch';
+import { Title } from '~src/components/title';
 
 export const Media = () => {
     const [loaded, setLoaded] = useState(false);
-    const cfBaseUrl = "https://d73zqe3h0v0mi.cloudfront.net/therun/";
+    const cfBaseUrl = 'https://d73zqe3h0v0mi.cloudfront.net/therun/';
 
     const [logoTransparent, setLogoTransparent] = useState(true);
     const [logoDark, setLogoDark] = useState(true);
@@ -18,26 +18,26 @@ export const Media = () => {
     const [bannerWithLogo, setBannerWithLogo] = useState(true);
 
     const getLogoPath = () => {
-        let path = "media/";
-        path += logoCropped ? "logo_cropped/" : "logo/";
+        let path = 'media/';
+        path += logoCropped ? 'logo_cropped/' : 'logo/';
 
-        path += "logo_";
-        path += logoDark ? "dark_theme_" : "light_theme_";
-        path += logoUrl ? "text" : "no_text";
+        path += 'logo_';
+        path += logoDark ? 'dark_theme_' : 'light_theme_';
+        path += logoUrl ? 'text' : 'no_text';
 
-        if (logoTransparent) path += "_transparent";
+        if (logoTransparent) path += '_transparent';
 
-        path += ".png";
+        path += '.png';
 
         return path;
     };
 
     const getBannerPath = () => {
-        let path = "media/banner/";
-        path += bannerWithLogo ? "twitterbanner_" : "banner_no_logo_";
-        path += bannerDark ? "dark_theme" : "light_theme";
-        path += bannerTransparent ? "_transparent" : "";
-        path += ".png";
+        let path = 'media/banner/';
+        path += bannerWithLogo ? 'twitterbanner_' : 'banner_no_logo_';
+        path += bannerDark ? 'dark_theme' : 'light_theme';
+        path += bannerTransparent ? '_transparent' : '';
+        path += '.png';
 
         return path;
     };
@@ -99,14 +99,14 @@ export const Media = () => {
                                             ).getPropertyValue(
                                                 // FIXME: Remove this
                                                 // eslint-disable-next-line sonarjs/no-duplicate-string
-                                                "--bs-link-color",
+                                                '--bs-link-color',
                                             )}
                                             offColor={getComputedStyle(
                                                 document.documentElement,
                                             ).getPropertyValue(
                                                 // FIXME: Remove this
                                                 // eslint-disable-next-line sonarjs/no-duplicate-string
-                                                "--bs-tertiary-bg",
+                                                '--bs-tertiary-bg',
                                             )}
                                             name="switch"
                                             onChange={(checked) => {
@@ -118,8 +118,8 @@ export const Media = () => {
                                             htmlFor="switch"
                                             className="ms-2 align-self-center text-nowrap"
                                         >
-                                            {" "}
-                                            Transparent background{" "}
+                                            {' '}
+                                            Transparent background{' '}
                                         </label>
                                     </div>
                                     <div className="d-flex justify-content-start align-self-center mb-2">
@@ -127,12 +127,12 @@ export const Media = () => {
                                             onColor={getComputedStyle(
                                                 document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-link-color",
+                                                '--bs-link-color',
                                             )}
                                             offColor={getComputedStyle(
                                                 document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-tertiary-bg",
+                                                '--bs-tertiary-bg',
                                             )}
                                             name="switch"
                                             onChange={(checked) => {
@@ -144,8 +144,8 @@ export const Media = () => {
                                             htmlFor="switch"
                                             className="ms-2 align-self-center text-nowrap"
                                         >
-                                            {" "}
-                                            Dark theme{" "}
+                                            {' '}
+                                            Dark theme{' '}
                                         </label>
                                     </div>
                                     <div className="d-flex justify-content-start align-self-center mb-2">
@@ -153,12 +153,12 @@ export const Media = () => {
                                             onColor={getComputedStyle(
                                                 document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-link-color",
+                                                '--bs-link-color',
                                             )}
                                             offColor={getComputedStyle(
                                                 document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-tertiary-bg",
+                                                '--bs-tertiary-bg',
                                             )}
                                             name="switch"
                                             onChange={(checked) => {
@@ -170,8 +170,8 @@ export const Media = () => {
                                             htmlFor="switch"
                                             className="ms-2 align-self-center text-nowrap"
                                         >
-                                            {" "}
-                                            Cropped{" "}
+                                            {' '}
+                                            Cropped{' '}
                                         </label>
                                     </div>
                                     <div className="d-flex justify-content-start align-self-center mb-2">
@@ -179,12 +179,12 @@ export const Media = () => {
                                             onColor={getComputedStyle(
                                                 document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-link-color",
+                                                '--bs-link-color',
                                             )}
                                             offColor={getComputedStyle(
                                                 document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-tertiary-bg",
+                                                '--bs-tertiary-bg',
                                             )}
                                             name="switch"
                                             onChange={(checked) => {
@@ -196,8 +196,8 @@ export const Media = () => {
                                             htmlFor="switch"
                                             className="ms-2 align-self-center text-nowrap"
                                         >
-                                            {" "}
-                                            With URL text in logo{" "}
+                                            {' '}
+                                            With URL text in logo{' '}
                                         </label>
                                     </div>
                                 </Col>
@@ -230,12 +230,12 @@ export const Media = () => {
                                             onColor={getComputedStyle(
                                                 document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-link-color",
+                                                '--bs-link-color',
                                             )}
                                             offColor={getComputedStyle(
                                                 document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-tertiary-bg",
+                                                '--bs-tertiary-bg',
                                             )}
                                             name="switch"
                                             onChange={(checked) => {
@@ -247,8 +247,8 @@ export const Media = () => {
                                             htmlFor="switch"
                                             className="ms-2 align-self-center text-nowrap"
                                         >
-                                            {" "}
-                                            Transparent background{" "}
+                                            {' '}
+                                            Transparent background{' '}
                                         </label>
                                     </div>
                                     <div className="d-flex justify-content-start align-self-center mb-2">
@@ -256,12 +256,12 @@ export const Media = () => {
                                             onColor={getComputedStyle(
                                                 document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-link-color",
+                                                '--bs-link-color',
                                             )}
                                             offColor={getComputedStyle(
                                                 document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-tertiary-bg",
+                                                '--bs-tertiary-bg',
                                             )}
                                             name="switch"
                                             onChange={(checked) => {
@@ -273,8 +273,8 @@ export const Media = () => {
                                             htmlFor="switch"
                                             className="ms-2 align-self-center text-nowrap"
                                         >
-                                            {" "}
-                                            Dark theme{" "}
+                                            {' '}
+                                            Dark theme{' '}
                                         </label>
                                     </div>
                                     <div className="d-flex justify-content-start align-self-center mb-2">
@@ -282,12 +282,12 @@ export const Media = () => {
                                             onColor={getComputedStyle(
                                                 document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-link-color",
+                                                '--bs-link-color',
                                             )}
                                             offColor={getComputedStyle(
                                                 document.documentElement,
                                             ).getPropertyValue(
-                                                "--bs-tertiary-bg",
+                                                '--bs-tertiary-bg',
                                             )}
                                             name="switch"
                                             onChange={(checked) => {
@@ -299,8 +299,8 @@ export const Media = () => {
                                             htmlFor="switch"
                                             className="ms-2 align-self-center text-nowrap"
                                         >
-                                            {" "}
-                                            With logo{" "}
+                                            {' '}
+                                            With logo{' '}
                                         </label>
                                     </div>
                                 </Col>

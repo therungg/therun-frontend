@@ -1,8 +1,4 @@
-export const ClockIcon = ({
-    color = "var(--bs-gold)",
-}: {
-    color?: string;
-}) => {
+export const ClockIcon = ({ color = 'var(--bs-gold)' }: { color?: string }) => {
     return (
         <svg
             xmlns="http://www.w3.org/2000/svg"

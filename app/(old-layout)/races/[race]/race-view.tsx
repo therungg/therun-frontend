@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
+import React, { useEffect, useState } from 'react';
+import { Col, Row } from 'react-bootstrap';
+import { RaceActions } from '~app/(old-layout)/races/[race]/race-actions';
+import { RaceAdminActions } from '~app/(old-layout)/races/[race]/race-admin-actions';
+import { RaceChat } from '~app/(old-layout)/races/[race]/race-chat';
+import { RaceHeader } from '~app/(old-layout)/races/[race]/race-header';
+import { RaceParticipantDetail } from '~app/(old-layout)/races/[race]/race-participant-detail';
+import { RaceParticipantOverview } from '~app/(old-layout)/races/[race]/race-participant-overview';
+import { RaceProgressGraph } from '~app/(old-layout)/races/[race]/race-progress-graph';
+import { RaceStartConditionInformation } from '~app/(old-layout)/races/[race]/race-start-condition-information';
+import { RaceStats } from '~app/(old-layout)/races/[race]/race-stats';
+import { RaceStream } from '~app/(old-layout)/races/[race]/race-stream';
+import { RaceTimer } from '~app/(old-layout)/races/[race]/race-timer';
+import { useRace } from '~app/(old-layout)/races/hooks/use-race';
 import {
     Race,
     RaceMessage,
     RaceParticipantWithLiveData,
-} from "~app/(old-layout)/races/races.types";
-import { User } from "../../../../types/session.types";
-import { Col, Row } from "react-bootstrap";
-import React, { useEffect, useState } from "react";
-import { RaceParticipantOverview } from "~app/(old-layout)/races/[race]/race-participant-overview";
-import { RaceParticipantDetail } from "~app/(old-layout)/races/[race]/race-participant-detail";
-import { RaceActions } from "~app/(old-layout)/races/[race]/race-actions";
-import { RaceHeader } from "~app/(old-layout)/races/[race]/race-header";
-import { RaceTimer } from "~app/(old-layout)/races/[race]/race-timer";
-import { useRace } from "~app/(old-layout)/races/hooks/use-race";
+} from '~app/(old-layout)/races/races.types';
 import {
     Breadcrumb,
     BreadcrumbItem,
-} from "~src/components/breadcrumbs/breadcrumb";
-import { RaceStream } from "~app/(old-layout)/races/[race]/race-stream";
-import { RaceChat } from "~app/(old-layout)/races/[race]/race-chat";
-import { RaceAdminActions } from "~app/(old-layout)/races/[race]/race-admin-actions";
-import { RaceStartConditionInformation } from "~app/(old-layout)/races/[race]/race-start-condition-information";
-import { RaceStats } from "~app/(old-layout)/races/[race]/race-stats";
-import { RaceProgressGraph } from "~app/(old-layout)/races/[race]/race-progress-graph";
-import { getRaceMessages } from "~src/lib/races";
+} from '~src/components/breadcrumbs/breadcrumb';
+import { getRaceMessages } from '~src/lib/races';
+import { User } from '../../../../types/session.types';
 
 interface RaceDetailProps {
     race: Race;
@@ -40,7 +40,7 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
     const [stream, setStream] = useState(getInitialRaceStream(raceState));
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { content: "Races", href: "/races" },
+        { content: 'Races', href: '/races' },
         { content: race.raceId },
     ];
 
@@ -72,12 +72,12 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
                 <Col xxl={8} lg={7} xs={12}>
                     <RaceHeader race={raceState} />
                     <Col className="flex-center justify-content-between py-2">
-                        {raceState.status !== "pending" && (
+                        {raceState.status !== 'pending' && (
                             <div className="fs-1 align-self-center">
                                 <RaceTimer race={raceState} />
                             </div>
                         )}
-                        {raceState.status === "pending" && (
+                        {raceState.status === 'pending' && (
                             <div className="fs-3 align-self-center">
                                 <RaceStartConditionInformation
                                     race={raceState}
@@ -139,5 +139,5 @@ const getInitialRaceStream = (race: Race) => {
 
     if (participants.length > 0) return participants[0].user;
 
-    return "";
+    return '';
 };

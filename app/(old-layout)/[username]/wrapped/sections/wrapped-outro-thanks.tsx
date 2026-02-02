@@ -1,13 +1,13 @@
-import React, { memo } from "react";
-import { WrappedWithData } from "../wrapped-types";
-import { SectionBody } from "./section-body";
-import { SectionTitle } from "./section-title";
-import { SectionWrapper } from "./section-wrapper";
-import styles from "../hearts.module.scss";
-import { PatreonBunnySvg } from "~app/(old-layout)/patron/patreon-info";
-import Link from "next/link";
-import { Button } from "react-bootstrap";
-import { BunnyIcon } from "~src/icons/bunny-icon";
+import Link from 'next/link';
+import React, { memo } from 'react';
+import { Button } from 'react-bootstrap';
+import { PatreonBunnySvg } from '~app/(old-layout)/patron/patreon-info';
+import { BunnyIcon } from '~src/icons/bunny-icon';
+import styles from '../hearts.module.scss';
+import { WrappedWithData } from '../wrapped-types';
+import { SectionBody } from './section-body';
+import { SectionTitle } from './section-title';
+import { SectionWrapper } from './section-wrapper';
 
 interface WrappedOutroThanksProps {
     wrapped: WrappedWithData;
@@ -51,16 +51,16 @@ export const WrappedOutroThanks = memo<WrappedOutroThanksProps>(
                             Lastly.. One more thing!
                         </p>
                         <p className="fs-2">
-                            All of{" "}
-                            <span style={{ color: "var(--bs-link-color)" }}>
+                            All of{' '}
+                            <span style={{ color: 'var(--bs-link-color)' }}>
                                 therun.gg
-                            </span>{" "}
+                            </span>{' '}
                             is open-source, 100% free and without ads.
                         </p>
                         <p className="fs-3 p-3">
-                            You can do <b>races</b>, <b>tournaments</b>,{" "}
-                            <b>view live runs</b>, get <b>advanced stats</b>{" "}
-                            about your runs and splits, a cool{" "}
+                            You can do <b>races</b>, <b>tournaments</b>,{' '}
+                            <b>view live runs</b>, get <b>advanced stats</b>{' '}
+                            about your runs and splits, a cool{' '}
                             <b>user profile</b>, and much, much more. All for
                             free! This is only possible because the amazing
                             people supporting us on Patreon.
@@ -91,4 +91,4 @@ export const WrappedOutroThanks = memo<WrappedOutroThanksProps>(
         );
     },
 );
-WrappedOutroThanks.displayName = "WrappedOutroThanks";
+WrappedOutroThanks.displayName = 'WrappedOutroThanks';

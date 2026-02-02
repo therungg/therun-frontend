@@ -1,5 +1,5 @@
-import { memo, useRef } from "react";
-import { CountUpProps, useCountUp } from "react-countup";
+import { memo, useRef } from 'react';
+import { CountUpProps, useCountUp } from 'react-countup';
 
 interface WrappedCounterProps extends CountUpProps {
     id: string;
@@ -25,4 +25,4 @@ export const WrappedCounter = memo<WrappedCounterProps>(
         );
     },
 );
-WrappedCounter.displayName = "WrappedCounter";
+WrappedCounter.displayName = 'WrappedCounter';

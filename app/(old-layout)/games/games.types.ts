@@ -1,4 +1,4 @@
-import { PaginatedData } from "~src/components/pagination/pagination.types";
+import { PaginatedData } from '~src/components/pagination/pagination.types';
 
 export type PaginatedGameResult = PaginatedData<Game>;
 

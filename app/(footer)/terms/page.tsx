@@ -1,9 +1,9 @@
-import buildMetadata from "~src/utils/metadata";
-import Link from "next/link";
+import Link from 'next/link';
+import buildMetadata from '~src/utils/metadata';
 
 export const metadata = buildMetadata({
-    title: "Terms & Conditions",
-    description: "Terms & Conditions for using and accessing The Run.",
+    title: 'Terms & Conditions',
+    description: 'Terms & Conditions for using and accessing The Run.',
 });
 
 export default function Terms() {
@@ -12,9 +12,11 @@ export default function Terms() {
             Hi there. <br />
             <br /> If you continue to use this website, you are agreeing to
             comply with and be bound by the following terms and conditions of
-            use, which together with the{" "}
-            <Link href="/privacy-policy" prefetch={false}>Privacy policy</Link> govern The Runs
-            relationship with you in relation to this website.
+            use, which together with the{' '}
+            <Link href="/privacy-policy" prefetch={false}>
+                Privacy policy
+            </Link>{' '}
+            govern The Runs relationship with you in relation to this website.
             <br />
             <br />
             If you disagree with any part of these terms and conditions, please

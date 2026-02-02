@@ -1,8 +1,8 @@
-import { RunSession } from "../../../common/types";
-import { Table } from "react-bootstrap";
-import moment from "moment/moment";
-import { DurationToFormatted, IsoToFormatted } from "../../util/datetime";
-import styles from "../../css/User.module.scss";
+import moment from 'moment/moment';
+import { Table } from 'react-bootstrap';
+import { RunSession } from '../../../common/types';
+import styles from '../../css/User.module.scss';
+import { DurationToFormatted, IsoToFormatted } from '../../util/datetime';
 
 export const SessionOverview = ({ sessions }: { sessions: RunSession[] }) => {
     return (

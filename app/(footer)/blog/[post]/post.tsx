@@ -1,7 +1,7 @@
-"use client";
-import React from "react";
-import { Blogpost } from "~src/components/blogpost";
-import { getBlogs } from "~app/(footer)/blog/blog";
+'use client';
+import React from 'react';
+import { getBlogs } from '~app/(footer)/blog/blog';
+import { Blogpost } from '~src/components/blogpost';
 
 interface PostProps {
     index: number;

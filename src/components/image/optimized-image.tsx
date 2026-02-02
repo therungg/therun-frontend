@@ -1,5 +1,5 @@
-import Image from "next/image";
-import { FC } from "react";
+import Image from 'next/image';
+import { FC } from 'react';
 
 export const OptimizedImage: FC<{
     src: string;
@@ -7,13 +7,13 @@ export const OptimizedImage: FC<{
     height: number;
     alt: string;
     className?: string;
-}> = ({ src, width, height, alt, className = "" }) => {
+}> = ({ src, width, height, alt, className = '' }) => {
     const style = { paddingBottom: `min(350px, ${100 / (width / height)}%)` };
     return (
         <div className="next-image-wrapper" style={style}>
             <Image
                 alt={alt}
-                className={"next-image" + className}
+                className={'next-image' + className}
                 src={src}
                 layout="fill"
                 objectFit="contain"

@@ -1,9 +1,9 @@
-"use client";
-import React from "react";
-import { Card, Col, Row } from "react-bootstrap";
-import { UserLink } from "~src/components/links/links";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import { Game } from "~app/(old-layout)/games/games.types";
+'use client';
+import React from 'react';
+import { Card, Col, Row } from 'react-bootstrap';
+import { Game } from '~app/(old-layout)/games/games.types';
+import { UserLink } from '~src/components/links/links';
+import { DurationToFormatted } from '~src/components/util/datetime';
 
 interface AllGamesBodyProps {
     game: Game;
@@ -28,8 +28,8 @@ export const AllGamesCardBody: React.FunctionComponent<AllGamesBodyProps> = ({
                                             ? (category.gameTimePb as string)
                                             : category.bestTime
                                     }
-                                />{" "}
-                                {category.gameTime && "(IGT)"}
+                                />{' '}
+                                {category.gameTime && '(IGT)'}
                             </div>
                             <div className="d-flex justify-content-end align-items-center w-100">
                                 <UserLink

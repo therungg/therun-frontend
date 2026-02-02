@@ -1,4 +1,4 @@
-import { NameAsPatreon } from "~src/components/patreon/patreon-name";
+import { NameAsPatreon } from '~src/components/patreon/patreon-name';
 
 export const WrappedTitle = ({ user }: { user: string }) => {
     return (

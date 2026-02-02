@@ -1,15 +1,15 @@
-"use client";
-import React from "react";
-import ContentLoader from "react-content-loader";
+'use client';
+import React from 'react';
+import ContentLoader from 'react-content-loader';
 // TODO: Remove all of the PropsFrom uses for the native React.ComponentProps
-import { PropsFrom } from "../../../../types/utility.types";
-import styles from "./skeleton.module.scss";
+import { PropsFrom } from '../../../../types/utility.types';
+import styles from './skeleton.module.scss';
 
 export const SkeletonGamesList = (props: PropsFrom<typeof ContentLoader>) => {
     const totalHeight = 157;
     const itemHeight = 142;
-    const width = "48%";
-    const widthRight = "52%";
+    const width = '48%';
+    const widthRight = '52%';
 
     return (
         <ContentLoader

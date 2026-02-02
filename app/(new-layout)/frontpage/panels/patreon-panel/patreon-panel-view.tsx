@@ -20,11 +20,7 @@ export const PatreonPanelView: React.FC<PatreonPanelViewProps> = ({
     featuredPatrons,
 }) => {
     return (
-        <Panel
-            subtitle="Support"
-            title="Patreon"
-            className="p-4"
-        >
+        <Panel subtitle="Support" title="Patreon" className="p-4">
             <div className={styles.ctaContainer}>
                 <div className={styles.iconWrapper}>
                     <BunnyIcon size={32} />
@@ -36,16 +32,24 @@ export const PatreonPanelView: React.FC<PatreonPanelViewProps> = ({
                     Help keep the site ad-free and unlock perks!
                 </p>
 
-                <a href="/patreon" className={`btn btn-primary ${styles.ctaButton}`}>
+                <a
+                    href="/patreon"
+                    className={`btn btn-primary ${styles.ctaButton}`}
+                >
                     Become a Patron
                 </a>
 
                 {featuredPatrons.length > 0 && (
                     <div className={styles.patronSection}>
-                        <p className={styles.patronLabel}>Thanks to our patrons:</p>
+                        <p className={styles.patronLabel}>
+                            Thanks to our patrons:
+                        </p>
                         <div className={styles.patronList}>
                             {featuredPatrons.map((patron) => (
-                                <div key={patron.name} className={styles.patronItem}>
+                                <div
+                                    key={patron.name}
+                                    className={styles.patronItem}
+                                >
                                     <PatreonName
                                         name={patron.name}
                                         color={patron.colorPreference}

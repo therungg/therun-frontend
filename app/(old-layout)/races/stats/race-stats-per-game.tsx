@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { GameStats } from "~app/(old-layout)/races/races.types";
-import usePagination from "~src/components/pagination/use-pagination";
-import { PaginationSearch } from "~src/components/pagination/pagination-search";
-import React from "react";
-import PaginationControl from "~src/components/pagination/pagination-control";
-import { PaginationContextProvider } from "~src/components/pagination/pagination.context-provider";
-import { Card, Col, Row } from "react-bootstrap";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import styles from "~src/components/css/LiveRun.module.scss";
-import { safeEncodeURI } from "~src/utils/uri";
+import React from 'react';
+import { Card, Col, Row } from 'react-bootstrap';
+import { GameStats } from '~app/(old-layout)/races/races.types';
+import styles from '~src/components/css/LiveRun.module.scss';
+import { PaginationContextProvider } from '~src/components/pagination/pagination.context-provider';
+import PaginationControl from '~src/components/pagination/pagination-control';
+import { PaginationSearch } from '~src/components/pagination/pagination-search';
+import usePagination from '~src/components/pagination/use-pagination';
+import { DurationToFormatted } from '~src/components/util/datetime';
+import { safeEncodeURI } from '~src/utils/uri';
 
 export const RaceStatsPerGame = ({
     globalGameStats,
@@ -80,7 +80,7 @@ const StatsPerGameXxl = ({
     stats: GameStats;
     isLink?: boolean;
 }) => {
-    const hasCategory = stats.displayValue.split("#").length === 2;
+    const hasCategory = stats.displayValue.split('#').length === 2;
     return (
         <div className="bg-body-secondary game-border mh-100 h-100 card game-border">
             <Card
@@ -93,7 +93,7 @@ const StatsPerGameXxl = ({
                         <Card.Img
                             className="rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
                             src={
-                                stats.image && stats.image !== "noimage"
+                                stats.image && stats.image !== 'noimage'
                                     ? stats.image
                                     : `/logo_dark_theme_no_text_transparent.png`
                             }
@@ -106,10 +106,10 @@ const StatsPerGameXxl = ({
                             <span
                                 className="h4 text-truncate mb-1"
                                 style={{
-                                    color: "var(--bs-link-color)",
+                                    color: 'var(--bs-link-color)',
                                 }}
                             >
-                                {stats.displayValue.split("#")[0]}
+                                {stats.displayValue.split('#')[0]}
                             </span>
                             <span className="fs-5">
                                 {stats.totalRaces} Races
@@ -117,7 +117,7 @@ const StatsPerGameXxl = ({
                         </div>
                         {hasCategory && (
                             <div className="fst-italic">
-                                {stats.displayValue.split("#")[1]}
+                                {stats.displayValue.split('#')[1]}
                             </div>
                         )}
                         <hr className="mt-1" />
@@ -148,7 +148,7 @@ const StatsPerGameSmallScreen = ({
                         <Card.Img
                             className="rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
                             src={
-                                stats.image && stats.image !== "noimage"
+                                stats.image && stats.image !== 'noimage'
                                     ? stats.image
                                     : `/logo_dark_theme_no_text_transparent.png`
                             }
@@ -165,7 +165,7 @@ const StatsPerGameSmallScreen = ({
                             <span
                                 className="h4 text-truncate"
                                 style={{
-                                    color: "var(--bs-link-color)",
+                                    color: 'var(--bs-link-color)',
                                 }}
                             >
                                 {stats.displayValue}
@@ -198,14 +198,14 @@ const StatsBodyXxl = ({ stats }: { stats: GameStats }) => {
     return (
         <Row
             className="align-content-center h-100"
-            style={{ minHeight: "3rem" }}
+            style={{ minHeight: '3rem' }}
         >
             <Col md={3}>
                 <div className="flex-center">Total Time</div>
                 <hr className="m-1 flex-center" />
                 <span
                     className="fw-bold flex-center"
-                    style={{ fontSize: "large" }}
+                    style={{ fontSize: 'large' }}
                 >
                     <DurationToFormatted duration={stats.totalRaceTime} />
                 </span>
@@ -215,7 +215,7 @@ const StatsBodyXxl = ({ stats }: { stats: GameStats }) => {
                 <hr className="m-1 flex-center" />
                 <span
                     className="fw-bold flex-center"
-                    style={{ fontSize: "large" }}
+                    style={{ fontSize: 'large' }}
                 >
                     {stats.totalParticipations}
                 </span>
@@ -225,7 +225,7 @@ const StatsBodyXxl = ({ stats }: { stats: GameStats }) => {
                 <hr className="m-1 flex-center" />
                 <span
                     className="fw-bold flex-center"
-                    style={{ fontSize: "large" }}
+                    style={{ fontSize: 'large' }}
                 >
                     {stats.totalFinishedParticipations}
                 </span>
@@ -235,7 +235,7 @@ const StatsBodyXxl = ({ stats }: { stats: GameStats }) => {
                 <hr className="m-1 flex-center" />
                 <span
                     className="fw-bold flex-center"
-                    style={{ fontSize: "large" }}
+                    style={{ fontSize: 'large' }}
                 >
                     {(stats.finishPercentage * 100).toFixed(2)}%
                 </span>

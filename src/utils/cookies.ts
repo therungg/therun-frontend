@@ -1,14 +1,14 @@
-import { getCookie, setCookie } from "cookies-next";
-import { cookies } from "next/headers";
-import { RequestCookie } from "next/dist/compiled/@edge-runtime/cookies";
-import { ValuesOf } from "types/utility.types";
+import { getCookie, setCookie } from 'cookies-next';
+import { RequestCookie } from 'next/dist/compiled/@edge-runtime/cookies';
+import { cookies } from 'next/headers';
+import { ValuesOf } from 'types/utility.types';
 
 export const COOKIE_KEY = {
-    SCHEME: "scheme",
-    SESSION_ID: "session_id",
-    RACES_MESSAGE_READ: "races-message-read",
-    PAGE_VISITS: "page_visits",
-    RECENT_VISITS: "recent_visits",
+    SCHEME: 'scheme',
+    SESSION_ID: 'session_id',
+    RACES_MESSAGE_READ: 'races-message-read',
+    PAGE_VISITS: 'page_visits',
+    RECENT_VISITS: 'recent_visits',
 } as const;
 
 export const getCookieKey = async (
@@ -19,21 +19,21 @@ export const getCookieKey = async (
     // we have to access the scheme while Next.js is rendering the `<RootLayout />`
     // component (this happens server side). We can use the `cookies` function
     // from the `next/headers` package to access the cookies from the request headers.
-    if (typeof window === "undefined") {
+    if (typeof window === 'undefined') {
         const cookieStore = await cookies();
         return cookieStore.has(key)
             ? cookieStore.get(key)?.value
             : defaultValue;
     }
 
-    return getCookie(key, { path: "/" }) ?? defaultValue;
+    return getCookie(key, { path: '/' }) ?? defaultValue;
 };
 
 export const setCookieData = (
     key: ValuesOf<typeof COOKIE_KEY>,
     value: string,
 ) => {
-    setCookie(key, value, { path: "/" });
+    setCookie(key, value, { path: '/' });
 };
 
 export const parseCookie = (

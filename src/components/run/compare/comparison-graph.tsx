@@ -1,7 +1,7 @@
-import { Col, Row, Table } from "react-bootstrap";
-import { SplitsHistory } from "../../../common/types";
-import { Difference, DurationToFormatted } from "../../util/datetime";
-import SplitName from "../../transformers/split-name";
+import { Col, Row, Table } from 'react-bootstrap';
+import { SplitsHistory } from '../../../common/types';
+import SplitName from '../../transformers/split-name';
+import { Difference, DurationToFormatted } from '../../util/datetime';
 
 export const ComparisonGraph = ({
     matchedOne,
@@ -11,25 +11,25 @@ export const ComparisonGraph = ({
 }: {
     matchedOne: SplitsHistory[];
     matchedTwo: SplitsHistory[];
-    variant: "single" | "total";
+    variant: 'single' | 'total';
     key: string;
 }) => {
     return (
         <Table striped bordered hover>
             <thead>
                 <tr>
-                    <th style={{ width: "10rem" }}>Split</th>
-                    <th style={{ width: "10rem" }}>
+                    <th style={{ width: '10rem' }}>Split</th>
+                    <th style={{ width: '10rem' }}>
                         <Row>
                             <Col>Time</Col>
                         </Row>
                     </th>
-                    <th style={{ width: "10rem" }}>
+                    <th style={{ width: '10rem' }}>
                         <Row>
                             <Col>Best Possible</Col>
                         </Row>
                     </th>
-                    <th style={{ width: "10rem" }}>
+                    <th style={{ width: '10rem' }}>
                         <Row>
                             <Col>Best Achieved</Col>
                         </Row>
@@ -49,19 +49,19 @@ export const ComparisonGraph = ({
                                 value,
                                 compareValue,
                                 variant,
-                                "time",
+                                'time',
                             )}
                             {comparisonCell(
                                 value,
                                 compareValue,
                                 variant,
-                                "bestPossibleTime",
+                                'bestPossibleTime',
                             )}
                             {comparisonCell(
                                 value,
                                 compareValue,
                                 variant,
-                                "bestAchievedTime",
+                                'bestAchievedTime',
                             )}
                         </tr>
                     );
@@ -74,8 +74,8 @@ export const ComparisonGraph = ({
 const comparisonCell = (
     value: SplitsHistory,
     compareValue: SplitsHistory,
-    variant: "single" | "total",
-    subject: "time" | "bestPossibleTime" | "bestAchievedTime",
+    variant: 'single' | 'total',
+    subject: 'time' | 'bestPossibleTime' | 'bestAchievedTime',
 ) => {
     return (
         <td>

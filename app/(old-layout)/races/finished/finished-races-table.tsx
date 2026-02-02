@@ -1,18 +1,18 @@
-"use client";
+'use client';
 
-import { PaginatedRaces, Race } from "~app/(old-layout)/races/races.types";
-import { PaginationContextProvider } from "~src/components/pagination/pagination.context-provider";
-import usePagination from "~src/components/pagination/use-pagination";
-import { getPaginatedFinishedRaces } from "~src/lib/races";
-import React, { useContext } from "react";
-import PaginationControl from "~src/components/pagination/pagination-control";
-import { Card, Col, Row } from "react-bootstrap";
-import { PersonIcon } from "~src/icons/person-icon";
-import { RacePlacings } from "~app/(old-layout)/races/components/race-placings";
-import { FromNow } from "~src/components/util/datetime";
-import styles from "~src/components/css/LiveRun.module.scss";
-import { PaginationFetcher } from "~src/components/pagination/pagination.types";
-import { RaceGameContext } from "~app/(old-layout)/races/context/race-game-context-provider";
+import React, { useContext } from 'react';
+import { Card, Col, Row } from 'react-bootstrap';
+import { RacePlacings } from '~app/(old-layout)/races/components/race-placings';
+import { RaceGameContext } from '~app/(old-layout)/races/context/race-game-context-provider';
+import { PaginatedRaces, Race } from '~app/(old-layout)/races/races.types';
+import styles from '~src/components/css/LiveRun.module.scss';
+import { PaginationContextProvider } from '~src/components/pagination/pagination.context-provider';
+import { PaginationFetcher } from '~src/components/pagination/pagination.types';
+import PaginationControl from '~src/components/pagination/pagination-control';
+import usePagination from '~src/components/pagination/use-pagination';
+import { FromNow } from '~src/components/util/datetime';
+import { PersonIcon } from '~src/icons/person-icon';
+import { getPaginatedFinishedRaces } from '~src/lib/races';
 
 export const FinishedRaceTable = ({
     paginatedRaces,
@@ -92,7 +92,7 @@ export const FinishedRaceWithCategory = ({ races }: { races: Race[] }) => {
                                 <Card
                                     className={`h-100 game-border px-3 py-2 ${styles.liveRunContainer}`}
                                     style={{
-                                        minHeight: "8rem",
+                                        minHeight: '8rem',
                                     }}
                                 >
                                     <div className="w-100 h-100">
@@ -154,7 +154,7 @@ export const FinishedRaceWithGameCategory = ({ races }: { races: Race[] }) => {
                                                 className="rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
                                                 src={
                                                     race.gameImage &&
-                                                    race.gameImage !== "noimage"
+                                                    race.gameImage !== 'noimage'
                                                         ? race.gameImage
                                                         : `/logo_dark_theme_no_text_transparent.png`
                                                 }
@@ -173,7 +173,7 @@ export const FinishedRaceWithGameCategory = ({ races }: { races: Race[] }) => {
                                                     <div
                                                         className="h5 m-0 p-0 text-truncate"
                                                         style={{
-                                                            color: "var(--bs-link-color)",
+                                                            color: 'var(--bs-link-color)',
                                                         }}
                                                     >
                                                         {race.displayGame}

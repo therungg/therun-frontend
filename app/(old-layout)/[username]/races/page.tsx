@@ -1,17 +1,17 @@
-"use server";
+'use server';
 
+import { groupCategoryStatsByGame } from '~app/(old-layout)/[username]/races/group-category-stats-by-game';
+import { UserRaceProfile } from '~app/(old-layout)/[username]/races/user-race-profile';
+import {
+    DetailedUserStats,
+    RaceParticipant,
+} from '~app/(old-layout)/races/races.types';
 import {
     getDetailedUserStats,
     getRaceParticipationsByUser,
     getRacesByIds,
-} from "~src/lib/races";
-import { UserRaceProfile } from "~app/(old-layout)/[username]/races/user-race-profile";
-import {
-    DetailedUserStats,
-    RaceParticipant,
-} from "~app/(old-layout)/races/races.types";
-import { groupCategoryStatsByGame } from "~app/(old-layout)/[username]/races/group-category-stats-by-game";
-import { safeDecodeURI } from "~src/utils/uri";
+} from '~src/lib/races';
+import { safeDecodeURI } from '~src/utils/uri';
 
 interface PageProps {
     params: Promise<{ username: string }>;

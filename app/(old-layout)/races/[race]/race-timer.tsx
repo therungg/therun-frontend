@@ -1,30 +1,30 @@
-"use client";
+'use client';
 
+import { useEffect } from 'react';
+import Countdown from 'react-countdown';
 import {
     Race,
     RaceParticipantWithLiveData,
-} from "~app/(old-layout)/races/races.types";
-import { useSpeedrunTimer } from "~src/components/use-speedrun-timer";
-import { useEffect } from "react";
-import Countdown from "react-countdown";
+} from '~app/(old-layout)/races/races.types';
+import { useSpeedrunTimer } from '~src/components/use-speedrun-timer';
 
 export const RaceTimer = ({ race }: { race: Race }) => {
     const initialOffset = getTimerOffsetForRace(race);
 
-    const timer = useSpeedrunTimer(initialOffset, race.status === "progress");
+    const timer = useSpeedrunTimer(initialOffset, race.status === 'progress');
 
     useEffect(() => {
         timer.setTime(getTimerOffsetForRace(race));
-        if (race.status === "progress") {
+        if (race.status === 'progress') {
             timer.startTimer();
         }
 
-        if (race.status === "finished") {
+        if (race.status === 'finished') {
             timer.stopTimer();
         }
     }, [race.status]);
 
-    if (race.status === "starting" && race.startTime) {
+    if (race.status === 'starting' && race.startTime) {
         return (
             <Countdown
                 date={race.startTime}
@@ -32,8 +32,8 @@ export const RaceTimer = ({ race }: { race: Race }) => {
                     if (!completed) {
                         const minuteString =
                             minutes > 0
-                                ? `${minutes.toString().padStart(2, "0")}:`
-                                : "";
+                                ? `${minutes.toString().padStart(2, '0')}:`
+                                : '';
                         return (
                             <span
                                 suppressHydrationWarning={true}
@@ -69,13 +69,13 @@ export const RaceParticipantTimer = ({
           : getTimerOffsetForRace(race);
     const timer = useSpeedrunTimer(
         initialOffset,
-        raceParticipant.status === "started" ||
-            (raceParticipant.status === "ready" && raceStatus === "progress"),
+        raceParticipant.status === 'started' ||
+            (raceParticipant.status === 'ready' && raceStatus === 'progress'),
     );
 
     useEffect(() => {
         if (
-            ["finished", "confirmed", "started"].includes(
+            ['finished', 'confirmed', 'started'].includes(
                 raceParticipant.status,
             )
         ) {
@@ -89,20 +89,20 @@ export const RaceParticipantTimer = ({
                   : getTimerOffsetForRace(race);
             timer.setTime(newoffset);
         }
-        if (["finished", "confirmed"].includes(raceParticipant.status)) {
+        if (['finished', 'confirmed'].includes(raceParticipant.status)) {
             timer.stopTimer();
         }
 
-        if (raceParticipant.status === "started") {
+        if (raceParticipant.status === 'started') {
             timer.startTimer();
         }
     }, [raceParticipant.status, raceParticipant.liveData?.currentSplitIndex]);
 
     useEffect(() => {
         if (
-            raceStatus === "progress" &&
-            (raceParticipant.status === "ready" ||
-                raceParticipant.status === "started")
+            raceStatus === 'progress' &&
+            (raceParticipant.status === 'ready' ||
+                raceParticipant.status === 'started')
         ) {
             timer.startTimer();
         }
@@ -114,10 +114,10 @@ export const RaceParticipantTimer = ({
 const getTimerOffsetForRace = (race: Race) => {
     let initialOffset = 0;
 
-    if (race.status === "progress" && race.startTime) {
+    if (race.status === 'progress' && race.startTime) {
         initialOffset =
             (new Date().getTime() - new Date(race.startTime).getTime()) / 1000;
-    } else if (race.status === "finished") {
+    } else if (race.status === 'finished') {
         initialOffset =
             (new Date(race.endTime as string).getTime() -
                 new Date(race.startTime as string).getTime()) /

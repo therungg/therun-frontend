@@ -1,14 +1,14 @@
-import { CategoryLeaderboard } from "~app/(old-layout)/games/[game]/game.types";
-import { Table } from "react-bootstrap";
-import { DurationToFormatted } from "../util/datetime";
+import { Dispatch, useState } from 'react';
+import { Table } from 'react-bootstrap';
+import { CategoryLeaderboard } from '~app/(old-layout)/games/[game]/game.types';
+import { Button } from '~src/components/Button/Button';
 import {
     GameCategoryLink,
     UserGameCategoryLink,
     UserLink,
-} from "../links/links";
-import { Dispatch, useState } from "react";
-import { InfoTooltip } from "../tooltip";
-import { Button } from "~src/components/Button/Button";
+} from '../links/links';
+import { InfoTooltip } from '../tooltip';
+import { DurationToFormatted } from '../util/datetime';
 
 export const CategoryOverview = ({
     categories,
@@ -91,7 +91,7 @@ export const CategoryOverview = ({
                                             category.pbLeaderboard[0].username
                                         }
                                         url={
-                                            category.pbLeaderboard[0].url || ""
+                                            category.pbLeaderboard[0].url || ''
                                         }
                                     />
                                     )
@@ -101,7 +101,7 @@ export const CategoryOverview = ({
                                         duration={
                                             category.stats.totalRunTime
                                                 ? category.stats.totalRunTime.toString()
-                                                : ""
+                                                : ''
                                         }
                                     />
                                 </td>

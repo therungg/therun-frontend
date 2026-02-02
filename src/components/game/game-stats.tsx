@@ -1,6 +1,6 @@
-import { CumulativeGameStat } from "~app/(old-layout)/games/[game]/game.types";
-import { Table } from "react-bootstrap";
-import { DurationToFormatted } from "../util/datetime";
+import { Table } from 'react-bootstrap';
+import { CumulativeGameStat } from '~app/(old-layout)/games/[game]/game.types';
+import { DurationToFormatted } from '../util/datetime';
 
 export const GameStats = ({
     stats,
@@ -32,7 +32,7 @@ export const GameStats = ({
                                 duration={
                                     stats.totalRunTime
                                         ? stats.totalRunTime.toString()
-                                        : ""
+                                        : ''
                                 }
                             />
                         </td>
@@ -62,7 +62,7 @@ export const GameStats = ({
                                 duration={
                                     stats.totalRunTime
                                         ? stats.totalRunTime.toString()
-                                        : ""
+                                        : ''
                                 }
                             />
                         </td>

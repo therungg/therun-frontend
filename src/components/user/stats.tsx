@@ -1,11 +1,11 @@
-import useSWR from "swr";
-import { fetcher } from "../../utils/fetcher";
-import React, { useEffect, useState } from "react";
-import { VictoryAxis, VictoryBar, VictoryChart, VictoryTooltip } from "victory";
-import { getFormattedString } from "../util/datetime";
-import { Col, Row } from "react-bootstrap";
-import CalendarHeatmap from "../../../public/js/calendar-heatmap.component";
-import { scaleLinear } from "d3";
+import { scaleLinear } from 'd3';
+import React, { useEffect, useState } from 'react';
+import { Col, Row } from 'react-bootstrap';
+import useSWR from 'swr';
+import { VictoryAxis, VictoryBar, VictoryChart, VictoryTooltip } from 'victory';
+import CalendarHeatmap from '../../../public/js/calendar-heatmap.component';
+import { fetcher } from '../../utils/fetcher';
+import { getFormattedString } from '../util/datetime';
 
 export interface PlaytimeStats {
     total: number;
@@ -63,7 +63,7 @@ export const Stats = ({ username }: { username: string }) => {
             </Row>
             <div
                 className="playtime-graph"
-                style={{ marginTop: "1rem", marginBottom: "2rem" }}
+                style={{ marginTop: '1rem', marginBottom: '2rem' }}
             >
                 <PlayTimeTable
                     playtimePerDay={playtimeStats.playtimePerDayMap}
@@ -121,27 +121,27 @@ export const PlayTimeTable = ({
 
     return (
         <div>
-            <div style={{ display: "flex", marginBottom: "1rem" }}>
+            <div style={{ display: 'flex', marginBottom: '1rem' }}>
                 {!!currentYear && (
                     <div>
-                        Selected year:{" "}
-                        <span style={{ fontSize: "larger" }}>
+                        Selected year:{' '}
+                        <span style={{ fontSize: 'larger' }}>
                             {currentYear}
                         </span>
                     </div>
                 )}
-                <div style={{ marginLeft: currentYear ? "2rem" : "" }}>
-                    Total playtime:{" "}
-                    <span style={{ fontSize: "larger" }}>
+                <div style={{ marginLeft: currentYear ? '2rem' : '' }}>
+                    Total playtime:{' '}
+                    <span style={{ fontSize: 'larger' }}>
                         {getFormattedString(total.toString())}
                     </span>
                 </div>
                 {!!currentYear &&
                     playtimePerYear[currentYear] &&
                     playtimePerYear[currentYear].total && (
-                        <div style={{ marginLeft: "2rem" }}>
-                            Playtime in {currentYear}:{" "}
-                            <span style={{ fontSize: "larger" }}>
+                        <div style={{ marginLeft: '2rem' }}>
+                            Playtime in {currentYear}:{' '}
+                            <span style={{ fontSize: 'larger' }}>
                                 {getFormattedString(
                                     playtimePerYear[
                                         currentYear
@@ -173,10 +173,8 @@ export const PlaytimePerMonthGraph = ({
 
     const currentYear = year;
     for (let month = 1; month <= 12; month++) {
-        const monthKey = `${currentYear}-${String(month).padStart(2, "0")}`;
-        if (
-            !Object.prototype.hasOwnProperty.call(playtimePerMonthMap, monthKey)
-        ) {
+        const monthKey = `${currentYear}-${String(month).padStart(2, '0')}`;
+        if (!Object.hasOwn(playtimePerMonthMap, monthKey)) {
             playtimePerMonthMap[monthKey] = { total: 0, perGame: {} };
         }
     }
@@ -185,9 +183,9 @@ export const PlaytimePerMonthGraph = ({
         .map(([day, stat]) => {
             if (stat.total > max) max = stat.total;
             return {
-                x: day.split("-")[1],
+                x: day.split('-')[1],
                 y: stat.total,
-                fill: "green",
+                fill: 'green',
             };
         })
         .sort((a, b) => {
@@ -196,7 +194,7 @@ export const PlaytimePerMonthGraph = ({
         });
 
     const color = scaleLinear()
-        .range(["#ffffff", "#27A11B"])
+        .range(['#ffffff', '#27A11B'])
         .domain([-0.15 * max, max]);
 
     return (
@@ -212,47 +210,47 @@ export const PlaytimePerMonthGraph = ({
                             fontSize: 11,
                             // TODO: Get rid of this
                             // eslint-disable-next-line sonarjs/no-duplicate-string
-                            color: "var(--bs-body-color)",
-                            fill: "var(--bs-body-color)",
+                            color: 'var(--bs-body-color)',
+                            fill: 'var(--bs-body-color)',
                             angle: 0,
                             padding: 10,
                         },
                         axis: {
-                            color: "var(--bs-body-color)",
-                            borderColor: "var(--bs-body-color)",
-                            fill: "var(--bs-body-color)",
-                            stroke: "var(--bs-body-color)",
+                            color: 'var(--bs-body-color)',
+                            borderColor: 'var(--bs-body-color)',
+                            fill: 'var(--bs-body-color)',
+                            stroke: 'var(--bs-body-color)',
                         },
                     }}
                     data={victoryData}
                     tickFormat={(a) => {
                         switch (a) {
-                            case "01":
-                                return "Jan";
-                            case "02":
-                                return "Feb";
-                            case "03":
-                                return "Mar";
-                            case "04":
-                                return "Apr";
-                            case "05":
-                                return "May";
-                            case "06":
-                                return "June";
-                            case "07":
-                                return "July";
-                            case "08":
-                                return "Aug";
-                            case "09":
-                                return "Sep";
-                            case "10":
-                                return "Oct";
-                            case "11":
-                                return "Nov";
-                            case "12":
-                                return "Dec";
+                            case '01':
+                                return 'Jan';
+                            case '02':
+                                return 'Feb';
+                            case '03':
+                                return 'Mar';
+                            case '04':
+                                return 'Apr';
+                            case '05':
+                                return 'May';
+                            case '06':
+                                return 'June';
+                            case '07':
+                                return 'July';
+                            case '08':
+                                return 'Aug';
+                            case '09':
+                                return 'Sep';
+                            case '10':
+                                return 'Oct';
+                            case '11':
+                                return 'Nov';
+                            case '12':
+                                return 'Dec';
                             default:
-                                return "Monday";
+                                return 'Monday';
                         }
                     }}
                 />
@@ -265,7 +263,7 @@ export const PlaytimePerMonthGraph = ({
                                         d.index !== null &&
                                         d.index !== undefined
                                         ? d.data[d.index as number]._y
-                                        : "var(--bs-link-color)",
+                                        : 'var(--bs-link-color)',
                                 );
                             },
                         },
@@ -273,7 +271,7 @@ export const PlaytimePerMonthGraph = ({
                     data={victoryData}
                     labels={({ index }) => {
                         const key =
-                            year + "-" + String(index + 1).padStart(2, "0");
+                            year + '-' + String(index + 1).padStart(2, '0');
 
                         const target: TotalStat = playtimePerMonthMap[key];
 
@@ -304,13 +302,13 @@ export const PlayTimePerDayOfWeekGraph = ({
             return {
                 x: day,
                 y: stat.total,
-                fill: "green",
+                fill: 'green',
             };
         },
     );
 
     const color = scaleLinear()
-        .range(["#ffffff", "#27A11B"])
+        .range(['#ffffff', '#27A11B'])
         .domain([-0.15 * max, max]);
 
     return (
@@ -326,37 +324,37 @@ export const PlayTimePerDayOfWeekGraph = ({
                             fontSize: 11,
                             // TODO: Get rid of this
 
-                            color: "var(--bs-body-color)",
-                            fill: "var(--bs-body-color)",
+                            color: 'var(--bs-body-color)',
+                            fill: 'var(--bs-body-color)',
                             angle: 0,
                             padding: 10,
                         },
                         axis: {
-                            color: "var(--bs-body-color)",
-                            borderColor: "var(--bs-body-color)",
-                            fill: "var(--bs-body-color)",
-                            stroke: "var(--bs-body-color)",
+                            color: 'var(--bs-body-color)',
+                            borderColor: 'var(--bs-body-color)',
+                            fill: 'var(--bs-body-color)',
+                            stroke: 'var(--bs-body-color)',
                         },
                     }}
                     data={victoryData}
                     tickFormat={(a) => {
                         switch (a) {
-                            case "0":
-                                return "Monday";
-                            case "1":
-                                return "Tuesday";
-                            case "2":
-                                return "Wednesday";
-                            case "3":
-                                return "Thursday";
-                            case "4":
-                                return "Friday";
-                            case "5":
-                                return "Saturday";
-                            case "6":
-                                return "Sunday";
+                            case '0':
+                                return 'Monday';
+                            case '1':
+                                return 'Tuesday';
+                            case '2':
+                                return 'Wednesday';
+                            case '3':
+                                return 'Thursday';
+                            case '4':
+                                return 'Friday';
+                            case '5':
+                                return 'Saturday';
+                            case '6':
+                                return 'Sunday';
                             default:
-                                return "Monday";
+                                return 'Monday';
                         }
                     }}
                 />
@@ -369,7 +367,7 @@ export const PlayTimePerDayOfWeekGraph = ({
                                         d.index !== null &&
                                         d.index !== undefined
                                         ? d.data[d.index as number]._y
-                                        : "var(--bs-link-color)",
+                                        : 'var(--bs-link-color)',
                                 );
                             },
                         },
@@ -407,13 +405,13 @@ export const PlaytimePerHourGraph = ({
             return {
                 x: hour,
                 y: stat.total,
-                fill: "green",
+                fill: 'green',
             };
         },
     );
 
     const color = scaleLinear()
-        .range(["#ffffff", "#27A11B"])
+        .range(['#ffffff', '#27A11B'])
         .domain([-0.15 * max, max]);
 
     return (
@@ -427,16 +425,16 @@ export const PlaytimePerHourGraph = ({
                     style={{
                         tickLabels: {
                             fontSize: 11,
-                            color: "var(--bs-body-color)",
-                            fill: "var(--bs-body-color)",
+                            color: 'var(--bs-body-color)',
+                            fill: 'var(--bs-body-color)',
                             angle: 0,
                             padding: 10,
                         },
                         axis: {
-                            color: "var(--bs-body-color)",
-                            borderColor: "var(--bs-body-color)",
-                            fill: "var(--bs-body-color)",
-                            stroke: "var(--bs-body-color)",
+                            color: 'var(--bs-body-color)',
+                            borderColor: 'var(--bs-body-color)',
+                            fill: 'var(--bs-body-color)',
+                            stroke: 'var(--bs-body-color)',
                         },
                     }}
                     data={victoryData}
@@ -453,22 +451,22 @@ export const PlaytimePerHourGraph = ({
                     style={{
                         tickLabels: {
                             fontSize: 11,
-                            color: "var(--bs-body-color)",
-                            fill: "var(--bs-body-color)",
+                            color: 'var(--bs-body-color)',
+                            fill: 'var(--bs-body-color)',
                             angle: 0,
                             padding: 25,
                         },
                         axis: {
-                            color: "var(--bs-body-color)",
-                            borderColor: "var(--bs-body-color)",
-                            fill: "var(--bs-body-color)",
-                            stroke: "var(--bs-body-color)",
+                            color: 'var(--bs-body-color)',
+                            borderColor: 'var(--bs-body-color)',
+                            fill: 'var(--bs-body-color)',
+                            stroke: 'var(--bs-body-color)',
                         },
                     }}
                     data={victoryData}
                     tickFormat={(a) => {
-                        if (parseInt(a) == 1) return "AM";
-                        if (parseInt(a) == 13) return "PM";
+                        if (parseInt(a) == 1) return 'AM';
+                        if (parseInt(a) == 13) return 'PM';
                     }}
                 />
                 <VictoryBar
@@ -507,7 +505,7 @@ export const PlaytimePerHourGraph = ({
 };
 
 const tooltip = (data: TotalStat): string => {
-    if (!data) return "No time";
+    if (!data) return 'No time';
     return getFormattedString(data.total.toString());
 };
 

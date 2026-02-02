@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode } from 'react';
 
 export interface Split {
     name: string;
@@ -42,7 +42,7 @@ export interface Variables {
 }
 
 export interface Variable {
-    "#text": string;
+    '#text': string;
     name: string;
 }
 

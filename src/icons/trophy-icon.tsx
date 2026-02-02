@@ -1,13 +1,13 @@
-type TrophyColor = "gold" | "silver" | "bronze";
+type TrophyColor = 'gold' | 'silver' | 'bronze';
 
 const trophyColors = {
-    gold: "var(--bs-gold)",
-    silver: "silver",
-    bronze: "#CD7F32",
+    gold: 'var(--bs-gold)',
+    silver: 'silver',
+    bronze: '#CD7F32',
 };
 
 export const TrophyIcon = ({
-    trophyColor = "gold",
+    trophyColor = 'gold',
     size = 21,
 }: {
     trophyColor?: TrophyColor;

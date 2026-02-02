@@ -1,16 +1,16 @@
-import { eventOrganizers, events, roles, userRoles, users } from "./schema";
-import { faker } from "@faker-js/faker";
-import * as dotenv from "dotenv";
-import { db } from "~src/db/index";
-import { CreateEventInput } from "../../types/events.types";
-import { InferInsertModel, sql } from "drizzle-orm";
-import { manageableRoles } from "../../types/roles.types";
-import { clearAlgoliaIndex, insertEventsToAlgolia } from "~src/lib/algolia";
+import { faker } from '@faker-js/faker';
+import * as dotenv from 'dotenv';
+import { InferInsertModel, sql } from 'drizzle-orm';
+import { db } from '~src/db/index';
+import { clearAlgoliaIndex, insertEventsToAlgolia } from '~src/lib/algolia';
+import { CreateEventInput } from '../../types/events.types';
+import { manageableRoles } from '../../types/roles.types';
+import { eventOrganizers, events, roles, userRoles, users } from './schema';
 
-dotenv.config({ path: "./.env.development" });
+dotenv.config({ path: './.env.development' });
 
-if (!("DATABASE_URL" in process.env))
-    throw new Error("DATABASE_URL not found on .env.development");
+if (!('DATABASE_URL' in process.env))
+    throw new Error('DATABASE_URL not found on .env.development');
 
 const NUM_EVENTS = 25;
 const NUM_USERS = 100;
@@ -23,28 +23,28 @@ const main = async () => {
     await insertEventSeeds();
     await insertRoles();
 
-    console.log("Seed done");
+    console.log('Seed done');
 };
 
 const insertEventSeeds = async () => {
-    console.log("Seeding events...");
+    console.log('Seeding events...');
     const fakeEvents: CreateEventInput[] = [];
     const organizers = await db
         .insert(eventOrganizers)
-        .values([{ name: "Organizer" }] as InferInsertModel<
+        .values([{ name: 'Organizer' }] as InferInsertModel<
             typeof eventOrganizers
         >[])
         .onConflictDoNothing()
         .returning();
     const currentYear = new Date().getFullYear();
     const eventNames = [
-        "GDQ",
-        "ESA",
-        "BSG",
-        "PACE",
-        "The Run Con",
-        "Speedons",
-        "Random Event",
+        'GDQ',
+        'ESA',
+        'BSG',
+        'PACE',
+        'The Run Con',
+        'Speedons',
+        'Random Event',
     ];
 
     for (let i = 0; i < NUM_EVENTS; i++) {
@@ -60,7 +60,7 @@ const insertEventSeeds = async () => {
         const baseName = faker.helpers.arrayElement(eventNames);
         const yearSuffix = currentYear + Math.floor(i / eventNames.length);
         const name = `${baseName} ${yearSuffix}`;
-        const slug = name.toLowerCase().replace(/\s+/g, "-");
+        const slug = name.toLowerCase().replace(/\s+/g, '-');
 
         fakeEvents.push({
             organizerId: organizers[0].id,
@@ -68,35 +68,35 @@ const insertEventSeeds = async () => {
             endsAt,
             name,
             slug,
-            createdBy: "me",
+            createdBy: 'me',
             type: faker.helpers.arrayElement([
-                "Live",
-                "Online",
-                "Tournament",
-                "Race",
+                'Live',
+                'Online',
+                'Tournament',
+                'Race',
             ]),
             location: faker.location.city(),
             bluesky: faker.internet.username(),
             discord: `https://discord.gg/therungg`,
             language: faker.helpers.arrayElement([
-                "English",
-                "Dutch",
-                "Spanish",
+                'English',
+                'Dutch',
+                'Spanish',
             ]),
             shortDescription: faker.lorem.sentence(10),
-            description: faker.lorem.paragraphs(2, "\n\n"),
+            description: faker.lorem.paragraphs(2, '\n\n'),
             url: faker.internet.url(),
             tier: faker.number.int({ min: 1, max: 4 }),
             isOffline: faker.datatype.boolean(),
             isHighlighted: faker.datatype.boolean(),
-            imageUrl: "/logo_dark_theme_no_text_transparent.png",
+            imageUrl: '/logo_dark_theme_no_text_transparent.png',
             tags: faker.helpers.arrayElements(
                 [
-                    "speedrunning",
-                    "charity",
-                    "gaming",
-                    "tournament",
-                    "community",
+                    'speedrunning',
+                    'charity',
+                    'gaming',
+                    'tournament',
+                    'community',
                 ],
                 faker.number.int({ min: 1, max: 3 }),
             ),
@@ -109,17 +109,17 @@ const insertEventSeeds = async () => {
         .onConflictDoNothing()
         .returning();
 
-    console.log("Inserting events to algolia...");
+    console.log('Inserting events to algolia...');
 
     await clearAlgoliaIndex();
     await insertEventsToAlgolia(eventResults);
 };
 
-const adminUsers = ["joeys64", "therun_gg"];
+const adminUsers = ['joeys64', 'therun_gg'];
 
 const insertRoles = async () => {
     // Seed roles
-    console.log("Seeding roles...");
+    console.log('Seeding roles...');
     await Promise.all(
         manageableRoles.map(async (roleName) => {
             await db
@@ -156,7 +156,7 @@ const insertRoles = async () => {
         }
     }
 
-    console.log("Seeding users...");
+    console.log('Seeding users...');
     for (let i = 1; i <= NUM_USERS; i++) {
         const username = faker.person.firstName() + i.toString();
         const user = await db

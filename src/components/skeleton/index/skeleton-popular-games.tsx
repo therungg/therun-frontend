@@ -1,7 +1,7 @@
-import React from "react";
-import ContentLoader from "react-content-loader";
-import { PropsFrom } from "../../../../types/utility.types";
-import styles from "./skeleton.module.scss";
+import React from 'react';
+import ContentLoader from 'react-content-loader';
+import { PropsFrom } from '../../../../types/utility.types';
+import styles from './skeleton.module.scss';
 
 export const SkeletonPopularGames = (
     props: PropsFrom<typeof ContentLoader>,

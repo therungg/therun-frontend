@@ -1,5 +1,5 @@
-import React from "react";
-import { Button, ButtonProps } from "~src/components/Button/Button";
+import React from 'react';
+import { Button, ButtonProps } from '~src/components/Button/Button';
 
 export interface MarathonEvent {
     type: string;
@@ -21,7 +21,7 @@ interface SendMarathonDataButtonProps extends ButtonProps {
 
 export const SendMarathonDataButton: React.FunctionComponent<
     SendMarathonDataButtonProps
-> = ({ description, sessionId, data, children = "Submit Event" }) => {
+> = ({ description, sessionId, data, children = 'Submit Event' }) => {
     return (
         <div>
             {description && (
@@ -31,7 +31,7 @@ export const SendMarathonDataButton: React.FunctionComponent<
             )}
             <Button
                 className={`w-100 fw-medium d-inline-flex justify-content-center 
-                    align-items-center ${description ? "h-3r" : "h-2r"}`}
+                    align-items-center ${description ? 'h-3r' : 'h-2r'}`}
                 onClick={async () => {
                     if (
                         confirm(
@@ -56,5 +56,5 @@ const sendMarathonData = async (sessionId: string, data: MarathonEvent) => {
         event: data,
     });
 
-    await fetch(url, { method: "POST", body });
+    await fetch(url, { method: 'POST', body });
 };

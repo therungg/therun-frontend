@@ -1,14 +1,14 @@
-import styles from "../css/LiveRun.module.scss";
-import { Col, Row } from "react-bootstrap";
-import SplitName from "../transformers/split-name";
-import { Difference, DurationToFormatted } from "../util/datetime";
-import { getSplitStatus } from "./recommended-stream";
-import React, { useEffect, useState } from "react";
-import { LiveRun } from "~app/(old-layout)/live/live.types";
-import { LiveSplitTimerComponent } from "~app/(old-layout)/live/live-split-timer.component";
-import { SplitStatus } from "~src/types/splits.types";
+import React, { useEffect, useState } from 'react';
+import { Col, Row } from 'react-bootstrap';
+import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { LiveSplitTimerComponent } from '~app/(old-layout)/live/live-split-timer.component';
+import { SplitStatus } from '~src/types/splits.types';
+import styles from '../css/LiveRun.module.scss';
+import SplitName from '../transformers/split-name';
+import { Difference, DurationToFormatted } from '../util/datetime';
+import { getSplitStatus } from './recommended-stream';
 
-const PERSONAL_BEST = "Personal Best";
+const PERSONAL_BEST = 'Personal Best';
 
 export const SplitsViewer = ({
     activeLiveRun,
@@ -105,7 +105,7 @@ export const SplitsViewer = ({
                                     className={`w-100 ${styles.splitRow} ${
                                         splitStatus.isActive
                                             ? styles.splitRowActive
-                                            : ""
+                                            : ''
                                     }`}
                                     onClick={() => {
                                         setSelectedSplit(k);
@@ -121,23 +121,23 @@ export const SplitsViewer = ({
                                     <td className="w-18">
                                         <div className="text-end pe-1">
                                             {splitStatus.status ==
-                                            "completed" ? (
+                                            'completed' ? (
                                                 <Difference
                                                     one={
                                                         split.splitTime?.toString() ||
-                                                        ""
+                                                        ''
                                                     }
                                                     two={
                                                         split.comparisons[
                                                             comparison
-                                                        ]?.toString() || ""
+                                                        ]?.toString() || ''
                                                     }
                                                     withMillis={false}
                                                     isGold={splitStatus.isGold}
                                                     human={false}
                                                 />
                                             ) : splitStatus.status ==
-                                                  "skipped" ||
+                                                  'skipped' ||
                                               !activeLiveRun.splits[k]
                                                   .comparisons[comparison] ||
                                               (k > 0 &&
@@ -145,7 +145,7 @@ export const SplitsViewer = ({
                                                       .comparisons[
                                                       comparison
                                                   ]) ? (
-                                                "-"
+                                                '-'
                                             ) : (
                                                 <DurationToFormatted
                                                     withMillis={false}
@@ -173,16 +173,16 @@ export const SplitsViewer = ({
                                     </td>
                                     <td className="w-18">
                                         <div className="text-end pe-1">
-                                            {splitStatus.status == "skipped" ? (
-                                                "-"
+                                            {splitStatus.status == 'skipped' ? (
+                                                '-'
                                             ) : splitStatus.status ==
-                                              "completed" ? (
+                                              'completed' ? (
                                                 <b>
                                                     <DurationToFormatted
                                                         human={false}
                                                         duration={
                                                             split.splitTime?.toString() ||
-                                                            ""
+                                                            ''
                                                         }
                                                         withMillis={false}
                                                     />
@@ -215,7 +215,7 @@ export const SplitsViewer = ({
                                 activeLiveRun.currentSplitIndex + 1 ==
                                 activeLiveRun.splits.length
                                     ? styles.finalSplitRow
-                                    : ""
+                                    : ''
                             }
                             onClick={() => {
                                 setSelectedSplit(
@@ -242,7 +242,7 @@ export const SplitsViewer = ({
                                                 activeLiveRun.splits[
                                                     activeLiveRun.splits
                                                         .length - 1
-                                                ].splitTime?.toString() || ""
+                                                ].splitTime?.toString() || ''
                                             }
                                             two={
                                                 activeLiveRun.splits[
@@ -250,11 +250,11 @@ export const SplitsViewer = ({
                                                         .length - 1
                                                 ].comparisons[
                                                     comparison
-                                                ]?.toString() || ""
+                                                ]?.toString() || ''
                                             }
                                         />
                                     ) : activeLiveRun.splits.length < 2 ? (
-                                        "-"
+                                        '-'
                                     ) : (
                                         <DurationToFormatted
                                             duration={
@@ -310,12 +310,12 @@ export const SplitsViewer = ({
                                 <div className="fs-small">Timesave:&nbsp;</div>
                                 <div className="d-flex align-items-end justify-content-end w-100">
                                     {activeLiveRun.currentSplitIndex < 0 ? (
-                                        "-"
+                                        '-'
                                     ) : (
                                         <DurationToFormatted
                                             duration={
                                                 currentSplitSplitStatus?.possibleTimeSave?.toString() ||
-                                                ""
+                                                ''
                                             }
                                             withMillis={true}
                                         />

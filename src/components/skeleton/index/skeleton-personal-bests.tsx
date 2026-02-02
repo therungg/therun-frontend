@@ -1,8 +1,8 @@
-"use client";
-import React from "react";
-import ContentLoader from "react-content-loader";
-import { PropsFrom } from "../../../../types/utility.types";
-import styles from "./skeleton.module.scss";
+'use client';
+import React from 'react';
+import ContentLoader from 'react-content-loader';
+import { PropsFrom } from '../../../../types/utility.types';
+import styles from './skeleton.module.scss';
 
 export const SkeletonPersonalBests = (
     props: PropsFrom<typeof ContentLoader>,

@@ -1,14 +1,14 @@
-import { Tournament } from "~src/components/tournament/tournament-info";
-import { getTournamentByName } from "~src/components/tournament/getTournaments";
-import { LiveRun } from "~app/(old-layout)/live/live.types";
-import { getAllLiveRuns } from "~src/lib/live-runs";
-import { isLiveDataEligibleForTournament } from "./is-live-data-eligible-for-tournament.component";
-import { GenericTournament } from "~app/(old-layout)/tournaments/[tournament]/tournament";
-import { getSession } from "~src/actions/session.action";
-import { liveRunArrayToMap } from "~app/(old-layout)/tournaments/[tournament]/live-run-array-to-map.component";
-import buildMetadata from "~src/utils/metadata";
-import { safeDecodeURI } from "~src/utils/uri";
-import { getRaceByRaceId } from "~src/lib/races";
+import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { liveRunArrayToMap } from '~app/(old-layout)/tournaments/[tournament]/live-run-array-to-map.component';
+import { GenericTournament } from '~app/(old-layout)/tournaments/[tournament]/tournament';
+import { getSession } from '~src/actions/session.action';
+import { getTournamentByName } from '~src/components/tournament/getTournaments';
+import { Tournament } from '~src/components/tournament/tournament-info';
+import { getAllLiveRuns } from '~src/lib/live-runs';
+import { getRaceByRaceId } from '~src/lib/races';
+import buildMetadata from '~src/utils/metadata';
+import { safeDecodeURI } from '~src/utils/uri';
+import { isLiveDataEligibleForTournament } from './is-live-data-eligible-for-tournament.component';
 
 // Increase Tournament Page timeout to 60 seconds since some endpoints are a touch slow at the moment
 export const maxDuration = 60;
@@ -31,11 +31,11 @@ export const TournamentPage = async ({
     params: { tournament: string };
     searchParams: { [_: string]: string };
 }) => {
-    if (!params || !params.tournament) throw new Error("Tournament not found");
+    if (!params || !params.tournament) throw new Error('Tournament not found');
 
     const tournamentName: string = params.tournament as string;
 
-    const tab = searchParams.tab ?? "live";
+    const tab = searchParams.tab ?? 'live';
 
     const tournament: Tournament = await getTournamentByName(tournamentName);
 
@@ -69,7 +69,7 @@ export const TournamentPage = async ({
         <GenericTournament
             liveDataMap={liveRunArrayToMap(
                 liveData,
-                "pb",
+                'pb',
                 tournamentLeaderboards,
             )}
             session={session}
@@ -83,7 +83,7 @@ export const TournamentPage = async ({
 export async function generateMetadata(props: PageProps) {
     const params = await props.params;
     const name = safeDecodeURI(params.tournament);
-    const endString = name.toLowerCase().includes("tournament")
+    const endString = name.toLowerCase().includes('tournament')
         ? `the ${name}`
         : `the ${name} tournament`;
 

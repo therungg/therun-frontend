@@ -1,27 +1,27 @@
-import React from "react";
-import { Button, ButtonProps } from "./Button";
-import clsx from "clsx";
+import clsx from 'clsx';
+import React from 'react';
+import { Button, ButtonProps } from './Button';
 
 export interface IconButtonProps extends ButtonProps {
     icon: React.ReactNode;
-    iconPosition?: "left" | "right";
+    iconPosition?: 'left' | 'right';
 }
 
 export const IconButton: React.FC<React.PropsWithChildren<IconButtonProps>> = ({
     children,
     icon,
-    iconPosition = "left",
+    iconPosition = 'left',
     className,
     ...buttonProps
 }) => {
     const flexDirection =
-        iconPosition === "right" ? "flex-row-reverse" : "flex-row";
+        iconPosition === 'right' ? 'flex-row-reverse' : 'flex-row';
     const cls = clsx(
         className,
-        "d-inline-flex",
-        "justify-content-center",
-        "align-items-center",
-        "gap-1",
+        'd-inline-flex',
+        'justify-content-center',
+        'align-items-center',
+        'gap-1',
         flexDirection,
     );
     return (

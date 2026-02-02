@@ -1,22 +1,22 @@
-"use server";
+'use server';
 
-import { getSession } from "~src/actions/session.action";
-import { getApiKey } from "~src/actions/api-key.action";
-import { EditRaceInput } from "~app/(old-layout)/races/races.types";
-import Joi from "joi";
-import { redirect } from "next/navigation";
+import Joi from 'joi';
+import { redirect } from 'next/navigation';
+import { EditRaceInput } from '~app/(old-layout)/races/races.types';
+import { getApiKey } from '~src/actions/api-key.action';
+import { getSession } from '~src/actions/session.action';
 
 const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;
 
 export async function editRace(_prevState: unknown, raceInput: FormData) {
     const input: EditRaceInput = {
-        description: raceInput.get("description") as string,
-        customName: raceInput.get("customName") as string,
-        forceStream: raceInput.get("forceStream") as string,
-        password: raceInput.get("password") as string,
+        description: raceInput.get('description') as string,
+        customName: raceInput.get('customName') as string,
+        forceStream: raceInput.get('forceStream') as string,
+        password: raceInput.get('password') as string,
     };
 
-    const raceId = raceInput.get("raceId") as string;
+    const raceId = raceInput.get('raceId') as string;
 
     const { error } = await validateInput(input);
 
@@ -32,10 +32,10 @@ export async function editRace(_prevState: unknown, raceInput: FormData) {
     if (!session.id) return;
 
     const result = await fetch(`${racesApiUrl}/${raceId}`, {
-        method: "PATCH",
+        method: 'PATCH',
         headers: {
             Authorization: `Bearer ${session.id}`,
-            "x-api-key": apiKey,
+            'x-api-key': apiKey,
         },
         body: JSON.stringify(input),
     });

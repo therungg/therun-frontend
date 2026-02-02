@@ -1,14 +1,14 @@
-import { LiveUserRun } from "../live/live-user-run";
-import { SendMarathonDataButton } from "./send-marathon-data-button";
-import { Stats } from "../run/dashboard/stats";
-import { Col, Row } from "react-bootstrap";
-import EventDisplay from "./event-display";
-import { generalDataEvent } from "./events/general-data-event";
-import LiveRunStats, { liveRunEvent } from "./live-run-stats";
-import { useEffect, useState } from "react";
-import SuggestedEvents from "./suggested-events";
-import { FreeInput } from "./free-input";
-import { LiveRun } from "~app/(old-layout)/live/live.types";
+import { useEffect, useState } from 'react';
+import { Col, Row } from 'react-bootstrap';
+import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { LiveUserRun } from '../live/live-user-run';
+import { Stats } from '../run/dashboard/stats';
+import EventDisplay from './event-display';
+import { generalDataEvent } from './events/general-data-event';
+import { FreeInput } from './free-input';
+import LiveRunStats, { liveRunEvent } from './live-run-stats';
+import { SendMarathonDataButton } from './send-marathon-data-button';
+import SuggestedEvents from './suggested-events';
 
 export const MarathonRun = ({
     runData,

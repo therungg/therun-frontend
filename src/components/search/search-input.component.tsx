@@ -1,6 +1,6 @@
-import React from "react";
-import { type SearchItemKind } from "./use-fuzzy-search";
-import { Search as SearchIcon } from "react-bootstrap-icons";
+import React from 'react';
+import { Search as SearchIcon } from 'react-bootstrap-icons';
+import { type SearchItemKind } from './use-fuzzy-search';
 
 interface SearchInputProps {
     query: string;
@@ -48,13 +48,13 @@ export const SearchInput = React.memo(
     ),
 );
 
-SearchInput.displayName = "SearchInput";
+SearchInput.displayName = 'SearchInput';
 
 const getPlaceholderText = (filters: SearchItemKind[]) => {
     // TODO: Localize this.
-    const formatter = new Intl.ListFormat("en-US", {
-        style: "short",
-        type: "disjunction",
+    const formatter = new Intl.ListFormat('en-US', {
+        style: 'short',
+        type: 'disjunction',
     });
     const itemList = formatter.format(
         filters.map(

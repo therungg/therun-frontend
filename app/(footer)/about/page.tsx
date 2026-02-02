@@ -1,11 +1,11 @@
-import { Title } from "~src/components/title";
-import buildMetadata from "~src/utils/metadata";
-import Link from "next/link";
+import Link from 'next/link';
+import { Title } from '~src/components/title';
+import buildMetadata from '~src/utils/metadata';
 
 export const metadata = buildMetadata({
-    title: "About",
+    title: 'About',
     description:
-        "Learn more about The Run, including what it can do and its purpose.",
+        'Learn more about The Run, including what it can do and its purpose.',
 });
 
 export default function About() {
@@ -17,16 +17,16 @@ export default function About() {
             <h2>Features</h2>
             <ul>
                 <li>
-                    Each user has their own{" "}
+                    Each user has their own{' '}
                     <a href="/KallyNui" target="_blank" rel="noreferrer">
-                        {" "}
+                        {' '}
                         profile
                     </a>
                     , detailing their full stats and an overview of
                     games/categories they run.
                 </li>
                 <li>
-                    For each category a detailed{" "}
+                    For each category a detailed{' '}
                     <a
                         href="AverageTrey/Super Mario Sunshine/Any%25"
                         target="_blank"
@@ -64,40 +64,44 @@ export default function About() {
                 <li>
                     An overview of
                     <a href="/games" target="_blank" rel="noreferrer">
-                        {" "}
+                        {' '}
                         Games
                     </a>
                     , along with the best runners per category.
                 </li>
                 <li>
-                    A detailed{" "}
+                    A detailed{' '}
                     <a
                         href="/games/Super Mario 64"
                         target="_blank"
                         rel="noreferrer"
                     >
-                        {" "}
+                        {' '}
                         Game Page
-                    </a>{" "}
+                    </a>{' '}
                     with stats and leaderboards, which can all be filtered by
                     category.
                 </li>
                 <li>
-                    Automatic uploads through a{" "}
-                    <Link href="/livesplit" prefetch={false}>LiveSplit Component </Link>
+                    Automatic uploads through a{' '}
+                    <Link href="/livesplit" prefetch={false}>
+                        LiveSplit Component{' '}
+                    </Link>
                 </li>
                 <li>
-                    Live Run tracking from the Component on the{" "}
-                    <Link href="/live" prefetch={false}>Runs page</Link>
+                    Live Run tracking from the Component on the{' '}
+                    <Link href="/live" prefetch={false}>
+                        Runs page
+                    </Link>
                 </li>
                 <li>
-                    A{" "}
+                    A{' '}
                     <a
                         href="https://dashboard.twitch.tv/extensions/gl1gra1r6ucnkchrswmdsefomfwxai-0.1.0"
                         target="_blank"
                         rel="noreferrer"
                     >
-                        Twitch Extension{" "}
+                        Twitch Extension{' '}
                     </a>
                     that shows your stats right under your stream.
                 </li>
@@ -107,8 +111,8 @@ export default function About() {
                 <li>Dark mode (use the topbar button, I worked hard on it)</li>
                 <li>
                     <a href="/roadmap" target="_blank" rel="noreferrer">
-                        Many more features{" "}
-                    </a>{" "}
+                        Many more features{' '}
+                    </a>{' '}
                     to come in the future!
                 </li>
             </ul>
@@ -122,8 +126,11 @@ export default function About() {
                         way your viewers know how to find you on here as well!
                     </li>
                     <li>
-                        Upload your .lss file by going to the{" "}
-                        <Link href="/upload" prefetch={false}>Upload</Link> page.
+                        Upload your .lss file by going to the{' '}
+                        <Link href="/upload" prefetch={false}>
+                            Upload
+                        </Link>{' '}
+                        page.
                     </li>
                     <li>
                         Wait for 10 to 30 seconds for your splits to be

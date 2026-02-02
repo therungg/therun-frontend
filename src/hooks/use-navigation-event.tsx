@@ -1,5 +1,5 @@
-"use client";
-import { useEffect, useRef } from "react";
+'use client';
+import { useEffect, useRef } from 'react';
 
 export function useNavigationEvent(callback: MutationCallback) {
     const observerRef = useRef<MutationObserver>();

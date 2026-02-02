@@ -1,14 +1,14 @@
-import { LiveRun } from "~app/(old-layout)/live/live.types";
-import { Col } from "react-bootstrap";
-import { useEffect, useRef, useState } from "react";
-import { SplitsViewer } from "./splits-viewer";
-import patreonStyles from "../patreon/patreon-styles";
-import { usePatreons } from "../patreon/use-patreons";
-import { getColorMode } from "~src/utils/colormode";
-import { TwitchEmbed } from "react-twitch-embed";
-import { Split } from "~src/common/types";
-import { SplitStatus, Status } from "~src/types/splits.types";
-import { LiverunStatsPanel } from "~src/components/live/liverun-stats-panel";
+import { useEffect, useRef, useState } from 'react';
+import { Col } from 'react-bootstrap';
+import { TwitchEmbed } from 'react-twitch-embed';
+import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { Split } from '~src/common/types';
+import { LiverunStatsPanel } from '~src/components/live/liverun-stats-panel';
+import { SplitStatus, Status } from '~src/types/splits.types';
+import { getColorMode } from '~src/utils/colormode';
+import patreonStyles from '../patreon/patreon-styles';
+import { usePatreons } from '../patreon/use-patreons';
+import { SplitsViewer } from './splits-viewer';
 
 export const RecommendedStream = ({
     liveRun,
@@ -39,12 +39,12 @@ export const RecommendedStream = ({
     const previous = usePrevious({ activeLiveRun });
 
     useEffect(function () {
-        setDark(getColorMode() !== "light");
+        setDark(getColorMode() !== 'light');
     }, []);
 
     useEffect(() => {
         const scrollDistance = activeLiveRun.currentSplitIndex * pixelsForSplit;
-        const scrollBox = document.getElementById("scrollBox");
+        const scrollBox = document.getElementById('scrollBox');
 
         if (scrollBox) {
             if (
@@ -72,8 +72,8 @@ export const RecommendedStream = ({
     useEffect(() => {
         if (!isLoading && patreons && patreons[liveRun.user]) {
             const { preferences } = patreons[liveRun.user];
-            let borderColor = "";
-            let gradient = "";
+            let borderColor = '';
+            let gradient = '';
 
             if (preferences && !preferences.hide) {
                 const colors = patreonStyles();
@@ -83,13 +83,13 @@ export const RecommendedStream = ({
                     colors[0];
                 style = dark ? style.style[0] : style.style[1];
 
-                if (style.color != "transparent") {
+                if (style.color != 'transparent') {
                     borderColor = style.color;
                 } else {
                     gradient = style.background;
                 }
             } else if (!preferences) {
-                borderColor = "var(--bs-link-color)";
+                borderColor = 'var(--bs-link-color)';
             }
             setRecommendedStyles({
                 borderColor,
@@ -154,15 +154,15 @@ export const RecommendedStream = ({
                             ? {
                                   borderImageSource: recommendedStyles.gradient,
                                   borderImageSlice: 1,
-                                  borderWidth: "2px",
+                                  borderWidth: '2px',
                               }
                             : {
                                   borderColor: recommendedStyles.borderColor,
                                   borderWidth:
                                       recommendedStyles.gradient ||
                                       recommendedStyles.borderColor
-                                          ? "2px"
-                                          : "1px",
+                                          ? '2px'
+                                          : '1px',
                               }
                     }
                 >
@@ -177,8 +177,8 @@ export const RecommendedStream = ({
 };
 
 const SPLIT_KIND = {
-    PERSONAL_BEST: "Personal Best",
-    BEST_SEGMENTS: "Best Segments",
+    PERSONAL_BEST: 'Personal Best',
+    BEST_SEGMENTS: 'Best Segments',
 };
 
 export const getSplitStatus = (liveRun: LiveRun, k: number): SplitStatus => {
@@ -196,15 +196,15 @@ export const getSplitStatus = (liveRun: LiveRun, k: number): SplitStatus => {
 
     const status: Status =
         liveRun.currentSplitIndex < k
-            ? "future"
+            ? 'future'
             : liveRun.currentSplitIndex == k
-              ? "current"
+              ? 'current'
               : time
-                ? "completed"
-                : "skipped";
+                ? 'completed'
+                : 'skipped';
     const name = split.name.toString();
-    const isSubSplit = name ? name.startsWith("-") : false;
-    const isActive = status == "current";
+    const isSubSplit = name ? name.startsWith('-') : false;
+    const isActive = status == 'current';
 
     const newComparisons: { [key: string]: Split } = {};
 
@@ -228,7 +228,7 @@ export const getSplitStatus = (liveRun: LiveRun, k: number): SplitStatus => {
     });
 
     const isGold =
-        status == "completed" &&
+        status == 'completed' &&
         newComparisons[SPLIT_KIND.BEST_SEGMENTS] &&
         (k == 0 || liveRun.splits[k - 1].splitTime) &&
         newComparisons[SPLIT_KIND.BEST_SEGMENTS].singleTime &&

@@ -1,7 +1,7 @@
-import buildMetadata from "~src/utils/metadata";
+import buildMetadata from '~src/utils/metadata';
 
 export const metadata = buildMetadata({
-    title: "Privacy Policy",
+    title: 'Privacy Policy',
     description:
         "We want you to worry about your favorite games, not your data. Here's steps we take to protect your data and privacy.",
 });
@@ -114,7 +114,7 @@ export default function PrivacyPolicy() {
             </p>
             <p>
                 The Run will keep your data for an indefinite amount of time.
-                You may always contact us by mailing at{" "}
+                You may always contact us by mailing at{' '}
                 {process.env.NEXT_PUBLIC_CONTACT_EMAIL} to have all your data
                 erased.
             </p>
@@ -142,7 +142,7 @@ export default function PrivacyPolicy() {
                 certain conditions. <br />
                 The right to data portability – You have the right to request
                 that The Run transfer the data that we have collected to another
-                organization, or directly to you, under certain conditions.{" "}
+                organization, or directly to you, under certain conditions.{' '}
                 <br />
             </p>
             <p>

@@ -1,10 +1,10 @@
-import { Metadata } from "next";
-import { getSession } from "~src/actions/session.action";
-import { Dragdrop } from "~src/components/Dragdrop/Dragdrop";
+import { Metadata } from 'next';
+import { getSession } from '~src/actions/session.action';
+import { Dragdrop } from '~src/components/Dragdrop/Dragdrop';
 
 export const metadata: Metadata = {
-    title: "Upload",
-    description: "Upload your splits",
+    title: 'Upload',
+    description: 'Upload your splits',
 };
 
 export default async function Upload() {

@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { Col } from "react-bootstrap";
-import { getSession } from "~src/actions/session.action";
-import { TwitchLoginButton } from "~src/components/twitch/TwitchLoginButton";
-import { getWrappedForUser } from "~src/lib/get-wrapped-for-user";
-import { User } from "types/session.types";
-import { BunnyHeartIcon } from "~src/icons/bunny-heart-icon";
-import { GlobalSearch } from "~src/components/search/global-search.component";
-import { confirmPermission } from "~src/rbac/confirm-permission";
+import React, { useEffect, useState } from 'react';
+import { Col } from 'react-bootstrap';
+import { User } from 'types/session.types';
+import { getSession } from '~src/actions/session.action';
+import { GlobalSearch } from '~src/components/search/global-search.component';
+import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
+import { BunnyHeartIcon } from '~src/icons/bunny-heart-icon';
+import { getWrappedForUser } from '~src/lib/get-wrapped-for-user';
+import { confirmPermission } from '~src/rbac/confirm-permission';
 
 export default function Page() {
     const [session, setSession] = useState<User | null>(null);
@@ -22,7 +22,7 @@ export default function Page() {
                 setSession(sessionData);
 
                 // If session exists, preload wrapped data
-                if (sessionData?.id && sessionData.id !== "") {
+                if (sessionData?.id && sessionData.id !== '') {
                     setHasSession(true);
 
                     try {
@@ -30,13 +30,13 @@ export default function Page() {
                         await getWrappedForUser(sessionData.user);
                     } catch (wrappedError) {
                         console.error(
-                            "Error preloading wrapped data:",
+                            'Error preloading wrapped data:',
                             wrappedError,
                         );
                     }
                 }
                 // eslint-disable-next-line
-            } catch { }
+            } catch {}
         }
 
         fetchSession();
@@ -55,10 +55,10 @@ export default function Page() {
                 <div className="fs-5 mb-5">
                     <p>
                         We've been watching from the sidelines here at The Run,
-                        and we've seen the{" "}
+                        and we've seen the{' '}
                         <b>
                             <i>incredible</i>
-                        </b>{" "}
+                        </b>{' '}
                         amount of dedication you've poured into your favorite
                         speed games.
                     </p>
@@ -99,12 +99,12 @@ export default function Page() {
                 </div>
                 <div className="w-auto d-inline-block mb-5">
                     <GlobalSearch
-                        filter={["user"]}
+                        filter={['user']}
                         onSearchResults={(results) => {
                             return results.map(([type, items]) => {
                                 const itemsWithRecapUrl = items.map((item) => ({
                                     ...item,
-                                    url: `${item.url ?? ""}/recap`,
+                                    url: `${item.url ?? ''}/recap`,
                                 }));
                                 return [type, itemsWithRecapUrl];
                             });
@@ -116,11 +116,11 @@ export default function Page() {
                     <p className="display-6">Here's to 2025!</p>
                     <BunnyHeartIcon size={125} />
                     <p className="mt-3">
-                        -- Joey and <b>The</b>{" "}
+                        -- Joey and <b>The</b>{' '}
                         <span
                             style={{
-                                color: "var(--bs-link-color)",
-                                fontWeight: "bold",
+                                color: 'var(--bs-link-color)',
+                                fontWeight: 'bold',
                             }}
                         >
                             Run

@@ -1,12 +1,12 @@
+import { Metadata } from 'next';
+import { RaceOverview } from '~app/(old-layout)/races/race-overview';
 import {
     getAllActiveRaces,
     getGlobalRaceStats,
     getPaginatedFinishedRaces,
     getRaceGameStats,
-} from "~src/lib/races";
-import { RaceOverview } from "~app/(old-layout)/races/race-overview";
-import buildMetadata from "~src/utils/metadata";
-import { Metadata } from "next";
+} from '~src/lib/races';
+import buildMetadata from '~src/utils/metadata';
 
 export default async function RacePage() {
     const promises = [

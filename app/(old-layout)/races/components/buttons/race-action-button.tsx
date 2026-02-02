@@ -1,11 +1,11 @@
-import { Form } from "react-bootstrap";
+import { Form } from 'react-bootstrap';
 import {
     SubmitButton,
     SubmitButtonProps,
-} from "~src/components/Button/SubmitButton";
+} from '~src/components/Button/SubmitButton';
 
 export interface RaceActionProps
-    extends Omit<SubmitButtonProps, "pendingText" | "innerText"> {
+    extends Omit<SubmitButtonProps, 'pendingText' | 'innerText'> {
     raceId: string;
 }
 

@@ -1,11 +1,11 @@
-import { GameStats, GlobalStats } from "~app/(old-layout)/races/races.types";
-import { Col, Row } from "react-bootstrap";
-import React, { ReactElement } from "react";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import { GameImage } from "~src/components/image/gameimage";
-import styles from "~src/components/css/LiveRun.module.scss";
-import { safeEncodeURI } from "~src/utils/uri";
-import Link from "next/link";
+import Link from 'next/link';
+import React, { ReactElement } from 'react';
+import { Col, Row } from 'react-bootstrap';
+import { GameStats, GlobalStats } from '~app/(old-layout)/races/races.types';
+import styles from '~src/components/css/LiveRun.module.scss';
+import { GameImage } from '~src/components/image/gameimage';
+import { DurationToFormatted } from '~src/components/util/datetime';
+import { safeEncodeURI } from '~src/utils/uri';
 
 export const GlobalRaceStats = ({
     stats,
@@ -18,7 +18,9 @@ export const GlobalRaceStats = ({
         <div className="bg-body-secondary mb-3 game-border px-4 py-3 rounded-3">
             <div className="justify-content-between w-100 d-flex align-items-center">
                 <span className="h3 m-0">Race Stats</span>
-                <Link href="/races/stats" prefetch={false}>View all stats</Link>
+                <Link href="/races/stats" prefetch={false}>
+                    View all stats
+                </Link>
             </div>
             <hr />
             <div>
@@ -89,7 +91,7 @@ const ShowGameStat = ({ gameStat }: { gameStat: GameStats }) => {
         <div
             key={gameStat.value}
             className={`d-flex w-100 ${styles.liveRunContainer} rounded-3`}
-            style={{ color: "var(--bs-body-color)" }}
+            style={{ color: 'var(--bs-body-color)' }}
         >
             <GameImage
                 alt={`Image for ${gameStat.image}`}
@@ -103,7 +105,7 @@ const ShowGameStat = ({ gameStat }: { gameStat: GameStats }) => {
                 <div
                     className="h5 mb-1 p-0"
                     style={{
-                        color: "var(--bs-link-color)",
+                        color: 'var(--bs-link-color)',
                     }}
                 >
                     {gameStat.displayValue}

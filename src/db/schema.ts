@@ -1,6 +1,9 @@
+import { sql } from 'drizzle-orm';
 import {
+    boolean,
     index,
     integer,
+    json,
     jsonb,
     pgTable,
     primaryKey,
@@ -9,13 +12,11 @@ import {
     timestamp,
     uniqueIndex,
     varchar,
-    boolean,
-    json,
-} from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
+} from 'drizzle-orm/pg-core';
+import { PanelConfig } from '../../types/frontpage-config.types';
 
 export const events = pgTable(
-    "events",
+    'events',
     {
         id: integer().primaryKey().generatedAlwaysAsIdentity(),
         organizerId: integer()
@@ -51,39 +52,40 @@ export const events = pgTable(
         createdBy: varchar({ length: 255 }).notNull(),
     },
     (table) => [
-        index("starts_at_index").on(table.startsAt),
-        index("ends_at_index").on(table.endsAt),
-        index("slug_index").on(table.slug),
+        index('starts_at_index').on(table.startsAt),
+        index('ends_at_index').on(table.endsAt),
+        index('slug_index').on(table.slug),
     ],
 );
 
-export const eventOrganizers = pgTable("event_organizers", {
+export const eventOrganizers = pgTable('event_organizers', {
     id: serial().primaryKey().unique(),
     name: varchar({ length: 255 }).notNull().unique(),
 });
 
 export const users = pgTable(
-    "users",
+    'users',
     {
         id: serial().primaryKey().unique(),
         username: varchar({ length: 255 }).notNull().unique(),
+        frontpageConfig: jsonb('frontpage_config').$type<PanelConfig>(),
     },
     (table) => [
-        uniqueIndex("idx_users_username_lower").using(
-            "btree",
+        uniqueIndex('idx_users_username_lower').using(
+            'btree',
             sql`(lower(${table.username}))`,
         ),
     ],
 );
 
-export const roles = pgTable("roles", {
+export const roles = pgTable('roles', {
     id: serial().primaryKey().unique(),
     name: varchar({ length: 255 }).notNull().unique(),
-    description: varchar({ length: 1000 }).notNull().default("Description"),
+    description: varchar({ length: 1000 }).notNull().default('Description'),
 });
 
 export const userRoles = pgTable(
-    "user_roles",
+    'user_roles',
     {
         userId: integer()
             .references(() => users.id)
@@ -95,7 +97,7 @@ export const userRoles = pgTable(
     (table) => [primaryKey({ columns: [table.userId, table.roleId] })],
 );
 
-export const logs = pgTable("logs", {
+export const logs = pgTable('logs', {
     id: serial().primaryKey().unique(),
     userId: integer()
         .references(() => users.id)

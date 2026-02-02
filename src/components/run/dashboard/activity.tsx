@@ -1,6 +1,6 @@
-import { RunHistory, SplitsHistory } from "../../../common/types";
-import { Table } from "react-bootstrap";
-import { DurationToFormatted, FromNow } from "../../util/datetime";
+import { Table } from 'react-bootstrap';
+import { RunHistory, SplitsHistory } from '../../../common/types';
+import { DurationToFormatted, FromNow } from '../../util/datetime';
 
 const amount = 10;
 
@@ -40,7 +40,7 @@ export const Activity = ({
                                 <td>
                                     {attempt.splits.length < splits.length
                                         ? splits[attempt.splits.length].name
-                                        : "Finished run!"}
+                                        : 'Finished run!'}
                                 </td>
                                 <td>
                                     <DurationToFormatted

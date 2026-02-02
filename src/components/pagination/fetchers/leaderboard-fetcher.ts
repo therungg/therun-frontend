@@ -1,12 +1,12 @@
-"use client";
+'use client';
 
+import { Count } from '~app/(old-layout)/games/[game]/game.types';
+import { paginateArray } from '~src/components/pagination/paginate-array';
 import {
     PaginatedData,
     PaginationFetcher,
-} from "~src/components/pagination/pagination.types";
-import { Count } from "~app/(old-layout)/games/[game]/game.types";
-import { paginateArray } from "~src/components/pagination/paginate-array";
-import { includesCaseInsensitive } from "~src/utils/string";
+} from '~src/components/pagination/pagination.types';
+import { includesCaseInsensitive } from '~src/utils/string';
 
 export const leaderboardFetcher: PaginationFetcher<Count> = async (
     page: number,

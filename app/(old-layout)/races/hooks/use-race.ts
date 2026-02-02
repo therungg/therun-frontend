@@ -1,16 +1,16 @@
+import { useEffect, useRef, useState } from 'react';
+import { sortRaceParticipants } from '~app/(old-layout)/races/[race]/sort-race-participants';
 import {
     Race,
     RaceMessage,
     RaceParticipant,
     RaceParticipantWithLiveData,
     WebsocketRaceMessage,
-} from "~app/(old-layout)/races/races.types";
-import { useEffect, useRef, useState } from "react";
+} from '~app/(old-layout)/races/races.types';
 import {
     useAllRacesWebsocket,
     useRaceWebsocket,
-} from "~src/components/websocket/use-reconnect-websocket";
-import { sortRaceParticipants } from "~app/(old-layout)/races/[race]/sort-race-participants";
+} from '~src/components/websocket/use-reconnect-websocket';
 
 const raceMessageIsValid = (
     message: WebsocketRaceMessage<Race | RaceParticipant | RaceMessage>,
@@ -30,7 +30,7 @@ export const useRace = (race: Race, messages: RaceMessage[]) => {
 
     useEffect(() => {
         if (raceMessageIsValid(lastMessage)) {
-            if (lastMessage.type === "participantUpdate") {
+            if (lastMessage.type === 'participantUpdate') {
                 const newParticipant: RaceParticipantWithLiveData =
                     lastMessage.data as RaceParticipantWithLiveData;
 
@@ -41,7 +41,7 @@ export const useRace = (race: Race, messages: RaceMessage[]) => {
                 const newRace = { ...raceState };
 
                 if (index !== undefined && index > -1) {
-                    if (newParticipant.status === "unjoined") {
+                    if (newParticipant.status === 'unjoined') {
                         newRace.participants?.splice(index, 1);
                     } else {
                         (newRace.participants as RaceParticipantWithLiveData[])[
@@ -56,7 +56,7 @@ export const useRace = (race: Race, messages: RaceMessage[]) => {
 
                 setRaceState(newRace);
             }
-            if (lastMessage.type === "raceUpdate") {
+            if (lastMessage.type === 'raceUpdate') {
                 const newRace: Race = {
                     ...raceState,
                     ...lastMessage.data,
@@ -65,7 +65,7 @@ export const useRace = (race: Race, messages: RaceMessage[]) => {
                 newRace.participants = sortRaceParticipants(raceState);
                 setRaceState(newRace);
             }
-            if (lastMessage.type === "message") {
+            if (lastMessage.type === 'message') {
                 const data = lastMessage.data as RaceMessage;
                 // Don't process the message if it is not already in the messages
                 if (
@@ -87,7 +87,7 @@ export const useRace = (race: Race, messages: RaceMessage[]) => {
     useEffect(() => {
         const interval = setInterval(() => {
             const newRace = { ...raceStateRef.current };
-            if (newRace.status !== "finished") {
+            if (newRace.status !== 'finished') {
                 newRace.participants = sortRaceParticipants(newRace);
                 return setRaceState(newRace);
             } else {
@@ -110,7 +110,7 @@ export const useRaces = (races: Race[]) => {
         if (raceMessageIsValid(lastMessage)) {
             const newRaces = JSON.parse(JSON.stringify(stateRaces));
 
-            if (lastMessage.type === "participantUpdate") {
+            if (lastMessage.type === 'participantUpdate') {
                 const newParticipant: RaceParticipantWithLiveData =
                     lastMessage.data as RaceParticipantWithLiveData;
 
@@ -141,7 +141,7 @@ export const useRaces = (races: Race[]) => {
                     newRaces[raceIndex] = newRace;
                 }
             }
-            if (lastMessage.type === "raceUpdate") {
+            if (lastMessage.type === 'raceUpdate') {
                 const index = stateRaces.findIndex(
                     (race) => race.raceId === lastMessage.data.raceId,
                 );

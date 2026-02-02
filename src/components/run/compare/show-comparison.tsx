@@ -1,10 +1,10 @@
-import { Run, RunHistory, SplitsHistory } from "../../../common/types";
-import { Col, Row } from "react-bootstrap";
-import { ComparisonGraph } from "./comparison-graph";
-import { ComparisonTable } from "./comparison-table";
-import { CompareTimeline } from "./compare-timeline";
-import Switch from "react-switch";
-import { useState } from "react";
+import { useState } from 'react';
+import { Col, Row } from 'react-bootstrap';
+import Switch from 'react-switch';
+import { Run, RunHistory, SplitsHistory } from '../../../common/types';
+import { CompareTimeline } from './compare-timeline';
+import { ComparisonGraph } from './comparison-graph';
+import { ComparisonTable } from './comparison-table';
 
 export const ShowComparison = ({
     one,
@@ -30,7 +30,7 @@ export const ShowComparison = ({
         JSON.parse(JSON.stringify(two)),
     );
     const [totalTime, setTotalTime] = useState(true);
-    const variant = totalTime ? "total" : "single";
+    const variant = totalTime ? 'total' : 'single';
     const gameTime = false;
 
     return (
@@ -41,7 +41,7 @@ export const ShowComparison = ({
                         <Col>
                             <h2>Splits</h2>
                         </Col>
-                        <Col style={{ display: "flex", justifyContent: "end" }}>
+                        <Col style={{ display: 'flex', justifyContent: 'end' }}>
                             <div className="d-flex justify-content-start align-items-center justify-content-lg-center">
                                 <div className="me-2">Segment time</div>
                                 <Switch
@@ -49,10 +49,10 @@ export const ShowComparison = ({
                                     checkedIcon={false}
                                     onColor={getComputedStyle(
                                         document.documentElement,
-                                    ).getPropertyValue("--bs-link-color")}
+                                    ).getPropertyValue('--bs-link-color')}
                                     offColor={getComputedStyle(
                                         document.documentElement,
-                                    ).getPropertyValue("--bs-link-color")}
+                                    ).getPropertyValue('--bs-link-color')}
                                     name="switch"
                                     onChange={(checked) => {
                                         setTotalTime(checked);
@@ -198,9 +198,9 @@ const matchSplitsByName = (one: string[], two: string[]): (number | null)[] => {
 };
 
 const replaceString = (str: string): string => {
-    str = str.toString().replace("-", "").toLowerCase().replaceAll(" ", "");
+    str = str.toString().replace('-', '').toLowerCase().replaceAll(' ', '');
 
-    const split = str.split("}");
+    const split = str.split('}');
 
     if (split.length > 1) return split[1];
 

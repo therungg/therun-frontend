@@ -1,13 +1,13 @@
-"use client";
-import React from "react";
-import styles from "./css/DarkModeSlider.module.scss";
-import { useTheme } from "next-themes";
+'use client';
+import { useTheme } from 'next-themes';
+import React from 'react';
+import styles from './css/DarkModeSlider.module.scss';
 
-const getCheckedTheme = (isChecked: boolean) => (isChecked ? "light" : "dark");
+const getCheckedTheme = (isChecked: boolean) => (isChecked ? 'light' : 'dark');
 
 export const DarkModeSlider = () => {
     const { theme, setTheme } = useTheme();
-    const [checked, setChecked] = React.useState(theme === "light");
+    const [checked, setChecked] = React.useState(theme === 'light');
     return (
         <>
             <div className={styles.switch}>

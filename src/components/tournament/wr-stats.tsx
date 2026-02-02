@@ -1,11 +1,11 @@
-import { Table } from "react-bootstrap";
-import { UserLink } from "../links/links";
-import { DurationToFormatted } from "../util/datetime";
-import React, { useState } from "react";
-import { WrHistoryStat } from "./tournament-stats";
+import React, { useState } from 'react';
+import { Table } from 'react-bootstrap';
+import { UserLink } from '../links/links';
+import { DurationToFormatted } from '../util/datetime';
+import { WrHistoryStat } from './tournament-stats';
 
 export const WrStats = ({ stats }) => {
-    const [sortColumn, setSortColumn] = useState("held");
+    const [sortColumn, setSortColumn] = useState('held');
     const [sortAsc, setSortAsc] = useState(true);
 
     if (!stats) {
@@ -21,11 +21,11 @@ export const WrStats = ({ stats }) => {
     };
 
     const getSortableClassName = (column: string): string => {
-        let classNames = "sortable";
+        let classNames = 'sortable';
 
         if (sortColumn === column) {
-            classNames += " active";
-            classNames += sortAsc ? " asc" : " desc";
+            classNames += ' active';
+            classNames += sortAsc ? ' asc' : ' desc';
         }
 
         return classNames;
@@ -34,15 +34,15 @@ export const WrStats = ({ stats }) => {
     stats.sort((a: WrHistoryStat, b: WrHistoryStat) => {
         let res = 1;
 
-        if (sortColumn === "held") {
+        if (sortColumn === 'held') {
             res = a.timeHeldWr > b.timeHeldWr ? 1 : -1;
         }
 
-        if (sortColumn === "user") {
+        if (sortColumn === 'user') {
             res = a.user < b.user ? 1 : -1;
         }
 
-        if (sortColumn === "improved") {
+        if (sortColumn === 'improved') {
             res = a.improvedWr > b.improvedWr ? 1 : -1;
         }
 
@@ -58,25 +58,25 @@ export const WrStats = ({ stats }) => {
                     <thead>
                         <tr>
                             <th
-                                className={getSortableClassName("user")}
+                                className={getSortableClassName('user')}
                                 onClick={() => {
-                                    changeSort("user");
+                                    changeSort('user');
                                 }}
                             >
                                 User
                             </th>
                             <th
-                                className={getSortableClassName("held")}
+                                className={getSortableClassName('held')}
                                 onClick={() => {
-                                    changeSort("held");
+                                    changeSort('held');
                                 }}
                             >
                                 Held Record For
                             </th>
                             <th
-                                className={getSortableClassName("improved")}
+                                className={getSortableClassName('improved')}
                                 onClick={() => {
-                                    changeSort("improved");
+                                    changeSort('improved');
                                 }}
                             >
                                 Improved Record

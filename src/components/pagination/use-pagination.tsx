@@ -1,13 +1,13 @@
-import { useCallback, useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from 'react';
+import { useDebounceValue } from 'usehooks-ts';
+import { genericFetcher } from '~src/components/pagination/fetchers/generic-fetcher';
+import { paginateArray } from '~src/components/pagination/paginate-array';
+import { PaginationContext } from '~src/components/pagination/pagination.context';
 import {
     PaginatedData,
     PaginationFetcher,
     PaginationHook,
-} from "~src/components/pagination/pagination.types";
-import { PaginationContext } from "~src/components/pagination/pagination.context";
-import { useDebounceValue } from "usehooks-ts";
-import { paginateArray } from "~src/components/pagination/paginate-array";
-import { genericFetcher } from "~src/components/pagination/fetchers/generic-fetcher";
+} from '~src/components/pagination/pagination.types';
 
 function usePagination<T>(
     initialData: PaginatedData<T> | T[],
@@ -33,7 +33,7 @@ function usePagination<T>(
     }
 
     const [data, setData] = useState<{ [key: string]: PaginatedData<T> }>({
-        "1-": initialData,
+        '1-': initialData,
     });
     const [currentData, setCurrentData] = useState(initialData);
     const [isLoading, setIsLoading] = useState(false);

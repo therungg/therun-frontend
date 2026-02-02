@@ -1,9 +1,9 @@
-import { Race } from "~app/(old-layout)/races/races.types";
-import { Col, Row } from "react-bootstrap";
-import { TrophyIcon } from "~src/icons/trophy-icon";
-import { DurationToFormatted } from "~src/components/util/datetime";
-import React from "react";
-import { UserLink } from "~src/components/links/links";
+import React from 'react';
+import { Col, Row } from 'react-bootstrap';
+import { Race } from '~app/(old-layout)/races/races.types';
+import { UserLink } from '~src/components/links/links';
+import { DurationToFormatted } from '~src/components/util/datetime';
+import { TrophyIcon } from '~src/icons/trophy-icon';
 
 export const RaceStats = ({ race }: { race: Race }) => {
     if (
@@ -26,13 +26,13 @@ export const RaceStats = ({ race }: { race: Race }) => {
                                     <TrophyIcon
                                         trophyColor={
                                             i === 0
-                                                ? "gold"
+                                                ? 'gold'
                                                 : i === 1
-                                                  ? "silver"
-                                                  : "bronze"
+                                                  ? 'silver'
+                                                  : 'bronze'
                                         }
                                     />
-                                    <b>{stat.mmr}</b> -{" "}
+                                    <b>{stat.mmr}</b> -{' '}
                                     <UserLink
                                         username={stat.user}
                                         url={`/${stat.user}/races`}
@@ -51,18 +51,18 @@ export const RaceStats = ({ race }: { race: Race }) => {
                                     <TrophyIcon
                                         trophyColor={
                                             i === 0
-                                                ? "gold"
+                                                ? 'gold'
                                                 : i === 1
-                                                  ? "silver"
-                                                  : "bronze"
+                                                  ? 'silver'
+                                                  : 'bronze'
                                         }
                                     />
                                     <b>
                                         <DurationToFormatted
                                             duration={stat.time}
                                         />
-                                    </b>{" "}
-                                    -{" "}
+                                    </b>{' '}
+                                    -{' '}
                                     <UserLink
                                         username={stat.user}
                                         url={`/${stat.user}/races`}

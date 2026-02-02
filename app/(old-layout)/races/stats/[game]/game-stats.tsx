@@ -1,16 +1,16 @@
+import { Col, Row } from 'react-bootstrap';
+import RaceGameContextProvider from '~app/(old-layout)/races/context/race-game-context-provider';
 import {
     PaginatedRaces,
     RaceGameStatsByGameWithCategoryStats,
-} from "~app/(old-layout)/races/races.types";
-import { StatsPerGame } from "~app/(old-layout)/races/stats/race-stats-per-game";
-import { Col, Row } from "react-bootstrap";
+} from '~app/(old-layout)/races/races.types';
+import { CategoryStatsList } from '~app/(old-layout)/races/stats/[game]/category-stats-list';
+import { FinishedRacesByGameTable } from '~app/(old-layout)/races/stats/[game]/finished-races-by-game-table';
+import { StatsPerGame } from '~app/(old-layout)/races/stats/race-stats-per-game';
 import {
     Breadcrumb,
     BreadcrumbItem,
-} from "~src/components/breadcrumbs/breadcrumb";
-import { FinishedRacesByGameTable } from "~app/(old-layout)/races/stats/[game]/finished-races-by-game-table";
-import { CategoryStatsList } from "~app/(old-layout)/races/stats/[game]/category-stats-list";
-import RaceGameContextProvider from "~app/(old-layout)/races/context/race-game-context-provider";
+} from '~src/components/breadcrumbs/breadcrumb';
 
 export const GameStats = ({
     stats,
@@ -20,8 +20,8 @@ export const GameStats = ({
     paginatedRaces: PaginatedRaces;
 }) => {
     const breadcrumbs: BreadcrumbItem[] = [
-        { content: "Races", href: "/races" },
-        { content: "Race Stats", href: "/races/stats" },
+        { content: 'Races', href: '/races' },
+        { content: 'Race Stats', href: '/races/stats' },
         {
             content: stats.stats.displayValue,
             href: `/${stats.stats.displayValue}`,

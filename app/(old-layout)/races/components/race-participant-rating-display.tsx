@@ -1,4 +1,4 @@
-import { RaceParticipant } from "~app/(old-layout)/races/races.types";
+import { RaceParticipant } from '~app/(old-layout)/races/races.types';
 
 export const RaceParticipantRatingDisplay = ({
     raceParticipant,
@@ -32,14 +32,14 @@ const RatingAfter = ({
             style={{
                 color:
                     difference === 0
-                        ? ""
+                        ? ''
                         : difference > 0
-                          ? "var(--bs-link-color)"
-                          : "red",
-                marginLeft: "0.3rem",
+                          ? 'var(--bs-link-color)'
+                          : 'red',
+                marginLeft: '0.3rem',
             }}
         >
-            {difference >= 0 && "+"}
+            {difference >= 0 && '+'}
             {difference}
         </sup>
     );

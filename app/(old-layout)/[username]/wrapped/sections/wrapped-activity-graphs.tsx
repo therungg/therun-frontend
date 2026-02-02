@@ -1,16 +1,16 @@
-import React, { memo, useMemo, useRef } from "react";
-import { WrappedWithData } from "~app/(old-layout)/[username]/wrapped/wrapped-types";
-import { useResizeObserver } from "usehooks-ts";
-import CalendarHeatmap from "../../../../../public/js/calendar-heatmap.component";
-import { Row } from "react-bootstrap";
+import React, { memo, useMemo, useRef } from 'react';
+import { Row } from 'react-bootstrap';
+import { useResizeObserver } from 'usehooks-ts';
+import { SectionBody } from '~app/(old-layout)/[username]/wrapped/sections/section-body';
+import { SectionTitle } from '~app/(old-layout)/[username]/wrapped/sections/section-title';
+import { WrappedWithData } from '~app/(old-layout)/[username]/wrapped/wrapped-types';
 import {
     PlayTimePerDayOfWeekGraph,
     PlaytimePerHourGraph,
     PlaytimePerMonthGraph,
-} from "~src/components/user/stats";
-import { SectionTitle } from "~app/(old-layout)/[username]/wrapped/sections/section-title";
-import { SectionBody } from "~app/(old-layout)/[username]/wrapped/sections/section-body";
-import { SectionWrapper } from "./section-wrapper";
+} from '~src/components/user/stats';
+import CalendarHeatmap from '../../../../../public/js/calendar-heatmap.component';
+import { SectionWrapper } from './section-wrapper';
 
 interface WrappedActivityGraphsProps {
     wrapped: WrappedWithData;
@@ -107,4 +107,4 @@ export const WrappedActivityGraphs = memo<WrappedActivityGraphsProps>(
         );
     },
 );
-WrappedActivityGraphs.displayName = "WrappedActivityGraphs";
+WrappedActivityGraphs.displayName = 'WrappedActivityGraphs';

@@ -1,8 +1,8 @@
-"use client";
-import React from "react";
-import { Col, Row } from "react-bootstrap";
-import styles from "~src/components/css/Game.module.scss";
-import { GameContext } from "./game.context";
+'use client';
+import React from 'react';
+import { Col, Row } from 'react-bootstrap';
+import styles from '~src/components/css/Game.module.scss';
+import { GameContext } from './game.context';
 
 export const GameFilter: React.FunctionComponent = () => {
     const { category, setCategory, categories } = React.useContext(GameContext);
@@ -12,7 +12,7 @@ export const GameFilter: React.FunctionComponent = () => {
                 sm={0}
                 md={8}
                 className={styles.optionalColumn}
-                style={{ zIndex: "-10" }}
+                style={{ zIndex: '-10' }}
             />
             <Col sm={12} md={4} className={styles.form}>
                 <select

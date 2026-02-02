@@ -1,11 +1,11 @@
-import useSWR from "swr";
-import { fetcher } from "~src/utils/fetcher";
-import WrHistory from "../tournament/wr-history";
-import { Col, Row } from "react-bootstrap";
-import { useState } from "react";
-import Switch from "react-switch";
-import WrHistoryTableMode from "./wr-history-table-mode";
-import { safeEncodeURI } from "~src/utils/uri";
+import { useState } from 'react';
+import { Col, Row } from 'react-bootstrap';
+import Switch from 'react-switch';
+import useSWR from 'swr';
+import { fetcher } from '~src/utils/fetcher';
+import { safeEncodeURI } from '~src/utils/uri';
+import WrHistory from '../tournament/wr-history';
+import WrHistoryTableMode from './wr-history-table-mode';
 
 export const CategoryRecordHistory = ({
     game,
@@ -51,10 +51,10 @@ export const CategoryRecordHistory = ({
                     <Switch
                         onColor={getComputedStyle(
                             document.documentElement,
-                        ).getPropertyValue("--bs-tertiary-bg")}
+                        ).getPropertyValue('--bs-tertiary-bg')}
                         offColor={getComputedStyle(
                             document.documentElement,
-                        ).getPropertyValue("--bs-tertiary-bg")}
+                        ).getPropertyValue('--bs-tertiary-bg')}
                         checkedIcon={false}
                         uncheckedIcon={false}
                         name="switch"

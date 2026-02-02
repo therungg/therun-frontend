@@ -1,10 +1,10 @@
-"use client";
-import React from "react";
-import Image from "next/image";
-import { Game } from "~app/(old-layout)/games/games.types";
-import { useTheme } from "next-themes";
-import { getGameUrl } from "./utilities";
-import { GameImage } from "~src/components/image/gameimage";
+'use client';
+import Image from 'next/image';
+import { useTheme } from 'next-themes';
+import React from 'react';
+import { Game } from '~app/(old-layout)/games/games.types';
+import { GameImage } from '~src/components/image/gameimage';
+import { getGameUrl } from './utilities';
 
 interface AllGamesImageProps {
     game: Game;
@@ -18,7 +18,7 @@ export const AllGamesImage: React.FunctionComponent<AllGamesImageProps> = ({
     return (
         <div className="float-start d-flex d-none d-sm-block align-items-center me-2">
             <a href={`/games/${gameUrl}`}>
-                {game.image && game.image != "noimage" && (
+                {game.image && game.image != 'noimage' && (
                     <GameImage
                         className="w-auto"
                         alt={game.display}
@@ -28,7 +28,7 @@ export const AllGamesImage: React.FunctionComponent<AllGamesImageProps> = ({
                         height={152}
                     />
                 )}
-                {(!game.image || game.image == "noimage") && (
+                {(!game.image || game.image == 'noimage') && (
                     <div className="d-flex align-items-center">
                         <Image
                             unoptimized

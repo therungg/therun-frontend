@@ -1,10 +1,10 @@
-"use client";
-import React from "react";
-import { Card, Col } from "react-bootstrap";
-import { AllGamesCardBody } from "./all-games-card-body.component";
-import { AllGamesCardHeader } from "./all-games-card-header.component";
-import { AllGamesImage } from "./all-games-image.component";
-import { Game } from "~app/(old-layout)/games/games.types";
+'use client';
+import React from 'react';
+import { Card, Col } from 'react-bootstrap';
+import { Game } from '~app/(old-layout)/games/games.types';
+import { AllGamesCardBody } from './all-games-card-body.component';
+import { AllGamesCardHeader } from './all-games-card-header.component';
+import { AllGamesImage } from './all-games-image.component';
 
 interface AllGamesCardProps {
     game: Game;

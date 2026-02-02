@@ -1,15 +1,15 @@
-import WrStats from "../tournament/wr-stats";
-import { Col, Row, Table } from "react-bootstrap";
+import { useState } from 'react';
+import { Col, Row, Table } from 'react-bootstrap';
+import { WrHistoryInterface } from '../tournament/wr-history';
+import WrStats from '../tournament/wr-stats';
 import {
     DifferenceFromOne,
     DurationToFormatted,
     IsoToFormatted,
-} from "../util/datetime";
-import { useState } from "react";
-import { WrHistoryInterface } from "../tournament/wr-history";
+} from '../util/datetime';
 
 export const WrHistoryTableMode = ({ historyData }) => {
-    const [sortColumn, setSortColumn] = useState("date");
+    const [sortColumn, setSortColumn] = useState('date');
     const [sortAsc, setSortAsc] = useState(true);
 
     const changeSort = (column: string) => {
@@ -22,11 +22,11 @@ export const WrHistoryTableMode = ({ historyData }) => {
     };
 
     const getSortableClassName = (column: string): string => {
-        let classNames = "sortable";
+        let classNames = 'sortable';
 
         if (sortColumn === column) {
-            classNames += " active";
-            classNames += sortAsc ? " asc" : " desc";
+            classNames += ' active';
+            classNames += sortAsc ? ' asc' : ' desc';
         }
 
         return classNames;
@@ -63,13 +63,13 @@ export const WrHistoryTableMode = ({ historyData }) => {
     realHistoryData.sort((a: WrHistoryInterface, b: WrHistoryInterface) => {
         let res = 1;
 
-        if (sortColumn === "user") res = a.user < b.user ? -1 : 1;
+        if (sortColumn === 'user') res = a.user < b.user ? -1 : 1;
 
-        if (sortColumn === "date") res = a.endedAt > b.endedAt ? -1 : 1;
+        if (sortColumn === 'date') res = a.endedAt > b.endedAt ? -1 : 1;
 
-        if (sortColumn === "improved") res = a.improved < b.improved ? -1 : 1;
+        if (sortColumn === 'improved') res = a.improved < b.improved ? -1 : 1;
 
-        if (sortColumn === "stood") res = a.stoodFor < b.stoodFor ? -1 : 1;
+        if (sortColumn === 'stood') res = a.stoodFor < b.stoodFor ? -1 : 1;
 
         if (!sortAsc) res *= -1;
 
@@ -85,41 +85,41 @@ export const WrHistoryTableMode = ({ historyData }) => {
                         <thead>
                             <tr>
                                 <th
-                                    className={getSortableClassName("user")}
+                                    className={getSortableClassName('user')}
                                     onClick={() => {
-                                        changeSort("user");
+                                        changeSort('user');
                                     }}
                                 >
                                     User
                                 </th>
                                 <th
-                                    className={getSortableClassName("date")}
+                                    className={getSortableClassName('date')}
                                     onClick={() => {
-                                        changeSort("date");
+                                        changeSort('date');
                                     }}
                                 >
                                     Date
                                 </th>
                                 <th
-                                    className={getSortableClassName("date")}
+                                    className={getSortableClassName('date')}
                                     onClick={() => {
-                                        changeSort("date");
+                                        changeSort('date');
                                     }}
                                 >
                                     Record
                                 </th>
                                 <th
-                                    className={getSortableClassName("improved")}
+                                    className={getSortableClassName('improved')}
                                     onClick={() => {
-                                        changeSort("improved");
+                                        changeSort('improved');
                                     }}
                                 >
                                     Improved
                                 </th>
                                 <th
-                                    className={getSortableClassName("stood")}
+                                    className={getSortableClassName('stood')}
                                     onClick={() => {
-                                        changeSort("stood");
+                                        changeSort('stood');
                                     }}
                                 >
                                     Stood for
@@ -148,7 +148,7 @@ export const WrHistoryTableMode = ({ historyData }) => {
                                                     diff={history.improved}
                                                 />
                                             ) : (
-                                                "-"
+                                                '-'
                                             )}
                                         </td>
                                         <td>
@@ -158,7 +158,7 @@ export const WrHistoryTableMode = ({ historyData }) => {
                                                     duration={history.stoodFor}
                                                 />
                                             ) : (
-                                                "-"
+                                                '-'
                                             )}
                                         </td>
                                     </tr>

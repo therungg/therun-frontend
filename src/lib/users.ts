@@ -1,17 +1,17 @@
-"use server";
+'use server';
 
-import { db } from "~src/db";
-import { roles, userRoles, users } from "~src/db/schema";
-import { and, eq, sql } from "drizzle-orm";
-import { PaginatedData } from "~src/components/pagination/pagination.types";
-import { Role } from "../../types/session.types";
-import { UserWithRoles } from "../../types/users.types";
+import { and, eq, sql } from 'drizzle-orm';
+import { PaginatedData } from '~src/components/pagination/pagination.types';
+import { db } from '~src/db';
+import { roles, userRoles, users } from '~src/db/schema';
+import { Role } from '../../types/session.types';
+import { UserWithRoles } from '../../types/users.types';
 
 export async function getPaginatedUsers(
     page = 1,
     pageSize = 10,
-    search = "",
-    role = "",
+    search = '',
+    role = '',
 ): Promise<PaginatedData<UserWithRoles>> {
     const offset = (page - 1) * pageSize;
     const lowerSearch = search.toLowerCase();
@@ -20,7 +20,7 @@ export async function getPaginatedUsers(
 
     if (search) {
         conditions.push(
-            sql`LOWER(${users.username}) LIKE ${"%" + lowerSearch + "%"}`,
+            sql`LOWER(${users.username}) LIKE ${'%' + lowerSearch + '%'}`,
         );
     }
 
@@ -37,6 +37,7 @@ export async function getPaginatedUsers(
         .select({
             id: users.id,
             username: users.username,
+            frontpageConfig: users.frontpageConfig,
             roles: sql<
                 Role[]
             >`COALESCE(JSON_AGG(${roles.name}) FILTER (WHERE ${roles.name} IS NOT NULL), '[]')`,

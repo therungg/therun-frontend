@@ -1,6 +1,6 @@
-import { Run } from "../../../common/types";
-import { DurationToFormatted } from "../../util/datetime";
-import { Table } from "react-bootstrap";
+import { Table } from 'react-bootstrap';
+import { Run } from '../../../common/types';
+import { DurationToFormatted } from '../../util/datetime';
 
 export const Stats = ({
     run,
@@ -16,13 +16,13 @@ export const Stats = ({
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th style={{ textAlign: "right" }}>Value</th>
+                        <th style={{ textAlign: 'right' }}>Value</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td>Personal Best</td>
-                        <td style={{ textAlign: "right" }}>
+                        <td style={{ textAlign: 'right' }}>
                             <DurationToFormatted
                                 duration={
                                     gameTime
@@ -36,19 +36,19 @@ export const Stats = ({
                     </tr>
                     <tr>
                         <td>Attempts</td>
-                        <td style={{ textAlign: "right" }}>
+                        <td style={{ textAlign: 'right' }}>
                             {run.attemptCount}
                         </td>
                     </tr>
                     <tr>
                         <td>Finished</td>
-                        <td style={{ textAlign: "right" }}>
+                        <td style={{ textAlign: 'right' }}>
                             {run.finishedAttemptCount}
                         </td>
                     </tr>
                     <tr>
                         <td>Completion %</td>
-                        <td style={{ textAlign: "right" }}>
+                        <td style={{ textAlign: 'right' }}>
                             {(
                                 (parseInt(run.finishedAttemptCount) /
                                     run.attemptCount) *
@@ -59,7 +59,7 @@ export const Stats = ({
                     </tr>
                     <tr>
                         <td>SoB</td>
-                        <td style={{ textAlign: "right" }}>
+                        <td style={{ textAlign: 'right' }}>
                             <DurationToFormatted
                                 duration={
                                     gameTime
@@ -73,7 +73,7 @@ export const Stats = ({
                     </tr>
                     <tr>
                         <td>Time to save</td>
-                        <td style={{ textAlign: "right" }}>
+                        <td style={{ textAlign: 'right' }}>
                             <DurationToFormatted
                                 duration={
                                     gameTime
@@ -87,7 +87,7 @@ export const Stats = ({
                     </tr>
                     <tr>
                         <td>Total Run Time</td>
-                        <td style={{ textAlign: "right" }}>
+                        <td style={{ textAlign: 'right' }}>
                             <DurationToFormatted duration={run.totalRunTime} />
                         </td>
                     </tr>

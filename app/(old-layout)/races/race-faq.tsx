@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { Accordion, Button, Modal } from "react-bootstrap";
-import { useState } from "react";
+import { useState } from 'react';
+import { Accordion, Button, Modal } from 'react-bootstrap';
 
 export const RaceFaq = () => {
     const [show, setShow] = useState(false);
@@ -49,7 +49,7 @@ const RaceFaqBody = () => {
             </p>
             <p>
                 If you have any further questions, feedback, remarks, insults or
-                compliments, feel free to contact us on{" "}
+                compliments, feel free to contact us on{' '}
                 <a href="therun.gg/discord" target="_blank" rel="noreferrer">
                     Discord
                 </a>
@@ -67,7 +67,7 @@ const RaceFaqBody = () => {
                             therun.gg LiveSplit component. If you already use
                             it. You are good to go! Just log in with Twitch in
                             the top right corner and you are all set. If you do
-                            not use the component yet, checkout{" "}
+                            not use the component yet, checkout{' '}
                             <a href="/livesplit">this tutorial</a>. It will take
                             5 minutes max. Want to test out if it is working?
                             Start your LiveSplit timer and see yourself appear
@@ -75,7 +75,7 @@ const RaceFaqBody = () => {
                         </p>
                         <h5>2. Create or join a race</h5>
                         <p>
-                            After you logged in, you can hit <b>Create Race</b>{" "}
+                            After you logged in, you can hit <b>Create Race</b>{' '}
                             in the top right corner (next to the button for this
                             FAQ). Just select your game, your category and start
                             the race. There are a bunch of extra options too if
@@ -237,7 +237,7 @@ const RaceFaqBody = () => {
                             </li>
                         </ul>
                         <p>
-                            Please note that these options are <b>only</b>{" "}
+                            Please note that these options are <b>only</b>{' '}
                             available once the full race has not yet finished.
                             That means if every participant is either confirmed
                             or abandoned, you are locked in.

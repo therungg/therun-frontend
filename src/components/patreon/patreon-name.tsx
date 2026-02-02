@@ -1,10 +1,10 @@
-"use client";
-import { useEffect, useState } from "react";
-import patreonStyles from "./patreon-styles";
-import { usePatreons } from "./use-patreons";
-import { getColorMode } from "~src/utils/colormode";
-import { safeDecodeURI } from "~src/utils/uri";
-import { BunnyIcon } from "~src/icons/bunny-icon";
+'use client';
+import { useEffect, useState } from 'react';
+import { BunnyIcon } from '~src/icons/bunny-icon';
+import { getColorMode } from '~src/utils/colormode';
+import { safeDecodeURI } from '~src/utils/uri';
+import patreonStyles from './patreon-styles';
+import { usePatreons } from './use-patreons';
 
 interface NameAsPatreonProps {
     name: string;
@@ -48,7 +48,7 @@ export const PatreonName: React.FunctionComponent<PatreonNameProps> = ({
 }) => {
     const [dark, setDark] = useState(true);
     useEffect(function () {
-        setDark(getColorMode() !== "light");
+        setDark(getColorMode() !== 'light');
     }, []);
 
     const colors = patreonStyles();
@@ -61,7 +61,7 @@ export const PatreonName: React.FunctionComponent<PatreonNameProps> = ({
             <span style={style}>{name}</span>
             {icon && (
                 <span>
-                    {" "}
+                    {' '}
                     <BunnyIcon size={size} />
                 </span>
             )}

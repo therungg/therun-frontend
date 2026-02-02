@@ -1,5 +1,5 @@
-import { getAllPatrons } from "~app/(old-layout)/api/patreons/get-all-patrons.action";
-import { UserLink } from "~src/components/links/links";
+import { getAllPatrons } from '~app/(old-layout)/api/patreons/get-all-patrons.action';
+import { UserLink } from '~src/components/links/links';
 
 const DEFAULT_ANIMATION_DURATION = 30;
 

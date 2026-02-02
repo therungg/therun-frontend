@@ -1,40 +1,40 @@
-"use client";
+'use client';
 
-import useWebSocket, { Options, ReadyState } from "react-use-websocket";
-import { useEffect } from "react";
-import { WebsocketLiveRunMessage } from "~app/(old-layout)/live/live.types";
+import { useEffect } from 'react';
+import useWebSocket, { Options, ReadyState } from 'react-use-websocket';
+import { WebsocketLiveRunMessage } from '~app/(old-layout)/live/live.types';
+import {
+    SplitStory,
+    Story,
+    WebsocketStoryMessage,
+} from '~app/(old-layout)/live/story.types';
 import {
     Race,
     RaceMessage,
     RaceParticipant,
     WebsocketRaceMessage,
-} from "~app/(old-layout)/races/races.types";
-import {
-    SplitStory,
-    Story,
-    WebsocketStoryMessage,
-} from "~app/(old-layout)/live/story.types";
+} from '~app/(old-layout)/races/races.types';
 
-type WebsocketType = "username" | "race" | "story";
+type WebsocketType = 'username' | 'race' | 'story';
 
 export const useLiveRunsWebsocket = <Message = WebsocketLiveRunMessage>(
     username?: string,
-) => useReconnectWebsocket<Message>("username", username);
+) => useReconnectWebsocket<Message>('username', username);
 
 export const useAllRacesWebsocket = () =>
     useReconnectWebsocket<WebsocketRaceMessage<Race | RaceParticipant>>(
-        "race",
-        "all-races",
+        'race',
+        'all-races',
     );
 
 export const useRaceWebsocket = (raceId: string) =>
     useReconnectWebsocket<
         WebsocketRaceMessage<Race | RaceParticipant | RaceMessage>
-    >("race", raceId);
+    >('race', raceId);
 
 export const useStoryWebsocket = (user: string) =>
     useReconnectWebsocket<WebsocketStoryMessage<Story | SplitStory>>(
-        "story",
+        'story',
         user,
     );
 
@@ -63,7 +63,7 @@ export const useReconnectWebsocket = <T>(
     useEffect(() => {
         if (readyState === ReadyState.OPEN) {
             const interval = setInterval(
-                () => sendMessage(""),
+                () => sendMessage(''),
                 pingIntervalMinutes * 60 * 1000,
             );
 

@@ -1,12 +1,12 @@
+import { ReactElement, useState } from 'react';
+import { Col, Nav, Row, Tab, Table } from 'react-bootstrap';
+import { Search as SearchIcon } from 'react-bootstrap-icons';
 import {
     Count,
     GameLeaderboard,
-} from "~app/(old-layout)/games/[game]/game.types";
-import { Col, Nav, Row, Tab, Table } from "react-bootstrap";
-import { DurationToFormatted, getFormattedString } from "../util/datetime";
-import { ReactElement, useState } from "react";
-import { UserLink } from "../links/links";
-import { Search as SearchIcon } from "react-bootstrap-icons";
+} from '~app/(old-layout)/games/[game]/game.types';
+import { UserLink } from '../links/links';
+import { DurationToFormatted, getFormattedString } from '../util/datetime';
 
 export const getLeaderboard = (
     name: string,
@@ -23,9 +23,9 @@ export const getLeaderboard = (
                 <Table bordered striped={search.length == 0} hover responsive>
                     <thead>
                         <tr className="text-center">
-                            <th style={{ width: "14%" }}>#</th>
-                            <th style={{ width: "38%" }}>User</th>
-                            <th style={{ width: "38%" }}>{name}</th>
+                            <th style={{ width: '14%' }}>#</th>
+                            <th style={{ width: '38%' }}>User</th>
+                            <th style={{ width: '38%' }}>{name}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -50,8 +50,8 @@ export const getLeaderboard = (
                                             leaderboard.username
                                                 .toLowerCase()
                                                 .includes(search.toLowerCase())
-                                                ? "text-center"
-                                                : "d-none"
+                                                ? 'text-center'
+                                                : 'd-none'
                                         }
                                     >
                                         <td>{leaderboard.placing}</td>
@@ -81,7 +81,7 @@ export const getLeaderboard = (
 
 export const getStatsTable = (values: Map<string, string>) => {
     return (
-        <div style={{ marginTop: "1rem", marginBottom: "2rem" }}>
+        <div style={{ marginTop: '1rem', marginBottom: '2rem' }}>
             <Table>
                 <tbody>
                     {Array.from(values).map(([key, value]) => {
@@ -90,9 +90,9 @@ export const getStatsTable = (values: Map<string, string>) => {
                                 <td style={{ paddingLeft: 0 }}>{key}</td>
                                 <td
                                     style={{
-                                        display: "flex",
-                                        justifyContent: "flex-end",
-                                        paddingRight: "0",
+                                        display: 'flex',
+                                        justifyContent: 'flex-end',
+                                        paddingRight: '0',
                                     }}
                                 >
                                     {value}
@@ -121,10 +121,10 @@ export const GameLeaderboards = ({
 }: {
     leaderboards: GameLeaderboard;
 }) => {
-    const [search, setSearch] = useState("");
+    const [search, setSearch] = useState('');
 
     const completePercentageLeaderboard = getLeaderboard(
-        "Completion %",
+        'Completion %',
         leaderboards.completePercentageLeaderboard,
         search,
         (stat) => {
@@ -132,13 +132,13 @@ export const GameLeaderboards = ({
         },
     );
     const playtimeLeaderboard = getLeaderboard(
-        "Total Playtime",
+        'Total Playtime',
         leaderboards.totalRunTimeLeaderboard,
         search,
         (stat) => {
             return (
                 <DurationToFormatted
-                    duration={stat ? stat.toString() : ""}
+                    duration={stat ? stat.toString() : ''}
                     padded={true}
                 />
             );
@@ -183,7 +183,7 @@ export const GameLeaderboards = ({
                                 {getStatsTable(
                                     new Map<string, string>([
                                         [
-                                            "Combined",
+                                            'Combined',
                                             getFormattedString(
                                                 leaderboards.stats.totalRunTime.toString(),
                                                 false,
@@ -191,7 +191,7 @@ export const GameLeaderboards = ({
                                             ),
                                         ],
                                         [
-                                            "Highest",
+                                            'Highest',
                                             getFormattedString(
                                                 leaderboards.totalRunTimeLeaderboard[0].stat.toString(),
                                                 false,
@@ -199,7 +199,7 @@ export const GameLeaderboards = ({
                                             ),
                                         ],
                                         [
-                                            "Average",
+                                            'Average',
                                             getFormattedString(
                                                 getAverageFromLeaderboard(
                                                     leaderboards.totalRunTimeLeaderboard,
@@ -215,15 +215,15 @@ export const GameLeaderboards = ({
                                 {getStatsTable(
                                     new Map<string, string>([
                                         [
-                                            "Combined",
+                                            'Combined',
                                             leaderboards.stats.attemptCount.toLocaleString(),
                                         ],
                                         [
-                                            "Highest",
+                                            'Highest',
                                             leaderboards.attemptCountLeaderboard[0].stat.toLocaleString(),
                                         ],
                                         [
-                                            "Average",
+                                            'Average',
                                             parseInt(
                                                 getAverageFromLeaderboard(
                                                     leaderboards.attemptCountLeaderboard,
@@ -237,15 +237,15 @@ export const GameLeaderboards = ({
                                 {getStatsTable(
                                     new Map<string, string>([
                                         [
-                                            "Combined",
+                                            'Combined',
                                             leaderboards.stats.finishedAttemptCount.toLocaleString(),
                                         ],
                                         [
-                                            "Highest",
+                                            'Highest',
                                             leaderboards.finishedAttemptCountLeaderboard[0].stat.toLocaleString(),
                                         ],
                                         [
-                                            "Average",
+                                            'Average',
                                             parseInt(
                                                 getAverageFromLeaderboard(
                                                     leaderboards.finishedAttemptCountLeaderboard,
@@ -259,21 +259,21 @@ export const GameLeaderboards = ({
                                 {getStatsTable(
                                     new Map<string, string>([
                                         [
-                                            "Average %",
+                                            'Average %',
                                             `${(
                                                 (leaderboards.stats
                                                     .finishedAttemptCount /
                                                     leaderboards.stats
                                                         .attemptCount) *
-                                                100
+                                                    100
                                             ).toFixed(2)}%`,
                                         ],
                                         [
-                                            "Total attempts",
+                                            'Total attempts',
                                             leaderboards.stats.attemptCount.toLocaleString(),
                                         ],
                                         [
-                                            "Finished attempts",
+                                            'Finished attempts',
                                             leaderboards.stats.finishedAttemptCount.toLocaleString(),
                                         ],
                                     ]),
@@ -283,15 +283,15 @@ export const GameLeaderboards = ({
                                 {getStatsTable(
                                     new Map<string, string>([
                                         [
-                                            "Combined",
+                                            'Combined',
                                             leaderboards.stats.uploadCount.toLocaleString(),
                                         ],
                                         [
-                                            "Highest",
+                                            'Highest',
                                             leaderboards.uploadLeaderboard[0].stat.toLocaleString(),
                                         ],
                                         [
-                                            "Average",
+                                            'Average',
                                             parseInt(
                                                 getAverageFromLeaderboard(
                                                     leaderboards.uploadLeaderboard,
@@ -311,7 +311,7 @@ export const GameLeaderboards = ({
                                 className="input-group-text"
                                 onClick={() => {
                                     const searchElement =
-                                        document.getElementById("gameSearch");
+                                        document.getElementById('gameSearch');
                                     if (
                                         document.activeElement !== searchElement
                                     ) {
@@ -339,14 +339,14 @@ export const GameLeaderboards = ({
                         </Tab.Pane>
                         <Tab.Pane eventKey="game-attempts">
                             {getLeaderboard(
-                                "Total Attempts",
+                                'Total Attempts',
                                 leaderboards.attemptCountLeaderboard,
                                 search,
                             )}
                         </Tab.Pane>
                         <Tab.Pane eventKey="game-finished-attempts">
                             {getLeaderboard(
-                                "Total Finished Runs",
+                                'Total Finished Runs',
                                 leaderboards.finishedAttemptCountLeaderboard,
                                 search,
                             )}
@@ -356,7 +356,7 @@ export const GameLeaderboards = ({
                         </Tab.Pane>
                         <Tab.Pane eventKey="game-uploads">
                             {getLeaderboard(
-                                "Total Uploads",
+                                'Total Uploads',
                                 leaderboards.uploadLeaderboard,
                                 search,
                             )}

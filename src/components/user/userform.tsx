@@ -1,39 +1,39 @@
-"use client";
+'use client';
 
-import { Title } from "../title";
-import React, { useState } from "react";
-import { Form } from "react-bootstrap";
-import { countries } from "~src/common/countries";
-import { hasFlag } from "country-flag-icons";
-import { NameAsPatreon } from "../patreon/patreon-name";
-import TimezoneSelect from "react-timezone-select";
-import Image from "next/image";
+import { hasFlag } from 'country-flag-icons';
+import Image from 'next/image';
+import React, { useState } from 'react';
+import { Form } from 'react-bootstrap';
 import {
     Twitch as TwitchIcon,
     Twitter as TwitterIcon,
     Youtube as YoutubeIcon,
-} from "react-bootstrap-icons";
-import { Can, subject } from "~src/rbac/Can.component";
-import { BlueskyIcon } from "~src/icons/bluesky-icon";
-import { Button } from "~src/components/Button/Button";
+} from 'react-bootstrap-icons';
+import TimezoneSelect from 'react-timezone-select';
+import { countries } from '~src/common/countries';
+import { Button } from '~src/components/Button/Button';
+import { BlueskyIcon } from '~src/icons/bluesky-icon';
+import { Can, subject } from '~src/rbac/Can.component';
+import { NameAsPatreon } from '../patreon/patreon-name';
+import { Title } from '../title';
 
 //TODO:: Would be better to use some form lib, not sure why i built it this way
 export const Userform = ({ username, session, userData, editInfo = false }) => {
-    "use no memo";
+    'use no memo';
 
     const [editingInfo, setEditingInfo] = useState(editInfo);
 
     if (userData.socials) {
         if (userData.socials.twitter) {
-            const split = userData.socials.twitter.toString().split(".com/");
+            const split = userData.socials.twitter.toString().split('.com/');
 
             userData.socials.twitter = split[split.length - 1];
         }
 
         if (userData.socials.youtube) {
-            let split = userData.socials.youtube.toString().split(".com/");
+            let split = userData.socials.youtube.toString().split('.com/');
             if (split.length === 1) {
-                split = split[0].split(".be/");
+                split = split[0].split('.be/');
             }
             userData.socials.youtube = split[split.length - 1];
         }
@@ -64,7 +64,7 @@ export const Userform = ({ username, session, userData, editInfo = false }) => {
                 })}
             {editingInfo && Edit({ username, form, setForm })}
 
-            <Can I="edit" this={subject("user", username)}>
+            <Can I="edit" this={subject('user', username)}>
                 <div className="mt-3 d-flex align-items-center">
                     <Button
                         className="w-240p"
@@ -73,7 +73,7 @@ export const Userform = ({ username, session, userData, editInfo = false }) => {
                                 await fetch(
                                     `/api/users/${session.id}-${username}`,
                                     {
-                                        method: "PUT",
+                                        method: 'PUT',
                                         body: JSON.stringify(form),
                                     },
                                 );
@@ -82,7 +82,7 @@ export const Userform = ({ username, session, userData, editInfo = false }) => {
                             setEditingInfo(!editingInfo);
                         }}
                     >
-                        {editingInfo ? "Update info" : "Edit info"}
+                        {editingInfo ? 'Update info' : 'Edit info'}
                     </Button>
                     {editingInfo && (
                         <Button
@@ -92,7 +92,7 @@ export const Userform = ({ username, session, userData, editInfo = false }) => {
                                 setEditingInfo(false);
                             }}
                         >
-                            {/* TODO: Add ms-4 or equivalent instead of empty space */}{" "}
+                            {/* TODO: Add ms-4 or equivalent instead of empty space */}{' '}
                             Cancel
                         </Button>
                     )}
@@ -103,7 +103,7 @@ export const Userform = ({ username, session, userData, editInfo = false }) => {
 };
 
 const Display = ({ username, form, showTimezone = false }) => {
-    "use no memo";
+    'use no memo';
 
     return (
         <div>
@@ -156,7 +156,7 @@ const Display = ({ username, form, showTimezone = false }) => {
             {form.pronouns && <div>{form.pronouns}</div>}
             {!!form.country && hasFlag(form.country) && (
                 <div>
-                    {countries()[form.country]}&nbsp;{" "}
+                    {countries()[form.country]}&nbsp;{' '}
                     <CountryIcon countryCode={form.country} />
                 </div>
             )}
@@ -171,7 +171,7 @@ const Display = ({ username, form, showTimezone = false }) => {
 };
 
 const Edit = ({ username, form, setForm }) => {
-    "use no memo";
+    'use no memo';
 
     return (
         <>
@@ -295,7 +295,7 @@ const Edit = ({ username, form, setForm }) => {
                                 controlId="youtube"
                             >
                                 <Form.Label>
-                                    Youtube{" "}
+                                    Youtube{' '}
                                     <YoutubeIcon size={24} color="red" />
                                 </Form.Label>
                                 <Form.Control
@@ -304,7 +304,7 @@ const Edit = ({ username, form, setForm }) => {
                                     defaultValue={
                                         form.socials && form.socials.youtube
                                             ? form.socials.youtube
-                                            : ""
+                                            : ''
                                     }
                                     placeholder="youtube.com/..."
                                     onChange={(e) =>
@@ -324,7 +324,7 @@ const Edit = ({ username, form, setForm }) => {
                                 controlId="twitter"
                             >
                                 <Form.Label>
-                                    Twitter{" "}
+                                    Twitter{' '}
                                     <TwitterIcon size={24} color="#1DA1F2" />
                                 </Form.Label>
                                 <Form.Control
@@ -333,7 +333,7 @@ const Edit = ({ username, form, setForm }) => {
                                     defaultValue={
                                         form.socials && form.socials.twitter
                                             ? form.socials.twitter
-                                            : ""
+                                            : ''
                                     }
                                     placeholder="twitter.com/..."
                                     onChange={(e) =>
@@ -361,7 +361,7 @@ const Edit = ({ username, form, setForm }) => {
                                     defaultValue={
                                         form.socials && form.socials.bluesky
                                             ? form.socials.bluesky
-                                            : ""
+                                            : ''
                                     }
                                     placeholder="bsky.app/profile/..."
                                     onChange={(e) =>

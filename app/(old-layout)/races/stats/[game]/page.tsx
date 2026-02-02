@@ -1,18 +1,18 @@
+import { Metadata } from 'next';
+import {
+    PaginatedRaces,
+    RaceGameStatsByGame,
+    RaceGameStatsByGameWithCategoryStats,
+} from '~app/(old-layout)/races/races.types';
+import { GameStats } from '~app/(old-layout)/races/stats/[game]/game-stats';
 import {
     getMmrLeaderboards,
     getPaginatedFinishedRacesByGame,
     getRaceGameStatsByGame,
     getTimeLeaderboards,
-} from "~src/lib/races";
-import { GameStats } from "~app/(old-layout)/races/stats/[game]/game-stats";
-import { Metadata } from "next";
-import buildMetadata from "~src/utils/metadata";
-import {
-    PaginatedRaces,
-    RaceGameStatsByGame,
-    RaceGameStatsByGameWithCategoryStats,
-} from "~app/(old-layout)/races/races.types";
-import { safeEncodeURI } from "~src/utils/uri";
+} from '~src/lib/races';
+import buildMetadata from '~src/utils/metadata';
+import { safeEncodeURI } from '~src/utils/uri';
 
 interface PageProps {
     params: Promise<{ game: string }>;
@@ -22,7 +22,7 @@ export default async function RaceGameStatsPage(props: PageProps) {
     const params = await props.params;
     const promises = [
         getRaceGameStatsByGame(params.game),
-        getPaginatedFinishedRacesByGame(1, 5, "", [], {
+        getPaginatedFinishedRacesByGame(1, 5, '', [], {
             game: params.game,
         }),
     ];
@@ -33,7 +33,7 @@ export default async function RaceGameStatsPage(props: PageProps) {
     ];
 
     const timesPromises = stats.categories.map((category) => {
-        const categoryName = category.displayValue.split("#")[1];
+        const categoryName = category.displayValue.split('#')[1];
 
         return getTimeLeaderboards(
             safeEncodeURI(params.game),
@@ -45,7 +45,7 @@ export default async function RaceGameStatsPage(props: PageProps) {
     });
 
     const mmrPromises = stats.categories.map((category) => {
-        const categoryName = category.displayValue.split("#")[1];
+        const categoryName = category.displayValue.split('#')[1];
 
         return getMmrLeaderboards(
             safeEncodeURI(params.game),
@@ -93,13 +93,13 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
         title: `${stats.stats.displayValue} Race Statistics`,
         description: `So far, ${stats.stats.totalRaces} races have been completed on therun.gg for the game ${stats.stats.displayValue}.`,
         images:
-            stats.stats.image && stats.stats.image !== "noimage"
+            stats.stats.image && stats.stats.image !== 'noimage'
                 ? [
                       {
                           url: stats.stats.image,
                           secureUrl: stats.stats.image,
                           alt: `Game image of ${game}`,
-                          type: "image/png",
+                          type: 'image/png',
                           width: 300,
                           height: 300,
                       },

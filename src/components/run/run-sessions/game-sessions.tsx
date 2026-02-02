@@ -1,13 +1,13 @@
-import { RunHistory, RunSession, SplitsHistory } from "~src/common/types";
+import moment from 'moment/moment';
+import React, { useEffect, useState } from 'react';
+import { Accordion, Card, Col, Pagination, Row, Table } from 'react-bootstrap';
+import { RunHistory, RunSession, SplitsHistory } from '~src/common/types';
+import styles from '../../css/Session.module.scss';
 import {
     Difference,
     DurationToFormatted,
     IsoToFormatted,
-} from "../../util/datetime";
-import { Accordion, Card, Col, Pagination, Row, Table } from "react-bootstrap";
-import React, { useEffect, useState } from "react";
-import moment from "moment/moment";
-import styles from "../../css/Session.module.scss";
+} from '../../util/datetime';
 
 export const GameSessions = ({
     sessions,
@@ -20,9 +20,9 @@ export const GameSessions = ({
     splits: SplitsHistory[];
     gameTime: boolean;
 }) => {
-    const [runsPast, setRunsPast] = useState("all");
+    const [runsPast, setRunsPast] = useState('all');
 
-    const [sortColumn, setSortColumn] = useState("ended-at");
+    const [sortColumn, setSortColumn] = useState('ended-at');
     const [sortAsc, setSortAsc] = useState(true);
 
     const changeSort = (column: string) => {
@@ -35,11 +35,11 @@ export const GameSessions = ({
     };
 
     const getSortableClassName = (column: string): string => {
-        let classNames = "sortable";
+        let classNames = 'sortable';
 
         if (sortColumn === column) {
-            classNames += " active";
-            classNames += sortAsc ? " asc" : " desc";
+            classNames += ' active';
+            classNames += sortAsc ? ' asc' : ' desc';
         }
 
         return classNames;
@@ -47,8 +47,8 @@ export const GameSessions = ({
 
     const totalCount = sessions.length;
 
-    if (runsPast != "all") {
-        if (runsPast == "finished") {
+    if (runsPast != 'all') {
+        if (runsPast == 'finished') {
             sessions = sessions.filter(
                 (session) => session.finishedRuns.length > 0,
             );
@@ -73,7 +73,7 @@ export const GameSessions = ({
     sessions.sort((a, b) => {
         let res = 1;
 
-        if (sortColumn === "duration") {
+        if (sortColumn === 'duration') {
             const aDuration = moment(a.endedAt)
                 .diff(moment(a.startedAt))
                 .toString();
@@ -83,22 +83,22 @@ export const GameSessions = ({
 
             res = parseInt(aDuration) > parseInt(bDuration) ? 1 : -1;
         }
-        if (sortColumn === "start") {
+        if (sortColumn === 'start') {
             res = a.startedAt > b.startedAt ? 1 : -1;
         }
 
-        if (sortColumn === "started") {
+        if (sortColumn === 'started') {
             const aRuns = a.runIds.last - a.runIds.first + 1;
             const bRuns = b.runIds.last - b.runIds.first + 1;
 
             res = aRuns - bRuns;
         }
 
-        if (sortColumn === "finished") {
+        if (sortColumn === 'finished') {
             res = a.finishedRuns.length - b.finishedRuns.length;
         }
 
-        if (sortColumn === "times") {
+        if (sortColumn === 'times') {
             if (a.finishedRuns.length == 0 && b.finishedRuns.length == 0)
                 return -1;
 
@@ -140,7 +140,7 @@ export const GameSessions = ({
     const onPaginationClick: React.MouseEventHandler<HTMLUListElement> = (
         event,
     ): void => {
-        let target = "";
+        let target = '';
 
         if (event.target.text) {
             target = event.target.text;
@@ -150,13 +150,13 @@ export const GameSessions = ({
 
         if (!target) return;
 
-        if (target.includes("«")) {
+        if (target.includes('«')) {
             setActive(1);
-        } else if (target.includes("‹")) {
+        } else if (target.includes('‹')) {
             setActive(active == 1 ? 1 : active - 1);
-        } else if (target.includes("›")) {
+        } else if (target.includes('›')) {
             setActive(active == last ? last : active + 1);
-        } else if (target.includes("»")) {
+        } else if (target.includes('»')) {
             setActive(last);
         } else {
             if (parseInt(target)) setActive(parseInt(target));
@@ -171,20 +171,20 @@ export const GameSessions = ({
                 </Col>
                 <Col
                     xl={6}
-                    style={{ display: "flex", justifyContent: "flex-end" }}
+                    style={{ display: 'flex', justifyContent: 'flex-end' }}
                 >
                     <label
                         htmlFor="switch"
                         style={{
-                            marginRight: "1rem",
-                            alignSelf: "center",
-                            whiteSpace: "nowrap",
+                            marginRight: '1rem',
+                            alignSelf: 'center',
+                            whiteSpace: 'nowrap',
                         }}
                     >
-                        {" "}
-                        {"Only show sessions with a run past: "}
+                        {' '}
+                        {'Only show sessions with a run past: '}
                     </label>
-                    <div style={{ alignSelf: "center" }}>
+                    <div style={{ alignSelf: 'center' }}>
                         <select
                             className="form-select"
                             onChange={(e) => {
@@ -219,57 +219,57 @@ export const GameSessions = ({
                 <div>
                     <div
                         style={{
-                            float: "left",
-                            width: "98%",
-                            whiteSpace: "nowrap",
+                            float: 'left',
+                            width: '98%',
+                            whiteSpace: 'nowrap',
                         }}
                     >
                         <Row>
                             <Col
                                 className={`${
                                     styles.optionalColumn
-                                } ${getSortableClassName("start")}`}
-                                onClick={() => changeSort("start")}
+                                } ${getSortableClassName('start')}`}
+                                onClick={() => changeSort('start')}
                             >
                                 <b>Started At</b>
                             </Col>
                             <Col
                                 className={`${
                                     styles.optionalColumn
-                                } ${getSortableClassName("start")}`}
-                                onClick={() => changeSort("start")}
+                                } ${getSortableClassName('start')}`}
+                                onClick={() => changeSort('start')}
                             >
                                 <b>Ended At</b>
                             </Col>
                             <Col
-                                className={getSortableClassName("duration")}
-                                onClick={() => changeSort("duration")}
+                                className={getSortableClassName('duration')}
+                                onClick={() => changeSort('duration')}
                             >
                                 <b>Duration</b>
                             </Col>
                             <Col
                                 className={`${
                                     styles.optionalColumn
-                                } ${getSortableClassName("started")}`}
-                                onClick={() => changeSort("started")}
+                                } ${getSortableClassName('started')}`}
+                                onClick={() => changeSort('started')}
                             >
                                 <b>Started #</b>
                             </Col>
                             <Col
-                                className={getSortableClassName("finished")}
-                                onClick={() => changeSort("finished")}
+                                className={getSortableClassName('finished')}
+                                onClick={() => changeSort('finished')}
                             >
                                 <b>Finished #</b>
                             </Col>
                             <Col
-                                className={getSortableClassName("times")}
-                                onClick={() => changeSort("times")}
+                                className={getSortableClassName('times')}
+                                onClick={() => changeSort('times')}
                             >
                                 <b>Times</b>
                             </Col>
                         </Row>
                     </div>
-                    <div style={{ width: "1.25rem", float: "left" }} />
+                    <div style={{ width: '1.25rem', float: 'left' }} />
                 </div>
             </Card>
             <Accordion>
@@ -302,7 +302,7 @@ export const GameSessions = ({
                                 }
 
                                 if (
-                                    split.totalTime != "0" &&
+                                    split.totalTime != '0' &&
                                     (!bestTimePerSplit[key] ||
                                         bestTimePerSplit[key] >
                                             parseInt(split.totalTime))
@@ -325,7 +325,7 @@ export const GameSessions = ({
                                 eventKey={session.endedAt}
                             >
                                 <Accordion.Header>
-                                    <div style={{ width: "100%" }}>
+                                    <div style={{ width: '100%' }}>
                                         <Row>
                                             {/* <Col xs={4}>
                                             <Line data={data} type={"line"}/>
@@ -390,7 +390,7 @@ export const GameSessions = ({
                                                                     gameTime={
                                                                         gameTime
                                                                     }
-                                                                />{" "}
+                                                                />{' '}
                                                                 <br />
                                                             </React.Fragment>
                                                         );
@@ -418,7 +418,7 @@ export const GameSessions = ({
                                                 <th>Split</th>
                                                 <th
                                                     style={{
-                                                        whiteSpace: "nowrap",
+                                                        whiteSpace: 'nowrap',
                                                     }}
                                                 >
                                                     Best time achieved
@@ -428,7 +428,7 @@ export const GameSessions = ({
                                                         styles.optionalColumn
                                                     }
                                                     style={{
-                                                        whiteSpace: "nowrap",
+                                                        whiteSpace: 'nowrap',
                                                     }}
                                                 >
                                                     # Completed
@@ -438,14 +438,14 @@ export const GameSessions = ({
                                                         styles.optionalColumn
                                                     }
                                                     style={{
-                                                        whiteSpace: "nowrap",
+                                                        whiteSpace: 'nowrap',
                                                     }}
                                                 >
                                                     # Resets
                                                 </th>
                                                 <th
                                                     style={{
-                                                        whiteSpace: "nowrap",
+                                                        whiteSpace: 'nowrap',
                                                     }}
                                                 >
                                                     Reset %
@@ -464,7 +464,7 @@ export const GameSessions = ({
                                                     currentAmount -= amount;
                                                     const splitName =
                                                         index === splits.length
-                                                            ? "Finished!"
+                                                            ? 'Finished!'
                                                             : splits[index]
                                                                   .name;
                                                     return (
@@ -478,12 +478,12 @@ export const GameSessions = ({
                                                                 !bestTimePerSplit[
                                                                     index
                                                                 ] ? (
-                                                                    "-"
+                                                                    '-'
                                                                 ) : (
                                                                     <>
                                                                         <div
                                                                             style={{
-                                                                                float: "left",
+                                                                                float: 'left',
                                                                             }}
                                                                         >
                                                                             <DurationToFormatted
@@ -498,9 +498,9 @@ export const GameSessions = ({
                                                                         </div>
                                                                         <div
                                                                             style={{
-                                                                                float: "left",
+                                                                                float: 'left',
                                                                                 marginLeft:
-                                                                                    "1rem",
+                                                                                    '1rem',
                                                                             }}
                                                                         >
                                                                             <Difference
@@ -525,7 +525,7 @@ export const GameSessions = ({
                                                                     styles.optionalColumn
                                                                 }
                                                             >
-                                                                {currentAmount}{" "}
+                                                                {currentAmount}{' '}
                                                                 - (
                                                                 {(
                                                                     (currentAmount /
@@ -568,10 +568,10 @@ export const GameSessions = ({
                 {items}
             </Pagination>
 
-            <div style={{ display: "flex", justifyContent: "center" }}>
-                Showing {(active - 1) * 10 + 1} -{" "}
-                {active * 10 < sessions.length ? active * 10 : sessions.length}{" "}
-                out of {sessions.length} sessions{" "}
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                Showing {(active - 1) * 10 + 1} -{' '}
+                {active * 10 < sessions.length ? active * 10 : sessions.length}{' '}
+                out of {sessions.length} sessions{' '}
                 {totalCount !== sessions.length &&
                     ` (${totalCount} without filter)`}
             </div>

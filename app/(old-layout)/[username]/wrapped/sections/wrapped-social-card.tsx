@@ -1,3 +1,5 @@
+import html2canvas from 'html2canvas';
+import { Bangers } from 'next/font/google';
 import {
     memo,
     ReactElement,
@@ -7,24 +9,22 @@ import {
     useMemo,
     useRef,
     useState,
-} from "react";
-import { WrappedWithData } from "~app/(old-layout)/[username]/wrapped/wrapped-types";
-import html2canvas from "html2canvas";
-import { getUserProfilePhoto } from "~src/utils/metadata";
-import { Bangers } from "next/font/google";
-import { SectionWrapper } from "./section-wrapper";
-import { SectionTitle } from "./section-title";
-import { SectionBody } from "./section-body";
-import { Button } from "react-bootstrap";
-import { safeDecodeURI } from "~src/utils/uri";
-import { usePatreons } from "~src/components/patreon/use-patreons";
-import { BunnyMarioPipeIcon } from "~src/icons/bunny-mario-pipe-icon";
-import { BunnyIcon } from "~src/icons/bunny-icon";
+} from 'react';
+import { Button } from 'react-bootstrap';
+import { WrappedWithData } from '~app/(old-layout)/[username]/wrapped/wrapped-types';
+import { usePatreons } from '~src/components/patreon/use-patreons';
+import { BunnyIcon } from '~src/icons/bunny-icon';
+import { BunnyMarioPipeIcon } from '~src/icons/bunny-mario-pipe-icon';
+import { getUserProfilePhoto } from '~src/utils/metadata';
+import { safeDecodeURI } from '~src/utils/uri';
+import { SectionBody } from './section-body';
+import { SectionTitle } from './section-title';
+import { SectionWrapper } from './section-wrapper';
 
 const bangers = Bangers({
-    weight: "400",
-    subsets: ["latin"],
-    display: "swap",
+    weight: '400',
+    subsets: ['latin'],
+    display: 'swap',
 });
 
 interface HiddenDataSummaryProps {
@@ -45,41 +45,41 @@ const HiddenDataSummary = memo<HiddenDataSummaryProps>(
         return (
             <div
                 style={{
-                    position: "fixed",
-                    left: "-9999px",
-                    top: "-9999px",
-                    width: "1080px",
-                    height: "1920px",
-                    overflow: "hidden",
+                    position: 'fixed',
+                    left: '-9999px',
+                    top: '-9999px',
+                    width: '1080px',
+                    height: '1920px',
+                    overflow: 'hidden',
                     opacity: 0,
-                    pointerEvents: "none",
+                    pointerEvents: 'none',
                 }}
             >
                 <div
                     ref={cardRef}
                     style={{
-                        width: "1080px",
-                        height: "1920px",
-                        display: "flex",
-                        flexDirection: "column",
-                        backgroundColor: "#000",
-                        paddingLeft: "25px",
-                        paddingRight: "25px",
-                        paddingTop: "10px",
-                        paddingBottom: "10px",
-                        position: "relative",
+                        width: '1080px',
+                        height: '1920px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        backgroundColor: '#000',
+                        paddingLeft: '25px',
+                        paddingRight: '25px',
+                        paddingTop: '10px',
+                        paddingBottom: '10px',
+                        position: 'relative',
                     }}
                 >
                     {/* eslint-disable-next-line */}
                     <img
                         src={gameImageUrl}
                         style={{
-                            position: "absolute",
+                            position: 'absolute',
                             top: 0,
                             left: 0,
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
                             opacity: 0.15,
                             zIndex: 1,
                         }}
@@ -88,43 +88,43 @@ const HiddenDataSummary = memo<HiddenDataSummaryProps>(
                     />
                     <div
                         style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            height: "100%",
-                            position: "relative",
+                            display: 'flex',
+                            flexDirection: 'column',
+                            height: '100%',
+                            position: 'relative',
                             zIndex: 2,
                         }}
                     >
                         <div
                             style={{
-                                height: "150px",
-                                width: "100%",
-                                display: "flex",
-                                flexDirection: "row",
-                                fontSize: "48px",
-                                alignItems: "center",
-                                paddingTop: "64px",
-                                justifyContent: "center",
+                                height: '150px',
+                                width: '100%',
+                                display: 'flex',
+                                flexDirection: 'row',
+                                fontSize: '48px',
+                                alignItems: 'center',
+                                paddingTop: '64px',
+                                justifyContent: 'center',
                             }}
                         >
                             {profilePhoto ? (
                                 <div
                                     style={{
-                                        position: "relative",
-                                        width: "fit-content",
+                                        position: 'relative',
+                                        width: 'fit-content',
                                     }}
                                 >
                                     {/* eslint-disable-next-line */}
                                     <img
                                         src="/bow-2024279_1920.png"
                                         style={{
-                                            position: "absolute",
-                                            top: "0",
-                                            left: "-25px",
-                                            transform: "rotate(-25deg)",
+                                            position: 'absolute',
+                                            top: '0',
+                                            left: '-25px',
+                                            transform: 'rotate(-25deg)',
                                             zIndex: 1.5,
-                                            width: "150px",
-                                            height: "38px",
+                                            width: '150px',
+                                            height: '38px',
                                         }}
                                     />
                                     {/* eslint-disable-next-line */}
@@ -134,20 +134,20 @@ const HiddenDataSummary = memo<HiddenDataSummaryProps>(
                                         height={150}
                                         crossOrigin="anonymous"
                                         style={{
-                                            borderRadius: "50%",
-                                            border: "5px solid #27a11b",
+                                            borderRadius: '50%',
+                                            border: '5px solid #27a11b',
                                         }}
                                     />
                                 </div>
                             ) : (
                                 <BunnyMarioPipeIcon size={150} />
                             )}
-                            <p style={{ marginLeft: "25px", fontSize: "48px" }}>
+                            <p style={{ marginLeft: '25px', fontSize: '48px' }}>
                                 <span
                                     className="text-white"
                                     style={{
                                         textShadow:
-                                            getEnhancedTextShadow("#27a11b"),
+                                            getEnhancedTextShadow('#27a11b'),
                                     }}
                                 >
                                     therun.gg/
@@ -157,15 +157,15 @@ const HiddenDataSummary = memo<HiddenDataSummaryProps>(
                                     style={{
                                         fontSize:
                                             wrapped.user.length > 16
-                                                ? "48px"
-                                                : "64px",
-                                        letterSpacing: "0.02em",
-                                        color: "#27a11b",
+                                                ? '48px'
+                                                : '64px',
+                                        letterSpacing: '0.02em',
+                                        color: '#27a11b',
                                         textShadow:
-                                            getEnhancedTextShadow("#27a11b"),
+                                            getEnhancedTextShadow('#27a11b'),
                                     }}
                                 >
-                                    {safeDecodeURI(wrapped.user)}{" "}
+                                    {safeDecodeURI(wrapped.user)}{' '}
                                     {isPatron && (
                                         <BunnyIcon
                                             size={
@@ -180,12 +180,12 @@ const HiddenDataSummary = memo<HiddenDataSummaryProps>(
                         </div>
                         <div
                             style={{
-                                width: "100%",
-                                display: "flex",
-                                flexDirection: "row",
-                                alignItems: "center",
-                                paddingTop: "48px",
-                                justifyContent: "center",
+                                width: '100%',
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                paddingTop: '48px',
+                                justifyContent: 'center',
                             }}
                         >
                             <LayeredStats wrapped={wrapped} />
@@ -194,52 +194,52 @@ const HiddenDataSummary = memo<HiddenDataSummaryProps>(
                         <div
                             className={bangers.className}
                             style={{
-                                width: "100%",
-                                display: "flex",
-                                flexDirection: "column",
-                                fontSize: "64px",
-                                alignItems: "center",
-                                color: "#fff",
-                                paddingTop: "48px",
-                                justifyContent: "center",
+                                width: '100%',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                fontSize: '64px',
+                                alignItems: 'center',
+                                color: '#fff',
+                                paddingTop: '48px',
+                                justifyContent: 'center',
                             }}
                         >
                             <h2
                                 style={{
-                                    fontSize: "72px",
-                                    letterSpacing: "0.02em",
+                                    fontSize: '72px',
+                                    letterSpacing: '0.02em',
                                 }}
                             >
                                 I...
                             </h2>
                             <p>
-                                ...reset{" "}
+                                ...reset{' '}
                                 <span
                                     style={{
-                                        letterSpacing: "0.02em",
-                                        color: "#df1349",
+                                        letterSpacing: '0.02em',
+                                        color: '#df1349',
                                         textShadow:
-                                            getEnhancedTextShadow("#df1349"),
+                                            getEnhancedTextShadow('#df1349'),
                                     }}
                                 >
                                     {wrapped.countResetFirstSplit.toLocaleString()}
-                                </span>{" "}
+                                </span>{' '}
                                 {pluralise(
                                     wrapped.countResetFirstSplit,
-                                    "time",
-                                )}{" "}
+                                    'time',
+                                )}{' '}
                                 on the first split
                             </p>
                             {wrapped.raceData?.globalStats?.totalRaces > 0 && (
                                 <p>
-                                    ...participated in{" "}
+                                    ...participated in{' '}
                                     <span
                                         style={{
-                                            letterSpacing: "0.02em",
-                                            color: "#27a11b",
+                                            letterSpacing: '0.02em',
+                                            color: '#27a11b',
                                             textShadow:
                                                 getEnhancedTextShadow(
-                                                    "#27a11b",
+                                                    '#27a11b',
                                                 ),
                                         }}
                                     >
@@ -247,19 +247,19 @@ const HiddenDataSummary = memo<HiddenDataSummaryProps>(
                                             wrapped.raceData.globalStats
                                                 .totalRaces
                                         }
-                                    </span>{" "}
+                                    </span>{' '}
                                     {pluralise(
                                         wrapped.raceData.globalStats.totalRaces,
-                                        "race",
+                                        'race',
                                     )}
-                                    , finishing{" "}
+                                    , finishing{' '}
                                     <span
                                         style={{
-                                            letterSpacing: "0.02em",
-                                            color: "#27a11b",
+                                            letterSpacing: '0.02em',
+                                            color: '#27a11b',
                                             textShadow:
                                                 getEnhancedTextShadow(
-                                                    "#27a11b",
+                                                    '#27a11b',
                                                 ),
                                         }}
                                     >
@@ -272,37 +272,37 @@ const HiddenDataSummary = memo<HiddenDataSummaryProps>(
                             )}
                             {wrapped.newGames.length > 0 && (
                                 <p>
-                                    ...played{" "}
+                                    ...played{' '}
                                     <span
                                         style={{
-                                            letterSpacing: "0.02em",
-                                            color: "#27a11b",
+                                            letterSpacing: '0.02em',
+                                            color: '#27a11b',
                                             textShadow:
                                                 getEnhancedTextShadow(
-                                                    "#27a11b",
+                                                    '#27a11b',
                                                 ),
                                         }}
                                     >
                                         {wrapped.newGames.length}
-                                    </span>{" "}
-                                    new{" "}
-                                    {pluralise(wrapped.newGames.length, "game")}
+                                    </span>{' '}
+                                    new{' '}
+                                    {pluralise(wrapped.newGames.length, 'game')}
                                 </p>
                             )}
 
-                            <h2 style={{ fontSize: "64px", marginTop: "48px" }}>
-                                My favorite{" "}
-                                {pluralise(top3Games.length, "game")}{" "}
-                                {pluralise(top3Games.length, "was", "were")}
+                            <h2 style={{ fontSize: '64px', marginTop: '48px' }}>
+                                My favorite{' '}
+                                {pluralise(top3Games.length, 'game')}{' '}
+                                {pluralise(top3Games.length, 'was', 'were')}
                             </h2>
                             {top3Games.map((game, index) => (
                                 <p
                                     style={{
-                                        fontSize: "48px",
-                                        letterSpacing: "0.02em",
-                                        color: "#27a11b",
+                                        fontSize: '48px',
+                                        letterSpacing: '0.02em',
+                                        color: '#27a11b',
                                         textShadow:
-                                            getEnhancedTextShadow("#27a11b"),
+                                            getEnhancedTextShadow('#27a11b'),
                                     }}
                                     key={index}
                                 >
@@ -313,11 +313,11 @@ const HiddenDataSummary = memo<HiddenDataSummaryProps>(
                         <div
                             className={bangers.className}
                             style={{
-                                marginTop: "auto",
-                                display: "flex",
-                                flexDirection: "row",
-                                alignItems: "center",
-                                padding: "20px",
+                                marginTop: 'auto',
+                                display: 'flex',
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                padding: '20px',
                             }}
                         >
                             {/* eslint-disable-next-line */}
@@ -329,18 +329,18 @@ const HiddenDataSummary = memo<HiddenDataSummaryProps>(
                             />
                             <h1
                                 style={{
-                                    fontSize: "48px",
-                                    color: "#fff",
-                                    marginLeft: "25px",
+                                    fontSize: '48px',
+                                    color: '#fff',
+                                    marginLeft: '25px',
                                 }}
                             >
-                                RECAP{" "}
+                                RECAP{' '}
                                 <span
                                     style={{
-                                        letterSpacing: "0.02em",
-                                        color: "#27a11b",
+                                        letterSpacing: '0.02em',
+                                        color: '#27a11b',
                                         textShadow:
-                                            getEnhancedTextShadow("#27a11b"),
+                                            getEnhancedTextShadow('#27a11b'),
                                     }}
                                 >
                                     {wrapped.year}
@@ -353,7 +353,7 @@ const HiddenDataSummary = memo<HiddenDataSummaryProps>(
         );
     },
 );
-HiddenDataSummary.displayName = "HiddenDataSummary";
+HiddenDataSummary.displayName = 'HiddenDataSummary';
 
 interface WrappedSocialCardProps {
     wrapped: WrappedWithData;
@@ -412,7 +412,7 @@ export function WrappedSocialCard({
 
             if (topGame.image) {
                 return `https://images.igdb.com/igdb/image/upload/t_1080p${topGame.image.slice(
-                    topGame.image.lastIndexOf("/"),
+                    topGame.image.lastIndexOf('/'),
                 )}`;
             }
         }
@@ -441,7 +441,7 @@ export function WrappedSocialCard({
 
         try {
             // Wait for images to load
-            const images = Array.from(cardRef.current.querySelectorAll("img"));
+            const images = Array.from(cardRef.current.querySelectorAll('img'));
 
             await Promise.all(
                 images.map(
@@ -468,24 +468,24 @@ export function WrappedSocialCard({
                 useCORS: true,
                 scale: 1,
                 allowTaint: false,
-                backgroundColor: "#000",
+                backgroundColor: '#000',
                 height: 1920,
                 width: 1080,
             });
 
             const targetWidth = 1080;
             const targetHeight = 1920;
-            const resizedCanvas = document.createElement("canvas");
+            const resizedCanvas = document.createElement('canvas');
             resizedCanvas.width = targetWidth;
             resizedCanvas.height = targetHeight;
 
             // Get the context and draw the scaled image
-            const ctx = resizedCanvas.getContext("2d");
+            const ctx = resizedCanvas.getContext('2d');
             if (!ctx) return;
 
             // Use better quality scaling
             ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = "high";
+            ctx.imageSmoothingQuality = 'high';
 
             // Draw the original canvas scaled down
             ctx.drawImage(canvas, 0, 0, targetWidth, targetHeight);
@@ -498,7 +498,7 @@ export function WrappedSocialCard({
                 });
             }
         } catch (error) {
-            console.error("Error generating image:", error);
+            console.error('Error generating image:', error);
             if (onLoadingStateChange) {
                 onLoadingStateChange({
                     isLoading: false,
@@ -506,7 +506,7 @@ export function WrappedSocialCard({
                     error:
                         error instanceof Error
                             ? error
-                            : new Error("Unknown error occurred"),
+                            : new Error('Unknown error occurred'),
                 });
             }
         }
@@ -514,10 +514,10 @@ export function WrappedSocialCard({
 
     const previewUrl = useMemo(() => {
         if (!canvas) {
-            return "";
+            return '';
         }
         // Convert to JPEG
-        return canvas.toDataURL("image/jpeg", 0.85);
+        return canvas.toDataURL('image/jpeg', 0.85);
     }, [canvas]);
 
     useEffect(() => {
@@ -528,7 +528,7 @@ export function WrappedSocialCard({
                     if (blob) {
                         resolve(blob);
                     } else {
-                        reject(new Error("Canvas toBlob failed."));
+                        reject(new Error('Canvas toBlob failed.'));
                     }
                 });
             });
@@ -551,7 +551,7 @@ export function WrappedSocialCard({
         try {
             navigator.clipboard.write([
                 new ClipboardItem({
-                    "image/png": blob!,
+                    'image/png': blob!,
                 }),
             ]);
 
@@ -566,7 +566,7 @@ export function WrappedSocialCard({
 
     const handleDownload = () => {
         if (!previewUrl) return;
-        const link = document.createElement("a");
+        const link = document.createElement('a');
         link.href = previewUrl;
         link.download = `TheRun-Recap-${wrapped.year}-${safeDecodeURI(
             wrapped.user,
@@ -597,7 +597,7 @@ export function WrappedSocialCard({
                                 alt={`${safeDecodeURI(
                                     wrapped.user,
                                 )}'s 2025 The Run Recap summary image`}
-                                style={{ maxHeight: "640px" }}
+                                style={{ maxHeight: '640px' }}
                             />
                             <div className="d-flex flex-row align-items-center gap-4">
                                 <Button
@@ -606,7 +606,7 @@ export function WrappedSocialCard({
                                     className="px-4 py-2"
                                     disabled={copied}
                                 >
-                                    {copied ? "Copied!" : "Copy"}
+                                    {copied ? 'Copied!' : 'Copy'}
                                 </Button>
                                 <Button
                                     onClick={handleDownload}
@@ -640,41 +640,41 @@ export function WrappedSocialCard({
 
 const LayeredStats = ({ wrapped }: { wrapped: WrappedWithData }) => {
     const stats = [
-        { value: wrapped.totalRuns, label: "RUN", color: "#4f46e5" },
+        { value: wrapped.totalRuns, label: 'RUN', color: '#4f46e5' },
         {
             value: wrapped.totalFinishedRuns,
-            label: "FINISHED RUN",
-            color: "#f97316",
+            label: 'FINISHED RUN',
+            color: '#f97316',
         },
-        { value: wrapped.totalPlaytime, label: "HOUR", color: "#06b6d4" },
+        { value: wrapped.totalPlaytime, label: 'HOUR', color: '#06b6d4' },
         {
             value: wrapped.streak.length,
-            label: "DAY STREAK",
-            plural: "DAY STREAK",
-            color: "#d73600",
+            label: 'DAY STREAK',
+            plural: 'DAY STREAK',
+            color: '#d73600',
         },
-        { value: wrapped.totalPbs, label: "PB", color: "#22c55e" },
-        { value: wrapped.totalGolds, label: "GOLD", color: "#eab308" },
-        { value: wrapped.totalGames, label: "GAME", color: "#8b5cf6" },
+        { value: wrapped.totalPbs, label: 'PB', color: '#22c55e' },
+        { value: wrapped.totalGolds, label: 'GOLD', color: '#eab308' },
+        { value: wrapped.totalGames, label: 'GAME', color: '#8b5cf6' },
         {
             value: wrapped.totalCategories,
-            label: "CATEGORY",
-            plural: "CATEGORIES",
-            color: "#c154c1",
+            label: 'CATEGORY',
+            plural: 'CATEGORIES',
+            color: '#c154c1',
         },
-        { value: wrapped.totalResets, label: "RESET", color: "#df1349" },
-        { value: wrapped.totalSplits, label: "SPLIT", color: "#27A11B" },
+        { value: wrapped.totalResets, label: 'RESET', color: '#df1349' },
+        { value: wrapped.totalSplits, label: 'SPLIT', color: '#27A11B' },
     ];
 
     return (
         <div
             className={bangers.className}
             style={{
-                width: "auto",
-                display: "grid",
-                gridTemplateColumns: "repeat(2, 1fr)",
-                gap: "20px",
-                padding: "20px 40px",
+                width: 'auto',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, 1fr)',
+                gap: '20px',
+                padding: '20px 40px',
             }}
         >
             {stats.map((stat) => (
@@ -683,28 +683,28 @@ const LayeredStats = ({ wrapped }: { wrapped: WrappedWithData }) => {
                     style={{
                         color: stat.color,
                         fontSize: `100px`,
-                        lineHeight: "1",
+                        lineHeight: '1',
                         textShadow: getEnhancedTextShadow(stat.color),
-                        letterSpacing: "0.02em",
-                        textAlign: "left",
-                        display: "flex",
-                        alignItems: "start",
-                        justifyContent: "center",
-                        flexDirection: "column",
+                        letterSpacing: '0.02em',
+                        textAlign: 'left',
+                        display: 'flex',
+                        alignItems: 'start',
+                        justifyContent: 'center',
+                        flexDirection: 'column',
                     }}
                 >
                     <div>
                         {stat.value.toLocaleString()}
                         <span
                             style={{
-                                fontSize: "50%",
-                                marginLeft: "8px",
+                                fontSize: '50%',
+                                marginLeft: '8px',
                                 opacity: 0.95,
-                                color: "#fff",
-                                textShadow: "0 0 4px rgba(0,0,0,0.8)",
-                                fontWeight: "400",
-                                letterSpacing: "0.05em",
-                                textTransform: "uppercase",
+                                color: '#fff',
+                                textShadow: '0 0 4px rgba(0,0,0,0.8)',
+                                fontWeight: '400',
+                                letterSpacing: '0.05em',
+                                textTransform: 'uppercase',
                             }}
                         >
                             {stat.plural
@@ -719,7 +719,7 @@ const LayeredStats = ({ wrapped }: { wrapped: WrappedWithData }) => {
 };
 
 const getEnhancedTextShadow = (color: string) => {
-    const shadowColor = color.replace(")", ", 0.3)").replace("rgb", "rgba");
+    const shadowColor = color.replace(')', ', 0.3)').replace('rgb', 'rgba');
     return `
       0 0 1px ${color},
       0 0 2px ${color},

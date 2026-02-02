@@ -12,7 +12,7 @@ export interface UserSummary {
     races: SummaryRace[];
 }
 
-export type UserSummaryType = "week" | "month";
+export type UserSummaryType = 'week' | 'month';
 
 export interface SummaryFinishedRun {
     game: string;

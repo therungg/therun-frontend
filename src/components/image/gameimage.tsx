@@ -1,26 +1,26 @@
-import React, { useMemo } from "react";
-import Image from "next/image";
+import Image from 'next/image';
+import React, { useMemo } from 'react';
 
-declare const VALID_LOADING_VALUES: readonly ["lazy", "eager", undefined];
+declare const VALID_LOADING_VALUES: readonly ['lazy', 'eager', undefined];
 declare type LoadingValue = (typeof VALID_LOADING_VALUES)[number];
-declare type PlaceholderValue = "blur" | "empty";
+declare type PlaceholderValue = 'blur' | 'empty';
 declare type SafeNumber = number | `${number}`;
 
-type Quality = "small" | "medium" | "large" | "sd" | "hd";
+type Quality = 'small' | 'medium' | 'large' | 'sd' | 'hd';
 
 type IgdbQualityString =
-    | "cover_small"
-    | "logo_med"
-    | "cover_big"
-    | "720p"
-    | "1080p";
+    | 'cover_small'
+    | 'logo_med'
+    | 'cover_big'
+    | '720p'
+    | '1080p';
 
 const qualityMap: Record<Quality, IgdbQualityString> = {
-    small: "cover_small",
-    medium: "logo_med",
-    large: "cover_big",
-    sd: "720p",
-    hd: "1080p",
+    small: 'cover_small',
+    medium: 'logo_med',
+    large: 'cover_big',
+    sd: '720p',
+    hd: '1080p',
 };
 
 interface GameImageProps {
@@ -41,8 +41,8 @@ interface GameImageProps {
 export const GameImage = (props: GameImageProps) => {
     const {
         src,
-        alt = "Game Image",
-        quality = "medium",
+        alt = 'Game Image',
+        quality = 'medium',
         fill = false,
         width,
         height,
@@ -51,25 +51,25 @@ export const GameImage = (props: GameImageProps) => {
         autosize,
     } = props;
 
-    const className = `img-fluid ${props.className || ""}`;
+    const className = `img-fluid ${props.className || ''}`;
     const autosizeProps = useMemo(
         () =>
             autosize
                 ? {
-                      sizes: "100vw",
+                      sizes: '100vw',
                       width: 0,
                       height: 0,
                       style: {
                           ...style,
-                          width: "100%",
-                          height: "auto",
+                          width: '100%',
+                          height: 'auto',
                       },
                   }
                 : {},
         [autosize, style],
     );
 
-    if (!src || src === "noimage")
+    if (!src || src === 'noimage')
         return (
             <Image
                 unoptimized
@@ -83,7 +83,7 @@ export const GameImage = (props: GameImageProps) => {
             ></Image>
         );
 
-    const file = src.slice(src.lastIndexOf("/"));
+    const file = src.slice(src.lastIndexOf('/'));
 
     return (
         <Image

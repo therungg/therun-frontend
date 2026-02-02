@@ -1,6 +1,6 @@
-"use client";
-import React from "react";
-import NProgress from "nprogress";
+'use client';
+import NProgress from 'nprogress';
+import React from 'react';
 
 export function useProgressBar() {
     React.useEffect(() => {
@@ -9,8 +9,8 @@ export function useProgressBar() {
         const handleAnchorClick = (event: MouseEvent) => {
             const targetUrl = (
                 event.currentTarget as HTMLAnchorElement
-            ).href.replace("#", "");
-            const currentUrl = location.href.replace("#", "");
+            ).href.replace('#', '');
+            const currentUrl = location.href.replace('#', '');
 
             if (targetUrl !== currentUrl) {
                 NProgress.start();
@@ -18,9 +18,9 @@ export function useProgressBar() {
         };
 
         const handleMutation: MutationCallback = () => {
-            const anchorElements = document.querySelectorAll("a");
+            const anchorElements = document.querySelectorAll('a');
             anchorElements.forEach((anchor) =>
-                anchor.addEventListener("click", handleAnchorClick),
+                anchor.addEventListener('click', handleAnchorClick),
             );
         };
 
@@ -31,7 +31,7 @@ export function useProgressBar() {
             apply: (
                 target,
                 thisArg,
-                argArray: Parameters<History["pushState"]>,
+                argArray: Parameters<History['pushState']>,
             ) => {
                 NProgress.done();
                 return target.apply(thisArg, argArray);

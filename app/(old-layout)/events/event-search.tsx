@@ -1,28 +1,28 @@
-"use client";
+'use client';
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { useDebounceValue } from "usehooks-ts";
-import { Search as SearchIcon } from "react-bootstrap-icons";
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { Search as SearchIcon } from 'react-bootstrap-icons';
+import { useDebounceValue } from 'usehooks-ts';
 
 export const EventSearch = () => {
     const router = useRouter();
     const searchParams = useSearchParams();
 
     const [searchInput, setSearchInput] = useState(
-        searchParams.get("search") ?? null,
+        searchParams.get('search') ?? null,
     );
     const [debouncedSearch] = useDebounceValue(searchInput, 300);
 
     useEffect(() => {
         if (debouncedSearch !== null) {
             const params = new URLSearchParams(searchParams.toString());
-            params.set("page", "1");
+            params.set('page', '1');
 
             if (debouncedSearch) {
-                params.set("search", debouncedSearch);
+                params.set('search', debouncedSearch);
             } else {
-                params.delete("search");
+                params.delete('search');
             }
             router.push(`?${params.toString()}`);
         }
@@ -33,7 +33,7 @@ export const EventSearch = () => {
             <span
                 className="input-group-text"
                 onClick={() => {
-                    const searchElement = document.getElementById("search");
+                    const searchElement = document.getElementById('search');
                     if (document.activeElement !== searchElement) {
                         searchElement?.focus();
                     }
@@ -48,7 +48,7 @@ export const EventSearch = () => {
                 onChange={(e) => {
                     setSearchInput(e.target.value);
                 }}
-                value={searchInput ?? ""}
+                value={searchInput ?? ''}
                 id="search"
             />
         </div>

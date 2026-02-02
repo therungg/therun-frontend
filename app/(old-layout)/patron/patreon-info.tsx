@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import React from "react";
-import Link from "next/link";
-import { usePatreons } from "~src/components/patreon/use-patreons";
-import { Col, Row, Table } from "react-bootstrap";
-import { UserLink } from "~src/components/links/links";
-import { CheckmarkIcon } from "~src/icons/checkmark-icon";
-import { CrossIcon } from "~src/icons/cross-icon";
-import { BunnyIcon } from "~src/icons/bunny-icon";
-import { Button } from "~src/components/Button/Button";
+import Link from 'next/link';
+import React from 'react';
+import { Col, Row, Table } from 'react-bootstrap';
+import { Button } from '~src/components/Button/Button';
+import { UserLink } from '~src/components/links/links';
+import { usePatreons } from '~src/components/patreon/use-patreons';
+import { BunnyIcon } from '~src/icons/bunny-icon';
+import { CheckmarkIcon } from '~src/icons/checkmark-icon';
+import { CrossIcon } from '~src/icons/cross-icon';
 
-const stripePaymentButton = "https://donate.stripe.com/8wMg2RgR3gNfblu7ss";
+const stripePaymentButton = 'https://donate.stripe.com/8wMg2RgR3gNfblu7ss';
 
 export function PatreonInfo({ session }: { session: { username: string } }) {
     const { data: patreonData, isLoading } = usePatreons();
@@ -236,7 +236,7 @@ export function PatreonInfo({ session }: { session: { username: string } }) {
                             </tr>
                             <tr>
                                 <td className="text-start">
-                                    This amazing golden rabbit next to your name{" "}
+                                    This amazing golden rabbit next to your name{' '}
                                     <PatreonBunnySvg size={20} />
                                 </td>
                                 <td>
@@ -300,13 +300,13 @@ export function PatreonInfo({ session }: { session: { username: string } }) {
     );
 }
 
-export const PatreonBunnySvg = ({ size = 20, url = "/patron" }) => {
+export const PatreonBunnySvg = ({ size = 20, url = '/patron' }) => {
     return (
         <a
             href={url}
             target="_blank"
             rel="noreferrer"
-            style={{ marginBottom: "4%" }}
+            style={{ marginBottom: '4%' }}
         >
             <BunnyIcon size={size} />
         </a>

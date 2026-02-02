@@ -4,7 +4,7 @@ interface GameData {
     image: string;
     display: string;
     game: string;
-    "category#username": string;
+    'category#username': string;
 }
 
 interface UserStats {

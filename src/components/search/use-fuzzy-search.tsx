@@ -1,9 +1,9 @@
-import Fuse, { FuseResultMatch } from "fuse.js";
-import React from "react";
-import { AggregatedResults } from "./use-aggregated-results";
-import { RunData } from "./find-user-or-run";
+import Fuse, { FuseResultMatch } from 'fuse.js';
+import React from 'react';
+import { RunData } from './find-user-or-run';
+import { AggregatedResults } from './use-aggregated-results';
 
-export type SearchItemKind = "user" | "game";
+export type SearchItemKind = 'user' | 'game';
 
 export interface SearchItem {
     key: string;
@@ -17,19 +17,19 @@ export interface SearchItem {
 export const useFuseSearch = (aggregatedResults: AggregatedResults) => {
     const combinedResults = [
         ...Object.entries(aggregatedResults.users).map(([key, data]) => ({
-            type: "user" as const,
+            type: 'user' as const,
             key,
             data,
         })),
         ...Object.entries(aggregatedResults.games).map(([key, data]) => ({
-            type: "game" as const,
+            type: 'game' as const,
             key,
             data,
         })),
     ];
 
     return new Fuse(combinedResults, {
-        keys: ["key", "game", "user"],
+        keys: ['key', 'game', 'user'],
         includeScore: true,
         includeMatches: true,
         threshold: 0.45,

@@ -1,9 +1,9 @@
-import { RunHistory, SplitsHistory } from "../../../common/types";
-import { Line } from "react-chartjs-2";
-import { getFormattedString, getMonthDay } from "../../util/datetime";
-import { Row } from "react-bootstrap";
-import { isOutlier } from "./split-stats";
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
+import { Row } from 'react-bootstrap';
+import { Line } from 'react-chartjs-2';
+import { RunHistory, SplitsHistory } from '../../../common/types';
+import { getFormattedString, getMonthDay } from '../../util/datetime';
+import { isOutlier } from './split-stats';
 
 export type GoldHistory = GoldSplit[];
 
@@ -28,13 +28,13 @@ export const GoldProgressionGraph = ({
     total?: boolean;
 }) => {
     const [splitTimeKey, setSplitTimeKey] = useState(
-        total ? "totalTime" : "splitTime",
+        total ? 'totalTime' : 'splitTime',
     );
-    const [groupKey, setGroupKey] = useState(total ? "total" : "single");
+    const [groupKey, setGroupKey] = useState(total ? 'total' : 'single');
 
     useEffect(() => {
-        setSplitTimeKey(total ? "totalTime" : "splitTime");
-        setGroupKey(total ? "total" : "single");
+        setSplitTimeKey(total ? 'totalTime' : 'splitTime');
+        setGroupKey(total ? 'total' : 'single');
     }, [total]);
 
     const key = split.id;
@@ -50,7 +50,7 @@ export const GoldProgressionGraph = ({
 
             if (
                 !currentSplit ||
-                currentSplit[splitTimeKey] == "0" ||
+                currentSplit[splitTimeKey] == '0' ||
                 isOutlier(
                     parseInt(split[groupKey].averageTime),
                     parseInt(split[groupKey].stdDev),
@@ -82,25 +82,25 @@ export const GoldProgressionGraph = ({
 
     const data = {
         labels: golds.map((gold: GoldSplit) => {
-            return gold.date ? getMonthDay(gold.date) : "Unknown";
+            return gold.date ? getMonthDay(gold.date) : 'Unknown';
         }),
         datasets: [
             {
-                label: "Gold splits",
+                label: 'Gold splits',
                 fill: false,
                 lineTension: 0.1,
-                backgroundColor: "gold",
-                borderColor: "gold",
-                borderCapStyle: "butt",
+                backgroundColor: 'gold',
+                borderColor: 'gold',
+                borderCapStyle: 'butt',
                 borderDash: [],
                 borderDashOffset: 0.0,
-                borderJoinStyle: "miter",
-                pointBorderColor: "gold",
-                pointBackgroundColor: "#fff",
+                borderJoinStyle: 'miter',
+                pointBorderColor: 'gold',
+                pointBackgroundColor: '#fff',
                 pointBorderWidth: 1,
                 pointHoverRadius: 5,
-                pointHoverBackgroundColor: "gold",
-                pointHoverBorderColor: "black",
+                pointHoverBackgroundColor: 'gold',
+                pointHoverBorderColor: 'black',
                 pointHoverBorderWidth: 2,
                 pointRadius: 1,
                 pointHitRadius: 10,
@@ -121,15 +121,15 @@ export const GoldProgressionGraph = ({
             legend: { display: false },
             title: {
                 display: false,
-                text: "Recent runs",
-                position: "top",
+                text: 'Recent runs',
+                position: 'top',
             },
         },
         scales: {
             y: {
                 ticks: {
                     callback(value: string) {
-                        return getFormattedString(value, true) || "Unknown";
+                        return getFormattedString(value, true) || 'Unknown';
                     },
                 },
             },

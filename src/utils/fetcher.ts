@@ -11,7 +11,7 @@ export const multiFetcher = async (urls: string[]) => {
     );
 
     return results.map((result) => {
-        if (result.status !== "fulfilled") return null;
+        if (result.status !== 'fulfilled') return null;
 
         return result.value;
     });

@@ -1,11 +1,11 @@
-"use client";
-import React, { CSSProperties, useMemo, useState } from "react";
-import Dropzone, { useDropzone } from "react-dropzone";
-import { Alert } from "react-bootstrap";
-import { CheckCircle, CloudUpload } from "react-bootstrap-icons";
-import Link from "next/link";
-import { useUploadMutation } from "./upload";
-import { UserLink } from "../links/links";
+'use client';
+import Link from 'next/link';
+import React, { CSSProperties, useMemo, useState } from 'react';
+import { Alert } from 'react-bootstrap';
+import { CheckCircle, CloudUpload } from 'react-bootstrap-icons';
+import Dropzone, { useDropzone } from 'react-dropzone';
+import { UserLink } from '../links/links';
+import { useUploadMutation } from './upload';
 
 export const Dragdrop = ({
     sessionId,
@@ -34,33 +34,33 @@ export const Dragdrop = ({
     };
 
     const { isFocused, isDragAccept, isDragReject } = useDropzone({
-        accept: "image/*",
+        accept: 'image/*',
     });
 
     const style: CSSProperties = useMemo(() => {
         const baseStyle = {
             flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            padding: "20px",
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            padding: '20px',
             borderWidth: 2,
             borderRadius: 2,
-            borderStyle: "dashed",
-            outline: "none",
-            transition: "border .24s ease-in-out",
+            borderStyle: 'dashed',
+            outline: 'none',
+            transition: 'border .24s ease-in-out',
         };
 
         const focusedStyle = {
-            borderColor: "#2196f3",
+            borderColor: '#2196f3',
         };
 
         const acceptStyle = {
-            borderColor: "#00e676",
+            borderColor: '#00e676',
         };
 
         const rejectStyle = {
-            borderColor: "#ff1744",
+            borderColor: '#ff1744',
         };
 
         return {
@@ -84,7 +84,7 @@ export const Dragdrop = ({
 
             <p>
                 If you install the LiveSplit Component, you will never have to
-                upload manually again!{" "}
+                upload manually again!{' '}
                 <a href="/livesplit">Check out how to here. </a>
             </p>
 
@@ -99,11 +99,13 @@ export const Dragdrop = ({
                         Upload succeeded!
                     </Alert.Heading>
                     <p>
-                        Check back on{" "}
+                        Check back on{' '}
                         <UserLink username={username}>Your profile</UserLink> in
                         around 1 minute. If your splits don&apos;t show up or
-                        there seems to be something wrong with them, please{" "}
-                        <Link href="/contact" prefetch={false}>Contact me!</Link>
+                        there seems to be something wrong with them, please{' '}
+                        <Link href="/contact" prefetch={false}>
+                            Contact me!
+                        </Link>
                     </p>
                 </Alert>
             ) : (

@@ -1,9 +1,9 @@
-import { Col, Row, Table } from "react-bootstrap";
-import { DurationToFormatted } from "../util/datetime";
-import React from "react";
-import { GameStats } from "../game/game-stats";
-import WrHistory from "./wr-history";
-import { UserLink } from "../links/links";
+import React from 'react';
+import { Col, Row, Table } from 'react-bootstrap';
+import { GameStats } from '../game/game-stats';
+import { UserLink } from '../links/links';
+import { DurationToFormatted } from '../util/datetime';
+import WrHistory from './wr-history';
 
 export interface WrHistoryStat {
     timeHeldWr: number;

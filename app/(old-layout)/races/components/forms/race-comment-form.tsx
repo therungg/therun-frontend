@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { Form } from "react-bootstrap";
-import { SubmitButton } from "~src/components/Button/SubmitButton";
-import { leaveRaceComment } from "~app/(old-layout)/races/actions/leave-race-comment.action";
+import { Form } from 'react-bootstrap';
+import { leaveRaceComment } from '~app/(old-layout)/races/actions/leave-race-comment.action';
+import { SubmitButton } from '~src/components/Button/SubmitButton';
 
 export const CommentOnRaceForm = ({ raceId }: { raceId: string }) => {
     return (

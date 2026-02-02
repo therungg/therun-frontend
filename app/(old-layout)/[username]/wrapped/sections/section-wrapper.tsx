@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from "react";
+import React, { PropsWithChildren } from 'react';
 
 export const SectionWrapper = React.forwardRef<
     HTMLDivElement,
@@ -13,4 +13,4 @@ export const SectionWrapper = React.forwardRef<
         </div>
     );
 });
-SectionWrapper.displayName = "SectionWrapper";
+SectionWrapper.displayName = 'SectionWrapper';

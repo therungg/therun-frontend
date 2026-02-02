@@ -1,10 +1,10 @@
-import { RunHistory, SplitsHistory } from "~src/common/types";
-import { useState } from "react";
-import { Col, Row, Table } from "react-bootstrap";
-import { DurationToFormatted } from "../../util/datetime";
-import { InfoTooltip, UnderlineTooltip } from "../../tooltip";
-import Switch from "react-switch";
-import SplitName from "../../transformers/split-name";
+import { useState } from 'react';
+import { Col, Row, Table } from 'react-bootstrap';
+import Switch from 'react-switch';
+import { RunHistory, SplitsHistory } from '~src/common/types';
+import { InfoTooltip, UnderlineTooltip } from '../../tooltip';
+import SplitName from '../../transformers/split-name';
+import { DurationToFormatted } from '../../util/datetime';
 
 export const Timesaves = ({
     history,
@@ -16,7 +16,7 @@ export const Timesaves = ({
     const [lastN, setLastN] = useState(
         history.length < 500 ? history.length : 500,
     );
-    const [sortColumn, setSortColumn] = useState("best");
+    const [sortColumn, setSortColumn] = useState('best');
     const [sortAsc, setSortAsc] = useState(true);
     const [visual, setVisual] = useState(true);
 
@@ -76,11 +76,11 @@ export const Timesaves = ({
     };
 
     const getSortableClassName = (column: string): string => {
-        let classNames = "sortable";
+        let classNames = 'sortable';
 
         if (sortColumn === column) {
-            classNames += " active";
-            classNames += sortAsc ? " asc" : " desc";
+            classNames += ' active';
+            classNames += sortAsc ? ' asc' : ' desc';
         }
 
         return classNames;
@@ -89,23 +89,23 @@ export const Timesaves = ({
     splits.sort((a, b) => {
         let res = 1;
 
-        if (sortColumn === "timesave") {
+        if (sortColumn === 'timesave') {
             res = a.timeSave < b.timeSave ? 1 : -1;
         }
 
-        if (sortColumn === "split") {
+        if (sortColumn === 'split') {
             res = a.key > b.key ? 1 : -1;
         }
-        if (sortColumn === "best") {
+        if (sortColumn === 'best') {
             res = a.bestDiff < b.bestDiff ? 1 : -1;
         }
-        if (sortColumn === "10") {
+        if (sortColumn === '10') {
             res = a.tenPercentDiff < b.tenPercentDiff ? 1 : -1;
         }
-        if (sortColumn === "50") {
+        if (sortColumn === '50') {
             res = a.fiftyPercentDiff < b.fiftyPercentDiff ? 1 : -1;
         }
-        if (sortColumn === "#") {
+        if (sortColumn === '#') {
             res = a.values.length < b.values.length ? 1 : -1;
         }
 
@@ -130,10 +130,10 @@ export const Timesaves = ({
                         checkedIcon={false}
                         onColor={getComputedStyle(
                             document.documentElement,
-                        ).getPropertyValue("--bs-link-color")}
+                        ).getPropertyValue('--bs-link-color')}
                         offColor={getComputedStyle(
                             document.documentElement,
-                        ).getPropertyValue("--bs-link-color")}
+                        ).getPropertyValue('--bs-link-color')}
                         name="switch"
                         onChange={(checked) => {
                             setVisual(checked);
@@ -148,8 +148,8 @@ export const Timesaves = ({
                         <UnderlineTooltip
                             title="Sample size"
                             content={
-                                "The sample size limits the amount of recent runs the tool takes into account." +
-                                " This can be useful, because it is often not relevant to see data for a run you did 5 years ago, for example. The default is 500."
+                                'The sample size limits the amount of recent runs the tool takes into account.' +
+                                ' This can be useful, because it is often not relevant to see data for a run you did 5 years ago, for example. The default is 500.'
                             }
                             element="Sample size:"
                         />
@@ -160,7 +160,7 @@ export const Timesaves = ({
                                 let val =
                                     e.target.value > history.length
                                         ? history.length
-                                        : e.target.value.replace(/\D/g, "");
+                                        : e.target.value.replace(/\D/g, '');
                                 if (val < 0) val = 500;
                                 setLastN(val);
                             }}
@@ -200,7 +200,7 @@ export const Timesaves = ({
                                         >
                                             <div>
                                                 <div>
-                                                    Possible timesave:{" "}
+                                                    Possible timesave:{' '}
                                                     <b>
                                                         -
                                                         <DurationToFormatted
@@ -215,7 +215,7 @@ export const Timesaves = ({
                                         </Col>
                                         <Col>
                                             <div>
-                                                Time in PB:{" "}
+                                                Time in PB:{' '}
                                                 <b>
                                                     <DurationToFormatted
                                                         duration={
@@ -226,7 +226,7 @@ export const Timesaves = ({
                                                 </b>
                                             </div>
                                             <div>
-                                                Chance to save time:{" "}
+                                                Chance to save time:{' '}
                                                 <b>
                                                     {(
                                                         split.timeSave * 100
@@ -235,7 +235,7 @@ export const Timesaves = ({
                                                 </b>
                                             </div>
                                             <div>
-                                                % of total time to save:{" "}
+                                                % of total time to save:{' '}
                                                 <b>
                                                     {(
                                                         (split.bestDiff /
@@ -257,15 +257,15 @@ export const Timesaves = ({
                     <thead>
                         <tr>
                             <th
-                                className={getSortableClassName("split")}
-                                onClick={() => changeSort("split")}
+                                className={getSortableClassName('split')}
+                                onClick={() => changeSort('split')}
                             >
                                 Split
                             </th>
                             <th>PB Time</th>
                             <th
-                                className={getSortableClassName("best")}
-                                onClick={() => changeSort("best")}
+                                className={getSortableClassName('best')}
+                                onClick={() => changeSort('best')}
                             >
                                 Possible timesave
                                 <InfoTooltip
@@ -286,9 +286,9 @@ export const Timesaves = ({
                             </th>
                             <th
                                 className={`d-none d-lg-table-cell ${getSortableClassName(
-                                    "timesave",
+                                    'timesave',
                                 )}`}
-                                onClick={() => changeSort("timesave")}
+                                onClick={() => changeSort('timesave')}
                             >
                                 Timesave%
                                 <InfoTooltip
@@ -303,9 +303,9 @@ export const Timesaves = ({
                             </th>
                             <th
                                 className={`d-none d-lg-table-cell ${getSortableClassName(
-                                    "10",
+                                    '10',
                                 )}`}
-                                onClick={() => changeSort("10")}
+                                onClick={() => changeSort('10')}
                             >
                                 Best 10%
                                 <InfoTooltip
@@ -321,9 +321,9 @@ export const Timesaves = ({
                             </th>
                             <th
                                 className={`d-none d-lg-table-cell ${getSortableClassName(
-                                    "50",
+                                    '50',
                                 )}`}
-                                onClick={() => changeSort("50")}
+                                onClick={() => changeSort('50')}
                             >
                                 Best 50%
                                 <InfoTooltip
@@ -341,9 +341,9 @@ export const Timesaves = ({
                             </th>
                             <th
                                 className={`d-none d-lg-table-cell ${getSortableClassName(
-                                    "#",
+                                    '#',
                                 )}`}
-                                onClick={() => changeSort("#")}
+                                onClick={() => changeSort('#')}
                             >
                                 Split#
                                 <InfoTooltip
@@ -377,17 +377,17 @@ export const Timesaves = ({
                                             style={{
                                                 color:
                                                     split.bestDiff >= 0
-                                                        ? "var(--bs-link-color)"
-                                                        : "var(--bs-red)",
-                                                marginRight: "1rem",
+                                                        ? 'var(--bs-link-color)'
+                                                        : 'var(--bs-red)',
+                                                marginRight: '1rem',
                                             }}
                                         >
-                                            {split.bestDiff >= 0 ? "-" : "+"}
+                                            {split.bestDiff >= 0 ? '-' : '+'}
                                             <DurationToFormatted
                                                 duration={split.bestDiff}
                                                 withMillis={true}
                                             />
-                                        </span>{" "}
+                                        </span>{' '}
                                         (
                                         {(
                                             (split.bestDiff /
@@ -399,7 +399,7 @@ export const Timesaves = ({
 
                                     <td className="d-none d-lg-table-cell">
                                         {split.timeSave == 0
-                                            ? "Need gold"
+                                            ? 'Need gold'
                                             : `${(split.timeSave * 100).toFixed(
                                                   2,
                                               )}%`}
@@ -416,11 +416,11 @@ export const Timesaves = ({
                                                 style={{
                                                     color:
                                                         val >= 0
-                                                            ? "var(--bs-link-color)"
-                                                            : "var(--bs-red)",
+                                                            ? 'var(--bs-link-color)'
+                                                            : 'var(--bs-red)',
                                                 }}
                                             >
-                                                {val >= 0 ? "-" : "+"}
+                                                {val >= 0 ? '-' : '+'}
                                                 <DurationToFormatted
                                                     duration={val}
                                                     withMillis={true}

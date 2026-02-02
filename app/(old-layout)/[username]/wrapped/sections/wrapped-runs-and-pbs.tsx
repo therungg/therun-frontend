@@ -1,19 +1,19 @@
-import { WrappedWithData } from "~app/(old-layout)/[username]/wrapped/wrapped-types";
-import React, { Dispatch, FC, SetStateAction, useMemo, useState } from "react";
-import { SectionWrapper } from "~app/(old-layout)/[username]/wrapped/sections/section-wrapper";
-import { SectionTitle } from "~app/(old-layout)/[username]/wrapped/sections/section-title";
-import { SectionBody } from "~app/(old-layout)/[username]/wrapped/sections/section-body";
-import { Col, Row, Table } from "react-bootstrap";
+import React, { Dispatch, FC, SetStateAction, useMemo, useState } from 'react';
+import { Col, Row, Table } from 'react-bootstrap';
+import { SectionBody } from '~app/(old-layout)/[username]/wrapped/sections/section-body';
+import { SectionTitle } from '~app/(old-layout)/[username]/wrapped/sections/section-title';
+import { SectionWrapper } from '~app/(old-layout)/[username]/wrapped/sections/section-wrapper';
+import { WrappedWithData } from '~app/(old-layout)/[username]/wrapped/wrapped-types';
+import styles from '~src/components/css/LiveRun.module.scss';
+import { GameImage } from '~src/components/image/gameimage';
+import { TruncatedTextTooltip } from '~src/components/tooltip';
 import {
     Difference,
     DifferenceFromOne,
     DurationToFormatted,
     getDateAsMonthDay,
-} from "~src/components/util/datetime";
-import styles from "~src/components/css/LiveRun.module.scss";
-import { GameImage } from "~src/components/image/gameimage";
-import { TrophyIcon } from "~src/icons/trophy-icon";
-import { TruncatedTextTooltip } from "~src/components/tooltip";
+} from '~src/components/util/datetime';
+import { TrophyIcon } from '~src/icons/trophy-icon';
 
 interface WrappedRunsAndPbsProps {
     wrapped: WrappedWithData;
@@ -150,8 +150,9 @@ export const WrappedRunsAndPbs: React.FC<WrappedRunsAndPbsProps> = ({
         <SectionWrapper>
             <SectionTitle
                 title="Here's a full overview of your runs this year!"
-                subtitle={`You finished ${wrapped.totalFinishedRuns} runs. ${wrapped.totalPbs
-                    } - or ${pbPercentage.toFixed(2)}% - of them were a PB.`}
+                subtitle={`You finished ${wrapped.totalFinishedRuns} runs. ${
+                    wrapped.totalPbs
+                } - or ${pbPercentage.toFixed(2)}% - of them were a PB.`}
                 extraRemark="We all know speedrunning is about records, not about having fun."
             />
             <SectionBody>
@@ -254,9 +255,9 @@ const GameOverview: React.FC<
                                             <div
                                                 className="text-start h5 fw-bold pe-3"
                                                 style={{
-                                                    textDecoration: "underline",
+                                                    textDecoration: 'underline',
                                                     textDecorationColor:
-                                                        "var(--bs-gold)",
+                                                        'var(--bs-gold)',
                                                 }}
                                             >
                                                 <TruncatedTextTooltip
@@ -267,11 +268,11 @@ const GameOverview: React.FC<
                                                                     size={24}
                                                                     trophyColor={
                                                                         i === 0
-                                                                            ? "gold"
+                                                                            ? 'gold'
                                                                             : i ===
                                                                                 1
-                                                                                ? "silver"
-                                                                                : "bronze"
+                                                                              ? 'silver'
+                                                                              : 'bronze'
                                                                     }
                                                                 />
                                                             )}
@@ -361,7 +362,7 @@ const ShowGame: React.FC<
                         returnToOverview();
                     }}
                 >
-                    {"< Back to games"}
+                    {'< Back to games'}
                 </span>
             </div>
             <Row>
@@ -388,10 +389,10 @@ const ShowGame: React.FC<
                                 <tr>
                                     <td>
                                         <b>
-                                            You spent{" "}
+                                            You spent{' '}
                                             <DurationToFormatted
                                                 duration={gameData.totalRunTime}
-                                            />{" "}
+                                            />{' '}
                                             playing this game
                                         </b>
                                     </td>
@@ -399,8 +400,8 @@ const ShowGame: React.FC<
                                 <tr>
                                     <td>
                                         <b>
-                                            You ran a total of{" "}
-                                            {gameData.categories.size}{" "}
+                                            You ran a total of{' '}
+                                            {gameData.categories.size}{' '}
                                             categories
                                         </b>
                                     </td>
@@ -408,7 +409,7 @@ const ShowGame: React.FC<
                                 <tr>
                                     <td>
                                         <b>
-                                            You started {gameData.attemptCount}{" "}
+                                            You started {gameData.attemptCount}{' '}
                                             attempts
                                         </b>
                                     </td>
@@ -416,8 +417,8 @@ const ShowGame: React.FC<
                                 <tr>
                                     <td>
                                         <b>
-                                            You finished{" "}
-                                            {gameData.finishedAttemptCount}{" "}
+                                            You finished{' '}
+                                            {gameData.finishedAttemptCount}{' '}
                                             attempts
                                         </b>
                                     </td>
@@ -430,7 +431,7 @@ const ShowGame: React.FC<
                                 <tr>
                                     <td>
                                         <b>
-                                            While doing so, you golded{" "}
+                                            While doing so, you golded{' '}
                                             {gameData.totalGolds} times
                                         </b>
                                     </td>
@@ -445,7 +446,7 @@ const ShowGame: React.FC<
                     md={12}
                     className="overflow-y-auto"
                     style={{
-                        maxHeight: "50vh",
+                        maxHeight: '50vh',
                     }}
                 >
                     <div className="mb-2">
@@ -470,16 +471,16 @@ const ShowGame: React.FC<
                                         <TruncatedTextTooltip
                                             text={
                                                 <>
-                                                    {category} -{" "}
+                                                    {category} -{' '}
                                                     <DurationToFormatted
                                                         duration={
                                                             categoryData.pb
                                                         }
-                                                    />{" "}
+                                                    />{' '}
                                                     {categoryData.timeBefore &&
                                                         categoryData.pb &&
                                                         categoryData.timeBefore !==
-                                                        categoryData.pb && (
+                                                            categoryData.pb && (
                                                             <span className="h6">
                                                                 (
                                                                 <Difference
@@ -488,7 +489,7 @@ const ShowGame: React.FC<
                                                                     inline={
                                                                         true
                                                                     }
-                                                                />{" "}
+                                                                />{' '}
                                                                 this year)
                                                             </span>
                                                         )}
@@ -556,7 +557,7 @@ const ShowCategory: FC<
                         returnToGame();
                     }}
                 >
-                    {"< Back to " + game}
+                    {'< Back to ' + game}
                 </span>
             </div>
             <Row>
@@ -586,7 +587,7 @@ const ShowCategory: FC<
                                             {categoryData.timeBefore && (
                                                 <>
                                                     You started the year off
-                                                    with a PB of{" "}
+                                                    with a PB of{' '}
                                                     <DurationToFormatted
                                                         duration={
                                                             categoryData.timeBefore
@@ -606,7 +607,7 @@ const ShowCategory: FC<
                                 <tr>
                                     <td>
                                         <b>
-                                            Your best time this year was a{" "}
+                                            Your best time this year was a{' '}
                                             <DurationToFormatted
                                                 duration={categoryData.pb}
                                             />
@@ -615,17 +616,17 @@ const ShowCategory: FC<
                                 </tr>
                                 {categoryData.timeBefore &&
                                     categoryData.timeBefore >
-                                    categoryData.pb && (
+                                        categoryData.pb && (
                                         <tr>
                                             <td>
                                                 <b>
                                                     <span>
-                                                        So you shaved off{" "}
+                                                        So you shaved off{' '}
                                                         <Difference
                                                             two={categoryData.timeBefore.toString()}
                                                             one={categoryData.pb.toString()}
                                                             inline={true}
-                                                        />{" "}
+                                                        />{' '}
                                                         this year!
                                                     </span>
                                                 </b>
@@ -634,17 +635,17 @@ const ShowCategory: FC<
                                     )}
                                 {categoryData.timeBefore &&
                                     categoryData.timeBefore <=
-                                    categoryData.pb && (
+                                        categoryData.pb && (
                                         <tr>
                                             <td>
                                                 <b>
                                                     <span>
-                                                        You were only{" "}
+                                                        You were only{' '}
                                                         <Difference
                                                             two={categoryData.timeBefore.toString()}
                                                             one={categoryData.pb.toString()}
                                                             inline={true}
-                                                        />{" "}
+                                                        />{' '}
                                                         off your PB this year!
                                                     </span>
                                                 </b>
@@ -654,7 +655,7 @@ const ShowCategory: FC<
                                 <tr>
                                     <td>
                                         <b>
-                                            Your SOB is{" "}
+                                            Your SOB is{' '}
                                             <DurationToFormatted
                                                 duration={categoryData.sob}
                                             />
@@ -664,12 +665,12 @@ const ShowCategory: FC<
                                 <tr>
                                     <td>
                                         <b>
-                                            You spent{" "}
+                                            You spent{' '}
                                             <DurationToFormatted
                                                 duration={
                                                     categoryData.totalRunTime
                                                 }
-                                            />{" "}
+                                            />{' '}
                                             playing this category
                                         </b>
                                     </td>
@@ -677,7 +678,7 @@ const ShowCategory: FC<
                                 <tr>
                                     <td>
                                         <b>
-                                            You started{" "}
+                                            You started{' '}
                                             {categoryData.attemptCount} attempts
                                         </b>
                                     </td>
@@ -685,21 +686,21 @@ const ShowCategory: FC<
                                 <tr>
                                     <td>
                                         <b>
-                                            You finished{" "}
+                                            You finished{' '}
                                             <span
                                                 style={{
                                                     color:
                                                         categoryData.finishedAttemptCount <=
-                                                            0
-                                                            ? "red"
-                                                            : "var(--bs-link-color)",
+                                                        0
+                                                            ? 'red'
+                                                            : 'var(--bs-link-color)',
                                                 }}
                                                 className="fw-bold"
                                             >
                                                 {
                                                     categoryData.finishedAttemptCount
                                                 }
-                                            </span>{" "}
+                                            </span>{' '}
                                             attempts
                                         </b>
                                     </td>
@@ -707,37 +708,37 @@ const ShowCategory: FC<
                                 <tr>
                                     <td>
                                         <b>
-                                            You got{" "}
+                                            You got{' '}
                                             <span
                                                 style={{
                                                     color:
                                                         categoryData.pbCount <=
-                                                            0
-                                                            ? "red"
-                                                            : "var(--bs-link-color)",
+                                                        0
+                                                            ? 'red'
+                                                            : 'var(--bs-link-color)',
                                                 }}
                                                 className="fw-bold"
                                             >
                                                 {categoryData.pbCount}
-                                            </span>{" "}
+                                            </span>{' '}
                                             PBs
                                         </b>
                                     </td>
                                 </tr>
                                 <tr>
                                     <td>
-                                        While doing so, you golded{" "}
+                                        While doing so, you golded{' '}
                                         <span
                                             style={{
                                                 color:
                                                     categoryData.totalGolds <= 0
-                                                        ? "red"
-                                                        : "gold",
+                                                        ? 'red'
+                                                        : 'gold',
                                             }}
                                             className="fw-bold"
                                         >
                                             {categoryData.totalGolds}
-                                        </span>{" "}
+                                        </span>{' '}
                                         times
                                     </td>
                                 </tr>
@@ -748,7 +749,7 @@ const ShowCategory: FC<
                 <Col
                     className="overflow-y-auto"
                     style={{
-                        maxHeight: "60vh",
+                        maxHeight: '60vh',
                     }}
                     md={12}
                     lg={5}
@@ -792,9 +793,9 @@ const ShowCategory: FC<
                                         <td>
                                             {run.isPb
                                                 ? run.timeSave
-                                                    ? "Yes!"
-                                                    : "First Run"
-                                                : "No"}
+                                                    ? 'Yes!'
+                                                    : 'First Run'
+                                                : 'No'}
                                         </td>
                                         <td>
                                             {run.isPb && run.timeSave && (

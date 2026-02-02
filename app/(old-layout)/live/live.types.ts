@@ -1,5 +1,5 @@
-import { Run } from "~src/common/types";
-import { MarathonEvent } from "~src/components/marathon/send-marathon-data-button";
+import { Run } from '~src/common/types';
+import { MarathonEvent } from '~src/components/marathon/send-marathon-data-button';
 
 export interface LiveRun {
     user: string;
@@ -78,7 +78,7 @@ export interface LiveProps {
 }
 
 export interface WebsocketLiveRunMessage {
-    type: "UPDATE" | "DELETE";
+    type: 'UPDATE' | 'DELETE';
     user: string;
     run: LiveRun;
     time?: string;

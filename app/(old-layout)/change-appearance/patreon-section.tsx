@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { PatreonBunnySvg } from "~app/(old-layout)/patron/patreon-info";
-import { Button, Col, Row } from "react-bootstrap";
-import React, { useState } from "react";
-import Switch from "react-switch";
-import axios from "axios";
-import Router from "next/router";
-import patreonStyles from "~src/components/patreon/patreon-styles";
-import PatreonName from "~src/components/patreon/patreon-name";
-import { User } from "../../../types/session.types";
+import axios from 'axios';
+import Router from 'next/router';
+import React, { useState } from 'react';
+import { Button, Col, Row } from 'react-bootstrap';
+import Switch from 'react-switch';
+import { PatreonBunnySvg } from '~app/(old-layout)/patron/patreon-info';
+import PatreonName from '~src/components/patreon/patreon-name';
+import patreonStyles from '~src/components/patreon/patreon-styles';
+import { User } from '../../../types/session.types';
 
 interface PatreonPreferences {
     hide: boolean;
@@ -40,7 +40,7 @@ export default function PatreonSection({
                     userPatreonData={userPatreonData}
                 />
             )}
-            {!userPatreonData.tier && "You are not a patreon!"}
+            {!userPatreonData.tier && 'You are not a patreon!'}
         </div>
     );
 }
@@ -115,7 +115,7 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                                                 if (
                                                     userPatreonData.tier >= n ||
                                                     session.username ==
-                                                        "joeys64"
+                                                        'joeys64'
                                                 ) {
                                                     setColorPreference(
                                                         style.id,
@@ -130,12 +130,12 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                                             <div
                                                 className={`${
                                                     userPatreonData.tier >= n
-                                                        ? "border border-hover cursor-pointer"
-                                                        : " "
+                                                        ? 'border border-hover cursor-pointer'
+                                                        : ' '
                                                 } ${
                                                     colorPreference == style.id
-                                                        ? "border border-secondary"
-                                                        : ""
+                                                        ? 'border border-secondary'
+                                                        : ''
                                                 }`}
                                             >
                                                 <div className="bg-dark">
@@ -178,7 +178,7 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                         checked={!hide}
                     />
                     <label htmlFor="switch" className="ms-2">
-                        Display me as Patreon{" "}
+                        Display me as Patreon{' '}
                         <span className="d-none d-lg-inline">
                             (overrides all other settings when switched off)
                         </span>
@@ -209,7 +209,7 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                     </label>
                 </div>
                 {(userPatreonData.tier > 2 ||
-                    session.username == "joeys64") && (
+                    session.username == 'joeys64') && (
                     <div className="d-flex justify-content-start align-items-center mb-3">
                         <Switch
                             name="switch"
