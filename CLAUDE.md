@@ -82,7 +82,6 @@ The project uses React Compiler (babel-plugin-react-compiler) enabled via `react
 ### Implementation Execution Preference
 
 **Subagent-Driven Development:** When given the choice between subagent-driven (this session) vs parallel session (separate) execution, always choose **subagent-driven** for this project. This allows for task-by-task execution with review between tasks in the current session.
-
 **Worktree Cleanup:** After creating a Pull Request, always remove the worktree with `git worktree remove --force <path>`. The user prefers to access branches from the main repository rather than keeping worktrees around.
 
 ### After Completing Work
