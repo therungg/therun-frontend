@@ -6,6 +6,7 @@ import { users } from '~src/db/schema';
 import {
     DEFAULT_FRONTPAGE_CONFIG,
     mergeConfigWithDefaults,
+    NON_HIDEABLE_PANELS,
     PANEL_REGISTRY,
 } from '~src/lib/frontpage-panels';
 import { PanelConfig } from '../../types/frontpage-config.types';
@@ -26,7 +27,16 @@ export async function getFrontpageConfig(): Promise<PanelConfig> {
         return DEFAULT_FRONTPAGE_CONFIG;
     }
 
-    return mergeConfigWithDefaults(user.frontpageConfig as PanelConfig);
+    const merged = mergeConfigWithDefaults(user.frontpageConfig as PanelConfig);
+    return enforceNonHideablePanels(merged);
+}
+
+function enforceNonHideablePanels(config: PanelConfig): PanelConfig {
+    return {
+        panels: config.panels.map((p) =>
+            NON_HIDEABLE_PANELS.includes(p.id) ? { ...p, visible: true } : p,
+        ),
+    };
 }
 
 export async function updateFrontpageConfig(
@@ -51,10 +61,12 @@ export async function updateFrontpageConfig(
         return { success: false, error: 'Invalid panel configuration' };
     }
 
+    const enforced = enforceNonHideablePanels(config);
+
     try {
         await db
             .update(users)
-            .set({ frontpageConfig: config })
+            .set({ frontpageConfig: enforced })
             .where(eq(users.username, session.username));
 
         return { success: true };

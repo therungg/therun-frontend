@@ -48,12 +48,6 @@ const LatestPb = ({ run, gameData, userData }: LatestPbProps) => {
         ? (run.gameTimeData?.personalBest as string)
         : run.personalBest;
 
-    const gameTimeLabel = run.hasGameTime ? (
-        <span className="fs-smaller fst-italic"> (IGT)</span>
-    ) : (
-        ''
-    );
-
     const imageUrl =
         gameData?.image && gameData.image !== 'noimage'
             ? gameData.image
@@ -64,48 +58,53 @@ const LatestPb = ({ run, gameData, userData }: LatestPbProps) => {
             imageUrl={imageUrl}
             imageAlt={gameData?.display || run.game}
             className={styles.pbCard}
+            imageWidth={70}
+            imageHeight={90}
         >
-            <div className="d-flex flex-column">
-                <div className="fs-normal">
-                    <UserGameCategoryLink
-                        url={run.url}
-                        username={run.user}
-                        game={run.game}
-                        category={run.run}
-                    />{' '}
-                    in <DurationToFormatted duration={duration} />
-                    {gameTimeLabel}
+            <div className={styles.pbContent}>
+                {/* Row 1: Game + User */}
+                <div className={styles.topRow}>
+                    <div className={styles.gameName}>
+                        <UserGameCategoryLink
+                            url={run.url}
+                            username={run.user}
+                            game={run.game}
+                            category={run.run}
+                        >
+                            {gameData?.display || run.game}
+                        </UserGameCategoryLink>
+                    </div>
+                    <UserLink username={run.user}>
+                        <div className={styles.userInfo}>
+                            {userData?.picture && (
+                                <div className={styles.userAvatar}>
+                                    <Image
+                                        src={userData.picture}
+                                        alt={userData.username}
+                                        fill
+                                        style={{ objectFit: 'cover' }}
+                                    />
+                                </div>
+                            )}
+                            <span className={styles.username}>{run.user}</span>
+                        </div>
+                    </UserLink>
                 </div>
 
-                <div
-                    className={`fs-smaller d-flex align-items-center ${styles.metaInfo}`}
-                >
-                    <FromNow time={run.personalBestTime} />
-                    {userData && (
-                        <>
-                            <span>by</span>
-                            <UserLink username={run.user}>
-                                <div
-                                    className={`d-flex align-items-center gap-1 ${styles.userWithImage}`}
-                                >
-                                    <span>{run.user}</span>
-                                    {userData.picture && (
-                                        <div
-                                            className={styles.userImageWrapper}
-                                        >
-                                            <Image
-                                                src={userData.picture}
-                                                alt={userData.username}
-                                                fill
-                                                style={{ objectFit: 'cover' }}
-                                                className={styles.userImage}
-                                            />
-                                        </div>
-                                    )}
-                                </div>
-                            </UserLink>
-                        </>
-                    )}
+                {/* Row 2: Category + User avatar duplicate? No, just category */}
+                <div className={styles.middleRow}>
+                    <span className={styles.categoryBadge}>{run.run}</span>
+                </div>
+
+                {/* Row 3: [spacer] Time badge (center) Timestamp (right) */}
+                <div className={styles.bottomRow}>
+                    <div />
+                    <div className={styles.timeBadge}>
+                        <DurationToFormatted duration={duration} />
+                    </div>
+                    <span className={styles.timestamp}>
+                        <FromNow time={run.personalBestTime} />
+                    </span>
                 </div>
             </div>
         </CardWithImage>

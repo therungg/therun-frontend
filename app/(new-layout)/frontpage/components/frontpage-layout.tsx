@@ -20,6 +20,7 @@ import {
 import React, { ReactNode, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { updateFrontpageConfig } from '~src/actions/frontpage-config.action';
+import { NON_HIDEABLE_PANELS } from '~src/lib/frontpage-panels-metadata';
 import { PanelConfig, PanelId } from '../../../../types/frontpage-config.types';
 import { DraggablePanel } from './draggable-panel';
 import { HiddenPanelsDropdown } from './hidden-panels-dropdown';
@@ -303,6 +304,7 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
     };
 
     const handleHidePanel = (panelId: PanelId) => {
+        if (NON_HIDEABLE_PANELS.includes(panelId)) return;
         const newPanels = config.panels.map((p) =>
             p.id === panelId ? { ...p, visible: false } : p,
         );
@@ -388,6 +390,9 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                                     id={panel.id}
                                     onHide={() => handleHidePanel(panel.id)}
                                     canHide={canHideMore}
+                                    hideable={
+                                        !NON_HIDEABLE_PANELS.includes(panel.id)
+                                    }
                                     isAuthenticated={isAuthenticated}
                                 >
                                     {panels[panel.id]}
@@ -432,6 +437,9 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                                     id={panel.id}
                                     onHide={() => handleHidePanel(panel.id)}
                                     canHide={canHideMore}
+                                    hideable={
+                                        !NON_HIDEABLE_PANELS.includes(panel.id)
+                                    }
                                     isAuthenticated={isAuthenticated}
                                 >
                                     {panels[panel.id]}

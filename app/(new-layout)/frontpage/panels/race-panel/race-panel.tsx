@@ -77,19 +77,9 @@ export default async function RacePanel() {
                         )}
                     </a>
                 </Card>
-                {progressRaces.length > 0 ? (
-                    progressRaces.map((race) => (
-                        <RaceCard
-                            key={race.raceId}
-                            race={race}
-                            className="mt-2"
-                        />
-                    ))
-                ) : (
-                    <div className={styles.emptyState}>
-                        No races currently in progress
-                    </div>
-                )}
+                {progressRaces.map((race) => (
+                    <RaceCard key={race.raceId} race={race} className="mt-2" />
+                ))}
             </div>
             {pendingRaces.length > 0 && (
                 <div className={styles.upcomingSection}>
