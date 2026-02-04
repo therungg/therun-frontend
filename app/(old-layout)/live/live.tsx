@@ -167,51 +167,59 @@ export const Live = ({
             <Row className="g-3 mb-3">
                 <Col>
                     <div
-                        className="d-flex align-items-center justify-content-between px-3 py-2 rounded-3 shadow-sm"
+                        className="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center justify-content-lg-between px-3 py-2 rounded-3 shadow-sm gap-3 gap-lg-4"
                         style={{
                             background: 'var(--bs-body-bg)',
                             border: '1px solid var(--bs-border-color)',
-                            gap: '1.5rem',
                         }}
                     >
-                        <SortControl
-                            value={sortOption}
-                            onChange={setSortOption}
-                        />
-                        <div
-                            className="input-group"
-                            style={{ maxWidth: '380px' }}
-                        >
-                            <span
-                                className="input-group-text bg-transparent border-end-0"
-                                onClick={() => {
-                                    const searchElement =
-                                        document.getElementById('gameSearch');
-                                    if (
-                                        document.activeElement !== searchElement
-                                    ) {
-                                        searchElement.focus();
-                                    }
-                                }}
-                            >
-                                <SearchIcon size={18} />
-                            </span>
-                            <input
-                                type="search"
-                                className="form-control border-start-0 bg-transparent"
-                                placeholder="Filter by game/category/user"
-                                onChange={(e) => {
-                                    setSearch(e.target.value);
-                                }}
-                                value={search}
-                                id="gameSearch"
-                                style={{
-                                    boxShadow: 'none',
-                                }}
-                            />
+                        <div className="d-flex flex-column flex-sm-row align-items-stretch gap-3 flex-grow-1">
+                            <div style={{ minWidth: '200px' }}>
+                                <SortControl
+                                    value={sortOption}
+                                    onChange={setSortOption}
+                                />
+                            </div>
+                            <div className="flex-grow-1">
+                                <div className="input-group">
+                                    <span
+                                        className="input-group-text bg-transparent border-end-0"
+                                        onClick={() => {
+                                            const searchElement =
+                                                document.getElementById(
+                                                    'gameSearch',
+                                                );
+                                            if (
+                                                document.activeElement !==
+                                                searchElement
+                                            ) {
+                                                searchElement.focus();
+                                            }
+                                        }}
+                                    >
+                                        <SearchIcon size={18} />
+                                    </span>
+                                    <input
+                                        type="search"
+                                        className="form-control border-start-0 bg-transparent"
+                                        placeholder="Filter by game/category/user"
+                                        onChange={(e) => {
+                                            setSearch(e.target.value);
+                                        }}
+                                        value={search}
+                                        id="gameSearch"
+                                        style={{
+                                            boxShadow: 'none',
+                                        }}
+                                    />
+                                </div>
+                            </div>
                         </div>
-                        <div className="d-flex align-items-center gap-2">
-                            <Funnel size={16} className="text-muted" />
+                        <div className="d-flex align-items-center gap-2 justify-content-start justify-content-lg-end">
+                            <Funnel
+                                size={16}
+                                className="text-muted flex-shrink-0"
+                            />
                             <FilterControl
                                 filters={filters}
                                 onChange={setFilters}

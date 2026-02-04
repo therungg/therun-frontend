@@ -18,17 +18,15 @@ export const SortControl = ({ value, onChange }: SortControlProps) => {
     ];
 
     return (
-        <div className="d-flex align-items-center gap-2">
-            <SortDown size={20} className="text-muted" />
+        <div className="d-flex align-items-center gap-2 w-100">
+            <SortDown size={20} className="text-muted flex-shrink-0" />
             <select
                 id="sort-select"
-                className="form-select form-select-sm shadow-sm"
+                className="form-select form-select-sm shadow-sm flex-grow-1"
                 value={value}
                 onChange={(e) => onChange(e.target.value as SortOption)}
                 aria-label="Sort live runs"
                 style={{
-                    width: 'auto',
-                    minWidth: '200px',
                     cursor: 'pointer',
                     fontSize: '0.95rem',
                     fontWeight: '500',
