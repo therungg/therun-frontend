@@ -88,9 +88,6 @@ The project uses React Compiler (babel-plugin-react-compiler) enabled via `react
 
 **IMPORTANT:** Always complete these steps when finishing a feature or session:
 
-1. **STOP THE DEV SERVER** - Run `pkill -f "next dev"` to kill any running development servers
-   - This is critical to avoid resource usage and port conflicts
-   - Do this EVERY TIME before finishing work
 2. **Clear build cache** - Run `rm -rf .next` if there were significant changes
 3. **Verify commits** - Ensure all changes are committed with proper messages
 4. **Update documentation** - Mark design documents as implemented if applicable
