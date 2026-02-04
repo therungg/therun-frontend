@@ -1,18 +1,165 @@
 @import '../../../styles/design-tokens';
 @import '../../../styles/mixins';
 
-.category {
-    margin-top: 0.1rem;
-    font-size: 0.8rem;
-    opacity: 0.65;
-    font-weight: 500;
+.raceContent {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    width: 100%;
+    justify-content: center;
+    height: 100%;
 }
 
-.result {
-    margin-top: 0.1rem;
-    font-size: 0.8rem;
-    opacity: 0.75;
+.topRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.middleRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.bottomRow {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+}
+
+.timestampInline {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+    font-size: 0.75rem;
     font-weight: 500;
+    color: var(--bs-secondary-color);
+    opacity: 0.65;
+    white-space: nowrap;
+    justify-self: end;
+}
+
+.timeBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-self: center;
+    padding: 0.2rem 0.5rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-primary) 100%, white 5%),
+        color-mix(in srgb, var(--bs-primary) 90%, black 10%)
+    );
+    color: white;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.8rem;
+    box-shadow:
+        0 2px 8px rgba(var(--bs-primary-rgb), 0.4),
+        0 1px 3px rgba(0, 0, 0, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25),
+        inset 0 -1px 1px rgba(0, 0, 0, 0.15);
+    white-space: nowrap;
+    letter-spacing: -0.03em;
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    flex-shrink: 0;
+}
+
+.gameName {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--bs-emphasis-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.03em;
+    flex: 1;
+}
+
+.participantBadge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.55rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--bs-primary);
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-primary) 15%, transparent),
+        color-mix(in srgb, var(--bs-primary) 8%, transparent)
+    );
+    border: 1px solid color-mix(in srgb, var(--bs-primary) 30%, transparent);
+    border-radius: 10px;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    flex-shrink: 0;
+}
+
+.categoryBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.6rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-secondary-bg) 100%, white 10%),
+        color-mix(in srgb, var(--bs-secondary-bg) 95%, white 5%)
+    );
+    border: 1px solid color-mix(in srgb, var(--bs-border-color) 50%, transparent);
+    border-radius: 12px;
+    white-space: nowrap;
+    letter-spacing: -0.01em;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+        0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    flex-shrink: 0;
+
+    &::before {
+        content: '';
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--bs-primary);
+        opacity: 0.7;
+        flex-shrink: 0;
+    }
+}
+
+.creatorText {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--bs-secondary-color);
+    opacity: 0.65;
+    letter-spacing: 0.01em;
+}
+
+.winnerInfo {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #d4af37;
+}
+
+.winnerName {
+    color: var(--bs-body-color);
+    font-weight: 600;
 }
 
 .timer {
@@ -24,16 +171,56 @@
 
 .link {
     color: inherit;
-    background-color: var(--bs-tertiary-bg);
     width: 100%;
-    transition: all 0.15s ease-in-out;
+    background: var(--bs-tertiary-bg);
     border-radius: 0.5rem;
+    transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: block;
+
+    &.mt-2 {
+        margin-top: 0.35rem !important;
+    }
 
     &:hover {
-        background-color: var(--bs-secondary-bg);
         text-decoration: none;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        background: var(--bs-secondary-bg);
+        transform: translateY(-2px) scale(1.01);
+        box-shadow:
+            0 8px 24px rgba(0, 0, 0, 0.08),
+            0 2px 8px rgba(0, 0, 0, 0.04);
+
+        .participantBadge {
+            background: linear-gradient(
+                135deg,
+                color-mix(in srgb, var(--bs-primary) 20%, transparent),
+                color-mix(in srgb, var(--bs-primary) 12%, transparent)
+            );
+            border-color: color-mix(in srgb, var(--bs-primary) 50%, transparent);
+            box-shadow: 0 2px 8px rgba(var(--bs-primary-rgb), 0.2);
+            transform: scale(1.05);
+        }
+
+        .categoryBadge {
+            background: linear-gradient(
+                135deg,
+                color-mix(in srgb, var(--bs-primary) 15%, transparent),
+                color-mix(in srgb, var(--bs-primary) 8%, transparent)
+            );
+            border-color: color-mix(in srgb, var(--bs-primary) 40%, transparent);
+            box-shadow: 0 2px 8px rgba(var(--bs-primary-rgb), 0.15);
+            transform: scale(1.05);
+        }
+
+        .gameName {
+            background: linear-gradient(
+                120deg,
+                var(--bs-emphasis-color),
+                color-mix(in srgb, var(--bs-emphasis-color) 70%, var(--bs-primary))
+            );
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
     }
 }
 

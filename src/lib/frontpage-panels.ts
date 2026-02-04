@@ -9,6 +9,7 @@ import StatsPanel from '~app/(new-layout)/frontpage/panels/stats-panel/stats-pan
 import type { PanelConfig, PanelId } from '../../types/frontpage-config.types';
 import {
     DEFAULT_FRONTPAGE_CONFIG,
+    NON_HIDEABLE_PANELS,
     PANEL_METADATA,
 } from './frontpage-panels-metadata';
 
@@ -22,7 +23,7 @@ export const PANEL_REGISTRY = {
 } as const;
 
 // Re-export for convenience
-export { DEFAULT_FRONTPAGE_CONFIG, PANEL_METADATA };
+export { DEFAULT_FRONTPAGE_CONFIG, NON_HIDEABLE_PANELS, PANEL_METADATA };
 
 export function mergeConfigWithDefaults(savedConfig: PanelConfig): PanelConfig {
     const allPanelIds = Object.keys(PANEL_REGISTRY) as PanelId[];

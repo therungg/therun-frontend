@@ -5,11 +5,15 @@ import { FC, HTMLAttributes, PropsWithChildren } from 'react';
 interface CardWithImageProps extends HTMLAttributes<HTMLDivElement> {
     imageUrl: string;
     imageAlt: string;
+    imageWidth?: number;
+    imageHeight?: number;
 }
 
 export const CardWithImage: FC<PropsWithChildren<CardWithImageProps>> = ({
     imageUrl,
     imageAlt,
+    imageWidth = 60,
+    imageHeight = 70,
     children,
     ...props
 }) => {
@@ -27,21 +31,23 @@ export const CardWithImage: FC<PropsWithChildren<CardWithImageProps>> = ({
         >
             <div
                 style={{
-                    width: 70,
-                    height: 80,
+                    width: imageWidth,
+                    height: imageHeight,
                     position: 'relative',
-                    minWidth: 60,
-                    minHeight: 80,
+                    minWidth: imageWidth - 10,
+                    minHeight: imageHeight,
+                    borderRadius: 10,
+                    overflow: 'hidden',
                 }}
             >
                 <Image
                     src={imageUrl}
                     fill
                     style={{
-                        objectFit: 'contain',
+                        objectFit: 'cover',
                     }}
                     alt={imageAlt}
-                    className="rounded-2 w-100"
+                    className="w-100"
                 />
             </div>
             <div className="ms-3 me-2 w-100 text-nowrap">{children}</div>

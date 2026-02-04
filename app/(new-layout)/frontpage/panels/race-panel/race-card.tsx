@@ -29,7 +29,6 @@ export const RaceCard: FC<PropsWithChildren<RaceCardProps>> = ({
     race = raceState;
 
     const className = clsx(props.className, styles.link);
-    props.className = className;
 
     const firstPlace = sortRaceParticipants(race)[0];
     const firstPlaceFinished =
@@ -43,154 +42,137 @@ export const RaceCard: FC<PropsWithChildren<RaceCardProps>> = ({
             race.results[0].status === 'confirmed');
 
     return (
-        <div>
-            <a href={'/races/' + race.raceId} className={className}>
-                <CardWithImage
-                    key={race.raceId}
-                    imageUrl={race.gameImage}
-                    imageAlt={race.game}
-                    {...props}
-                >
-                    <div className="d-flex justify-content-between">
-                        <div className="fs-larger fw-bold">
+        <a href={'/races/' + race.raceId} className={className}>
+            <CardWithImage
+                key={race.raceId}
+                imageUrl={race.gameImage}
+                imageAlt={race.game}
+                imageWidth={70}
+                imageHeight={90}
+            >
+                <div className={styles.raceContent}>
+                    {/* Row 1: Game + Participants */}
+                    <div className={styles.topRow}>
+                        <div className={styles.gameName}>
                             {race.displayGame}
                         </div>
-                        <span>
+                        <div className={styles.participantBadge}>
                             {race.status === 'pending' &&
                                 race.startMethod === 'everyone-ready' &&
                                 race.readyParticipantCount.toString() + '/'}
-                            {race.participantCount}{' '}
-                            <FaUser
-                                size={14}
-                                className="mb-1 ms-1 text-highlight"
-                            />
-                        </span>
+                            {race.participantCount}
+                            <FaUser size={10} className="ms-1" />
+                        </div>
                     </div>
-                    <div className="d-flex justify-content-between">
-                        <div className={styles.category}>
+
+                    {/* Row 2: Category + Winner */}
+                    <div className={styles.middleRow}>
+                        <div className={styles.categoryBadge}>
                             {race.displayCategory}
                         </div>
                         {race.status === 'pending' && (
-                            <span
-                                className={styles.result}
-                                style={{ opacity: 0.7 }}
-                            >
+                            <span className={styles.creatorText}>
                                 by {race.creator}
                             </span>
                         )}
                         {race.status !== 'pending' && firstPlace && (
-                            <span className={styles.result}>
-                                {firstPlace.user}{' '}
+                            <div className={styles.winnerInfo}>
+                                <span className={styles.winnerName}>
+                                    {firstPlace.user}
+                                </span>
                                 {firstPlaceFinished ? (
-                                    <span className="font-monospace">
-                                        {'- '}
-                                        <DurationToFormatted
-                                            duration={
-                                                firstPlace.finalTime?.toString() as string
-                                            }
-                                        />{' '}
-                                        <FaTrophy
-                                            size={14}
-                                            className="mb-1 ms-1 text-gold"
-                                        />
-                                    </span>
+                                    <FaTrophy size={10} />
                                 ) : (
-                                    <FaRocket
-                                        size={14}
-                                        className="ms-1 text-gold"
-                                    />
+                                    <FaRocket size={10} />
                                 )}
-                            </span>
+                            </div>
                         )}
                         {raceWasCompleted && (
-                            <span className={styles.result}>
-                                {race.results![0].name}{' '}
-                                <FaTrophy
-                                    size={14}
-                                    className="ms-1 text-gold"
-                                />
-                            </span>
+                            <div className={styles.winnerInfo}>
+                                <span className={styles.winnerName}>
+                                    {race.results![0].name}
+                                </span>
+                                <FaTrophy size={10} />
+                            </div>
                         )}
                     </div>
-                    {race.startTime && (
-                        <div className="d-flex justify-content-between mt-1">
-                            <div></div>
-                            <span className={styles.result}>
-                                <FromNow time={new Date(race.startTime)} />
-                                <FaClock size={12} className="ms-2" />
-                            </span>
-                        </div>
-                    )}
-                    {race.status === 'progress' && (
-                        <div className="d-flex justify-content-center d-flex position-relative">
-                            <div
-                                className={clsx(
-                                    'px-2 rounded-2 position-absolute bottom-0 start-50 translate-middle-x',
-                                    styles.timerContainer,
-                                )}
-                                style={{ marginBottom: '-0.6rem' }}
-                            >
-                                <span className={styles.timer}>
-                                    <div className="d-flex justify-content-center align-items-center">
-                                        <RaceTimer race={race} />
-                                        <div className="ms-2 d-flex justify-content-start">
-                                            <PingAnimation />
-                                        </div>
-                                    </div>
-                                </span>
-                            </div>
-                        </div>
-                    )}
-                    {race.status === 'pending' && (
-                        <div className="mt-2 d-flex justify-content-center text-muted d-flex">
-                            {race.startMethod === 'everyone-ready' && (
-                                <span>Waiting for ready up...</span>
-                            )}
-                            {race.startMethod === 'moderator' && (
-                                <span>Waiting for moderator to start...</span>
-                            )}
-                            {race.startMethod === 'datetime' && (
-                                <span>
-                                    Starts on{' '}
-                                    <LocalizedTime
-                                        date={
-                                            new Date(race.willStartAt as string)
+
+                    {/* Row 3: [spacer] Time badge (center) Timestamp (right) */}
+                    <div className={styles.bottomRow}>
+                        <div />
+                        <div>
+                            {firstPlaceFinished && firstPlace && (
+                                <div className={styles.timeBadge}>
+                                    <DurationToFormatted
+                                        duration={
+                                            firstPlace.finalTime?.toString() as string
                                         }
-                                        options={{
-                                            year: undefined,
-                                            month: '2-digit',
-                                            day: '2-digit',
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                        }}
                                     />
-                                </span>
+                                </div>
                             )}
-                        </div>
-                    )}
-                    {raceWasCompleted && (
-                        <div className="d-flex justify-content-center d-flex position-relative">
-                            <div
-                                className={clsx(
-                                    'px-2 rounded-2 position-absolute bottom-0 start-50 translate-middle-x',
-                                    styles.timerContainer,
-                                )}
-                                style={{ marginBottom: '-0.6rem' }}
-                            >
-                                <span
-                                    className={clsx(styles.timer, 'fst-italic')}
-                                >
+                            {raceWasCompleted && (
+                                <div className={styles.timeBadge}>
                                     <DurationToFormatted
                                         duration={
                                             race.results![0].finalTime?.toString() as string
                                         }
                                     />
-                                </span>
-                            </div>
+                                </div>
+                            )}
                         </div>
-                    )}
-                </CardWithImage>
-            </a>
-        </div>
+                        <span className={styles.timestampInline}>
+                            {race.startTime && (
+                                <FromNow time={new Date(race.startTime)} />
+                            )}
+                        </span>
+                    </div>
+                </div>
+                {race.status === 'progress' && (
+                    <div className="d-flex justify-content-center d-flex position-relative">
+                        <div
+                            className={clsx(
+                                'px-2 rounded-2 position-absolute bottom-0 start-50 translate-middle-x',
+                                styles.timerContainer,
+                            )}
+                            style={{ marginBottom: '-0.6rem' }}
+                        >
+                            <span className={styles.timer}>
+                                <div className="d-flex justify-content-center align-items-center">
+                                    <RaceTimer race={race} />
+                                    <div className="ms-2 d-flex justify-content-start">
+                                        <PingAnimation />
+                                    </div>
+                                </div>
+                            </span>
+                        </div>
+                    </div>
+                )}
+                {race.status === 'pending' && (
+                    <div className="mt-2 d-flex justify-content-center text-muted d-flex">
+                        {race.startMethod === 'everyone-ready' && (
+                            <span>Waiting for ready up...</span>
+                        )}
+                        {race.startMethod === 'moderator' && (
+                            <span>Waiting for moderator to start...</span>
+                        )}
+                        {race.startMethod === 'datetime' && (
+                            <span>
+                                Starts on{' '}
+                                <LocalizedTime
+                                    date={new Date(race.willStartAt as string)}
+                                    options={{
+                                        year: undefined,
+                                        month: '2-digit',
+                                        day: '2-digit',
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                    }}
+                                />
+                            </span>
+                        )}
+                    </div>
+                )}
+            </CardWithImage>
+        </a>
     );
 };

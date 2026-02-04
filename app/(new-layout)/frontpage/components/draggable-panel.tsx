@@ -11,6 +11,7 @@ interface DraggablePanelProps {
     children: ReactNode;
     onHide: () => void;
     canHide: boolean;
+    hideable?: boolean;
     isAuthenticated: boolean;
 }
 
@@ -19,6 +20,7 @@ export const DraggablePanel: React.FC<DraggablePanelProps> = ({
     children,
     onHide,
     canHide,
+    hideable = true,
     isAuthenticated,
 }) => {
     const {
@@ -49,19 +51,21 @@ export const DraggablePanel: React.FC<DraggablePanelProps> = ({
                     >
                         <FaGripVertical />
                     </button>
-                    <button
-                        className={styles.hideButton}
-                        onClick={onHide}
-                        disabled={!canHide}
-                        aria-label="Hide panel"
-                        title={
-                            canHide
-                                ? 'Hide panel'
-                                : 'At least 3 panels must be visible'
-                        }
-                    >
-                        <FaEyeSlash />
-                    </button>
+                    {hideable && (
+                        <button
+                            className={styles.hideButton}
+                            onClick={onHide}
+                            disabled={!canHide}
+                            aria-label="Hide panel"
+                            title={
+                                canHide
+                                    ? 'Hide panel'
+                                    : 'At least 3 panels must be visible'
+                            }
+                        >
+                            <FaEyeSlash />
+                        </button>
+                    )}
                 </div>
             )}
             {children}

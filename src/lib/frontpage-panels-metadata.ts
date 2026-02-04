@@ -13,6 +13,9 @@ export const PANEL_METADATA: Record<PanelId, PanelMetadata> = {
     'latest-pbs': { name: 'Latest PBs', defaultColumn: 'right' },
 };
 
+/** Panels that can be reordered but never hidden */
+export const NON_HIDEABLE_PANELS: PanelId[] = ['patreon'];
+
 export const DEFAULT_FRONTPAGE_CONFIG: PanelConfig = {
     panels: [
         { id: 'live-runs', visible: true, order: 0, column: 'left' },

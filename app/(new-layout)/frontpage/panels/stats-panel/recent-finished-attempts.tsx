@@ -121,22 +121,23 @@ const RecentFinishedRun = ({
             imageUrl={image}
             imageAlt={display}
         >
-            <div className="d-flex justify-content-between">
-                <div className="fs-larger fw-bold">{display}</div>
-            </div>
-            <div className="d-flex justify-content-between">
-                <div className={styles.category}>{run.category}</div>
-                <div>
-                    <span className="text-muted fs-smaller d-flex justify-content-end mw-100">
+            <div className={styles.finishedContent}>
+                {/* Top row: Game + Time */}
+                <div className={styles.topRow}>
+                    <div className={styles.gameName}>{display}</div>
+                    <div className={styles.timeBadge}>
+                        <DurationToFormatted
+                            duration={run.time?.toString() as string}
+                        />
+                    </div>
+                </div>
+
+                {/* Bottom row: Category + Timestamp */}
+                <div className={styles.bottomRow}>
+                    <div className={styles.categoryBadge}>{run.category}</div>
+                    <span className={styles.timestamp}>
                         <FromNow time={new Date(run.date)} />
                     </span>
-                </div>
-            </div>
-            <div className="d-flex justify-content-between mt-1 w-100">
-                <div className="d-flex fs-large justify-content-center font-monospace w-100 fst-italic fw-bold">
-                    <DurationToFormatted
-                        duration={run.time?.toString() as string}
-                    />
                 </div>
             </div>
         </CardWithImage>
