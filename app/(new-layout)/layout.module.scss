@@ -5,7 +5,13 @@ $secondary: var(--bs-secondary);
     position: relative;
     min-height: 100vh;
     z-index: 0;
-    background: var(--bs-body-bg);
+    background:
+        linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--bs-body-bg) 85%, var(--bs-primary) 15%) 0%,
+            color-mix(in srgb, var(--bs-body-bg) 95%, var(--bs-primary) 5%) 150px,
+            var(--bs-body-bg) 300px
+        );
 }
 
 // Subtle green-tinted ambient glow for dark mode
@@ -33,6 +39,7 @@ $secondary: var(--bs-secondary);
     position: relative;
     z-index: 10;
     color: var(--bs-body-color);
+    background: transparent;
 }
 
 .main,

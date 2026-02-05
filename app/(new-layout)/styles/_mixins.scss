@@ -23,7 +23,11 @@
     transition: all $transition-fast;
 
     &:hover {
-        background-color: var(--bs-tertiary-bg);
+        background: linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--bs-tertiary-bg) 98%, white 2%) 0%,
+            color-mix(in srgb, var(--bs-tertiary-bg) 93%, white 7%) 100%
+        );
         transform: translateX(4px);
     }
 }

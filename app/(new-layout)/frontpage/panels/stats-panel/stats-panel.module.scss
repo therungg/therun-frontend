@@ -81,13 +81,18 @@
 
 .statItem {
     padding: 0.75rem;
-    background: var(--bs-tertiary-bg);
+    background: linear-gradient(135deg, var(--bs-tertiary-bg) 0%, color-mix(in srgb, var(--bs-tertiary-bg) 95%, black 5%) 100%);
     border: 1px solid rgba(96, 140, 89, 0.15);
     border-radius: 0.5rem;
     transition: all 0.2s ease-in-out;
     cursor: default;
 
     &:hover {
+        background: linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--bs-tertiary-bg) 98%, white 2%) 0%,
+            color-mix(in srgb, var(--bs-tertiary-bg) 93%, white 7%) 100%
+        );
         border-color: rgba(96, 140, 89, 0.3);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         transform: translateY(-1px);
@@ -142,9 +147,9 @@
 
 .finishedRunCard {
     background: linear-gradient(
-        to bottom,
-        var(--bs-tertiary-bg),
-        color-mix(in srgb, var(--bs-tertiary-bg) 95%, black)
+        135deg,
+        var(--bs-tertiary-bg) 0%,
+        color-mix(in srgb, var(--bs-tertiary-bg) 95%, black 5%) 100%
     );
     border: 1px solid transparent;
     position: relative;
@@ -169,9 +174,9 @@
 
     &:hover {
         background: linear-gradient(
-            to bottom,
-            var(--bs-secondary-bg),
-            color-mix(in srgb, var(--bs-secondary-bg) 95%, black)
+            135deg,
+            color-mix(in srgb, var(--bs-tertiary-bg) 98%, white 2%) 0%,
+            color-mix(in srgb, var(--bs-tertiary-bg) 93%, white 7%) 100%
         );
         transform: translateY(-2px) scale(1.01);
         border-color: color-mix(in srgb, var(--bs-primary) 20%, transparent);
