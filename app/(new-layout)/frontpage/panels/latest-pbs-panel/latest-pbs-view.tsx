@@ -23,7 +23,7 @@ export const LatestPbView = ({
     return (
         <Container
             fluid
-            className={`h-100 p-3 rounded-4 overflow-hidden border shadow-sm bg-body ${styles.pbContainer}`}
+            className={`h-100 p-3 rounded-4 overflow-hidden border shadow-sm ${styles.pbContainer}`}
         >
             {runs.map((run) => (
                 <LatestPb

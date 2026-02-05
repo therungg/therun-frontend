@@ -77,7 +77,7 @@ export const LiveRunView = ({
     return (
         <Container
             fluid
-            className="h-100 p-0 rounded-4 overflow-hidden border shadow-sm bg-body"
+            className="h-100 p-0 rounded-4 overflow-hidden border shadow-sm"
         >
             <Row className="h-100 g-0">
                 <Col
@@ -97,7 +97,7 @@ export const LiveRunView = ({
                     xl={6}
                     className={clsx(
                         styles.streamWrapper,
-                        'bg-body order-1 order-xl-2 d-flex align-items-center justify-content-center',
+                        'order-1 order-xl-2 d-flex align-items-center justify-content-center',
                     )}
                 >
                     {/* Improvement: 16x9 Ratio lock */}
@@ -221,10 +221,7 @@ const LiveRunStatsPanel = ({
 
 const LiveRunSkeleton = () => {
     return (
-        <Container
-            fluid
-            className="h-100 p-0 rounded-4 overflow-hidden border bg-body"
-        >
+        <Container fluid className="h-100 p-0 rounded-4 overflow-hidden border">
             <Row className="h-100 g-0">
                 {/* Skeleton Left */}
                 <Col

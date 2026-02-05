@@ -3,9 +3,9 @@
 
 .pbCard {
     background: linear-gradient(
-        to bottom,
-        var(--bs-tertiary-bg),
-        color-mix(in srgb, var(--bs-tertiary-bg) 95%, black)
+        135deg,
+        var(--bs-tertiary-bg) 0%,
+        color-mix(in srgb, var(--bs-tertiary-bg) 95%, black 5%) 100%
     );
     border-left: 3px solid var(--bs-primary) !important;
     position: relative;
@@ -31,9 +31,9 @@
 
     &:hover {
         background: linear-gradient(
-            to bottom,
-            var(--bs-secondary-bg),
-            color-mix(in srgb, var(--bs-secondary-bg) 95%, black)
+            135deg,
+            color-mix(in srgb, var(--bs-tertiary-bg) 98%, white 2%) 0%,
+            color-mix(in srgb, var(--bs-tertiary-bg) 93%, white 7%) 100%
         );
         transform: translateX(3px) scale(1.01);
         box-shadow:

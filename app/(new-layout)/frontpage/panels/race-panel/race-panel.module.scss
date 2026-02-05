@@ -172,7 +172,7 @@
 .link {
     color: inherit;
     width: 100%;
-    background: var(--bs-tertiary-bg);
+    background: linear-gradient(135deg, var(--bs-tertiary-bg) 0%, color-mix(in srgb, var(--bs-tertiary-bg) 95%, black 5%) 100%);
     border-radius: 0.5rem;
     transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
     display: block;
@@ -183,7 +183,11 @@
 
     &:hover {
         text-decoration: none;
-        background: var(--bs-secondary-bg);
+        background: linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--bs-tertiary-bg) 98%, white 2%) 0%,
+            color-mix(in srgb, var(--bs-tertiary-bg) 93%, white 7%) 100%
+        );
         transform: translateY(-2px) scale(1.01);
         box-shadow:
             0 8px 24px rgba(0, 0, 0, 0.08),
