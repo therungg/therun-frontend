@@ -1,6 +1,7 @@
 'use server';
 
 import Joi from 'joi';
+import { revalidatePath } from 'next/cache';
 import {
     StoryElementType,
     StoryPreferences,
@@ -87,6 +88,8 @@ export async function setStoryPreferencesAction(
         const response = await result.text();
         return { message: response, type: 'error' };
     }
+
+    revalidatePath('/stories/manage');
 
     return {
         message: 'Story preferences succesfully updated!',
