@@ -52,15 +52,16 @@ SearchInput.displayName = 'SearchInput';
 
 const getPlaceholderText = (filters: SearchItemKind[]) => {
     // TODO: Localize this.
+    const labels: Record<SearchItemKind, string> = {
+        user: 'User',
+        run: 'Run',
+        game: 'Game',
+    };
     const formatter = new Intl.ListFormat('en-US', {
         style: 'short',
         type: 'disjunction',
     });
-    const itemList = formatter.format(
-        filters.map(
-            (filter) => filter.charAt(0).toUpperCase() + filter.slice(1),
-        ),
-    );
+    const itemList = formatter.format(filters.map((f) => labels[f]));
 
     return `Find a ${itemList}`;
 };

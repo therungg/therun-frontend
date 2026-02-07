@@ -3,7 +3,7 @@ import React from 'react';
 import type { RunResult, UserResult } from './find-user-or-run';
 import type { AggregatedResults } from './use-aggregated-results';
 
-export type SearchItemKind = 'user' | 'game';
+export type SearchItemKind = 'user' | 'run' | 'game';
 
 export interface SearchItem {
     key: string;
