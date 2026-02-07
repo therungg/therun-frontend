@@ -107,6 +107,8 @@ export async function getUserProfilePhoto(
         return undefined;
     }
 
+    if (!response.ok) return undefined;
+
     const data = await response.json();
 
     if (!data?.picture) return undefined;
