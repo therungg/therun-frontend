@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { setLayoutPreference } from '~src/actions/layout-preference.action';
 
@@ -11,6 +11,11 @@ interface LayoutSwitcherProps {
 export const LayoutSwitcher = ({ currentLayout }: LayoutSwitcherProps) => {
     const [isOpen, setIsOpen] = useState(false);
     const router = useRouter();
+    const pathname = usePathname();
+
+    if (pathname !== '/' && pathname !== '/frontpage') {
+        return null;
+    }
 
     const handleSwitchLayout = async () => {
         const targetLayout = currentLayout === 'old' ? 'new' : 'old';
