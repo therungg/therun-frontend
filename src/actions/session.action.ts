@@ -1,6 +1,7 @@
 'use server';
 
 import { cookies } from 'next/headers';
+import { cache } from 'react';
 import { DEFAULT_SESSION } from '~src/common/constants';
 import { SessionError } from '~src/common/session.error';
 import { generateSession } from '~src/lib/generate-session';
@@ -13,7 +14,6 @@ import { getBaseUrl } from './base-url.action';
 export const createSession = async (code: string) => {
     const baseUrl = await getBaseUrl();
     let sessionId = (await cookies()).get('session_id')?.value ?? undefined;
-    console.log('sessionId', sessionId);
     if (sessionId === 'undefined') sessionId = undefined;
 
     if (!code || sessionId) return;
@@ -22,8 +22,6 @@ export const createSession = async (code: string) => {
         `${baseUrl}/api`,
         code,
     );
-
-    console.log(loginData, userInfo);
 
     const twitchSessionId = await generateSession({
         accessToken: loginData.access_token,
@@ -34,8 +32,6 @@ export const createSession = async (code: string) => {
             picture: userInfo.picture,
         },
     });
-    console.log(twitchSessionId, 'twitch');
-
     if (twitchSessionId) {
         return {
             username: userInfo.preferred_username,
@@ -45,7 +41,7 @@ export const createSession = async (code: string) => {
     }
 };
 
-export const getSession = async (): Promise<User> => {
+export const getSession = cache(async (): Promise<User> => {
     const sessionId = (await cookies()).get('session_id')?.value;
     if (!sessionId || sessionId === 'undefined') {
         return DEFAULT_SESSION;
@@ -73,4 +69,4 @@ export const getSession = async (): Promise<User> => {
     }
 
     return DEFAULT_SESSION;
-};
+});

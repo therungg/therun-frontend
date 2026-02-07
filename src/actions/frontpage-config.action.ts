@@ -1,6 +1,7 @@
 'use server';
 
 import { eq } from 'drizzle-orm';
+import { cacheLife, cacheTag, revalidateTag } from 'next/cache';
 import { db } from '~src/db';
 import { users } from '~src/db/schema';
 import {
@@ -12,14 +13,29 @@ import {
 import { PanelConfig } from '../../types/frontpage-config.types';
 import { getSession } from './session.action';
 
-export async function getFrontpageConfig(): Promise<PanelConfig> {
-    const session = await getSession();
-    if (!session?.username) return DEFAULT_FRONTPAGE_CONFIG;
+export async function getFrontpageConfig(
+    username?: string,
+): Promise<PanelConfig> {
+    if (!username) {
+        const session = await getSession();
+        if (!session?.username) return DEFAULT_FRONTPAGE_CONFIG;
+        username = session.username;
+    }
+
+    return getCachedFrontpageConfig(username);
+}
+
+async function getCachedFrontpageConfig(
+    username: string,
+): Promise<PanelConfig> {
+    'use cache';
+    cacheLife('hours');
+    cacheTag(`frontpage-config-${username}`);
 
     const result = await db
         .select()
         .from(users)
-        .where(eq(users.username, session.username))
+        .where(eq(users.username, username))
         .limit(1);
 
     const user = result[0];
@@ -48,10 +64,10 @@ export async function updateFrontpageConfig(
     }
 
     const visibleCount = config.panels.filter((p) => p.visible).length;
-    if (visibleCount < 3) {
+    if (visibleCount < 2) {
         return {
             success: false,
-            error: 'Must have at least 3 visible panels',
+            error: 'Must have at least 2 visible panels',
         };
     }
 
@@ -68,6 +84,8 @@ export async function updateFrontpageConfig(
             .update(users)
             .set({ frontpageConfig: enforced })
             .where(eq(users.username, session.username));
+
+        revalidateTag(`frontpage-config-${session.username}`, 'hours');
 
         return { success: true };
     } catch (error) {
@@ -86,4 +104,6 @@ export async function resetFrontpageConfig(): Promise<void> {
         .update(users)
         .set({ frontpageConfig: null })
         .where(eq(users.username, session.username));
+
+    revalidateTag(`frontpage-config-${session.username}`, 'hours');
 }

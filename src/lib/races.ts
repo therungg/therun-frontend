@@ -1,5 +1,6 @@
 'use server';
 
+import { cacheLife, cacheTag } from 'next/cache';
 import { URLSearchParams } from 'next/dist/compiled/@edge-runtime/primitives';
 import type {
     DetailedUserStats,
@@ -26,9 +27,12 @@ export const getPaginatedFinishedRaces: PaginationFetcher<Race> = async (
     page = 1,
     pageSize = paginationPageSize,
 ): Promise<PaginatedRaces> => {
+    'use cache';
+    cacheLife('minutes');
+    cacheTag('finished-races');
+
     const races = await fetch(
         `${racesApiUrl}?page=${page}&pageSize=${pageSize}`,
-        { next: { revalidate: 0 } },
     );
 
     return (await races.json()).result as PaginatedRaces;

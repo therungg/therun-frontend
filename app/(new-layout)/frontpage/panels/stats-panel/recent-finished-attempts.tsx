@@ -16,12 +16,20 @@ interface GameData {
     display?: string;
 }
 
-export const RecentFinishedAttempts = ({ stats }: { stats: UserSummary }) => {
+export const RecentFinishedAttempts = ({
+    stats,
+    initialGameDataMap,
+}: {
+    stats: UserSummary;
+    initialGameDataMap?: Record<string, unknown>;
+}) => {
     const [showAll, setShowAll] = useState(false);
     const [gameDataMap, setGameDataMap] = useState<Record<string, GameData>>(
-        {},
+        () => (initialGameDataMap as Record<string, GameData>) ?? {},
     );
-    const fetchedGamesRef = useRef<Set<string>>(new Set());
+    const fetchedGamesRef = useRef<Set<string>>(
+        new Set(Object.keys(initialGameDataMap ?? {})),
+    );
 
     // Fetch game data after mount/when stats change
     useEffect(() => {

@@ -1,0 +1,67 @@
+.hero {
+    position: relative;
+}
+
+.panel {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.streamPanel {
+    padding: 0;
+}
+
+.liveIndicator {
+    width: 8px;
+    height: 8px;
+    background-color: #e53e3e;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.4;
+    }
+}
+
+.userHeader {
+    flex-wrap: wrap;
+}
+
+.userImageWrapper {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    position: relative;
+    border-radius: 50%;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.userImage {
+    border-radius: 50%;
+}
+
+.gameInfo {
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+.gameImageWrapper {
+    flex-shrink: 0;
+    width: 44px;
+    height: 54px;
+    position: relative;
+    border-radius: 0.375rem;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.gameImage {
+    border-radius: 0.375rem;
+}

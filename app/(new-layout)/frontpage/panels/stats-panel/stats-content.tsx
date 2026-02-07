@@ -14,6 +14,7 @@ interface Props {
     username: string;
     firstWeek?: string;
     firstMonth?: string;
+    initialGameDataMap?: Record<string, unknown>;
 }
 
 export function StatsContent({
@@ -21,6 +22,7 @@ export function StatsContent({
     username,
     firstWeek,
     firstMonth,
+    initialGameDataMap,
 }: Props) {
     const [stats, setStats] = useState(initialStats);
     const [range, setRange] = useState<'week' | 'month'>(initialStats.type);
@@ -40,8 +42,6 @@ export function StatsContent({
         if (range === newRange && newOffset == offset) return;
         setRange(newRange);
         setOffset(newOffset);
-
-        console.log(newRange, newOffset);
 
         startTransition(async () => {
             const newStats = await fetchStatsAction(
@@ -104,7 +104,10 @@ export function StatsContent({
 
             {stats.totalFinishedRuns > 0 && (
                 <div className="mt-3" style={{ opacity: isPending ? 0.5 : 1 }}>
-                    <RecentFinishedAttempts stats={stats} />
+                    <RecentFinishedAttempts
+                        stats={stats}
+                        initialGameDataMap={initialGameDataMap}
+                    />
                 </div>
             )}
         </>
