@@ -42,7 +42,7 @@ export default async function RootLayout({
                     </Content>
                 </main>
             </div>
-            <LayoutSwitcher />
+            <LayoutSwitcher currentLayout="new" />
         </Providers>
     );
 }

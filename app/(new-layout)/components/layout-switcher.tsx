@@ -1,15 +1,32 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { setLayoutPreference } from '~src/actions/layout-preference.action';
 
-export const LayoutSwitcher = () => {
-    const [isOpen, setIsOpen] = useState(false);
+interface LayoutSwitcherProps {
+    currentLayout: 'old' | 'new';
+}
 
-    const handleSwitchToOld = async () => {
-        await setLayoutPreference('old');
-        window.location.href = '/';
+export const LayoutSwitcher = ({ currentLayout }: LayoutSwitcherProps) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const router = useRouter();
+
+    const handleSwitchLayout = async () => {
+        const targetLayout = currentLayout === 'old' ? 'new' : 'old';
+        await setLayoutPreference(targetLayout);
+
+        if (targetLayout === 'new') {
+            router.push('/frontpage');
+        } else {
+            router.push('/');
+        }
     };
+
+    const targetLayoutParams =
+        currentLayout === 'old'
+            ? { label: 'New Front Page', emoji: '✨' }
+            : { label: 'Classic Front Page', emoji: '🏛️' };
 
     return (
         <div
@@ -45,7 +62,7 @@ export const LayoutSwitcher = () => {
                             Layout
                         </p>
                         <button
-                            onClick={handleSwitchToOld}
+                            onClick={handleSwitchLayout}
                             className="btn btn-sm btn-outline-secondary"
                             style={{
                                 fontSize: '0.8rem',
@@ -53,7 +70,7 @@ export const LayoutSwitcher = () => {
                                 color: 'var(--bs-body-color)',
                             }}
                         >
-                            Classic Front Page
+                            {targetLayoutParams.label}
                         </button>
                         <button
                             onClick={() => setIsOpen(false)}

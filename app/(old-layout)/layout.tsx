@@ -4,6 +4,7 @@ import { Viewport } from 'next';
 import { getSession } from '~src/actions/session.action';
 import { SessionErrorBoundary } from '~src/components/errors/session.error-boundary';
 import buildMetadata from '~src/utils/metadata';
+import { LayoutSwitcher } from '../(new-layout)/components/layout-switcher';
 import { Content } from './content';
 import { Footer } from './footer';
 import { Header } from './header';
@@ -31,6 +32,7 @@ export default async function RootLayout({
                 {sessionError ? <SessionErrorBoundary /> : children}
             </Content>
             <Footer />
+            <LayoutSwitcher currentLayout="old" />
         </Providers>
     );
 }
