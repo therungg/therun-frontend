@@ -16,18 +16,7 @@ export async function GET(request: NextRequest) {
 
     const result = await findUserOrRun(searchParams.get('q') as string);
 
-    result.runs = result.runs
-        .filter((run) => !!run.pb || !!run.pbgt)
-        .sort((a, b) => {
-            if (a.pbgt || b.pbgt) {
-                if (!a.pbgt) return 1;
-                if (!b.pbgt) return -1;
-                return parseFloat(a.pbgt) - parseFloat(b.pbgt);
-            }
-            if (!a.pb) return 1;
-            if (!b.pb) return -1;
-            return parseFloat(a.pb) - parseFloat(b.pb);
-        });
+    result.runs = result.runs.filter((run) => !!run.pb || !!run.pbgt);
 
     return apiResponse({
         body: result,
