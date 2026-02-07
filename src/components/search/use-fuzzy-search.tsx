@@ -1,7 +1,7 @@
 import Fuse, { FuseResultMatch } from 'fuse.js';
 import React from 'react';
-import { RunData } from './find-user-or-run';
-import { AggregatedResults } from './use-aggregated-results';
+import type { RunResult, UserResult } from './find-user-or-run';
+import type { AggregatedResults } from './use-aggregated-results';
 
 export type SearchItemKind = 'user' | 'game';
 
@@ -9,27 +9,34 @@ export interface SearchItem {
     key: string;
     type: SearchItemKind;
     url?: string;
-    data: RunData[];
+    userData?: UserResult;
+    runs?: RunResult[];
     matches: FuseResultMatch[];
 }
 
-// TODO: Add categories and other types in the future
+interface FuseSearchItem {
+    type: SearchItemKind;
+    key: string;
+    userData?: UserResult;
+    runs?: RunResult[];
+}
+
 export const useFuseSearch = (aggregatedResults: AggregatedResults) => {
-    const combinedResults = [
-        ...Object.entries(aggregatedResults.users).map(([key, data]) => ({
+    const combinedResults: FuseSearchItem[] = [
+        ...Object.entries(aggregatedResults.users).map(([key, userData]) => ({
             type: 'user' as const,
             key,
-            data,
+            userData,
         })),
-        ...Object.entries(aggregatedResults.games).map(([key, data]) => ({
+        ...Object.entries(aggregatedResults.games).map(([key, runs]) => ({
             type: 'game' as const,
             key,
-            data,
+            runs,
         })),
     ];
 
     return new Fuse(combinedResults, {
-        keys: ['key', 'game', 'user'],
+        keys: ['key'],
         includeScore: true,
         includeMatches: true,
         threshold: 0.45,
@@ -37,11 +44,7 @@ export const useFuseSearch = (aggregatedResults: AggregatedResults) => {
 };
 
 export const useFilteredFuzzySearch = (
-    fuse: Fuse<{
-        type: SearchItemKind;
-        key: string;
-        data: RunData[];
-    }>,
+    fuse: Fuse<FuseSearchItem>,
     query: string,
 ) => {
     return React.useMemo(() => {

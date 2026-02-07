@@ -15,7 +15,7 @@ import { StatsContent } from './stats-content';
 const DEFAULT_SETTING = 'month' as const;
 
 interface SearchResult {
-    users?: Record<string, unknown[]>;
+    users?: Array<{ user: string }>;
 }
 
 interface StatsData {
@@ -237,11 +237,13 @@ export const StatsSearch = () => {
                                 Searching...
                             </div>
                         ) : searchResults?.users &&
-                          Object.keys(searchResults.users).length > 0 ? (
-                            Object.keys(searchResults.users).map((username) => (
+                          searchResults.users.length > 0 ? (
+                            searchResults.users.map((userResult) => (
                                 <button
-                                    key={username}
-                                    onClick={() => handleUserSelect(username)}
+                                    key={userResult.user}
+                                    onClick={() =>
+                                        handleUserSelect(userResult.user)
+                                    }
                                     style={{
                                         display: 'block',
                                         width: '100%',
@@ -267,7 +269,7 @@ export const StatsSearch = () => {
                                         ).style.backgroundColor = 'transparent';
                                     }}
                                 >
-                                    {username}
+                                    {userResult.user}
                                 </button>
                             ))
                         ) : (

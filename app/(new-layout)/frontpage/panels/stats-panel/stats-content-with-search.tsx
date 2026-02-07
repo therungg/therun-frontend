@@ -11,7 +11,7 @@ import { StatsContent } from './stats-content';
 const DEFAULT_SETTING = 'month' as const;
 
 interface SearchResult {
-    users?: Record<string, unknown[]>;
+    users?: Array<{ user: string }>;
 }
 
 interface StatsData {
@@ -212,44 +212,42 @@ export function StatsContentWithSearch({
                                     Searching...
                                 </div>
                             ) : searchResults?.users &&
-                              Object.keys(searchResults.users).length > 0 ? (
-                                Object.keys(searchResults.users).map(
-                                    (username) => (
-                                        <button
-                                            key={username}
-                                            onClick={() =>
-                                                handleUserSelect(username)
-                                            }
-                                            style={{
-                                                display: 'block',
-                                                width: '100%',
-                                                padding: '0.75rem',
-                                                backgroundColor: 'transparent',
-                                                border: 'none',
-                                                textAlign: 'left',
-                                                cursor: 'pointer',
-                                                color: 'var(--bs-body-color)',
-                                                fontSize: '0.9rem',
-                                                transition:
-                                                    'background-color 0.15s ease-in-out',
-                                            }}
-                                            onMouseEnter={(e) => {
-                                                (
-                                                    e.currentTarget as HTMLButtonElement
-                                                ).style.backgroundColor =
-                                                    'rgba(96, 140, 89, 0.08)';
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                (
-                                                    e.currentTarget as HTMLButtonElement
-                                                ).style.backgroundColor =
-                                                    'transparent';
-                                            }}
-                                        >
-                                            {username}
-                                        </button>
-                                    ),
-                                )
+                              searchResults.users.length > 0 ? (
+                                searchResults.users.map((userResult) => (
+                                    <button
+                                        key={userResult.user}
+                                        onClick={() =>
+                                            handleUserSelect(userResult.user)
+                                        }
+                                        style={{
+                                            display: 'block',
+                                            width: '100%',
+                                            padding: '0.75rem',
+                                            backgroundColor: 'transparent',
+                                            border: 'none',
+                                            textAlign: 'left',
+                                            cursor: 'pointer',
+                                            color: 'var(--bs-body-color)',
+                                            fontSize: '0.9rem',
+                                            transition:
+                                                'background-color 0.15s ease-in-out',
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            (
+                                                e.currentTarget as HTMLButtonElement
+                                            ).style.backgroundColor =
+                                                'rgba(96, 140, 89, 0.08)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            (
+                                                e.currentTarget as HTMLButtonElement
+                                            ).style.backgroundColor =
+                                                'transparent';
+                                        }}
+                                    >
+                                        {userResult.user}
+                                    </button>
+                                ))
                             ) : (
                                 <div
                                     style={{

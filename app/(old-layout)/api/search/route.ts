@@ -16,32 +16,18 @@ export async function GET(request: NextRequest) {
 
     const result = await findUserOrRun(searchParams.get('q') as string);
 
-    for (const category in result.categories) {
-        result.categories[category] = result.categories[category].filter(
-            (cat) => {
-                return (
-                    cat.run.split('//').filter((r) => !!r).length === 3 &&
-                    (!!cat.pb || !!cat.pbgt)
-                );
-            },
-        );
-
-        if (result.categories[category].length === 0) {
-            delete result.categories[category];
-            continue;
-        }
-
-        result.categories[category].sort((a, b) => {
+    result.runs = result.runs
+        .filter((run) => !!run.pb || !!run.pbgt)
+        .sort((a, b) => {
             if (a.pbgt || b.pbgt) {
                 if (!a.pbgt) return 1;
                 if (!b.pbgt) return -1;
-                return parseInt(a.pbgt) - parseInt(b.pbgt);
+                return parseFloat(a.pbgt) - parseFloat(b.pbgt);
             }
             if (!a.pb) return 1;
             if (!b.pb) return -1;
-            return parseInt(a.pb) - parseInt(b.pb);
+            return parseFloat(a.pb) - parseFloat(b.pb);
         });
-    }
 
     return apiResponse({
         body: result,
