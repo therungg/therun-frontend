@@ -49,28 +49,11 @@ export const StatsSearch = () => {
                 // Automatically fetch and display stats for the saved user
                 try {
                     setLoading(true);
-                    let stats = await getUserSummary(
-                        lastUser,
-                        DEFAULT_SETTING,
-                        0,
-                    );
-                    let tries = 1;
-                    while (stats === undefined && tries < 3) {
-                        stats = await getUserSummary(
-                            lastUser,
-                            DEFAULT_SETTING,
-                            tries++,
-                        );
-                    }
-
-                    const firstWeek = await getDateOfFirstUserSummary(
-                        lastUser,
-                        'week',
-                    );
-                    const firstMonth = await getDateOfFirstUserSummary(
-                        lastUser,
-                        'month',
-                    );
+                    const [stats, firstWeek, firstMonth] = await Promise.all([
+                        getUserSummary(lastUser, DEFAULT_SETTING, 0),
+                        getDateOfFirstUserSummary(lastUser, 'week'),
+                        getDateOfFirstUserSummary(lastUser, 'month'),
+                    ]);
 
                     if (stats) {
                         setSelectedUser(lastUser);
@@ -119,24 +102,11 @@ export const StatsSearch = () => {
                 ? username.slice(1)
                 : username;
 
-            let stats = await getUserSummary(cleanUsername, DEFAULT_SETTING, 0);
-            let tries = 1;
-            while (stats === undefined && tries < 3) {
-                stats = await getUserSummary(
-                    cleanUsername,
-                    DEFAULT_SETTING,
-                    tries++,
-                );
-            }
-
-            const firstWeek = await getDateOfFirstUserSummary(
-                cleanUsername,
-                'week',
-            );
-            const firstMonth = await getDateOfFirstUserSummary(
-                cleanUsername,
-                'month',
-            );
+            const [stats, firstWeek, firstMonth] = await Promise.all([
+                getUserSummary(cleanUsername, DEFAULT_SETTING, 0),
+                getDateOfFirstUserSummary(cleanUsername, 'week'),
+                getDateOfFirstUserSummary(cleanUsername, 'month'),
+            ]);
 
             if (stats) {
                 setSelectedUser(cleanUsername);

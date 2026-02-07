@@ -2,7 +2,6 @@ import 'server-only';
 
 import CurrentUserLivePanel from '~app/(new-layout)/frontpage/panels/current-user-live-panel/current-user-live-panel';
 import { LatestPbsPanel } from '~app/(new-layout)/frontpage/panels/latest-pbs-panel/latest-pbs-panel';
-import { LiveRunsPanel } from '~app/(new-layout)/frontpage/panels/live-runs-panel/live-runs-panel';
 import PatreonPanel from '~app/(new-layout)/frontpage/panels/patreon-panel/patreon-panel';
 import RacePanel from '~app/(new-layout)/frontpage/panels/race-panel/race-panel';
 import StatsPanel from '~app/(new-layout)/frontpage/panels/stats-panel/stats-panel';
@@ -14,7 +13,6 @@ import {
 } from './frontpage-panels-metadata';
 
 export const PANEL_REGISTRY = {
-    'live-runs': LiveRunsPanel,
     stats: StatsPanel,
     'current-user-live': CurrentUserLivePanel,
     race: RacePanel,
@@ -27,16 +25,24 @@ export { DEFAULT_FRONTPAGE_CONFIG, NON_HIDEABLE_PANELS, PANEL_METADATA };
 
 export function mergeConfigWithDefaults(savedConfig: PanelConfig): PanelConfig {
     const allPanelIds = Object.keys(PANEL_REGISTRY) as PanelId[];
-    const savedPanelIds = savedConfig.panels.map((p) => p.id);
+
+    // Filter out panels that no longer exist in the registry (e.g. live-count, live-runs)
+    const validSavedPanels = savedConfig.panels.filter((p) =>
+        allPanelIds.includes(p.id),
+    );
+    const savedPanelIds = validSavedPanels.map((p) => p.id);
 
     const newPanels = allPanelIds.filter((id) => !savedPanelIds.includes(id));
 
-    if (newPanels.length === 0) {
+    if (
+        newPanels.length === 0 &&
+        validSavedPanels.length === savedConfig.panels.length
+    ) {
         return savedConfig;
     }
 
     const getNextOrder = (column: 'left' | 'right'): number => {
-        const columnPanels = savedConfig.panels.filter(
+        const columnPanels = validSavedPanels.filter(
             (p) => p.column === column,
         );
         return columnPanels.length > 0
@@ -46,7 +52,7 @@ export function mergeConfigWithDefaults(savedConfig: PanelConfig): PanelConfig {
 
     return {
         panels: [
-            ...savedConfig.panels,
+            ...validSavedPanels,
             ...newPanels.map((id) => ({
                 id,
                 visible: true,

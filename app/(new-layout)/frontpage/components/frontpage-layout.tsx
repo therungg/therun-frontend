@@ -43,13 +43,6 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
         data: { type: 'column', columnId },
     });
 
-    console.log('📦 DroppableColumn render:', {
-        columnId,
-        droppableId: `column-${columnId}`,
-        panelCount: panels.length,
-        isEmpty: panels.length === 0,
-    });
-
     const isEmpty = panels.length === 0;
 
     return (
@@ -69,7 +62,7 @@ const DroppableColumn: React.FC<DroppableColumnProps> = ({
                     alignItems: isEmpty ? 'center' : undefined,
                     justifyContent: isEmpty ? 'center' : undefined,
                     padding: isEmpty ? '2rem' : undefined,
-                    transition: 'all 0.2s ease',
+                    transition: 'background-color 0.2s ease',
                     position: 'relative',
                 }}
             >
@@ -259,31 +252,18 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
 
-        console.log('🔍 DEBUG: handleDragEnd called', {
-            activeId: active.id,
-            overId: over?.id,
-            overData: over?.data,
-        });
-
         setActiveId(null);
         setPreviewPosition(null);
 
         if (!over || active.id === over.id) {
-            console.log('❌ No valid drop target');
             return;
         }
 
         const activeId = active.id as PanelId;
         const overId = over.id as string;
 
-        // Check if dropped on a column container vs a panel
         const isColumnDrop =
             typeof overId === 'string' && overId.startsWith('column-');
-
-        console.log('🎯 Drop type:', isColumnDrop ? 'COLUMN' : 'PANEL', {
-            overId,
-            columnId: over.data.current?.columnId,
-        });
 
         if (isColumnDrop) {
             const targetColumn = over.data.current?.columnId as
@@ -291,14 +271,9 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                 | 'right'
                 | undefined;
             if (targetColumn) {
-                console.log('✅ Calling handleColumnDrop:', {
-                    activeId,
-                    targetColumn,
-                });
                 handleColumnDrop(activeId, targetColumn);
             }
         } else {
-            console.log('✅ Calling handlePanelDrop:', { activeId, overId });
             handlePanelDrop(activeId, overId as PanelId);
         }
     };
@@ -326,7 +301,7 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
     };
 
     const visibleCount = config.panels.filter((p) => p.visible).length;
-    const canHideMore = visibleCount > 3;
+    const canHideMore = visibleCount > 2;
 
     const baseLeftPanels = useMemo(
         () =>

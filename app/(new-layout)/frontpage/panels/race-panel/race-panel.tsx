@@ -12,8 +12,11 @@ import styles from './race-panel.module.scss';
 const FRONTPAGE_RACE_COUNT = 4;
 
 export default async function RacePanel() {
-    const races = await getAllActiveRaces();
-    const session = await getSession();
+    const [races, session, prefetchedFinished] = await Promise.all([
+        getAllActiveRaces(),
+        getSession(),
+        getPaginatedFinishedRaces(1, FRONTPAGE_RACE_COUNT + 2),
+    ]);
 
     const pendingRaces = races.filter(
         (race) => race.participantCount > 0 && race.status === 'pending',
@@ -28,11 +31,7 @@ export default async function RacePanel() {
     if (progressRaceLength < FRONTPAGE_RACE_COUNT) {
         const showFinishedRaceCount = FRONTPAGE_RACE_COUNT - progressRaceLength;
 
-        const finishedRaceData = await getPaginatedFinishedRaces(
-            1,
-            showFinishedRaceCount + 2,
-        );
-        finishedRaces = finishedRaceData.items
+        finishedRaces = prefetchedFinished.items
             .filter((race) => {
                 return (
                     race.status === 'finished' &&
@@ -43,7 +42,7 @@ export default async function RacePanel() {
                 );
             })
             .slice(0, showFinishedRaceCount);
-        finishedRaceCount = finishedRaceData.totalItems;
+        finishedRaceCount = prefetchedFinished.totalItems;
     }
 
     return (

@@ -160,6 +160,9 @@ export const Topbar = ({
                                         <NavDropdown.Item href="/admin/roles">
                                             Admin Panel
                                         </NavDropdown.Item>
+                                        <NavDropdown.Item href="/admin/move-user">
+                                            Move User
+                                        </NavDropdown.Item>
                                     </Can>
                                     <NavDropdown.Item
                                         onClick={async () => {

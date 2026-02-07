@@ -25,6 +25,7 @@ interface Props {
     loggedInUser: string;
     firstWeek?: string;
     firstMonth?: string;
+    initialGameDataMap?: Record<string, unknown>;
 }
 
 export function StatsContentWithSearch({
@@ -32,6 +33,7 @@ export function StatsContentWithSearch({
     loggedInUser,
     firstWeek,
     firstMonth,
+    initialGameDataMap,
 }: Props) {
     const [selectedUser, setSelectedUser] = useState<string>(loggedInUser);
     const [statsData, setStatsData] = useState<StatsData>({
@@ -79,24 +81,11 @@ export function StatsContentWithSearch({
                 ? username.slice(1)
                 : username;
 
-            let stats = await getUserSummary(cleanUsername, DEFAULT_SETTING, 0);
-            let tries = 1;
-            while (stats === undefined && tries < 3) {
-                stats = await getUserSummary(
-                    cleanUsername,
-                    DEFAULT_SETTING,
-                    tries++,
-                );
-            }
-
-            const newFirstWeek = await getDateOfFirstUserSummary(
-                cleanUsername,
-                'week',
-            );
-            const newFirstMonth = await getDateOfFirstUserSummary(
-                cleanUsername,
-                'month',
-            );
+            const [stats, newFirstWeek, newFirstMonth] = await Promise.all([
+                getUserSummary(cleanUsername, DEFAULT_SETTING, 0),
+                getDateOfFirstUserSummary(cleanUsername, 'week'),
+                getDateOfFirstUserSummary(cleanUsername, 'month'),
+            ]);
 
             if (stats) {
                 setSelectedUser(cleanUsername);
@@ -282,6 +271,11 @@ export function StatsContentWithSearch({
                 username={selectedUser}
                 firstWeek={statsData.firstWeek}
                 firstMonth={statsData.firstMonth}
+                initialGameDataMap={
+                    selectedUser === loggedInUser
+                        ? initialGameDataMap
+                        : undefined
+                }
             />
         </div>
     );

@@ -1,5 +1,4 @@
 export type PanelId =
-    | 'live-runs'
     | 'stats'
     | 'current-user-live'
     | 'race'

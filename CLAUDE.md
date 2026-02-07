@@ -73,6 +73,24 @@ The app uses Next.js route groups to manage different layouts:
 - WebSocket at `wss://ws.therun.gg` for live updates
 - Various AWS Lambda endpoints for API operations
 
+### Caching
+
+Next.js 16 with `experimental.useCache: true` and `cacheComponents: true` in next.config.js. Always use the `'use cache'` directive with `cacheLife()` and `cacheTag()` from `next/cache` for server-side data fetching. Never use the old `{ next: { revalidate: N } }` fetch option — use `'use cache'` instead. Use `revalidateTag()` for targeted cache invalidation.
+
+```typescript
+import { cacheLife, cacheTag, revalidateTag } from 'next/cache';
+
+export async function getData() {
+    'use cache';
+    cacheLife('minutes'); // 'seconds' | 'minutes' | 'hours' | 'days' | 'weeks' | 'max'
+    cacheTag('my-data');
+    // ...
+}
+
+// Invalidation: revalidateTag requires 2 args — the tag and the cacheLife profile
+revalidateTag('my-data', 'minutes');
+```
+
 ### React Compiler
 
 The project uses React Compiler (babel-plugin-react-compiler) enabled via `reactCompiler: true` in next.config.js. This auto-memoizes components.

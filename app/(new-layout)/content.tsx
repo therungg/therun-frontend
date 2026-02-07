@@ -22,8 +22,6 @@ export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
                 ? (query.get('toastType') as 'success' | 'error')
                 : 'success';
 
-            console.log(query.get('toast'));
-
             toast[type](query.get('toast'));
         }
     }, [query.get('toast')]);

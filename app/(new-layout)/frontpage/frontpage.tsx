@@ -1,16 +1,22 @@
+import dynamic from 'next/dynamic';
+import { Suspense } from 'react';
 import { getFrontpageConfig } from '~src/actions/frontpage-config.action';
 import { getSession } from '~src/actions/session.action';
 import { PANEL_REGISTRY } from '~src/lib/frontpage-panels';
 import { PanelId } from '../../../types/frontpage-config.types';
-import { FrontpageLayout } from './components/frontpage-layout';
-import styles from './frontpage.module.scss';
+import { FrontpageHero } from './components/frontpage-hero';
+import { PanelSkeleton } from './components/panel-skeleton';
+import { StaticFrontpageLayout } from './components/static-frontpage-layout';
+
+const DraggableFrontpageLayout = dynamic(() =>
+    import('./components/frontpage-layout').then((mod) => mod.FrontpageLayout),
+);
 
 export default async function FrontPage() {
     const session = await getSession();
-    const config = await getFrontpageConfig();
+    const config = await getFrontpageConfig(session?.username);
     const isAuthenticated = !!session?.id;
 
-    const LiveRunsComponent = PANEL_REGISTRY['live-runs'];
     const StatsComponent = PANEL_REGISTRY['stats'];
     const CurrentUserLiveComponent = PANEL_REGISTRY['current-user-live'];
     const RaceComponent = PANEL_REGISTRY['race'];
@@ -18,29 +24,48 @@ export default async function FrontPage() {
     const LatestPbsComponent = PANEL_REGISTRY['latest-pbs'];
 
     const panelComponents: Record<PanelId, React.ReactNode> = {
-        'live-runs': <LiveRunsComponent />,
-        stats: <StatsComponent />,
-        'current-user-live': <CurrentUserLiveComponent />,
-        race: <RaceComponent />,
-        patreon: <PatreonComponent />,
-        'latest-pbs': <LatestPbsComponent />,
+        stats: (
+            <Suspense fallback={<PanelSkeleton />}>
+                <StatsComponent />
+            </Suspense>
+        ),
+        'current-user-live': (
+            <Suspense fallback={<PanelSkeleton />}>
+                <CurrentUserLiveComponent />
+            </Suspense>
+        ),
+        race: (
+            <Suspense fallback={<PanelSkeleton />}>
+                <RaceComponent />
+            </Suspense>
+        ),
+        patreon: (
+            <Suspense fallback={<PanelSkeleton />}>
+                <PatreonComponent />
+            </Suspense>
+        ),
+        'latest-pbs': (
+            <Suspense fallback={<PanelSkeleton />}>
+                <LatestPbsComponent />
+            </Suspense>
+        ),
     };
 
     return (
         <div>
-            <div className={`text-center mb-3 ${styles.heroSection}`}>
-                <h1 className={`display-3 fw-medium ${styles.title}`}>
-                    The Run
-                </h1>
-                <h2 className={`display-6 ${styles.subtitle}`}>
-                    Everything Speedrunning
-                </h2>
-            </div>
-            <FrontpageLayout
-                initialConfig={config}
-                panels={panelComponents}
-                isAuthenticated={isAuthenticated}
-            />
+            <FrontpageHero />
+            {isAuthenticated ? (
+                <DraggableFrontpageLayout
+                    initialConfig={config}
+                    panels={panelComponents}
+                    isAuthenticated={isAuthenticated}
+                />
+            ) : (
+                <StaticFrontpageLayout
+                    initialConfig={config}
+                    panels={panelComponents}
+                />
+            )}
         </div>
     );
 }

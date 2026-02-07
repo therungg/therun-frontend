@@ -56,7 +56,6 @@ const generateMonthPeriods = (startMonth: string): PeriodOption[] => {
 const generateWeekPeriods = (startWeek: string): PeriodOption[] => {
     let currentDate = new Date(startWeek);
     currentDate.setHours(0, 0, 0, 0);
-    console.log(currentDate, startWeek);
     const today = new Date();
     const currentWeekEnd = new Date(today);
     currentWeekEnd.setDate(currentWeekEnd.getDate());
