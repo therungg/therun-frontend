@@ -1,30 +1,36 @@
 import { cacheLife } from 'next/cache';
 
-export interface RunData {
+export interface UserResult {
+    user: string;
+    picture: string;
+    login: string;
+    searchName: string;
+    totalGames: number;
+    totalCategories: number;
+    totalTimePlayed: number;
+    totalAttempts: number;
+    totalFinishedAttempts: number;
+}
+
+export interface RunResult {
+    user: string;
     game: string;
+    category: string;
+    url: string;
     pb: string;
     pbgt: string;
-    run: string;
-    user: string;
+    attemptCount: number;
 }
 
 export interface SearchResults {
-    categories: {
-        [category: string]: RunData[];
-    };
-    games: {
-        [game: string]: RunData[];
-    };
-    users: {
-        [user: string]: RunData[];
-    };
+    users: UserResult[];
+    runs: RunResult[];
 }
 
 // Same as API on empty result
-export const DEFAULT_SEARCH_RESULTS = {
-    categories: {},
-    games: {},
-    users: {},
+export const DEFAULT_SEARCH_RESULTS: SearchResults = {
+    users: [],
+    runs: [],
 };
 
 export const findUserOrRun = async (term: string): Promise<SearchResults> => {
