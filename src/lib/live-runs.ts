@@ -4,8 +4,7 @@ import { type LiveRun } from '~app/(old-layout)/live/live.types';
 import { type Tournament } from '~src/components/tournament/tournament-info';
 import { safeEncodeURI } from '~src/utils/uri';
 
-const LIVE_RUN_URL =
-    'https://pokzhwoycl3uo7n5lzh6iltyoq0iaibq.lambda-url.eu-west-1.on.aws/';
+const LIVE_RUN_URL = `${process.env.NEXT_PUBLIC_DATA_URL}/live`;
 
 export const getAllLiveRuns = async (
     game: string | null = null,
@@ -22,7 +21,7 @@ export const getAllLiveRuns = async (
 
     const result = await fetch(url, { next: { revalidate: 30 } });
 
-    return result.json();
+    return (await result.json()).result;
 };
 
 export const getLiveRunsForTournament = async (tournament: Tournament) => {
@@ -43,13 +42,13 @@ export const getLiveRunsForGameCategory = async (
         )}`,
     );
 
-    return result.json();
+    return (await result.json()).result;
 };
 
 export const getLiveRunForUser = async (username: string) => {
     const result = await fetch(`${LIVE_RUN_URL}?username=${username}`);
 
-    const resolved = await result.json();
+    const resolved = (await result.json()).result;
 
     if (Array.isArray(resolved) && resolved.length === 0) return undefined;
 
@@ -59,11 +58,11 @@ export const getLiveRunForUser = async (username: string) => {
 export const getTopNLiveRuns = async (n = 5): Promise<LiveRun[]> => {
     const result = await fetch(`${LIVE_RUN_URL}?limit=${n}`);
 
-    return result.json();
+    return (await result.json()).result;
 };
 
 export const getRandomTopLiveRun = async () => {
     const result = await fetch(`${LIVE_RUN_URL}?random=true`);
 
-    return result.json();
+    return (await result.json()).result;
 };
