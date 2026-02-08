@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { GlobalGameData } from '~app/(old-layout)/[username]/[game]/[run]/run';
+import { groupCategoryStatsByGame } from '~app/(old-layout)/[username]/races/group-category-stats-by-game';
 import { getRunmap } from '~app/(old-layout)/[username]/runmap.component';
 import { UserProfile } from '~app/(old-layout)/[username]/user-profile';
 import { CombinedTournamentPage } from '~app/(old-layout)/tournaments/[tournament]/combined-tournament-page';
@@ -10,7 +11,12 @@ import { getGameGlobal } from '~src/components/game/get-game';
 import { getGlobalUser } from '~src/lib/get-global-user';
 import { getUserRuns } from '~src/lib/get-user-runs';
 import { getLiveRunForUser } from '~src/lib/live-runs';
-import { getUserRaceStats } from '~src/lib/races';
+import {
+    getDetailedUserStats,
+    getRaceParticipationsByUser,
+    getRacesByIds,
+    getUserRaceStats,
+} from '~src/lib/races';
 import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
 
 interface PageProps {
@@ -72,12 +78,34 @@ export default async function Page(props: PageProps) {
         });
     }
 
-    const [userData, liveData, raceStats, session] = await Promise.all([
+    const [
+        userData,
+        liveData,
+        raceStats,
+        session,
+        detailedRaceStats,
+        raceParticipations,
+    ] = await Promise.all([
         getGlobalUser(username),
         getLiveRunForUser(username),
         getUserRaceStats(username),
         getSession(),
+        getDetailedUserStats(username).catch(() => null),
+        getRaceParticipationsByUser(username).catch(() => []),
     ] as const);
+
+    let initialRaces: Awaited<ReturnType<typeof getRacesByIds>> = [];
+    let categoryStatsMap: ReturnType<typeof groupCategoryStatsByGame> = [];
+    if (raceParticipations && raceParticipations.length > 0) {
+        initialRaces = await getRacesByIds(
+            raceParticipations.slice(0, 10).map((p) => p.raceId),
+        );
+    }
+    if (detailedRaceStats?.categoryStats) {
+        categoryStatsMap = groupCategoryStatsByGame(
+            detailedRaceStats.categoryStats,
+        );
+    }
 
     return (
         <UserProfile
@@ -90,6 +118,10 @@ export default async function Page(props: PageProps) {
             userData={userData}
             allGlobalGameData={allGlobalGameData}
             raceStats={raceStats}
+            detailedRaceStats={detailedRaceStats?.globalStats}
+            raceParticipations={raceParticipations || []}
+            initialRaces={initialRaces}
+            categoryStatsMap={categoryStatsMap}
         />
     );
 }

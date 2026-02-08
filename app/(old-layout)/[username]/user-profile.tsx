@@ -1,27 +1,28 @@
 'use client';
 
 import Link from 'next/link';
-import React, { useEffect, useReducer, useState } from 'react';
-import { Col, Row, Tab, Tabs } from 'react-bootstrap';
-import { TwitchEmbed } from 'react-twitch-embed';
+import { useEffect, useReducer, useState } from 'react';
 import type { User as IUser, User } from 'types/session.types';
 import { GlobalGameData } from '~app/(old-layout)/[username]/[game]/[run]/run';
 import { prepareSessions } from '~app/(old-layout)/[username]/prepare-sessions.component';
 import { getRunmap } from '~app/(old-layout)/[username]/runmap.component';
 import { LiveRun } from '~app/(old-layout)/live/live.types';
-import { UserStats as UserRaceStats } from '~app/(old-layout)/races/races.types';
+import {
+    Race,
+    RaceParticipant,
+    UserStats as RaceUserStats,
+    UserStats as UserRaceStats,
+} from '~app/(old-layout)/races/races.types';
 import { Run, RunSession } from '~src/common/types';
-import { GametimeForm } from '~src/components/gametime/gametime-form';
-import { LiveIcon, LiveUserRun } from '~src/components/live/live-user-run';
-import { HighlightedRun } from '~src/components/run/dashboard/highlighted-run';
-import { SessionOverview } from '~src/components/run/user-detail/session-overview';
-import { UserOverview } from '~src/components/run/user-detail/user-overview';
-import { UserRaceStatsTable } from '~src/components/run/user-detail/user-race-stats';
-import { UserStats } from '~src/components/run/user-detail/user-stats';
-import Stats from '~src/components/user/stats';
-import { Userform } from '~src/components/user/userform';
 import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
 import type { UserData } from '~src/lib/get-session-data';
+import { ActivityTab } from './components/activity-tab';
+import { OverviewTab } from './components/overview-tab';
+import { ProfileEditModal } from './components/profile-edit-modal';
+import { ProfileHero } from './components/profile-hero';
+import { ProfileTabs } from './components/profile-tabs';
+import { RacesTab } from './components/races-tab';
+import { StreamTab } from './components/stream-tab';
 
 export interface UserPageProps {
     runs: Run[];
@@ -33,6 +34,10 @@ export interface UserPageProps {
     allGlobalGameData: GlobalGameData[];
     liveData?: LiveRun;
     raceStats?: UserRaceStats;
+    detailedRaceStats?: RaceUserStats;
+    raceParticipations?: RaceParticipant[];
+    initialRaces?: Race[];
+    categoryStatsMap?: RaceUserStats[][];
 }
 
 export const UserProfile = ({
@@ -45,13 +50,19 @@ export const UserProfile = ({
     allGlobalGameData,
     liveData,
     raceStats,
+    detailedRaceStats,
+    raceParticipations,
+    initialRaces,
+    categoryStatsMap,
 }: UserPageProps) => {
     const [useGameTime, setUseGameTime] = useState(
         hasGameTime && defaultGameTime,
     );
     const [currentGame, setCurrentGame] = useState('all-games');
-    const [, forceUpdate] = useReducer((x) => x + 1, 0);
+    const [, forceUpdate] = useReducer((x: number) => x + 1, 0);
     const [liveRun, setLiveRun] = useState(liveData);
+    const [activeTab, setActiveTab] = useState('overview');
+    const [showEditModal, setShowEditModal] = useState(false);
 
     const lastMessage = useLiveRunsWebsocket(username);
 
@@ -67,7 +78,17 @@ export const UserProfile = ({
         }
     }, [lastMessage]);
 
-    if (runs.length === 0) return NoRuns(username, session, userData);
+    if (runs.length === 0)
+        return (
+            <NoRuns
+                username={username}
+                session={session}
+                userData={userData}
+                onEditClick={() => setShowEditModal(true)}
+                showEditModal={showEditModal}
+                onHideEditModal={() => setShowEditModal(false)}
+            />
+        );
 
     runs.sort((a, b) => {
         if (a.highlighted && b.highlighted) {
@@ -100,191 +121,119 @@ export const UserProfile = ({
         ? prepareSessions(currentRuns, true)
         : null;
 
+    const uniqueGames = Array.from(allRunsRunMap.keys()).filter(
+        (game: string, i, arr: string[]) => {
+            if (i === 0) return true;
+            const previous = arr[i - 1];
+            return game.split('#')[0] !== previous.split('#')[0];
+        },
+    );
+
+    const tabs = [
+        { key: 'overview', label: 'Overview' },
+        { key: 'activity', label: 'Activity' },
+        { key: 'races', label: 'Races' },
+        { key: 'stream', label: 'Stream' },
+    ];
+
     return (
         <>
-            <Row className="mb-3">
-                <Col md={12} lg={9}>
-                    <Userform
-                        username={username}
-                        session={session}
-                        userData={userData}
-                    />
-                </Col>
-                {hasGameTime && (
-                    <Col
-                        md={12}
-                        lg={3}
-                        className="d-flex mt-4 mt-md-0 justify-content-md-end"
-                    >
-                        <GametimeForm
-                            useGameTime={useGameTime}
-                            setUseGameTime={setUseGameTime}
-                        />
-                    </Col>
-                )}
-            </Row>
-            {allRunsRunMap.size > 1 && (
-                <Row>
-                    <Col md={8} />
-                    <Col
-                        xs={12}
-                        md={4}
-                        className="my-3 my-md-0 game-filter-mb game-filter-mw"
-                    >
-                        <select
-                            className="form-select"
-                            onChange={(e) => {
-                                setCurrentGame(e.target.value.split('#')[0]);
-                            }}
-                        >
-                            <option
-                                key="all-games"
-                                title="All Games"
-                                value="all-games"
-                            >
-                                No Game Filter
-                            </option>
-                            {Array.from(allRunsRunMap.keys())
-                                .filter((game: string, i, arr: string[]) => {
-                                    if (i === 0) return true;
+            <ProfileHero
+                username={username}
+                userData={userData}
+                runs={runs}
+                liveRun={liveRun}
+                raceStats={raceStats}
+                session={session}
+                onEditClick={() => setShowEditModal(true)}
+            />
 
-                                    const previous = arr[i - 1];
+            <ProfileTabs
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                tabs={tabs}
+                hasGameTime={hasGameTime}
+                useGameTime={useGameTime}
+                setUseGameTime={setUseGameTime}
+                gameCount={allRunsRunMap.size}
+                games={uniqueGames}
+                currentGame={currentGame}
+                setCurrentGame={setCurrentGame}
+            />
 
-                                    return (
-                                        game.split('#')[0] !==
-                                        previous.split('#')[0]
-                                    );
-                                })
-                                .map((game: string) => {
-                                    return (
-                                        <option key={game} value={game}>
-                                            {game.split('#')[0]}
-                                        </option>
-                                    );
-                                })}
-                        </select>
-                    </Col>
-                </Row>
+            {activeTab === 'overview' && (
+                <OverviewTab
+                    runs={runMap}
+                    currentRuns={currentRuns}
+                    username={username}
+                    session={session}
+                    useGameTime={useGameTime}
+                    allGlobalGameData={allGlobalGameData}
+                    liveRun={liveRun}
+                    raceStats={raceStats}
+                    highlightedRun={highlightedRun}
+                    parentForceUpdate={forceUpdate}
+                />
             )}
-            <Tabs
-                defaultActiveKey="overview"
-                className={`position-relative z-1 mb-3 pt-0 w-100 mw-md-66${
-                    allRunsRunMap.size > 1 ? ' with-filter' : ''
-                }`}
-            >
-                <Tab eventKey="overview" title="Overview">
-                    <Row>
-                        <Col xl={8} lg={12}>
-                            <UserOverview
-                                runs={runMap}
-                                username={username}
-                                gameTime={useGameTime}
-                                session={session}
-                                allGlobalGameData={allGlobalGameData}
-                                parentForceUpdate={forceUpdate}
-                            />
-                        </Col>
-                        <Col xl={4} lg={12}>
-                            {!!liveRun && !Array.isArray(liveRun) && (
-                                <div className="mb-3">
-                                    <h2>
-                                        Currently Live!&nbsp;
-                                        <Link href="/live" prefetch={false}>
-                                            <LiveIcon />
-                                        </Link>
-                                    </h2>
 
-                                    <div>
-                                        <a
-                                            href={`/live/${username}`}
-                                            className="link-without-style"
-                                        >
-                                            <LiveUserRun
-                                                isUrl={true}
-                                                liveRun={liveRun}
-                                            />
-                                        </a>
-                                    </div>
-                                </div>
-                            )}
+            {activeTab === 'activity' && (
+                <ActivityTab
+                    username={username}
+                    sessions={
+                        hasGameTime && useGameTime && gameTimeSessions
+                            ? gameTimeSessions
+                            : sessions
+                    }
+                    useGameTime={useGameTime}
+                />
+            )}
 
-                            <UserStats runs={currentRuns} />
-                            {raceStats && (
-                                <div>
-                                    <span className="justify-content-between d-flex">
-                                        <div className="d-flex">
-                                            <h2>Races</h2>
-                                            <span
-                                                style={{
-                                                    color: 'var(--bs-gold)',
-                                                }}
-                                                className="ms-2"
-                                            >
-                                                New!
-                                            </span>
-                                        </div>
-                                        <div className="d-flex align-items-center">
-                                            <a href={`${username}/races`}>
-                                                User Race Profile
-                                            </a>
-                                        </div>
-                                    </span>
-                                    <UserRaceStatsTable raceStats={raceStats} />
-                                </div>
-                            )}
-                            {highlightedRun && (
-                                <HighlightedRun run={highlightedRun} />
-                            )}
-                        </Col>
-                    </Row>
-                </Tab>
+            {activeTab === 'races' && detailedRaceStats && (
+                <RacesTab
+                    username={username}
+                    globalStats={detailedRaceStats}
+                    categoryStatsMap={categoryStatsMap || []}
+                    participations={raceParticipations || []}
+                    initialRaces={initialRaces || []}
+                />
+            )}
 
-                <Tab title="Activity" eventKey="stats">
-                    <Row>
-                        <Col>
-                            <Stats username={username} />
-                        </Col>
-                    </Row>
-                </Tab>
-                <Tab title="Sessions" eventKey="sessions">
-                    <Row>
-                        <Col>
-                            <h2>Speedrun Sessions</h2>
-                            <SessionOverview
-                                sessions={
-                                    hasGameTime &&
-                                    useGameTime &&
-                                    gameTimeSessions
-                                        ? gameTimeSessions
-                                        : sessions
-                                }
-                            />
-                        </Col>
-                    </Row>
-                </Tab>
-                <Tab title="Twitch stream" eventKey="stream">
-                    <h2>Twitch stream</h2>
+            {activeTab === 'stream' && <StreamTab username={username} />}
 
-                    <TwitchEmbed
-                        channel={username}
-                        width="100%"
-                        height="800px"
-                        muted
-                        withChat={true}
-                    />
-                </Tab>
-            </Tabs>
+            <ProfileEditModal
+                show={showEditModal}
+                onHide={() => setShowEditModal(false)}
+                username={username}
+                session={session}
+                userData={userData}
+            />
         </>
     );
 };
 
-const NoRuns = (username: string, session: User, userData: UserData) => {
+const NoRuns = ({
+    username,
+    session,
+    userData,
+    onEditClick,
+    showEditModal,
+    onHideEditModal,
+}: {
+    username: string;
+    session: User;
+    userData: UserData;
+    onEditClick: () => void;
+    showEditModal: boolean;
+    onHideEditModal: () => void;
+}) => {
     return (
         <>
-            <Userform
+            <ProfileHero
                 username={username}
-                session={session}
                 userData={userData}
+                runs={[]}
+                session={session}
+                onEditClick={onEditClick}
             />
             <hr />
             <div>
@@ -295,6 +244,13 @@ const NoRuns = (username: string, session: User, userData: UserData) => {
                     contact me!
                 </Link>
             </div>
+            <ProfileEditModal
+                show={showEditModal}
+                onHide={onHideEditModal}
+                username={username}
+                session={session}
+                userData={userData}
+            />
         </>
     );
 };
