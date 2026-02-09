@@ -7,14 +7,15 @@ import {
     getRaceGameStats,
     getRaceGameStatsByGame,
 } from '~src/lib/races';
-import { getPaginatedUsers } from '~src/lib/users';
+import { getAllSitemapRuns, getSitemapUsers } from '~src/lib/sitemap';
 import { safeEncodeURI } from '~src/utils/uri';
 
 export const maxDuration = 120;
 
 export async function generateSitemaps() {
-    return [{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }];
+    return [{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }];
 }
+
 export default async function sitemap({
     id,
 }: {
@@ -31,6 +32,8 @@ export default async function sitemap({
             return sitemapForTournaments();
         case 4:
             return sitemapForEvents();
+        case 5:
+            return sitemapForRuns();
     }
 
     return [];
@@ -39,45 +42,32 @@ export default async function sitemap({
 const sitemapForRaces = async (): Promise<MetadataRoute.Sitemap> => {
     const allItems: Race[] = [];
     let page = 1;
-    let cont = true;
 
-    while (cont) {
-        const allEvents = await getPaginatedFinishedRaces(page++, 100);
+    while (true) {
+        const result = await getPaginatedFinishedRaces(page, 100);
+        allItems.push(...result.items);
 
-        allItems.push(...allEvents.items);
-
-        if (allEvents.totalPages === page) {
-            cont = false;
-        }
+        if (page >= result.totalPages) break;
+        page++;
     }
 
-    return allItems.map((race) => {
-        return {
-            url: 'https://therun.gg/races/' + race.raceId,
-            lastModified: new Date(),
-            changeFrequency: 'weekly',
-            priority: 0.4,
-        };
-    });
+    return allItems.map((race) => ({
+        url: 'https://therun.gg/races/' + race.raceId,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.4,
+    }));
 };
 
 const sitemapForUsers = async (): Promise<MetadataRoute.Sitemap> => {
-    const users = await getPaginatedUsers(1, 50000);
+    const users = await getSitemapUsers();
 
-    return users.items
-        .map((user) => {
-            try {
-                return {
-                    url: 'https://therun.gg/' + user.username,
-                    lastModified: new Date(),
-                    changeFrequency: 'weekly',
-                    priority: 0.8,
-                };
-            } catch (_) {
-                return null;
-            }
-        })
-        .filter((res) => !!res) as MetadataRoute.Sitemap;
+    return users.map((user) => ({
+        url: 'https://therun.gg/' + user.username,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.8,
+    }));
 };
 
 const sitemapForRaceStats = async (): Promise<MetadataRoute.Sitemap> => {
@@ -99,7 +89,7 @@ const sitemapForRaceStats = async (): Promise<MetadataRoute.Sitemap> => {
                     'https://therun.gg/races/stats/' +
                     safeEncodeURI(stat.displayValue),
                 lastModified: new Date(),
-                changeFrequency: 'daily',
+                changeFrequency: 'daily' as const,
                 priority: 0.7,
             };
         })
@@ -140,25 +130,38 @@ const sitemapForRaceStats = async (): Promise<MetadataRoute.Sitemap> => {
 const sitemapForTournaments = async (): Promise<MetadataRoute.Sitemap> => {
     const tournaments = await getAllTournamentSlugs();
 
-    return tournaments.map((tournament) => {
-        return {
-            url: 'https://therun.gg/' + tournament,
-            lastModified: new Date(),
-            changeFrequency: 'daily',
-            priority: 0.6,
-        };
-    });
+    return tournaments.map((tournament) => ({
+        url: 'https://therun.gg/' + tournament,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 0.6,
+    }));
 };
 
 const sitemapForEvents = async (): Promise<MetadataRoute.Sitemap> => {
     const allEvents = await getAllEvents();
 
-    return allEvents.map((event) => {
-        return {
-            url: 'https://therun.gg/events/' + event.slug,
-            lastModified: new Date(),
-            changeFrequency: 'weekly',
-            priority: 0.4,
-        };
-    });
+    return allEvents.map((event) => ({
+        url: 'https://therun.gg/events/' + event.slug,
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.4,
+    }));
+};
+
+const sitemapForRuns = async (): Promise<MetadataRoute.Sitemap> => {
+    const runs = await getAllSitemapRuns();
+
+    return runs.map((run) => ({
+        url:
+            'https://therun.gg/' +
+            run.user +
+            '/' +
+            safeEncodeURI(run.game) +
+            '/' +
+            safeEncodeURI(run.run),
+        lastModified: new Date(),
+        changeFrequency: 'weekly',
+        priority: 0.5,
+    }));
 };

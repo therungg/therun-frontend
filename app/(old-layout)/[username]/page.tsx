@@ -7,10 +7,12 @@ import { TournamentPage } from '~app/(old-layout)/tournaments/[tournament]/page'
 import { getTournamentNameFromSlug } from '~app/(old-layout)/tournaments/tournament-list';
 import { getSession } from '~src/actions/session.action';
 import { getGameGlobal } from '~src/components/game/get-game';
+import { JsonLd } from '~src/components/json-ld';
 import { getGlobalUser } from '~src/lib/get-global-user';
 import { getUserRuns } from '~src/lib/get-user-runs';
 import { getLiveRunForUser } from '~src/lib/live-runs';
 import { getUserRaceStats } from '~src/lib/races';
+import { buildPersonJsonLd } from '~src/utils/json-ld';
 import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
 
 interface PageProps {
@@ -79,18 +81,38 @@ export default async function Page(props: PageProps) {
         getSession(),
     ] as const);
 
+    const topGame = runs.length > 0 ? runs[0].game : undefined;
+    const pbCount = runs.filter((r) => r.personalBest).length;
+    const profileDescription = [
+        `${userData.user} is a speedrunner on The Run.`,
+        topGame ? `Top game: ${topGame}.` : '',
+        `${runs.length} runs tracked, ${pbCount} personal bests.`,
+    ]
+        .filter(Boolean)
+        .join(' ');
+
     return (
-        <UserProfile
-            runs={runs}
-            username={userData.user}
-            hasGameTime={hasGameTime}
-            defaultGameTime={defaultGameTime}
-            liveData={liveData}
-            session={session}
-            userData={userData}
-            allGlobalGameData={allGlobalGameData}
-            raceStats={raceStats}
-        />
+        <>
+            <JsonLd
+                data={buildPersonJsonLd({
+                    username: userData.user,
+                    picture: userData.picture,
+                    description: profileDescription,
+                    socials: userData.socials,
+                })}
+            />
+            <UserProfile
+                runs={runs}
+                username={userData.user}
+                hasGameTime={hasGameTime}
+                defaultGameTime={defaultGameTime}
+                liveData={liveData}
+                session={session}
+                userData={userData}
+                allGlobalGameData={allGlobalGameData}
+                raceStats={raceStats}
+            />
+        </>
     );
 }
 
