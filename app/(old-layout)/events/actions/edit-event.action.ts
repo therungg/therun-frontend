@@ -6,8 +6,6 @@ import { formInputToEventInput } from '~app/(old-layout)/events/actions/form-inp
 import { validateEventInput } from '~app/(old-layout)/events/actions/validate-event-input';
 import { getSession } from '~src/actions/session.action';
 import { editEvent, getEventById } from '~src/lib/events';
-import { insertLog } from '~src/lib/logs';
-import { getOrCreateUser } from '~src/lib/users';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 
 export async function editEventAction(
@@ -50,14 +48,7 @@ export async function editEventAction(
         };
     }
     try {
-        await editEvent(eventId, input);
-        await insertLog({
-            userId: await getOrCreateUser(user.username),
-            action: 'edit-event',
-            entity: 'event',
-            target: eventId.toString(),
-            data: { eventId, input },
-        });
+        await editEvent(eventId, input, user.id);
     } catch (error: unknown) {
         let message = (error as { message: string }).message;
 

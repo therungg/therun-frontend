@@ -6,7 +6,6 @@ import { DEFAULT_SESSION } from '~src/common/constants';
 import { SessionError } from '~src/common/session.error';
 import { generateSession } from '~src/lib/generate-session';
 import { getSessionData } from '~src/lib/get-session-data';
-import { getOrCreateUser, getUserRoles } from '~src/lib/users';
 import { User } from '../../types/session.types';
 import { loginWithTwitch } from '../components/twitch/login-with-twitch';
 import { getBaseUrl } from './base-url.action';
@@ -49,10 +48,6 @@ export const getSession = cache(async (): Promise<User> => {
     try {
         const session = await getSessionData(sessionId);
         if (session) {
-            const userId = await getOrCreateUser(session.username);
-            const roles = await getUserRoles(userId);
-            session.roles.push(...roles);
-
             return { id: sessionId, ...session } as User;
         }
     } catch (error) {

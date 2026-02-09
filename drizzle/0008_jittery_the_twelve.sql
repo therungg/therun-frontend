@@ -1,1 +1,0 @@
-ALTER TABLE "roles" ADD COLUMN "description" varchar(1000) NOT NULL;

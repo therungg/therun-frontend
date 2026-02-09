@@ -1,1 +1,0 @@
-CREATE INDEX "idx_name_search" ON "events" USING gin ("name_search");

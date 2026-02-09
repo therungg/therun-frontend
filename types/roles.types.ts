@@ -1,5 +1,3 @@
-import { InferSelectModel } from 'drizzle-orm';
-import { roles } from '~src/db/schema';
 import { Role } from './session.types';
 
 export const manageableRoles: Role[] = [
@@ -17,6 +15,9 @@ export const assignableRoles: ManageableRole[] = [
 ];
 
 export type ManageableRole = (typeof manageableRoles)[number];
-export type RoleEntity = InferSelectModel<typeof roles> & {
+
+export interface RoleEntity {
+    id: number;
     name: ManageableRole;
-};
+    description: string;
+}

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-therun.gg is a free speedrun statistics website providing live data and advanced statistics for speedrunners. Built with Next.js 16 (App Router), React 19, TypeScript, and PostgreSQL via Drizzle ORM.
+therun.gg is a free speedrun statistics website providing live data and advanced statistics for speedrunners. Built with Next.js 16 (App Router), React 19, and TypeScript. All data operations go through the backend REST API (`NEXT_PUBLIC_DATA_URL`).
 
 ## Commands
 
@@ -14,9 +14,6 @@ npm run build         # Production build with Turbopack
 npm run lint          # Run ESLint
 npm run lint-fix      # Run ESLint with auto-fix
 npm run typecheck     # TypeScript type checking (tsc --noEmit)
-npm run migrate       # Run Drizzle database migrations
-npm run seed          # Seed the database with test data
-npm run generate-migration  # Generate new Drizzle migration
 ```
 
 ## Code Quality
@@ -45,12 +42,12 @@ The app uses Next.js route groups to manage different layouts:
 
 ### Key Directories
 
-- `src/lib/` - Data fetching functions (server-side)
+- `src/lib/` - Data fetching functions (server-side, via backend API)
+- `src/lib/api-client.ts` - Shared `apiFetch()` helper for backend API calls
 - `src/actions/` - Server Actions
-- `src/db/` - Drizzle ORM schema and database connection
 - `src/rbac/` - Role-based access control using CASL
 - `src/components/` - Shared React components
-- `types/` - TypeScript type definitions
+- `types/` - TypeScript type definitions (standalone, no ORM dependencies)
 
 ### Authentication & Authorization
 
@@ -59,19 +56,19 @@ The app uses Next.js route groups to manage different layouts:
 - Roles: admin, moderator, patreon1-3, event-admin, race-admin, board-admin, etc.
 - Use `<Can>` component for conditional rendering based on permissions
 
-### Database
+### Backend API
 
-- PostgreSQL with Drizzle ORM
-- Schema defined in `src/db/schema.ts`
-- Migrations in `./drizzle/` directory
-- Uses dotenvx to load `.env.local` and `.env` for database commands
+- All data operations (events, users, roles, frontpage config) go through the backend REST API
+- Base URL configured via `NEXT_PUBLIC_DATA_URL` environment variable
+- Auth pattern: `Authorization: Bearer {sessionId}` header
+- API client helper: `src/lib/api-client.ts` (`apiFetch()`)
 
 ### External Services
 
 - Vercel Blob for image storage
-- Algolia for search (events, games, users)
+- Algolia for search (events read-only from frontend, writes handled by backend)
 - WebSocket at `wss://ws.therun.gg` for live updates
-- Various AWS Lambda endpoints for API operations
+- Backend REST API for all CRUD operations
 
 ### Caching
 

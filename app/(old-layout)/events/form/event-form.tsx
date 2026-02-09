@@ -4,11 +4,14 @@ import Image from 'next/image';
 import React, { ReactElement, useEffect, useState } from 'react';
 import { Col, Form, Modal, Row } from 'react-bootstrap';
 import { toast } from 'react-toastify';
+import {
+    createEventOrganizerAction,
+    getAllEventOrganizersAction,
+} from '~app/(old-layout)/events/actions/create-event-organizer.action';
 import { countries } from '~src/common/countries';
 import { languages } from '~src/common/languages';
 import { Button } from '~src/components/Button/Button';
 import Tiptap from '~src/components/TipTap';
-import { createEventOrganizer, getAllEventOrganizers } from '~src/lib/events';
 import {
     Event,
     EventOrganizer,
@@ -51,7 +54,7 @@ export const EventForm = ({ event }: { event?: Event }) => {
     const [showModal, setShowModal] = useState('');
 
     const fetchEventOrganizers = async () => {
-        const organizers = await getAllEventOrganizers();
+        const organizers = await getAllEventOrganizersAction();
         setEventOrganizers(organizers);
     };
 
@@ -62,9 +65,9 @@ export const EventForm = ({ event }: { event?: Event }) => {
     const handleAddOrganizer = async () => {
         if (newOrganizerName.trim()) {
             try {
-                const newOrganizer = await createEventOrganizer({
-                    name: newOrganizerName.trim(),
-                });
+                const newOrganizer = await createEventOrganizerAction(
+                    newOrganizerName.trim(),
+                );
                 setNewOrganizerName('');
                 await fetchEventOrganizers(); // Refetch to update the list
                 toast.success('Organizer added successfully');
