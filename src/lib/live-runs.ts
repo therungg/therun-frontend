@@ -1,5 +1,6 @@
 'use server';
 
+import { cacheLife } from 'next/cache';
 import { type LiveRun } from '~app/(old-layout)/live/live.types';
 import { type Tournament } from '~src/components/tournament/tournament-info';
 import { safeEncodeURI } from '~src/utils/uri';
@@ -10,6 +11,8 @@ export const getAllLiveRuns = async (
     game: string | null = null,
     category: string | null = null,
 ) => {
+    'use cache';
+    cacheLife('seconds');
     let url = `${LIVE_RUN_URL}?minify=true`;
 
     if (game) {
@@ -19,7 +22,7 @@ export const getAllLiveRuns = async (
         }
     }
 
-    const result = await fetch(url, { next: { revalidate: 30 } });
+    const result = await fetch(url);
 
     return (await result.json()).result;
 };

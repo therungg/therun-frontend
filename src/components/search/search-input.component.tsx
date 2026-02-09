@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Search as SearchIcon } from 'react-bootstrap-icons';
+import styles from './search-results-panel.module.scss';
 import { type SearchItemKind } from './use-fuzzy-search';
 
 interface SearchInputProps {
@@ -16,8 +17,22 @@ export const SearchInput = React.memo(
             { isSearching, query, filters, onChange, onInputFocus },
             searchRef,
         ) => {
+            const [isFocused, setIsFocused] = useState(false);
+            const showBadge = !isFocused && !query;
+
+            const handleFocus: React.FocusEventHandler<HTMLInputElement> = (
+                e,
+            ) => {
+                setIsFocused(true);
+                onInputFocus(e);
+            };
+
+            const handleBlur = () => {
+                setIsFocused(false);
+            };
+
             return (
-                <div className="input-group">
+                <div className="input-group" style={{ position: 'relative' }}>
                     <label
                         htmlFor="global-search"
                         className="input-group-text w-42p"
@@ -39,9 +54,11 @@ export const SearchInput = React.memo(
                         placeholder={getPlaceholderText(filters)}
                         onChange={onChange}
                         value={query}
-                        onFocus={onInputFocus}
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
                         id="global-search"
                     />
+                    {showBadge && <ShortcutBadge />}
                 </div>
             );
         },
@@ -49,6 +66,18 @@ export const SearchInput = React.memo(
 );
 
 SearchInput.displayName = 'SearchInput';
+
+const ShortcutBadge = () => {
+    const isMac =
+        typeof navigator !== 'undefined' &&
+        /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
+
+    return (
+        <span className={styles.shortcutBadge}>
+            {isMac ? '\u2318' : 'Ctrl+'}K
+        </span>
+    );
+};
 
 const getPlaceholderText = (filters: SearchItemKind[]) => {
     // TODO: Localize this.
