@@ -65,10 +65,8 @@ The app uses Next.js route groups to manage different layouts:
 
 ### External Services
 
-- Vercel Blob for image storage
-- Algolia for search (events read-only from frontend, writes handled by backend)
 - WebSocket at `wss://ws.therun.gg` for live updates
-- Backend REST API for all CRUD operations
+- Backend REST API for all CRUD operations (including image uploads via S3 presigned URLs and Algolia search)
 
 ### Caching
 

@@ -1,11 +1,7 @@
 'use server';
 
-import { EventFromSearch } from 'types/events.types';
 import { Events } from '~app/(old-layout)/events/events';
-import {
-    algoliaSearchResponseToPaginationResponse,
-    searchAlgoliaEvents,
-} from '~src/lib/algolia';
+import { searchEvents } from '~src/lib/events';
 
 export default async function EventsPage({
     searchParams,
@@ -16,18 +12,13 @@ export default async function EventsPage({
 
     const { page = '1', search = '' } = queryParams;
 
-    const events = await searchAlgoliaEvents<EventFromSearch>(
+    const events = await searchEvents(
         parseInt(page as string),
         search as string,
         getAlgoliaFilters(queryParams),
     );
 
-    return (
-        <Events
-            events={events}
-            pagination={await algoliaSearchResponseToPaginationResponse(events)}
-        />
-    );
+    return <Events events={events} />;
 }
 
 type DateFilterOptions = 'all' | 'upcoming' | 'current' | 'past';
