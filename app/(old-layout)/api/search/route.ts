@@ -20,6 +20,5 @@ export async function GET(request: NextRequest) {
 
     return apiResponse({
         body: result,
-        cache: { maxAge: 60, swr: 60 },
     });
 }

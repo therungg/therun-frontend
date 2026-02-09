@@ -138,6 +138,15 @@
     }
 }
 
+.pendingStatus {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--bs-secondary-color);
+    opacity: 0.65;
+    white-space: nowrap;
+}
+
 .creatorText {
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
     font-size: 0.8rem;

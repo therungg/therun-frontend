@@ -1,8 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import React from 'react';
+import { Controller as ControllerIcon } from 'react-bootstrap-icons';
+import { GameImage } from '~src/components/image/gameimage';
 import { getFormattedString } from '~src/components/util/datetime';
 import type { RunResult, UserResult } from './find-user-or-run';
+import styles from './search-results-panel.module.scss';
 
 const MAX_USERS = 8;
 const MAX_RUNS = 10;
@@ -32,24 +35,18 @@ export const SearchResultsPanel = React.memo(
             return (
                 <div
                     ref={ref}
-                    className="dropdown-menu d-block mt-2 py-0 overflow-y-auto"
-                    style={{
-                        width: bothVisible
-                            ? 'min(650px, calc(100vw - 2rem))'
-                            : undefined,
-                        maxWidth: 'calc(100vw - 2rem)',
-                        right: 0,
-                        left: 'auto',
-                        maxHeight: '450px',
-                    }}
+                    className={`${styles.panel} ${bothVisible ? styles.panelWide : styles.panelNarrow}`}
                 >
                     {!hasResults && !isSearching && (
-                        <div className="p-3 text-center text-muted fs-smaller">
+                        <div className={styles.emptyState}>
+                            <div className={styles.emptyIcon}>
+                                <ControllerIcon size={24} />
+                            </div>
                             No results found
                         </div>
                     )}
                     {isSearching && !hasResults && (
-                        <div className="p-3 d-flex align-items-center justify-content-center gap-2 fs-smaller">
+                        <div className={styles.loadingState}>
                             <span
                                 className="spinner-border spinner-border-sm"
                                 role="status"
@@ -67,7 +64,9 @@ export const SearchResultsPanel = React.memo(
                                             : 'col-12'
                                     }
                                 >
-                                    <SectionHeader title="Users" />
+                                    <div className={styles.sectionHeader}>
+                                        Users
+                                    </div>
                                     {hasUsers ? (
                                         displayUsers.map((user) => (
                                             <UserResultCard
@@ -92,7 +91,9 @@ export const SearchResultsPanel = React.memo(
                                             : 'col-12'
                                     }
                                 >
-                                    <SectionHeader title="Runs" />
+                                    <div className={styles.sectionHeader}>
+                                        Runs
+                                    </div>
                                     {hasRuns ? (
                                         displayRuns.map((run) => (
                                             <RunResultCard
@@ -119,20 +120,6 @@ export const SearchResultsPanel = React.memo(
 
 SearchResultsPanel.displayName = 'SearchResultsPanel';
 
-const SectionHeader = ({ title }: { title: string }) => (
-    <div
-        className="px-2 py-1 fw-semibold border-bottom fs-smaller"
-        style={{
-            position: 'sticky',
-            top: 0,
-            backgroundColor: 'var(--bs-tertiary-bg)',
-            zIndex: 1,
-        }}
-    >
-        {title}
-    </div>
-);
-
 const EmptySection = ({
     text,
     isSearching,
@@ -140,9 +127,9 @@ const EmptySection = ({
     text: string;
     isSearching: boolean;
 }) => (
-    <div className="px-3 py-2 text-muted fs-smaller">
+    <div className={styles.emptyState}>
         {isSearching ? (
-            <span className="d-flex align-items-center gap-2">
+            <span className={styles.loadingState}>
                 <span
                     className="spinner-border spinner-border-sm"
                     role="status"
@@ -164,23 +151,26 @@ const UserResultCard = ({
 }) => (
     <Link
         href={`/${user.user}${urlSuffix}`}
-        className="d-flex align-items-center gap-2 px-3 py-2 text-decoration-none text-body list-group-item-action"
+        className={styles.resultItem}
         prefetch={false}
     >
         <Image
             src={user.picture}
             alt=""
-            width={32}
-            height={32}
-            className="rounded-circle flex-shrink-0"
+            width={40}
+            height={40}
+            className={styles.avatar}
             unoptimized
         />
-        <div style={{ minWidth: 0 }}>
-            <div className="fw-medium text-truncate lh-sm">{user.user}</div>
-            <div className="text-muted fs-smaller text-truncate lh-sm">
-                {user.totalGames} {user.totalGames === 1 ? 'game' : 'games'}{' '}
-                &middot; {user.totalCategories}{' '}
+        <div className={styles.resultText}>
+            <div className={styles.resultName}>{user.user}</div>
+            <div className={styles.meta}>
+                {user.totalGames} {user.totalGames === 1 ? 'game' : 'games'}
+                {' \u00B7 '}
+                {user.totalCategories}{' '}
                 {user.totalCategories === 1 ? 'category' : 'categories'}
+                {' \u00B7 '}
+                {user.totalAttempts.toLocaleString()} attempts
             </div>
         </div>
     </Link>
@@ -199,13 +189,31 @@ const RunResultCard = ({
     return (
         <Link
             href={`/${run.url}${urlSuffix}`}
-            className="d-block px-3 py-2 text-decoration-none text-body list-group-item-action"
+            className={styles.resultItem}
             prefetch={false}
         >
-            <div className="fw-medium text-truncate lh-sm">{run.game}</div>
-            <div className="text-muted fs-smaller text-truncate lh-sm">
-                {run.category} &middot; {run.user}
-                {formattedPb && <> &middot; {formattedPb}</>}
+            {run.image ? (
+                <GameImage
+                    src={run.image}
+                    alt={run.game}
+                    width={36}
+                    height={48}
+                    quality="small"
+                    className={styles.gameImage}
+                />
+            ) : (
+                <div className={styles.gameImageFallback}>
+                    <ControllerIcon size={16} />
+                </div>
+            )}
+            <div className={styles.resultText}>
+                <div className={styles.resultName}>{run.game}</div>
+                <div className={styles.meta}>
+                    {run.category} &middot; {run.user}
+                </div>
+                {formattedPb && (
+                    <div className={styles.pbTime}>{formattedPb}</div>
+                )}
             </div>
         </Link>
     );

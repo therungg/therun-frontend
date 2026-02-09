@@ -69,6 +69,20 @@ export const GlobalSearch = React.memo<SearchProps>(
             }, []);
 
         React.useEffect(() => {
+            const handleKeyDown = (e: KeyboardEvent) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                    e.preventDefault();
+                    searchRef.current?.focus();
+                }
+            };
+
+            document.addEventListener('keydown', handleKeyDown);
+            return () => {
+                document.removeEventListener('keydown', handleKeyDown);
+            };
+        }, []);
+
+        React.useEffect(() => {
             const handleClickOutside = (event: MouseEvent) => {
                 if (
                     resultsPanelRef.current &&

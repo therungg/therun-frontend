@@ -119,6 +119,51 @@ export const RaceCard: FC<PropsWithChildren<RaceCardProps>> = ({
                                     />
                                 </div>
                             )}
+                            {race.status === 'pending' && (
+                                <span className={styles.pendingStatus}>
+                                    {race.startMethod === 'everyone-ready' && (
+                                        <span>
+                                            <FaClock
+                                                size={10}
+                                                className="me-1"
+                                            />
+                                            Waiting for ready up...
+                                        </span>
+                                    )}
+                                    {race.startMethod === 'moderator' && (
+                                        <span>
+                                            <FaClock
+                                                size={10}
+                                                className="me-1"
+                                            />
+                                            Waiting for moderator...
+                                        </span>
+                                    )}
+                                    {race.startMethod === 'datetime' && (
+                                        <span>
+                                            <FaClock
+                                                size={10}
+                                                className="me-1"
+                                            />
+                                            Starts{' '}
+                                            <LocalizedTime
+                                                date={
+                                                    new Date(
+                                                        race.willStartAt as string,
+                                                    )
+                                                }
+                                                options={{
+                                                    year: undefined,
+                                                    month: '2-digit',
+                                                    day: '2-digit',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                }}
+                                            />
+                                        </span>
+                                    )}
+                                </span>
+                            )}
                         </div>
                         <span className={styles.timestampInline}>
                             {race.startTime && (
@@ -145,31 +190,6 @@ export const RaceCard: FC<PropsWithChildren<RaceCardProps>> = ({
                                 </div>
                             </span>
                         </div>
-                    </div>
-                )}
-                {race.status === 'pending' && (
-                    <div className="mt-2 d-flex justify-content-center text-muted d-flex">
-                        {race.startMethod === 'everyone-ready' && (
-                            <span>Waiting for ready up...</span>
-                        )}
-                        {race.startMethod === 'moderator' && (
-                            <span>Waiting for moderator to start...</span>
-                        )}
-                        {race.startMethod === 'datetime' && (
-                            <span>
-                                Starts on{' '}
-                                <LocalizedTime
-                                    date={new Date(race.willStartAt as string)}
-                                    options={{
-                                        year: undefined,
-                                        month: '2-digit',
-                                        day: '2-digit',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                    }}
-                                />
-                            </span>
-                        )}
                     </div>
                 )}
             </CardWithImage>

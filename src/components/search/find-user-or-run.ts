@@ -20,6 +20,7 @@ export interface RunResult {
     pb: string;
     pbgt: string;
     attemptCount: number;
+    image: string;
 }
 
 export interface SearchResults {

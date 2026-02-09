@@ -1,5 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
+    bigint,
+    bigserial,
     boolean,
     index,
     integer,
@@ -109,3 +111,79 @@ export const logs = pgTable('logs', {
     data: jsonb(),
     timestamp: timestamp().defaultNow().notNull(),
 });
+
+export const speedrunRuns = pgTable(
+    'speedrun_runs',
+    {
+        id: serial().primaryKey(),
+        username: text().notNull(),
+        game: text().notNull(),
+        category: text().notNull(),
+        personalBest: bigint({ mode: 'number' }),
+        sumOfBests: bigint({ mode: 'number' }),
+        attemptCount: integer(),
+        finishedAttemptCount: integer(),
+        totalRunTime: bigint({ mode: 'number' }),
+        platform: text(),
+        emulator: boolean().default(false),
+        gameRegion: text(),
+        variables: jsonb(),
+        hasGameTime: boolean().default(false),
+        gameTimePb: bigint({ mode: 'number' }),
+        gameTimeSob: bigint({ mode: 'number' }),
+        personalBestTime: timestamp(),
+        uploadTime: timestamp(),
+        highlighted: boolean().default(false),
+        vod: text(),
+        description: text(),
+        customUrl: text(),
+        updatedAt: timestamp().defaultNow(),
+    },
+    (table) => [
+        uniqueIndex('speedrun_runs_username_game_category_idx').on(
+            table.username,
+            table.game,
+            table.category,
+        ),
+        index('speedrun_runs_game_category_pb_idx').on(
+            table.game,
+            table.category,
+            table.personalBest,
+        ),
+        index('speedrun_runs_username_idx').on(table.username),
+    ],
+);
+
+export const finishedRuns = pgTable(
+    'finished_runs',
+    {
+        id: bigserial({ mode: 'number' }).primaryKey(),
+        username: text().notNull(),
+        game: text().notNull(),
+        category: text().notNull(),
+        time: bigint({ mode: 'number' }).notNull(),
+        gameTime: bigint({ mode: 'number' }),
+        startedAt: timestamp(),
+        endedAt: timestamp().notNull(),
+        isPb: boolean().default(false),
+        platform: text(),
+        emulator: boolean().default(false),
+        runId: integer().references(() => speedrunRuns.id, {
+            onDelete: 'cascade',
+        }),
+    },
+    (table) => [
+        index('finished_runs_game_category_ended_at_idx').on(
+            table.game,
+            table.category,
+            table.endedAt,
+        ),
+        index('finished_runs_username_ended_at_idx').on(
+            table.username,
+            table.endedAt,
+        ),
+        index('finished_runs_game_category_time_pb_idx')
+            .on(table.game, table.category, table.time)
+            .where(sql`"isPb" = true`),
+    ],
+);
