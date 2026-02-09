@@ -33,12 +33,6 @@ export default async function sitemap() {
             priority: 0.8,
         },
         {
-            url: 'https://therun.gg/games',
-            lastModified: new Date(),
-            changeFrequency: 'weekly',
-            priority: 0.6,
-        },
-        {
             url: 'https://therun.gg/patreon',
             lastModified: new Date(),
             changeFrequency: 'daily',

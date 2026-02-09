@@ -2,8 +2,10 @@ import { Metadata } from 'next';
 import { cacheLife } from 'next/cache';
 import RunDetail from '~app/(old-layout)/[username]/[game]/[run]/run';
 import { getGameGlobal } from '~src/components/game/get-game';
+import { JsonLd } from '~src/components/json-ld';
 import { getRun } from '~src/lib/get-run';
 import { getLiveRunForUser } from '~src/lib/live-runs';
+import { buildSportsEventJsonLd } from '~src/utils/json-ld';
 import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 
@@ -30,16 +32,29 @@ export default async function RunPage(props: PageProps) {
 
     const liveData = await getLiveRunForUser(username);
 
+    const decodedGame = safeDecodeURI(game);
+    const decodedRun = safeDecodeURI(runName);
+
     return (
-        <RunDetail
-            run={run}
-            username={username}
-            game={game}
-            runName={runName}
-            globalGameData={globalGameData}
-            liveData={liveData}
-            tab={searchParams.tab}
-        />
+        <>
+            <JsonLd
+                data={buildSportsEventJsonLd({
+                    username,
+                    game: decodedGame,
+                    category: decodedRun,
+                    personalBest: run.personalBest,
+                })}
+            />
+            <RunDetail
+                run={run}
+                username={username}
+                game={game}
+                runName={runName}
+                globalGameData={globalGameData}
+                liveData={liveData}
+                tab={searchParams.tab}
+            />
+        </>
     );
 }
 
