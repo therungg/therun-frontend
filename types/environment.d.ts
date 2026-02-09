@@ -29,12 +29,6 @@ declare global {
             ANALYTICS_MEASUREMENT_ID: string;
             SMTP_HOST: string;
             SMTP_PASSWORD: string;
-            EDGE_CONFIG: string;
-            DATABASE_URL: string;
-            NEXT_PUBLIC_ALGOLIA_APPLICATION_ID: string;
-            ALGOLIA_API_KEY: string;
-            NEXT_PUBLIC_ALGOLIA_EVENTS_INDEX_NAME: string;
-            NEXT_PUBLIC_ALGOLIA_SEARCH_API_KEY: string;
         }
     }
 }

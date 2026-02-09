@@ -2,7 +2,10 @@ import sanitizeHtml from 'sanitize-html';
 import { uploadEventImage } from '~app/(old-layout)/events/actions/upload-event-image';
 import { EditEventInput, EventRestream } from '../../../../types/events.types';
 
-export const formInputToEventInput = async (eventInput: FormData) => {
+export const formInputToEventInput = async (
+    eventInput: FormData,
+    sessionId: string,
+) => {
     const input = {
         name: eventInput.get('name') as string,
         slug: eventInput.get('slug') as string,
@@ -43,10 +46,7 @@ export const formInputToEventInput = async (eventInput: FormData) => {
     const file = eventInput.get('image') as File;
 
     if (file.size > 0) {
-        input.imageUrl = await uploadEventImage(
-            file,
-            input.name + '.' + file.type.split('/')[1],
-        );
+        input.imageUrl = await uploadEventImage(file, input.slug, sessionId);
     }
 
     if (file.size > 10 * 1024 * 1024) {

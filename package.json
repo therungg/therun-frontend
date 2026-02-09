@@ -13,7 +13,6 @@
         "prepare": "husky install",
         "prepush": "npx @biomejs/biome check --write .",
         "typecheck": "tsc --noEmit",
-        "algolia:set-index-settings": "npx dotenvx run -f .env.local -f .env -- npx tsx ./src/lib/algolia-set-index-settings.ts",
         "postinstall": "patch-package"
     },
     "overrides": {
@@ -59,9 +58,6 @@
         "@tiptap/react": "^2.11.5",
         "@tiptap/starter-kit": "^2.11.5",
         "@types/hapi__joi": "^17.1.14",
-        "@vercel/blob": "^0.27.3",
-        "@vercel/edge-config": "^0.4.1",
-        "algoliasearch": "^5.23.0",
         "axios": "1.7.4",
         "babel-plugin-react-compiler": "^19.0.0-beta-decd7b8-20250118",
         "bootstrap": "^5.3.3",

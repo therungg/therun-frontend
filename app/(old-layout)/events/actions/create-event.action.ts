@@ -21,7 +21,7 @@ export async function createEventAction(
     let baseInput = undefined;
 
     try {
-        baseInput = await formInputToEventInput(eventInput);
+        baseInput = await formInputToEventInput(eventInput, session.id);
     } catch (error) {
         return {
             message: (error as { message: string }).message,

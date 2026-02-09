@@ -1,25 +1,17 @@
 'use client';
 
-import { SearchResponse } from 'algoliasearch';
 import Link from 'next/link';
 import { Col, Row } from 'react-bootstrap';
 import { IconButton } from '~src/components/Button/IconButton';
-import { PaginatedData } from '~src/components/pagination/pagination.types';
 import { Paginate } from '~src/components/server-pagination/Paginate';
 import { PlusIcon } from '~src/icons/plus-icon';
+import { EventSearchResult } from '~src/lib/events';
 import { Can } from '~src/rbac/Can.component';
-import { EventFromSearch } from '../../../types/events.types';
 import { SpeedrunEventCard } from './event-card';
 import { EventFilters } from './event-filters';
 import { EventSearch } from './event-search';
 
-export const Events = ({
-    events,
-    pagination,
-}: {
-    events: SearchResponse<EventFromSearch>;
-    pagination: PaginatedData<EventFromSearch>;
-}) => {
+export const Events = ({ events }: { events: EventSearchResult }) => {
     return (
         <div>
             <Row className="mb-3">
@@ -45,13 +37,13 @@ export const Events = ({
             </Row>
             <Row>
                 <Col xl={2} lg={3} md={4} sm={5} xs={12}>
-                    <EventFilters filters={events.facets!} />
+                    <EventFilters filters={events.facets} />
                 </Col>
                 <Col xl={10} lg={9} md={8} sm={7} xs={12}>
                     <section>
                         <EventSearch />
                         <Row>
-                            {events.hits.map((event) => {
+                            {events.items.map((event) => {
                                 return (
                                     <Col key={event.id} xl={12} lg={6} md={12}>
                                         <Link
@@ -65,7 +57,7 @@ export const Events = ({
                                 );
                             })}
                         </Row>
-                        <Paginate data={pagination} />
+                        <Paginate data={events} />
                     </section>
                 </Col>
             </Row>

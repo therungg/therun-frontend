@@ -29,7 +29,7 @@ export async function editEventAction(
     let input: EditEventInput;
 
     try {
-        input = await formInputToEventInput(eventInput);
+        input = await formInputToEventInput(eventInput, user.id);
 
         if (!input.imageUrl && event.imageUrl) {
             input.imageUrl = event.imageUrl;
