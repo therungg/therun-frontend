@@ -18,8 +18,8 @@ export default async function RolesPage(props: { searchParams: SearchParams }) {
     const searchQuery = (searchParams.search as string) || '';
     const role = (searchParams.role as string) || '';
 
-    const users = await getPaginatedUsers(page, 10, searchQuery, role);
-    const roles = await getAllRoles();
+    const users = await getPaginatedUsers(page, 10, searchQuery, role, user.id);
+    const roles = await getAllRoles(user.id);
 
     return (
         <>

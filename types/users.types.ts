@@ -1,6 +1,10 @@
-import { InferSelectModel } from 'drizzle-orm';
-import { users } from '~src/db/schema';
+import { PanelConfig } from './frontpage-config.types';
 import { Role } from './session.types';
 
-export type User = InferSelectModel<typeof users>;
+export interface User {
+    id: number;
+    username: string;
+    frontpageConfig: PanelConfig | null;
+}
+
 export type UserWithRoles = User & { roles: Role[] };

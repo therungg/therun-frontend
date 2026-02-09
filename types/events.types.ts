@@ -1,10 +1,36 @@
-import { InferInsertModel, InferSelectModel } from 'drizzle-orm';
-import { eventOrganizers, events } from '~src/db/schema';
-
-export type Event = InferSelectModel<typeof events> & {
+export interface Event {
+    id: number;
+    organizerId: number;
+    startsAt: Date;
+    endsAt: Date;
+    name: string;
+    slug: string;
+    type: string;
+    location: string | null;
+    bluesky: string | null;
+    twitter: string | null;
+    twitch: string | null;
+    discord: string | null;
+    submissionsUrl: string | null;
+    language: string;
+    shortDescription: string;
+    description: string;
+    url: string | null;
+    scheduleUrl: string | null;
+    imageUrl: string | null;
+    isOffline: boolean;
+    isHighlighted: boolean;
+    tier: number | null;
     tags: string[];
+    isForCharity: boolean;
+    charityName: string | null;
+    charityUrl: string | null;
     restreams: EventRestream[];
-};
+    isDeleted: boolean;
+    createdAt: Date;
+    createdBy: string;
+}
+
 export type EventWithOrganizerName = Event & { organizerName: string };
 
 export interface EventFromSearch
@@ -16,13 +42,16 @@ export interface EventFromSearch
     objectID: string;
 }
 
-export type CreateEventInput = InferInsertModel<typeof events>;
+export type CreateEventInput = Omit<Event, 'id' | 'createdAt'> & {
+    createdAt?: Date;
+};
 export type EditEventInput = Omit<CreateEventInput, 'createdBy'>;
 
-export type EventOrganizer = InferSelectModel<typeof eventOrganizers>;
-export type CreateEventOrganizerInput = InferInsertModel<
-    typeof eventOrganizers
->;
+export interface EventOrganizer {
+    id: number;
+    name: string;
+}
+export type CreateEventOrganizerInput = Omit<EventOrganizer, 'id'>;
 
 export type EventType =
     | 'Marathon'

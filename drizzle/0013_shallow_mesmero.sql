@@ -1,1 +1,0 @@
-ALTER TABLE "events" ADD COLUMN "isOffline" boolean DEFAULT true NOT NULL;

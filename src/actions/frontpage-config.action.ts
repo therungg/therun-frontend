@@ -1,9 +1,7 @@
 'use server';
 
-import { eq } from 'drizzle-orm';
 import { cacheLife, cacheTag, revalidateTag } from 'next/cache';
-import { db } from '~src/db';
-import { users } from '~src/db/schema';
+import { apiFetch } from '~src/lib/api-client';
 import {
     DEFAULT_FRONTPAGE_CONFIG,
     mergeConfigWithDefaults,
@@ -32,19 +30,20 @@ async function getCachedFrontpageConfig(
     cacheLife('hours');
     cacheTag(`frontpage-config-${username}`);
 
-    const result = await db
-        .select()
-        .from(users)
-        .where(eq(users.username, username))
-        .limit(1);
+    try {
+        const config = await apiFetch<PanelConfig | null>(
+            `/users/${username}/frontpage-config`,
+        );
 
-    const user = result[0];
-    if (!user?.frontpageConfig) {
+        if (!config) {
+            return DEFAULT_FRONTPAGE_CONFIG;
+        }
+
+        const merged = mergeConfigWithDefaults(config);
+        return enforceNonHideablePanels(merged);
+    } catch {
         return DEFAULT_FRONTPAGE_CONFIG;
     }
-
-    const merged = mergeConfigWithDefaults(user.frontpageConfig as PanelConfig);
-    return enforceNonHideablePanels(merged);
 }
 
 function enforceNonHideablePanels(config: PanelConfig): PanelConfig {
@@ -80,10 +79,11 @@ export async function updateFrontpageConfig(
     const enforced = enforceNonHideablePanels(config);
 
     try {
-        await db
-            .update(users)
-            .set({ frontpageConfig: enforced })
-            .where(eq(users.username, session.username));
+        await apiFetch(`/users/${session.username}/frontpage-config`, {
+            method: 'PUT',
+            body: JSON.stringify(enforced),
+            sessionId: session.id,
+        });
 
         revalidateTag(`frontpage-config-${session.username}`, 'hours');
 
@@ -100,10 +100,11 @@ export async function resetFrontpageConfig(): Promise<void> {
         throw new Error('Not authenticated');
     }
 
-    await db
-        .update(users)
-        .set({ frontpageConfig: null })
-        .where(eq(users.username, session.username));
+    await apiFetch(`/users/${session.username}/frontpage-config`, {
+        method: 'PUT',
+        body: JSON.stringify(null),
+        sessionId: session.id,
+    });
 
     revalidateTag(`frontpage-config-${session.username}`, 'hours');
 }

@@ -1,49 +1,34 @@
 'use server';
 
-import { and, eq } from 'drizzle-orm';
-import { db } from '~src/db';
-import { roles, userRoles } from '~src/db/schema';
 import { ManageableRole, RoleEntity } from '../../types/roles.types';
+import { apiFetch } from './api-client';
 
-export const getAllRoles = async () => {
-    return (await db.select().from(roles)) as RoleEntity[];
+export const getAllRoles = async (
+    sessionId?: string,
+): Promise<RoleEntity[]> => {
+    return apiFetch<RoleEntity[]>('/admin/roles', { sessionId });
 };
 
-export const getRoleByName = async (role: ManageableRole) => {
-    return db.query.roles.findFirst({
-        where: eq(roles.name, role),
-    });
-};
-
-export const addRoleToUser = async (userId: number, role: ManageableRole) => {
-    const roleEntity = await getRoleByName(role);
-
-    if (!roleEntity) {
-        throw new Error('Role not found');
-    }
-
-    await db.insert(userRoles).values({
-        userId,
-        roleId: roleEntity.id,
+export const addRoleToUser = async (
+    userId: number,
+    role: ManageableRole,
+    sessionId: string,
+): Promise<void> => {
+    await apiFetch<void>('/admin/roles/assign', {
+        method: 'POST',
+        body: JSON.stringify({ userId, role }),
+        sessionId,
     });
 };
 
 export const removeRoleFromUser = async (
     userId: number,
     role: ManageableRole,
-) => {
-    const roleEntity = await getRoleByName(role);
-
-    if (!roleEntity) {
-        throw new Error('Role not found');
-    }
-
-    await db
-        .delete(userRoles)
-        .where(
-            and(
-                eq(userRoles.roleId, roleEntity.id),
-                eq(userRoles.userId, userId),
-            ),
-        );
+    sessionId: string,
+): Promise<void> => {
+    await apiFetch<void>('/admin/roles/remove', {
+        method: 'POST',
+        body: JSON.stringify({ userId, role }),
+        sessionId,
+    });
 };

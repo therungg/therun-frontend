@@ -5,8 +5,6 @@ import { formInputToEventInput } from '~app/(old-layout)/events/actions/form-inp
 import { validateEventInput } from '~app/(old-layout)/events/actions/validate-event-input';
 import { getSession } from '~src/actions/session.action';
 import { createEvent } from '~src/lib/events';
-import { insertLog } from '~src/lib/logs';
-import { getOrCreateUser } from '~src/lib/users';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 import { CreateEventInput } from '../../../../types/events.types';
 
@@ -45,14 +43,7 @@ export async function createEventAction(
     let eventId = null;
 
     try {
-        eventId = await createEvent(input);
-        await insertLog({
-            userId: await getOrCreateUser(session.username),
-            action: 'create-event',
-            entity: 'event',
-            target: eventId.toString(),
-            data: { eventId, input },
-        });
+        eventId = await createEvent(input, session.id);
     } catch (error: unknown) {
         let message = (error as { message: string }).message;
 
