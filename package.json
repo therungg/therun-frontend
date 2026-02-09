@@ -59,7 +59,7 @@
         "@tiptap/react": "^2.11.5",
         "@tiptap/starter-kit": "^2.11.5",
         "@types/hapi__joi": "^17.1.14",
-        "@vercel/blob": "^0.27.3",
+        "@vercel/blob": "^2.2.0",
         "@vercel/edge-config": "^0.4.1",
         "algoliasearch": "^5.23.0",
         "axios": "1.7.4",
