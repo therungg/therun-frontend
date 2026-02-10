@@ -139,18 +139,6 @@ export default function RunDetail({
         tab,
     ]);
 
-    if (!dataLoading && !realTimeRuns) {
-        return <>Loading data, should not take long...</>;
-    }
-
-    if (dataLoading) {
-        return <>Loading data, should not take long...</>;
-    }
-
-    const { runs, splits, sessions } = useGameTime
-        ? (gameTimeRuns as Runs)
-        : (realTimeRuns as Runs);
-
     // This implementation of the variables is pretty ugly. Should refactor code + UI
     const varsMap: { [key: string]: string } = {};
 
@@ -167,6 +155,13 @@ export default function RunDetail({
     let vars = Object.entries(varsMap);
 
     vars = vars.filter((variable) => variable[0] !== 'Verified');
+
+    const splitsLoaded = !dataLoading && realTimeRuns;
+    const runsData = splitsLoaded
+        ? useGameTime
+            ? (gameTimeRuns as Runs)
+            : (realTimeRuns as Runs)
+        : null;
 
     return (
         <>
@@ -243,97 +238,117 @@ export default function RunDetail({
                 </div>
             )}
 
-            <Tabs
-                defaultActiveKey={tab}
-                className="mb-3"
-                onSelect={async (e) => {
-                    if (e !== 'compare' || !!gameData) return;
+            <div className="visually-hidden" aria-hidden="true">
+                <Stats run={run} gameTime={useGameTime} />
+            </div>
 
-                    await loadCompare();
-                }}
-            >
-                <Tab eventKey="dashboard" title="Dashboard">
-                    <Row>
-                        <Col xl={8}>
-                            <Splits
-                                splits={splits}
-                                gameTime={useGameTime}
-                                run={run}
-                            />
-                        </Col>
-                        <Col xl={4}>
-                            <Stats run={run} gameTime={useGameTime} />
-                            <hr />
-                            <RecentRuns
-                                history={runs}
-                                pb={
-                                    (useGameTime
-                                        ? run.gameTimeData?.personalBest
-                                        : run.personalBest) || ''
-                                }
-                            />
-                            <hr />
-                            <Activity history={runs} splits={splits} />
-                        </Col>
-                    </Row>
-                </Tab>
-                <Tab eventKey="splits_stats" title="Splits Stats">
-                    <Row>
-                        <Col xs={12}>
-                            <SplitStats
-                                history={runs}
-                                splits={splits}
-                                gameTime={useGameTime}
-                            />
-                        </Col>
-                    </Row>
-                </Tab>
-                <Tab eventKey="sessions" title="Sessions">
-                    <Row>
-                        <Col xs={12}>
-                            <GameSessions
-                                sessions={sessions}
-                                runs={runs}
-                                splits={splits}
-                                gameTime={useGameTime}
-                            />
-                        </Col>
-                    </Row>
-                </Tab>
-                <Tab eventKey="runs" title="Runs">
-                    <History history={runs} splits={splits} />
-                </Tab>
-                <Tab eventKey="golds" title="Golds">
-                    <Golds history={runs} splits={splits} />
-                </Tab>
-                <Tab eventKey="timesaves" title="Timesaves">
-                    <TimeSaves history={runs} splits={splits} />
-                </Tab>
-                <Tab eventKey="compare" title="Compare splits">
-                    {gameData ? (
-                        <CompareSplits
-                            statsData={gameData}
-                            category={run.run}
-                            username={username}
-                            splits={splits}
-                            run={run}
-                            runs={runs}
-                            gameTime={useGameTime as boolean}
-                        />
-                    ) : (
-                        'Loading Game Data...'
-                    )}
-                </Tab>
-                {run.vod && (
-                    <Tab
-                        eventKey="vod"
-                        title="Video"
-                        className="ratio ratio-16x9"
-                    >
-                        {run.vod && <Vod vod={run.vod} />}
+            {runsData ? (
+                <Tabs
+                    defaultActiveKey={tab}
+                    className="mb-3"
+                    onSelect={async (e) => {
+                        if (e !== 'compare' || !!gameData) return;
+
+                        await loadCompare();
+                    }}
+                >
+                    <Tab eventKey="dashboard" title="Dashboard">
+                        <Row>
+                            <Col xl={8}>
+                                <Splits
+                                    splits={runsData.splits}
+                                    gameTime={useGameTime}
+                                    run={run}
+                                />
+                            </Col>
+                            <Col xl={4}>
+                                <Stats run={run} gameTime={useGameTime} />
+                                <hr />
+                                <RecentRuns
+                                    history={runsData.runs}
+                                    pb={
+                                        (useGameTime
+                                            ? run.gameTimeData?.personalBest
+                                            : run.personalBest) || ''
+                                    }
+                                />
+                                <hr />
+                                <Activity
+                                    history={runsData.runs}
+                                    splits={runsData.splits}
+                                />
+                            </Col>
+                        </Row>
                     </Tab>
-                )}
-            </Tabs>
+                    <Tab eventKey="splits_stats" title="Splits Stats">
+                        <Row>
+                            <Col xs={12}>
+                                <SplitStats
+                                    history={runsData.runs}
+                                    splits={runsData.splits}
+                                    gameTime={useGameTime}
+                                />
+                            </Col>
+                        </Row>
+                    </Tab>
+                    <Tab eventKey="sessions" title="Sessions">
+                        <Row>
+                            <Col xs={12}>
+                                <GameSessions
+                                    sessions={runsData.sessions}
+                                    runs={runsData.runs}
+                                    splits={runsData.splits}
+                                    gameTime={useGameTime}
+                                />
+                            </Col>
+                        </Row>
+                    </Tab>
+                    <Tab eventKey="runs" title="Runs">
+                        <History
+                            history={runsData.runs}
+                            splits={runsData.splits}
+                        />
+                    </Tab>
+                    <Tab eventKey="golds" title="Golds">
+                        <Golds
+                            history={runsData.runs}
+                            splits={runsData.splits}
+                        />
+                    </Tab>
+                    <Tab eventKey="timesaves" title="Timesaves">
+                        <TimeSaves
+                            history={runsData.runs}
+                            splits={runsData.splits}
+                        />
+                    </Tab>
+                    <Tab eventKey="compare" title="Compare splits">
+                        {gameData ? (
+                            <CompareSplits
+                                statsData={gameData}
+                                category={run.run}
+                                username={username}
+                                splits={runsData.splits}
+                                run={run}
+                                runs={runsData.runs}
+                                gameTime={useGameTime as boolean}
+                            />
+                        ) : (
+                            'Loading Game Data...'
+                        )}
+                    </Tab>
+                    {run.vod && (
+                        <Tab
+                            eventKey="vod"
+                            title="Video"
+                            className="ratio ratio-16x9"
+                        >
+                            {run.vod && <Vod vod={run.vod} />}
+                        </Tab>
+                    )}
+                </Tabs>
+            ) : (
+                <>Loading data, should not take long...</>
+            )}
         </>
     );
 }
