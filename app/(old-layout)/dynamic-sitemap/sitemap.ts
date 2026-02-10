@@ -16,12 +16,11 @@ export async function generateSitemaps() {
     return [{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }];
 }
 
-export default async function sitemap({
-    id,
-}: {
-    id: number;
+export default async function sitemap(props: {
+    id: Promise<string>;
 }): Promise<MetadataRoute.Sitemap> {
-    switch (parseInt(id.toString())) {
+    const id = Number(await props.id);
+    switch (id) {
         case 0:
             return sitemapForRaces();
         case 1:

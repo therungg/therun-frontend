@@ -31,8 +31,8 @@ export async function getSitemapUsers(): Promise<SitemapUser[]> {
 
     while (true) {
         const url = cursor
-            ? `${BASE_URL}/api/sitemap/users?cursor=${cursor}`
-            : `${BASE_URL}/api/sitemap/users`;
+            ? `${BASE_URL}/sitemap/users?cursor=${cursor}`
+            : `${BASE_URL}/sitemap/users`;
         const res = await fetch(url);
         const data: SitemapResponse<SitemapUser> = await res.json();
 
@@ -53,8 +53,8 @@ export async function getSitemapRuns(
     cacheTag('sitemap-runs');
 
     const url = cursor
-        ? `${BASE_URL}/api/sitemap/runs?cursor=${cursor}`
-        : `${BASE_URL}/api/sitemap/runs`;
+        ? `${BASE_URL}/sitemap/runs?cursor=${cursor}`
+        : `${BASE_URL}/sitemap/runs`;
     const res = await fetch(url);
     return res.json();
 }
