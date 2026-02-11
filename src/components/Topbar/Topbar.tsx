@@ -111,6 +111,9 @@ export const Topbar = ({
 
                             <Nav.Link href="/races">Races</Nav.Link>
                             <Nav.Link href="/live">Live</Nav.Link>
+                            <Can I="moderate" a="roles">
+                                <Nav.Link href="/data">Data</Nav.Link>
+                            </Can>
 
                             {/*{username && (*/}
                             {/*    <Nav.Link href="/stories/manage">*/}

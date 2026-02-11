@@ -8,6 +8,11 @@ export function buildWebSiteJsonLd() {
         url: BASE_URL,
         description:
             'Free speedrun statistics — live run tracking, leaderboards, personal bests, and race data for speedrunners.',
+        potentialAction: {
+            '@type': 'SearchAction',
+            target: `${BASE_URL}/search?q={search_term_string}`,
+            'query-input': 'required name=search_term_string',
+        },
     };
 }
 
