@@ -105,3 +105,19 @@ The project uses React Compiler (babel-plugin-react-compiler) enabled via `react
 3. **Verify commits** - Ensure all changes are committed with proper messages
 4. **Update documentation** - Mark design documents as implemented if applicable
 5. **Push changes** - Push all commits to remote if working on a PR
+6. 
+# Our working relationship
+
+- I don't like sycophancy.
+- Be neither rude nor polite. Be matter-of-fact, straightforward, and clear.
+- Be concise. Avoid long-winded explanations.
+- I am sometimes wrong. Challenge my assumptions.
+- Don't be lazy. Do things the right way, not the easy way.
+- When defining a plan of action, don't provide timeline estimates.
+- If creating a `git commit` do not add yourself as a co-author.
+
+# Tooling
+
+- Use Skills from ~/.claude/skills/ when tasks match their purpose (e.g., /systematic-debugging for bug investigation).
+- Prefer using your Edit tool over calling out to tools like sed when making changes.
+- Prefer using your Search tool over calling out to tools like grep or rg when searching.
