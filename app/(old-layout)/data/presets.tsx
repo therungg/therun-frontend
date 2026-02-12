@@ -1,12 +1,15 @@
 'use client';
 
 import React from 'react';
-import { Button } from 'react-bootstrap';
+import { Card, Col, Row } from 'react-bootstrap';
+import type { EntityTab, Filters } from './types';
+import { DEFAULT_FILTERS } from './types';
 
-interface Preset {
+interface PresetConfig {
     label: string;
     description: string;
-    filters: Record<string, string>;
+    tab: EntityTab;
+    filters: Partial<Filters>;
 }
 
 function getDateDaysAgo(days: number): string {
@@ -15,93 +18,67 @@ function getDateDaysAgo(days: number): string {
     return d.toISOString().split('T')[0];
 }
 
-const PRESETS: Preset[] = [
+const PRESETS: PresetConfig[] = [
     {
-        label: 'Most Playtime by User',
-        description: 'Users with the most total playtime (filter by game)',
-        filters: {
-            dataSource: 'runs',
-            aggregate: 'sum',
-            groupBy: 'username',
-            aggregateColumn: 'total_run_time',
-            limit: '50',
-        },
+        label: 'Top Games by Playtime',
+        description: 'Which games have the most total playtime?',
+        tab: 'games',
+        filters: { metric: 'playtime', limit: '50' },
     },
     {
-        label: 'Most Attempts by User',
-        description: 'Users with the most attempts (filter by game)',
-        filters: {
-            dataSource: 'runs',
-            aggregate: 'sum',
-            groupBy: 'username',
-            aggregateColumn: 'attempt_count',
-            limit: '50',
-        },
+        label: 'PBs This Week',
+        description: 'Personal bests set in the last 7 days',
+        tab: 'finished-runs',
+        filters: { isPb: 'true', afterDate: getDateDaysAgo(7) },
     },
     {
-        label: 'PB Count This Week',
-        description: 'Number of PBs set in the last 7 days per game',
-        filters: {
-            dataSource: 'finished-runs',
-            isPb: 'true',
-            afterDate: getDateDaysAgo(7),
-            aggregate: 'count',
-            groupBy: 'game',
-            limit: '50',
-        },
+        label: 'Most Dedicated Runners',
+        description: 'Who has the most total playtime across all games?',
+        tab: 'users',
+        filters: { metric: 'playtime', limit: '50' },
     },
     {
-        label: 'Recent PBs in Top 100 Categories',
-        description: 'Latest PBs from the most popular categories',
-        filters: {
-            dataSource: 'finished-runs',
-            isPb: 'true',
-            topCategories: '100',
-            aggregate: 'none',
-            limit: '50',
-        },
-    },
-    {
-        label: 'Finished Runs Per User',
-        description: 'Who has the most finished runs (filter by game)',
-        filters: {
-            dataSource: 'finished-runs',
-            aggregate: 'count',
-            groupBy: 'username',
-            limit: '50',
-        },
-    },
-    {
-        label: 'Avg Finish Time Per User',
-        description: 'Average finish time by user (filter by game)',
-        filters: {
-            dataSource: 'finished-runs',
-            aggregate: 'avg',
-            groupBy: 'username',
-            aggregateColumn: 'time',
-            limit: '50',
-        },
+        label: 'Most Attempted Games',
+        description: 'Which games have the most total attempts?',
+        tab: 'games',
+        filters: { metric: 'attempts', limit: '50' },
     },
 ];
 
-interface PresetsProps {
-    onApply: (filters: Record<string, string>) => void;
+interface PresetCardsProps {
+    onApply: (tab: EntityTab, filters: Filters) => void;
 }
 
-export function Presets({ onApply }: PresetsProps) {
+export function PresetCards({ onApply }: PresetCardsProps) {
     return (
-        <div className="d-flex flex-wrap gap-2">
+        <Row className="g-3 mb-4">
             {PRESETS.map((preset) => (
-                <Button
-                    key={preset.label}
-                    variant="outline-primary"
-                    size="sm"
-                    title={preset.description}
-                    onClick={() => onApply(preset.filters)}
-                >
-                    {preset.label}
-                </Button>
+                <Col xs={6} lg={3} key={preset.label}>
+                    <Card
+                        className="h-100 border-0 bg-body-secondary"
+                        role="button"
+                        style={{ cursor: 'pointer' }}
+                        onClick={() =>
+                            onApply(preset.tab, {
+                                ...DEFAULT_FILTERS,
+                                ...preset.filters,
+                            } as Filters)
+                        }
+                    >
+                        <Card.Body className="py-3 px-3">
+                            <div className="fw-semibold small">
+                                {preset.label}
+                            </div>
+                            <div
+                                className="text-secondary"
+                                style={{ fontSize: '0.8rem' }}
+                            >
+                                {preset.description}
+                            </div>
+                        </Card.Body>
+                    </Card>
+                </Col>
             ))}
-        </div>
+        </Row>
     );
 }
