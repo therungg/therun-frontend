@@ -1,3 +1,5 @@
+import { type EventWithOrganizerName } from '../../types/events.types';
+
 const BASE_URL = 'https://therun.gg';
 
 export function buildWebSiteJsonLd() {
@@ -40,6 +42,62 @@ export function buildPersonJsonLd({
         description,
         ...(picture ? { image: picture } : {}),
         ...(sameAs.length > 0 ? { sameAs } : {}),
+    };
+}
+
+export function buildEventJsonLd(event: EventWithOrganizerName) {
+    const startsAt = new Date(event.startsAt).toISOString();
+    const endsAt = new Date(event.endsAt).toISOString();
+
+    const eventStatus = event.isDeleted
+        ? 'https://schema.org/EventCancelled'
+        : 'https://schema.org/EventScheduled';
+
+    const location = event.isOffline
+        ? event.location
+            ? {
+                  '@type': 'Place' as const,
+                  name: event.location,
+              }
+            : undefined
+        : {
+              '@type': 'VirtualLocation' as const,
+              url: event.twitch
+                  ? `https://twitch.tv/${event.twitch}`
+                  : (event.url ?? `${BASE_URL}/events/${event.slug}`),
+          };
+
+    const eventAttendanceMode = event.isOffline
+        ? 'https://schema.org/OfflineEventAttendanceMode'
+        : 'https://schema.org/OnlineEventAttendanceMode';
+
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'Event',
+        name: event.name,
+        url: `${BASE_URL}/events/${event.slug}`,
+        description: event.shortDescription || event.name,
+        startDate: startsAt,
+        endDate: endsAt,
+        eventStatus,
+        eventAttendanceMode,
+        ...(location ? { location } : {}),
+        ...(event.imageUrl ? { image: event.imageUrl } : {}),
+        organizer: {
+            '@type': 'Organization',
+            name: event.organizerName,
+        },
+        ...(event.submissionsUrl
+            ? {
+                  offers: {
+                      '@type': 'Offer',
+                      url: event.submissionsUrl,
+                      price: '0',
+                      priceCurrency: 'USD',
+                      availability: 'https://schema.org/InStock',
+                  },
+              }
+            : {}),
     };
 }
 
