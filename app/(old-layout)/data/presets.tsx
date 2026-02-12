@@ -55,9 +55,25 @@ export function PresetCards({ onApply }: PresetCardsProps) {
             {PRESETS.map((preset) => (
                 <Col xs={6} lg={3} key={preset.label}>
                     <Card
-                        className="h-100 border-0 bg-body-secondary"
+                        className="h-100 border bg-body-secondary"
                         role="button"
-                        style={{ cursor: 'pointer' }}
+                        style={{
+                            cursor: 'pointer',
+                            transition:
+                                'background-color 0.15s, border-color 0.15s',
+                            borderColor: 'var(--bs-border-color)',
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor =
+                                'var(--bs-tertiary-bg)';
+                            e.currentTarget.style.borderColor =
+                                'var(--bs-primary)';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '';
+                            e.currentTarget.style.borderColor =
+                                'var(--bs-border-color)';
+                        }}
                         onClick={() =>
                             onApply(preset.tab, {
                                 ...DEFAULT_FILTERS,
@@ -66,12 +82,12 @@ export function PresetCards({ onApply }: PresetCardsProps) {
                         }
                     >
                         <Card.Body className="py-3 px-3">
-                            <div className="fw-semibold small">
+                            <div className="fw-semibold small mb-1">
                                 {preset.label}
                             </div>
                             <div
-                                className="text-secondary"
-                                style={{ fontSize: '0.8rem' }}
+                                className="text-secondary lh-sm"
+                                style={{ fontSize: '0.75rem' }}
                             >
                                 {preset.description}
                             </div>

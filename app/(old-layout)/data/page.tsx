@@ -10,11 +10,7 @@ export const metadata: Metadata = {
 export default function StatsExplorerPage() {
     return (
         <div>
-            <h1>Stats Explorer</h1>
-            <p className="text-secondary mb-4">
-                Explore speedrunning statistics across games, categories, and
-                runners.
-            </p>
+            <h2 className="fw-bold mb-4">Stats Explorer</h2>
             <StatsExplorer />
         </div>
     );

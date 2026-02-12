@@ -19,6 +19,13 @@ const DURATION_COLUMNS = new Set([
 
 const DURATION_METRICS: Metric[] = ['playtime'];
 
+const METRIC_LABELS: Record<Metric, string> = {
+    playtime: 'Total Playtime',
+    attempts: 'Total Attempts',
+    'finished-attempts': 'Finished Attempts',
+    'runner-count': 'Runner Count',
+};
+
 interface ResultsTableProps {
     data: any;
     isLoading: boolean;
@@ -38,9 +45,11 @@ export function ResultsTable({
 }: ResultsTableProps) {
     if (!apiUrl) {
         return (
-            <p className="text-secondary fst-italic">
-                Choose your filters and press Search to explore data.
-            </p>
+            <div className="text-center py-5">
+                <p className="text-secondary mb-1">
+                    Pick a preset above, or set your filters and hit Search.
+                </p>
+            </div>
         );
     }
 
@@ -114,28 +123,40 @@ function AggregateResults({
             <div className="small text-secondary mb-2">
                 {rows.length} result{rows.length !== 1 ? 's' : ''}
             </div>
-            <Table responsive hover className="align-middle">
-                <thead>
+            <Table responsive hover striped className="align-middle table-sm">
+                <thead className="border-bottom">
                     <tr>
-                        <th style={{ width: '3rem' }}>#</th>
-                        <th>{entityLabel}</th>
-                        {tab === 'categories' && <th>Game</th>}
-                        <th className="text-end" style={{ width: '12rem' }}>
-                            Value
+                        <th
+                            className="text-secondary fw-normal"
+                            style={{ width: '3rem' }}
+                        >
+                            #
+                        </th>
+                        <th className="fw-semibold">{entityLabel}</th>
+                        {tab === 'categories' && (
+                            <th className="fw-semibold">Game</th>
+                        )}
+                        <th
+                            className="text-end fw-semibold"
+                            style={{ width: '12rem' }}
+                        >
+                            {METRIC_LABELS[metric]}
                         </th>
                     </tr>
                 </thead>
                 <tbody>
                     {rows.map((row: any, i: number) => (
                         <tr key={i}>
-                            <td className="text-secondary fw-medium">
-                                {i + 1}
-                            </td>
+                            <td className="text-secondary small">{i + 1}</td>
                             <td className="fw-medium">
                                 {row[groupKey] ?? row.key ?? '-'}
                             </td>
-                            {tab === 'categories' && <td>{row.game ?? '-'}</td>}
-                            <td className="text-end">
+                            {tab === 'categories' && (
+                                <td className="text-secondary">
+                                    {row.game ?? '-'}
+                                </td>
+                            )}
+                            <td className="text-end tabular-nums">
                                 {isDuration && row.value > 0 ? (
                                     <DurationToFormatted duration={row.value} />
                                 ) : (
@@ -158,19 +179,26 @@ function RawResults({ rows, tab }: { rows: any[]; tab: EntityTab }) {
             <div className="small text-secondary mb-2">
                 {rows.length} result{rows.length !== 1 ? 's' : ''}
             </div>
-            <Table responsive hover className="align-middle">
-                <thead>
+            <Table responsive hover striped className="align-middle table-sm">
+                <thead className="border-bottom">
                     <tr>
-                        <th style={{ width: '3rem' }}>#</th>
+                        <th
+                            className="text-secondary fw-normal"
+                            style={{ width: '3rem' }}
+                        >
+                            #
+                        </th>
                         {columns.map((col) => (
-                            <th key={col}>{formatColumnHeader(col)}</th>
+                            <th key={col} className="fw-semibold">
+                                {formatColumnHeader(col)}
+                            </th>
                         ))}
                     </tr>
                 </thead>
                 <tbody>
                     {rows.map((row: any, i: number) => (
                         <tr key={i}>
-                            <td className="text-secondary">{i + 1}</td>
+                            <td className="text-secondary small">{i + 1}</td>
                             {columns.map((col) => (
                                 <td key={col}>
                                     {formatCell(col, row[col], tab)}

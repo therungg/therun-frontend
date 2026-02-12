@@ -127,23 +127,37 @@ function renderFilter(
             );
         case 'afterDate':
             return (
-                <Form.Control
-                    size="sm"
-                    type="date"
-                    value={filters.afterDate}
-                    onChange={(e) => onChange('afterDate', e.target.value)}
-                    title="After date"
-                />
+                <div>
+                    <div
+                        className="text-secondary mb-1"
+                        style={{ fontSize: '0.7rem' }}
+                    >
+                        After
+                    </div>
+                    <Form.Control
+                        size="sm"
+                        type="date"
+                        value={filters.afterDate}
+                        onChange={(e) => onChange('afterDate', e.target.value)}
+                    />
+                </div>
             );
         case 'beforeDate':
             return (
-                <Form.Control
-                    size="sm"
-                    type="date"
-                    value={filters.beforeDate}
-                    onChange={(e) => onChange('beforeDate', e.target.value)}
-                    title="Before date"
-                />
+                <div>
+                    <div
+                        className="text-secondary mb-1"
+                        style={{ fontSize: '0.7rem' }}
+                    >
+                        Before
+                    </div>
+                    <Form.Control
+                        size="sm"
+                        type="date"
+                        value={filters.beforeDate}
+                        onChange={(e) => onChange('beforeDate', e.target.value)}
+                    />
+                </div>
             );
         case 'isPb':
             return (

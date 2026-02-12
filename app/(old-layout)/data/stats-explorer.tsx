@@ -121,11 +121,14 @@ function StatsExplorerInner() {
                 variant="pills"
                 activeKey={tab}
                 onSelect={(k) => k && handleTabChange(k as EntityTab)}
-                className="gap-1"
+                className="gap-1 flex-nowrap overflow-auto"
             >
                 {ENTITY_TABS.map((t) => (
                     <Nav.Item key={t.value}>
-                        <Nav.Link eventKey={t.value} className="py-1 px-3">
+                        <Nav.Link
+                            eventKey={t.value}
+                            className="py-1 px-3 text-nowrap"
+                        >
                             {t.label}
                         </Nav.Link>
                     </Nav.Item>
@@ -133,28 +136,23 @@ function StatsExplorerInner() {
             </Nav>
 
             <div className="bg-body-secondary rounded-3 p-3">
-                <div className="d-flex flex-column gap-2">
-                    <FilterBar
-                        tab={tab}
-                        filters={filters}
-                        onChange={handleFilterChange}
-                    />
-                    <div className="d-flex gap-2 align-items-center mt-1">
-                        <Button
-                            variant="primary"
-                            size="sm"
-                            onClick={handleSearch}
-                        >
-                            Search
-                        </Button>
-                        <button
-                            type="button"
-                            className="btn btn-link btn-sm text-secondary text-decoration-none p-0"
-                            onClick={handleReset}
-                        >
-                            Reset
-                        </button>
-                    </div>
+                <FilterBar
+                    tab={tab}
+                    filters={filters}
+                    onChange={handleFilterChange}
+                />
+                <div className="d-flex gap-2 align-items-center mt-2">
+                    <Button variant="primary" size="sm" onClick={handleSearch}>
+                        Search
+                    </Button>
+                    <Button
+                        variant="link"
+                        size="sm"
+                        className="text-secondary text-decoration-none p-0"
+                        onClick={handleReset}
+                    >
+                        Reset
+                    </Button>
                 </div>
             </div>
 
