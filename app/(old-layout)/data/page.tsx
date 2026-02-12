@@ -1,24 +1,21 @@
 import { Metadata } from 'next';
-import { getSession } from '~src/actions/session.action';
-import { confirmPermission } from '~src/rbac/confirm-permission';
-import { DataExplorer } from './data-explorer';
+import { StatsExplorer } from './stats-explorer';
 
 export const metadata: Metadata = {
-    title: 'Data Explorer - therun.gg',
-    description: 'Explore speedrunning statistics with custom queries',
+    title: 'Stats Explorer - therun.gg',
+    description:
+        'Explore speedrunning statistics across games, categories, and runners',
 };
 
-export default async function DataExplorerPage() {
-    const user = await getSession();
-    confirmPermission(user, 'moderate', 'roles');
-
+export default function StatsExplorerPage() {
     return (
         <div>
-            <h1>Data Explorer</h1>
-            <p className="text-secondary">
-                Build custom queries to explore speedrunning data.
+            <h1>Stats Explorer</h1>
+            <p className="text-secondary mb-4">
+                Explore speedrunning statistics across games, categories, and
+                runners.
             </p>
-            <DataExplorer />
+            <StatsExplorer />
         </div>
     );
 }
