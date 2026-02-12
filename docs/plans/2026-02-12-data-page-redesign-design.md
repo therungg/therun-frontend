@@ -1,6 +1,6 @@
 # Data Page Redesign — Stats Explorer
 
-## Status: Design
+## Status: Implemented
 
 ## Goal
 
