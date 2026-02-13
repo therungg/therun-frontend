@@ -271,13 +271,18 @@ Sidebar content slots between search and the main feed on mobile, prioritizing l
 - Personal stats: `'use cache'` with `cacheLife('minutes')`, tagged per user
 - Race data: `'use cache'` with `cacheLife('seconds')` — races are live
 
-### New API Calls Needed
-- `/v1/runs/global-stats` — not currently called from frontend
-- `/v1/finished-runs?aggregate=count&after_date=X` — today's counts
-- `/v1/finished-runs?top_categories=100&is_pb=true` — curated PBs
-- `/v1/runs/stats?type=most_active_games&period=week` — trending games
-- `/v1/runs/user-stats?sort=-total_run_time&limit=5` — runner spotlights
-- `/v1/finished-runs?aggregate=count&group_by=username&after_date=X` — runner activity
+### New API Calls Needed (all verified 2026-02-12)
+- `/v1/runs/global-stats` — platform totals: `{ totalRunTime, totalAttemptCount, totalFinishedAttemptCount, totalRunners }`
+- `/v1/finished-runs?aggregate=count&after_date=X` — today's counts: `{ count: number }`
+- `/v1/finished-runs?aggregate=count&after_date=X&is_pb=true` — today's PB count: `{ count: number }`
+- `/v1/finished-runs?top_categories=100&is_pb=true&sort=-ended_at&limit=N` — curated PBs with improvement data
+- `/v1/runs/stats?type=most_active_games&period=week` — trending games (values are strings, not numbers)
+- `/v1/runs/games?sort=-unique_runners&limit=200` — game image map (IGDB cover URLs)
+- `/v1/finished-runs?aggregate=sum&field=time&group_by=username&after_date=X&sort=-value&limit=N` — weekly grinders by time
+- `/v1/finished-runs?aggregate=count&group_by=username&after_date=X&sort=-value&limit=N` — weekly grinders by runs
+- `/v1/finished-runs?aggregate=count&group_by=username&after_date=X&is_pb=true&sort=-value&limit=N` — weekly grinders by PBs
+- ~~`/v1/runs/user-stats?sort=-total_run_time&limit=5`~~ — all-time only, `period` param ignored. Use aggregate endpoints above instead.
+- `/games/global/{game}/{category}` — **needs API key auth**, cannot use for rank data from frontend without it
 
 ### Components to Build
 - `PulseCounters` — animated global stat counters
