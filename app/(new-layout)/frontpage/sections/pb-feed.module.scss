@@ -1,0 +1,120 @@
+.feedContainer {
+    max-height: 600px;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: var(--bs-secondary-bg);
+        border-radius: 3px;
+
+        &:hover {
+            background: color-mix(in srgb, var(--bs-secondary-bg) 80%, var(--bs-body-color) 20%);
+        }
+    }
+}
+
+.feedItem {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--bs-secondary-bg) 60%, transparent);
+    transition: background-color 0.15s ease;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:hover {
+        background-color: color-mix(in srgb, var(--bs-secondary-bg) 35%, transparent);
+    }
+}
+
+.feedGameIcon {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid color-mix(in srgb, var(--bs-secondary-bg) 80%, transparent);
+    margin-top: 2px;
+}
+
+.feedItemContent {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.feedItemTopRow {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.feedRunnerName {
+    font-weight: 600;
+    font-size: 0.88rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.feedGameCategory {
+    font-size: 0.78rem;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.feedItemBottomRow {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+}
+
+.feedTime {
+    font-family: 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', monospace;
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--bs-body-color);
+}
+
+.improvementDelta {
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: #4caf50;
+    font-variant-numeric: tabular-nums;
+}
+
+.firstPbBadge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background-color: color-mix(in srgb, var(--bs-info) 20%, transparent);
+    color: var(--bs-info);
+    white-space: nowrap;
+}
+
+.feedTimestamp {
+    font-size: 0.7rem;
+    color: var(--bs-secondary-color);
+    margin-left: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
