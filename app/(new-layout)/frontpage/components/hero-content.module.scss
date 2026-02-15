@@ -316,13 +316,6 @@
     background: var(--bs-secondary-bg);
 }
 
-.sidebarCardPace {
-    border-color: rgba(34, 197, 94, 0.4);
-}
-
-.sidebarCardPace:hover {
-    border-color: rgba(34, 197, 94, 0.7);
-}
 
 /* Faint game art on the right */
 .sidebarCardArt {
@@ -346,7 +339,7 @@
     flex-direction: column;
     justify-content: center;
     gap: 0.2rem;
-    padding: 0.5rem 0.65rem;
+    padding: 0.35rem 0.65rem;
 }
 
 .sidebarCardTop {

@@ -351,7 +351,6 @@ const LiveSidebar = ({
                 const isActive = globalIndex === featuredIndex;
                 const hasGameImage =
                     run.gameImage && run.gameImage !== 'noimage';
-                const onPace = run.delta < 0;
                 const hasAvatar = run.picture && run.picture !== 'noimage';
 
                 return (
@@ -361,7 +360,6 @@ const LiveSidebar = ({
                         className={clsx(
                             styles.sidebarCard,
                             isActive && styles.sidebarCardActive,
-                            onPace && styles.sidebarCardPace,
                         )}
                         onClick={() => onSelectRun(globalIndex)}
                     >
