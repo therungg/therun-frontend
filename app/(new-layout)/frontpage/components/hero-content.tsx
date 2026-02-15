@@ -171,35 +171,32 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
 
             {/* All content */}
             <div className={styles.featuredContent}>
-                {/* Top: LIVE badge + runner */}
-                <div className={styles.featuredTop}>
+                {/* Top: runner + LIVE badge */}
+                <div className={styles.runnerIdentity}>
+                    {hasAvatar && (
+                        <div className={styles.avatarWrapper}>
+                            <Image
+                                src={run.picture!}
+                                alt={run.user}
+                                fill
+                                style={{ objectFit: 'cover' }}
+                                className={styles.avatar}
+                            />
+                        </div>
+                    )}
+                    <div className={styles.runnerDetails}>
+                        <h3 className={styles.runnerName}>{run.user}</h3>
+                        <span className={styles.gameLabelText}>
+                            {run.game}
+                            {' · '}
+                            <span className={styles.categoryLabel}>
+                                {run.category}
+                            </span>
+                        </span>
+                    </div>
                     <div className={styles.liveBadge}>
                         <span className={styles.liveDot} />
                         LIVE
-                    </div>
-
-                    <div className={styles.runnerIdentity}>
-                        {hasAvatar && (
-                            <div className={styles.avatarWrapper}>
-                                <Image
-                                    src={run.picture!}
-                                    alt={run.user}
-                                    fill
-                                    style={{ objectFit: 'cover' }}
-                                    className={styles.avatar}
-                                />
-                            </div>
-                        )}
-                        <div className={styles.runnerDetails}>
-                            <h3 className={styles.runnerName}>{run.user}</h3>
-                            <span className={styles.gameLabelText}>
-                                {run.game}
-                                {' · '}
-                                <span className={styles.categoryLabel}>
-                                    {run.category}
-                                </span>
-                            </span>
-                        </div>
                     </div>
                 </div>
 

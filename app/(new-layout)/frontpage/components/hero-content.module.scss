@@ -45,17 +45,11 @@
     max-width: 65%;
 }
 
-/* Top: LIVE + runner */
-.featuredTop {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-}
-
 .liveBadge {
     display: inline-flex;
     align-items: center;
     align-self: flex-start;
+    flex-shrink: 0;
     gap: 0.35rem;
     padding: 0.2rem 0.55rem;
     background: rgba(220, 38, 38, 0.9);
