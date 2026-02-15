@@ -13,46 +13,25 @@
     padding: 0;
 }
 
-/* Featured run panel */
+/* Featured run panel — no .panel border, self-contained */
 .featuredPanel {
+    display: block;
     position: relative;
     overflow: hidden;
     height: 340px;
-    background: #0a0a0f;
+    border-radius: 1rem;
+    background: #0c0c14;
 }
 
-/* Game art — full height, anchored right, portrait-friendly */
-.gameArt {
+/* Game art — real <Image>, right-aligned, CSS mask fades left edge */
+.gameArtWrapper {
     position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
-    width: 65%;
-    background-size: cover;
-    background-position: center;
-    opacity: 0.7;
-}
-
-/* Gradient that fades the art out toward the left */
-.gameArtFade {
-    position: absolute;
-    inset: 0;
-    background:
-        /* Strong left edge for text readability */
-        linear-gradient(
-            90deg,
-            #0a0a0f 30%,
-            rgba(10, 10, 15, 0.85) 50%,
-            rgba(10, 10, 15, 0.3) 75%,
-            rgba(10, 10, 15, 0.15) 100%
-        ),
-        /* Subtle bottom fade for stats readability */
-        linear-gradient(
-            0deg,
-            rgba(10, 10, 15, 0.9) 0%,
-            rgba(10, 10, 15, 0.4) 30%,
-            transparent 50%
-        );
+    width: 60%;
+    mask-image: linear-gradient(90deg, transparent 0%, black 50%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 50%);
 }
 
 /* Content layer */
@@ -65,7 +44,7 @@
     padding: 1rem 1.25rem;
 }
 
-/* Top section: LIVE + runner */
+/* Top: LIVE + runner */
 .featuredTop {
     display: flex;
     flex-direction: column;
@@ -85,7 +64,6 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: #fff;
-    backdrop-filter: blur(4px);
 }
 
 .liveDot {
@@ -102,8 +80,8 @@
         transform: scale(1);
     }
     50% {
-        opacity: 0.5;
-        transform: scale(0.75);
+        opacity: 0.4;
+        transform: scale(0.7);
     }
 }
 
@@ -121,7 +99,7 @@
     border-radius: 50%;
     overflow: hidden;
     border: 2px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .avatar {
@@ -142,7 +120,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
 }
 
 .gameLabelText {
@@ -152,6 +130,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     display: block;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 .categoryLabel {
@@ -178,7 +157,7 @@
     display: flex;
     gap: 0;
     padding: 0.4rem 0 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .statItem {
@@ -190,7 +169,7 @@
 }
 
 .statItem + .statItem {
-    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .statLabel {
@@ -207,6 +186,7 @@
     font-size: 0.82rem;
     color: #fff;
     font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 .progressBar {

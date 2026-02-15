@@ -153,23 +153,25 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
     return (
         <Link
             href={`/live/${run.user}`}
-            className={clsx(styles.panel, styles.featuredPanel)}
+            className={styles.featuredPanel}
             style={{ textDecoration: 'none', color: 'inherit' }}
         >
-            {/* Game art — full height, right-aligned, fades left */}
+            {/* Game art — actual Image, right-aligned, masked to fade left */}
             {hasGameImage && (
-                <div
-                    className={styles.gameArt}
-                    style={{
-                        backgroundImage: `url(${run.gameImage})`,
-                    }}
-                />
+                <div className={styles.gameArtWrapper}>
+                    <Image
+                        src={run.gameImage!}
+                        alt={run.game}
+                        fill
+                        style={{ objectFit: 'cover', objectPosition: 'center' }}
+                        unoptimized
+                    />
+                </div>
             )}
-            <div className={styles.gameArtFade} />
 
-            {/* All content overlaid */}
+            {/* All content */}
             <div className={styles.featuredContent}>
-                {/* Top: LIVE badge + runner identity */}
+                {/* Top: LIVE badge + runner */}
                 <div className={styles.featuredTop}>
                     <div className={styles.liveBadge}>
                         <span className={styles.liveDot} />
