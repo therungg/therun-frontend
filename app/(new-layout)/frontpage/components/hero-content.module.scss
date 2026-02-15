@@ -320,10 +320,14 @@
 /* Faint game art centered behind content */
 .sidebarCardArt {
     position: absolute;
-    inset: 0;
-    mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
-    -webkit-mask-image: radial-gradient(ellipse at center, black 0%, transparent 70%);
-    opacity: 0.12;
+    top: -20%;
+    bottom: -20%;
+    left: 50%;
+    width: 40%;
+    transform: translateX(-50%);
+    mask-image: linear-gradient(90deg, transparent 0%, black 30%, black 70%, transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 30%, black 70%, transparent 100%);
+    opacity: 0.15;
     pointer-events: none;
 }
 
