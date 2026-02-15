@@ -10,10 +10,24 @@ import {
 import { getAllSitemapRuns, getSitemapUsers } from '~src/lib/sitemap';
 import { safeEncodeURI } from '~src/utils/uri';
 
-export const maxDuration = 120;
+export const maxDuration = 300;
+
+const RUNS_PER_SITEMAP = 40000;
 
 export async function generateSitemaps() {
-    return [{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }];
+    const runs = await getAllSitemapRuns();
+    const runSitemapCount = Math.ceil(runs.length / RUNS_PER_SITEMAP);
+
+    return [
+        { id: 0 },
+        { id: 1 },
+        { id: 2 },
+        { id: 3 },
+        { id: 4 },
+        ...Array.from({ length: runSitemapCount }, (_, i) => ({
+            id: 5 + i,
+        })),
+    ];
 }
 
 export default async function sitemap(props: {
@@ -31,11 +45,9 @@ export default async function sitemap(props: {
             return sitemapForTournaments();
         case 4:
             return sitemapForEvents();
-        case 5:
-            return sitemapForRuns();
+        default:
+            return sitemapForRuns(id - 5);
     }
-
-    return [];
 }
 
 const sitemapForRaces = async (): Promise<MetadataRoute.Sitemap> => {
@@ -148,10 +160,14 @@ const sitemapForEvents = async (): Promise<MetadataRoute.Sitemap> => {
     }));
 };
 
-const sitemapForRuns = async (): Promise<MetadataRoute.Sitemap> => {
+const sitemapForRuns = async (
+    chunkIndex: number,
+): Promise<MetadataRoute.Sitemap> => {
     const runs = await getAllSitemapRuns();
+    const start = chunkIndex * RUNS_PER_SITEMAP;
+    const chunk = runs.slice(start, start + RUNS_PER_SITEMAP);
 
-    return runs.map((run) => ({
+    return chunk.map((run) => ({
         url:
             'https://therun.gg/' +
             run.user +
