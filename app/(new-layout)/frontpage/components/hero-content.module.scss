@@ -145,6 +145,28 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.75rem 0;
+    flex-wrap: wrap;
+}
+
+.timerMeta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bigDelta {
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+.currentSplitName {
+    width: 100%;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 500;
+    margin-top: -0.25rem;
 }
 
 .pbPaceBadge {
