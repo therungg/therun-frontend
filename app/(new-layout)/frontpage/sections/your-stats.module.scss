@@ -1,0 +1,324 @@
+.periodToggle {
+    display: inline-flex;
+    background: var(--bs-tertiary-bg);
+    border-radius: 0.5rem;
+    padding: 0.2rem;
+    gap: 0.15rem;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+}
+
+.periodButton {
+    padding: 0.35rem 1rem;
+    border: none;
+    border-radius: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    background: transparent;
+    color: var(--bs-secondary-color);
+
+    &:hover:not(.periodButtonActive) {
+        background: rgba(var(--bs-primary-rgb), 0.06);
+        color: var(--bs-body-color);
+    }
+}
+
+.periodButtonActive {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-primary) 100%, white 5%),
+        color-mix(in srgb, var(--bs-primary) 85%, black 15%)
+    );
+    color: white;
+    box-shadow:
+        0 2px 6px rgba(var(--bs-primary-rgb), 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.statCard {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem 0.75rem;
+    background: linear-gradient(
+        135deg,
+        var(--bs-tertiary-bg) 0%,
+        color-mix(in srgb, var(--bs-tertiary-bg) 95%, black 5%) 100%
+    );
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.15);
+    border-radius: 0.5rem;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+        border-color: rgba(var(--bs-primary-rgb), 0.25);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+}
+
+.statValue {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--bs-primary);
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+}
+
+.statLabel {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    margin-top: 0.25rem;
+}
+
+.recentRunsHeader {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+    opacity: 0.6;
+    margin: 1.25rem 0 0.5rem 0;
+}
+
+.recentRunsList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.recentRunItem {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.65rem;
+    background: linear-gradient(
+        135deg,
+        var(--bs-tertiary-bg) 0%,
+        color-mix(in srgb, var(--bs-tertiary-bg) 95%, black 5%) 100%
+    );
+    border: 1px solid transparent;
+    border-radius: 0.4rem;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    &:hover {
+        border-color: rgba(var(--bs-primary-rgb), 0.15);
+        background: linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--bs-tertiary-bg) 98%, white 2%) 0%,
+            color-mix(in srgb, var(--bs-tertiary-bg) 93%, white 7%) 100%
+        );
+        transform: translateX(2px);
+        text-decoration: none;
+        color: inherit;
+    }
+}
+
+.runGameImage {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.runGameImagePlaceholder {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    background: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.runInfo {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+}
+
+.runGame {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    letter-spacing: -0.02em;
+}
+
+.runCategory {
+    font-size: 0.72rem;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.runTime {
+    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.pbBadge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.45rem;
+    background: linear-gradient(
+        135deg,
+        rgba(40, 167, 69, 0.9),
+        rgba(32, 134, 55, 0.95)
+    );
+    color: white;
+    border-radius: 50rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(40, 167, 69, 0.3);
+}
+
+.runTimestamp {
+    font-size: 0.7rem;
+    color: var(--bs-secondary-color);
+    opacity: 0.6;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--bs-secondary-color);
+    opacity: 0.7;
+}
+
+.emptyStateText {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.emptyStateHint {
+    font-size: 0.8rem;
+    opacity: 0.7;
+}
+
+// Search component styles
+.searchContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem 0;
+}
+
+.searchInputGroup {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    width: 100%;
+    max-width: 320px;
+}
+
+.searchInput {
+    flex: 1;
+    padding: 0.55rem 0.85rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
+    background: var(--bs-body-bg);
+    color: var(--bs-body-color);
+    font-size: 0.9rem;
+    transition: all 0.2s ease-in-out;
+
+    &:focus {
+        outline: none;
+        border-color: rgba(var(--bs-primary-rgb), 0.5);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.1);
+    }
+
+    &::placeholder {
+        color: var(--bs-secondary-color);
+        opacity: 0.5;
+    }
+}
+
+.searchButton {
+    padding: 0.55rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: var(--bs-primary);
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    white-space: nowrap;
+
+    &:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+}
+
+.suggestionsDropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 0.25rem;
+    background: var(--bs-body-bg);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
+    border-radius: 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.suggestionItem {
+    display: block;
+    width: 100%;
+    padding: 0.6rem 0.85rem;
+    background: transparent;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    color: var(--bs-body-color);
+    font-size: 0.9rem;
+    transition: background-color 0.15s ease-in-out;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.06);
+    }
+}
+
+.suggestionLoading {
+    padding: 0.6rem 0.85rem;
+    font-size: 0.85rem;
+    color: var(--bs-secondary-color);
+    opacity: 0.7;
+}
