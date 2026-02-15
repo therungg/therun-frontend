@@ -240,9 +240,6 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                             timerClassName={styles.mainTimer}
                             className="d-flex"
                         />
-                        <span className={styles.bigDelta}>
-                            <DifferenceFromOne diff={run.delta} />
-                        </span>
                         {onPbPace && (
                             <span className={styles.pbPaceBadge}>PB Pace</span>
                         )}
@@ -264,6 +261,12 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                             <span className={styles.statLabel}>PB</span>
                             <span className={styles.statValue}>
                                 <DurationToFormatted duration={run.pb} />
+                            </span>
+                        </div>
+                        <div className={styles.statItem}>
+                            <span className={styles.statLabel}>Delta</span>
+                            <span className={styles.statValue}>
+                                <DifferenceFromOne diff={run.delta} />
                             </span>
                         </div>
                         <div className={styles.statItem}>
