@@ -340,6 +340,9 @@ const LiveSidebar = ({
                     run.splits.length > 0
                         ? (run.currentSplitIndex / run.splits.length) * 100
                         : 0;
+                const hasGameImage =
+                    run.gameImage && run.gameImage !== 'noimage';
+                const onPace = run.delta < 0;
 
                 return (
                     <button
@@ -348,28 +351,60 @@ const LiveSidebar = ({
                         className={clsx(
                             styles.sidebarCard,
                             isActive && styles.sidebarCardActive,
+                            onPace && styles.sidebarCardPace,
                         )}
                         onClick={() => onSelectRun(globalIndex)}
                     >
-                        <div className={styles.sidebarCardInfo}>
-                            <span className={styles.sidebarRunner}>
-                                {run.user}
-                            </span>
-                            <span className={styles.sidebarGame}>
-                                {run.game}
-                            </span>
+                        {/* Game art background */}
+                        {hasGameImage && (
+                            <div className={styles.sidebarCardArt}>
+                                <Image
+                                    src={run.gameImage!}
+                                    alt={run.game}
+                                    fill
+                                    style={{
+                                        objectFit: 'cover',
+                                        objectPosition: 'center',
+                                    }}
+                                    unoptimized
+                                />
+                            </div>
+                        )}
+                        <div className={styles.sidebarCardContent}>
+                            <div className={styles.sidebarCardTop}>
+                                <div className={styles.sidebarCardInfo}>
+                                    <span className={styles.sidebarRunner}>
+                                        {run.user}
+                                    </span>
+                                    <span className={styles.sidebarGame}>
+                                        {run.game} · {run.category}
+                                    </span>
+                                </div>
+                                <span className={styles.sidebarDelta}>
+                                    <DifferenceFromOne diff={run.delta} />
+                                </span>
+                            </div>
+                            <div className={styles.sidebarCardBottom}>
+                                <span className={styles.sidebarSplit}>
+                                    {run.currentSplitName || 'Done'}
+                                </span>
+                                <span className={styles.sidebarProgress}>
+                                    {run.currentSplitIndex}/{run.splits.length}
+                                </span>
+                            </div>
                             <div className={styles.sidebarMiniProgress}>
                                 <div
-                                    className={styles.sidebarMiniProgressFill}
+                                    className={clsx(
+                                        styles.sidebarMiniProgressFill,
+                                        onPace &&
+                                            styles.sidebarMiniProgressPace,
+                                    )}
                                     style={{
                                         width: `${Math.min(progress, 100)}%`,
                                     }}
                                 />
                             </div>
                         </div>
-                        <span className={styles.sidebarDelta}>
-                            <DifferenceFromOne diff={run.delta} />
-                        </span>
                     </button>
                 );
             })}

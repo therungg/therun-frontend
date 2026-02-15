@@ -283,15 +283,15 @@
 .sidebar {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.4rem;
     height: 100%;
 }
 
 .sidebarCard {
+    position: relative;
     display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.625rem 0.75rem;
+    overflow: hidden;
+    padding: 0;
     background: var(--bs-body-bg);
     border: 1px solid var(--bs-border-color);
     border-radius: 0.75rem;
@@ -299,16 +299,58 @@
     transition: all 0.2s ease;
     flex: 1;
     min-height: 0;
+    text-align: left;
 }
 
 .sidebarCard:hover {
-    background: var(--bs-secondary-bg);
+    border-color: var(--bs-primary);
     transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .sidebarCardActive {
-    border-left: 3px solid var(--bs-primary);
+    border-color: var(--bs-primary);
     background: var(--bs-secondary-bg);
+}
+
+.sidebarCardPace {
+    border-color: rgba(34, 197, 94, 0.4);
+}
+
+.sidebarCardPace:hover {
+    border-color: rgba(34, 197, 94, 0.7);
+}
+
+/* Faint game art on the right */
+.sidebarCardArt {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 30%;
+    mask-image: linear-gradient(90deg, transparent 0%, black 50%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 50%);
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.sidebarCardContent {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.2rem;
+    padding: 0.5rem 0.65rem;
+}
+
+.sidebarCardTop {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
 }
 
 .sidebarCardInfo {
@@ -316,11 +358,10 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.125rem;
 }
 
 .sidebarRunner {
-    font-weight: 600;
+    font-weight: 700;
     font-size: 0.85rem;
     white-space: nowrap;
     overflow: hidden;
@@ -328,7 +369,7 @@
 }
 
 .sidebarGame {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--bs-secondary-color);
     white-space: nowrap;
     overflow: hidden;
@@ -337,23 +378,51 @@
 
 .sidebarDelta {
     font-size: 0.8rem;
-    font-weight: 600;
+    font-weight: 700;
+    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
     white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.sidebarCardBottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.sidebarSplit {
+    font-size: 0.65rem;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebarProgress {
+    font-size: 0.65rem;
+    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .sidebarMiniProgress {
-    height: 3px;
-    border-radius: 1.5px;
+    height: 2px;
+    border-radius: 1px;
     background: var(--bs-border-color);
     overflow: hidden;
-    margin-top: 0.25rem;
 }
 
 .sidebarMiniProgressFill {
     height: 100%;
-    border-radius: 1.5px;
+    border-radius: 1px;
     background: var(--bs-primary);
     transition: width 0.3s ease;
+}
+
+.sidebarMiniProgressPace {
+    background: rgb(34, 197, 94);
 }
 
 .viewAllLink {
