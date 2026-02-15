@@ -1,0 +1,71 @@
+@import '../../styles/design-tokens';
+@import '../../styles/mixins';
+
+.sectionHeader {
+    @include section-header;
+}
+
+.ongoingSection {
+    @include status-section($status-ongoing-color);
+    margin-bottom: $section-spacing-vertical;
+}
+
+.upcomingSection {
+    @include status-section($status-upcoming-color);
+    margin-bottom: $section-spacing-vertical;
+}
+
+.finishedSection {
+    @include status-section($status-finished-color);
+    margin-bottom: $section-spacing-vertical;
+}
+
+.startRaceButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-primary) 100%, white 5%),
+        color-mix(in srgb, var(--bs-primary) 85%, black 15%)
+    );
+    color: white;
+    border: none;
+    border-radius: 50rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    box-shadow:
+        0 2px 8px rgba(var(--bs-primary-rgb), 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    &:hover {
+        transform: translateY(-1px) scale(1.02);
+        box-shadow:
+            0 4px 16px rgba(var(--bs-primary-rgb), 0.4),
+            inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        color: white;
+        text-decoration: none;
+    }
+
+    &:active {
+        transform: translateY(0) scale(0.98);
+    }
+}
+
+.raceList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.emptyState {
+    text-align: center;
+    padding: 2rem 1rem;
+    font-size: 0.9rem;
+    color: var(--bs-secondary-color);
+    opacity: 0.7;
+}
