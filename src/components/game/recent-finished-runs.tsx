@@ -22,28 +22,26 @@ export const RecentFinishedRuns: React.FC<Props> = ({
             run.achievedAt !== 'ended.toISOString()',
     );
 
-    const runRows = runs
-        .slice(0, 10)
-        .map(({ username, achievedAt, time, category }) => (
-            <tr key={`${username}-${achievedAt}-${time}-${category}`}>
-                <td>
-                    <UserGameCategoryLink
-                        username={username}
-                        category={category}
-                        game={game}
-                    >
-                        <FromNow time={achievedAt} />
-                    </UserGameCategoryLink>
-                </td>
-                {showCategory && <td>{category}</td>}
-                <td>
-                    <UserLink username={username} />
-                </td>
-                <td>
-                    <DurationToFormatted duration={time} />
-                </td>
-            </tr>
-        ));
+    const runRows = runs.map(({ username, achievedAt, time, category }) => (
+        <tr key={`${username}-${achievedAt}-${time}-${category}`}>
+            <td>
+                <UserGameCategoryLink
+                    username={username}
+                    category={category}
+                    game={game}
+                >
+                    <FromNow time={achievedAt} />
+                </UserGameCategoryLink>
+            </td>
+            {showCategory && <td>{category}</td>}
+            <td>
+                <UserLink username={username} />
+            </td>
+            <td>
+                <DurationToFormatted duration={time} />
+            </td>
+        </tr>
+    ));
 
     return (
         <Table striped bordered hover responsive>
