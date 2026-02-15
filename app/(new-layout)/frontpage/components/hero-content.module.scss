@@ -135,23 +135,23 @@
 
 /* Timer */
 .timerSection {
-    flex: 1;
     display: flex;
     align-items: center;
+    padding: 0.75rem 0;
 }
 
 /* Bottom: Stats + progress */
 .featuredBottom {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    justify-content: flex-end;
+    gap: 0.6rem;
 }
 
 .statsRow {
     display: flex;
     gap: 0;
-    padding: 0.4rem 0 0;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .statItem {
@@ -160,6 +160,7 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
+    padding: 0.5rem 0;
 }
 
 .statItem + .statItem {
@@ -171,13 +172,13 @@
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: rgba(255, 255, 255, 0.4);
-    margin-bottom: 0.1rem;
+    margin-bottom: 0.2rem;
     font-weight: 500;
 }
 
 .statValue {
     font-weight: 700;
-    font-size: 0.82rem;
+    font-size: 0.9rem;
     color: #fff;
     font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
