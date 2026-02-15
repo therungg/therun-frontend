@@ -1,0 +1,174 @@
+.trendingContent {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+// --- Sub-section headers ---
+
+.subSectionHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--bs-secondary-color);
+    margin-bottom: 0.25rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--bs-secondary-bg) 80%, transparent);
+}
+
+// --- Hot Games ---
+
+.hotGames {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.hotGameRow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.6rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+        background-color: color-mix(in srgb, var(--bs-secondary-bg) 50%, transparent);
+    }
+
+    &:nth-child(even) {
+        background-color: color-mix(in srgb, var(--bs-secondary-bg) 20%, transparent);
+
+        &:hover {
+            background-color: color-mix(in srgb, var(--bs-secondary-bg) 50%, transparent);
+        }
+    }
+}
+
+.gameRank {
+    width: 1.5rem;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    flex-shrink: 0;
+}
+
+.gameImage {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid color-mix(in srgb, var(--bs-secondary-bg) 80%, transparent);
+}
+
+.gameInfo {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.gameName {
+    font-weight: 500;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+
+    a {
+        color: var(--bs-body-color);
+        text-decoration: none;
+
+        &:hover {
+            color: var(--bs-primary);
+        }
+    }
+}
+
+.gameStats {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.runBadge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background-color: color-mix(in srgb, var(--bs-primary) 15%, transparent);
+    color: var(--bs-primary);
+    white-space: nowrap;
+}
+
+.runnerCount {
+    font-size: 0.7rem;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+
+// --- Runners lists ---
+
+.runnersGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+
+    @media (max-width: 576px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.runnersList {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.runnerRow {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 0.6rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+        background-color: color-mix(in srgb, var(--bs-secondary-bg) 50%, transparent);
+    }
+}
+
+.runnerMedal {
+    width: 1.5rem;
+    text-align: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.runnerName {
+    flex: 1;
+    min-width: 0;
+    font-weight: 500;
+    font-size: 0.9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.runnerValue {
+    font-size: 0.8rem;
+    color: var(--bs-secondary-color);
+    font-weight: 500;
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+}
