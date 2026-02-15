@@ -209,8 +209,8 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                         liveRun={run}
                         dark={false}
                         withDiff={false}
-                        timerClassName="font-monospace text-center w-100 fs-1 fw-bold justify-content-center"
-                        className="d-flex justify-content-center"
+                        timerClassName="font-monospace fs-1 fw-bold"
+                        className="d-flex"
                     />
                 </div>
 
