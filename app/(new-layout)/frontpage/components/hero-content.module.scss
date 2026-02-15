@@ -21,6 +21,12 @@
     height: 340px;
     border-radius: 1rem;
     background: #0c0c14;
+    transition: box-shadow 0.3s ease;
+}
+
+/* Subtle green glow when runner is on PB pace */
+.featuredPanelPbPace {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.15), 0 0 40px rgba(34, 197, 94, 0.05);
 }
 
 /* Game art — real <Image>, right-aligned, CSS mask fades left edge */
@@ -137,7 +143,21 @@
 .timerSection {
     display: flex;
     align-items: center;
+    gap: 0.75rem;
     padding: 0.75rem 0;
+}
+
+.pbPaceBadge {
+    flex-shrink: 0;
+    padding: 0.2rem 0.6rem;
+    background: rgba(34, 197, 94, 0.15);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 0.3rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgb(34, 197, 94);
 }
 
 /* Bottom: Stats + progress */
@@ -184,18 +204,44 @@
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
-.progressBar {
-    height: 3px;
-    border-radius: 1.5px;
-    background: rgba(255, 255, 255, 0.08);
-    overflow: hidden;
+/* Split timeline — colored segments per split */
+.splitTimeline {
+    display: flex;
+    gap: 2px;
+    height: 6px;
 }
 
-.progressFill {
-    height: 100%;
-    border-radius: 1.5px;
-    background: linear-gradient(90deg, var(--bs-primary), color-mix(in srgb, var(--bs-primary) 80%, white 20%));
-    transition: width 0.5s ease;
+.splitSegment {
+    flex: 1;
+    border-radius: 1px;
+    background: rgba(255, 255, 255, 0.08);
+    transition: background 0.3s ease;
+}
+
+.splitSegmentAhead {
+    background: rgba(34, 197, 94, 0.7);
+}
+
+.splitSegmentBehind {
+    background: rgba(239, 68, 68, 0.6);
+}
+
+.splitSegmentNeutral {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.splitSegmentCurrent {
+    background: var(--bs-primary);
+    animation: splitPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes splitPulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
 }
 
 .progressMeta {

@@ -145,31 +145,51 @@ const HeroLayout = ({
 const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
     const hasGameImage = run.gameImage && run.gameImage !== 'noimage';
     const hasAvatar = run.picture && run.picture !== 'noimage';
-    const progress =
-        run.splits.length > 0
-            ? (run.currentSplitIndex / run.splits.length) * 100
-            : 0;
+    const onPbPace = run.delta < 0;
+
+    // Build split segment data for the mini timeline
+    const splitSegments = run.splits.map((split, i) => {
+        if (i >= run.currentSplitIndex) return 'pending';
+        const splitTime = split.splitTime ?? 0;
+        const pbTime = split.pbSplitTime ?? 0;
+        if (!splitTime || !pbTime) return 'neutral';
+        return splitTime <= pbTime ? 'ahead' : 'behind';
+    });
+
+    // Predicted finish from the current split's predictedTotalTime
+    const currentSplit = run.splits[run.currentSplitIndex];
+    const predictedFinish =
+        run.currentPrediction ??
+        (currentSplit?.predictedTotalTime
+            ? String(currentSplit.predictedTotalTime)
+            : null);
 
     return (
         <Link
             href={`/live/${run.user}`}
-            className={styles.featuredPanel}
+            className={clsx(
+                styles.featuredPanel,
+                onPbPace && styles.featuredPanelPbPace,
+            )}
             style={{ textDecoration: 'none', color: 'inherit' }}
         >
-            {/* Game art — actual Image, right-aligned, masked to fade left */}
+            {/* Game art */}
             {hasGameImage && (
                 <div className={styles.gameArtWrapper}>
                     <Image
                         src={run.gameImage!}
                         alt={run.game}
                         fill
-                        style={{ objectFit: 'cover', objectPosition: 'center' }}
+                        style={{
+                            objectFit: 'cover',
+                            objectPosition: 'center',
+                        }}
                         unoptimized
                     />
                 </div>
             )}
 
-            {/* All content */}
+            {/* Content */}
             <div className={styles.featuredContent}>
                 {/* Top: runner + LIVE badge */}
                 <div className={styles.runnerIdentity}>
@@ -200,7 +220,7 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                     </div>
                 </div>
 
-                {/* Center: Timer */}
+                {/* Timer */}
                 <div className={styles.timerSection}>
                     <LiveSplitTimerComponent
                         liveRun={run}
@@ -209,9 +229,12 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                         timerClassName="font-monospace fs-1 fw-bold"
                         className="d-flex"
                     />
+                    {onPbPace && (
+                        <span className={styles.pbPaceBadge}>PB Pace</span>
+                    )}
                 </div>
 
-                {/* Bottom: Stats + progress */}
+                {/* Stats */}
                 <div className={styles.featuredBottom}>
                     <div className={styles.statsRow}>
                         <div className={styles.statItem}>
@@ -221,46 +244,59 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                             </span>
                         </div>
                         <div className={styles.statItem}>
-                            <span className={styles.statLabel}>Split</span>
-                            <span
-                                className={styles.statValue}
-                                style={{
-                                    maxWidth: '120px',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                }}
-                            >
-                                {run.currentSplitName || 'Done'}
-                            </span>
-                        </div>
-                        <div className={styles.statItem}>
                             <span className={styles.statLabel}>Delta</span>
                             <span className={styles.statValue}>
                                 <DifferenceFromOne diff={run.delta} />
                             </span>
                         </div>
                         <div className={styles.statItem}>
-                            <span className={styles.statLabel}>SOB</span>
+                            <span className={styles.statLabel}>
+                                Best Possible
+                            </span>
                             <span className={styles.statValue}>
-                                <DurationToFormatted duration={run.sob} />
+                                <DurationToFormatted
+                                    duration={run.bestPossible}
+                                />
                             </span>
                         </div>
+                        {predictedFinish && (
+                            <div className={styles.statItem}>
+                                <span className={styles.statLabel}>
+                                    Predicted
+                                </span>
+                                <span className={styles.statValue}>
+                                    <DurationToFormatted
+                                        duration={predictedFinish}
+                                    />
+                                </span>
+                            </div>
+                        )}
                     </div>
 
-                    <div className={styles.progressBar}>
-                        <div
-                            className={styles.progressFill}
-                            style={{
-                                width: `${Math.min(progress, 100)}%`,
-                            }}
-                        />
+                    {/* Split timeline */}
+                    <div className={styles.splitTimeline}>
+                        {splitSegments.map((status, i) => (
+                            <div
+                                key={run.splits[i].name}
+                                className={clsx(
+                                    styles.splitSegment,
+                                    status === 'ahead' &&
+                                        styles.splitSegmentAhead,
+                                    status === 'behind' &&
+                                        styles.splitSegmentBehind,
+                                    status === 'neutral' &&
+                                        styles.splitSegmentNeutral,
+                                    i === run.currentSplitIndex &&
+                                        styles.splitSegmentCurrent,
+                                )}
+                            />
+                        ))}
                     </div>
                     <div className={styles.progressMeta}>
+                        <span>{run.currentSplitName || 'Done'}</span>
                         <span>
                             {run.currentSplitIndex}/{run.splits.length} splits
                         </span>
-                        <span>{Math.round(progress)}%</span>
                     </div>
                 </div>
             </div>
