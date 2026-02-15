@@ -1,0 +1,141 @@
+.pulseContainer {
+    background: var(--bs-secondary-bg);
+    border-radius: 1rem;
+    padding: 1.5rem;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+/* Period toggle */
+.toggleGroup {
+    display: flex;
+    background: var(--bs-body-bg);
+    border-radius: 2rem;
+    padding: 0.2rem;
+    border: 1px solid var(--bs-border-color);
+}
+
+.toggleBtn {
+    padding: 0.35rem 1rem;
+    border: none;
+    border-radius: 2rem;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.toggleBtn:hover {
+    color: var(--bs-body-color);
+}
+
+.toggleBtnActive {
+    background: var(--bs-primary);
+    color: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.toggleBtnActive:hover {
+    color: #fff;
+}
+
+/* Stats row */
+.statsRow {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.statCard {
+    flex: 1;
+    min-width: 140px;
+    background: var(--bs-body-bg);
+    border-radius: 0.75rem;
+    padding: 1rem 1.25rem;
+    text-align: center;
+    border: 1px solid var(--bs-border-color);
+}
+
+.statNumber {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.statLabel {
+    font-size: 0.8rem;
+    color: var(--bs-secondary-color);
+    margin-top: 0.25rem;
+}
+
+.delta {
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-top: 0.25rem;
+}
+
+.deltaPositive {
+    color: #4caf50;
+}
+
+.deltaNegative {
+    color: #ef5350;
+}
+
+/* Live dot */
+.liveDot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #4caf50;
+    animation: livePulse 2s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.4;
+    }
+}
+
+/* Chart */
+.chartWrapper {
+    margin-bottom: 1.25rem;
+    height: 120px;
+}
+
+/* All-time row */
+.allTimeRow {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--bs-secondary-color);
+}
+
+.allTimeSeparator {
+    margin: 0 0.5rem;
+    opacity: 0.4;
+}
