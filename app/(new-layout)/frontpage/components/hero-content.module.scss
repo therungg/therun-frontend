@@ -20,7 +20,8 @@
     overflow: hidden;
     height: 340px;
     border-radius: 1rem;
-    background: #0c0c14;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
     transition: box-shadow 0.3s ease;
 }
 
@@ -99,8 +100,8 @@
     position: relative;
     border-radius: 50%;
     overflow: hidden;
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+    border: 2px solid var(--bs-border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .avatar {
@@ -115,23 +116,21 @@
 .runnerName {
     font-size: 1.3rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--bs-body-color);
     line-height: 1.2;
     margin: 0;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.7);
 }
 
 .gameLabelText {
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.55);
+    color: var(--bs-secondary-color);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     display: block;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
 }
 
 .categoryLabel {
@@ -158,16 +157,15 @@
     font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
     font-size: 2rem;
     font-weight: 700;
-    color: #fff;
+    color: var(--bs-body-color);
     line-height: 1;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .segmentTimer {
     font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
     font-size: 1rem;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.45);
+    color: var(--bs-secondary-color);
     line-height: 1;
     margin-top: 0.3rem;
 }
@@ -209,14 +207,14 @@
 }
 
 .statItem + .statItem {
-    border-left: 1px solid rgba(255, 255, 255, 0.06);
+    border-left: 1px solid var(--bs-border-color);
 }
 
 .statLabel {
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--bs-secondary-color);
     margin-bottom: 0.3rem;
     font-weight: 600;
 }
@@ -224,9 +222,8 @@
 .statValue {
     font-weight: 700;
     font-size: 1.15rem;
-    color: #fff;
+    color: var(--bs-body-color);
     font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
 }
 
 /* Split timeline — colored segments per split */
@@ -239,7 +236,7 @@
 .splitSegment {
     flex: 1;
     border-radius: 1px;
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--bs-border-color);
     transition: background 0.3s ease;
 }
 
@@ -257,7 +254,7 @@
 }
 
 .splitSegmentNeutral {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--bs-secondary-bg);
 }
 
 .splitSegmentCurrent {
@@ -278,7 +275,7 @@
     display: flex;
     justify-content: space-between;
     font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--bs-secondary-color);
     font-weight: 500;
 }
 
