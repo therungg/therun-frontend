@@ -174,14 +174,6 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
         return 'behind';
     });
 
-    // Predicted finish from the current split's predictedTotalTime
-    const currentSplit = run.splits[run.currentSplitIndex];
-    const predictedFinish =
-        run.currentPrediction ??
-        (currentSplit?.predictedTotalTime
-            ? String(currentSplit.predictedTotalTime)
-            : null);
-
     return (
         <Link
             href={`/live/${run.user}`}
@@ -238,7 +230,7 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                     </div>
                 </div>
 
-                {/* Timer */}
+                {/* Timer + delta + split name — LiveSplit style */}
                 <div className={styles.timerSection}>
                     <LiveSplitTimerComponent
                         liveRun={run}
@@ -247,9 +239,17 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                         timerClassName="font-monospace fs-1 fw-bold"
                         className="d-flex"
                     />
-                    {onPbPace && (
-                        <span className={styles.pbPaceBadge}>PB Pace</span>
-                    )}
+                    <div className={styles.timerMeta}>
+                        <span className={styles.bigDelta}>
+                            <DifferenceFromOne diff={run.delta} />
+                        </span>
+                        {onPbPace && (
+                            <span className={styles.pbPaceBadge}>PB Pace</span>
+                        )}
+                    </div>
+                    <div className={styles.currentSplitName}>
+                        {run.currentSplitName || 'Finished'}
+                    </div>
                 </div>
 
                 {/* Stats */}
@@ -262,9 +262,9 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                             </span>
                         </div>
                         <div className={styles.statItem}>
-                            <span className={styles.statLabel}>Delta</span>
+                            <span className={styles.statLabel}>SOB</span>
                             <span className={styles.statValue}>
-                                <DifferenceFromOne diff={run.delta} />
+                                <DurationToFormatted duration={run.sob} />
                             </span>
                         </div>
                         <div className={styles.statItem}>
@@ -277,18 +277,6 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                                 />
                             </span>
                         </div>
-                        {predictedFinish && (
-                            <div className={styles.statItem}>
-                                <span className={styles.statLabel}>
-                                    Predicted
-                                </span>
-                                <span className={styles.statValue}>
-                                    <DurationToFormatted
-                                        duration={predictedFinish}
-                                    />
-                                </span>
-                            </div>
-                        )}
                     </div>
 
                     {/* Split timeline */}
