@@ -418,7 +418,8 @@
 }
 
 .sidebarTimeline {
-    height: 3px;
+    height: 4px;
+    flex-shrink: 0;
     gap: 1px;
 }
 
