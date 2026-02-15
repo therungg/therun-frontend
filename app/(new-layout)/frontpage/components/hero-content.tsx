@@ -153,12 +153,11 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
         const time = split.splitTime;
         if (!time) return 'neutral';
 
-        // Segment time = cumulative difference from previous split
+        // Gold: compare individual segment time vs best segment
         const prevTime = i > 0 ? run.splits[i - 1].splitTime : 0;
         if (i > 0 && !prevTime) return 'neutral';
         const segmentTime = time - (prevTime ?? 0);
 
-        // Best Segments comparison for gold detection
         const bestSegCumulative = split.comparisons?.['Best Segments'];
         const prevBestSegCumulative =
             i > 0 ? run.splits[i - 1].comparisons?.['Best Segments'] : 0;
@@ -169,16 +168,9 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
 
         if (bestSegSingle && segmentTime < bestSegSingle) return 'gold';
 
-        // PB comparison for ahead/behind
+        // Ahead/behind: compare cumulative time vs cumulative PB
         const pbCumulative = split.comparisons?.['Personal Best'];
-        const prevPbCumulative =
-            i > 0 ? run.splits[i - 1].comparisons?.['Personal Best'] : 0;
-        const pbSingle =
-            pbCumulative && (i === 0 || prevPbCumulative)
-                ? pbCumulative - (prevPbCumulative ?? 0)
-                : null;
-
-        if (pbSingle && segmentTime <= pbSingle) return 'ahead';
+        if (pbCumulative && time <= pbCumulative) return 'ahead';
         return 'behind';
     });
 
