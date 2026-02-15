@@ -156,50 +156,40 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
             className={clsx(styles.panel, styles.featuredPanel)}
             style={{ textDecoration: 'none', color: 'inherit' }}
         >
-            {/* Game art banner */}
-            <div className={styles.gameBanner}>
-                {hasGameImage && (
-                    <div
-                        className={styles.gameBannerImage}
-                        style={{
-                            backgroundImage: `url(${run.gameImage})`,
-                        }}
-                    />
-                )}
-                <div className={styles.gameBannerGradient} />
+            {/* Game art — full height, right-aligned, fades left */}
+            {hasGameImage && (
+                <div
+                    className={styles.gameArt}
+                    style={{
+                        backgroundImage: `url(${run.gameImage})`,
+                    }}
+                />
+            )}
+            <div className={styles.gameArtFade} />
 
-                {/* LIVE badge */}
-                <div className={styles.liveBadge}>
-                    <span className={styles.liveDot} />
-                    LIVE
-                </div>
+            {/* All content overlaid */}
+            <div className={styles.featuredContent}>
+                {/* Top: LIVE badge + runner identity */}
+                <div className={styles.featuredTop}>
+                    <div className={styles.liveBadge}>
+                        <span className={styles.liveDot} />
+                        LIVE
+                    </div>
 
-                {/* Runner identity overlaid on banner */}
-                <div className={styles.runnerIdentity}>
-                    {hasAvatar && (
-                        <div className={styles.avatarWrapper}>
-                            <Image
-                                src={run.picture!}
-                                alt={run.user}
-                                fill
-                                style={{ objectFit: 'cover' }}
-                                className={styles.avatar}
-                            />
-                        </div>
-                    )}
-                    <div className={styles.runnerDetails}>
-                        <h3 className={styles.runnerName}>{run.user}</h3>
-                        <div className={styles.gameLabel}>
-                            {hasGameImage && (
-                                <div className={styles.gameThumb}>
-                                    <Image
-                                        src={run.gameImage!}
-                                        alt={run.game}
-                                        fill
-                                        style={{ objectFit: 'cover' }}
-                                    />
-                                </div>
-                            )}
+                    <div className={styles.runnerIdentity}>
+                        {hasAvatar && (
+                            <div className={styles.avatarWrapper}>
+                                <Image
+                                    src={run.picture!}
+                                    alt={run.user}
+                                    fill
+                                    style={{ objectFit: 'cover' }}
+                                    className={styles.avatar}
+                                />
+                            </div>
+                        )}
+                        <div className={styles.runnerDetails}>
+                            <h3 className={styles.runnerName}>{run.user}</h3>
                             <span className={styles.gameLabelText}>
                                 {run.game}
                                 {' · '}
@@ -210,10 +200,8 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Timer + Stats */}
-            <div className={styles.featuredBody}>
+                {/* Center: Timer */}
                 <div className={styles.timerSection}>
                     <LiveSplitTimerComponent
                         liveRun={run}
@@ -224,55 +212,57 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                     />
                 </div>
 
-                <div className={styles.statsRow}>
-                    <div className={styles.statItem}>
-                        <span className={styles.statLabel}>PB</span>
-                        <span className={styles.statValue}>
-                            <DurationToFormatted duration={run.pb} />
-                        </span>
+                {/* Bottom: Stats + progress */}
+                <div className={styles.featuredBottom}>
+                    <div className={styles.statsRow}>
+                        <div className={styles.statItem}>
+                            <span className={styles.statLabel}>PB</span>
+                            <span className={styles.statValue}>
+                                <DurationToFormatted duration={run.pb} />
+                            </span>
+                        </div>
+                        <div className={styles.statItem}>
+                            <span className={styles.statLabel}>Split</span>
+                            <span
+                                className={styles.statValue}
+                                style={{
+                                    maxWidth: '120px',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
+                                {run.currentSplitName || 'Done'}
+                            </span>
+                        </div>
+                        <div className={styles.statItem}>
+                            <span className={styles.statLabel}>Delta</span>
+                            <span className={styles.statValue}>
+                                <DifferenceFromOne diff={run.delta} />
+                            </span>
+                        </div>
+                        <div className={styles.statItem}>
+                            <span className={styles.statLabel}>SOB</span>
+                            <span className={styles.statValue}>
+                                <DurationToFormatted duration={run.sob} />
+                            </span>
+                        </div>
                     </div>
-                    <div className={styles.statItem}>
-                        <span className={styles.statLabel}>Split</span>
-                        <span
-                            className={styles.statValue}
-                            style={{
-                                maxWidth: '120px',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                            }}
-                        >
-                            {run.currentSplitName || 'Done'}
-                        </span>
-                    </div>
-                    <div className={styles.statItem}>
-                        <span className={styles.statLabel}>Delta</span>
-                        <span className={styles.statValue}>
-                            <DifferenceFromOne diff={run.delta} />
-                        </span>
-                    </div>
-                    <div className={styles.statItem}>
-                        <span className={styles.statLabel}>SOB</span>
-                        <span className={styles.statValue}>
-                            <DurationToFormatted duration={run.sob} />
-                        </span>
-                    </div>
-                </div>
-            </div>
 
-            {/* Progress bar at bottom */}
-            <div className={styles.progressSection}>
-                <div className={styles.progressBar}>
-                    <div
-                        className={styles.progressFill}
-                        style={{ width: `${Math.min(progress, 100)}%` }}
-                    />
-                </div>
-                <div className={styles.progressMeta}>
-                    <span>
-                        {run.currentSplitIndex}/{run.splits.length} splits
-                    </span>
-                    <span>{Math.round(progress)}%</span>
+                    <div className={styles.progressBar}>
+                        <div
+                            className={styles.progressFill}
+                            style={{
+                                width: `${Math.min(progress, 100)}%`,
+                            }}
+                        />
+                    </div>
+                    <div className={styles.progressMeta}>
+                        <span>
+                            {run.currentSplitIndex}/{run.splits.length} splits
+                        </span>
+                        <span>{Math.round(progress)}%</span>
+                    </div>
                 </div>
             </div>
         </Link>
