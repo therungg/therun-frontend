@@ -200,7 +200,12 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
             )}
 
             {/* Content */}
-            <div className={styles.featuredContent}>
+            <div
+                className={clsx(
+                    styles.featuredContent,
+                    hasGameImage && styles.featuredContentWithArt,
+                )}
+            >
                 {/* Top: runner + LIVE badge */}
                 <div className={styles.runnerIdentity}>
                     {hasAvatar && (
