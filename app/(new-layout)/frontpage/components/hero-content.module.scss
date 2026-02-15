@@ -113,7 +113,7 @@
 }
 
 .runnerName {
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     font-weight: 700;
     color: #fff;
     line-height: 1.2;
@@ -125,7 +125,7 @@
 }
 
 .gameLabelText {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     color: rgba(255, 255, 255, 0.55);
     white-space: nowrap;
     overflow: hidden;
@@ -145,6 +145,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
+    align-items: center;
 }
 
 .mainTimerRow {
