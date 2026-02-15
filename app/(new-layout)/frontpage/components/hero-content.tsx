@@ -343,6 +343,7 @@ const LiveSidebar = ({
                 const hasGameImage =
                     run.gameImage && run.gameImage !== 'noimage';
                 const onPace = run.delta < 0;
+                const hasAvatar = run.picture && run.picture !== 'noimage';
 
                 return (
                     <button
@@ -372,6 +373,19 @@ const LiveSidebar = ({
                         )}
                         <div className={styles.sidebarCardContent}>
                             <div className={styles.sidebarCardTop}>
+                                {hasAvatar && (
+                                    <div className={styles.sidebarAvatar}>
+                                        <Image
+                                            src={run.picture!}
+                                            alt={run.user}
+                                            fill
+                                            style={{
+                                                objectFit: 'cover',
+                                            }}
+                                            unoptimized
+                                        />
+                                    </div>
+                                )}
                                 <div className={styles.sidebarCardInfo}>
                                     <span className={styles.sidebarRunner}>
                                         {run.user}

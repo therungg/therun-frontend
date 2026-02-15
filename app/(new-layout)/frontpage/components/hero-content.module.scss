@@ -348,9 +348,18 @@
 
 .sidebarCardTop {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
+    align-items: center;
     gap: 0.5rem;
+}
+
+.sidebarAvatar {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    position: relative;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1.5px solid var(--bs-border-color);
 }
 
 .sidebarCardInfo {
@@ -362,14 +371,14 @@
 
 .sidebarRunner {
     font-weight: 700;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .sidebarGame {
-    font-size: 0.7rem;
+    font-size: 0.8rem;
     color: var(--bs-secondary-color);
     white-space: nowrap;
     overflow: hidden;
@@ -377,7 +386,7 @@
 }
 
 .sidebarDelta {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 700;
     font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
     white-space: nowrap;
@@ -392,7 +401,7 @@
 }
 
 .sidebarSplit {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     color: var(--bs-secondary-color);
     white-space: nowrap;
     overflow: hidden;
@@ -400,7 +409,7 @@
 }
 
 .sidebarProgress {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
     color: var(--bs-secondary-color);
     white-space: nowrap;
