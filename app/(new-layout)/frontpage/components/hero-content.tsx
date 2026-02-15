@@ -3,11 +3,11 @@
 import clsx from 'clsx';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { Col, Placeholder, Row } from 'react-bootstrap';
 import { LiveRun } from '~app/(old-layout)/live/live.types';
 import { LiveSplitTimerComponent } from '~app/(old-layout)/live/live-split-timer.component';
-import { Button } from '~src/components/Button/Button';
 import {
     DifferenceFromOne,
     DurationToFormatted,
@@ -15,130 +15,109 @@ import {
 import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
 import styles from './hero-content.module.scss';
 
-const LiveCountChart = dynamic(() =>
-    import('../panels/live-count-panel/live-count-chart').then(
-        (mod) => mod.LiveCountChart,
-    ),
-);
-
 const TwitchPlayer = dynamic(() =>
     import('react-twitch-embed').then((mod) => mod.TwitchPlayer),
 );
 
-interface LiveCountDataPoint {
-    count: number;
-    timestamp: number;
-}
-
 export const HeroContent = ({
-    liveRuns,
-    countHistory,
+    liveRuns: initialRuns,
 }: {
     liveRuns: LiveRun[];
-    countHistory: LiveCountDataPoint[];
 }) => {
-    const [showedRunIndex, setShowedRunIndex] = useState(0);
+    const [featuredIndex, setFeaturedIndex] = useState(0);
+    const [liveRuns, setLiveRuns] = useState(initialRuns);
+
+    const handleSelectRun = useCallback((index: number) => {
+        setFeaturedIndex(index);
+    }, []);
 
     const handleNextRun = useCallback(() => {
-        setShowedRunIndex((prevIndex) =>
-            prevIndex === liveRuns.length - 1 ? 0 : prevIndex + 1,
+        setFeaturedIndex((prev) =>
+            prev >= liveRuns.length - 1 ? 0 : prev + 1,
+        );
+    }, [liveRuns.length]);
+
+    const handlePrevRun = useCallback(() => {
+        setFeaturedIndex((prev) =>
+            prev <= 0 ? liveRuns.length - 1 : prev - 1,
         );
     }, [liveRuns.length]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'ArrowRight') {
-                handleNextRun();
-            }
+            if (e.key === 'ArrowRight') handleNextRun();
+            if (e.key === 'ArrowLeft') handlePrevRun();
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [handleNextRun]);
+    }, [handleNextRun, handlePrevRun]);
 
-    const liveRun = liveRuns[showedRunIndex];
+    const featuredRun = liveRuns[featuredIndex];
+    const sidebarRuns = liveRuns.filter((_, i) => i !== featuredIndex);
 
-    if (!liveRun) {
+    if (!featuredRun) {
         return <HeroSkeleton />;
     }
 
     return (
-        <HeroRun
-            liveRun={liveRun}
-            countHistory={countHistory}
-            onNextRun={handleNextRun}
+        <HeroLayout
+            featuredRun={featuredRun}
+            sidebarRuns={sidebarRuns}
+            featuredIndex={featuredIndex}
+            allRuns={liveRuns}
+            onSelectRun={handleSelectRun}
+            onUpdateRuns={setLiveRuns}
         />
     );
 };
 
-const HeroRun = ({
-    liveRun,
-    countHistory,
-    onNextRun,
+const HeroLayout = ({
+    featuredRun,
+    sidebarRuns,
+    featuredIndex,
+    allRuns,
+    onSelectRun,
+    onUpdateRuns,
 }: {
-    liveRun: LiveRun;
-    countHistory: LiveCountDataPoint[];
-    onNextRun: () => void;
+    featuredRun: LiveRun;
+    sidebarRuns: LiveRun[];
+    featuredIndex: number;
+    allRuns: LiveRun[];
+    onSelectRun: (index: number) => void;
+    onUpdateRuns: (runs: LiveRun[]) => void;
 }) => {
-    const [updatedLiveRun, setUpdatedLiveRun] = useState<LiveRun | undefined>(
-        liveRun,
-    );
-
-    const lastMessage = useLiveRunsWebsocket(liveRun.user);
+    const lastMessage = useLiveRunsWebsocket(featuredRun.user);
 
     useEffect(() => {
-        if (lastMessage?.type === 'UPDATE') {
-            setUpdatedLiveRun(lastMessage.run);
-        }
-        if (lastMessage?.type === 'DELETE') {
-            setUpdatedLiveRun(undefined);
+        if (!lastMessage) return;
+        if (lastMessage.type === 'UPDATE') {
+            onUpdateRuns(
+                allRuns.map((r) =>
+                    r.user === lastMessage.user ? lastMessage.run : r,
+                ),
+            );
         }
     }, [lastMessage]);
 
-    useEffect(() => {
-        setUpdatedLiveRun(liveRun);
-    }, [liveRun]);
-
-    if (!updatedLiveRun) {
-        return <HeroSkeleton />;
-    }
+    const currentFeatured = allRuns[featuredIndex] ?? featuredRun;
 
     return (
         <div className={clsx(styles.hero, 'mb-3')}>
             <Row className="g-3">
-                {/* Left: Activity chart */}
-                <Col xl={3} lg={12} className="d-none d-xl-block">
-                    <div
-                        className={clsx(
-                            styles.panel,
-                            'h-100 d-flex flex-column p-3',
-                        )}
-                    >
-                        <div className="d-flex align-items-center gap-2 mb-2">
-                            <span
-                                className={clsx(
-                                    styles.liveIndicator,
-                                    'rounded-circle',
-                                )}
-                            />
-                            <span className="fw-semibold text-uppercase small">
-                                Activity
-                            </span>
-                        </div>
-                        <div className="flex-grow-1">
-                            <LiveCountChart data={countHistory} />
-                        </div>
-                    </div>
+                {/* Left: Featured Run */}
+                <Col xl={5} lg={5} md={12}>
+                    <FeaturedRunPanel run={currentFeatured} />
                 </Col>
 
-                {/* Center: Stream */}
-                <Col xl={5} lg={7} md={12}>
+                {/* Center: Twitch Embed */}
+                <Col xl={4} lg={4} md={12}>
                     <div
                         className={clsx(styles.panel, styles.streamPanel)}
                         style={{ height: '340px' }}
                     >
                         <div className="ratio ratio-16x9 w-100 h-100">
                             <TwitchPlayer
-                                channel={updatedLiveRun.user}
+                                channel={currentFeatured.user}
                                 width="100%"
                                 height="100%"
                                 autoplay={true}
@@ -149,56 +128,43 @@ const HeroRun = ({
                     </div>
                 </Col>
 
-                {/* Right: Run stats */}
-                <Col xl={4} lg={5} md={12}>
-                    <div
-                        className={clsx(
-                            styles.panel,
-                            'h-100 d-flex flex-column justify-content-center p-3',
-                        )}
-                        style={{ minHeight: '340px' }}
-                    >
-                        <HeroRunStats run={updatedLiveRun} onNext={onNextRun} />
-                    </div>
-                </Col>
-            </Row>
-
-            {/* Activity chart for smaller screens - below the stream */}
-            <Row className="g-3 mt-0 d-xl-none">
-                <Col xs={12}>
-                    <div className={clsx(styles.panel, 'p-3')}>
-                        <div className="d-flex align-items-center gap-2 mb-2">
-                            <span
-                                className={clsx(
-                                    styles.liveIndicator,
-                                    'rounded-circle',
-                                )}
-                            />
-                            <span className="fw-semibold text-uppercase small">
-                                Activity
-                            </span>
-                        </div>
-                        <LiveCountChart data={countHistory} />
-                    </div>
+                {/* Right: Live Sidebar */}
+                <Col xl={3} lg={3} md={12}>
+                    <LiveSidebar
+                        runs={sidebarRuns}
+                        allRuns={allRuns}
+                        featuredIndex={featuredIndex}
+                        onSelectRun={onSelectRun}
+                    />
                 </Col>
             </Row>
         </div>
     );
 };
 
-const HeroRunStats = ({
-    run,
-    onNext,
-}: {
-    run: LiveRun;
-    onNext: () => void;
-}) => {
+const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
+    const hasGameImage = run.gameImage && run.gameImage !== 'noimage';
+    const progress =
+        run.splits.length > 0
+            ? (run.currentSplitIndex / run.splits.length) * 100
+            : 0;
+
     return (
-        <>
-            <div className="text-center">
+        <div
+            className={clsx(styles.panel, styles.featuredPanel)}
+            style={{ height: '340px' }}
+        >
+            {hasGameImage && (
                 <div
-                    className={`d-flex align-items-center justify-content-center gap-2 mb-2 ${styles.userHeader}`}
-                >
+                    className={styles.featuredBg}
+                    style={{ backgroundImage: `url(${run.gameImage})` }}
+                />
+            )}
+            <div className={styles.featuredOverlay} />
+
+            <div className={styles.featuredContent}>
+                {/* Runner identity */}
+                <div className={styles.userHeader}>
                     {run.picture && run.picture !== 'noimage' && (
                         <div className={styles.userImageWrapper}>
                             <Image
@@ -210,16 +176,20 @@ const HeroRunStats = ({
                             />
                         </div>
                     )}
-                    <h3 className="m-0 text-break">{run.user}</h3>
+                    <div>
+                        <h3 className={styles.userName}>{run.user}</h3>
+                        <span className={styles.isRunningLabel}>
+                            is running
+                        </span>
+                    </div>
                 </div>
-                <span className="fs-smaller text-muted">is running</span>
-                <div
-                    className={`d-flex align-items-center justify-content-center gap-2 ${styles.gameInfo}`}
-                >
-                    {run.gameImage && run.gameImage !== 'noimage' && (
+
+                {/* Game + Category */}
+                <div className={styles.gameInfo}>
+                    {hasGameImage && (
                         <div className={styles.gameImageWrapper}>
                             <Image
-                                src={run.gameImage}
+                                src={run.gameImage!}
                                 alt={run.game}
                                 fill
                                 style={{ objectFit: 'contain' }}
@@ -227,64 +197,133 @@ const HeroRunStats = ({
                             />
                         </div>
                     )}
-                    <div className="text-break">
-                        <span className="fw-bold">{run.game}</span> -{' '}
-                        <span className="fst-italic">{run.category}</span>
+                    <div>
+                        <div className={styles.gameName}>{run.game}</div>
+                        <div className={styles.categoryName}>
+                            {run.category}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Live timer */}
+                <div className={styles.timerWrapper}>
+                    <LiveSplitTimerComponent
+                        liveRun={run}
+                        dark={false}
+                        withDiff={false}
+                        timerClassName="font-monospace text-center w-100 fs-1 fw-bold justify-content-center"
+                        className="d-flex justify-content-center"
+                    />
+                </div>
+
+                {/* Stats row */}
+                <div className={styles.statsRow}>
+                    <div className={styles.statItem}>
+                        <span className={styles.statLabel}>Personal Best</span>
+                        <span className={styles.statValue}>
+                            <DurationToFormatted duration={run.pb} />
+                        </span>
+                    </div>
+                    <div className={styles.statItem}>
+                        <span className={styles.statLabel}>Current Split</span>
+                        <span
+                            className={styles.statValue}
+                            style={{
+                                maxWidth: '120px',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap',
+                            }}
+                        >
+                            {run.currentSplitName || 'Finished!'}
+                        </span>
+                    </div>
+                    <div className={styles.statItem}>
+                        <span className={styles.statLabel}>+/- PB</span>
+                        <span className={styles.statValue}>
+                            <DifferenceFromOne diff={run.delta} />
+                        </span>
+                    </div>
+                </div>
+
+                {/* Progress bar */}
+                <div className={styles.progressWrapper}>
+                    <div className={styles.progressBar}>
+                        <div
+                            className={styles.progressFill}
+                            style={{ width: `${Math.min(progress, 100)}%` }}
+                        />
+                    </div>
+                    <div className={styles.progressLabel}>
+                        <span>
+                            Split {run.currentSplitIndex} / {run.splits.length}
+                        </span>
+                        <span>{Math.round(progress)}%</span>
                     </div>
                 </div>
             </div>
+        </div>
+    );
+};
 
-            <hr className="w-75 mx-auto my-3" />
+const LiveSidebar = ({
+    runs,
+    allRuns,
+    featuredIndex,
+    onSelectRun,
+}: {
+    runs: LiveRun[];
+    allRuns: LiveRun[];
+    featuredIndex: number;
+    onSelectRun: (index: number) => void;
+}) => {
+    return (
+        <div className={styles.sidebar} style={{ height: '340px' }}>
+            {runs.slice(0, 4).map((run) => {
+                const globalIndex = allRuns.indexOf(run);
+                const isActive = globalIndex === featuredIndex;
+                const progress =
+                    run.splits.length > 0
+                        ? (run.currentSplitIndex / run.splits.length) * 100
+                        : 0;
 
-            <LiveSplitTimerComponent
-                liveRun={run}
-                dark={false}
-                withDiff={false}
-                timerClassName="font-monospace text-center w-100 fs-1 fw-bold justify-content-center"
-            />
-
-            <Row className="mt-4 g-2">
-                <Col className="d-flex flex-column align-items-center">
-                    <span className="text-muted small text-uppercase">
-                        Personal Best
-                    </span>
-                    <span className="fw-bold fs-5">
-                        <DurationToFormatted duration={run.pb} />
-                    </span>
-                </Col>
-                <Col className="d-flex flex-column align-items-center border-start border-end">
-                    <span className="text-muted small text-uppercase">
-                        Current Split
-                    </span>
-                    <span
-                        className="fw-bold text-break text-center text-truncate"
-                        style={{ maxWidth: '200px' }}
+                return (
+                    <button
+                        type="button"
+                        key={run.user}
+                        className={clsx(
+                            styles.sidebarCard,
+                            isActive && styles.sidebarCardActive,
+                        )}
+                        onClick={() => onSelectRun(globalIndex)}
                     >
-                        {run.currentSplitName || 'Finished!'}
-                    </span>
-                </Col>
-                <Col className="d-flex flex-column align-items-center">
-                    <span className="text-muted small text-uppercase">
-                        +/- PB
-                    </span>
-                    <span className="fw-bold">
-                        <DifferenceFromOne diff={run.delta} />
-                    </span>
-                </Col>
-            </Row>
+                        <div className={styles.sidebarCardInfo}>
+                            <span className={styles.sidebarRunner}>
+                                {run.user}
+                            </span>
+                            <span className={styles.sidebarGame}>
+                                {run.game}
+                            </span>
+                            <div className={styles.sidebarMiniProgress}>
+                                <div
+                                    className={styles.sidebarMiniProgressFill}
+                                    style={{
+                                        width: `${Math.min(progress, 100)}%`,
+                                    }}
+                                />
+                            </div>
+                        </div>
+                        <span className={styles.sidebarDelta}>
+                            <DifferenceFromOne diff={run.delta} />
+                        </span>
+                    </button>
+                );
+            })}
 
-            <div className="mt-auto pt-4 text-center w-100">
-                <Button
-                    variant="primary"
-                    className="w-100 py-2 rounded-3 fw-bold text-uppercase"
-                    style={{ letterSpacing: '0.5px', fontSize: '0.95rem' }}
-                    onClick={onNext}
-                    title="Press Right Arrow key to skip"
-                >
-                    Watch next run &gt;
-                </Button>
-            </div>
-        </>
+            <Link href="/live" className={styles.viewAllLink}>
+                View all live runs &rarr;
+            </Link>
+        </div>
     );
 };
 
@@ -292,18 +331,46 @@ const HeroSkeleton = () => {
     return (
         <div className={clsx(styles.hero, 'mb-3')}>
             <Row className="g-3">
-                <Col xl={3} lg={12} className="d-none d-xl-block">
+                <Col xl={5} lg={5} md={12}>
                     <div
-                        className={clsx(styles.panel, 'h-100 p-3')}
-                        style={{ minHeight: '340px' }}
+                        className={clsx(
+                            styles.panel,
+                            styles.skeletonPanel,
+                            'p-4',
+                        )}
                     >
                         <div className="placeholder-glow">
-                            <Placeholder xs={4} className="mb-3" />
-                            <Placeholder xs={12} style={{ height: '180px' }} />
+                            <div className="d-flex align-items-center gap-3 mb-3">
+                                <Placeholder
+                                    as="span"
+                                    className="rounded-circle"
+                                    style={{ width: 48, height: 48 }}
+                                />
+                                <div className="flex-grow-1">
+                                    <Placeholder
+                                        xs={6}
+                                        className="d-block mb-1"
+                                    />
+                                    <Placeholder xs={3} />
+                                </div>
+                            </div>
+                            <Placeholder xs={8} className="d-block mb-2" />
+                            <Placeholder xs={5} className="d-block mb-4" />
+                            <Placeholder
+                                xs={12}
+                                size="lg"
+                                className="d-block my-4"
+                                style={{ height: '3rem' }}
+                            />
+                            <div className="d-flex gap-3">
+                                <Placeholder xs={4} />
+                                <Placeholder xs={4} />
+                                <Placeholder xs={4} />
+                            </div>
                         </div>
                     </div>
                 </Col>
-                <Col xl={5} lg={7} md={12}>
+                <Col xl={4} lg={4} md={12}>
                     <div
                         className={clsx(
                             styles.panel,
@@ -321,32 +388,23 @@ const HeroSkeleton = () => {
                         </div>
                     </div>
                 </Col>
-                <Col xl={4} lg={5} md={12}>
+                <Col xl={3} lg={3} md={12}>
                     <div
-                        className={clsx(styles.panel, 'p-4')}
-                        style={{ minHeight: '340px' }}
+                        className="d-flex flex-column gap-2"
+                        style={{ height: '340px' }}
                     >
-                        <div className="d-flex flex-column align-items-center w-100 placeholder-glow">
-                            <Placeholder as="h3" xs={6} className="mb-2" />
-                            <Placeholder xs={4} className="mb-3" />
-                            <Placeholder xs={8} size="lg" className="my-3" />
-                            <Row className="w-100 mt-4">
-                                <Col className="text-center">
-                                    <Placeholder xs={8} />
-                                </Col>
-                                <Col className="text-center">
-                                    <Placeholder xs={8} />
-                                </Col>
-                                <Col className="text-center">
-                                    <Placeholder xs={8} />
-                                </Col>
-                            </Row>
-                            <Placeholder.Button
-                                variant="primary"
-                                xs={12}
-                                className="mt-5 py-2"
-                            />
-                        </div>
+                        {[0, 1, 2, 3].map((i) => (
+                            <div
+                                key={i}
+                                className={clsx(
+                                    styles.panel,
+                                    'p-3 flex-fill placeholder-glow',
+                                )}
+                            >
+                                <Placeholder xs={6} className="d-block mb-1" />
+                                <Placeholder xs={8} />
+                            </div>
+                        ))}
                     </div>
                 </Col>
             </Row>
