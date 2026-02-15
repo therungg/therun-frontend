@@ -150,12 +150,35 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
     // Build split segment data for the mini timeline
     const splitSegments = run.splits.map((split, i) => {
         if (i >= run.currentSplitIndex) return 'pending';
-        const splitTime = split.splitTime ?? 0;
-        const goldTime = split.bestPossible ?? 0;
-        const pbTime = split.pbSplitTime ?? 0;
-        if (!splitTime) return 'neutral';
-        if (goldTime && splitTime <= goldTime) return 'gold';
-        if (pbTime && splitTime <= pbTime) return 'ahead';
+        const time = split.splitTime;
+        if (!time) return 'neutral';
+
+        // Segment time = cumulative difference from previous split
+        const prevTime = i > 0 ? run.splits[i - 1].splitTime : 0;
+        if (i > 0 && !prevTime) return 'neutral';
+        const segmentTime = time - (prevTime ?? 0);
+
+        // Best Segments comparison for gold detection
+        const bestSegCumulative = split.comparisons?.['Best Segments'];
+        const prevBestSegCumulative =
+            i > 0 ? run.splits[i - 1].comparisons?.['Best Segments'] : 0;
+        const bestSegSingle =
+            bestSegCumulative && (i === 0 || prevBestSegCumulative)
+                ? bestSegCumulative - (prevBestSegCumulative ?? 0)
+                : null;
+
+        if (bestSegSingle && segmentTime < bestSegSingle) return 'gold';
+
+        // PB comparison for ahead/behind
+        const pbCumulative = split.comparisons?.['Personal Best'];
+        const prevPbCumulative =
+            i > 0 ? run.splits[i - 1].comparisons?.['Personal Best'] : 0;
+        const pbSingle =
+            pbCumulative && (i === 0 || prevPbCumulative)
+                ? pbCumulative - (prevPbCumulative ?? 0)
+                : null;
+
+        if (pbSingle && segmentTime <= pbSingle) return 'ahead';
         return 'behind';
     });
 
