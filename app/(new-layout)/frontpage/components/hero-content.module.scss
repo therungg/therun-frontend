@@ -388,33 +388,25 @@
     text-overflow: ellipsis;
 }
 
-.sidebarDelta {
-    font-size: 0.85rem;
-    font-weight: 700;
-    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
-    white-space: nowrap;
+.sidebarRight {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
     flex-shrink: 0;
 }
 
-.sidebarCardBottom {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.sidebarStat {
-    font-size: 0.75rem;
+.sidebarTimerText {
     font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
-    color: var(--bs-secondary-color);
+    font-size: 0.85rem;
+    font-weight: 700;
     white-space: nowrap;
 }
 
-.sidebarTimerText {
-    font-family: inherit;
-    font-size: inherit;
-    font-weight: inherit;
-    color: inherit;
+.sidebarDelta {
+    font-size: 0.75rem;
+    font-weight: 600;
+    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+    white-space: nowrap;
 }
 
 .sidebarTimeline {
