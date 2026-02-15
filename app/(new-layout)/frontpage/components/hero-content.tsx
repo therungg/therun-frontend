@@ -19,6 +19,59 @@ const TwitchPlayer = dynamic(() =>
     import('react-twitch-embed').then((mod) => mod.TwitchPlayer),
 );
 
+type SplitStatus = 'pending' | 'neutral' | 'gold' | 'ahead' | 'behind';
+
+const getSplitSegments = (run: LiveRun): SplitStatus[] =>
+    run.splits.map((split, i) => {
+        if (i >= run.currentSplitIndex) return 'pending';
+        const time = split.splitTime;
+        if (!time) return 'neutral';
+
+        const prevTime = i > 0 ? run.splits[i - 1].splitTime : 0;
+        if (i > 0 && !prevTime) return 'neutral';
+        const segmentTime = time - (prevTime ?? 0);
+
+        const bestSegCumulative = split.comparisons?.['Best Segments'];
+        const prevBestSegCumulative =
+            i > 0 ? run.splits[i - 1].comparisons?.['Best Segments'] : 0;
+        const bestSegSingle =
+            bestSegCumulative && (i === 0 || prevBestSegCumulative)
+                ? bestSegCumulative - (prevBestSegCumulative ?? 0)
+                : null;
+
+        if (bestSegSingle && segmentTime < bestSegSingle) return 'gold';
+
+        const pbCumulative = split.comparisons?.['Personal Best'];
+        if (pbCumulative && time <= pbCumulative) return 'ahead';
+        return 'behind';
+    });
+
+const SplitTimeline = ({
+    run,
+    segments,
+    className,
+}: {
+    run: LiveRun;
+    segments: SplitStatus[];
+    className?: string;
+}) => (
+    <div className={clsx(styles.splitTimeline, className)}>
+        {segments.map((status, i) => (
+            <div
+                key={run.splits[i].name}
+                className={clsx(
+                    styles.splitSegment,
+                    status === 'gold' && styles.splitSegmentGold,
+                    status === 'ahead' && styles.splitSegmentAhead,
+                    status === 'behind' && styles.splitSegmentBehind,
+                    status === 'neutral' && styles.splitSegmentNeutral,
+                    i === run.currentSplitIndex && styles.splitSegmentCurrent,
+                )}
+            />
+        ))}
+    </div>
+);
+
 export const HeroContent = ({
     liveRuns: initialRuns,
 }: {
@@ -146,33 +199,7 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
     const hasGameImage = run.gameImage && run.gameImage !== 'noimage';
     const hasAvatar = run.picture && run.picture !== 'noimage';
     const onPbPace = run.delta < 0;
-
-    // Build split segment data for the mini timeline
-    const splitSegments = run.splits.map((split, i) => {
-        if (i >= run.currentSplitIndex) return 'pending';
-        const time = split.splitTime;
-        if (!time) return 'neutral';
-
-        // Gold: compare individual segment time vs best segment
-        const prevTime = i > 0 ? run.splits[i - 1].splitTime : 0;
-        if (i > 0 && !prevTime) return 'neutral';
-        const segmentTime = time - (prevTime ?? 0);
-
-        const bestSegCumulative = split.comparisons?.['Best Segments'];
-        const prevBestSegCumulative =
-            i > 0 ? run.splits[i - 1].comparisons?.['Best Segments'] : 0;
-        const bestSegSingle =
-            bestSegCumulative && (i === 0 || prevBestSegCumulative)
-                ? bestSegCumulative - (prevBestSegCumulative ?? 0)
-                : null;
-
-        if (bestSegSingle && segmentTime < bestSegSingle) return 'gold';
-
-        // Ahead/behind: compare cumulative time vs cumulative PB
-        const pbCumulative = split.comparisons?.['Personal Best'];
-        if (pbCumulative && time <= pbCumulative) return 'ahead';
-        return 'behind';
-    });
+    const splitSegments = getSplitSegments(run);
 
     return (
         <Link
@@ -293,26 +320,7 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                     </div>
 
                     {/* Split timeline */}
-                    <div className={styles.splitTimeline}>
-                        {splitSegments.map((status, i) => (
-                            <div
-                                key={run.splits[i].name}
-                                className={clsx(
-                                    styles.splitSegment,
-                                    status === 'gold' &&
-                                        styles.splitSegmentGold,
-                                    status === 'ahead' &&
-                                        styles.splitSegmentAhead,
-                                    status === 'behind' &&
-                                        styles.splitSegmentBehind,
-                                    status === 'neutral' &&
-                                        styles.splitSegmentNeutral,
-                                    i === run.currentSplitIndex &&
-                                        styles.splitSegmentCurrent,
-                                )}
-                            />
-                        ))}
-                    </div>
+                    <SplitTimeline run={run} segments={splitSegments} />
                     <div className={styles.progressMeta}>
                         <span>{run.currentSplitName || 'Done'}</span>
                         <span>
@@ -341,10 +349,6 @@ const LiveSidebar = ({
             {runs.slice(0, 4).map((run) => {
                 const globalIndex = allRuns.indexOf(run);
                 const isActive = globalIndex === featuredIndex;
-                const progress =
-                    run.splits.length > 0
-                        ? (run.currentSplitIndex / run.splits.length) * 100
-                        : 0;
                 const hasGameImage =
                     run.gameImage && run.gameImage !== 'noimage';
                 const onPace = run.delta < 0;
@@ -421,18 +425,11 @@ const LiveSidebar = ({
                                     {run.currentSplitIndex}/{run.splits.length}
                                 </span>
                             </div>
-                            <div className={styles.sidebarMiniProgress}>
-                                <div
-                                    className={clsx(
-                                        styles.sidebarMiniProgressFill,
-                                        onPace &&
-                                            styles.sidebarMiniProgressPace,
-                                    )}
-                                    style={{
-                                        width: `${Math.min(progress, 100)}%`,
-                                    }}
-                                />
-                            </div>
+                            <SplitTimeline
+                                run={run}
+                                segments={getSplitSegments(run)}
+                                className={styles.sidebarTimeline}
+                            />
                         </div>
                     </button>
                 );
