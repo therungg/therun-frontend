@@ -1,7 +1,6 @@
-import { Dispatch, useState } from 'react';
+import { Dispatch } from 'react';
 import { Table } from 'react-bootstrap';
 import { CategoryLeaderboard } from '~app/(old-layout)/games/[game]/game.types';
-import { Button } from '~src/components/Button/Button';
 import {
     GameCategoryLink,
     UserGameCategoryLink,
@@ -19,9 +18,6 @@ export const CategoryOverview = ({
     game: string;
     setCurrentCategory: Dispatch<React.SetStateAction<string>>;
 }) => {
-    const [categoriesCountLimit, setCategoriesCountLimit] = useState(5);
-    const MINIMUM_CATEGORIES_LIMIT: number = 5;
-
     return (
         <Table striped bordered hover responsive>
             <thead>
@@ -50,7 +46,7 @@ export const CategoryOverview = ({
                 </tr>
             </thead>
             <tbody>
-                {categories.slice(0, categoriesCountLimit).map((category) => {
+                {categories.map((category) => {
                     return (
                         category.pbLeaderboard[0] && (
                             <tr key={category.categoryName}>
@@ -123,29 +119,6 @@ export const CategoryOverview = ({
                     );
                 })}
             </tbody>
-            {categories.length > MINIMUM_CATEGORIES_LIMIT ? (
-                categoriesCountLimit === MINIMUM_CATEGORIES_LIMIT ? (
-                    <Button
-                        name="Show more categories"
-                        className="mt-2"
-                        onClick={() =>
-                            setCategoriesCountLimit(categories.length)
-                        }
-                    >
-                        Show more categories
-                    </Button>
-                ) : (
-                    <Button
-                        name="Show fewer categories"
-                        className="mt-2"
-                        onClick={() =>
-                            setCategoriesCountLimit(MINIMUM_CATEGORIES_LIMIT)
-                        }
-                    >
-                        Show fewer categories
-                    </Button>
-                )
-            ) : null}
         </Table>
     );
 };

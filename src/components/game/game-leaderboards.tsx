@@ -286,18 +286,6 @@ export const GameLeaderboards = ({
                                             'Combined',
                                             leaderboards.stats.uploadCount.toLocaleString(),
                                         ],
-                                        [
-                                            'Highest',
-                                            leaderboards.uploadLeaderboard[0].stat.toLocaleString(),
-                                        ],
-                                        [
-                                            'Average',
-                                            parseInt(
-                                                getAverageFromLeaderboard(
-                                                    leaderboards.uploadLeaderboard,
-                                                ).toFixed(0),
-                                            ).toLocaleString(),
-                                        ],
                                     ]),
                                 )}
                             </Tab.Pane>
