@@ -403,12 +403,7 @@ const LiveSidebar = ({
                                         {run.game} · {run.category}
                                     </span>
                                 </div>
-                                <span className={styles.sidebarDelta}>
-                                    <DifferenceFromOne diff={run.delta} />
-                                </span>
-                            </div>
-                            <div className={styles.sidebarCardBottom}>
-                                <span className={styles.sidebarStat}>
+                                <div className={styles.sidebarRight}>
                                     <LiveSplitTimerComponent
                                         liveRun={run}
                                         dark={false}
@@ -417,7 +412,10 @@ const LiveSidebar = ({
                                         timerClassName={styles.sidebarTimerText}
                                         className="d-inline-flex"
                                     />
-                                </span>
+                                    <span className={styles.sidebarDelta}>
+                                        <DifferenceFromOne diff={run.delta} />
+                                    </span>
+                                </div>
                             </div>
                             <SplitTimeline
                                 run={run}
