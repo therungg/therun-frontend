@@ -426,7 +426,9 @@ const LiveSidebar = ({
             })}
 
             <Link href="/live" className={styles.viewAllLink}>
-                View all live runs &rarr;
+                <span className={styles.viewAllDot} />
+                <span>View all live runs</span>
+                <span className={styles.viewAllArrow}>&rarr;</span>
             </Link>
         </div>
     );
