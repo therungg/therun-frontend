@@ -148,6 +148,22 @@
     flex-wrap: wrap;
 }
 
+.timerStack {
+    display: flex;
+    flex-direction: column;
+}
+
+.segmentTimer {
+    margin-top: -0.25rem;
+}
+
+.segmentTimerText {
+    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+}
+
 .timerMeta {
     display: flex;
     align-items: center;

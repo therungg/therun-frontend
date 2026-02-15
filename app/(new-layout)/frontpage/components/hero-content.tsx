@@ -230,15 +230,27 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                     </div>
                 </div>
 
-                {/* Timer + delta + split name — LiveSplit style */}
+                {/* Timer + segment timer + delta + split name */}
                 <div className={styles.timerSection}>
-                    <LiveSplitTimerComponent
-                        liveRun={run}
-                        dark={false}
-                        withDiff={false}
-                        timerClassName="font-monospace fs-1 fw-bold"
-                        className="d-flex"
-                    />
+                    <div className={styles.timerStack}>
+                        <LiveSplitTimerComponent
+                            liveRun={run}
+                            dark={false}
+                            withDiff={false}
+                            timerClassName="font-monospace fs-1 fw-bold"
+                            className="d-flex"
+                        />
+                        <div className={styles.segmentTimer}>
+                            <LiveSplitTimerComponent
+                                liveRun={run}
+                                dark={false}
+                                withDiff={false}
+                                splitTime={true}
+                                timerClassName={styles.segmentTimerText}
+                                className="d-flex"
+                            />
+                        </div>
+                    </div>
                     <div className={styles.timerMeta}>
                         <span className={styles.bigDelta}>
                             <DifferenceFromOne diff={run.delta} />
