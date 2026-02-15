@@ -322,11 +322,10 @@
     position: absolute;
     top: -20%;
     bottom: -20%;
-    left: 70%;
+    right: 0;
     width: 30%;
-    transform: translateX(-50%);
-    mask-image: linear-gradient(90deg, transparent 0%, black 30%, black 70%, transparent 100%);
-    -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 30%, black 70%, transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0%, black 40%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 40%);
     opacity: 0.15;
     pointer-events: none;
 }
@@ -384,8 +383,10 @@
 .sidebarRight {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    align-items: flex-start;
     flex-shrink: 0;
+    margin-left: auto;
+    margin-right: 2rem;
 }
 
 .sidebarTimerText {
