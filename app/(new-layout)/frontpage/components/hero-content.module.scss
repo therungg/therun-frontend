@@ -141,9 +141,10 @@
 
 /* Timer */
 .timerSection {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 0.75rem 0;
+    justify-content: center;
 }
 
 .mainTimerRow {
