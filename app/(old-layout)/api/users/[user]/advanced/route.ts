@@ -1,3 +1,4 @@
+import { cacheLife } from 'next/cache';
 import { NextRequest } from 'next/server';
 import { apiResponse } from '~app/(old-layout)/api/response';
 import { getAdvancedUserStats } from '~src/lib/get-advanced-user-stats';
@@ -10,6 +11,8 @@ export async function GET(
         params: Promise<{ user: string }>;
     },
 ) {
+    'use cache';
+    cacheLife('days');
     const params = await props.params;
     const { user } = params;
     const userData = await getAdvancedUserStats(user, '0');
