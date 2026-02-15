@@ -403,20 +403,18 @@
     gap: 0.25rem;
 }
 
-.sidebarSplit {
-    font-size: 0.75rem;
-    color: var(--bs-secondary-color);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.sidebarProgress {
+.sidebarStat {
     font-size: 0.75rem;
     font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
     color: var(--bs-secondary-color);
     white-space: nowrap;
-    flex-shrink: 0;
+}
+
+.sidebarTimerText {
+    font-family: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    color: inherit;
 }
 
 .sidebarMiniProgress {
