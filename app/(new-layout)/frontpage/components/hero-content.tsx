@@ -417,6 +417,9 @@ const LiveSidebar = ({
                                         className="d-inline-flex"
                                     />
                                 </span>
+                                <span className={styles.sidebarStat}>
+                                    {run.currentSplitIndex}/{run.splits.length}
+                                </span>
                             </div>
                             <div className={styles.sidebarMiniProgress}>
                                 <div
