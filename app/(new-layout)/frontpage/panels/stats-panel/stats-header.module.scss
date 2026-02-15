@@ -1,8 +1,0 @@
-.periodSelector {
-    transition: border-color 0.15s ease-in-out, background-color 0.15s ease-in-out;
-
-    &:hover {
-        border-color: var(--bs-primary-light, #7DA876) !important;
-        background-color: rgba(125, 168, 118, 0.08);
-    }
-}
