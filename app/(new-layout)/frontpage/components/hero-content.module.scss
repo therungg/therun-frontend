@@ -218,6 +218,11 @@
     transition: background 0.3s ease;
 }
 
+.splitSegmentGold {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    box-shadow: 0 0 4px rgba(251, 191, 36, 0.5);
+}
+
 .splitSegmentAhead {
     background: rgba(34, 197, 94, 0.7);
 }

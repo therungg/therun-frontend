@@ -151,9 +151,12 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
     const splitSegments = run.splits.map((split, i) => {
         if (i >= run.currentSplitIndex) return 'pending';
         const splitTime = split.splitTime ?? 0;
+        const goldTime = split.bestPossible ?? 0;
         const pbTime = split.pbSplitTime ?? 0;
-        if (!splitTime || !pbTime) return 'neutral';
-        return splitTime <= pbTime ? 'ahead' : 'behind';
+        if (!splitTime) return 'neutral';
+        if (goldTime && splitTime <= goldTime) return 'gold';
+        if (pbTime && splitTime <= pbTime) return 'ahead';
+        return 'behind';
     });
 
     // Predicted finish from the current split's predictedTotalTime
@@ -280,6 +283,8 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                                 key={run.splits[i].name}
                                 className={clsx(
                                     styles.splitSegment,
+                                    status === 'gold' &&
+                                        styles.splitSegmentGold,
                                     status === 'ahead' &&
                                         styles.splitSegmentAhead,
                                     status === 'behind' &&
