@@ -230,9 +230,9 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                     </div>
                 </div>
 
-                {/* Timer block — total + segment + delta */}
+                {/* Timer block — total + delta on one line, segment below */}
                 <div className={styles.timerSection}>
-                    <div className={styles.timerStack}>
+                    <div className={styles.mainTimerRow}>
                         <LiveSplitTimerComponent
                             liveRun={run}
                             dark={false}
@@ -240,16 +240,6 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                             timerClassName={styles.mainTimer}
                             className="d-flex"
                         />
-                        <LiveSplitTimerComponent
-                            liveRun={run}
-                            dark={false}
-                            withDiff={false}
-                            splitTime={true}
-                            timerClassName={styles.segmentTimer}
-                            className="d-flex"
-                        />
-                    </div>
-                    <div className={styles.timerMeta}>
                         <span className={styles.bigDelta}>
                             <DifferenceFromOne diff={run.delta} />
                         </span>
@@ -257,6 +247,14 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                             <span className={styles.pbPaceBadge}>PB Pace</span>
                         )}
                     </div>
+                    <LiveSplitTimerComponent
+                        liveRun={run}
+                        dark={false}
+                        withDiff={false}
+                        splitTime={true}
+                        timerClassName={styles.segmentTimer}
+                        className="d-flex"
+                    />
                 </div>
 
                 {/* Stats */}
