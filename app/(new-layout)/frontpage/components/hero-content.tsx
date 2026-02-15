@@ -404,11 +404,18 @@ const LiveSidebar = ({
                                 </span>
                             </div>
                             <div className={styles.sidebarCardBottom}>
-                                <span className={styles.sidebarSplit}>
-                                    {run.currentSplitName || 'Done'}
+                                <span className={styles.sidebarStat}>
+                                    PB <DurationToFormatted duration={run.pb} />
                                 </span>
-                                <span className={styles.sidebarProgress}>
-                                    {run.currentSplitIndex}/{run.splits.length}
+                                <span className={styles.sidebarStat}>
+                                    <LiveSplitTimerComponent
+                                        liveRun={run}
+                                        dark={false}
+                                        withDiff={false}
+                                        splitTime={false}
+                                        timerClassName={styles.sidebarTimerText}
+                                        className="d-inline-flex"
+                                    />
                                 </span>
                             </div>
                             <div className={styles.sidebarMiniProgress}>
