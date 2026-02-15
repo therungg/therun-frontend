@@ -230,26 +230,24 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                     </div>
                 </div>
 
-                {/* Timer + segment timer + delta + split name */}
+                {/* Timer block — total + segment + delta */}
                 <div className={styles.timerSection}>
                     <div className={styles.timerStack}>
                         <LiveSplitTimerComponent
                             liveRun={run}
                             dark={false}
                             withDiff={false}
-                            timerClassName="font-monospace fs-1 fw-bold"
+                            timerClassName={styles.mainTimer}
                             className="d-flex"
                         />
-                        <div className={styles.segmentTimer}>
-                            <LiveSplitTimerComponent
-                                liveRun={run}
-                                dark={false}
-                                withDiff={false}
-                                splitTime={true}
-                                timerClassName={styles.segmentTimerText}
-                                className="d-flex"
-                            />
-                        </div>
+                        <LiveSplitTimerComponent
+                            liveRun={run}
+                            dark={false}
+                            withDiff={false}
+                            splitTime={true}
+                            timerClassName={styles.segmentTimer}
+                            className="d-flex"
+                        />
                     </div>
                     <div className={styles.timerMeta}>
                         <span className={styles.bigDelta}>
@@ -258,9 +256,6 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                         {onPbPace && (
                             <span className={styles.pbPaceBadge}>PB Pace</span>
                         )}
-                    </div>
-                    <div className={styles.currentSplitName}>
-                        {run.currentSplitName || 'Finished'}
                     </div>
                 </div>
 
