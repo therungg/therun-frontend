@@ -417,22 +417,9 @@
     color: inherit;
 }
 
-.sidebarMiniProgress {
-    height: 2px;
-    border-radius: 1px;
-    background: var(--bs-border-color);
-    overflow: hidden;
-}
-
-.sidebarMiniProgressFill {
-    height: 100%;
-    border-radius: 1px;
-    background: var(--bs-primary);
-    transition: width 0.3s ease;
-}
-
-.sidebarMiniProgressPace {
-    background: rgb(34, 197, 94);
+.sidebarTimeline {
+    height: 3px;
+    gap: 1px;
 }
 
 .viewAllLink {
