@@ -74,21 +74,14 @@ export const LiveSplitTimerComponent: React.FunctionComponent<
                         {splitTime && (
                             <>
                                 <div
-                                    className={`d-flex justify-content-end
-                                    ${timerClassName}`}
+                                    className={`d-flex justify-content-end ${timerClassName}`}
                                 >
-                                    <div>
-                                        <b>
-                                            <i>
-                                                <DurationAsTimer
-                                                    duration={
-                                                        lastSplitStatus?.singleTime?.toString() ||
-                                                        ''
-                                                    }
-                                                />
-                                            </i>
-                                        </b>
-                                    </div>
+                                    <DurationAsTimer
+                                        duration={
+                                            lastSplitStatus?.singleTime?.toString() ||
+                                            ''
+                                        }
+                                    />
                                 </div>
                                 {withDiff && (
                                     <DifferenceFromOne diff={liveRun.delta} />
@@ -99,36 +92,23 @@ export const LiveSplitTimerComponent: React.FunctionComponent<
                         {!splitTime && (
                             <div
                                 className={
-                                    'd-flex justify-content-end ' +
+                                    'd-flex align-items-center justify-content-end ' +
                                     timerClassName
                                 }
                             >
-                                <div className="d-flex">
-                                    <Flag
-                                        className="me-2"
-                                        height={30}
-                                        dark={dark}
-                                    />
-                                </div>
-                                <div>
-                                    <div className={`d-flex ${timerClassName}`}>
-                                        <b>
-                                            <i className="fs-big">
-                                                <DurationAsTimer
-                                                    duration={
-                                                        lastSplitStatus?.time?.toString() ||
-                                                        ''
-                                                    }
-                                                />
-                                            </i>
-                                        </b>
-                                    </div>
-                                    {withDiff && (
-                                        <DifferenceFromOne
-                                            diff={liveRun.delta}
-                                        />
-                                    )}
-                                </div>
+                                <Flag
+                                    className="me-2"
+                                    height={16}
+                                    dark={dark}
+                                />
+                                <DurationAsTimer
+                                    duration={
+                                        lastSplitStatus?.time?.toString() || ''
+                                    }
+                                />
+                                {withDiff && (
+                                    <DifferenceFromOne diff={liveRun.delta} />
+                                )}
                             </div>
                         )}
                     </>
