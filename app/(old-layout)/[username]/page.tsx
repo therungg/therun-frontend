@@ -12,7 +12,11 @@ import { getGlobalUser } from '~src/lib/get-global-user';
 import { getUserRuns } from '~src/lib/get-user-runs';
 import { getLiveRunForUser } from '~src/lib/live-runs';
 import { getUserRaceStats } from '~src/lib/races';
-import { buildPersonJsonLd } from '~src/utils/json-ld';
+import {
+    buildPersonJsonLd,
+    formatMillis,
+    formatPlaytime,
+} from '~src/utils/json-ld';
 import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
 
 interface PageProps {
@@ -81,15 +85,38 @@ export default async function Page(props: PageProps) {
         getSession(),
     ] as const);
 
-    const topGame = runs.length > 0 ? runs[0].game : undefined;
-    const pbCount = runs.filter((r) => r.personalBest).length;
-    const profileDescription = [
-        `${userData.user} is a speedrunner on The Run.`,
-        topGame ? `Top game: ${topGame}.` : '',
-        `${runs.length} runs tracked, ${pbCount} personal bests.`,
-    ]
-        .filter(Boolean)
-        .join(' ');
+    // Find favorite game+category by total playtime
+    const favoriteRun =
+        runs.length > 0
+            ? runs.reduce((best, run) => {
+                  const time = parseInt(run.totalRunTime) || 0;
+                  const bestTime = parseInt(best.totalRunTime) || 0;
+                  return time > bestTime ? run : best;
+              })
+            : undefined;
+
+    const totalPlaytimeMs = runs.reduce(
+        (sum, run) => sum + (parseInt(run.totalRunTime) || 0),
+        0,
+    );
+    const totalAttempts = runs.reduce(
+        (sum, run) => sum + (run.attemptCount || 0),
+        0,
+    );
+
+    const descParts = [`${userData.user} is a speedrunner on The Run`];
+    if (favoriteRun) {
+        const favPb = formatMillis(favoriteRun.personalBest);
+        const favLabel = `${favoriteRun.game} - ${favoriteRun.run}`;
+        descParts.push(
+            `Favorite game: ${favLabel}${favPb ? ` (PB: ${favPb})` : ''}`,
+        );
+    }
+    if (totalAttempts > 0)
+        descParts.push(`${totalAttempts.toLocaleString()} total attempts`);
+    const playtime = formatPlaytime(String(totalPlaytimeMs));
+    if (playtime) descParts.push(`${playtime} total playtime`);
+    const profileDescription = descParts.join(' | ');
 
     return (
         <>
@@ -131,9 +158,46 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
         });
     }
 
+    const [runs, images] = await Promise.all([
+        getUserRuns(username),
+        getUserProfilePhoto(username),
+    ]);
+
+    const allRuns = runs || [];
+    const favoriteRun =
+        allRuns.length > 0
+            ? allRuns.reduce((best, run) => {
+                  const time = parseInt(run.totalRunTime) || 0;
+                  const bestTime = parseInt(best.totalRunTime) || 0;
+                  return time > bestTime ? run : best;
+              })
+            : undefined;
+
+    const totalAttempts = allRuns.reduce(
+        (sum, run) => sum + (run.attemptCount || 0),
+        0,
+    );
+    const totalPlaytimeMs = allRuns.reduce(
+        (sum, run) => sum + (parseInt(run.totalRunTime) || 0),
+        0,
+    );
+
+    const descParts = [`${username}'s speedrun stats`];
+    if (favoriteRun) {
+        const favPb = formatMillis(favoriteRun.personalBest);
+        const favLabel = `${favoriteRun.game} - ${favoriteRun.run}`;
+        descParts.push(
+            `Favorite: ${favLabel}${favPb ? ` (PB: ${favPb})` : ''}`,
+        );
+    }
+    if (totalAttempts > 0)
+        descParts.push(`${totalAttempts.toLocaleString()} attempts`);
+    const playtime = formatPlaytime(String(totalPlaytimeMs));
+    if (playtime) descParts.push(`${playtime} played`);
+
     return buildMetadata({
         title: username,
-        description: `${username} is on The Run! View their games, runs, personal bests, and more.`,
-        images: await getUserProfilePhoto(username),
+        description: descParts.join(' | '),
+        images,
     });
 }
