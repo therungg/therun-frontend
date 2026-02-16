@@ -136,7 +136,7 @@ export function formatMillis(ms: string | undefined): string | undefined {
  * Formats a millisecond string into a human-readable total playtime.
  * Examples: "360000000" -> "100 hours", "7200000" -> "2 hours", "1800000" -> "30 minutes"
  */
-function formatPlaytime(ms: string | undefined): string | undefined {
+export function formatPlaytime(ms: string | undefined): string | undefined {
     if (!ms) return undefined;
     const milli = parseInt(ms);
     if (Number.isNaN(milli) || milli <= 0) return undefined;
