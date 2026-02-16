@@ -101,27 +101,98 @@ export function buildEventJsonLd(event: EventWithOrganizerName) {
     };
 }
 
-export function buildSportsEventJsonLd({
-    username,
-    game,
-    category,
-    personalBest,
-}: {
+/**
+ * Formats a millisecond string into a human-readable duration.
+ * Examples: "5025000" -> "1:23:45", "83000" -> "01:23", "3661000" -> "1:01:01"
+ */
+export function formatMillis(ms: string | undefined): string | undefined {
+    if (!ms) return undefined;
+    const milli = parseInt(ms);
+    if (Number.isNaN(milli) || milli <= 0) return undefined;
+
+    const totalSeconds = Math.floor(milli / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+    const millis = milli % 1000;
+
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    let time = '';
+    if (hours > 0) {
+        time = `${hours}:${pad(minutes)}:${pad(seconds)}`;
+    } else {
+        time = `${pad(minutes)}:${pad(seconds)}`;
+    }
+
+    if (millis > 0) {
+        time += `.${String(millis).padStart(3, '0')}`;
+    }
+
+    return time;
+}
+
+/**
+ * Formats a millisecond string into a human-readable total playtime.
+ * Examples: "360000000" -> "100 hours", "7200000" -> "2 hours", "1800000" -> "30 minutes"
+ */
+function formatPlaytime(ms: string | undefined): string | undefined {
+    if (!ms) return undefined;
+    const milli = parseInt(ms);
+    if (Number.isNaN(milli) || milli <= 0) return undefined;
+
+    const totalMinutes = Math.floor(milli / 60000);
+    const hours = Math.floor(totalMinutes / 60);
+
+    if (hours >= 1) {
+        return `${hours} hour${hours !== 1 ? 's' : ''}`;
+    }
+    return `${totalMinutes} minute${totalMinutes !== 1 ? 's' : ''}`;
+}
+
+interface RunProfileJsonLdInput {
     username: string;
     game: string;
     category: string;
     personalBest?: string;
-}) {
+    sumOfBests?: string;
+    attemptCount?: number;
+    finishedAttemptCount?: string;
+    totalRunTime?: string;
+}
+
+export function buildRunProfileJsonLd({
+    username,
+    game,
+    category,
+    personalBest,
+    sumOfBests,
+    attemptCount,
+    finishedAttemptCount,
+    totalRunTime,
+}: RunProfileJsonLdInput) {
+    const pb = formatMillis(personalBest);
+    const sob = formatMillis(sumOfBests);
+    const playtime = formatPlaytime(totalRunTime);
+
+    const descParts = [`${username} speedruns ${game} - ${category}`];
+    if (pb) descParts.push(`PB: ${pb}`);
+    if (sob) descParts.push(`Sum of best: ${sob}`);
+    if (attemptCount) descParts.push(`${attemptCount} attempts`);
+    if (playtime) descParts.push(`${playtime} played`);
+    const description = descParts.join(' | ');
+
     return {
         '@context': 'https://schema.org',
-        '@type': 'SportsEvent',
-        name: `${game} - ${category}`,
+        '@type': 'ProfilePage',
+        name: `${username}'s ${game} - ${category} Speedruns`,
         url: `${BASE_URL}/${username}/${encodeURIComponent(game)}/${encodeURIComponent(category)}`,
-        description: `${username} speedruns ${game} - ${category}${personalBest ? ` with a personal best of ${personalBest}` : ''}`,
-        performer: {
+        description,
+        mainEntity: {
             '@type': 'Person',
             name: username,
             url: `${BASE_URL}/${username}`,
+            knowsAbout: `${game} - ${category}`,
         },
     };
 }
