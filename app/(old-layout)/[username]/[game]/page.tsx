@@ -2,8 +2,10 @@ import { Metadata } from 'next';
 import { cacheLife } from 'next/cache';
 import RunDetail from '~app/(old-layout)/[username]/[game]/[run]/run';
 import { getGameGlobal } from '~src/components/game/get-game';
+import { JsonLd } from '~src/components/json-ld';
 import { getRunByCustomUrl } from '~src/lib/get-run';
 import { getLiveRunForUser } from '~src/lib/live-runs';
+import { buildRunProfileJsonLd, formatMillis } from '~src/utils/json-ld';
 import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
 
 interface PageProps {
@@ -29,14 +31,28 @@ export default async function CustomRunPage(props: PageProps) {
     const liveData = await getLiveRunForUser(username);
 
     return (
-        <RunDetail
-            run={run}
-            username={username}
-            game={game}
-            runName={runName}
-            globalGameData={globalGameData}
-            liveData={liveData}
-        />
+        <>
+            <JsonLd
+                data={buildRunProfileJsonLd({
+                    username,
+                    game,
+                    category: runName,
+                    personalBest: run.personalBest,
+                    sumOfBests: run.sumOfBests,
+                    attemptCount: run.attemptCount,
+                    finishedAttemptCount: run.finishedAttemptCount,
+                    totalRunTime: run.totalRunTime,
+                })}
+            />
+            <RunDetail
+                run={run}
+                username={username}
+                game={game}
+                runName={runName}
+                globalGameData={globalGameData}
+                liveData={liveData}
+            />
+        </>
     );
 }
 
@@ -47,15 +63,23 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
 
     if (!username || !customUrl) return buildMetadata();
 
-    const run = await getRunByCustomUrl(username, customUrl);
-    const game = run.game;
-    const runName = run.run;
+    const [run, images] = await Promise.all([
+        getRunByCustomUrl(username, customUrl),
+        getUserProfilePhoto(username),
+    ]);
 
-    const gameAndCategory = `${game} - ${runName}`;
+    const gameAndCategory = `${run.game} - ${run.run}`;
+
+    const descParts = [`${username}'s ${gameAndCategory} speedrun stats`];
+    const pb = formatMillis(run?.personalBest);
+    if (pb) descParts.push(`PB: ${pb}`);
+    if (run?.attemptCount) descParts.push(`${run.attemptCount} attempts`);
+    const sob = formatMillis(run?.sumOfBests);
+    if (sob) descParts.push(`Sum of best: ${sob}`);
 
     return buildMetadata({
-        title: username,
-        description: `${username} runs ${gameAndCategory}. Check out all their attempts, personal best, and more on The Run!`,
-        images: await getUserProfilePhoto(username),
+        title: `${username}: ${gameAndCategory}`,
+        description: descParts.join(' | '),
+        images,
     });
 }
