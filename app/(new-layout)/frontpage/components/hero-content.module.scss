@@ -30,6 +30,19 @@
     box-shadow: 0 0 20px rgba(34, 197, 94, 0.15), 0 0 40px rgba(34, 197, 94, 0.05);
 }
 
+/* Gold glow — last completed segment beat best ever */
+.featuredPanelGold {
+    border-color: #f59e0b;
+    animation: cardGoldPulse 1.5s ease-in-out infinite;
+}
+
+/* Green glow — last completed segment beat PB segment */
+.featuredPanelGreen {
+    border-color: #22c55e;
+    box-shadow: 0 0 12px 3px rgba(34, 197, 94, 0.35),
+                0 0 24px 6px rgba(34, 197, 94, 0.12);
+}
+
 /* Game art — real <Image>, right-aligned, CSS mask fades left edge */
 .gameArtWrapper {
     position: absolute;
@@ -186,99 +199,6 @@
     color: rgb(34, 197, 94);
 }
 
-/* Prediction bar */
-.predictionBar {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-}
-
-.predictionLabel {
-    display: flex;
-    align-items: baseline;
-    gap: 0.4rem;
-}
-
-.predictionLabelText {
-    font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--bs-secondary-color);
-}
-
-.predictionTime {
-    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--bs-body-color);
-}
-
-.predictionTimeAhead {
-    color: rgb(34, 197, 94);
-}
-
-.predictionTrack {
-    position: relative;
-    height: 6px;
-    background: var(--bs-border-color);
-    border-radius: 3px;
-}
-
-.predictionBand {
-    position: absolute;
-    top: 0;
-    height: 100%;
-    border-radius: 3px;
-    background: rgba(148, 163, 184, 0.4);
-    transition: all 0.3s ease;
-}
-
-.predictionBandAhead {
-    background: rgba(34, 197, 94, 0.3);
-}
-
-.predictionPbMarker {
-    position: absolute;
-    top: -3px;
-    width: 2px;
-    height: 12px;
-    background: var(--bs-body-color);
-    transform: translateX(-50%);
-    border-radius: 1px;
-}
-
-.predictionPbLabel {
-    position: absolute;
-    top: -14px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 0.55rem;
-    font-weight: 700;
-    color: var(--bs-secondary-color);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    white-space: nowrap;
-}
-
-.predictionDot {
-    position: absolute;
-    top: 50%;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: var(--bs-body-color);
-    border: 2px solid var(--bs-body-bg);
-    transform: translate(-50%, -50%);
-    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
-}
-
-.predictionDotAhead {
-    background: rgb(34, 197, 94);
-    box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
-}
-
 /* Bottom: Stats + progress */
 .featuredBottom {
     flex: 1;
@@ -338,11 +258,46 @@
 
 .splitSegmentGold {
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
-    box-shadow: 0 0 4px rgba(251, 191, 36, 0.5);
+    box-shadow: 0 0 6px rgba(251, 191, 36, 0.6);
+}
+
+.splitSegmentGoldLatest {
+    animation: goldPop 2s ease-out;
 }
 
 .splitSegmentAhead {
-    background: rgba(34, 197, 94, 0.7);
+    background: #22c55e;
+    box-shadow: 0 0 4px rgba(34, 197, 94, 0.4);
+}
+
+.splitSegmentAheadLatest {
+    animation: aheadPop 1.5s ease-out;
+}
+
+@keyframes aheadPop {
+    0% {
+        box-shadow: 0 0 8px 2px rgba(34, 197, 94, 0.8);
+        transform: scaleY(2);
+    }
+    100% {
+        box-shadow: 0 0 4px rgba(34, 197, 94, 0.4);
+        transform: scaleY(1);
+    }
+}
+
+@keyframes goldPop {
+    0% {
+        box-shadow: 0 0 12px 4px rgba(251, 191, 36, 0.9);
+        transform: scaleY(2.5);
+    }
+    30% {
+        box-shadow: 0 0 10px 3px rgba(251, 191, 36, 0.7);
+        transform: scaleY(1.8);
+    }
+    100% {
+        box-shadow: 0 0 6px rgba(251, 191, 36, 0.6);
+        transform: scaleY(1);
+    }
 }
 
 .splitSegmentBehind {
@@ -409,6 +364,37 @@
     background: var(--bs-secondary-bg);
 }
 
+/* Gold glow — last segment beat best ever (eye-catching continuous pulse) */
+.sidebarCardGold {
+    border-color: #f59e0b;
+    animation: cardGoldPulse 1.5s ease-in-out infinite;
+}
+
+.sidebarCardGold:hover {
+    border-color: #fbbf24;
+}
+
+/* Green glow — last segment beat PB segment */
+.sidebarCardGreen {
+    border-color: #22c55e;
+    box-shadow: 0 0 10px 2px rgba(34, 197, 94, 0.3),
+                0 0 20px 4px rgba(34, 197, 94, 0.1);
+}
+
+.sidebarCardGreen:hover {
+    border-color: #4ade80;
+}
+
+@keyframes cardGoldPulse {
+    0%, 100% {
+        box-shadow: 0 0 10px 2px rgba(251, 191, 36, 0.4),
+                    0 0 20px 4px rgba(251, 191, 36, 0.15);
+    }
+    50% {
+        box-shadow: 0 0 20px 6px rgba(251, 191, 36, 0.7),
+                    0 0 40px 10px rgba(251, 191, 36, 0.3);
+    }
+}
 
 /* Faint game art centered behind content */
 .sidebarCardArt {
@@ -552,6 +538,90 @@
 
 .viewAllLink:hover .viewAllArrow {
     transform: translateX(3px);
+}
+
+/* ── Mobile ── */
+
+@media (max-width: 991px) {
+    .featuredPanel {
+        height: auto;
+        min-height: 0;
+    }
+
+    .featuredContent {
+        padding: 1.25rem;
+    }
+
+    .featuredContentWithArt {
+        max-width: 100%;
+    }
+
+    .gameArtWrapper {
+        display: none;
+    }
+
+    .mainTimer {
+        font-size: 1.75rem;
+    }
+
+    .timerSection {
+        padding: 1rem 0;
+    }
+
+    .statsRow {
+        flex-wrap: wrap;
+    }
+
+    .statItem {
+        flex: 1 1 45%;
+        padding: 0.5rem 0;
+    }
+
+    .statItem:nth-child(n+3) {
+        border-top: 1px solid var(--bs-border-color);
+    }
+
+    .statItem:nth-child(odd) {
+        border-left: none;
+    }
+
+    .statLabel {
+        font-size: 0.65rem;
+    }
+
+    .statValue {
+        font-size: 1rem;
+    }
+
+    .progressMeta {
+        font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 575px) {
+    .featuredContent {
+        padding: 1rem;
+    }
+
+    .runnerName {
+        font-size: 1.1rem;
+    }
+
+    .gameLabelText {
+        font-size: 0.75rem;
+    }
+
+    .mainTimer {
+        font-size: 1.5rem;
+    }
+
+    .segmentTimer {
+        font-size: 0.85rem;
+    }
+
+    .pbPaceBadge {
+        font-size: 0.6rem;
+    }
 }
 
 /* Skeleton */

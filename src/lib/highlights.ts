@@ -10,6 +10,20 @@ export interface GlobalStats {
     totalAttemptCount: number;
     totalFinishedAttemptCount: number;
     totalRunners: number;
+    totalGames: number;
+    totalCategories: number;
+}
+
+export interface CategoryStats {
+    gameId: number;
+    categoryId: number;
+    gameDisplay: string;
+    categoryDisplay: string;
+    gameImage: string | null;
+    totalRunTime: number;
+    totalAttemptCount: number;
+    totalFinishedAttemptCount: number;
+    uniqueRunners: number;
 }
 
 export interface TodayStats {
@@ -65,12 +79,13 @@ export interface WeeklyRunner {
 
 // --- Data fetching ---
 
-export async function getGlobalStats(): Promise<GlobalStats> {
+export async function getGlobalStats(offset?: string): Promise<GlobalStats> {
     'use cache';
     cacheLife('minutes');
-    cacheTag('global-stats');
+    cacheTag(offset ? `global-stats-${offset}` : 'global-stats');
 
-    return apiFetch<GlobalStats>('/v1/runs/global-stats');
+    const query = offset ? `?offset=${offset}` : '';
+    return apiFetch<GlobalStats>(`/v1/runs/global-stats${query}`);
 }
 
 export async function getTodayStats(): Promise<TodayStats> {
@@ -202,6 +217,29 @@ export async function getGameImageMap(): Promise<Record<string, string>> {
         }
     }
     return map;
+}
+
+export async function getTopGames(limit = 3): Promise<GameWithImage[]> {
+    'use cache';
+    cacheLife('hours');
+    cacheTag('top-games');
+
+    return apiFetch<GameWithImage[]>(
+        `/v1/runs/games?sort=-total_run_time&limit=${limit}`,
+    );
+}
+
+export async function getTopCategoriesForGame(
+    gameId: number,
+    limit = 3,
+): Promise<CategoryStats[]> {
+    'use cache';
+    cacheLife('hours');
+    cacheTag(`top-categories-${gameId}`);
+
+    return apiFetch<CategoryStats[]>(
+        `/v1/runs/categories?game_id=${gameId}&sort=-total_run_time&limit=${limit}`,
+    );
 }
 
 export async function getWeeklyTopRunners(limit = 10): Promise<WeeklyRunner[]> {

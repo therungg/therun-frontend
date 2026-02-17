@@ -1,141 +1,214 @@
-.pulseContainer {
-    background: var(--bs-secondary-bg);
+.pulse {
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
     border-radius: 1rem;
-    padding: 1.5rem;
+    padding: 2rem 2rem 1.5rem;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
-.header {
+.pulseVisible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ── Main stat milestones ── */
+
+.milestones {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.milestone {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1.25rem;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-}
-
-.title {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin: 0;
-}
-
-/* Period toggle */
-.toggleGroup {
-    display: flex;
-    background: var(--bs-body-bg);
-    border-radius: 2rem;
-    padding: 0.2rem;
-    border: 1px solid var(--bs-border-color);
-}
-
-.toggleBtn {
-    padding: 0.35rem 1rem;
-    border: none;
-    border-radius: 2rem;
-    background: transparent;
-    color: var(--bs-secondary-color);
-    font-size: 0.8rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-}
-
-.toggleBtn:hover {
-    color: var(--bs-body-color);
-}
-
-.toggleBtnActive {
-    background: var(--bs-primary);
-    color: #fff;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-}
-
-.toggleBtnActive:hover {
-    color: #fff;
-}
-
-/* Stats row */
-.statsRow {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1.25rem;
-    flex-wrap: wrap;
-}
-
-.statCard {
-    flex: 1;
-    min-width: 140px;
-    background: var(--bs-body-bg);
-    border-radius: 0.75rem;
-    padding: 1rem 1.25rem;
     text-align: center;
-    border: 1px solid var(--bs-border-color);
+    padding: 0 0.75rem;
+    border-left: 1px solid var(--bs-border-color);
 }
 
-.statNumber {
-    font-size: 2rem;
+.milestone:first-child {
+    border-left: none;
+}
+
+.number {
+    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+    font-size: 2.5rem;
     font-weight: 700;
-    line-height: 1.1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+    line-height: 1;
+    color: var(--bs-body-color);
+    letter-spacing: -0.02em;
 }
 
-.statLabel {
-    font-size: 0.8rem;
+.label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     color: var(--bs-secondary-color);
-    margin-top: 0.25rem;
+    margin-top: 0.4rem;
 }
 
 .delta {
-    font-size: 0.8rem;
-    font-weight: 500;
-    margin-top: 0.25rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.5rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(34, 197, 94, 0.1);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #22c55e;
+    white-space: nowrap;
+    line-height: 1.4;
 }
 
-.deltaPositive {
-    color: #4caf50;
-}
-
-.deltaNegative {
-    color: #ef5350;
-}
-
-/* Live dot */
-.liveDot {
+.deltaArrow {
     display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background-color: #4caf50;
-    animation: livePulse 2s ease-in-out infinite;
+    font-size: 0.6rem;
 }
 
-@keyframes livePulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.4;
-    }
+/* ── Platform stats strip ── */
+
+.platformStrip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--bs-border-color);
 }
 
-/* Chart */
-.chartWrapper {
-    margin-bottom: 1.25rem;
-    height: 120px;
-}
-
-/* All-time row */
-.allTimeRow {
-    text-align: center;
-    font-size: 0.85rem;
+.platformStat {
+    font-size: 0.75rem;
     color: var(--bs-secondary-color);
+    white-space: nowrap;
 }
 
-.allTimeSeparator {
-    margin: 0 0.5rem;
-    opacity: 0.4;
+.platformValue {
+    font-weight: 700;
+    color: var(--bs-body-color);
+    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+    font-size: 0.8rem;
+}
+
+.platformDivider {
+    width: 1px;
+    height: 14px;
+    background: var(--bs-border-color);
+}
+
+/* ── Top games ── */
+
+.topGames {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    padding-top: 1.25rem;
+}
+
+.gameCard {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: var(--bs-body-bg);
+    transition: border-color 0.2s ease;
+}
+
+.gameCard:hover {
+    border-color: var(--bs-secondary-color);
+}
+
+.gameHeader {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+}
+
+.gameImageWrap {
+    position: relative;
+    width: 52px;
+    height: 70px;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.gameInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.gameTitle {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--bs-body-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gameStatRow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.2rem 0.85rem;
+}
+
+.gameStat {
+    font-size: 0.95rem;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+
+.gameStatValue {
+    font-weight: 700;
+    color: var(--bs-body-color);
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 768px) {
+    .pulse {
+        padding: 1.5rem 1.25rem 1.25rem;
+    }
+
+    .milestones {
+        grid-template-columns: repeat(2, 1fr);
+        row-gap: 1.25rem;
+    }
+
+    .milestone:nth-child(odd) {
+        border-left: none;
+    }
+
+    .number {
+        font-size: 2.25rem;
+    }
+
+    .topGames {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .pulse {
+        padding: 1.25rem 1rem 1rem;
+    }
+
+    .number {
+        font-size: 2rem;
+    }
+
+    .label {
+        font-size: 0.6rem;
+    }
 }
