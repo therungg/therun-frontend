@@ -5,7 +5,7 @@ import { getGameGlobal } from '~src/components/game/get-game';
 import { JsonLd } from '~src/components/json-ld';
 import { getRun } from '~src/lib/get-run';
 import { getLiveRunForUser } from '~src/lib/live-runs';
-import { buildSportsEventJsonLd } from '~src/utils/json-ld';
+import { buildRunProfileJsonLd, formatMillis } from '~src/utils/json-ld';
 import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 
@@ -38,11 +38,15 @@ export default async function RunPage(props: PageProps) {
     return (
         <>
             <JsonLd
-                data={buildSportsEventJsonLd({
+                data={buildRunProfileJsonLd({
                     username,
                     game: decodedGame,
                     category: decodedRun,
                     personalBest: run.personalBest,
+                    sumOfBests: run.sumOfBests,
+                    attemptCount: run.attemptCount,
+                    finishedAttemptCount: run.finishedAttemptCount,
+                    totalRunTime: run.totalRunTime,
                 })}
             />
             <RunDetail
@@ -64,13 +68,25 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
 
     if (!username) return buildMetadata();
 
-    const gameAndCategory = `${safeDecodeURI(params.game)} - ${safeDecodeURI(
-        params.run,
-    )}`;
+    const game = safeDecodeURI(params.game);
+    const category = safeDecodeURI(params.run);
+    const gameAndCategory = `${game} - ${category}`;
+
+    const [run, images] = await Promise.all([
+        getRun(username, params.game, params.run),
+        getUserProfilePhoto(username),
+    ]);
+
+    const descParts = [`${username}'s ${gameAndCategory} speedrun stats`];
+    const pb = formatMillis(run?.personalBest);
+    if (pb) descParts.push(`PB: ${pb}`);
+    if (run?.attemptCount) descParts.push(`${run.attemptCount} attempts`);
+    const sob = formatMillis(run?.sumOfBests);
+    if (sob) descParts.push(`Sum of best: ${sob}`);
 
     return buildMetadata({
         title: `${username}: ${gameAndCategory}`,
-        description: `${username} runs ${gameAndCategory}. Check out all their attempts, personal best, and more on The Run!`,
-        images: await getUserProfilePhoto(username),
+        description: descParts.join(' | '),
+        images,
     });
 }

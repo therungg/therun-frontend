@@ -31,8 +31,24 @@ export interface LiveRun {
     url: string;
     gameData?: Run;
     currentPrediction?: string;
+    monteCarloPrediction?: MonteCarloPrediction;
     events: MarathonEvent[];
     isMinified?: boolean;
+}
+
+export interface MonteCarloPrediction {
+    percentiles: {
+        p10: number;
+        p25: number;
+        p50: number;
+        p75: number;
+        p90: number;
+    };
+    bestEstimate: number;
+    confidenceInterval: {
+        lower: number;
+        upper: number;
+    };
 }
 
 interface Variables {

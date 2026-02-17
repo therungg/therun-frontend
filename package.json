@@ -45,6 +45,7 @@
         "@nivo/core": "^0.99.0",
         "@nivo/line": "^0.99.0",
         "@nivo/tooltip": "^0.99.0",
+        "@sentry/nextjs": "^10.39.0",
         "@tiptap/extension-bullet-list": "^2.11.5",
         "@tiptap/extension-document": "^2.11.5",
         "@tiptap/extension-hard-break": "^2.11.5",

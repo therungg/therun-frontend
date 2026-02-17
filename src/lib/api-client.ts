@@ -11,7 +11,7 @@ export async function apiFetch<T>(
     };
     if (sessionId) headers['Authorization'] = `Bearer ${sessionId}`;
     const res = await fetch(`${BASE_URL}${path}`, { ...fetchOptions, headers });
-    if (!res.ok) throw new Error(await res.text());
+    if (!res.ok) throw new Error(path + ' ' + (await res.text()));
     const json = await res.json();
     return json.result;
 }

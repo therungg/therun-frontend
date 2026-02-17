@@ -186,6 +186,99 @@
     color: rgb(34, 197, 94);
 }
 
+/* Prediction bar */
+.predictionBar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.predictionLabel {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+}
+
+.predictionLabelText {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--bs-secondary-color);
+}
+
+.predictionTime {
+    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--bs-body-color);
+}
+
+.predictionTimeAhead {
+    color: rgb(34, 197, 94);
+}
+
+.predictionTrack {
+    position: relative;
+    height: 6px;
+    background: var(--bs-border-color);
+    border-radius: 3px;
+}
+
+.predictionBand {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    border-radius: 3px;
+    background: rgba(148, 163, 184, 0.4);
+    transition: all 0.3s ease;
+}
+
+.predictionBandAhead {
+    background: rgba(34, 197, 94, 0.3);
+}
+
+.predictionPbMarker {
+    position: absolute;
+    top: -3px;
+    width: 2px;
+    height: 12px;
+    background: var(--bs-body-color);
+    transform: translateX(-50%);
+    border-radius: 1px;
+}
+
+.predictionPbLabel {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.55rem;
+    font-weight: 700;
+    color: var(--bs-secondary-color);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.predictionDot {
+    position: absolute;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--bs-body-color);
+    border: 2px solid var(--bs-body-bg);
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.predictionDotAhead {
+    background: rgb(34, 197, 94);
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+}
+
 /* Bottom: Stats + progress */
 .featuredBottom {
     flex: 1;
@@ -326,7 +419,18 @@
     width: 22%;
     mask-image: linear-gradient(90deg, transparent 0%, black 40%);
     -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 40%);
-    opacity: 0.15;
+    opacity: 0.8;
+    pointer-events: none;
+}
+
+.sidebarCardArtFallback {
+    position: absolute;
+    top: 50%;
+    right: 6%;
+    width: 40px;
+    height: 40px;
+    transform: translateY(-50%);
+    opacity: 0.5;
     pointer-events: none;
 }
 
