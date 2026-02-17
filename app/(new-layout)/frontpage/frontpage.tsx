@@ -12,7 +12,7 @@ export default async function FrontPage() {
             <Suspense fallback={<SectionSkeleton height={340} />}>
                 <FrontpageHero />
             </Suspense>
-            <Suspense fallback={<SectionSkeleton height={250} />}>
+            <Suspense fallback={<SectionSkeleton height={220} />}>
                 <CommunityPulse />
             </Suspense>
             <Suspense fallback={<SectionSkeleton height={500} />}>

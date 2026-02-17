@@ -4,10 +4,12 @@ import clsx from 'clsx';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Col, Placeholder, Row } from 'react-bootstrap';
-import type { MonteCarloPrediction } from '~app/(old-layout)/live/live.types';
-import { LiveRun } from '~app/(old-layout)/live/live.types';
+import {
+    LiveRun,
+    WebsocketLiveRunMessage,
+} from '~app/(old-layout)/live/live.types';
 import { LiveSplitTimerComponent } from '~app/(old-layout)/live/live-split-timer.component';
 import {
     DifferenceFromOne,
@@ -42,10 +44,30 @@ const getSplitSegments = (run: LiveRun): SplitStatus[] =>
 
         if (bestSegSingle && segmentTime < bestSegSingle) return 'gold';
 
+        // Segment-based PB comparison: did this segment beat the PB segment?
         const pbCumulative = split.comparisons?.['Personal Best'];
-        if (pbCumulative && time <= pbCumulative) return 'ahead';
+        const prevPbCumulative =
+            i > 0 ? run.splits[i - 1].comparisons?.['Personal Best'] : 0;
+        const pbSegSingle =
+            pbCumulative && (i === 0 || prevPbCumulative)
+                ? pbCumulative - (prevPbCumulative ?? 0)
+                : null;
+        if (pbSegSingle && segmentTime < pbSegSingle) return 'ahead';
+
         return 'behind';
     });
+
+const getCardHighlight = (
+    run: LiveRun,
+    segments: SplitStatus[],
+): 'gold' | 'ahead' | null => {
+    const lastCompleted = run.currentSplitIndex - 1;
+    if (lastCompleted < 0 || lastCompleted >= segments.length) return null;
+    const status = segments[lastCompleted];
+    if (status === 'gold') return 'gold';
+    if (status === 'ahead') return 'ahead';
+    return null;
+};
 
 const SplitTimeline = ({
     run,
@@ -55,28 +77,41 @@ const SplitTimeline = ({
     run: LiveRun;
     segments: SplitStatus[];
     className?: string;
-}) => (
-    <div className={clsx(styles.splitTimeline, className)}>
-        {segments.map((status, i) => (
-            <div
-                key={run.splits[i].name}
-                className={clsx(
-                    styles.splitSegment,
-                    status === 'gold' && styles.splitSegmentGold,
-                    status === 'ahead' && styles.splitSegmentAhead,
-                    status === 'behind' && styles.splitSegmentBehind,
-                    status === 'neutral' && styles.splitSegmentNeutral,
-                    i === run.currentSplitIndex && styles.splitSegmentCurrent,
-                )}
-            />
-        ))}
-    </div>
-);
+}) => {
+    const justCompleted = run.currentSplitIndex - 1;
+
+    return (
+        <div className={clsx(styles.splitTimeline, className)}>
+            {segments.map((status, i) => (
+                <div
+                    key={run.splits[i].name}
+                    className={clsx(
+                        styles.splitSegment,
+                        status === 'gold' && styles.splitSegmentGold,
+                        status === 'ahead' && styles.splitSegmentAhead,
+                        status === 'behind' && styles.splitSegmentBehind,
+                        status === 'neutral' && styles.splitSegmentNeutral,
+                        i === run.currentSplitIndex &&
+                            styles.splitSegmentCurrent,
+                        i === justCompleted &&
+                            status === 'ahead' &&
+                            styles.splitSegmentAheadLatest,
+                        i === justCompleted &&
+                            status === 'gold' &&
+                            styles.splitSegmentGoldLatest,
+                    )}
+                />
+            ))}
+        </div>
+    );
+};
 
 export const HeroContent = ({
     liveRuns: initialRuns,
+    liveCount,
 }: {
     liveRuns: LiveRun[];
+    liveCount: number;
 }) => {
     const [featuredIndex, setFeaturedIndex] = useState(0);
     const [liveRuns, setLiveRuns] = useState(initialRuns);
@@ -84,27 +119,6 @@ export const HeroContent = ({
     const handleSelectRun = useCallback((index: number) => {
         setFeaturedIndex(index);
     }, []);
-
-    const handleNextRun = useCallback(() => {
-        setFeaturedIndex((prev) =>
-            prev >= liveRuns.length - 1 ? 0 : prev + 1,
-        );
-    }, [liveRuns.length]);
-
-    const handlePrevRun = useCallback(() => {
-        setFeaturedIndex((prev) =>
-            prev <= 0 ? liveRuns.length - 1 : prev - 1,
-        );
-    }, [liveRuns.length]);
-
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'ArrowRight') handleNextRun();
-            if (e.key === 'ArrowLeft') handlePrevRun();
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [handleNextRun, handlePrevRun]);
 
     const featuredRun = liveRuns[featuredIndex];
     const sidebarRuns = liveRuns.filter((_, i) => i !== featuredIndex);
@@ -119,6 +133,7 @@ export const HeroContent = ({
             sidebarRuns={sidebarRuns}
             featuredIndex={featuredIndex}
             allRuns={liveRuns}
+            liveCount={liveCount}
             onSelectRun={handleSelectRun}
             onUpdateRuns={setLiveRuns}
         />
@@ -130,6 +145,7 @@ const HeroLayout = ({
     sidebarRuns,
     featuredIndex,
     allRuns,
+    liveCount,
     onSelectRun,
     onUpdateRuns,
 }: {
@@ -137,26 +153,32 @@ const HeroLayout = ({
     sidebarRuns: LiveRun[];
     featuredIndex: number;
     allRuns: LiveRun[];
+    liveCount: number;
     onSelectRun: (index: number) => void;
     onUpdateRuns: (runs: LiveRun[]) => void;
 }) => {
-    const lastMessage = useLiveRunsWebsocket(featuredRun.user);
-
-    useEffect(() => {
-        if (!lastMessage) return;
-        if (lastMessage.type === 'UPDATE') {
-            onUpdateRuns(
-                allRuns.map((r) =>
-                    r.user === lastMessage.user ? lastMessage.run : r,
-                ),
-            );
-        }
-    }, [lastMessage]);
+    const handleWsMessage = useCallback(
+        (msg: WebsocketLiveRunMessage) => {
+            if (msg.type === 'UPDATE') {
+                onUpdateRuns(
+                    allRuns.map((r) => (r.user === msg.user ? msg.run : r)),
+                );
+            }
+        },
+        [allRuns, onUpdateRuns],
+    );
 
     const currentFeatured = allRuns[featuredIndex] ?? featuredRun;
 
     return (
         <div className={clsx(styles.hero, 'mb-3')}>
+            {allRuns.map((run) => (
+                <RunSubscriber
+                    key={run.user}
+                    user={run.user}
+                    onMessage={handleWsMessage}
+                />
+            ))}
             <Row className="g-3">
                 {/* Left: Featured Run */}
                 <Col xl={5} lg={5} md={12}>
@@ -188,82 +210,11 @@ const HeroLayout = ({
                         runs={sidebarRuns}
                         allRuns={allRuns}
                         featuredIndex={featuredIndex}
+                        liveCount={liveCount}
                         onSelectRun={onSelectRun}
                     />
                 </Col>
             </Row>
-        </div>
-    );
-};
-
-const PredictionBar = ({
-    prediction,
-    pb,
-}: {
-    prediction: MonteCarloPrediction;
-    pb: number;
-}) => {
-    const { p25, p75 } = prediction.percentiles;
-    const p50 = prediction.bestEstimate;
-
-    // Range: from min(p25, pb) - padding to max(p75, pb) + padding
-    const rangeMin = Math.min(p25, pb);
-    const rangeMax = Math.max(p75, pb);
-    const padding = (rangeMax - rangeMin) * 0.15;
-    const scaleMin = rangeMin - padding;
-    const scaleMax = rangeMax + padding;
-    const scaleRange = scaleMax - scaleMin;
-
-    const toPercent = (val: number) =>
-        Math.max(0, Math.min(100, ((val - scaleMin) / scaleRange) * 100));
-
-    const bandLeft = toPercent(p25);
-    const bandRight = toPercent(p75);
-    const pbPos = toPercent(pb);
-    const p50Pos = toPercent(p50);
-    const beatingPb = p50 < pb;
-
-    return (
-        <div className={styles.predictionBar}>
-            <div className={styles.predictionLabel}>
-                <span className={styles.predictionLabelText}>Predicted</span>
-                <span
-                    className={clsx(
-                        styles.predictionTime,
-                        beatingPb && styles.predictionTimeAhead,
-                    )}
-                >
-                    <DurationToFormatted duration={p50} />
-                </span>
-            </div>
-            <div className={styles.predictionTrack}>
-                {/* Confidence band (p25–p75) */}
-                <div
-                    className={clsx(
-                        styles.predictionBand,
-                        beatingPb && styles.predictionBandAhead,
-                    )}
-                    style={{
-                        left: `${bandLeft}%`,
-                        width: `${bandRight - bandLeft}%`,
-                    }}
-                />
-                {/* PB marker */}
-                <div
-                    className={styles.predictionPbMarker}
-                    style={{ left: `${pbPos}%` }}
-                >
-                    <span className={styles.predictionPbLabel}>PB</span>
-                </div>
-                {/* p50 dot */}
-                <div
-                    className={clsx(
-                        styles.predictionDot,
-                        beatingPb && styles.predictionDotAhead,
-                    )}
-                    style={{ left: `${p50Pos}%` }}
-                />
-            </div>
         </div>
     );
 };
@@ -273,6 +224,7 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
     const hasAvatar = run.picture && run.picture !== 'noimage';
     const onPbPace = run.delta < 0;
     const splitSegments = getSplitSegments(run);
+    const highlight = getCardHighlight(run, splitSegments);
 
     return (
         <Link
@@ -280,6 +232,8 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
             className={clsx(
                 styles.featuredPanel,
                 onPbPace && styles.featuredPanelPbPace,
+                highlight === 'gold' && styles.featuredPanelGold,
+                highlight === 'ahead' && styles.featuredPanelGreen,
             )}
             style={{ textDecoration: 'none', color: 'inherit' }}
         >
@@ -359,14 +313,6 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                     />
                 </div>
 
-                {/* Prediction bar */}
-                {run.monteCarloPrediction && (
-                    <PredictionBar
-                        prediction={run.monteCarloPrediction}
-                        pb={run.pb}
-                    />
-                )}
-
                 {/* Stats */}
                 <div className={styles.featuredBottom}>
                     <div className={styles.statsRow}>
@@ -418,11 +364,13 @@ const LiveSidebar = ({
     runs,
     allRuns,
     featuredIndex,
+    liveCount,
     onSelectRun,
 }: {
     runs: LiveRun[];
     allRuns: LiveRun[];
     featuredIndex: number;
+    liveCount: number;
     onSelectRun: (index: number) => void;
 }) => {
     return (
@@ -433,6 +381,8 @@ const LiveSidebar = ({
                 const hasGameImage =
                     run.gameImage && run.gameImage !== 'noimage';
                 const hasAvatar = run.picture && run.picture !== 'noimage';
+                const segments = getSplitSegments(run);
+                const highlight = getCardHighlight(run, segments);
 
                 return (
                     <button
@@ -441,6 +391,8 @@ const LiveSidebar = ({
                         className={clsx(
                             styles.sidebarCard,
                             isActive && styles.sidebarCardActive,
+                            highlight === 'gold' && styles.sidebarCardGold,
+                            highlight === 'ahead' && styles.sidebarCardGreen,
                         )}
                         onClick={() => onSelectRun(globalIndex)}
                     >
@@ -507,7 +459,7 @@ const LiveSidebar = ({
                             </div>
                             <SplitTimeline
                                 run={run}
-                                segments={getSplitSegments(run)}
+                                segments={segments}
                                 className={styles.sidebarTimeline}
                             />
                         </div>
@@ -517,11 +469,29 @@ const LiveSidebar = ({
 
             <Link href="/live" className={styles.viewAllLink}>
                 <span className={styles.viewAllDot} />
-                <span>View all live runs</span>
+                <span>View all {liveCount} live runs</span>
                 <span className={styles.viewAllArrow}>&rarr;</span>
             </Link>
         </div>
     );
+};
+
+const RunSubscriber = ({
+    user,
+    onMessage,
+}: {
+    user: string;
+    onMessage: (msg: WebsocketLiveRunMessage) => void;
+}) => {
+    const lastMessage = useLiveRunsWebsocket(user);
+    const onMessageRef = useRef(onMessage);
+    onMessageRef.current = onMessage;
+
+    useEffect(() => {
+        if (lastMessage) onMessageRef.current(lastMessage);
+    }, [lastMessage]);
+
+    return null;
 };
 
 const HeroSkeleton = () => {

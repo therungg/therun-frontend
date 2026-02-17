@@ -1,72 +1,30 @@
 import { cacheLife } from 'next/cache';
-import {
-    type GlobalStats,
-    getGlobalStats,
-    getPeriodStats,
-    getPreviousPeriodStats,
-    type PeriodStats,
-} from '~src/lib/highlights';
+import { getGlobalStats, getTopGames } from '~src/lib/highlights';
 import { CommunityPulseClient } from './community-pulse-client';
 
-interface LiveCountDataPoint {
-    count: number;
-    timestamp: number;
-}
-
-async function getLiveCountHistory(): Promise<LiveCountDataPoint[]> {
-    'use cache';
-    cacheLife('minutes');
-
-    const res = await fetch('https://api.therun.gg/live/count/history');
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.result ?? [];
-}
-
-async function getLiveCount(): Promise<number> {
-    'use cache';
-    cacheLife('seconds');
-
-    const res = await fetch('https://api.therun.gg/live/count');
-    if (!res.ok) return 0;
-    const data = await res.json();
-    return data.count ?? 0;
-}
-
 export const CommunityPulse = async () => {
-    const [
-        globalStats,
-        dayStats,
-        weekStats,
-        monthStats,
-        prevDayStats,
-        prevWeekStats,
-        prevMonthStats,
-        countHistory,
-        liveCount,
-    ] = await Promise.all([
+    const [globalStats, stats24hAgo, topGames] = await Promise.all([
         getGlobalStats(),
-        getPeriodStats('day'),
-        getPeriodStats('week'),
-        getPeriodStats('month'),
-        getPreviousPeriodStats('day'),
-        getPreviousPeriodStats('week'),
-        getPreviousPeriodStats('month'),
-        getLiveCountHistory(),
-        getLiveCount(),
+        getGlobalStats('1d'),
+        getTopGames(3),
     ]);
+
+    const deltas = {
+        runners: globalStats.totalRunners - stats24hAgo.totalRunners,
+        attempts: globalStats.totalAttemptCount - stats24hAgo.totalAttemptCount,
+        finished:
+            globalStats.totalFinishedAttemptCount -
+            stats24hAgo.totalFinishedAttemptCount,
+        hours: Math.round(
+            (globalStats.totalRunTime - stats24hAgo.totalRunTime) / 3_600_000,
+        ),
+    };
 
     return (
         <CommunityPulseClient
             globalStats={globalStats}
-            periodStats={{ day: dayStats, week: weekStats, month: monthStats }}
-            prevPeriodStats={{
-                day: prevDayStats,
-                week: prevWeekStats,
-                month: prevMonthStats,
-            }}
-            countHistory={countHistory}
-            liveCount={liveCount}
+            deltas={deltas}
+            topGames={topGames}
         />
     );
 };
