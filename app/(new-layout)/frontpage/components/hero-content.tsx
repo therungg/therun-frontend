@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { Col, Placeholder, Row } from 'react-bootstrap';
+import type { MonteCarloPrediction } from '~app/(old-layout)/live/live.types';
 import { LiveRun } from '~app/(old-layout)/live/live.types';
 import { LiveSplitTimerComponent } from '~app/(old-layout)/live/live-split-timer.component';
 import {
@@ -195,6 +196,78 @@ const HeroLayout = ({
     );
 };
 
+const PredictionBar = ({
+    prediction,
+    pb,
+}: {
+    prediction: MonteCarloPrediction;
+    pb: number;
+}) => {
+    const { p25, p75 } = prediction.percentiles;
+    const p50 = prediction.bestEstimate;
+
+    // Range: from min(p25, pb) - padding to max(p75, pb) + padding
+    const rangeMin = Math.min(p25, pb);
+    const rangeMax = Math.max(p75, pb);
+    const padding = (rangeMax - rangeMin) * 0.15;
+    const scaleMin = rangeMin - padding;
+    const scaleMax = rangeMax + padding;
+    const scaleRange = scaleMax - scaleMin;
+
+    const toPercent = (val: number) =>
+        Math.max(0, Math.min(100, ((val - scaleMin) / scaleRange) * 100));
+
+    const bandLeft = toPercent(p25);
+    const bandRight = toPercent(p75);
+    const pbPos = toPercent(pb);
+    const p50Pos = toPercent(p50);
+    const beatingPb = p50 < pb;
+
+    return (
+        <div className={styles.predictionBar}>
+            <div className={styles.predictionLabel}>
+                <span className={styles.predictionLabelText}>Predicted</span>
+                <span
+                    className={clsx(
+                        styles.predictionTime,
+                        beatingPb && styles.predictionTimeAhead,
+                    )}
+                >
+                    <DurationToFormatted duration={p50} />
+                </span>
+            </div>
+            <div className={styles.predictionTrack}>
+                {/* Confidence band (p25–p75) */}
+                <div
+                    className={clsx(
+                        styles.predictionBand,
+                        beatingPb && styles.predictionBandAhead,
+                    )}
+                    style={{
+                        left: `${bandLeft}%`,
+                        width: `${bandRight - bandLeft}%`,
+                    }}
+                />
+                {/* PB marker */}
+                <div
+                    className={styles.predictionPbMarker}
+                    style={{ left: `${pbPos}%` }}
+                >
+                    <span className={styles.predictionPbLabel}>PB</span>
+                </div>
+                {/* p50 dot */}
+                <div
+                    className={clsx(
+                        styles.predictionDot,
+                        beatingPb && styles.predictionDotAhead,
+                    )}
+                    style={{ left: `${p50Pos}%` }}
+                />
+            </div>
+        </div>
+    );
+};
+
 const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
     const hasGameImage = run.gameImage && run.gameImage !== 'noimage';
     const hasAvatar = run.picture && run.picture !== 'noimage';
@@ -286,6 +359,14 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
                     />
                 </div>
 
+                {/* Prediction bar */}
+                {run.monteCarloPrediction && (
+                    <PredictionBar
+                        prediction={run.monteCarloPrediction}
+                        pb={run.pb}
+                    />
+                )}
+
                 {/* Stats */}
                 <div className={styles.featuredBottom}>
                     <div className={styles.statsRow}>
@@ -364,7 +445,7 @@ const LiveSidebar = ({
                         onClick={() => onSelectRun(globalIndex)}
                     >
                         {/* Game art background */}
-                        {hasGameImage && (
+                        {hasGameImage ? (
                             <div className={styles.sidebarCardArt}>
                                 <Image
                                     src={run.gameImage!}
@@ -375,6 +456,15 @@ const LiveSidebar = ({
                                         objectPosition: 'center',
                                     }}
                                     unoptimized
+                                />
+                            </div>
+                        ) : (
+                            <div className={styles.sidebarCardArtFallback}>
+                                <Image
+                                    src="/logo_dark_theme_no_text_transparent.png"
+                                    alt="therun.gg"
+                                    width={40}
+                                    height={40}
                                 />
                             </div>
                         )}
