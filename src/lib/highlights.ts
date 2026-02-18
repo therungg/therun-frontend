@@ -12,6 +12,8 @@ export interface GlobalStats {
     totalRunners: number;
     totalGames: number;
     totalCategories: number;
+    totalPbs: number;
+    totalPbsWithPrevious: number;
 }
 
 export interface CategoryStats {
@@ -268,4 +270,15 @@ export async function getMostPBsRunners(limit = 10): Promise<WeeklyRunner[]> {
     return apiFetch<WeeklyRunner[]>(
         `/v1/finished-runs?aggregate=count&group_by=username&after_date=${weekAgo.toISOString()}&is_pb=true&sort=-value&limit=${limit}`,
     );
+}
+
+export async function getLiveCount(): Promise<number> {
+    'use cache';
+    cacheLife('seconds');
+    cacheTag('live-count');
+
+    const res = await fetch('https://api.therun.gg/live/count');
+    if (!res.ok) return 0;
+    const data = await res.json();
+    return data.result ?? data.count ?? 0;
 }
