@@ -109,48 +109,103 @@ export const RaceProgressGraph = ({
 
     const graphTicks = [...times];
 
-    // Todo:: these messages include when someone undoes a split, or finishes on accident. Also, if a race resets, the messages still include it. We should filter them out.
-    messages
-        .filter(isRaceParticipantSplitMessage)
-        .reverse()
-        .forEach((message) => {
-            if (!message.data || !message.data.time) return;
-            const current = participantsMap.get(message.data.user);
+    // Check if any participant has splitPredictions data
+    const hasSplitPredictions = race.participants?.some(
+        (p) => p.splitPredictions && p.splitPredictions.length > 0,
+    );
+
+    if (hasSplitPredictions) {
+        // Use splitPredictions for graph data (new system)
+        race.participants?.forEach((participant) => {
+            const current = participantsMap.get(participant.user);
             if (!current) return;
 
-            let percentage = message.data.percentage
-                ? Number((message.data.percentage * 100).toFixed(2))
-                : 0;
+            const predictions =
+                participant.splitPredictions ||
+                participant.liveData?.splitPredictions;
+            if (!predictions) return;
 
-            if (percentage < 0) percentage = 0;
-            if (percentage > 100) percentage = 100;
+            predictions.forEach((prediction) => {
+                if (
+                    !prediction.estimatedFinishTime ||
+                    prediction.estimatedFinishTime <= 0
+                )
+                    return;
 
-            let time = Number((Number(message.data.time) / 1000).toFixed(0));
+                const percentage = Math.min(
+                    (prediction.currentTime / prediction.estimatedFinishTime) *
+                        100,
+                    100,
+                );
+                const time = Number((prediction.currentTime / 1000).toFixed(0));
 
-            if (time < 0) time = 0;
-
-            times.push(time);
-
-            if (message.type === 'participant-split') {
-                current?.push({
-                    percentage,
+                times.push(time);
+                current.push({
+                    percentage: Number(percentage.toFixed(2)),
                     time,
-                    splitName: message.data.splitName,
+                    splitName: prediction.splitName,
                 });
-            } else if (
-                message.type === 'participant-finish' ||
-                message.type === 'participant-confirm'
-            ) {
-                current?.push({
+            });
+
+            // Add finish point if participant finished
+            if (participant.finalTime) {
+                const time = Number((participant.finalTime / 1000).toFixed(0));
+                times.push(time);
+                current.push({
                     percentage: 100,
                     time,
                     splitName: 'Finish',
                 });
             }
-            participantsMap.set(message.data.user, current);
-        });
 
-    // Real-time interpolation using estimatedFinishTime
+            participantsMap.set(participant.user, current);
+        });
+    } else {
+        // Fallback: use race messages for graph data (older races without splitPredictions)
+        messages
+            .filter(isRaceParticipantSplitMessage)
+            .reverse()
+            .forEach((message) => {
+                if (!message.data || !message.data.time) return;
+                const current = participantsMap.get(message.data.user);
+                if (!current) return;
+
+                let percentage = message.data.percentage
+                    ? Number((message.data.percentage * 100).toFixed(2))
+                    : 0;
+
+                if (percentage < 0) percentage = 0;
+                if (percentage > 100) percentage = 100;
+
+                let time = Number(
+                    (Number(message.data.time) / 1000).toFixed(0),
+                );
+
+                if (time < 0) time = 0;
+
+                times.push(time);
+
+                if (message.type === 'participant-split') {
+                    current?.push({
+                        percentage,
+                        time,
+                        splitName: message.data.splitName,
+                    });
+                } else if (
+                    message.type === 'participant-finish' ||
+                    message.type === 'participant-confirm'
+                ) {
+                    current?.push({
+                        percentage: 100,
+                        time,
+                        splitName: 'Finish',
+                    });
+                }
+                participantsMap.set(message.data.user, current);
+            });
+    }
+
+    // Real-time interpolation for active runners
     race.participants?.forEach((participant) => {
         if (!participant.liveData) return;
 

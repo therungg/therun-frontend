@@ -95,6 +95,7 @@ export interface RaceParticipantWithLiveData extends RaceParticipant {
 
 export interface SplitPrediction {
     splitIndex: number;
+    splitName: string;
     estimatedFinishTime: number;
     currentTime: number;
 }
