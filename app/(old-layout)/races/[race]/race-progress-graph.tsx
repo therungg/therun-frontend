@@ -150,30 +150,48 @@ export const RaceProgressGraph = ({
             participantsMap.set(message.data.user, current);
         });
 
-    // Add this to make the graph move forward in real time, does not work great yet, but looks cool
-    // race.participants?.forEach((participant) => {
-    //     if (!participant.liveData) return;
-    //
-    //     const values = participantsMap.get(participant.user);
-    //
-    //     if (!values) return;
-    //
-    //     if (participant.status === "started") {
-    //         values.push({
-    //             percentage:
-    //                 (participant.liveData.runPercentageTime ||
-    //                     participant.liveData.runPercentageSplits) * 100,
-    //             time:
-    //                 participant.liveData.currentTime / 1000 +
-    //                 (new Date().getTime() -
-    //                     participant.liveData.splitStartedAt) /
-    //                     1000,
-    //             splitName: participant.liveData.currentSplitName,
-    //         });
-    //     }
-    //
-    //     participantsMap.set(participant.user, values);
-    // });
+    // Real-time interpolation using estimatedFinishTime
+    race.participants?.forEach((participant) => {
+        if (!participant.liveData) return;
+
+        const values = participantsMap.get(participant.user);
+
+        if (!values) return;
+
+        if (participant.status === 'started') {
+            const {
+                estimatedFinishTime,
+                currentTime,
+                splitStartedAt,
+                currentSplitName,
+            } = participant.liveData;
+
+            const elapsed = (new Date().getTime() - splitStartedAt) / 1000;
+            const interpolatedTime = currentTime / 1000 + elapsed;
+
+            let percentage = 0;
+            if (estimatedFinishTime && estimatedFinishTime > 0) {
+                percentage =
+                    ((currentTime + (new Date().getTime() - splitStartedAt)) /
+                        estimatedFinishTime) *
+                    100;
+            } else {
+                percentage =
+                    (participant.liveData.runPercentageTime ||
+                        participant.liveData.runPercentageSplits) * 100;
+            }
+
+            percentage = Math.min(Math.max(percentage, 0), 99.9);
+
+            values.push({
+                percentage,
+                time: interpolatedTime,
+                splitName: currentSplitName,
+            });
+        }
+
+        participantsMap.set(participant.user, values);
+    });
 
     times = times.sort((a, b) => {
         return a - b;
