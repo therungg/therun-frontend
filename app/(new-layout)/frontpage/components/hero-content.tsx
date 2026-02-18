@@ -57,16 +57,39 @@ const getSplitSegments = (run: LiveRun): SplitStatus[] =>
         return 'behind';
     });
 
-const getCardHighlight = (
-    run: LiveRun,
-    segments: SplitStatus[],
-): 'gold' | 'ahead' | null => {
-    const lastCompleted = run.currentSplitIndex - 1;
-    if (lastCompleted < 0 || lastCompleted >= segments.length) return null;
-    const status = segments[lastCompleted];
-    if (status === 'gold') return 'gold';
-    if (status === 'ahead') return 'ahead';
-    return null;
+type CardFlash = 'gold' | 'ahead' | 'behind' | null;
+
+const useSplitFlash = (run: LiveRun): CardFlash => {
+    const [flash, setFlash] = useState<CardFlash>(null);
+    const prevSplitIndexRef = useRef(run.currentSplitIndex);
+    const timeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+    useEffect(() => {
+        if (run.currentSplitIndex > prevSplitIndexRef.current) {
+            const segments = getSplitSegments(run);
+            const lastCompleted = run.currentSplitIndex - 1;
+            const status = segments[lastCompleted];
+            const highlight: CardFlash =
+                status === 'gold'
+                    ? 'gold'
+                    : status === 'ahead'
+                      ? 'ahead'
+                      : status === 'behind'
+                        ? 'behind'
+                        : null;
+
+            setFlash(highlight);
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = setTimeout(() => setFlash(null), 3000);
+        }
+        prevSplitIndexRef.current = run.currentSplitIndex;
+    });
+
+    useEffect(() => {
+        return () => clearTimeout(timeoutRef.current);
+    }, []);
+
+    return flash;
 };
 
 const SplitTimeline = ({
@@ -224,7 +247,7 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
     const hasAvatar = run.picture && run.picture !== 'noimage';
     const onPbPace = run.delta < 0;
     const splitSegments = getSplitSegments(run);
-    const highlight = getCardHighlight(run, splitSegments);
+    const flash = useSplitFlash(run);
 
     return (
         <Link
@@ -232,8 +255,9 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
             className={clsx(
                 styles.featuredPanel,
                 onPbPace && styles.featuredPanelPbPace,
-                highlight === 'gold' && styles.featuredPanelGold,
-                highlight === 'ahead' && styles.featuredPanelGreen,
+                flash === 'gold' && styles.featuredPanelGold,
+                flash === 'ahead' && styles.featuredPanelGreen,
+                flash === 'behind' && styles.featuredPanelRed,
             )}
             style={{ textDecoration: 'none', color: 'inherit' }}
         >
@@ -377,93 +401,13 @@ const LiveSidebar = ({
         <div className={styles.sidebar} style={{ height: '340px' }}>
             {runs.slice(0, 4).map((run) => {
                 const globalIndex = allRuns.indexOf(run);
-                const isActive = globalIndex === featuredIndex;
-                const hasGameImage =
-                    run.gameImage && run.gameImage !== 'noimage';
-                const hasAvatar = run.picture && run.picture !== 'noimage';
-                const segments = getSplitSegments(run);
-                const highlight = getCardHighlight(run, segments);
-
                 return (
-                    <button
-                        type="button"
+                    <SidebarCard
                         key={run.user}
-                        className={clsx(
-                            styles.sidebarCard,
-                            isActive && styles.sidebarCardActive,
-                            highlight === 'gold' && styles.sidebarCardGold,
-                            highlight === 'ahead' && styles.sidebarCardGreen,
-                        )}
-                        onClick={() => onSelectRun(globalIndex)}
-                    >
-                        {/* Game art background */}
-                        {hasGameImage ? (
-                            <div className={styles.sidebarCardArt}>
-                                <Image
-                                    src={run.gameImage!}
-                                    alt={run.game}
-                                    fill
-                                    style={{
-                                        objectFit: 'cover',
-                                        objectPosition: 'center',
-                                    }}
-                                    unoptimized
-                                />
-                            </div>
-                        ) : (
-                            <div className={styles.sidebarCardArtFallback}>
-                                <Image
-                                    src="/logo_dark_theme_no_text_transparent.png"
-                                    alt="therun.gg"
-                                    width={40}
-                                    height={40}
-                                />
-                            </div>
-                        )}
-                        <div className={styles.sidebarCardContent}>
-                            <div className={styles.sidebarCardTop}>
-                                {hasAvatar && (
-                                    <div className={styles.sidebarAvatar}>
-                                        <Image
-                                            src={run.picture!}
-                                            alt={run.user}
-                                            fill
-                                            style={{
-                                                objectFit: 'cover',
-                                            }}
-                                            unoptimized
-                                        />
-                                    </div>
-                                )}
-                                <div className={styles.sidebarCardInfo}>
-                                    <span className={styles.sidebarRunner}>
-                                        {run.user}
-                                    </span>
-                                    <span className={styles.sidebarGame}>
-                                        {run.game} · {run.category}
-                                    </span>
-                                </div>
-                                <div className={styles.sidebarRight}>
-                                    <LiveSplitTimerComponent
-                                        liveRun={run}
-                                        dark={false}
-                                        withDiff={false}
-                                        splitTime={false}
-                                        timerClassName={styles.sidebarTimerText}
-                                        className="d-inline-flex"
-                                    />
-                                    <span className={styles.sidebarDelta}>
-                                        <DifferenceFromOne diff={run.delta} />
-                                    </span>
-                                </div>
-                            </div>
-                            <SplitTimeline
-                                run={run}
-                                segments={segments}
-                                className={styles.sidebarTimeline}
-                            />
-                        </div>
-                    </button>
+                        run={run}
+                        isActive={globalIndex === featuredIndex}
+                        onSelect={() => onSelectRun(globalIndex)}
+                    />
                 );
             })}
 
@@ -473,6 +417,98 @@ const LiveSidebar = ({
                 <span className={styles.viewAllArrow}>&rarr;</span>
             </Link>
         </div>
+    );
+};
+
+const SidebarCard = ({
+    run,
+    isActive,
+    onSelect,
+}: {
+    run: LiveRun;
+    isActive: boolean;
+    onSelect: () => void;
+}) => {
+    const hasGameImage = run.gameImage && run.gameImage !== 'noimage';
+    const hasAvatar = run.picture && run.picture !== 'noimage';
+    const segments = getSplitSegments(run);
+    const flash = useSplitFlash(run);
+
+    return (
+        <button
+            type="button"
+            className={clsx(
+                styles.sidebarCard,
+                isActive && styles.sidebarCardActive,
+                flash === 'gold' && styles.sidebarCardGold,
+                flash === 'ahead' && styles.sidebarCardGreen,
+                flash === 'behind' && styles.sidebarCardRed,
+            )}
+            onClick={onSelect}
+        >
+            {hasGameImage ? (
+                <div className={styles.sidebarCardArt}>
+                    <Image
+                        src={run.gameImage!}
+                        alt={run.game}
+                        fill
+                        style={{
+                            objectFit: 'cover',
+                            objectPosition: 'center',
+                        }}
+                        unoptimized
+                    />
+                </div>
+            ) : (
+                <div className={styles.sidebarCardArtFallback}>
+                    <Image
+                        src="/logo_dark_theme_no_text_transparent.png"
+                        alt="therun.gg"
+                        width={40}
+                        height={40}
+                    />
+                </div>
+            )}
+            <div className={styles.sidebarCardContent}>
+                <div className={styles.sidebarCardTop}>
+                    {hasAvatar && (
+                        <div className={styles.sidebarAvatar}>
+                            <Image
+                                src={run.picture!}
+                                alt={run.user}
+                                fill
+                                style={{ objectFit: 'cover' }}
+                                unoptimized
+                            />
+                        </div>
+                    )}
+                    <div className={styles.sidebarCardInfo}>
+                        <span className={styles.sidebarRunner}>{run.user}</span>
+                        <span className={styles.sidebarGame}>
+                            {run.game} · {run.category}
+                        </span>
+                    </div>
+                    <div className={styles.sidebarRight}>
+                        <LiveSplitTimerComponent
+                            liveRun={run}
+                            dark={false}
+                            withDiff={false}
+                            splitTime={false}
+                            timerClassName={styles.sidebarTimerText}
+                            className="d-inline-flex"
+                        />
+                        <span className={styles.sidebarDelta}>
+                            <DifferenceFromOne diff={run.delta} />
+                        </span>
+                    </div>
+                </div>
+                <SplitTimeline
+                    run={run}
+                    segments={segments}
+                    className={styles.sidebarTimeline}
+                />
+            </div>
+        </button>
     );
 };
 

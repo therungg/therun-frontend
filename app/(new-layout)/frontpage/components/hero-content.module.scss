@@ -30,17 +30,19 @@
     box-shadow: 0 0 20px rgba(34, 197, 94, 0.15), 0 0 40px rgba(34, 197, 94, 0.05);
 }
 
-/* Gold glow — last completed segment beat best ever */
+/* Split flash — gold (best ever segment) */
 .featuredPanelGold {
-    border-color: #f59e0b;
-    animation: cardGoldPulse 1.5s ease-in-out infinite;
+    animation: cardGoldFlash 3s ease-out forwards;
 }
 
-/* Green glow — last completed segment beat PB segment */
+/* Split flash — green (beat PB segment) */
 .featuredPanelGreen {
-    border-color: #22c55e;
-    box-shadow: 0 0 12px 3px rgba(34, 197, 94, 0.35),
-                0 0 24px 6px rgba(34, 197, 94, 0.12);
+    animation: cardGreenFlash 3s ease-out forwards;
+}
+
+/* Split flash — red (lost time on segment) */
+.featuredPanelRed {
+    animation: cardRedFlash 3s ease-out forwards;
 }
 
 /* Game art — real <Image>, right-aligned, CSS mask fades left edge */
@@ -364,35 +366,72 @@
     background: var(--bs-secondary-bg);
 }
 
-/* Gold glow — last segment beat best ever (eye-catching continuous pulse) */
+/* Split flash — gold */
 .sidebarCardGold {
-    border-color: #f59e0b;
-    animation: cardGoldPulse 1.5s ease-in-out infinite;
+    animation: cardGoldFlash 3s ease-out forwards;
 }
 
-.sidebarCardGold:hover {
-    border-color: #fbbf24;
-}
-
-/* Green glow — last segment beat PB segment */
+/* Split flash — green */
 .sidebarCardGreen {
-    border-color: #22c55e;
-    box-shadow: 0 0 10px 2px rgba(34, 197, 94, 0.3),
-                0 0 20px 4px rgba(34, 197, 94, 0.1);
+    animation: cardGreenFlash 3s ease-out forwards;
 }
 
-.sidebarCardGreen:hover {
-    border-color: #4ade80;
+/* Split flash — red */
+.sidebarCardRed {
+    animation: cardRedFlash 3s ease-out forwards;
 }
 
-@keyframes cardGoldPulse {
-    0%, 100% {
-        box-shadow: 0 0 10px 2px rgba(251, 191, 36, 0.4),
-                    0 0 20px 4px rgba(251, 191, 36, 0.15);
+@keyframes cardGoldFlash {
+    0% {
+        border-color: #fcd34d;
+        box-shadow:
+            0 0 40px 12px rgba(251, 191, 36, 0.9),
+            0 0 80px 24px rgba(251, 191, 36, 0.4),
+            inset 0 0 20px 4px rgba(251, 191, 36, 0.12);
+    }
+    25% {
+        border-color: #fbbf24;
+        box-shadow:
+            0 0 20px 6px rgba(251, 191, 36, 0.6),
+            0 0 40px 12px rgba(251, 191, 36, 0.25),
+            inset 0 0 10px 2px rgba(251, 191, 36, 0.06);
     }
     50% {
-        box-shadow: 0 0 20px 6px rgba(251, 191, 36, 0.7),
-                    0 0 40px 10px rgba(251, 191, 36, 0.3);
+        border-color: #f59e0b;
+        box-shadow:
+            0 0 30px 8px rgba(251, 191, 36, 0.5),
+            0 0 60px 16px rgba(251, 191, 36, 0.2),
+            inset 0 0 12px 3px rgba(251, 191, 36, 0.05);
+    }
+    100% {
+        border-color: var(--bs-border-color);
+        box-shadow: none;
+    }
+}
+
+@keyframes cardGreenFlash {
+    0% {
+        border-color: #4ade80;
+        box-shadow:
+            0 0 25px 6px rgba(34, 197, 94, 0.7),
+            0 0 50px 14px rgba(34, 197, 94, 0.3);
+    }
+    100% {
+        border-color: var(--bs-border-color);
+        box-shadow: none;
+    }
+}
+
+@keyframes cardRedFlash {
+    0% {
+        border-color: #f87171;
+        box-shadow:
+            0 0 20px 5px rgba(239, 68, 68, 0.6),
+            0 0 40px 10px rgba(239, 68, 68, 0.25);
+    }
+    100% {
+        border-color: var(--bs-border-color);
+        box-shadow: none;
     }
 }
 
