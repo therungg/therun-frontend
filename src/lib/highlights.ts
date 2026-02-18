@@ -28,11 +28,6 @@ export interface CategoryStats {
     uniqueRunners: number;
 }
 
-export interface TodayStats {
-    runCount: number;
-    pbCount: number;
-}
-
 export interface FinishedRunPB {
     id: number;
     username: string;
@@ -88,96 +83,6 @@ export async function getGlobalStats(offset?: string): Promise<GlobalStats> {
 
     const query = offset ? `?offset=${offset}` : '';
     return apiFetch<GlobalStats>(`/v1/runs/global-stats${query}`);
-}
-
-export async function getTodayStats(): Promise<TodayStats> {
-    'use cache';
-    cacheLife('seconds');
-    cacheTag('today-stats');
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const afterDate = today.toISOString();
-
-    const [runData, pbData] = await Promise.all([
-        apiFetch<{ count: number }>(
-            `/v1/finished-runs?aggregate=count&after_date=${afterDate}`,
-        ),
-        apiFetch<{ count: number }>(
-            `/v1/finished-runs?aggregate=count&after_date=${afterDate}&is_pb=true`,
-        ),
-    ]);
-
-    return { runCount: runData.count, pbCount: pbData.count };
-}
-
-export interface PeriodStats {
-    runCount: number;
-    pbCount: number;
-}
-
-export async function getPeriodStats(
-    period: 'day' | 'week' | 'month',
-): Promise<PeriodStats> {
-    'use cache';
-    cacheLife('minutes');
-    cacheTag(`period-stats-${period}`);
-
-    const afterDate = getPeriodStartDate(period).toISOString();
-
-    const [runData, pbData] = await Promise.all([
-        apiFetch<{ count: number }>(
-            `/v1/finished-runs?aggregate=count&after_date=${afterDate}`,
-        ),
-        apiFetch<{ count: number }>(
-            `/v1/finished-runs?aggregate=count&after_date=${afterDate}&is_pb=true`,
-        ),
-    ]);
-
-    return { runCount: runData.count, pbCount: pbData.count };
-}
-
-export async function getPreviousPeriodStats(
-    period: 'day' | 'week' | 'month',
-): Promise<PeriodStats> {
-    'use cache';
-    cacheLife('hours');
-    cacheTag(`prev-period-stats-${period}`);
-
-    const currentStart = getPeriodStartDate(period);
-    const previousStart = getPeriodStartDate(period, 1);
-
-    const afterDate = previousStart.toISOString();
-    const beforeDate = currentStart.toISOString();
-
-    const [runData, pbData] = await Promise.all([
-        apiFetch<{ count: number }>(
-            `/v1/finished-runs?aggregate=count&after_date=${afterDate}&before_date=${beforeDate}`,
-        ),
-        apiFetch<{ count: number }>(
-            `/v1/finished-runs?aggregate=count&after_date=${afterDate}&before_date=${beforeDate}&is_pb=true`,
-        ),
-    ]);
-
-    return { runCount: runData.count, pbCount: pbData.count };
-}
-
-function getPeriodStartDate(
-    period: 'day' | 'week' | 'month',
-    offset = 0,
-): Date {
-    const date = new Date();
-    if (period === 'day') {
-        date.setDate(date.getDate() - offset);
-        date.setHours(0, 0, 0, 0);
-    } else if (period === 'week') {
-        date.setDate(date.getDate() - 7 * (1 + offset));
-        date.setHours(0, 0, 0, 0);
-    } else {
-        date.setMonth(date.getMonth() - offset, 1);
-        date.setHours(0, 0, 0, 0);
-    }
-    return date;
 }
 
 export async function getRecentNotablePBs(
