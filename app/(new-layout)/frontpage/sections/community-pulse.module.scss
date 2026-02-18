@@ -1,7 +1,5 @@
 $mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
 $amber: #f59e0b;
-$green: #22c55e;
-$red: #ef4444;
 
 /* ── Container ── */
 
@@ -22,14 +20,14 @@ $red: #ef4444;
     transform: translateY(0);
 }
 
-/* ── Today — hero section ── */
+/* ── Top Tier — The Pulse ── */
 
-.today {
+.pulseGrid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
 }
 
-.card {
+.cell {
     display: flex;
     flex-direction: column;
     padding: 0 2rem;
@@ -67,17 +65,7 @@ $red: #ef4444;
     }
 }
 
-.heroNumber {
-    font-family: $mono;
-    font-size: 3.5rem;
-    font-weight: 800;
-    line-height: 1;
-    letter-spacing: -0.03em;
-    color: $amber;
-    text-shadow: 0 0 50px rgba($amber, 0.12);
-}
-
-.cardNumber {
+.bigNumber {
     font-family: $mono;
     font-size: 2.25rem;
     font-weight: 700;
@@ -86,16 +74,15 @@ $red: #ef4444;
     color: var(--bs-body-color);
 }
 
-.rateSep {
-    font-size: 0.6em;
-    font-weight: 400;
-    opacity: 0.35;
-    margin: 0 0.1em;
+.heroCell .bigNumber {
+    font-size: 3.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: $amber;
+    text-shadow: 0 0 50px rgba($amber, 0.12);
 }
 
-.cardLabel {
-    display: flex;
-    align-items: center;
+.cellLabel {
     font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -104,12 +91,40 @@ $red: #ef4444;
     margin-top: 0.65rem;
 }
 
-.todayDot {
+.allTimeLabel {
+    font-size: 0.7rem;
+    color: var(--bs-secondary-color);
+    opacity: 0.6;
+    margin-top: 0.25rem;
+    font-family: $mono;
+}
+
+/* ── "last 24 hours" tag ── */
+
+.pulseTag {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 1.25rem;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--bs-secondary-color);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+
+    .visible & {
+        opacity: 0.5;
+        transition-delay: 0.4s;
+    }
+}
+
+.pulseDot {
     width: 6px;
     height: 6px;
     border-radius: 50%;
     background: $amber;
-    margin-right: 0.45rem;
     flex-shrink: 0;
     animation: dotPulse 3s ease-in-out infinite;
 }
@@ -125,123 +140,49 @@ $red: #ef4444;
     }
 }
 
-/* ── Divider ── */
+/* ── Bottom Tier — The Scale ── */
 
-.divider {
-    height: 1px;
-    background: var(--bs-border-color);
-    margin: 1.75rem 0;
-    transform: scaleX(0);
-    transition: transform 0.6s ease;
-
-    .visible & {
-        transform: scaleX(1);
-    }
-
-    .visible &:nth-of-type(1) {
-        transition-delay: 0.35s;
-    }
-
-    .visible &:nth-of-type(2) {
-        transition-delay: 0.55s;
-    }
-}
-
-/* ── This Week ── */
-
-.week {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-
-    .visible & {
-        opacity: 1;
-        transition-delay: 0.45s;
-    }
-}
-
-.weekHeader {
-    font-size: 0.6rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--bs-secondary-color);
-    opacity: 0.5;
-    white-space: nowrap;
-}
-
-.weekMetrics {
-    display: flex;
-    align-items: center;
-    gap: 2.5rem;
-}
-
-.weekMetric {
-    display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
-}
-
-.weekNumber {
-    font-family: $mono;
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--bs-body-color);
-}
-
-.weekLabel {
-    font-size: 0.75rem;
-    color: var(--bs-secondary-color);
-}
-
-.delta {
-    font-size: 0.65rem;
-    font-weight: 700;
-    padding: 0.15rem 0.5rem;
-    border-radius: 999px;
-    white-space: nowrap;
-}
-
-.deltaUp {
-    background: rgba($green, 0.1);
-    color: $green;
-}
-
-.deltaDown {
-    background: rgba($red, 0.08);
-    color: $red;
-}
-
-/* ── All Time ── */
-
-.allTime {
+.scale {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.75rem;
     flex-wrap: wrap;
+    margin-top: 1.75rem;
+    padding-top: 1.75rem;
+    border-top: 1px solid var(--bs-border-color);
     opacity: 0;
     transition: opacity 0.5s ease;
 
     .visible & {
         opacity: 1;
-        transition-delay: 0.65s;
+        transition-delay: 0.55s;
     }
 }
 
-.allTimeStat {
+.scaleStat {
     font-size: 0.75rem;
     color: var(--bs-secondary-color);
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
 }
 
-.allTimeValue {
+.scaleValue {
     font-weight: 700;
     color: var(--bs-body-color);
     font-family: $mono;
     font-size: 0.8rem;
+}
+
+.liveDot {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: $amber;
+    animation: dotPulse 3s ease-in-out infinite;
 }
 
 .dot {
@@ -260,12 +201,12 @@ $red: #ef4444;
         padding: 2rem 1.5rem 1.5rem;
     }
 
-    .today {
+    .pulseGrid {
         grid-template-columns: 1fr;
         gap: 0;
     }
 
-    .card {
+    .cell {
         border-left: none;
         padding: 1.25rem 0;
         border-bottom: 1px solid var(--bs-border-color);
@@ -280,23 +221,12 @@ $red: #ef4444;
         }
     }
 
-    .heroNumber {
+    .heroCell .bigNumber {
         font-size: 3rem;
     }
 
-    .cardNumber {
+    .bigNumber {
         font-size: 1.85rem;
-    }
-
-    .week {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
-    }
-
-    .weekMetrics {
-        flex-wrap: wrap;
-        gap: 0.75rem 2rem;
     }
 }
 
@@ -305,19 +235,19 @@ $red: #ef4444;
         padding: 1.5rem 1.25rem 1.25rem;
     }
 
-    .heroNumber {
+    .heroCell .bigNumber {
         font-size: 2.5rem;
     }
 
-    .cardNumber {
+    .bigNumber {
         font-size: 1.6rem;
     }
 
-    .allTime {
+    .scale {
         gap: 0.5rem;
     }
 
-    .allTimeStat {
+    .scaleStat {
         font-size: 0.7rem;
     }
 }

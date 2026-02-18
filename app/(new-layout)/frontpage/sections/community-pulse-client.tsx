@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import type { GlobalStats, PeriodStats, TodayStats } from '~src/lib/highlights';
+import type { GlobalStats } from '~src/lib/highlights';
 import styles from './community-pulse.module.scss';
 
 const compact = new Intl.NumberFormat('en', {
@@ -33,27 +33,30 @@ function useCountUp(target: number, duration: number, active: boolean): number {
     return value;
 }
 
-function formatHoursCompact(ms: number): string {
+function formatHours(ms: number): string {
     const hours = ms / 3_600_000;
     if (hours >= 1_000_000) return `${(hours / 1_000_000).toFixed(1)}M`;
     if (hours >= 1_000) return `${(hours / 1_000).toFixed(1)}K`;
     return Math.round(hours).toLocaleString();
 }
 
+interface Last24h {
+    pbs: number;
+    runs: number;
+    hoursMs: number;
+}
+
 export const CommunityPulseClient = ({
-    globalStats,
-    todayStats,
-    weekStats,
-    prevWeekStats,
+    last24h,
+    allTime,
+    liveCount,
 }: {
-    globalStats: GlobalStats;
-    todayStats: TodayStats;
-    weekStats: PeriodStats;
-    prevWeekStats: PeriodStats;
+    last24h: Last24h;
+    allTime: GlobalStats;
+    liveCount: number;
 }) => {
     const ref = useRef<HTMLDivElement>(null);
     const [visible, setVisible] = useState(false);
-    const [weekReady, setWeekReady] = useState(false);
 
     useEffect(() => {
         const el = ref.current;
@@ -71,141 +74,85 @@ export const CommunityPulseClient = ({
         return () => obs.disconnect();
     }, []);
 
-    // Delay week count-up to match its CSS stagger
-    useEffect(() => {
-        if (!visible) return;
-        const t = setTimeout(() => setWeekReady(true), 450);
-        return () => clearTimeout(t);
-    }, [visible]);
-
-    const pbCount = useCountUp(todayStats.pbCount, 1400, visible);
-    const runCount = useCountUp(todayStats.runCount, 1600, visible);
-    const weekRuns = useCountUp(weekStats.runCount, 1400, weekReady);
-    const weekPbs = useCountUp(weekStats.pbCount, 1400, weekReady);
-
-    const pbRate =
-        todayStats.runCount > 0 && todayStats.pbCount > 0
-            ? Math.round(todayStats.runCount / todayStats.pbCount)
-            : null;
-
-    const runsDelta =
-        prevWeekStats.runCount > 0
-            ? ((weekStats.runCount - prevWeekStats.runCount) /
-                  prevWeekStats.runCount) *
-              100
-            : null;
-
-    const pbsDelta =
-        prevWeekStats.pbCount > 0
-            ? ((weekStats.pbCount - prevWeekStats.pbCount) /
-                  prevWeekStats.pbCount) *
-              100
-            : null;
+    const pbs = useCountUp(last24h.pbs, 1400, visible);
+    const runs = useCountUp(last24h.runs, 1600, visible);
+    const hours = useCountUp(
+        Math.round(last24h.hoursMs / 3_600_000),
+        1400,
+        visible,
+    );
 
     return (
         <div
             ref={ref}
             className={`${styles.pulse} ${visible ? styles.visible : ''}`}
         >
-            {/* Today's pulse — the heartbeat */}
-            <div className={styles.today}>
-                <div className={`${styles.card} ${styles.heroCard}`}>
-                    <span className={styles.heroNumber}>
-                        {pbCount.toLocaleString()}
+            {/* Top tier — The Pulse: 24h activity */}
+            <div className={styles.pulseGrid}>
+                <div className={`${styles.cell} ${styles.heroCell}`}>
+                    <span className={styles.bigNumber}>
+                        {pbs.toLocaleString()}
                     </span>
-                    <span className={styles.cardLabel}>
-                        <span className={styles.todayDot} />
-                        personal bests today
-                    </span>
-                </div>
-                <div className={styles.card}>
-                    <span className={styles.cardNumber}>
-                        {runCount.toLocaleString()}
-                    </span>
-                    <span className={styles.cardLabel}>
-                        runs completed today
+                    <span className={styles.cellLabel}>personal bests</span>
+                    <span className={styles.allTimeLabel}>
+                        {compact.format(allTime.totalPbs)} all time
                     </span>
                 </div>
-                {pbRate !== null && (
-                    <div className={styles.card}>
-                        <span className={styles.cardNumber}>
-                            1 <span className={styles.rateSep}>in</span>{' '}
-                            {pbRate}
-                        </span>
-                        <span className={styles.cardLabel}>
-                            runs is a personal best
-                        </span>
-                    </div>
-                )}
-            </div>
-
-            <div className={styles.divider} />
-
-            {/* Weekly momentum */}
-            <div className={styles.week}>
-                <span className={styles.weekHeader}>this week</span>
-                <div className={styles.weekMetrics}>
-                    <div className={styles.weekMetric}>
-                        <span className={styles.weekNumber}>
-                            {weekRuns.toLocaleString()}
-                        </span>
-                        <span className={styles.weekLabel}>runs</span>
-                        {runsDelta !== null && <DeltaBadge value={runsDelta} />}
-                    </div>
-                    <div className={styles.weekMetric}>
-                        <span className={styles.weekNumber}>
-                            {weekPbs.toLocaleString()}
-                        </span>
-                        <span className={styles.weekLabel}>personal bests</span>
-                        {pbsDelta !== null && <DeltaBadge value={pbsDelta} />}
-                    </div>
+                <div className={styles.cell}>
+                    <span className={styles.bigNumber}>
+                        {runs.toLocaleString()}
+                    </span>
+                    <span className={styles.cellLabel}>runs completed</span>
+                    <span className={styles.allTimeLabel}>
+                        {compact.format(allTime.totalFinishedAttemptCount)} all
+                        time
+                    </span>
+                </div>
+                <div className={styles.cell}>
+                    <span className={styles.bigNumber}>
+                        {hours.toLocaleString()}
+                    </span>
+                    <span className={styles.cellLabel}>hours played</span>
+                    <span className={styles.allTimeLabel}>
+                        {formatHours(allTime.totalRunTime)} all time
+                    </span>
                 </div>
             </div>
 
-            <div className={styles.divider} />
+            <div className={styles.pulseTag}>
+                <span className={styles.pulseDot} />
+                last 24 hours
+            </div>
 
-            {/* All-time — social proof, deemphasized */}
-            <div className={styles.allTime}>
-                <span className={styles.allTimeStat}>
-                    <span className={styles.allTimeValue}>
-                        {compact.format(globalStats.totalRunners)}
+            {/* Bottom tier — The Scale: all-time totals */}
+            <div className={styles.scale}>
+                <span className={styles.scaleStat}>
+                    <span className={styles.scaleValue}>
+                        {compact.format(allTime.totalRunners)}
                     </span>{' '}
                     runners
                 </span>
                 <span className={styles.dot} />
-                <span className={styles.allTimeStat}>
-                    <span className={styles.allTimeValue}>
-                        {compact.format(globalStats.totalFinishedAttemptCount)}
-                    </span>{' '}
-                    runs completed
-                </span>
-                <span className={styles.dot} />
-                <span className={styles.allTimeStat}>
-                    <span className={styles.allTimeValue}>
-                        {formatHoursCompact(globalStats.totalRunTime)}
-                    </span>{' '}
-                    hours played
-                </span>
-                <span className={styles.dot} />
-                <span className={styles.allTimeStat}>
-                    <span className={styles.allTimeValue}>
-                        {compact.format(globalStats.totalGames)}
+                <span className={styles.scaleStat}>
+                    <span className={styles.scaleValue}>
+                        {compact.format(allTime.totalGames)}
                     </span>{' '}
                     games
                 </span>
+                <span className={styles.dot} />
+                <span className={styles.scaleStat}>
+                    <span className={styles.scaleValue}>
+                        {compact.format(allTime.totalCategories)}
+                    </span>{' '}
+                    categories
+                </span>
+                <span className={styles.dot} />
+                <span className={styles.scaleStat}>
+                    <span className={styles.scaleValue}>{liveCount}</span>{' '}
+                    <span className={styles.liveDot} />
+                    live now
+                </span>
             </div>
         </div>
-    );
-};
-
-const DeltaBadge = ({ value }: { value: number }) => {
-    const isUp = value >= 0;
-    const display = `${isUp ? '+' : ''}${Math.round(value)}%`;
-    return (
-        <span
-            className={`${styles.delta} ${isUp ? styles.deltaUp : styles.deltaDown}`}
-        >
-            {display}
-        </span>
     );
 };
