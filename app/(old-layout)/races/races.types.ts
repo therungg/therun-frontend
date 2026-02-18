@@ -86,10 +86,17 @@ export type RaceParticipant = {
     ratingBefore: number;
     ratingAfter: number | null;
     comment?: string | null;
+    splitPredictions?: SplitPrediction[];
 };
 
 export interface RaceParticipantWithLiveData extends RaceParticipant {
     liveData?: RaceLiveData;
+}
+
+export interface SplitPrediction {
+    splitIndex: number;
+    estimatedFinishTime: number;
+    currentTime: number;
 }
 
 export interface RaceLiveData {
@@ -112,6 +119,8 @@ export interface RaceLiveData {
     delta: number;
     runFinished: boolean;
     bestPossibleTime: number | null;
+    estimatedFinishTime: number | null;
+    splitPredictions: SplitPrediction[];
     timeToNextSplit?: number;
 }
 

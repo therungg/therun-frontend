@@ -27,22 +27,24 @@ export const getRaceParticipantPercentageTime = (
 ): number | null | undefined => {
     const liveData = participant.liveData;
 
-    if (!liveData || !liveData.bestPossibleTime) {
-        return null;
-    }
+    if (!liveData) return null;
+
+    // Use estimatedFinishTime for interpolation when available
+    const denominator =
+        liveData.estimatedFinishTime || liveData.bestPossibleTime;
+
+    if (!denominator) return null;
 
     const expectedSplitDuration = liveData.timeToNextSplit;
 
-    if (!expectedSplitDuration) {
-        return null;
-    }
+    if (!expectedSplitDuration) return null;
 
     const maximumTime = liveData.currentTime + expectedSplitDuration;
 
     const now = new Date().getTime();
     const runDuration = Math.min(now - liveData.startedAt, maximumTime);
 
-    return Number((runDuration / liveData.bestPossibleTime).toFixed(3));
+    return Number((runDuration / denominator).toFixed(3));
 };
 
 export const getRaceParticipantPercentageSplits = (

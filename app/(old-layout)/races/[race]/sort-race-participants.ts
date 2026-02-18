@@ -4,6 +4,20 @@ import {
     RaceParticipantWithLiveData,
 } from '~app/(old-layout)/races/races.types';
 
+const compareBySplitProgress = (
+    a: RaceParticipantWithLiveData,
+    b: RaceParticipantWithLiveData,
+): number => {
+    const aLive = a.liveData!;
+    const bLive = b.liveData!;
+
+    if (aLive.currentSplitIndex !== bLive.currentSplitIndex) {
+        return bLive.currentSplitIndex - aLive.currentSplitIndex;
+    }
+
+    return aLive.currentTime - bLive.currentTime;
+};
+
 export const sortRaceParticipants = (
     race: Race,
 ): RaceParticipantWithLiveData[] => {
@@ -14,89 +28,91 @@ export const sortRaceParticipants = (
     if (!participants) return [];
 
     return participants.sort((a, b) => {
-        // Final time comparison
+        // Finished runners first, by final time ascending
         if (a.finalTime || b.finalTime) {
             if (!a.finalTime) return 1;
             if (!b.finalTime) return -1;
-            return a.finalTime - b.finalTime; // Both have finalTime, compare them directly
+            return a.finalTime - b.finalTime;
         }
 
-        // Status comparison, prioritizing non-abandoned over abandoned
+        // Abandoned runners last, by abandonment time
         if (a.status === 'abandoned' || b.status === 'abandoned') {
             if (a.status !== 'abandoned') return -1;
             if (b.status !== 'abandoned') return 1;
-            // If both are abandoned, compare abandonment times
             return (
                 new Date(b.abandondedAtDate as string).getTime() -
                 new Date(a.abandondedAtDate as string).getTime()
             );
         }
 
-        // LiveData comparison, prioritizing participants with liveData
-        if (a.liveData || b.liveData) {
-            if (!a.liveData) return 1;
-            if (!b.liveData) return -1;
+        // Active runners — compare by estimated finish time and split progress
+        const aLive = a.liveData;
+        const bLive = b.liveData;
 
-            if (race.startTime) {
-                if (
-                    a.liveData.startedAt <
-                    new Date(race.startTime).getTime() - 1000 * 60
-                ) {
-                    return 1;
-                }
-                if (
-                    b.liveData.startedAt <
-                    new Date(race.startTime).getTime() - 1000 * 60
-                ) {
-                    return -1;
-                }
+        if (!aLive && !bLive) {
+            return (
+                new Date(a.joinedAtDate as string).getTime() -
+                new Date(b.joinedAtDate as string).getTime()
+            );
+        }
+        if (!aLive) return 1;
+        if (!bLive) return -1;
+
+        // Filter out runners who started before the race
+        if (race.startTime) {
+            if (
+                aLive.startedAt <
+                new Date(race.startTime).getTime() - 1000 * 60
+            ) {
+                return 1;
             }
-
-            if (race.category.includes('602')) {
-                if (
-                    a.liveData.totalSplits < 400 &&
-                    b.liveData.totalSplits < 400
-                ) {
-                    return a.user < b.user ? -1 : 1;
-                }
-                if (a.liveData.totalSplits < 400) {
-                    return 1;
-                }
-                if (b.liveData.totalSplits < 400) {
-                    return -1;
-                }
+            if (
+                bLive.startedAt <
+                new Date(race.startTime).getTime() - 1000 * 60
+            ) {
+                return -1;
             }
-
-            // Both have liveData, compare their percentages
-            const aPercentage = (
-                a.liveData.runPercentageTime &&
-                a.liveData.runPercentageTime <= 1
-                    ? a.liveData.runPercentageTime
-                    : a.liveData.runPercentageSplits
-            ) as number;
-            const bPercentage = (
-                b.liveData.runPercentageTime &&
-                b.liveData.runPercentageTime <= 1
-                    ? b.liveData.runPercentageTime
-                    : b.liveData.runPercentageSplits
-            ) as number;
-
-            return bPercentage - aPercentage; // Higher percentage first
         }
 
-        // Personal best (pb) comparison
-        if (a.pb || b.pb) {
-            if (!a.pb) return 1;
-            if (!b.pb) return -1;
-            const aPb = parseInt(a.pb, 10);
-            const bPb = parseInt(b.pb, 10);
-            return aPb - bPb;
+        // Category 602 special case
+        if (race.category.includes('602')) {
+            if (aLive.totalSplits < 400 && bLive.totalSplits < 400) {
+                return a.user < b.user ? -1 : 1;
+            }
+            if (aLive.totalSplits < 400) {
+                return 1;
+            }
+            if (bLive.totalSplits < 400) {
+                return -1;
+            }
         }
 
-        // Joined date comparison as a last resort
+        const aEst = aLive.estimatedFinishTime;
+        const bEst = bLive.estimatedFinishTime;
+
+        // Both have estimates — lower wins
+        if (aEst && bEst) {
+            return aEst - bEst;
+        }
+
+        // One has estimate, one doesn't
+        if (aEst || bEst) {
+            if (aLive.totalSplits === bLive.totalSplits) {
+                return compareBySplitProgress(a, b);
+            }
+            if (!aEst) return 1;
+            return -1;
+        }
+
+        // Neither has estimate
+        if (aLive.totalSplits === bLive.totalSplits) {
+            return compareBySplitProgress(a, b);
+        }
+
+        // Not comparable — join order
         return (
-            parseInt(a.joinedAtDate as string) -
-            parseInt(b.joinedAtDate as string)
+            new Date(a.joinedAtDate as string).getTime() -
+            new Date(b.joinedAtDate as string).getTime()
         );
     });
 };
