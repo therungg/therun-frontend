@@ -1,5 +1,3 @@
-'use server';
-
 import { Metadata } from 'next';
 import { getSession } from '~src/actions/session.action';
 import { confirmPermission } from '~src/rbac/confirm-permission';
