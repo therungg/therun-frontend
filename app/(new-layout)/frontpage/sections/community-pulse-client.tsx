@@ -124,27 +124,34 @@ export const CommunityPulseClient = ({
             </div>
 
             <div className={styles.footer}>
-                <span className={styles.footerStat}>
-                    <strong>{compact.format(allTime.totalRunners)}</strong>{' '}
-                    runners
+                <span className={styles.footerChip}>
+                    <span className={styles.chipNumber}>
+                        {compact.format(allTime.totalRunners)}
+                    </span>
+                    <span className={styles.chipLabel}>runners</span>
                 </span>
-                <span className={styles.dot} />
-                <span className={styles.footerStat}>
-                    <strong>{compact.format(allTime.totalGames)}</strong> games
+                <span className={styles.footerChip}>
+                    <span className={styles.chipNumber}>
+                        {compact.format(allTime.totalGames)}
+                    </span>
+                    <span className={styles.chipLabel}>games</span>
                 </span>
-                <span className={styles.dot} />
-                <span className={styles.footerStat}>
-                    <strong>{compact.format(allTime.totalCategories)}</strong>{' '}
-                    categories
+                <span className={styles.footerChip}>
+                    <span className={styles.chipNumber}>
+                        {compact.format(allTime.totalCategories)}
+                    </span>
+                    <span className={styles.chipLabel}>categories</span>
                 </span>
-                <span className={styles.dot} />
-                <span className={styles.footerStat}>
-                    <strong>{compact.format(allTime.totalRaces)}</strong> races
+                <span className={styles.footerChip}>
+                    <span className={styles.chipNumber}>
+                        {compact.format(allTime.totalRaces)}
+                    </span>
+                    <span className={styles.chipLabel}>races</span>
                 </span>
-                <span className={styles.dot} />
-                <span className={styles.footerStat}>
-                    <strong>{liveCount}</strong>{' '}
-                    <span className={styles.liveDot} /> live
+                <span className={styles.liveChip}>
+                    <span className={styles.liveDot} />
+                    <span className={styles.chipNumber}>{liveCount}</span>
+                    <span className={styles.chipLabel}>live</span>
                 </span>
             </div>
         </div>
