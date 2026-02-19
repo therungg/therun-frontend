@@ -14,6 +14,7 @@ export interface GlobalStats {
     totalCategories: number;
     totalPbs: number;
     totalPbsWithPrevious: number;
+    totalRaces: number;
 }
 
 export interface CategoryStats {
