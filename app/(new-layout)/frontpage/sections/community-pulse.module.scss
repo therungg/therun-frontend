@@ -87,13 +87,20 @@ $amber: #f59e0b;
     }
 }
 
-/* ── Footer ── */
+/* ── All Time row ── */
+
+.allTimeRow {
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
 
 .footer {
     display: flex;
-    align-items: center;
+    align-content: flex-start;
     gap: 0.5rem;
     flex-wrap: wrap;
+    flex: 0 0 auto;
 }
 
 .footerChip {
@@ -166,6 +173,84 @@ $amber: #f59e0b;
     }
 }
 
+/* ── Top games ── */
+
+.topGames {
+    flex: 1;
+    min-width: 0;
+    border-left: 1px solid var(--bs-border-color);
+    padding-left: 1.5rem;
+}
+
+.topGamesHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--bs-secondary-color);
+    margin-bottom: 0.6rem;
+}
+
+.gameRow {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.4rem 0;
+
+    &:not(:last-child) {
+        border-bottom: 1px solid color-mix(in srgb, var(--bs-border-color) 50%, transparent);
+    }
+}
+
+.gameRank {
+    font-family: $mono;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--bs-secondary-color);
+    width: 1rem;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.gameImage {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.gameName {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    flex: 1;
+}
+
+.gameStats {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.gameStat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-family: $mono;
+    font-size: 0.7rem;
+    color: var(--bs-secondary-color);
+}
+
 /* ── Responsive ── */
 
 @media (max-width: 768px) {
@@ -196,6 +281,17 @@ $amber: #f59e0b;
 
     .number {
         font-size: 1.75rem;
+    }
+
+    .allTimeRow {
+        flex-direction: column;
+    }
+
+    .topGames {
+        border-left: none;
+        padding-left: 0;
+        padding-top: 1rem;
+        border-top: 1px solid var(--bs-border-color);
     }
 }
 
