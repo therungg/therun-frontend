@@ -14,11 +14,13 @@ export const CommunityPulse = async () => {
         runs:
             globalStats.totalFinishedAttemptCount -
             globalStats24hAgo.totalFinishedAttemptCount,
-        hoursMs: globalStats.totalRunTime - globalStats24hAgo.totalRunTime,
+        attempts:
+            globalStats.totalAttemptCount - globalStats24hAgo.totalAttemptCount,
+        playtimeMs: globalStats.totalRunTime - globalStats24hAgo.totalRunTime,
     };
 
     return (
-        <Panel title="Community" subtitle="Last 24 Hours" className="p-0">
+        <Panel title="Community Pulse" subtitle="Last 24 Hours" className="p-0">
             <CommunityPulseClient
                 last24h={last24h}
                 allTime={globalStats}
