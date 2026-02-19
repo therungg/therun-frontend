@@ -46,6 +46,9 @@ $amber: #f59e0b;
 }
 
 .label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -53,6 +56,11 @@ $amber: #f59e0b;
     color: var(--bs-body-color);
     margin-top: 0.5rem;
     opacity: 0.7;
+}
+
+.hero .label {
+    color: $amber;
+    opacity: 0.85;
 }
 
 .allTime {
@@ -95,6 +103,11 @@ $amber: #f59e0b;
     font-size: 0.85rem;
     font-weight: 700;
     color: var(--bs-body-color);
+}
+
+.chipIcon {
+    color: var(--bs-secondary-color);
+    flex-shrink: 0;
 }
 
 .chipLabel {

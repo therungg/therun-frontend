@@ -1,6 +1,16 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+    FaBolt,
+    FaClock,
+    FaFlagCheckered,
+    FaGamepad,
+    FaLayerGroup,
+    FaPlay,
+    FaTrophy,
+    FaUsers,
+} from 'react-icons/fa6';
 import type { GlobalStats } from '~src/lib/highlights';
 import styles from './community-pulse.module.scss';
 
@@ -88,7 +98,9 @@ export const CommunityPulseClient = ({
                     <span className={styles.number}>
                         {pbs.toLocaleString()}
                     </span>
-                    <span className={styles.label}>Personal Bests</span>
+                    <span className={styles.label}>
+                        <FaTrophy size={11} /> Personal Bests
+                    </span>
                     <span className={styles.allTime}>
                         {compact.format(allTime.totalPbs)} all time
                     </span>
@@ -97,7 +109,9 @@ export const CommunityPulseClient = ({
                     <span className={styles.number}>
                         {runs.toLocaleString()}
                     </span>
-                    <span className={styles.label}>Runs Completed</span>
+                    <span className={styles.label}>
+                        <FaFlagCheckered size={11} /> Runs Completed
+                    </span>
                     <span className={styles.allTime}>
                         {compact.format(allTime.totalFinishedAttemptCount)} all
                         time
@@ -107,7 +121,9 @@ export const CommunityPulseClient = ({
                     <span className={styles.number}>
                         {attempts.toLocaleString()}
                     </span>
-                    <span className={styles.label}>Total Attempts</span>
+                    <span className={styles.label}>
+                        <FaBolt size={11} /> Total Attempts
+                    </span>
                     <span className={styles.allTime}>
                         {compact.format(allTime.totalAttemptCount)} all time
                     </span>
@@ -116,7 +132,9 @@ export const CommunityPulseClient = ({
                     <span className={styles.number}>
                         {hours.toLocaleString()}
                     </span>
-                    <span className={styles.label}>Hours Played</span>
+                    <span className={styles.label}>
+                        <FaClock size={11} /> Hours Played
+                    </span>
                     <span className={styles.allTime}>
                         {formatHours(allTime.totalRunTime)} all time
                     </span>
@@ -125,24 +143,28 @@ export const CommunityPulseClient = ({
 
             <div className={styles.footer}>
                 <span className={styles.footerChip}>
+                    <FaUsers size={12} className={styles.chipIcon} />
                     <span className={styles.chipNumber}>
                         {compact.format(allTime.totalRunners)}
                     </span>
                     <span className={styles.chipLabel}>runners</span>
                 </span>
                 <span className={styles.footerChip}>
+                    <FaGamepad size={12} className={styles.chipIcon} />
                     <span className={styles.chipNumber}>
                         {compact.format(allTime.totalGames)}
                     </span>
                     <span className={styles.chipLabel}>games</span>
                 </span>
                 <span className={styles.footerChip}>
+                    <FaLayerGroup size={12} className={styles.chipIcon} />
                     <span className={styles.chipNumber}>
                         {compact.format(allTime.totalCategories)}
                     </span>
                     <span className={styles.chipLabel}>categories</span>
                 </span>
                 <span className={styles.footerChip}>
+                    <FaPlay size={10} className={styles.chipIcon} />
                     <span className={styles.chipNumber}>
                         {compact.format(allTime.totalRaces)}
                     </span>
