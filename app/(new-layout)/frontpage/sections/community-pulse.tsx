@@ -1,3 +1,4 @@
+import { Panel } from '~app/(new-layout)/components/panel.component';
 import { getGlobalStats, getLiveCount } from '~src/lib/highlights';
 import { CommunityPulseClient } from './community-pulse-client';
 
@@ -17,10 +18,12 @@ export const CommunityPulse = async () => {
     };
 
     return (
-        <CommunityPulseClient
-            last24h={last24h}
-            allTime={globalStats}
-            liveCount={liveCount}
-        />
+        <Panel title="Community" subtitle="Last 24 Hours" className="p-0">
+            <CommunityPulseClient
+                last24h={last24h}
+                allTime={globalStats}
+                liveCount={liveCount}
+            />
+        </Panel>
     );
 };

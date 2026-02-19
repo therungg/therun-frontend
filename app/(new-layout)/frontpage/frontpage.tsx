@@ -1,10 +1,13 @@
 import { Suspense } from 'react';
+import { Col, Row } from 'react-bootstrap';
 import { FrontpageHero } from './components/frontpage-hero';
 import { SectionSkeleton } from './components/section-skeleton';
 import { CommunityPulse } from './sections/community-pulse';
 import { PatreonSection } from './sections/patreon-section';
-import { RacesAndYourStats } from './sections/races-and-your-stats';
-import { TrendingAndPbFeed } from './sections/trending-and-pb-feed';
+import { PbFeedSection } from './sections/pb-feed-section';
+import { RacesSection } from './sections/races-section';
+import { TrendingSection } from './sections/trending-section';
+import { YourStatsSection } from './sections/your-stats-section';
 
 export default async function FrontPage() {
     return (
@@ -12,14 +15,32 @@ export default async function FrontPage() {
             <Suspense fallback={<SectionSkeleton height={340} />}>
                 <FrontpageHero />
             </Suspense>
-            <Suspense fallback={<SectionSkeleton height={220} />}>
-                <CommunityPulse />
-            </Suspense>
-            <Suspense fallback={<SectionSkeleton height={500} />}>
-                <TrendingAndPbFeed />
-            </Suspense>
+            <Row className="g-4">
+                <Col lg={5} xs={12}>
+                    <Suspense fallback={<SectionSkeleton height={400} />}>
+                        <CommunityPulse />
+                    </Suspense>
+                </Col>
+                <Col lg={7} xs={12}>
+                    <Suspense fallback={<SectionSkeleton height={400} />}>
+                        <TrendingSection />
+                    </Suspense>
+                </Col>
+            </Row>
+            <Row className="g-4">
+                <Col lg={5} xs={12}>
+                    <Suspense fallback={<SectionSkeleton height={400} />}>
+                        <PbFeedSection />
+                    </Suspense>
+                </Col>
+                <Col lg={7} xs={12}>
+                    <Suspense fallback={<SectionSkeleton height={400} />}>
+                        <RacesSection />
+                    </Suspense>
+                </Col>
+            </Row>
             <Suspense fallback={<SectionSkeleton height={400} />}>
-                <RacesAndYourStats />
+                <YourStatsSection />
             </Suspense>
             <Suspense fallback={<SectionSkeleton height={150} />}>
                 <PatreonSection />
