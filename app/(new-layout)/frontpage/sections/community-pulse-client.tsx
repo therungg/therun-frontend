@@ -201,7 +201,10 @@ export const CommunityPulseClient = ({
                             <span className={styles.gameStats}>
                                 <span className={styles.gameStat}>
                                     <FaClock size={9} />
-                                    {formatHours(game.totalRunTime)}h
+                                    {Math.round(
+                                        game.totalRunTime / 3_600_000,
+                                    ).toLocaleString()}{' '}
+                                    hrs
                                 </span>
                                 <span className={styles.gameStat}>
                                     <FaBolt size={9} />
