@@ -1,26 +1,15 @@
 import { Panel } from '~app/(new-layout)/components/panel.component';
-import {
-    getGameImageMap,
-    getGlobalStats,
-    getLiveCount,
-    getMostActiveGames,
-} from '~src/lib/highlights';
+import { getGlobalStats, getLiveCount, getTopGames } from '~src/lib/highlights';
 import { CommunityPulseClient } from './community-pulse-client';
 
 export const CommunityPulse = async () => {
-    const [
-        globalStats,
-        globalStats24hAgo,
-        liveCount,
-        activeGames,
-        gameImageMap,
-    ] = await Promise.all([
-        getGlobalStats(),
-        getGlobalStats('24h'),
-        getLiveCount(),
-        getMostActiveGames('day'),
-        getGameImageMap(),
-    ]);
+    const [globalStats, globalStats24hAgo, liveCount, topGames] =
+        await Promise.all([
+            getGlobalStats(),
+            getGlobalStats('24h'),
+            getLiveCount(),
+            getTopGames(3),
+        ]);
 
     const last24h = {
         pbs: globalStats.totalPbs - globalStats24hAgo.totalPbs,
@@ -38,8 +27,7 @@ export const CommunityPulse = async () => {
                 last24h={last24h}
                 allTime={globalStats}
                 liveCount={liveCount}
-                hotGames={activeGames.slice(0, 3)}
-                gameImageMap={gameImageMap}
+                topGames={topGames}
             />
         </Panel>
     );
