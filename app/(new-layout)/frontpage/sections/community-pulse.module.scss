@@ -2,19 +2,21 @@ $mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
 $amber: #f59e0b;
 
 .content {
-    padding: 1.5rem;
+    padding: 1.5rem 2rem;
 }
 
-.grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 0;
+/* ── Ticker grid ── */
+
+.ticker {
+    display: flex;
+    align-items: stretch;
 }
 
-.stat {
+.cell {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    padding: 0 1.25rem;
+    padding: 0.5rem 1.5rem;
     border-left: 1px solid var(--bs-border-color);
 
     &:first-child {
@@ -27,22 +29,24 @@ $amber: #f59e0b;
     }
 }
 
+/* ── Numbers ── */
+
 .number {
     font-family: $mono;
-    font-size: 1.75rem;
+    font-size: 2.25rem;
     font-weight: 700;
     line-height: 1;
-    letter-spacing: -0.02em;
+    letter-spacing: -0.03em;
     color: var(--bs-body-color);
 }
 
 .hero .number {
     color: $amber;
-    text-shadow: 0 0 40px rgba($amber, 0.1);
+    text-shadow: 0 0 40px rgba($amber, 0.15);
 }
 
 .label {
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -50,7 +54,7 @@ $amber: #f59e0b;
     margin-top: 0.5rem;
 }
 
-.total {
+.allTime {
     font-size: 0.6rem;
     font-family: $mono;
     color: var(--bs-secondary-color);
@@ -96,10 +100,11 @@ $amber: #f59e0b;
 
 .liveDot {
     display: inline-block;
-    width: 5px;
-    height: 5px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     background: $amber;
+    box-shadow: 0 0 6px rgba($amber, 0.5);
     animation: pulse 3s ease-in-out infinite;
 }
 
@@ -107,29 +112,68 @@ $amber: #f59e0b;
     0%,
     100% {
         opacity: 1;
+        box-shadow: 0 0 6px rgba($amber, 0.5);
     }
 
     50% {
-        opacity: 0.25;
+        opacity: 0.3;
+        box-shadow: 0 0 2px rgba($amber, 0.2);
     }
 }
 
 /* ── Responsive ── */
 
-@media (max-width: 576px) {
-    .grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem 0;
+@media (max-width: 768px) {
+    .content {
+        padding: 1.25rem 1.5rem;
     }
 
-    .stat:nth-child(3) {
+    .ticker {
+        flex-wrap: wrap;
+    }
+
+    .cell {
+        flex: 1 1 45%;
+        padding: 0.5rem 1rem;
+        min-width: 0;
+
+        &:nth-child(n + 3) {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--bs-border-color);
+        }
+
+        &:nth-child(3) {
+            border-left: none;
+            padding-left: 0;
+        }
+    }
+
+    .number {
+        font-size: 1.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .content {
+        padding: 1rem;
+    }
+
+    .cell {
+        flex: 1 1 100%;
         border-left: none;
-        padding-left: 0;
-        grid-column: 1;
-    }
+        padding: 0.75rem 0;
+        border-top: 1px solid var(--bs-border-color);
 
-    .stat:nth-child(2) {
-        padding-right: 0;
+        &:first-child {
+            border-top: none;
+            padding-top: 0;
+        }
+
+        &:nth-child(3) {
+            margin-top: 0;
+            padding-top: 0.75rem;
+        }
     }
 
     .number {
