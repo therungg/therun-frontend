@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     FaBolt,
     FaClock,
+    FaFire,
     FaFlagCheckered,
     FaGamepad,
     FaLayerGroup,
@@ -11,7 +12,7 @@ import {
     FaTrophy,
     FaUsers,
 } from 'react-icons/fa6';
-import type { GameWithImage, GlobalStats } from '~src/lib/highlights';
+import type { ActiveGame, GlobalStats } from '~src/lib/highlights';
 import styles from './community-pulse.module.scss';
 
 const compact = new Intl.NumberFormat('en', {
@@ -62,12 +63,14 @@ export const CommunityPulseClient = ({
     last24h,
     allTime,
     liveCount,
-    topGames,
+    hotGames,
+    gameImageMap,
 }: {
     last24h: Last24h;
     allTime: GlobalStats;
     liveCount: number;
-    topGames: GameWithImage[];
+    hotGames: ActiveGame[];
+    gameImageMap: Record<string, string>;
 }) => {
     const ref = useRef<HTMLDivElement>(null);
     const [visible, setVisible] = useState(false);
@@ -96,127 +99,134 @@ export const CommunityPulseClient = ({
     return (
         <div ref={ref} className={styles.content}>
             <div className={styles.sectionHeader}>Last 24 Hours</div>
-            <div className={styles.ticker}>
-                <div className={`${styles.cell} ${styles.hero}`}>
-                    <span className={styles.number}>
-                        {pbs.toLocaleString()}
-                    </span>
-                    <span className={styles.label}>
-                        <FaTrophy size={11} /> Personal Bests
-                    </span>
-                    <span className={styles.allTime}>
-                        {compact.format(allTime.totalPbs)} all time
-                    </span>
+            <div className={styles.dayRow}>
+                <div className={styles.ticker}>
+                    <div className={`${styles.cell} ${styles.hero}`}>
+                        <span className={styles.number}>
+                            {pbs.toLocaleString()}
+                        </span>
+                        <span className={styles.label}>
+                            <FaTrophy size={11} /> Personal Bests
+                        </span>
+                        <span className={styles.allTime}>
+                            {compact.format(allTime.totalPbs)} all time
+                        </span>
+                    </div>
+                    <div className={styles.cell}>
+                        <span className={styles.number}>
+                            {runs.toLocaleString()}
+                        </span>
+                        <span className={styles.label}>
+                            <FaFlagCheckered size={11} /> Runs Completed
+                        </span>
+                        <span className={styles.allTime}>
+                            {compact.format(allTime.totalFinishedAttemptCount)}{' '}
+                            all time
+                        </span>
+                    </div>
+                    <div className={styles.cell}>
+                        <span className={styles.number}>
+                            {attempts.toLocaleString()}
+                        </span>
+                        <span className={styles.label}>
+                            <FaBolt size={11} /> Total Attempts
+                        </span>
+                        <span className={styles.allTime}>
+                            {compact.format(allTime.totalAttemptCount)} all time
+                        </span>
+                    </div>
+                    <div className={styles.cell}>
+                        <span className={styles.number}>
+                            {hours.toLocaleString()}
+                        </span>
+                        <span className={styles.label}>
+                            <FaClock size={11} /> Hours Played
+                        </span>
+                        <span className={styles.allTime}>
+                            {formatHours(allTime.totalRunTime)} all time
+                        </span>
+                    </div>
                 </div>
-                <div className={styles.cell}>
-                    <span className={styles.number}>
-                        {runs.toLocaleString()}
-                    </span>
-                    <span className={styles.label}>
-                        <FaFlagCheckered size={11} /> Runs Completed
-                    </span>
-                    <span className={styles.allTime}>
-                        {compact.format(allTime.totalFinishedAttemptCount)} all
-                        time
-                    </span>
-                </div>
-                <div className={styles.cell}>
-                    <span className={styles.number}>
-                        {attempts.toLocaleString()}
-                    </span>
-                    <span className={styles.label}>
-                        <FaBolt size={11} /> Total Attempts
-                    </span>
-                    <span className={styles.allTime}>
-                        {compact.format(allTime.totalAttemptCount)} all time
-                    </span>
-                </div>
-                <div className={styles.cell}>
-                    <span className={styles.number}>
-                        {hours.toLocaleString()}
-                    </span>
-                    <span className={styles.label}>
-                        <FaClock size={11} /> Hours Played
-                    </span>
-                    <span className={styles.allTime}>
-                        {formatHours(allTime.totalRunTime)} all time
-                    </span>
-                </div>
+                {hotGames.length > 0 && (
+                    <div className={styles.hotGames}>
+                        <div className={styles.hotGamesHeader}>
+                            <FaFire size={12} /> Hot Games Today
+                        </div>
+                        {hotGames.map((game, i) => {
+                            const img = gameImageMap[game.game];
+                            return (
+                                <div key={game.game} className={styles.gameRow}>
+                                    <span className={styles.gameRank}>
+                                        {i + 1}
+                                    </span>
+                                    {img && (
+                                        <img
+                                            src={img}
+                                            alt=""
+                                            className={styles.gameImage}
+                                        />
+                                    )}
+                                    <span className={styles.gameName}>
+                                        {game.game}
+                                    </span>
+                                    <span className={styles.gameStats}>
+                                        <span className={styles.gameStat}>
+                                            <FaFlagCheckered size={10} />
+                                            {Number(
+                                                game.runCount,
+                                            ).toLocaleString()}{' '}
+                                            runs
+                                        </span>
+                                        <span className={styles.gameStat}>
+                                            <FaUsers size={10} />
+                                            {Number(
+                                                game.uniqueRunners,
+                                            ).toLocaleString()}{' '}
+                                            runners
+                                        </span>
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
 
             <div className={styles.sectionHeader}>All Time</div>
-            <div className={styles.allTimeRow}>
-                <div className={styles.footer}>
-                    <span className={styles.footerChip}>
-                        <FaUsers size={12} className={styles.chipIcon} />
-                        <span className={styles.chipNumber}>
-                            {compact.format(allTime.totalRunners)}
-                        </span>
-                        <span className={styles.chipLabel}>runners</span>
+            <div className={styles.footer}>
+                <span className={styles.footerChip}>
+                    <FaUsers size={12} className={styles.chipIcon} />
+                    <span className={styles.chipNumber}>
+                        {compact.format(allTime.totalRunners)}
                     </span>
-                    <span className={styles.footerChip}>
-                        <FaGamepad size={12} className={styles.chipIcon} />
-                        <span className={styles.chipNumber}>
-                            {compact.format(allTime.totalGames)}
-                        </span>
-                        <span className={styles.chipLabel}>games</span>
+                    <span className={styles.chipLabel}>runners</span>
+                </span>
+                <span className={styles.footerChip}>
+                    <FaGamepad size={12} className={styles.chipIcon} />
+                    <span className={styles.chipNumber}>
+                        {compact.format(allTime.totalGames)}
                     </span>
-                    <span className={styles.footerChip}>
-                        <FaLayerGroup size={12} className={styles.chipIcon} />
-                        <span className={styles.chipNumber}>
-                            {compact.format(allTime.totalCategories)}
-                        </span>
-                        <span className={styles.chipLabel}>categories</span>
+                    <span className={styles.chipLabel}>games</span>
+                </span>
+                <span className={styles.footerChip}>
+                    <FaLayerGroup size={12} className={styles.chipIcon} />
+                    <span className={styles.chipNumber}>
+                        {compact.format(allTime.totalCategories)}
                     </span>
-                    <span className={styles.footerChip}>
-                        <FaPlay size={10} className={styles.chipIcon} />
-                        <span className={styles.chipNumber}>
-                            {compact.format(allTime.totalRaces)}
-                        </span>
-                        <span className={styles.chipLabel}>races</span>
+                    <span className={styles.chipLabel}>categories</span>
+                </span>
+                <span className={styles.footerChip}>
+                    <FaPlay size={10} className={styles.chipIcon} />
+                    <span className={styles.chipNumber}>
+                        {compact.format(allTime.totalRaces)}
                     </span>
-                    <span className={styles.liveChip}>
-                        <span className={styles.liveDot} />
-                        <span className={styles.chipNumber}>{liveCount}</span>
-                        <span className={styles.chipLabel}>live</span>
-                    </span>
-                </div>
-                <div className={styles.topGames}>
-                    <div className={styles.topGamesHeader}>
-                        <FaTrophy size={11} /> Top Games by Playtime
-                    </div>
-                    {topGames.map((game, i) => (
-                        <div key={game.gameId} className={styles.gameRow}>
-                            <span className={styles.gameRank}>{i + 1}</span>
-                            {game.gameImage && game.gameImage !== 'noimage' && (
-                                <img
-                                    src={game.gameImage}
-                                    alt=""
-                                    className={styles.gameImage}
-                                />
-                            )}
-                            <span className={styles.gameName}>
-                                {game.gameDisplay}
-                            </span>
-                            <span className={styles.gameStats}>
-                                <span className={styles.gameStat}>
-                                    <FaClock size={9} />
-                                    {formatHours(game.totalRunTime)}h
-                                </span>
-                                <span className={styles.gameStat}>
-                                    <FaBolt size={9} />
-                                    {compact.format(game.totalAttemptCount)}
-                                </span>
-                                <span className={styles.gameStat}>
-                                    <FaFlagCheckered size={9} />
-                                    {compact.format(
-                                        game.totalFinishedAttemptCount,
-                                    )}
-                                </span>
-                            </span>
-                        </div>
-                    ))}
-                </div>
+                    <span className={styles.chipLabel}>races</span>
+                </span>
+                <span className={styles.liveChip}>
+                    <span className={styles.liveDot} />
+                    <span className={styles.chipNumber}>{liveCount}</span>
+                    <span className={styles.chipLabel}>live</span>
+                </span>
             </div>
         </div>
     );
