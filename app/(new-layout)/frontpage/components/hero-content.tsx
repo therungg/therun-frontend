@@ -22,7 +22,14 @@ const TwitchPlayer = dynamic(() =>
     import('react-twitch-embed').then((mod) => mod.TwitchPlayer),
 );
 
-type SplitStatus = 'pending' | 'neutral' | 'gold' | 'ahead' | 'behind';
+type SplitStatus =
+    | 'pending'
+    | 'neutral'
+    | 'gold'
+    | 'ahead'
+    | 'ahead-muted'
+    | 'behind'
+    | 'behind-muted';
 
 const getSplitSegments = (run: LiveRun): SplitStatus[] =>
     run.splits.map((split, i) => {
@@ -34,6 +41,7 @@ const getSplitSegments = (run: LiveRun): SplitStatus[] =>
         if (i > 0 && !prevTime) return 'neutral';
         const segmentTime = time - (prevTime ?? 0);
 
+        // Gold: segment time beats best segment ever
         const bestSegCumulative = split.comparisons?.['Best Segments'];
         const prevBestSegCumulative =
             i > 0 ? run.splits[i - 1].comparisons?.['Best Segments'] : 0;
@@ -44,17 +52,24 @@ const getSplitSegments = (run: LiveRun): SplitStatus[] =>
 
         if (bestSegSingle && segmentTime < bestSegSingle) return 'gold';
 
-        // Segment-based PB comparison: did this segment beat the PB segment?
+        // Cumulative: ahead or behind PB overall?
         const pbCumulative = split.comparisons?.['Personal Best'];
+        if (!pbCumulative) return 'neutral';
+        const aheadOverall = time < pbCumulative;
+
+        // Segment: gained or lost time vs PB segment? Bright = gained, muted = lost
         const prevPbCumulative =
             i > 0 ? run.splits[i - 1].comparisons?.['Personal Best'] : 0;
         const pbSegSingle =
             pbCumulative && (i === 0 || prevPbCumulative)
                 ? pbCumulative - (prevPbCumulative ?? 0)
                 : null;
-        if (pbSegSingle && segmentTime < pbSegSingle) return 'ahead';
+        const gainedTime = pbSegSingle ? segmentTime < pbSegSingle : null;
 
-        return 'behind';
+        if (aheadOverall) {
+            return gainedTime ? 'ahead' : 'ahead-muted';
+        }
+        return gainedTime ? 'behind' : 'behind-muted';
     });
 
 type CardFlash = 'gold' | 'ahead' | 'behind' | null;
@@ -72,9 +87,9 @@ const useSplitFlash = (run: LiveRun): CardFlash => {
             const highlight: CardFlash =
                 status === 'gold'
                     ? 'gold'
-                    : status === 'ahead'
+                    : status === 'ahead' || status === 'ahead-muted'
                       ? 'ahead'
-                      : status === 'behind'
+                      : status === 'behind' || status === 'behind-muted'
                         ? 'behind'
                         : null;
 
@@ -112,12 +127,16 @@ const SplitTimeline = ({
                         styles.splitSegment,
                         status === 'gold' && styles.splitSegmentGold,
                         status === 'ahead' && styles.splitSegmentAhead,
+                        status === 'ahead-muted' &&
+                            styles.splitSegmentAheadMuted,
                         status === 'behind' && styles.splitSegmentBehind,
+                        status === 'behind-muted' &&
+                            styles.splitSegmentBehindMuted,
                         status === 'neutral' && styles.splitSegmentNeutral,
                         i === run.currentSplitIndex &&
                             styles.splitSegmentCurrent,
                         i === justCompleted &&
-                            status === 'ahead' &&
+                            (status === 'ahead' || status === 'ahead-muted') &&
                             styles.splitSegmentAheadLatest,
                         i === justCompleted &&
                             status === 'gold' &&

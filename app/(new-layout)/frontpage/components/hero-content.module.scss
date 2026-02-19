@@ -268,8 +268,8 @@
 }
 
 .splitSegmentAhead {
-    background: #22c55e;
-    box-shadow: 0 0 4px rgba(34, 197, 94, 0.4);
+    background: #4ade80;
+    box-shadow: 0 0 4px rgba(74, 222, 128, 0.4);
 }
 
 .splitSegmentAheadLatest {
@@ -302,8 +302,16 @@
     }
 }
 
+.splitSegmentAheadMuted {
+    background: rgba(74, 222, 128, 0.5);
+}
+
 .splitSegmentBehind {
-    background: rgba(239, 68, 68, 0.6);
+    background: rgba(248, 113, 113, 0.7);
+}
+
+.splitSegmentBehindMuted {
+    background: rgba(248, 113, 113, 0.4);
 }
 
 .splitSegmentNeutral {
