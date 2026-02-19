@@ -93,6 +93,7 @@ export const CommunityPulseClient = ({
 
     return (
         <div ref={ref} className={styles.content}>
+            <div className={styles.sectionHeader}>Last 24 Hours</div>
             <div className={styles.ticker}>
                 <div className={`${styles.cell} ${styles.hero}`}>
                     <span className={styles.number}>
@@ -141,6 +142,7 @@ export const CommunityPulseClient = ({
                 </div>
             </div>
 
+            <div className={styles.sectionHeader}>All Time</div>
             <div className={styles.footer}>
                 <span className={styles.footerChip}>
                     <FaUsers size={12} className={styles.chipIcon} />
