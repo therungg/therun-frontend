@@ -87,26 +87,20 @@ $amber: #f59e0b;
     }
 }
 
-/* ── Day row (stats + hot games) ── */
+/* ── All Time row ── */
 
-.dayRow {
+.allTimeRow {
     display: flex;
     gap: 1.5rem;
     align-items: flex-start;
 }
-
-.ticker {
-    flex: 1;
-    min-width: 0;
-}
-
-/* ── Footer ── */
 
 .footer {
     display: flex;
     align-content: flex-start;
     gap: 0.5rem;
     flex-wrap: wrap;
+    flex: 0 0 auto;
 }
 
 .footerChip {
@@ -179,32 +173,32 @@ $amber: #f59e0b;
     }
 }
 
-/* ── Hot games ── */
+/* ── Top games ── */
 
-.hotGames {
-    flex: 0 0 auto;
-    min-width: 280px;
+.topGames {
+    flex: 1;
+    min-width: 0;
     border-left: 1px solid var(--bs-border-color);
     padding-left: 1.5rem;
 }
 
-.hotGamesHeader {
+.topGamesHeader {
     display: flex;
     align-items: center;
-    gap: 0.4rem;
-    font-size: 0.75rem;
+    gap: 0.35rem;
+    font-size: 0.65rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.08em;
     color: var(--bs-secondary-color);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
 }
 
 .gameRow {
     display: flex;
     align-items: center;
-    gap: 0.65rem;
-    padding: 0.5rem 0;
+    gap: 0.6rem;
+    padding: 0.4rem 0;
 
     &:not(:last-child) {
         border-bottom: 1px solid color-mix(in srgb, var(--bs-border-color) 50%, transparent);
@@ -213,24 +207,24 @@ $amber: #f59e0b;
 
 .gameRank {
     font-family: $mono;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 700;
     color: var(--bs-secondary-color);
-    width: 1.2rem;
+    width: 1rem;
     text-align: center;
     flex-shrink: 0;
 }
 
 .gameImage {
-    width: 32px;
-    height: 32px;
-    border-radius: 5px;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
     object-fit: cover;
     flex-shrink: 0;
 }
 
 .gameName {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--bs-body-color);
     white-space: nowrap;
@@ -251,9 +245,9 @@ $amber: #f59e0b;
 .gameStat {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: 0.25rem;
     font-family: $mono;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     color: var(--bs-secondary-color);
 }
 
@@ -289,12 +283,11 @@ $amber: #f59e0b;
         font-size: 1.75rem;
     }
 
-    .dayRow {
+    .allTimeRow {
         flex-direction: column;
     }
 
-    .hotGames {
-        min-width: 0;
+    .topGames {
         border-left: none;
         padding-left: 0;
         padding-top: 1rem;
