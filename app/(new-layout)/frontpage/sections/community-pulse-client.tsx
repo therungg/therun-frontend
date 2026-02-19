@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import type { GlobalStats } from '~src/lib/highlights';
 import styles from './community-pulse.module.scss';
 
@@ -8,30 +7,6 @@ const compact = new Intl.NumberFormat('en', {
     notation: 'compact',
     maximumFractionDigits: 1,
 });
-
-function easeOutExpo(t: number): number {
-    return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
-}
-
-function useCountUp(target: number, duration: number, active: boolean): number {
-    const [value, setValue] = useState(0);
-    const ran = useRef(false);
-
-    useEffect(() => {
-        if (!active || ran.current || target === 0) return;
-        ran.current = true;
-
-        const t0 = performance.now();
-        const tick = (now: number) => {
-            const p = Math.min((now - t0) / duration, 1);
-            setValue(Math.round(easeOutExpo(p) * target));
-            if (p < 1) requestAnimationFrame(tick);
-        };
-        requestAnimationFrame(tick);
-    }, [active, target, duration]);
-
-    return value;
-}
 
 function formatHours(ms: number): string {
     const hours = ms / 3_600_000;
@@ -55,102 +30,59 @@ export const CommunityPulseClient = ({
     allTime: GlobalStats;
     liveCount: number;
 }) => {
-    const ref = useRef<HTMLDivElement>(null);
-    const [visible, setVisible] = useState(false);
-
-    useEffect(() => {
-        const el = ref.current;
-        if (!el) return;
-        const obs = new IntersectionObserver(
-            ([e]) => {
-                if (e.isIntersecting) {
-                    setVisible(true);
-                    obs.disconnect();
-                }
-            },
-            { threshold: 0.15 },
-        );
-        obs.observe(el);
-        return () => obs.disconnect();
-    }, []);
-
-    const pbs = useCountUp(last24h.pbs, 1400, visible);
-    const runs = useCountUp(last24h.runs, 1600, visible);
-    const hours = useCountUp(
-        Math.round(last24h.hoursMs / 3_600_000),
-        1400,
-        visible,
-    );
-
     return (
-        <div
-            ref={ref}
-            className={`${styles.pulse} ${visible ? styles.visible : ''}`}
-        >
-            {/* Top tier — The Pulse: 24h activity */}
-            <div className={styles.pulseGrid}>
-                <div className={`${styles.cell} ${styles.heroCell}`}>
-                    <span className={styles.bigNumber}>
-                        {pbs.toLocaleString()}
+        <div className={styles.content}>
+            <div className={styles.grid}>
+                <div className={`${styles.stat} ${styles.hero}`}>
+                    <span className={styles.number}>
+                        {last24h.pbs.toLocaleString()}
                     </span>
-                    <span className={styles.cellLabel}>personal bests</span>
-                    <span className={styles.allTimeLabel}>
+                    <span className={styles.label}>personal bests</span>
+                    <span className={styles.total}>
                         {compact.format(allTime.totalPbs)} all time
                     </span>
                 </div>
-                <div className={styles.cell}>
-                    <span className={styles.bigNumber}>
-                        {runs.toLocaleString()}
+                <div className={styles.stat}>
+                    <span className={styles.number}>
+                        {last24h.runs.toLocaleString()}
                     </span>
-                    <span className={styles.cellLabel}>runs completed</span>
-                    <span className={styles.allTimeLabel}>
+                    <span className={styles.label}>runs completed</span>
+                    <span className={styles.total}>
                         {compact.format(allTime.totalFinishedAttemptCount)} all
                         time
                     </span>
                 </div>
-                <div className={styles.cell}>
-                    <span className={styles.bigNumber}>
-                        {hours.toLocaleString()}
+                <div className={styles.stat}>
+                    <span className={styles.number}>
+                        {Math.round(
+                            last24h.hoursMs / 3_600_000,
+                        ).toLocaleString()}
                     </span>
-                    <span className={styles.cellLabel}>hours played</span>
-                    <span className={styles.allTimeLabel}>
+                    <span className={styles.label}>hours played</span>
+                    <span className={styles.total}>
                         {formatHours(allTime.totalRunTime)} all time
                     </span>
                 </div>
             </div>
 
-            <div className={styles.pulseTag}>
-                <span className={styles.pulseDot} />
-                last 24 hours
-            </div>
-
-            {/* Bottom tier — The Scale: all-time totals */}
-            <div className={styles.scale}>
-                <span className={styles.scaleStat}>
-                    <span className={styles.scaleValue}>
-                        {compact.format(allTime.totalRunners)}
-                    </span>{' '}
+            <div className={styles.footer}>
+                <span className={styles.footerStat}>
+                    <strong>{compact.format(allTime.totalRunners)}</strong>{' '}
                     runners
                 </span>
                 <span className={styles.dot} />
-                <span className={styles.scaleStat}>
-                    <span className={styles.scaleValue}>
-                        {compact.format(allTime.totalGames)}
-                    </span>{' '}
-                    games
+                <span className={styles.footerStat}>
+                    <strong>{compact.format(allTime.totalGames)}</strong> games
                 </span>
                 <span className={styles.dot} />
-                <span className={styles.scaleStat}>
-                    <span className={styles.scaleValue}>
-                        {compact.format(allTime.totalCategories)}
-                    </span>{' '}
+                <span className={styles.footerStat}>
+                    <strong>{compact.format(allTime.totalCategories)}</strong>{' '}
                     categories
                 </span>
                 <span className={styles.dot} />
-                <span className={styles.scaleStat}>
-                    <span className={styles.scaleValue}>{liveCount}</span>{' '}
-                    <span className={styles.liveDot} />
-                    live now
+                <span className={styles.footerStat}>
+                    <strong>{liveCount}</strong>{' '}
+                    <span className={styles.liveDot} /> live
                 </span>
             </div>
         </div>
