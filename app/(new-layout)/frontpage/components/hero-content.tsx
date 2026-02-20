@@ -365,7 +365,7 @@ const FeaturedRunPanel = ({
                             timerClassName={styles.mainTimer}
                             className="d-flex"
                         />
-                        {onPbPace && (
+                        {!staleReason && onPbPace && (
                             <span className={styles.pbPaceBadge}>PB Pace</span>
                         )}
                     </div>
