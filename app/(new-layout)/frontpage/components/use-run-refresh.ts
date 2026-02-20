@@ -15,6 +15,7 @@ const GRACE_PERIODS: Record<StaleReason, number> = {
 };
 
 const BACKUP_POLL_INTERVAL = 120_000; // 2 minutes
+const REPLACE_RETRY_INTERVAL = 30_000; // 30 seconds
 const ENTER_ANIMATION_MS = 300;
 
 const LIVE_URL = `${process.env.NEXT_PUBLIC_DATA_URL}/live`;
@@ -112,21 +113,21 @@ export function useRunRefresh(
                 }
             }
 
-            const freshRuns = await fetchTopRuns(5);
+            // Fetch more than 5 to increase chance of finding someone not already displayed
+            const freshRuns = await fetchTopRuns(10);
             const currentUsers = new Set(currentRuns.map((r) => r.user));
 
-            // Find the best replacement not already displayed
+            // Find the best replacement not already displayed and not stale itself
             const replacement = freshRuns.find(
-                (r) => !currentUsers.has(r.user),
+                (r) => !currentUsers.has(r.user) && !r.hasReset && !r.endedAt,
             );
 
             if (!replacement) {
-                // No replacement available — just clear the stale state
-                setStaleMap((prev) => {
-                    const next = new Map(prev);
-                    next.delete(staleUser);
-                    return next;
-                });
+                // No replacement available — retry later, keep stale indicator
+                const retryTimer = setTimeout(() => {
+                    replaceStaleRun(staleUser);
+                }, REPLACE_RETRY_INTERVAL);
+                graceTimersRef.current.set(staleUser, retryTimer);
                 return;
             }
 
@@ -162,6 +163,19 @@ export function useRunRefresh(
                 // Detect finish: backend sets endedAt when run completes
                 else if (msg.run.endedAt) {
                     markStale(msg.user, 'finished');
+                }
+                // Runner started a new attempt — clear stale state if previously marked
+                else if (staleMapRef.current.has(msg.user)) {
+                    const existingTimer = graceTimersRef.current.get(msg.user);
+                    if (existingTimer) {
+                        clearTimeout(existingTimer);
+                        graceTimersRef.current.delete(msg.user);
+                    }
+                    setStaleMap((prev) => {
+                        const next = new Map(prev);
+                        next.delete(msg.user);
+                        return next;
+                    });
                 }
 
                 // Still update the run data so it renders correctly during grace
