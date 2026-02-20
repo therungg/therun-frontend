@@ -116,9 +116,12 @@ export function useRunRefresh(
             const freshRuns = await fetchTopRuns(5);
             const currentUsers = new Set(currentRuns.map((r) => r.user));
 
-            // Find the best replacement not already displayed and not stale itself
+            // Find the best replacement: not already displayed, actively running
             const replacement = freshRuns.find(
-                (r) => !currentUsers.has(r.user) && !r.hasReset && !r.endedAt,
+                (r) =>
+                    !currentUsers.has(r.user) &&
+                    r.currentSplitIndex >= 0 &&
+                    r.currentSplitIndex < r.splits.length,
             );
 
             if (!replacement) {
@@ -155,26 +158,13 @@ export function useRunRefresh(
             }
 
             if (msg.type === 'UPDATE') {
-                // Detect reset: backend sets hasReset=true when runner resets
-                if (msg.run.hasReset) {
+                // Detect reset: splitIndex -1 means runner reset
+                if (msg.run.currentSplitIndex < 0) {
                     markStale(msg.user, 'reset');
                 }
-                // Detect finish: backend sets endedAt when run completes
-                else if (msg.run.endedAt) {
+                // Detect finish: splitIndex past last split (e.g., 3 splits → index 3)
+                else if (msg.run.currentSplitIndex >= msg.run.splits.length) {
                     markStale(msg.user, 'finished');
-                }
-                // Runner started a new attempt — clear stale state if previously marked
-                else if (staleMapRef.current.has(msg.user)) {
-                    const existingTimer = graceTimersRef.current.get(msg.user);
-                    if (existingTimer) {
-                        clearTimeout(existingTimer);
-                        graceTimersRef.current.delete(msg.user);
-                    }
-                    setStaleMap((prev) => {
-                        const next = new Map(prev);
-                        next.delete(msg.user);
-                        return next;
-                    });
                 }
 
                 // Still update the run data so it renders correctly during grace
