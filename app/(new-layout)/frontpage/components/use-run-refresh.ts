@@ -5,6 +5,7 @@ import {
     LiveRun,
     WebsocketLiveRunMessage,
 } from '~app/(old-layout)/live/live.types';
+import { getTopNLiveRuns } from '~src/lib/live-runs';
 
 export type StaleReason = 'reset' | 'finished' | 'offline';
 
@@ -18,14 +19,9 @@ const BACKUP_POLL_INTERVAL = 120_000; // 2 minutes
 const REPLACE_RETRY_INTERVAL = 30_000; // 30 seconds
 const ENTER_ANIMATION_MS = 300;
 
-const LIVE_URL = `${process.env.NEXT_PUBLIC_DATA_URL}/live`;
-
 async function fetchTopRuns(n = 5): Promise<LiveRun[]> {
     try {
-        const res = await fetch(`${LIVE_URL}?limit=${n}`);
-        if (!res.ok) return [];
-        const data = await res.json();
-        return data.result ?? [];
+        return await getTopNLiveRuns(n);
     } catch {
         return [];
     }
