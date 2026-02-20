@@ -8,12 +8,6 @@ import {
 
 export type StaleReason = 'reset' | 'finished' | 'offline';
 
-interface _StaleEntry {
-    reason: StaleReason;
-    /** Timestamp (ms) when grace period expires and run should be swapped */
-    expiresAt: number;
-}
-
 const GRACE_PERIODS: Record<StaleReason, number> = {
     reset: 15_000,
     finished: 60_000,
@@ -21,17 +15,22 @@ const GRACE_PERIODS: Record<StaleReason, number> = {
 };
 
 const BACKUP_POLL_INTERVAL = 120_000; // 2 minutes
+const ENTER_ANIMATION_MS = 300;
 
 const LIVE_URL = `${process.env.NEXT_PUBLIC_DATA_URL}/live`;
 
 async function fetchTopRuns(n = 5): Promise<LiveRun[]> {
-    const res = await fetch(`${LIVE_URL}?limit=${n}`);
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.result ?? [];
+    try {
+        const res = await fetch(`${LIVE_URL}?limit=${n}`);
+        if (!res.ok) return [];
+        const data = await res.json();
+        return data.result ?? [];
+    } catch {
+        return [];
+    }
 }
 
-export function useRunRefresh(initialRuns: LiveRun[]) {
+export function useRunRefresh(initialRuns: LiveRun[], featuredIndex: number) {
     const [liveRuns, setLiveRuns] = useState(initialRuns);
     const [staleMap, setStaleMap] = useState<Map<string, StaleReason>>(
         new Map(),
@@ -39,6 +38,9 @@ export function useRunRefresh(initialRuns: LiveRun[]) {
 
     // Track previous splitIndex per user to detect resets
     const prevSplitIndexRef = useRef<Map<string, number>>(new Map());
+    // Track featured index for backup polling (protect featured run from replacement)
+    const featuredIndexRef = useRef(featuredIndex);
+    featuredIndexRef.current = featuredIndex;
     // Track grace period timeouts so we can clear them
     const graceTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(
         new Map(),
@@ -50,6 +52,21 @@ export function useRunRefresh(initialRuns: LiveRun[]) {
     liveRunsRef.current = liveRuns;
     const staleMapRef = useRef(staleMap);
     staleMapRef.current = staleMap;
+
+    const animateEntry = useCallback((user: string) => {
+        setEnteringUsers((prev) => {
+            const next = new Set(prev);
+            next.add(user);
+            return next;
+        });
+        setTimeout(() => {
+            setEnteringUsers((prev) => {
+                const next = new Set(prev);
+                next.delete(user);
+                return next;
+            });
+        }, ENTER_ANIMATION_MS);
+    }, []);
 
     // Initialize prevSplitIndex from initial runs
     useEffect(() => {
@@ -80,56 +97,51 @@ export function useRunRefresh(initialRuns: LiveRun[]) {
         graceTimersRef.current.set(user, timer);
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const replaceStaleRun = useCallback(async (staleUser: string) => {
-        const freshRuns = await fetchTopRuns(5);
-        const currentUsers = new Set(liveRunsRef.current.map((r) => r.user));
+    const replaceStaleRun = useCallback(
+        async (staleUser: string) => {
+            const freshRuns = await fetchTopRuns(5);
+            const currentUsers = new Set(
+                liveRunsRef.current.map((r) => r.user),
+            );
 
-        // Find the best replacement not already displayed
-        const replacement = freshRuns.find((r) => !currentUsers.has(r.user));
+            // Find the best replacement not already displayed
+            const replacement = freshRuns.find(
+                (r) => !currentUsers.has(r.user),
+            );
 
-        if (!replacement) {
-            // No replacement available — just clear the stale state
+            if (!replacement) {
+                // No replacement available — just clear the stale state
+                setStaleMap((prev) => {
+                    const next = new Map(prev);
+                    next.delete(staleUser);
+                    return next;
+                });
+                return;
+            }
+
+            // Swap the stale run for the replacement
+            setLiveRuns((prev) =>
+                prev.map((r) => (r.user === staleUser ? replacement : r)),
+            );
+
+            animateEntry(replacement.user);
+
+            // Update prevSplitIndex tracking
+            prevSplitIndexRef.current.delete(staleUser);
+            prevSplitIndexRef.current.set(
+                replacement.user,
+                replacement.currentSplitIndex,
+            );
+
+            // Clear stale state
             setStaleMap((prev) => {
                 const next = new Map(prev);
                 next.delete(staleUser);
                 return next;
             });
-            return;
-        }
-
-        // Swap the stale run for the replacement
-        setLiveRuns((prev) =>
-            prev.map((r) => (r.user === staleUser ? replacement : r)),
-        );
-
-        // Track entering state for animation
-        setEnteringUsers((prev) => {
-            const next = new Set(prev);
-            next.add(replacement.user);
-            return next;
-        });
-        setTimeout(() => {
-            setEnteringUsers((prev) => {
-                const next = new Set(prev);
-                next.delete(replacement.user);
-                return next;
-            });
-        }, 300);
-
-        // Update prevSplitIndex tracking
-        prevSplitIndexRef.current.delete(staleUser);
-        prevSplitIndexRef.current.set(
-            replacement.user,
-            replacement.currentSplitIndex,
-        );
-
-        // Clear stale state
-        setStaleMap((prev) => {
-            const next = new Map(prev);
-            next.delete(staleUser);
-            return next;
-        });
-    }, []);
+        },
+        [animateEntry],
+    );
 
     const handleWsMessage = useCallback(
         (msg: WebsocketLiveRunMessage) => {
@@ -149,7 +161,8 @@ export function useRunRefresh(initialRuns: LiveRun[]) {
                 ) {
                     markStale(msg.user, 'finished');
                 }
-                // Detect reset: splitIndex drops to 0 from a significant position
+                // Detect reset: splitIndex drops to 0 from a significant position.
+                // Threshold of 2 avoids false positives from early resets (common in speedrunning).
                 else if (newIndex === 0 && prevIndex > 2) {
                     markStale(msg.user, 'reset');
                 }
@@ -181,11 +194,11 @@ export function useRunRefresh(initialRuns: LiveRun[]) {
             if (newCandidates.length === 0) return;
 
             // Find lowest-importance non-featured sidebar run to potentially replace.
-            // Index 0 is the featured run by default — skip it.
-            // Only replace if the new run has higher importance.
+            // Skip the featured run so the user isn't jarred mid-stream.
             let worstIndex = -1;
             let worstImportance = Infinity;
-            for (let i = 1; i < currentRuns.length; i++) {
+            for (let i = 0; i < currentRuns.length; i++) {
+                if (i === featuredIndexRef.current) continue;
                 // Don't replace runs already marked stale (they have their own timer)
                 if (staleMapRef.current.has(currentRuns[i].user)) continue;
                 if (currentRuns[i].importance < worstImportance) {
@@ -208,19 +221,7 @@ export function useRunRefresh(initialRuns: LiveRun[]) {
                 prev.map((r) => (r.user === replacedUser ? replacement : r)),
             );
 
-            // Entering animation
-            setEnteringUsers((prev) => {
-                const next = new Set(prev);
-                next.add(replacement.user);
-                return next;
-            });
-            setTimeout(() => {
-                setEnteringUsers((prev) => {
-                    const next = new Set(prev);
-                    next.delete(replacement.user);
-                    return next;
-                });
-            }, 300);
+            animateEntry(replacement.user);
 
             prevSplitIndexRef.current.delete(replacedUser);
             prevSplitIndexRef.current.set(
