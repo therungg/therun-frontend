@@ -158,7 +158,7 @@ export const HeroContent = ({
 }) => {
     const [featuredIndex, setFeaturedIndex] = useState(0);
     const { liveRuns, staleMap, enteringUsers, handleWsMessage } =
-        useRunRefresh(initialRuns, featuredIndex);
+        useRunRefresh(initialRuns, featuredIndex, setFeaturedIndex);
 
     const handleSelectRun = useCallback((index: number) => {
         setFeaturedIndex(index);
@@ -446,7 +446,9 @@ const LiveSidebar = ({
     return (
         <div className={styles.sidebar} style={{ height: '340px' }}>
             {runs.slice(0, 4).map((run) => {
-                const globalIndex = allRuns.indexOf(run);
+                const globalIndex = allRuns.findIndex(
+                    (r) => r.user === run.user,
+                );
                 return (
                     <SidebarCard
                         key={run.user}
