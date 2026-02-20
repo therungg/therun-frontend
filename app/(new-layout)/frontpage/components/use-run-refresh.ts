@@ -185,19 +185,55 @@ export function useRunRefresh(
             const currentRuns = liveRunsRef.current;
             const currentUsers = new Set(currentRuns.map((r) => r.user));
 
-            // Find runs in fresh list that aren't already displayed
+            // Find runs in fresh list that aren't already displayed and actively running
             const newCandidates = freshRuns.filter(
-                (r) => !currentUsers.has(r.user),
+                (r) =>
+                    !currentUsers.has(r.user) &&
+                    r.currentSplitIndex >= 0 &&
+                    r.currentSplitIndex < r.splits.length,
             );
             if (newCandidates.length === 0) return;
 
-            // Find lowest-importance non-featured sidebar run to potentially replace.
-            // Skip the featured run so the user isn't jarred mid-stream.
+            // Priority 1: replace stale sidebar runs first
+            for (const candidate of newCandidates) {
+                const staleIndex = currentRuns.findIndex(
+                    (r, i) =>
+                        i !== featuredIndexRef.current &&
+                        staleMapRef.current.has(r.user),
+                );
+                if (staleIndex === -1) break;
+
+                const staleUser = currentRuns[staleIndex].user;
+                setLiveRuns((prev) =>
+                    prev.map((r) => (r.user === staleUser ? candidate : r)),
+                );
+                animateEntry(candidate.user);
+                // Clear stale state and any retry timer
+                const timer = graceTimersRef.current.get(staleUser);
+                if (timer) {
+                    clearTimeout(timer);
+                    graceTimersRef.current.delete(staleUser);
+                }
+                setStaleMap((prev) => {
+                    const next = new Map(prev);
+                    next.delete(staleUser);
+                    return next;
+                });
+                // Update currentUsers for next iteration
+                currentUsers.delete(staleUser);
+                currentUsers.add(candidate.user);
+            }
+
+            // Priority 2: replace lowest-importance non-featured sidebar run
+            const remainingCandidates = newCandidates.filter(
+                (r) => !currentUsers.has(r.user),
+            );
+            if (remainingCandidates.length === 0) return;
+
             let worstIndex = -1;
             let worstImportance = Infinity;
             for (let i = 0; i < currentRuns.length; i++) {
                 if (i === featuredIndexRef.current) continue;
-                // Don't replace runs already marked stale (they have their own timer)
                 if (staleMapRef.current.has(currentRuns[i].user)) continue;
                 if (currentRuns[i].importance < worstImportance) {
                     worstImportance = currentRuns[i].importance;
@@ -207,12 +243,12 @@ export function useRunRefresh(
 
             if (
                 worstIndex === -1 ||
-                newCandidates[0].importance <= worstImportance
+                remainingCandidates[0].importance <= worstImportance
             ) {
                 return;
             }
 
-            const replacement = newCandidates[0];
+            const replacement = remainingCandidates[0];
             const replacedUser = currentRuns[worstIndex].user;
 
             setLiveRuns((prev) =>
