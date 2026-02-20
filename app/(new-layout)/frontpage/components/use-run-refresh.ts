@@ -30,7 +30,11 @@ async function fetchTopRuns(n = 5): Promise<LiveRun[]> {
     }
 }
 
-export function useRunRefresh(initialRuns: LiveRun[], featuredIndex: number) {
+export function useRunRefresh(
+    initialRuns: LiveRun[],
+    featuredIndex: number,
+    setFeaturedIndex: (index: number) => void,
+) {
     const [liveRuns, setLiveRuns] = useState(initialRuns);
     const [staleMap, setStaleMap] = useState<Map<string, StaleReason>>(
         new Map(),
@@ -99,10 +103,26 @@ export function useRunRefresh(initialRuns: LiveRun[], featuredIndex: number) {
 
     const replaceStaleRun = useCallback(
         async (staleUser: string) => {
-            const freshRuns = await fetchTopRuns(5);
-            const currentUsers = new Set(
-                liveRunsRef.current.map((r) => r.user),
+            const currentRuns = liveRunsRef.current;
+            const staleIndex = currentRuns.findIndex(
+                (r) => r.user === staleUser,
             );
+
+            // If the stale run is the featured run, auto-promote the first
+            // non-stale sidebar run to featured instead of swapping in-place.
+            // This avoids unexpectedly switching the Twitch embed channel.
+            if (staleIndex === featuredIndexRef.current) {
+                const promotionIndex = currentRuns.findIndex(
+                    (r, i) =>
+                        i !== staleIndex && !staleMapRef.current.has(r.user),
+                );
+                if (promotionIndex !== -1) {
+                    setFeaturedIndex(promotionIndex);
+                }
+            }
+
+            const freshRuns = await fetchTopRuns(5);
+            const currentUsers = new Set(currentRuns.map((r) => r.user));
 
             // Find the best replacement not already displayed
             const replacement = freshRuns.find(
@@ -140,7 +160,7 @@ export function useRunRefresh(initialRuns: LiveRun[], featuredIndex: number) {
                 return next;
             });
         },
-        [animateEntry],
+        [animateEntry, setFeaturedIndex],
     );
 
     const handleWsMessage = useCallback(

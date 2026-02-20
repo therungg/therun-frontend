@@ -472,24 +472,9 @@
     border: 1px solid var(--bs-border-color);
 }
 
-/* Swap animations */
-.sidebarCardExit {
-    animation: cardSlideOut 300ms ease-in forwards;
-}
-
+/* Swap animation — new run slides in */
 .sidebarCardEnter {
     animation: cardSlideIn 300ms ease-out forwards;
-}
-
-@keyframes cardSlideOut {
-    0% {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    100% {
-        opacity: 0;
-        transform: translateY(8px);
-    }
 }
 
 @keyframes cardSlideIn {
