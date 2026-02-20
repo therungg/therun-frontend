@@ -17,6 +17,7 @@ import {
 } from '~src/components/util/datetime';
 import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
 import styles from './hero-content.module.scss';
+import { type StaleReason, useRunRefresh } from './use-run-refresh';
 
 const TwitchPlayer = dynamic(() =>
     import('react-twitch-embed').then((mod) => mod.TwitchPlayer),
@@ -156,7 +157,8 @@ export const HeroContent = ({
     liveCount: number;
 }) => {
     const [featuredIndex, setFeaturedIndex] = useState(0);
-    const [liveRuns, setLiveRuns] = useState(initialRuns);
+    const { liveRuns, staleMap, enteringUsers, handleWsMessage } =
+        useRunRefresh(initialRuns, featuredIndex);
 
     const handleSelectRun = useCallback((index: number) => {
         setFeaturedIndex(index);
@@ -177,7 +179,9 @@ export const HeroContent = ({
             allRuns={liveRuns}
             liveCount={liveCount}
             onSelectRun={handleSelectRun}
-            onUpdateRuns={setLiveRuns}
+            staleMap={staleMap}
+            enteringUsers={enteringUsers}
+            onWsMessage={handleWsMessage}
         />
     );
 };
@@ -189,7 +193,9 @@ const HeroLayout = ({
     allRuns,
     liveCount,
     onSelectRun,
-    onUpdateRuns,
+    staleMap,
+    enteringUsers,
+    onWsMessage,
 }: {
     featuredRun: LiveRun;
     sidebarRuns: LiveRun[];
@@ -197,19 +203,10 @@ const HeroLayout = ({
     allRuns: LiveRun[];
     liveCount: number;
     onSelectRun: (index: number) => void;
-    onUpdateRuns: (runs: LiveRun[]) => void;
+    staleMap: Map<string, StaleReason>;
+    enteringUsers: Set<string>;
+    onWsMessage: (msg: WebsocketLiveRunMessage) => void;
 }) => {
-    const handleWsMessage = useCallback(
-        (msg: WebsocketLiveRunMessage) => {
-            if (msg.type === 'UPDATE') {
-                onUpdateRuns(
-                    allRuns.map((r) => (r.user === msg.user ? msg.run : r)),
-                );
-            }
-        },
-        [allRuns, onUpdateRuns],
-    );
-
     const currentFeatured = allRuns[featuredIndex] ?? featuredRun;
 
     return (
@@ -218,13 +215,16 @@ const HeroLayout = ({
                 <RunSubscriber
                     key={run.user}
                     user={run.user}
-                    onMessage={handleWsMessage}
+                    onMessage={onWsMessage}
                 />
             ))}
             <Row className="g-3">
                 {/* Left: Featured Run */}
                 <Col xl={5} lg={5} md={12}>
-                    <FeaturedRunPanel run={currentFeatured} />
+                    <FeaturedRunPanel
+                        run={currentFeatured}
+                        staleReason={staleMap.get(currentFeatured.user)}
+                    />
                 </Col>
 
                 {/* Center: Twitch Embed */}
@@ -254,6 +254,8 @@ const HeroLayout = ({
                         featuredIndex={featuredIndex}
                         liveCount={liveCount}
                         onSelectRun={onSelectRun}
+                        staleMap={staleMap}
+                        enteringUsers={enteringUsers}
                     />
                 </Col>
             </Row>
@@ -261,7 +263,19 @@ const HeroLayout = ({
     );
 };
 
-const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
+const STALE_LABELS: Record<StaleReason, string> = {
+    finished: 'Finished',
+    reset: 'Reset',
+    offline: 'Offline',
+};
+
+const FeaturedRunPanel = ({
+    run,
+    staleReason,
+}: {
+    run: LiveRun;
+    staleReason?: StaleReason;
+}) => {
     const hasGameImage = run.gameImage && run.gameImage !== 'noimage';
     const hasAvatar = run.picture && run.picture !== 'noimage';
     const onPbPace = run.delta < 0;
@@ -273,13 +287,22 @@ const FeaturedRunPanel = ({ run }: { run: LiveRun }) => {
             href={`/live/${run.user}`}
             className={clsx(
                 styles.featuredPanel,
-                onPbPace && styles.featuredPanelPbPace,
-                flash === 'gold' && styles.featuredPanelGold,
-                flash === 'ahead' && styles.featuredPanelGreen,
-                flash === 'behind' && styles.featuredPanelRed,
+                staleReason
+                    ? styles.featuredPanelStale
+                    : [
+                          onPbPace && styles.featuredPanelPbPace,
+                          flash === 'gold' && styles.featuredPanelGold,
+                          flash === 'ahead' && styles.featuredPanelGreen,
+                          flash === 'behind' && styles.featuredPanelRed,
+                      ],
             )}
             style={{ textDecoration: 'none', color: 'inherit' }}
         >
+            {staleReason && (
+                <div className={styles.staleBadge}>
+                    {STALE_LABELS[staleReason]}
+                </div>
+            )}
             {/* Game art */}
             {hasGameImage && (
                 <div className={styles.gameArtWrapper}>
@@ -409,12 +432,16 @@ const LiveSidebar = ({
     featuredIndex,
     liveCount,
     onSelectRun,
+    staleMap,
+    enteringUsers,
 }: {
     runs: LiveRun[];
     allRuns: LiveRun[];
     featuredIndex: number;
     liveCount: number;
     onSelectRun: (index: number) => void;
+    staleMap: Map<string, StaleReason>;
+    enteringUsers: Set<string>;
 }) => {
     return (
         <div className={styles.sidebar} style={{ height: '340px' }}>
@@ -426,6 +453,8 @@ const LiveSidebar = ({
                         run={run}
                         isActive={globalIndex === featuredIndex}
                         onSelect={() => onSelectRun(globalIndex)}
+                        staleReason={staleMap.get(run.user)}
+                        isEntering={enteringUsers.has(run.user)}
                     />
                 );
             })}
@@ -443,10 +472,14 @@ const SidebarCard = ({
     run,
     isActive,
     onSelect,
+    staleReason,
+    isEntering,
 }: {
     run: LiveRun;
     isActive: boolean;
     onSelect: () => void;
+    staleReason?: StaleReason;
+    isEntering?: boolean;
 }) => {
     const hasGameImage = run.gameImage && run.gameImage !== 'noimage';
     const hasAvatar = run.picture && run.picture !== 'noimage';
@@ -459,12 +492,22 @@ const SidebarCard = ({
             className={clsx(
                 styles.sidebarCard,
                 isActive && styles.sidebarCardActive,
-                flash === 'gold' && styles.sidebarCardGold,
-                flash === 'ahead' && styles.sidebarCardGreen,
-                flash === 'behind' && styles.sidebarCardRed,
+                staleReason
+                    ? styles.sidebarCardStale
+                    : [
+                          flash === 'gold' && styles.sidebarCardGold,
+                          flash === 'ahead' && styles.sidebarCardGreen,
+                          flash === 'behind' && styles.sidebarCardRed,
+                      ],
+                isEntering && styles.sidebarCardEnter,
             )}
             onClick={onSelect}
         >
+            {staleReason && (
+                <div className={styles.staleBadge}>
+                    {STALE_LABELS[staleReason]}
+                </div>
+            )}
             {hasGameImage ? (
                 <div className={styles.sidebarCardArt}>
                     <Image
