@@ -89,6 +89,17 @@ export function useRunRefresh(
         graceTimersRef.current.set(user, timer);
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+    // Check initial runs for already-stale runs on mount
+    useEffect(() => {
+        for (const run of initialRuns) {
+            if (run.currentSplitIndex < 0) {
+                markStale(run.user, 'reset');
+            } else if (run.currentSplitIndex >= run.splits.length) {
+                markStale(run.user, 'finished');
+            }
+        }
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
     const replaceStaleRun = useCallback(
         async (staleUser: string) => {
             const currentRuns = liveRunsRef.current;
