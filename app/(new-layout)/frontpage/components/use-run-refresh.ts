@@ -40,8 +40,6 @@ export function useRunRefresh(
         new Map(),
     );
 
-    // Track previous splitIndex per user to detect resets
-    const prevSplitIndexRef = useRef<Map<string, number>>(new Map());
     // Track featured index for backup polling (protect featured run from replacement)
     const featuredIndexRef = useRef(featuredIndex);
     featuredIndexRef.current = featuredIndex;
@@ -71,13 +69,6 @@ export function useRunRefresh(
             });
         }, ENTER_ANIMATION_MS);
     }, []);
-
-    // Initialize prevSplitIndex from initial runs
-    useEffect(() => {
-        for (const run of initialRuns) {
-            prevSplitIndexRef.current.set(run.user, run.currentSplitIndex);
-        }
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const markStale = useCallback((user: string, reason: StaleReason) => {
         // Don't re-mark if already stale
@@ -146,13 +137,6 @@ export function useRunRefresh(
 
             animateEntry(replacement.user);
 
-            // Update prevSplitIndex tracking
-            prevSplitIndexRef.current.delete(staleUser);
-            prevSplitIndexRef.current.set(
-                replacement.user,
-                replacement.currentSplitIndex,
-            );
-
             // Clear stale state
             setStaleMap((prev) => {
                 const next = new Map(prev);
@@ -171,23 +155,14 @@ export function useRunRefresh(
             }
 
             if (msg.type === 'UPDATE') {
-                const prevIndex = prevSplitIndexRef.current.get(msg.user) ?? 0;
-                const newIndex = msg.run.currentSplitIndex;
-
-                // Detect finish: completed all splits
-                if (
-                    newIndex >= msg.run.splits.length &&
-                    prevIndex < msg.run.splits.length
-                ) {
-                    markStale(msg.user, 'finished');
-                }
-                // Detect reset: splitIndex drops to 0 from a significant position.
-                // Threshold of 2 avoids false positives from early resets (common in speedrunning).
-                else if (newIndex === 0 && prevIndex > 2) {
+                // Detect reset: backend sets hasReset=true when runner resets
+                if (msg.run.hasReset) {
                     markStale(msg.user, 'reset');
                 }
-
-                prevSplitIndexRef.current.set(msg.user, newIndex);
+                // Detect finish: backend sets endedAt when run completes
+                else if (msg.run.endedAt) {
+                    markStale(msg.user, 'finished');
+                }
 
                 // Still update the run data so it renders correctly during grace
                 setLiveRuns((prev) =>
@@ -242,12 +217,6 @@ export function useRunRefresh(
             );
 
             animateEntry(replacement.user);
-
-            prevSplitIndexRef.current.delete(replacedUser);
-            prevSplitIndexRef.current.set(
-                replacement.user,
-                replacement.currentSplitIndex,
-            );
         }, BACKUP_POLL_INTERVAL);
 
         return () => clearInterval(interval);
