@@ -113,8 +113,7 @@ export function useRunRefresh(
                 }
             }
 
-            // Fetch more than 5 to increase chance of finding someone not already displayed
-            const freshRuns = await fetchTopRuns(10);
+            const freshRuns = await fetchTopRuns(5);
             const currentUsers = new Set(currentRuns.map((r) => r.user));
 
             // Find the best replacement not already displayed and not stale itself
