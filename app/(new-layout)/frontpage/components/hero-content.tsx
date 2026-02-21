@@ -151,14 +151,26 @@ const SplitTimeline = ({
 
 export const HeroContent = ({
     liveRuns: initialRuns,
-    liveCount,
+    liveCount: initialLiveCount,
 }: {
     liveRuns: LiveRun[];
     liveCount: number;
 }) => {
     const [featuredIndex, setFeaturedIndex] = useState(0);
-    const { liveRuns, staleMap, enteringUsers, handleWsMessage } =
-        useRunRefresh(initialRuns, featuredIndex, setFeaturedIndex);
+    const {
+        liveRuns,
+        liveCount,
+        staleMap,
+        enteringUsers,
+        handleWsMessage,
+        countdownMap,
+        markStale,
+    } = useRunRefresh(
+        initialRuns,
+        initialLiveCount,
+        featuredIndex,
+        setFeaturedIndex,
+    );
 
     const handleSelectRun = useCallback((index: number) => {
         setFeaturedIndex(index);
@@ -182,6 +194,8 @@ export const HeroContent = ({
             staleMap={staleMap}
             enteringUsers={enteringUsers}
             onWsMessage={handleWsMessage}
+            countdownMap={countdownMap}
+            markStale={markStale}
         />
     );
 };
@@ -196,6 +210,8 @@ const HeroLayout = ({
     staleMap,
     enteringUsers,
     onWsMessage,
+    countdownMap,
+    markStale,
 }: {
     featuredRun: LiveRun;
     sidebarRuns: LiveRun[];
@@ -206,8 +222,18 @@ const HeroLayout = ({
     staleMap: Map<string, StaleReason>;
     enteringUsers: Set<string>;
     onWsMessage: (msg: WebsocketLiveRunMessage) => void;
+    countdownMap: Map<string, number>;
+    markStale: (user: string, reason: StaleReason) => void;
 }) => {
     const currentFeatured = allRuns[featuredIndex] ?? featuredRun;
+
+    // Track featured user in ref so the onOffline callback always reads the latest
+    const featuredUserRef = useRef(currentFeatured.user);
+    featuredUserRef.current = currentFeatured.user;
+
+    const handleTwitchOffline = useCallback(() => {
+        markStale(featuredUserRef.current, 'offline');
+    }, [markStale]);
 
     return (
         <div className={clsx(styles.hero, 'mb-3')}>
@@ -224,6 +250,7 @@ const HeroLayout = ({
                     <FeaturedRunPanel
                         run={currentFeatured}
                         staleReason={staleMap.get(currentFeatured.user)}
+                        countdown={countdownMap.get(currentFeatured.user)}
                     />
                 </Col>
 
@@ -241,6 +268,7 @@ const HeroLayout = ({
                                 autoplay={true}
                                 muted={true}
                                 id="frontpage-twitch-player"
+                                onOffline={handleTwitchOffline}
                             />
                         </div>
                     </div>
@@ -256,6 +284,7 @@ const HeroLayout = ({
                         onSelectRun={onSelectRun}
                         staleMap={staleMap}
                         enteringUsers={enteringUsers}
+                        countdownMap={countdownMap}
                     />
                 </Col>
             </Row>
@@ -272,9 +301,11 @@ const STALE_LABELS: Record<StaleReason, string> = {
 const FeaturedRunPanel = ({
     run,
     staleReason,
+    countdown,
 }: {
     run: LiveRun;
     staleReason?: StaleReason;
+    countdown?: number | null;
 }) => {
     const hasGameImage = run.gameImage && run.gameImage !== 'noimage';
     const hasAvatar = run.picture && run.picture !== 'noimage';
@@ -287,20 +318,28 @@ const FeaturedRunPanel = ({
             href={`/live/${run.user}`}
             className={clsx(
                 styles.featuredPanel,
-                staleReason
-                    ? styles.featuredPanelStale
-                    : [
-                          onPbPace && styles.featuredPanelPbPace,
-                          flash === 'gold' && styles.featuredPanelGold,
-                          flash === 'ahead' && styles.featuredPanelGreen,
-                          flash === 'behind' && styles.featuredPanelRed,
-                      ],
+                staleReason === 'finished'
+                    ? styles.featuredPanelFinished
+                    : staleReason
+                      ? styles.featuredPanelStale
+                      : [
+                            onPbPace && styles.featuredPanelPbPace,
+                            flash === 'gold' && styles.featuredPanelGold,
+                            flash === 'ahead' && styles.featuredPanelGreen,
+                            flash === 'behind' && styles.featuredPanelRed,
+                        ],
             )}
             style={{ textDecoration: 'none', color: 'inherit' }}
         >
             {staleReason && (
-                <div className={styles.staleBadge}>
+                <div
+                    className={clsx(
+                        styles.staleBadge,
+                        staleReason === 'finished' && styles.staleBadgeFinished,
+                    )}
+                >
                     {STALE_LABELS[staleReason]}
+                    {countdown != null && ` · ${countdown}`}
                 </div>
             )}
             {/* Game art */}
@@ -434,6 +473,7 @@ const LiveSidebar = ({
     onSelectRun,
     staleMap,
     enteringUsers,
+    countdownMap,
 }: {
     runs: LiveRun[];
     allRuns: LiveRun[];
@@ -442,6 +482,7 @@ const LiveSidebar = ({
     onSelectRun: (index: number) => void;
     staleMap: Map<string, StaleReason>;
     enteringUsers: Set<string>;
+    countdownMap: Map<string, number>;
 }) => {
     return (
         <div className={styles.sidebar} style={{ height: '340px' }}>
@@ -457,6 +498,7 @@ const LiveSidebar = ({
                         onSelect={() => onSelectRun(globalIndex)}
                         staleReason={staleMap.get(run.user)}
                         isEntering={enteringUsers.has(run.user)}
+                        countdown={countdownMap.get(run.user)}
                     />
                 );
             })}
@@ -476,12 +518,14 @@ const SidebarCard = ({
     onSelect,
     staleReason,
     isEntering,
+    countdown,
 }: {
     run: LiveRun;
     isActive: boolean;
     onSelect: () => void;
     staleReason?: StaleReason;
     isEntering?: boolean;
+    countdown?: number;
 }) => {
     const hasGameImage = run.gameImage && run.gameImage !== 'noimage';
     const hasAvatar = run.picture && run.picture !== 'noimage';
@@ -494,20 +538,28 @@ const SidebarCard = ({
             className={clsx(
                 styles.sidebarCard,
                 isActive && styles.sidebarCardActive,
-                staleReason
-                    ? styles.sidebarCardStale
-                    : [
-                          flash === 'gold' && styles.sidebarCardGold,
-                          flash === 'ahead' && styles.sidebarCardGreen,
-                          flash === 'behind' && styles.sidebarCardRed,
-                      ],
+                staleReason === 'finished'
+                    ? styles.sidebarCardFinished
+                    : staleReason
+                      ? styles.sidebarCardStale
+                      : [
+                            flash === 'gold' && styles.sidebarCardGold,
+                            flash === 'ahead' && styles.sidebarCardGreen,
+                            flash === 'behind' && styles.sidebarCardRed,
+                        ],
                 isEntering && styles.sidebarCardEnter,
             )}
             onClick={onSelect}
         >
             {staleReason && (
-                <div className={styles.staleBadge}>
+                <div
+                    className={clsx(
+                        styles.staleBadge,
+                        staleReason === 'finished' && styles.staleBadgeFinished,
+                    )}
+                >
                     {STALE_LABELS[staleReason]}
+                    {countdown != null && ` · ${countdown}`}
                 </div>
             )}
             {hasGameImage ? (
