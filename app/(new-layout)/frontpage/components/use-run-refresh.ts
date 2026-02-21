@@ -5,6 +5,7 @@ import {
     LiveRun,
     WebsocketLiveRunMessage,
 } from '~app/(old-layout)/live/live.types';
+import { getLiveCount } from '~src/lib/highlights';
 import { getTopNLiveRuns } from '~src/lib/live-runs';
 
 export type StaleReason = 'reset' | 'finished' | 'offline';
@@ -18,8 +19,9 @@ const GRACE_PERIODS: Record<StaleReason, number> = {
 const BACKUP_POLL_INTERVAL = 120_000; // 2 minutes
 const REPLACE_RETRY_INTERVAL = 30_000; // 30 seconds
 const ENTER_ANIMATION_MS = 300;
+const SWAP_COUNTDOWN_S = 5;
 
-async function fetchTopRuns(n = 5): Promise<LiveRun[]> {
+async function fetchTopRuns(n = 7): Promise<LiveRun[]> {
     try {
         return await getTopNLiveRuns(n);
     } catch {
@@ -29,15 +31,17 @@ async function fetchTopRuns(n = 5): Promise<LiveRun[]> {
 
 export function useRunRefresh(
     initialRuns: LiveRun[],
+    initialLiveCount: number,
     featuredIndex: number,
     setFeaturedIndex: (index: number) => void,
 ) {
     const [liveRuns, setLiveRuns] = useState(initialRuns);
+    const [liveCount, setLiveCount] = useState(initialLiveCount);
     const [staleMap, setStaleMap] = useState<Map<string, StaleReason>>(
         new Map(),
     );
 
-    // Track featured index for backup polling (protect featured run from replacement)
+    // Track featured index for backup polling
     const featuredIndexRef = useRef(featuredIndex);
     featuredIndexRef.current = featuredIndex;
     // Track grace period timeouts so we can clear them
@@ -46,6 +50,14 @@ export function useRunRefresh(
     );
     // Track entering animation state
     const [enteringUsers, setEnteringUsers] = useState<Set<string>>(new Set());
+    // Per-run countdown before swap (user -> seconds remaining)
+    const countdownMapRef = useRef<Map<string, number>>(new Map());
+    const [countdownDisplay, setCountdownDisplay] = useState<
+        Map<string, number>
+    >(new Map());
+    const countdownTickRef = useRef<ReturnType<typeof setInterval> | null>(
+        null,
+    );
     // Ref to latest liveRuns for use in callbacks/timers
     const liveRunsRef = useRef(liveRuns);
     liveRunsRef.current = liveRuns;
@@ -100,59 +112,102 @@ export function useRunRefresh(
         }
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+    // Pre-fetched replacements keyed by stale user
+    const prefetchedRef = useRef<Map<string, LiveRun | null>>(new Map());
+
     const replaceStaleRun = useCallback(
-        async (staleUser: string) => {
-            const currentRuns = liveRunsRef.current;
-            const staleIndex = currentRuns.findIndex(
-                (r) => r.user === staleUser,
-            );
+        (staleUser: string) => {
+            // Already counting down this user
+            if (countdownMapRef.current.has(staleUser)) return;
 
-            // If the stale run is the featured run, auto-promote the first
-            // non-stale sidebar run to featured instead of swapping in-place.
-            // This avoids unexpectedly switching the Twitch embed channel.
-            if (staleIndex === featuredIndexRef.current) {
-                const promotionIndex = currentRuns.findIndex(
-                    (r, i) =>
-                        i !== staleIndex && !staleMapRef.current.has(r.user),
+            countdownMapRef.current.set(staleUser, SWAP_COUNTDOWN_S);
+            setCountdownDisplay(new Map(countdownMapRef.current));
+
+            // Pre-fetch replacement immediately
+            fetchTopRuns(7).then((freshRuns) => {
+                const currentUsers = new Set(
+                    liveRunsRef.current.map((r) => r.user),
                 );
-                if (promotionIndex !== -1) {
-                    setFeaturedIndex(promotionIndex);
-                }
-            }
-
-            const freshRuns = await fetchTopRuns(5);
-            const currentUsers = new Set(currentRuns.map((r) => r.user));
-
-            // Find the best replacement: not already displayed, actively running
-            const replacement = freshRuns.find(
-                (r) =>
-                    !currentUsers.has(r.user) &&
-                    r.currentSplitIndex >= 0 &&
-                    r.currentSplitIndex < r.splits.length,
-            );
-
-            if (!replacement) {
-                // No replacement available — retry later, keep stale indicator
-                const retryTimer = setTimeout(() => {
-                    replaceStaleRun(staleUser);
-                }, REPLACE_RETRY_INTERVAL);
-                graceTimersRef.current.set(staleUser, retryTimer);
-                return;
-            }
-
-            // Swap the stale run for the replacement
-            setLiveRuns((prev) =>
-                prev.map((r) => (r.user === staleUser ? replacement : r)),
-            );
-
-            animateEntry(replacement.user);
-
-            // Clear stale state
-            setStaleMap((prev) => {
-                const next = new Map(prev);
-                next.delete(staleUser);
-                return next;
+                const replacement =
+                    freshRuns.find(
+                        (r) =>
+                            !currentUsers.has(r.user) &&
+                            r.currentSplitIndex >= 0 &&
+                            r.currentSplitIndex < r.splits.length,
+                    ) ?? null;
+                prefetchedRef.current.set(staleUser, replacement);
             });
+
+            // Start master tick if not already running
+            if (countdownTickRef.current) return;
+
+            countdownTickRef.current = setInterval(() => {
+                const map = countdownMapRef.current;
+                const expired: string[] = [];
+
+                for (const [user, remaining] of map) {
+                    if (remaining <= 1) {
+                        expired.push(user);
+                        map.delete(user);
+                    } else {
+                        map.set(user, remaining - 1);
+                    }
+                }
+
+                setCountdownDisplay(new Map(map));
+
+                // Stop tick when no countdowns remain
+                if (map.size === 0 && countdownTickRef.current) {
+                    clearInterval(countdownTickRef.current);
+                    countdownTickRef.current = null;
+                }
+
+                for (const user of expired) {
+                    const runs = liveRunsRef.current;
+                    const idx = runs.findIndex((r) => r.user === user);
+                    if (idx === -1) continue;
+
+                    // If featured, promote best non-stale sidebar run
+                    if (idx === featuredIndexRef.current) {
+                        const promotionIndex = runs.findIndex(
+                            (r, i) =>
+                                i !== idx && !staleMapRef.current.has(r.user),
+                        );
+                        if (promotionIndex !== -1) {
+                            setFeaturedIndex(promotionIndex);
+                        }
+                    }
+
+                    let replacement = prefetchedRef.current.get(user);
+                    prefetchedRef.current.delete(user);
+
+                    // Guard against duplicates: pre-fetch may be stale
+                    const currentUsers = new Set(
+                        liveRunsRef.current.map((r) => r.user),
+                    );
+                    if (replacement && currentUsers.has(replacement.user)) {
+                        replacement = null;
+                    }
+
+                    if (replacement) {
+                        const swap = replacement;
+                        setLiveRuns((prev) =>
+                            prev.map((r) => (r.user === user ? swap : r)),
+                        );
+                        animateEntry(swap.user);
+                        setStaleMap((prev) => {
+                            const next = new Map(prev);
+                            next.delete(user);
+                            return next;
+                        });
+                    } else {
+                        const retryTimer = setTimeout(() => {
+                            replaceStaleRun(user);
+                        }, REPLACE_RETRY_INTERVAL);
+                        graceTimersRef.current.set(user, retryTimer);
+                    }
+                }
+            }, 1000);
         },
         [animateEntry, setFeaturedIndex],
     );
@@ -169,7 +224,7 @@ export function useRunRefresh(
                 if (msg.run.currentSplitIndex < 0) {
                     markStale(msg.user, 'reset');
                 }
-                // Detect finish: splitIndex past last split (e.g., 3 splits → index 3)
+                // Detect finish: splitIndex past last split (e.g., 3 splits -> index 3)
                 else if (msg.run.currentSplitIndex >= msg.run.splits.length) {
                     markStale(msg.user, 'finished');
                 }
@@ -183,94 +238,90 @@ export function useRunRefresh(
         [markStale],
     );
 
-    // Backup polling — fetch top runs every 2 minutes
+    // Backup polling — swap out sidebar runs that dropped out of the top 7
     useEffect(() => {
         const interval = setInterval(async () => {
-            const freshRuns = await fetchTopRuns(5);
+            const [freshRuns, freshCount] = await Promise.all([
+                fetchTopRuns(7),
+                getLiveCount(),
+            ]);
+            if (freshCount > 0) setLiveCount(freshCount);
             if (freshRuns.length === 0) return;
 
             const currentRuns = liveRunsRef.current;
+            const freshUsers = new Set(freshRuns.map((r) => r.user));
             const currentUsers = new Set(currentRuns.map((r) => r.user));
 
-            // Find runs in fresh list that aren't already displayed and actively running
-            const newCandidates = freshRuns.filter(
-                (r) =>
-                    !currentUsers.has(r.user) &&
-                    r.currentSplitIndex >= 0 &&
-                    r.currentSplitIndex < r.splits.length,
+            // Sidebar runs that dropped out of the top 7
+            const droppedIndices: number[] = [];
+            for (let i = 0; i < currentRuns.length; i++) {
+                if (i === featuredIndexRef.current) continue; // Don't touch featured
+                if (!freshUsers.has(currentRuns[i].user)) {
+                    droppedIndices.push(i);
+                }
+            }
+            if (droppedIndices.length === 0) return;
+
+            // Most important fresh runs not already displayed, sorted by importance desc
+            const candidates = freshRuns
+                .filter(
+                    (r) =>
+                        !currentUsers.has(r.user) &&
+                        r.currentSplitIndex >= 0 &&
+                        r.currentSplitIndex < r.splits.length,
+                )
+                .sort((a, b) => b.importance - a.importance);
+            if (candidates.length === 0) return;
+
+            // Pair each dropped sidebar run with the next most important candidate
+            const replacements = new Map<string, LiveRun>();
+            let candidateIdx = 0;
+
+            for (const idx of droppedIndices) {
+                if (candidateIdx >= candidates.length) break;
+                replacements.set(
+                    currentRuns[idx].user,
+                    candidates[candidateIdx++],
+                );
+            }
+
+            if (replacements.size === 0) return;
+
+            // Apply all replacements at once
+            setLiveRuns((prev) =>
+                prev.map((r) => replacements.get(r.user) ?? r),
             );
-            if (newCandidates.length === 0) return;
 
-            // Priority 1: replace stale sidebar runs first
-            for (const candidate of newCandidates) {
-                const staleIndex = currentRuns.findIndex(
-                    (r, i) =>
-                        i !== featuredIndexRef.current &&
-                        staleMapRef.current.has(r.user),
-                );
-                if (staleIndex === -1) break;
+            // Animate entries and clean up stale/countdown state
+            for (const [replacedUser, replacement] of replacements) {
+                animateEntry(replacement.user);
 
-                const staleUser = currentRuns[staleIndex].user;
-                setLiveRuns((prev) =>
-                    prev.map((r) => (r.user === staleUser ? candidate : r)),
-                );
-                animateEntry(candidate.user);
-                // Clear stale state and any retry timer
-                const timer = graceTimersRef.current.get(staleUser);
+                const timer = graceTimersRef.current.get(replacedUser);
                 if (timer) {
                     clearTimeout(timer);
-                    graceTimersRef.current.delete(staleUser);
+                    graceTimersRef.current.delete(replacedUser);
                 }
-                setStaleMap((prev) => {
-                    const next = new Map(prev);
-                    next.delete(staleUser);
-                    return next;
-                });
-                // Update currentUsers for next iteration
-                currentUsers.delete(staleUser);
-                currentUsers.add(candidate.user);
+                countdownMapRef.current.delete(replacedUser);
             }
 
-            // Priority 2: replace lowest-importance non-featured sidebar run
-            const remainingCandidates = newCandidates.filter(
-                (r) => !currentUsers.has(r.user),
-            );
-            if (remainingCandidates.length === 0) return;
-
-            let worstIndex = -1;
-            let worstImportance = Infinity;
-            for (let i = 0; i < currentRuns.length; i++) {
-                if (i === featuredIndexRef.current) continue;
-                if (staleMapRef.current.has(currentRuns[i].user)) continue;
-                if (currentRuns[i].importance < worstImportance) {
-                    worstImportance = currentRuns[i].importance;
-                    worstIndex = i;
+            setStaleMap((prev) => {
+                const next = new Map(prev);
+                for (const replacedUser of replacements.keys()) {
+                    next.delete(replacedUser);
                 }
-            }
-
-            if (
-                worstIndex === -1 ||
-                remainingCandidates[0].importance <= worstImportance
-            ) {
-                return;
-            }
-
-            const replacement = remainingCandidates[0];
-            const replacedUser = currentRuns[worstIndex].user;
-
-            setLiveRuns((prev) =>
-                prev.map((r) => (r.user === replacedUser ? replacement : r)),
-            );
-
-            animateEntry(replacement.user);
+                return next;
+            });
         }, BACKUP_POLL_INTERVAL);
 
         return () => clearInterval(interval);
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Cleanup all grace timers on unmount
+    // Cleanup all timers on unmount
     useEffect(() => {
         return () => {
+            if (countdownTickRef.current) {
+                clearInterval(countdownTickRef.current);
+            }
             for (const timer of graceTimersRef.current.values()) {
                 clearTimeout(timer);
             }
@@ -279,8 +330,11 @@ export function useRunRefresh(
 
     return {
         liveRuns,
+        liveCount,
         staleMap,
         enteringUsers,
         handleWsMessage,
+        countdownMap: countdownDisplay,
+        markStale,
     };
 }

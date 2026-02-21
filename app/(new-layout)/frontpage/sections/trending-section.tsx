@@ -20,7 +20,7 @@ const FALLBACK_IMAGE = '/logo_dark_theme_no_text_transparent.png';
 
 export const TrendingSection = async () => {
     const [games, gameImageMap, topRunners, pbRunners] = await Promise.all([
-        getMostActiveGames('week'),
+        getMostActiveGames('day'),
         getGameImageMap(),
         getWeeklyTopRunners(3),
         getMostPBsRunners(3),

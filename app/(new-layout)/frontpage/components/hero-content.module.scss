@@ -449,8 +449,19 @@
     pointer-events: none;
 }
 
+/* Finished run — celebrate, don't dim */
+.sidebarCardFinished {
+    pointer-events: none;
+    border-color: rgba(34, 197, 94, 0.5);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.15);
+}
+
 .featuredPanelStale {
     opacity: 0.5;
+}
+
+.featuredPanelFinished {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2), 0 0 40px rgba(34, 197, 94, 0.08);
 }
 
 .staleBadge {
@@ -470,6 +481,12 @@
     color: var(--bs-secondary-color);
     background: var(--bs-secondary-bg);
     border: 1px solid var(--bs-border-color);
+}
+
+.staleBadgeFinished {
+    color: #fff;
+    background: rgba(34, 197, 94, 0.85);
+    border-color: rgba(34, 197, 94, 0.4);
 }
 
 /* Swap animation — new run slides in */

@@ -22,7 +22,11 @@ export const CommunityPulse = async () => {
     };
 
     return (
-        <Panel title="Community Pulse" subtitle="Last 24 Hours" className="p-0">
+        <Panel
+            title="Community Pulse"
+            subtitle="Last 24 Hours"
+            className="p-0 overflow-hidden"
+        >
             <CommunityPulseClient
                 last24h={last24h}
                 allTime={globalStats}
