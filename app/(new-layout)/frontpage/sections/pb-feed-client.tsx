@@ -28,15 +28,17 @@ export const PbFeedClient = ({ pbs, gameImages }: PbFeedClientProps) => {
     return (
         <Panel title="Personal Bests" subtitle="Recent PBs" className="p-0">
             <FeaturedCarousel pbs={featured} gameImages={gameImages} />
-            <div className={styles.listContainer}>
-                {rest.map((pb) => (
-                    <CompactItem
-                        key={pb.id}
-                        pb={pb}
-                        imageUrl={gameImages[pb.game] ?? FALLBACK_IMAGE}
-                    />
-                ))}
-            </div>
+            {rest.length > 0 && (
+                <div className={styles.listContainer}>
+                    {rest.map((pb) => (
+                        <CompactItem
+                            key={pb.id}
+                            pb={pb}
+                            imageUrl={gameImages[pb.game] ?? FALLBACK_IMAGE}
+                        />
+                    ))}
+                </div>
+            )}
         </Panel>
     );
 };
@@ -52,17 +54,25 @@ const FeaturedCarousel = ({
     const pausedRef = useRef(false);
     const timerRef = useRef<ReturnType<typeof setInterval>>(undefined);
 
-    useEffect(() => {
+    const startTimer = () => {
+        clearInterval(timerRef.current);
         if (pbs.length <= 1) return;
-
         timerRef.current = setInterval(() => {
             if (!pausedRef.current) {
                 setActiveIndex((i) => (i + 1) % pbs.length);
             }
         }, ROTATE_INTERVAL);
+    };
 
+    useEffect(() => {
+        startTimer();
         return () => clearInterval(timerRef.current);
     }, [pbs.length]);
+
+    const goToSlide = (index: number) => {
+        setActiveIndex(index);
+        startTimer();
+    };
 
     return (
         <div
@@ -129,7 +139,7 @@ const FeaturedCarousel = ({
                             key={i}
                             type="button"
                             className={`${styles.dot} ${i === activeIndex ? styles.dotActive : ''}`}
-                            onClick={() => setActiveIndex(i)}
+                            onClick={() => goToSlide(i)}
                             aria-label={`Show PB ${i + 1}`}
                         />
                     ))}
