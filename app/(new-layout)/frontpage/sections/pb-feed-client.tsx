@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { FaArrowDown, FaStar, FaTrophy } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import { UserLink } from '~src/components/links/links';
 import {
@@ -256,6 +257,15 @@ const FeaturedCarousel = ({
                                 className={styles.featuredArt}
                             />
                             <div className={styles.featuredContent}>
+                                <div className={styles.featuredHeader}>
+                                    <span className={styles.featuredLabel}>
+                                        <FaTrophy size={10} />
+                                        Notable PB
+                                    </span>
+                                    <span className={styles.featuredTimestamp}>
+                                        <FromNow time={pb.endedAt} />
+                                    </span>
+                                </div>
                                 <span className={styles.featuredRunner}>
                                     <UserLink username={pb.username} />
                                 </span>
@@ -270,7 +280,7 @@ const FeaturedCarousel = ({
                                     </span>
                                     {hasImprovement ? (
                                         <span className={styles.featuredDelta}>
-                                            -
+                                            <FaArrowDown size={10} />
                                             {getFormattedString(
                                                 improvement.toString(),
                                                 improvement < 60000,
@@ -280,13 +290,11 @@ const FeaturedCarousel = ({
                                         <span
                                             className={styles.featuredFirstPb}
                                         >
+                                            <FaStar size={10} />
                                             First PB!
                                         </span>
                                     ) : null}
                                 </div>
-                                <span className={styles.featuredTimestamp}>
-                                    <FromNow time={pb.endedAt} />
-                                </span>
                             </div>
                         </div>
                     );
@@ -348,14 +356,16 @@ const CompactItem = ({
                 </span>
                 {hasImprovement ? (
                     <span className={styles.listDelta}>
-                        -
+                        <FaArrowDown size={8} />
                         {getFormattedString(
                             improvement.toString(),
                             improvement < 60000,
                         )}
                     </span>
                 ) : pb.previousPb === null ? (
-                    <span className={styles.listFirstPb}>First PB!</span>
+                    <span className={styles.listFirstPb}>
+                        <FaStar size={8} /> First PB!
+                    </span>
                 ) : null}
                 <span className={styles.listTimestamp}>
                     <FromNow time={pb.endedAt} />
