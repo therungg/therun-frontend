@@ -1,28 +1,37 @@
 $mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
 $green: #4caf50;
 
-/* ── Featured carousel ── */
+/* ── Featured carousel (horizontal scroll-snap) ── */
 
 .featured {
-    position: relative;
-    height: 160px;
-    overflow: hidden;
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
     border-bottom: 1px solid var(--bs-border-color);
+    cursor: grab;
+
+    &:active {
+        cursor: grabbing;
+    }
+
+    /* Hide scrollbar but keep functionality */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
 }
 
 .featuredSlide {
-    position: absolute;
-    inset: 0;
+    flex: 0 0 100%;
+    scroll-snap-align: start;
+    position: relative;
+    height: 160px;
+    overflow: hidden;
     display: flex;
     align-items: stretch;
-    opacity: 0;
-    transition: opacity 500ms ease;
-    pointer-events: none;
-}
-
-.featuredSlideActive {
-    opacity: 1;
-    pointer-events: auto;
 }
 
 .featuredArt {
@@ -103,48 +112,6 @@ $green: #4caf50;
     font-size: 0.75rem;
     color: var(--bs-secondary-color);
     margin-top: auto;
-}
-
-/* ── Carousel nav ── */
-
-.nav {
-    position: absolute;
-    bottom: 0.5rem;
-    left: 1.5rem;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-}
-
-.navButton {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    border: 1px solid color-mix(in srgb, var(--bs-border-color) 60%, transparent);
-    background: color-mix(in srgb, var(--bs-body-bg) 80%, transparent);
-    color: var(--bs-body-color);
-    cursor: pointer;
-    transition: all 0.15s ease;
-    padding: 0;
-
-    &:hover {
-        background: var(--bs-secondary-bg);
-        border-color: var(--bs-border-color);
-    }
-}
-
-.navCounter {
-    font-family: $mono;
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: var(--bs-secondary-color);
-    padding: 0 0.3rem;
-    min-width: 2.5rem;
-    text-align: center;
 }
 
 /* ── Compact list ── */
@@ -264,7 +231,7 @@ $green: #4caf50;
 /* ── Responsive ── */
 
 @media (max-width: 768px) {
-    .featured {
+    .featuredSlide {
         height: 140px;
     }
 
@@ -283,7 +250,7 @@ $green: #4caf50;
 }
 
 @media (max-width: 480px) {
-    .featured {
+    .featuredSlide {
         height: 130px;
     }
 

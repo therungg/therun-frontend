@@ -1,8 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { useEffect, useRef, useState } from 'react';
-import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
+import { useRef } from 'react';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import { UserLink } from '~src/components/links/links';
 import {
@@ -14,7 +13,6 @@ import type { FinishedRunPB } from '~src/lib/highlights';
 import styles from './pb-feed.module.scss';
 
 const FALLBACK_IMAGE = '/logo_dark_theme_no_text_transparent.png';
-const ROTATE_INTERVAL = 8000;
 
 interface PbFeedClientProps {
     notablePbs: FinishedRunPB[];
@@ -54,51 +52,54 @@ const FeaturedCarousel = ({
     pbs: FinishedRunPB[];
     gameImages: Record<string, string>;
 }) => {
-    const [activeIndex, setActiveIndex] = useState(0);
-    const pausedRef = useRef(false);
-    const timerRef = useRef<ReturnType<typeof setInterval>>(undefined);
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const dragState = useRef({ dragging: false, startX: 0, scrollLeft: 0 });
 
-    const startTimer = () => {
-        clearInterval(timerRef.current);
-        if (pbs.length <= 1) return;
-        timerRef.current = setInterval(() => {
-            if (!pausedRef.current) {
-                setActiveIndex((i) => (i + 1) % pbs.length);
-            }
-        }, ROTATE_INTERVAL);
+    const onPointerDown = (e: React.PointerEvent) => {
+        const el = scrollRef.current;
+        if (!el) return;
+        dragState.current = {
+            dragging: true,
+            startX: e.clientX,
+            scrollLeft: el.scrollLeft,
+        };
+        el.setPointerCapture(e.pointerId);
+        el.style.scrollBehavior = 'auto';
     };
 
-    useEffect(() => {
-        startTimer();
-        return () => clearInterval(timerRef.current);
-    }, [pbs.length]);
+    const onPointerMove = (e: React.PointerEvent) => {
+        if (!dragState.current.dragging) return;
+        const el = scrollRef.current;
+        if (!el) return;
+        const dx = e.clientX - dragState.current.startX;
+        el.scrollLeft = dragState.current.scrollLeft - dx;
+    };
 
-    const goToSlide = (index: number) => {
-        setActiveIndex(index);
-        startTimer();
+    const onPointerUp = (e: React.PointerEvent) => {
+        dragState.current.dragging = false;
+        const el = scrollRef.current;
+        if (!el) return;
+        el.releasePointerCapture(e.pointerId);
+        el.style.scrollBehavior = 'smooth';
     };
 
     return (
         <div
+            ref={scrollRef}
             className={styles.featured}
-            onMouseEnter={() => {
-                pausedRef.current = true;
-            }}
-            onMouseLeave={() => {
-                pausedRef.current = false;
-            }}
+            onPointerDown={onPointerDown}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
         >
-            {pbs.map((pb, i) => {
+            {pbs.map((pb) => {
                 const imageUrl = gameImages[pb.game] ?? FALLBACK_IMAGE;
                 const improvement =
                     pb.previousPb !== null ? pb.previousPb - pb.time : null;
                 const hasImprovement = improvement !== null && improvement > 0;
 
                 return (
-                    <div
-                        key={pb.id}
-                        className={`${styles.featuredSlide} ${i === activeIndex ? styles.featuredSlideActive : ''}`}
-                    >
+                    <div key={pb.id} className={styles.featuredSlide}>
                         <img
                             src={imageUrl}
                             alt=""
@@ -136,35 +137,6 @@ const FeaturedCarousel = ({
                     </div>
                 );
             })}
-            {pbs.length > 1 && (
-                <div className={styles.nav}>
-                    <button
-                        type="button"
-                        className={styles.navButton}
-                        onClick={() =>
-                            goToSlide(
-                                (activeIndex - 1 + pbs.length) % pbs.length,
-                            )
-                        }
-                        aria-label="Previous PB"
-                    >
-                        <FaChevronLeft size={10} />
-                    </button>
-                    <span className={styles.navCounter}>
-                        {activeIndex + 1} / {pbs.length}
-                    </span>
-                    <button
-                        type="button"
-                        className={styles.navButton}
-                        onClick={() =>
-                            goToSlide((activeIndex + 1) % pbs.length)
-                        }
-                        aria-label="Next PB"
-                    >
-                        <FaChevronRight size={10} />
-                    </button>
-                </div>
-            )}
         </div>
     );
 };
