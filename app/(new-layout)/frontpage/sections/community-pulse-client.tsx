@@ -207,7 +207,7 @@ export const CommunityPulseClient = ({
                     <span className={styles.chipNumber}>
                         {compact.format(allTime.totalFinishedAttemptCount)}
                     </span>
-                    <span className={styles.chipLabel}>runs</span>
+                    <span className={styles.chipLabel}>runs completed</span>
                 </span>
                 <span className={styles.footerChip}>
                     <FaBolt size={12} className={styles.chipIcon} />

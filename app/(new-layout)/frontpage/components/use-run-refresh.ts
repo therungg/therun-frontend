@@ -114,6 +114,8 @@ export function useRunRefresh(
 
     // Pre-fetched replacements keyed by stale user
     const prefetchedRef = useRef<Map<string, LiveRun | null>>(new Map());
+    // Users already claimed as pending replacements (prevents duplicate pre-fetches)
+    const claimedReplacementsRef = useRef<Set<string>>(new Set());
 
     const replaceStaleRun = useCallback(
         (staleUser: string) => {
@@ -132,9 +134,13 @@ export function useRunRefresh(
                     freshRuns.find(
                         (r) =>
                             !currentUsers.has(r.user) &&
+                            !claimedReplacementsRef.current.has(r.user) &&
                             r.currentSplitIndex >= 0 &&
                             r.currentSplitIndex < r.splits.length,
                     ) ?? null;
+                if (replacement) {
+                    claimedReplacementsRef.current.add(replacement.user);
+                }
                 prefetchedRef.current.set(staleUser, replacement);
             });
 
@@ -162,12 +168,13 @@ export function useRunRefresh(
                     countdownTickRef.current = null;
                 }
 
+                if (expired.length === 0) return;
+
+                // Handle featured promotion before batched swap
+                const runs = liveRunsRef.current;
                 for (const user of expired) {
-                    const runs = liveRunsRef.current;
                     const idx = runs.findIndex((r) => r.user === user);
                     if (idx === -1) continue;
-
-                    // If featured, promote best non-stale sidebar run
                     if (idx === featuredIndexRef.current) {
                         const promotionIndex = runs.findIndex(
                             (r, i) =>
@@ -177,35 +184,57 @@ export function useRunRefresh(
                             setFeaturedIndex(promotionIndex);
                         }
                     }
+                }
 
+                // Collect replacements for all expired users, deduplicating
+                // within the batch so two stale users can't claim the same swap
+                const validReplacements = new Map<string, LiveRun>();
+                const retryUsers: string[] = [];
+                const currentUsers = new Set(
+                    liveRunsRef.current.map((r) => r.user),
+                );
+                const claimedInBatch = new Set<string>();
+
+                for (const user of expired) {
                     let replacement = prefetchedRef.current.get(user);
                     prefetchedRef.current.delete(user);
-
-                    // Guard against duplicates: pre-fetch may be stale
-                    const currentUsers = new Set(
-                        liveRunsRef.current.map((r) => r.user),
-                    );
-                    if (replacement && currentUsers.has(replacement.user)) {
-                        replacement = null;
-                    }
-
                     if (replacement) {
-                        const swap = replacement;
-                        setLiveRuns((prev) =>
-                            prev.map((r) => (r.user === user ? swap : r)),
-                        );
-                        animateEntry(swap.user);
-                        setStaleMap((prev) => {
-                            const next = new Map(prev);
-                            next.delete(user);
-                            return next;
-                        });
-                    } else {
-                        const retryTimer = setTimeout(() => {
-                            replaceStaleRun(user);
-                        }, REPLACE_RETRY_INTERVAL);
-                        graceTimersRef.current.set(user, retryTimer);
+                        claimedReplacementsRef.current.delete(replacement.user);
                     }
+
+                    if (
+                        !replacement ||
+                        currentUsers.has(replacement.user) ||
+                        claimedInBatch.has(replacement.user)
+                    ) {
+                        retryUsers.push(user);
+                    } else {
+                        claimedInBatch.add(replacement.user);
+                        validReplacements.set(user, replacement);
+                    }
+                }
+
+                if (validReplacements.size > 0) {
+                    setLiveRuns((prev) =>
+                        prev.map((r) => validReplacements.get(r.user) ?? r),
+                    );
+                    for (const [, swap] of validReplacements) {
+                        animateEntry(swap.user);
+                    }
+                    setStaleMap((prev) => {
+                        const next = new Map(prev);
+                        for (const staleUser of validReplacements.keys()) {
+                            next.delete(staleUser);
+                        }
+                        return next;
+                    });
+                }
+
+                for (const user of retryUsers) {
+                    const retryTimer = setTimeout(() => {
+                        replaceStaleRun(user);
+                    }, REPLACE_RETRY_INTERVAL);
+                    graceTimersRef.current.set(user, retryTimer);
                 }
             }, 1000);
         },

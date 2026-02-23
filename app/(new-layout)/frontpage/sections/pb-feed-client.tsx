@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FaArrowDown, FaStar, FaTrophy } from 'react-icons/fa6';
+import { FaArrowDown, FaBolt, FaStar } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import { UserLink } from '~src/components/links/links';
 import {
@@ -20,17 +20,23 @@ interface PbFeedClientProps {
     notablePbs: FinishedRunPB[];
     allPbs: FinishedRunPB[];
     gameImages: Record<string, string>;
+    userPictures: Record<string, string>;
 }
 
 export const PbFeedClient = ({
     notablePbs,
     allPbs,
     gameImages,
+    userPictures,
 }: PbFeedClientProps) => {
     return (
         <Panel title="Personal Bests" subtitle="Recent PBs" className="p-0">
             {notablePbs.length > 0 && (
-                <FeaturedCarousel pbs={notablePbs} gameImages={gameImages} />
+                <FeaturedCarousel
+                    pbs={notablePbs}
+                    gameImages={gameImages}
+                    userPictures={userPictures}
+                />
             )}
             {allPbs.length > 0 && (
                 <div className={styles.listContainer}>
@@ -39,6 +45,7 @@ export const PbFeedClient = ({
                             key={pb.id}
                             pb={pb}
                             imageUrl={gameImages[pb.game] ?? FALLBACK_IMAGE}
+                            avatarUrl={userPictures[pb.username]}
                         />
                     ))}
                 </div>
@@ -50,9 +57,11 @@ export const PbFeedClient = ({
 const FeaturedCarousel = ({
     pbs,
     gameImages,
+    userPictures,
 }: {
     pbs: FinishedRunPB[];
     gameImages: Record<string, string>;
+    userPictures: Record<string, string>;
 }) => {
     const scrollRef = useRef<HTMLDivElement>(null);
     const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -106,12 +115,16 @@ const FeaturedCarousel = ({
     const resetProgress = useCallback(() => {
         const bar = progressRef.current;
         if (!bar) return;
-        bar.classList.remove(styles.progressBarAnimating);
-        bar.classList.remove(styles.progressBarPaused);
-        // Force reflow to restart animation
-        void bar.offsetWidth;
-        bar.style.transitionDuration = `${ROTATE_INTERVAL}ms`;
-        bar.classList.add(styles.progressBarAnimating);
+        // Snap to 0 with no transition
+        bar.style.transition = 'none';
+        bar.style.width = '0%';
+        // Wait for the browser to paint the 0% state, then animate to 100%
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                bar.style.transition = `width ${ROTATE_INTERVAL}ms linear`;
+                bar.style.width = '100%';
+            });
+        });
     }, []);
 
     // Auto-rotate
@@ -139,12 +152,13 @@ const FeaturedCarousel = ({
         pausedRef.current = true;
         const bar = progressRef.current;
         if (bar) {
+            // Freeze the bar at its current computed width
             const width = bar.getBoundingClientRect().width;
             const parentWidth =
                 bar.parentElement?.getBoundingClientRect().width || 1;
-            bar.classList.remove(styles.progressBarAnimating);
-            bar.classList.add(styles.progressBarPaused);
-            bar.style.width = `${(width / parentWidth) * 100}%`;
+            const pct = (width / parentWidth) * 100;
+            bar.style.transition = 'none';
+            bar.style.width = `${pct}%`;
         }
     };
 
@@ -153,13 +167,11 @@ const FeaturedCarousel = ({
         const bar = progressRef.current;
         if (bar) {
             const currentPct = parseFloat(bar.style.width) || 0;
-            const remainingPct = 100 - currentPct;
-            const remainingTime = (remainingPct / 100) * ROTATE_INTERVAL;
-            bar.classList.remove(styles.progressBarPaused);
-            bar.style.transitionDuration = `${remainingTime}ms`;
-            // Force reflow
+            const remainingTime = ((100 - currentPct) / 100) * ROTATE_INTERVAL;
+            // Force reflow so the browser sees the current frozen width
             void bar.offsetWidth;
-            bar.classList.add(styles.progressBarAnimating);
+            bar.style.transition = `width ${remainingTime}ms linear`;
+            bar.style.width = '100%';
         }
     };
 
@@ -238,6 +250,7 @@ const FeaturedCarousel = ({
             >
                 {pbs.map((pb, i) => {
                     const imageUrl = gameImages[pb.game] ?? FALLBACK_IMAGE;
+                    const avatarUrl = userPictures[pb.username];
                     const improvement =
                         pb.previousPb !== null ? pb.previousPb - pb.time : null;
                     const hasImprovement =
@@ -254,25 +267,84 @@ const FeaturedCarousel = ({
                             <img
                                 src={imageUrl}
                                 alt=""
-                                className={styles.featuredArt}
+                                className={styles.featuredBg}
                             />
+                            <div className={styles.featuredOverlay} />
                             <div className={styles.featuredContent}>
-                                <div className={styles.featuredHeader}>
-                                    <span className={styles.featuredLabel}>
-                                        <FaTrophy size={10} />
-                                        Notable PB
-                                    </span>
-                                    <span className={styles.featuredTimestamp}>
-                                        <FromNow time={pb.endedAt} />
-                                    </span>
+                                <span className={styles.featuredBadge}>
+                                    <FaBolt size={9} />
+                                    Highlighted PB
+                                </span>
+                                <div className={styles.featuredTop}>
+                                    {avatarUrl && (
+                                        <Image
+                                            src={avatarUrl}
+                                            alt={pb.username}
+                                            width={52}
+                                            height={52}
+                                            className={styles.featuredAvatar}
+                                            unoptimized
+                                        />
+                                    )}
+                                    <div className={styles.featuredIdentity}>
+                                        <span
+                                            className={
+                                                styles.featuredRunnerName
+                                            }
+                                        >
+                                            <UserLink username={pb.username} />
+                                        </span>
+                                        <span
+                                            className={
+                                                styles.featuredGameCategory
+                                            }
+                                        >
+                                            {pb.game} &middot; {pb.category}
+                                        </span>
+                                    </div>
                                 </div>
-                                <span className={styles.featuredRunner}>
-                                    <UserLink username={pb.username} />
-                                </span>
-                                <span className={styles.featuredGameCategory}>
-                                    {pb.game} &middot; {pb.category}
-                                </span>
-                                <div className={styles.featuredTimeRow}>
+                                <div className={styles.featuredStats}>
+                                    <div className={styles.featuredStat}>
+                                        <span
+                                            className={styles.featuredStatValue}
+                                        >
+                                            {pb.attemptCount.toLocaleString()}
+                                        </span>
+                                        <span
+                                            className={styles.featuredStatLabel}
+                                        >
+                                            Attempts
+                                        </span>
+                                    </div>
+                                    <div className={styles.featuredStat}>
+                                        <span
+                                            className={styles.featuredStatValue}
+                                        >
+                                            {pb.finishedAttemptCount.toLocaleString()}
+                                        </span>
+                                        <span
+                                            className={styles.featuredStatLabel}
+                                        >
+                                            Finished
+                                        </span>
+                                    </div>
+                                    <div className={styles.featuredStat}>
+                                        <span
+                                            className={styles.featuredStatValue}
+                                        >
+                                            {Math.round(
+                                                pb.totalRunTime / 3600000,
+                                            ).toLocaleString()}
+                                            h
+                                        </span>
+                                        <span
+                                            className={styles.featuredStatLabel}
+                                        >
+                                            Played
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className={styles.featuredBottom}>
                                     <span className={styles.featuredTime}>
                                         <DurationToFormatted
                                             duration={pb.time}
@@ -280,7 +352,7 @@ const FeaturedCarousel = ({
                                     </span>
                                     {hasImprovement ? (
                                         <span className={styles.featuredDelta}>
-                                            <FaArrowDown size={10} />
+                                            <FaArrowDown size={11} />
                                             {getFormattedString(
                                                 improvement.toString(),
                                                 improvement < 60000,
@@ -290,10 +362,13 @@ const FeaturedCarousel = ({
                                         <span
                                             className={styles.featuredFirstPb}
                                         >
-                                            <FaStar size={10} />
+                                            <FaStar size={11} />
                                             First PB!
                                         </span>
                                     ) : null}
+                                    <span className={styles.featuredTimestamp}>
+                                        <FromNow time={pb.endedAt} />
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -325,23 +400,37 @@ const FeaturedCarousel = ({
 const CompactItem = ({
     pb,
     imageUrl,
+    avatarUrl,
 }: {
     pb: FinishedRunPB;
     imageUrl: string;
+    avatarUrl?: string;
 }) => {
     const improvement = pb.previousPb !== null ? pb.previousPb - pb.time : null;
     const hasImprovement = improvement !== null && improvement > 0;
 
     return (
         <div className={styles.listItem}>
-            <Image
-                src={imageUrl}
-                alt={pb.game}
-                width={40}
-                height={40}
-                className={styles.listGameIcon}
-                unoptimized
-            />
+            <div className={styles.listImageStack}>
+                <Image
+                    src={imageUrl}
+                    alt={pb.game}
+                    width={40}
+                    height={40}
+                    className={styles.listGameIcon}
+                    unoptimized
+                />
+                {avatarUrl && (
+                    <Image
+                        src={avatarUrl}
+                        alt={pb.username}
+                        width={24}
+                        height={24}
+                        className={styles.listAvatar}
+                        unoptimized
+                    />
+                )}
+            </div>
             <div className={styles.listInfo}>
                 <span className={styles.listRunnerName}>
                     <UserLink username={pb.username} />

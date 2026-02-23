@@ -132,6 +132,7 @@
 }
 
 .runnerName {
+    font-family: var(--font-sans), sans-serif;
     font-size: 1.3rem;
     font-weight: 700;
     color: var(--bs-body-color);
@@ -143,6 +144,7 @@
 }
 
 .gameLabelText {
+    font-family: var(--font-sans), sans-serif;
     font-size: 0.85rem;
     color: var(--bs-secondary-color);
     white-space: nowrap;
@@ -229,6 +231,7 @@
 }
 
 .statLabel {
+    font-family: var(--font-sans), sans-serif;
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -319,16 +322,17 @@
 }
 
 .splitSegmentCurrent {
-    background: var(--bs-primary);
+    background: var(--bs-border-color);
+    box-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
     animation: splitPulse 1.5s ease-in-out infinite;
 }
 
 @keyframes splitPulse {
     0%, 100% {
-        opacity: 1;
+        box-shadow: 0 0 3px rgba(255, 255, 255, 0.4);
     }
     50% {
-        opacity: 0.5;
+        box-shadow: 0 0 4px rgba(255, 255, 255, 0.65);
     }
 }
 
@@ -365,8 +369,29 @@
 
 .sidebarCard:hover {
     border-color: var(--bs-primary);
+    border-left: 3px solid var(--bs-primary);
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* "Watch" hint on hover */
+.sidebarCard::after {
+    content: '▶';
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%) scale(0.8);
+    font-size: 0.55rem;
+    color: var(--bs-primary);
+    opacity: 0;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.sidebarCard:hover::after {
+    opacity: 0.7;
+    transform: translateY(-50%) scale(1);
 }
 
 .sidebarCardActive {
@@ -511,7 +536,7 @@
     top: -20%;
     bottom: -20%;
     right: 0;
-    width: 22%;
+    width: 16%;
     mask-image: linear-gradient(90deg, transparent 0%, black 40%);
     -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 40%);
     opacity: 0.8;
@@ -537,7 +562,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
-    padding: 0.2rem 0.65rem;
+    padding: 0.2rem calc(16% + 0.5rem) 0.2rem 0.65rem;
 }
 
 .sidebarCardTop {
@@ -564,6 +589,7 @@
 }
 
 .sidebarRunner {
+    font-family: var(--font-sans), sans-serif;
     font-weight: 700;
     font-size: 0.9rem;
     white-space: nowrap;
@@ -572,6 +598,7 @@
 }
 
 .sidebarGame {
+    font-family: var(--font-sans), sans-serif;
     font-size: 0.8rem;
     color: var(--bs-secondary-color);
     white-space: nowrap;
@@ -585,7 +612,6 @@
     align-items: flex-end;
     flex-shrink: 0;
     margin-left: auto;
-    margin-right: 5rem;
 }
 
 .sidebarTimerText {
@@ -606,7 +632,6 @@
     height: 4px;
     flex-shrink: 0;
     margin-top: auto;
-    margin-right: 5rem;
     gap: 1px;
 }
 
@@ -616,6 +641,7 @@
     justify-content: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
+    font-family: var(--font-sans), sans-serif;
     font-size: 0.8rem;
     font-weight: 600;
     letter-spacing: 0.03em;
