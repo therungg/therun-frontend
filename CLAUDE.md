@@ -63,6 +63,10 @@ The app uses Next.js route groups to manage different layouts:
 - Auth pattern: `Authorization: Bearer {sessionId}` header
 - API client helper: `src/lib/api-client.ts` (`apiFetch()`)
 
+### Game Images
+
+Game images (from IGDB) are always 3:4 aspect ratio (portrait). Use dimensions like 36×48, 48×64, etc. when displaying game art.
+
 ### External Services
 
 - WebSocket at `wss://ws.therun.gg` for live updates
