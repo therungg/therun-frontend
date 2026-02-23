@@ -96,7 +96,7 @@ export const RacesSection = async () => {
             {compactRaces.length > 0 && (
                 <div className={styles.group}>
                     {cardRaces.length > 0 && (
-                        <div className={styles.groupHeader}>Recent</div>
+                        <div className={styles.groupHeader}>More Races</div>
                     )}
                     {compactRaces.map((race) => (
                         <RaceRow

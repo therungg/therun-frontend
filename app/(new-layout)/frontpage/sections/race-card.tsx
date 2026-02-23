@@ -1,6 +1,6 @@
 'use client';
 
-import { FaTrophy, FaUser } from 'react-icons/fa6';
+import { FaClock, FaTrophy, FaUser } from 'react-icons/fa6';
 import { RaceTimer } from '~app/(old-layout)/races/[race]/race-timer';
 import { sortRaceParticipants } from '~app/(old-layout)/races/[race]/sort-race-participants';
 import { useRace } from '~app/(old-layout)/races/hooks/use-race';
@@ -72,18 +72,20 @@ export const RaceCard = ({ race: initialRace, variant }: RaceCardProps) => {
                     <span className={styles.cardGame}>{race.displayGame}</span>
                     <span className={styles.cardCategory}>
                         {race.displayCategory}
+                        {isLive && leader && !leaderFinished && (
+                            <>
+                                {' '}
+                                {' · '} Leader: {leader.user}
+                            </>
+                        )}
+                        {isLive && leader && leaderFinished && (
+                            <>
+                                {' · '}
+                                <FaTrophy size={10} /> {leader.user}
+                            </>
+                        )}
                     </span>
                 </div>
-                {isLive && leader && !leaderFinished && (
-                    <span className={styles.cardTimer}>
-                        Leader: {leader.user}
-                    </span>
-                )}
-                {isLive && leader && leaderFinished && (
-                    <span className={styles.cardTimer}>
-                        <FaTrophy size={12} /> {leader.user}
-                    </span>
-                )}
                 <div className={styles.cardTimer}>
                     <TimerSection race={race} variant={variant} />
                 </div>
@@ -114,7 +116,7 @@ const TimerSection = ({
     if (race.willStartAt) {
         const minutesUntilStart = Math.max(
             0,
-            Math.round(
+            Math.ceil(
                 (new Date(race.willStartAt).getTime() - Date.now()) / 60000,
             ),
         );
@@ -125,5 +127,9 @@ const TimerSection = ({
         );
     }
 
-    return <span className={styles.cardWaiting}>Waiting for players...</span>;
+    return (
+        <span className={styles.cardWaiting}>
+            <FaClock size={12} /> Waiting for players...
+        </span>
+    );
 };
