@@ -16,12 +16,12 @@ export default async function FrontPage() {
                 <FrontpageHero />
             </Suspense>
             <Row className="g-4">
-                <Col lg={7} xs={12}>
+                <Col lg={6} xs={12}>
                     <Suspense fallback={<SectionSkeleton height={400} />}>
                         <TrendingSection />
                     </Suspense>
                 </Col>
-                <Col lg={5} xs={12}>
+                <Col lg={6} xs={12}>
                     <div className="d-flex flex-column gap-4">
                         <Suspense fallback={<SectionSkeleton height={400} />}>
                             <PbFeedSection />
