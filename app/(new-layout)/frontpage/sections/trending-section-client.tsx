@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
 import {
     FaBolt,
     FaClock,
@@ -11,7 +10,6 @@ import {
     FaTrophy,
     FaUsers,
 } from 'react-icons/fa6';
-import useSWR from 'swr';
 import type {
     CategoryActivity,
     GameActivity,
@@ -21,38 +19,6 @@ import { safeEncodeURI } from '~src/utils/uri';
 import styles from './trending-section.module.scss';
 
 const FALLBACK_IMAGE = '/logo_dark_theme_no_text_transparent.png';
-const BASE_URL = process.env.NEXT_PUBLIC_DATA_URL;
-
-type Period = '1' | '3' | '7' | '30';
-type Metric = 'playtime' | 'players' | 'attempts' | 'pbs';
-
-const PERIODS: { value: Period; label: string }[] = [
-    { value: '1', label: '24h' },
-    { value: '3', label: '3d' },
-    { value: '7', label: '7d' },
-    { value: '30', label: '30d' },
-];
-
-const METRICS: { value: Metric; label: string }[] = [
-    { value: 'playtime', label: 'Playtime' },
-    { value: 'players', label: 'Players' },
-    { value: 'attempts', label: 'Attempts' },
-    { value: 'pbs', label: 'PBs' },
-];
-
-function getDateDaysAgo(days: number): string {
-    const d = new Date();
-    d.setDate(d.getDate() - days);
-    return d.toISOString().split('T')[0];
-}
-
-function getToday(): string {
-    return new Date().toISOString().split('T')[0];
-}
-
-function getMinPlayers(period: Period): number {
-    return period === '1' || period === '3' ? 2 : 3;
-}
 
 function formatHoursCompact(ms: number): string {
     const hours = ms / 3_600_000;
@@ -65,30 +31,6 @@ const compact = new Intl.NumberFormat('en', {
     maximumFractionDigits: 1,
 });
 
-function sortByMetric(games: GameActivity[], metric: Metric): GameActivity[] {
-    const sorted = [...games];
-    sorted.sort((a, b) => {
-        switch (metric) {
-            case 'playtime':
-                return b.totalPlaytime - a.totalPlaytime;
-            case 'players':
-                return b.uniquePlayers - a.uniquePlayers;
-            case 'attempts':
-                return b.totalAttempts - a.totalAttempts;
-            case 'pbs':
-                return b.totalPbs - a.totalPbs;
-        }
-    });
-    return sorted;
-}
-
-async function activityFetcher(url: string) {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('Failed to fetch activity');
-    const json = await res.json();
-    return json.result;
-}
-
 interface TrendingSectionClientProps {
     initialGames: GameActivity[];
     initialCategoryMap: Record<number, CategoryActivity[]>;
@@ -100,43 +42,6 @@ export const TrendingSectionClient = ({
     initialCategoryMap,
     allTimeGames,
 }: TrendingSectionClientProps) => {
-    const [period, setPeriod] = useState<Period>('7');
-    const [metric, setMetric] = useState<Metric>('playtime');
-
-    const from = getDateDaysAgo(Number(period));
-    const to = getToday();
-    const minPlayers = getMinPlayers(period);
-
-    // Only use SWR when period differs from the default (7d)
-    const shouldFetch = period !== '7';
-    const gamesUrl = shouldFetch
-        ? `${BASE_URL}/games/activity?from=${from}&to=${to}&type=games&minPlayers=${minPlayers}&limit=6`
-        : null;
-
-    const { data: fetchedGames } = useSWR<GameActivity[]>(
-        gamesUrl,
-        activityFetcher,
-        { keepPreviousData: true },
-    );
-
-    const hotGames = sortByMetric(fetchedGames ?? initialGames, metric);
-
-    // Fetch categories globally with high limit so all hot games get coverage
-    const categoriesUrl = shouldFetch
-        ? `${BASE_URL}/games/activity?from=${from}&to=${to}&type=categories&limit=50`
-        : null;
-
-    const { data: fetchedCategories } = useSWR<CategoryActivity[]>(
-        categoriesUrl,
-        activityFetcher,
-        { keepPreviousData: true },
-    );
-
-    // Build category map: group fetched categories by gameId, take top 2
-    const categoryMap: Record<number, CategoryActivity[]> = shouldFetch
-        ? buildCategoryMap(fetchedCategories ?? [], hotGames)
-        : initialCategoryMap;
-
     return (
         <div className={styles.content}>
             {/* Hot Right Now zone */}
@@ -146,41 +51,16 @@ export const TrendingSectionClient = ({
                         <FaFire size={12} />
                         Hot Right Now
                     </div>
-                    <div className={styles.periodPills}>
-                        {PERIODS.map((p) => (
-                            <button
-                                key={p.value}
-                                type="button"
-                                className={`${styles.pill} ${period === p.value ? styles.pillActive : ''}`}
-                                onClick={() => setPeriod(p.value)}
-                            >
-                                {p.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                <div className={styles.metricPills}>
-                    {METRICS.map((m) => (
-                        <button
-                            key={m.value}
-                            type="button"
-                            className={`${styles.metricPill} ${metric === m.value ? styles.metricPillActive : ''}`}
-                            onClick={() => setMetric(m.value)}
-                        >
-                            {m.label}
-                        </button>
-                    ))}
+                    <span className={styles.periodLabel}>Last 24 hours</span>
                 </div>
 
                 <div className={styles.hotGames}>
-                    {hotGames.map((game, i) => (
+                    {initialGames.map((game, i) => (
                         <HotGameCard
                             key={game.gameId}
                             game={game}
                             rank={i + 1}
-                            metric={metric}
-                            categories={categoryMap[game.gameId] ?? []}
+                            categories={initialCategoryMap[game.gameId] ?? []}
                         />
                     ))}
                 </div>
@@ -206,29 +86,13 @@ export const TrendingSectionClient = ({
     );
 };
 
-function buildCategoryMap(
-    categories: CategoryActivity[],
-    games: GameActivity[],
-): Record<number, CategoryActivity[]> {
-    const map: Record<number, CategoryActivity[]> = {};
-    const gameIdSet = new Set(games.map((g) => g.gameId));
-    for (const cat of categories) {
-        if (!gameIdSet.has(cat.gameId)) continue;
-        if (!map[cat.gameId]) map[cat.gameId] = [];
-        if (map[cat.gameId].length < 2) map[cat.gameId].push(cat);
-    }
-    return map;
-}
-
 const HotGameCard = ({
     game,
     rank,
-    metric,
     categories,
 }: {
     game: GameActivity;
     rank: number;
-    metric: Metric;
     categories: CategoryActivity[];
 }) => {
     const imageUrl =
@@ -263,27 +127,19 @@ const HotGameCard = ({
                 )}
             </div>
             <div className={styles.statGrid}>
-                <div
-                    className={`${styles.stat} ${metric === 'playtime' ? styles.statHighlight : ''}`}
-                >
+                <div className={`${styles.stat} ${styles.statHighlight}`}>
                     <FaClock size={9} />
                     <span>{formatHoursCompact(game.totalPlaytime)}</span>
                 </div>
-                <div
-                    className={`${styles.stat} ${metric === 'players' ? styles.statHighlight : ''}`}
-                >
+                <div className={styles.stat}>
                     <FaUsers size={9} />
                     <span>{compact.format(game.uniquePlayers)}</span>
                 </div>
-                <div
-                    className={`${styles.stat} ${metric === 'attempts' ? styles.statHighlight : ''}`}
-                >
+                <div className={styles.stat}>
                     <FaBolt size={9} />
                     <span>{compact.format(game.totalAttempts)}</span>
                 </div>
-                <div
-                    className={`${styles.stat} ${metric === 'pbs' ? styles.statHighlight : ''}`}
-                >
+                <div className={styles.stat}>
                     <FaTrophy size={9} />
                     <span>{compact.format(game.totalPbs)}</span>
                 </div>
