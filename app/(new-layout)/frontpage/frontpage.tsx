@@ -16,11 +16,6 @@ export default async function FrontPage() {
                 <FrontpageHero />
             </Suspense>
             <Row className="g-4">
-                <Col lg={7} xs={12}>
-                    <Suspense fallback={<SectionSkeleton height={400} />}>
-                        <PbFeedSection />
-                    </Suspense>
-                </Col>
                 <Col lg={5} xs={12}>
                     <div className="d-flex flex-column gap-4">
                         <Suspense fallback={<SectionSkeleton height={300} />}>
@@ -30,6 +25,11 @@ export default async function FrontPage() {
                             <TrendingSection />
                         </Suspense>
                     </div>
+                </Col>
+                <Col lg={7} xs={12}>
+                    <Suspense fallback={<SectionSkeleton height={400} />}>
+                        <PbFeedSection />
+                    </Suspense>
                 </Col>
             </Row>
             <Row className="g-4">
