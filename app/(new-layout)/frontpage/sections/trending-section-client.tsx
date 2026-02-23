@@ -128,20 +128,32 @@ const HotGameCard = ({
             </div>
             <div className={styles.statGrid}>
                 <div className={`${styles.stat} ${styles.statHighlight}`}>
-                    <FaClock size={9} />
-                    <span>{formatHoursCompact(game.totalPlaytime)}</span>
+                    <FaClock size={11} />
+                    <span className={styles.statValue}>
+                        {formatHoursCompact(game.totalPlaytime)}
+                    </span>
+                    <span className={styles.statLabel}>hrs</span>
                 </div>
                 <div className={styles.stat}>
-                    <FaUsers size={9} />
-                    <span>{compact.format(game.uniquePlayers)}</span>
+                    <FaUsers size={11} />
+                    <span className={styles.statValue}>
+                        {compact.format(game.uniquePlayers)}
+                    </span>
+                    <span className={styles.statLabel}>players</span>
                 </div>
                 <div className={styles.stat}>
-                    <FaBolt size={9} />
-                    <span>{compact.format(game.totalAttempts)}</span>
+                    <FaBolt size={11} />
+                    <span className={styles.statValue}>
+                        {compact.format(game.totalAttempts)}
+                    </span>
+                    <span className={styles.statLabel}>attempts</span>
                 </div>
                 <div className={styles.stat}>
-                    <FaTrophy size={9} />
-                    <span>{compact.format(game.totalPbs)}</span>
+                    <FaTrophy size={11} />
+                    <span className={styles.statValue}>
+                        {compact.format(game.totalPbs)}
+                    </span>
+                    <span className={styles.statLabel}>PBs</span>
                 </div>
             </div>
         </div>
