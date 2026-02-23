@@ -153,11 +153,14 @@ $green: #4caf50;
 /* ── Dot indicators ── */
 
 .dots {
+    position: absolute;
+    bottom: 0.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
     display: flex;
-    justify-content: center;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 0;
 }
 
 .dot {
