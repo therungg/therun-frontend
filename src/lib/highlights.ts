@@ -86,15 +86,23 @@ export async function getGlobalStats(offset?: string): Promise<GlobalStats> {
     return apiFetch<GlobalStats>(`/v1/runs/global-stats${query}`);
 }
 
-export async function getRecentNotablePBs(
-    limit = 20,
-): Promise<FinishedRunPB[]> {
+export async function getRecentNotablePBs(limit = 5): Promise<FinishedRunPB[]> {
     'use cache';
     cacheLife('minutes');
     cacheTag('notable-pbs');
 
     return apiFetch<FinishedRunPB[]>(
-        `/v1/finished-runs?top_categories=100&is_pb=true&sort=-ended_at&limit=${limit}`,
+        `/v1/finished-runs?top_categories=50&min_total_run_time=360000000&is_pb=true&sort=-ended_at&limit=${limit}`,
+    );
+}
+
+export async function getRecentPBs(limit = 20): Promise<FinishedRunPB[]> {
+    'use cache';
+    cacheLife('minutes');
+    cacheTag('recent-pbs');
+
+    return apiFetch<FinishedRunPB[]>(
+        `/v1/finished-runs?is_pb=true&sort=-ended_at&limit=${limit}`,
     );
 }
 
