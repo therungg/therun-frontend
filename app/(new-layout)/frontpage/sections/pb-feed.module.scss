@@ -67,27 +67,37 @@ $green: #4caf50;
 
 /* ── Game art ── */
 
-.featuredArt {
+.featuredArtWrapper {
     position: absolute;
-    top: -10%;
-    right: -2%;
-    bottom: -10%;
-    width: 20%;
-    object-fit: cover;
-    mask-image: linear-gradient(90deg, transparent 0%, black 50%);
-    -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 50%);
+    top: 50%;
+    right: 1.25rem;
+    transform: translateY(-50%);
+    width: 80px;
+    height: 107px; /* 3:4 ratio */
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--bs-border-color) 60%, transparent);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     pointer-events: none;
     animation: artFadeIn 600ms ease-out both;
+    flex-shrink: 0;
+}
+
+.featuredArt {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 @keyframes artFadeIn {
     from {
         opacity: 0;
-        transform: translateX(12px);
+        scale: 0.9;
     }
     to {
         opacity: 1;
-        transform: translateX(0);
+        scale: 1;
     }
 }
 
@@ -347,8 +357,10 @@ $green: #4caf50;
         font-size: 1.4rem;
     }
 
-    .featuredArt {
-        width: 18%;
+    .featuredArtWrapper {
+        width: 64px;
+        height: 85px;
+        right: 1rem;
     }
 }
 
@@ -361,7 +373,7 @@ $green: #4caf50;
         max-width: 100%;
     }
 
-    .featuredArt {
+    .featuredArtWrapper {
         display: none;
     }
 
