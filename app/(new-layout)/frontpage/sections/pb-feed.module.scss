@@ -73,12 +73,12 @@ $green: #4caf50;
     top: -10%;
     right: -2%;
     bottom: -10%;
-    width: 20%;
+    width: 16%;
     object-fit: cover;
     mask-image: linear-gradient(90deg, transparent 0%, black 50%);
     -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 50%);
     pointer-events: none;
-    border-radius: 12px;
+    border-radius: 16px;
     animation: artFadeIn 600ms ease-out both;
 }
 
