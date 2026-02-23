@@ -1,11 +1,22 @@
-import { getGameImageMap, getRecentNotablePBs } from '~src/lib/highlights';
+import {
+    getGameImageMap,
+    getRecentNotablePBs,
+    getRecentPBs,
+} from '~src/lib/highlights';
 import { PbFeedClient } from './pb-feed-client';
 
 export const PbFeedSection = async () => {
-    const [pbs, gameImages] = await Promise.all([
-        getRecentNotablePBs(20),
+    const [notablePbs, allPbs, gameImages] = await Promise.all([
+        getRecentNotablePBs(5),
+        getRecentPBs(20),
         getGameImageMap(),
     ]);
 
-    return <PbFeedClient pbs={pbs} gameImages={gameImages} />;
+    return (
+        <PbFeedClient
+            notablePbs={notablePbs}
+            allPbs={allPbs}
+            gameImages={gameImages}
+        />
+    );
 };

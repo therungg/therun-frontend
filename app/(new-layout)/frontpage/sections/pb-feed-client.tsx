@@ -14,23 +14,26 @@ import styles from './pb-feed.module.scss';
 
 const FALLBACK_IMAGE = '/logo_dark_theme_no_text_transparent.png';
 const ROTATE_INTERVAL = 8000;
-const FEATURED_COUNT = 3;
 
 interface PbFeedClientProps {
-    pbs: FinishedRunPB[];
+    notablePbs: FinishedRunPB[];
+    allPbs: FinishedRunPB[];
     gameImages: Record<string, string>;
 }
 
-export const PbFeedClient = ({ pbs, gameImages }: PbFeedClientProps) => {
-    const featured = pbs.slice(0, FEATURED_COUNT);
-    const rest = pbs.slice(FEATURED_COUNT);
-
+export const PbFeedClient = ({
+    notablePbs,
+    allPbs,
+    gameImages,
+}: PbFeedClientProps) => {
     return (
         <Panel title="Personal Bests" subtitle="Recent PBs" className="p-0">
-            <FeaturedCarousel pbs={featured} gameImages={gameImages} />
-            {rest.length > 0 && (
+            {notablePbs.length > 0 && (
+                <FeaturedCarousel pbs={notablePbs} gameImages={gameImages} />
+            )}
+            {allPbs.length > 0 && (
                 <div className={styles.listContainer}>
-                    {rest.map((pb) => (
+                    {allPbs.map((pb) => (
                         <CompactItem
                             key={pb.id}
                             pb={pb}
