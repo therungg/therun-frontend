@@ -20,11 +20,11 @@ function getToday(): string {
 }
 
 export const TrendingSection = async () => {
-    const from7d = getDateDaysAgo(7);
+    const from24h = getDateDaysAgo(1);
     const to = getToday();
 
     const [hotGames, allTimeGames] = await Promise.all([
-        getGameActivity(from7d, to, 6, 3),
+        getGameActivity(from24h, to, 5, 2),
         getTopGames(5),
     ]);
 
@@ -32,7 +32,7 @@ export const TrendingSection = async () => {
     const categoryMap: Record<number, CategoryActivity[]> = {};
     const categoryResults = await Promise.all(
         hotGames.map((game) =>
-            getCategoryActivityForGame(game.gameId, from7d, to, 2),
+            getCategoryActivityForGame(game.gameId, from24h, to, 2),
         ),
     );
     for (let i = 0; i < hotGames.length; i++) {

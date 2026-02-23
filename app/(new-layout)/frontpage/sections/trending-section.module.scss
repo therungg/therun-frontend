@@ -30,62 +30,12 @@ $amber: #f59e0b;
     color: $amber;
 }
 
-.periodPills {
-    display: flex;
-    gap: 2px;
-    background: color-mix(in srgb, var(--bs-secondary-bg) 60%, transparent);
-    border-radius: 6px;
-    padding: 2px;
-}
-
-.pill {
-    all: unset;
-    padding: 0.2rem 0.5rem;
+.periodLabel {
     font-size: 0.7rem;
     font-weight: 600;
-    border-radius: 4px;
     color: var(--bs-secondary-color);
-    cursor: pointer;
-    transition: all 0.15s;
-
-    &:hover {
-        color: var(--bs-body-color);
-        background: color-mix(in srgb, var(--bs-secondary-bg) 80%, transparent);
-    }
-}
-
-.pillActive {
-    color: var(--bs-body-color);
-    background: var(--bs-body-bg);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.metricPills {
-    display: flex;
-    gap: 0.35rem;
-    margin-bottom: 0.75rem;
-}
-
-.metricPill {
-    all: unset;
-    padding: 0.15rem 0.45rem;
-    font-size: 0.65rem;
-    font-weight: 600;
-    border-radius: 4px;
-    color: var(--bs-secondary-color);
-    cursor: pointer;
-    transition: all 0.15s;
-    border: 1px solid transparent;
-
-    &:hover {
-        color: var(--bs-body-color);
-    }
-}
-
-.metricPillActive {
-    color: var(--bs-body-color);
-    border-color: var(--bs-border-color);
-    background: color-mix(in srgb, var(--bs-secondary-bg) 50%, transparent);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
 }
 
 // ── Hot game cards ──
