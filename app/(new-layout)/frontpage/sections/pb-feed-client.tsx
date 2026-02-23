@@ -250,13 +250,11 @@ const FeaturedCarousel = ({
                             }}
                             className={styles.featuredSlide}
                         >
-                            <div className={styles.featuredArtWrapper}>
-                                <img
-                                    src={imageUrl}
-                                    alt=""
-                                    className={styles.featuredArt}
-                                />
-                            </div>
+                            <img
+                                src={imageUrl}
+                                alt=""
+                                className={styles.featuredArt}
+                            />
                             <div className={styles.featuredContent}>
                                 <span className={styles.featuredRunner}>
                                     <UserLink username={pb.username} />
