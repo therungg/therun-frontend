@@ -32,7 +32,7 @@ export const TrendingSection = async () => {
     const categoryMap: Record<number, CategoryActivity[]> = {};
     const categoryResults = await Promise.all(
         hotGames.map((game) =>
-            getCategoryActivityForGame(game.gameId, from24h, to, 2),
+            getCategoryActivityForGame(game.gameId, from24h, to, 3),
         ),
     );
     for (let i = 0; i < hotGames.length; i++) {

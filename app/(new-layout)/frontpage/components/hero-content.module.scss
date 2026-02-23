@@ -545,11 +545,13 @@
 
 .sidebarCardArtFallback {
     position: absolute;
-    top: 50%;
-    right: 6%;
-    width: 40px;
-    height: 40px;
-    transform: translateY(-50%);
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 16%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     opacity: 0.5;
     pointer-events: none;
 }

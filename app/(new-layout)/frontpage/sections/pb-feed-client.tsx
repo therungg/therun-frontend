@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FaArrowDown, FaBolt, FaStar } from 'react-icons/fa6';
+import { FaBolt, FaStar } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import { UserLink } from '~src/components/links/links';
 import {
@@ -44,7 +44,6 @@ export const PbFeedClient = ({
                         <CompactItem
                             key={pb.id}
                             pb={pb}
-                            imageUrl={gameImages[pb.game] ?? FALLBACK_IMAGE}
                             avatarUrl={userPictures[pb.username]}
                         />
                     ))}
@@ -271,10 +270,15 @@ const FeaturedCarousel = ({
                             />
                             <div className={styles.featuredOverlay} />
                             <div className={styles.featuredContent}>
-                                <span className={styles.featuredBadge}>
-                                    <FaBolt size={9} />
-                                    Highlighted PB
-                                </span>
+                                <div className={styles.featuredBadges}>
+                                    <span className={styles.featuredBadge}>
+                                        <FaBolt size={9} />
+                                        Highlighted PB
+                                    </span>
+                                    <span className={styles.featuredTimestamp}>
+                                        <FromNow time={pb.endedAt} />
+                                    </span>
+                                </div>
                                 <div className={styles.featuredTop}>
                                     {avatarUrl && (
                                         <Image
@@ -302,6 +306,29 @@ const FeaturedCarousel = ({
                                             {pb.game} &middot; {pb.category}
                                         </span>
                                     </div>
+                                </div>
+                                <div className={styles.featuredBottom}>
+                                    <span className={styles.featuredTime}>
+                                        <DurationToFormatted
+                                            duration={pb.time}
+                                        />
+                                    </span>
+                                    {hasImprovement ? (
+                                        <span className={styles.featuredDelta}>
+                                            &minus;
+                                            {getFormattedString(
+                                                improvement.toString(),
+                                                improvement < 60000,
+                                            )}
+                                        </span>
+                                    ) : pb.previousPb === null ? (
+                                        <span
+                                            className={styles.featuredFirstPb}
+                                        >
+                                            <FaStar size={11} />
+                                            First PB!
+                                        </span>
+                                    ) : null}
                                 </div>
                                 <div className={styles.featuredStats}>
                                     <div className={styles.featuredStat}>
@@ -344,32 +371,6 @@ const FeaturedCarousel = ({
                                         </span>
                                     </div>
                                 </div>
-                                <div className={styles.featuredBottom}>
-                                    <span className={styles.featuredTime}>
-                                        <DurationToFormatted
-                                            duration={pb.time}
-                                        />
-                                    </span>
-                                    {hasImprovement ? (
-                                        <span className={styles.featuredDelta}>
-                                            <FaArrowDown size={11} />
-                                            {getFormattedString(
-                                                improvement.toString(),
-                                                improvement < 60000,
-                                            )}
-                                        </span>
-                                    ) : pb.previousPb === null ? (
-                                        <span
-                                            className={styles.featuredFirstPb}
-                                        >
-                                            <FaStar size={11} />
-                                            First PB!
-                                        </span>
-                                    ) : null}
-                                    <span className={styles.featuredTimestamp}>
-                                        <FromNow time={pb.endedAt} />
-                                    </span>
-                                </div>
                             </div>
                         </div>
                     );
@@ -399,11 +400,9 @@ const FeaturedCarousel = ({
 
 const CompactItem = ({
     pb,
-    imageUrl,
     avatarUrl,
 }: {
     pb: FinishedRunPB;
-    imageUrl: string;
     avatarUrl?: string;
 }) => {
     const improvement = pb.previousPb !== null ? pb.previousPb - pb.time : null;
@@ -411,26 +410,16 @@ const CompactItem = ({
 
     return (
         <div className={styles.listItem}>
-            <div className={styles.listImageStack}>
+            {avatarUrl && (
                 <Image
-                    src={imageUrl}
-                    alt={pb.game}
+                    src={avatarUrl}
+                    alt={pb.username}
                     width={40}
                     height={40}
-                    className={styles.listGameIcon}
+                    className={styles.listAvatar}
                     unoptimized
                 />
-                {avatarUrl && (
-                    <Image
-                        src={avatarUrl}
-                        alt={pb.username}
-                        width={24}
-                        height={24}
-                        className={styles.listAvatar}
-                        unoptimized
-                    />
-                )}
-            </div>
+            )}
             <div className={styles.listInfo}>
                 <span className={styles.listRunnerName}>
                     <UserLink username={pb.username} />
@@ -440,22 +429,24 @@ const CompactItem = ({
                 </span>
             </div>
             <div className={styles.listRight}>
-                <span className={styles.listTime}>
-                    <DurationToFormatted duration={pb.time} />
+                <span className={styles.listTimeRow}>
+                    <span className={styles.listTime}>
+                        <DurationToFormatted duration={pb.time} />
+                    </span>
+                    {hasImprovement ? (
+                        <span className={styles.listDelta}>
+                            &minus;
+                            {getFormattedString(
+                                improvement.toString(),
+                                improvement < 60000,
+                            )}
+                        </span>
+                    ) : pb.previousPb === null ? (
+                        <span className={styles.listFirstPb}>
+                            <FaStar size={9} /> First PB!
+                        </span>
+                    ) : null}
                 </span>
-                {hasImprovement ? (
-                    <span className={styles.listDelta}>
-                        <FaArrowDown size={8} />
-                        {getFormattedString(
-                            improvement.toString(),
-                            improvement < 60000,
-                        )}
-                    </span>
-                ) : pb.previousPb === null ? (
-                    <span className={styles.listFirstPb}>
-                        <FaStar size={8} /> First PB!
-                    </span>
-                ) : null}
                 <span className={styles.listTimestamp}>
                     <FromNow time={pb.endedAt} />
                 </span>
