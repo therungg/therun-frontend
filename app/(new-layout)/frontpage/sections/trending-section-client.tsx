@@ -106,8 +106,8 @@ const HotGameCard = ({
             <Image
                 src={imageUrl}
                 alt={game.gameDisplay}
-                width={36}
-                height={48}
+                width={45}
+                height={60}
                 className={styles.gameArt}
                 unoptimized
             />
@@ -169,8 +169,8 @@ const AllTimeGameRow = ({
             <Image
                 src={imageUrl}
                 alt={game.gameDisplay}
-                width={24}
-                height={32}
+                width={30}
+                height={40}
                 className={styles.allTimeArt}
                 unoptimized
             />
