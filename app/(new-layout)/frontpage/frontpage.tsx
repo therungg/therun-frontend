@@ -23,11 +23,11 @@ export default async function FrontPage() {
                 </Col>
                 <Col lg={5} xs={12}>
                     <div className="d-flex flex-column gap-4">
-                        <Suspense fallback={<SectionSkeleton height={300} />}>
-                            <CommunityPulse />
-                        </Suspense>
                         <Suspense fallback={<SectionSkeleton height={400} />}>
                             <PbFeedSection />
+                        </Suspense>
+                        <Suspense fallback={<SectionSkeleton height={300} />}>
+                            <CommunityPulse />
                         </Suspense>
                     </div>
                 </Col>
