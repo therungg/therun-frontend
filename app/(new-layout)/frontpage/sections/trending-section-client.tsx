@@ -121,9 +121,9 @@ export const TrendingSectionClient = ({
 
     const hotGames = sortByMetric(fetchedGames ?? initialGames, metric);
 
-    // Fetch categories for current games
+    // Fetch categories globally with high limit so all hot games get coverage
     const categoriesUrl = shouldFetch
-        ? `${BASE_URL}/games/activity?from=${from}&to=${to}&type=categories&limit=12`
+        ? `${BASE_URL}/games/activity?from=${from}&to=${to}&type=categories&limit=50`
         : null;
 
     const { data: fetchedCategories } = useSWR<CategoryActivity[]>(
