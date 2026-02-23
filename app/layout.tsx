@@ -1,6 +1,13 @@
 import { Viewport } from 'next';
+import { DM_Sans } from 'next/font/google';
 import React, { Suspense } from 'react';
 import buildMetadata from '~src/utils/metadata';
+
+const dmSans = DM_Sans({
+    subsets: ['latin'],
+    display: 'swap',
+    variable: '--font-sans',
+});
 
 export const metadata = buildMetadata();
 export const viewport: Viewport = {
@@ -15,7 +22,7 @@ export default async function RootLayout({
 }) {
     return (
         <html lang="en" suppressHydrationWarning>
-            <body>
+            <body className={dmSans.variable}>
                 <Suspense>{children}</Suspense>
             </body>
         </html>

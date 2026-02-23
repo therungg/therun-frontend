@@ -123,7 +123,7 @@ const SplitTimeline = ({
         <div className={clsx(styles.splitTimeline, className)}>
             {segments.map((status, i) => (
                 <div
-                    key={run.splits[i].name}
+                    key={i}
                     className={clsx(
                         styles.splitSegment,
                         status === 'gold' && styles.splitSegmentGold,
