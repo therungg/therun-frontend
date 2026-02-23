@@ -13,7 +13,6 @@ import {
     FaUsers,
 } from 'react-icons/fa6';
 import {
-    type GameWithImage,
     type GlobalStats,
     getGlobalStats,
     getLiveCount,
@@ -90,12 +89,10 @@ export const CommunityPulseClient = ({
     last24h: initialLast24h,
     allTime: initialAllTime,
     liveCount: initialLiveCount,
-    topGames,
 }: {
     last24h: Last24h;
     allTime: GlobalStats;
     liveCount: number;
-    topGames: GameWithImage[];
 }) => {
     const ref = useRef<HTMLDivElement>(null);
     const [visible, setVisible] = useState(false);
@@ -251,45 +248,6 @@ export const CommunityPulseClient = ({
                     </span>
                     <span className={styles.chipLabel}>races</span>
                 </span>
-            </div>
-
-            <div className={styles.topGamesHeader}>Top Games</div>
-            <div className={styles.topGamesRow}>
-                {topGames.map((game, i) => (
-                    <div key={game.gameId} className={styles.gameCard}>
-                        {game.gameImage && game.gameImage !== 'noimage' && (
-                            <img
-                                src={game.gameImage}
-                                alt=""
-                                className={styles.gameImage}
-                            />
-                        )}
-                        <div className={styles.gameInfo}>
-                            <span className={styles.gameName}>
-                                {game.gameDisplay}
-                            </span>
-                            <span className={styles.gameStats}>
-                                <span className={styles.gameStat}>
-                                    <FaClock size={9} />
-                                    {Math.round(
-                                        game.totalRunTime / 3_600_000,
-                                    ).toLocaleString()}{' '}
-                                    hrs
-                                </span>
-                                <span className={styles.gameStat}>
-                                    <FaBolt size={9} />
-                                    {compact.format(game.totalAttemptCount)}
-                                </span>
-                                <span className={styles.gameStat}>
-                                    <FaFlagCheckered size={9} />
-                                    {compact.format(
-                                        game.totalFinishedAttemptCount,
-                                    )}
-                                </span>
-                            </span>
-                        </div>
-                    </div>
-                ))}
             </div>
         </div>
     );
