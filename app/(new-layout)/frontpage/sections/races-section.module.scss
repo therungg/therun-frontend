@@ -1,23 +1,367 @@
-@import '../../styles/design-tokens';
-@import '../../styles/mixins';
+$mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+$amber: #f59e0b;
+$blue: #3b82f6;
 
-.sectionHeader {
-    @include section-header;
+// ── Group headers ──
+
+.group {
+    &:not(:first-child) {
+        border-top: 1px solid var(--bs-border-color);
+    }
 }
 
-.ongoingSection {
-    @include status-section($status-ongoing-color);
-    margin-bottom: $section-spacing-vertical;
+.groupHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--bs-secondary-color);
+    padding: 0.6rem 1.25rem 0.25rem;
 }
 
-.upcomingSection {
-    @include status-section($status-upcoming-color);
-    margin-bottom: $section-spacing-vertical;
+.statusDot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
 }
 
-.finishedSection {
-    @include status-section($status-finished-color);
-    margin-bottom: $section-spacing-vertical;
+.statusLive {
+    background: $amber;
+    box-shadow: 0 0 6px rgba($amber, 0.5), 0 0 12px rgba($amber, 0.3);
+    animation: pulse 2.5s ease-in-out infinite;
+}
+
+.statusUpcoming {
+    background: var(--bs-info);
+    opacity: 0.7;
+}
+
+.statusFinished {
+    background: var(--bs-secondary-color);
+    opacity: 0.4;
+}
+
+// ── Race cards (live + imminent) ──
+
+.card {
+    display: flex;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    border-radius: 0;
+    transition: transform 0.15s ease;
+
+    &:not(:first-child) {
+        border-top: 1px solid color-mix(in srgb, var(--bs-border-color) 30%, transparent);
+    }
+
+    &:hover {
+        text-decoration: none;
+        color: inherit;
+        transform: translateX(2px);
+    }
+}
+
+.cardLive {
+    border-left: 3px solid $amber;
+    box-shadow: inset 0 0 30px rgba($amber, 0.06);
+}
+
+.cardImminent {
+    border-left: 3px solid $blue;
+    box-shadow: inset 0 0 30px rgba($blue, 0.04);
+}
+
+.cardBg {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    height: 100%;
+    object-fit: contain;
+    object-position: right;
+    pointer-events: none;
+}
+
+.cardOverlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to right,
+        var(--bs-body-bg) 35%,
+        color-mix(in srgb, var(--bs-body-bg) 75%, transparent) 55%,
+        color-mix(in srgb, var(--bs-body-bg) 25%, transparent) 75%,
+        transparent 100%
+    );
+    pointer-events: none;
+}
+
+.cardContent {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.85rem 1.25rem;
+    width: 100%;
+}
+
+.cardTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cardBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.2rem 0.55rem;
+    border-radius: 100px;
+    white-space: nowrap;
+}
+
+.cardBadgeLive {
+    color: $amber;
+    background: rgba($amber, 0.1);
+    border: 1px solid rgba($amber, 0.2);
+}
+
+.cardBadgeImminent {
+    color: $blue;
+    background: rgba($blue, 0.08);
+    border: 1px solid rgba($blue, 0.15);
+}
+
+.imminentDot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: $blue;
+    opacity: 0.7;
+}
+
+.cardParticipants {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
+.cardInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.cardGame {
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--bs-body-color);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cardCategory {
+    font-size: 0.78rem;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cardTimer {
+    font-family: $mono;
+    font-weight: 700;
+    font-size: 1.8rem;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--bs-body-color);
+    font-variant-numeric: tabular-nums;
+}
+
+.cardLive .cardTimer {
+    color: $amber;
+}
+
+.cardImminent .cardTimer {
+    color: $blue;
+    font-size: 1.3rem;
+}
+
+.cardReadyCount {
+    font-family: $mono;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.cardWaiting {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--bs-secondary-color);
+    opacity: 0.7;
+}
+
+// ── Race rows ──
+
+.raceRow {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.5rem 1.25rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--bs-border-color) 40%, transparent);
+    transition: transform 0.15s ease, background-color 0.15s ease;
+    text-decoration: none;
+    color: inherit;
+
+    &:nth-child(even) {
+        background-color: color-mix(in srgb, var(--bs-secondary-bg) 18%, transparent);
+    }
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &:hover {
+        background-color: color-mix(in srgb, var(--bs-secondary-bg) 50%, transparent);
+        transform: translateX(2px);
+        text-decoration: none;
+        color: inherit;
+    }
+}
+
+.gameArt {
+    width: 30px;
+    height: 40px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.raceInfo {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+
+.gameName {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--bs-body-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.subtitle {
+    font-size: 0.72rem;
+    color: var(--bs-secondary-color);
+    opacity: 0.7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.winner {
+    color: #d4af37;
+    font-weight: 600;
+}
+
+.creator {
+    font-weight: 500;
+}
+
+// ── Right section ──
+
+.raceRight {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+}
+
+.time {
+    font-family: $mono;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--bs-body-color);
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+}
+
+.liveTimer {
+    font-family: $mono;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--bs-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.pendingText {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+    color: var(--bs-secondary-color);
+    opacity: 0.65;
+    white-space: nowrap;
+}
+
+.participants {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.liveDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: $amber;
+    box-shadow: 0 0 6px rgba($amber, 0.5), 0 0 12px rgba($amber, 0.3);
+    animation: pulse 2.5s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+// ── Finished row gold accent ──
+
+.rowFinished {
+    border-left: 3px solid #d4af37;
+}
+
+// ── Start Race CTA ──
+
+.ctaContainer {
+    display: flex;
+    justify-content: center;
+    padding: 0.75rem 1.25rem;
 }
 
 .startRaceButton {
@@ -40,10 +384,10 @@
     box-shadow:
         0 2px 8px rgba(var(--bs-primary-rgb), 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
     &:hover {
-        transform: translateY(-1px) scale(1.02);
+        transform: translateY(-1px);
         box-shadow:
             0 4px 16px rgba(var(--bs-primary-rgb), 0.4),
             inset 0 1px 0 rgba(255, 255, 255, 0.25);
@@ -52,15 +396,11 @@
     }
 
     &:active {
-        transform: translateY(0) scale(0.98);
+        transform: translateY(0);
     }
 }
 
-.raceList {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-}
+// ── Empty state ──
 
 .emptyState {
     text-align: center;
@@ -68,4 +408,52 @@
     font-size: 0.9rem;
     color: var(--bs-secondary-color);
     opacity: 0.7;
+}
+
+// ── Pulse animation ──
+
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+        box-shadow: 0 0 6px rgba($amber, 0.5), 0 0 12px rgba($amber, 0.3);
+    }
+
+    50% {
+        opacity: 0.4;
+        box-shadow: 0 0 3px rgba($amber, 0.2);
+    }
+}
+
+// ── Responsive ──
+
+@media (max-width: 480px) {
+    .raceRow {
+        padding: 0.4rem 1rem;
+    }
+
+    .raceRight {
+        gap: 0.35rem;
+    }
+
+    .time,
+    .liveTimer {
+        font-size: 0.8rem;
+    }
+
+    .cardContent {
+        padding: 0.65rem 1rem;
+    }
+
+    .cardGame {
+        font-size: 1rem;
+    }
+
+    .cardTimer {
+        font-size: 1.4rem;
+    }
+
+    .cardImminent .cardTimer {
+        font-size: 1.1rem;
+    }
 }
