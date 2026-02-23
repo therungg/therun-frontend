@@ -1,26 +1,94 @@
-.trendingContent {
+$mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+$amber: #f59e0b;
+
+.content {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
 }
 
-// --- Sub-section headers ---
+// ── Hot Right Now zone ──
 
-.subSectionHeader {
+.hotZone {
+    padding: 1rem 1.25rem;
+}
+
+.hotHeader {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.hotTitle {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
     font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.2px;
-    color: var(--bs-secondary-color);
-    margin-bottom: 0.25rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid color-mix(in srgb, var(--bs-secondary-bg) 80%, transparent);
+    color: $amber;
 }
 
-// --- Hot Games ---
+.periodPills {
+    display: flex;
+    gap: 2px;
+    background: color-mix(in srgb, var(--bs-secondary-bg) 60%, transparent);
+    border-radius: 6px;
+    padding: 2px;
+}
+
+.pill {
+    all: unset;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    border-radius: 4px;
+    color: var(--bs-secondary-color);
+    cursor: pointer;
+    transition: all 0.15s;
+
+    &:hover {
+        color: var(--bs-body-color);
+        background: color-mix(in srgb, var(--bs-secondary-bg) 80%, transparent);
+    }
+}
+
+.pillActive {
+    color: var(--bs-body-color);
+    background: var(--bs-body-bg);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.metricPills {
+    display: flex;
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
+}
+
+.metricPill {
+    all: unset;
+    padding: 0.15rem 0.45rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    border-radius: 4px;
+    color: var(--bs-secondary-color);
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+
+    &:hover {
+        color: var(--bs-body-color);
+    }
+}
+
+.metricPillActive {
+    color: var(--bs-body-color);
+    border-color: var(--bs-border-color);
+    background: color-mix(in srgb, var(--bs-secondary-bg) 50%, transparent);
+}
+
+// ── Hot game cards ──
 
 .hotGames {
     display: flex;
@@ -28,11 +96,11 @@
     gap: 2px;
 }
 
-.hotGameRow {
+.hotGameCard {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 0.5rem 0.6rem;
+    gap: 0.6rem;
+    padding: 0.5rem 0.5rem;
     border-radius: 0.5rem;
     transition: background-color 0.15s ease;
 
@@ -49,8 +117,8 @@
     }
 }
 
-.gameRank {
-    width: 1.5rem;
+.rank {
+    width: 1.25rem;
     text-align: center;
     font-size: 0.8rem;
     font-weight: 600;
@@ -58,10 +126,10 @@
     flex-shrink: 0;
 }
 
-.gameImage {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
+.gameArt {
+    width: 48px;
+    height: 48px;
+    border-radius: 4px;
     object-fit: cover;
     flex-shrink: 0;
     border: 1px solid color-mix(in srgb, var(--bs-secondary-bg) 80%, transparent);
@@ -71,76 +139,87 @@
     flex: 1;
     min-width: 0;
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    flex-direction: column;
+    gap: 0.15rem;
 }
 
 .gameName {
-    font-weight: 500;
-    font-size: 0.9rem;
+    font-weight: 600;
+    font-size: 0.85rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    min-width: 0;
+    color: var(--bs-body-color);
+    text-decoration: none;
 
-    a {
-        color: var(--bs-body-color);
-        text-decoration: none;
-
-        &:hover {
-            color: var(--bs-primary);
-        }
+    &:hover {
+        color: var(--bs-primary);
     }
 }
 
-.gameStats {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-shrink: 0;
-    margin-left: auto;
-}
-
-.runBadge {
-    font-size: 0.72rem;
-    font-weight: 600;
-    padding: 0.2rem 0.55rem;
-    border-radius: 999px;
-    background-color: color-mix(in srgb, var(--bs-primary) 15%, transparent);
-    color: var(--bs-primary);
-    white-space: nowrap;
-}
-
-.runnerCount {
+.categories {
     font-size: 0.7rem;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.statGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.15rem 0.5rem;
+    flex-shrink: 0;
+}
+
+.stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-family: $mono;
+    font-size: 0.65rem;
     color: var(--bs-secondary-color);
     white-space: nowrap;
 }
 
-// --- Runners lists ---
-
-.runnersGrid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-
-    @media (max-width: 576px) {
-        grid-template-columns: 1fr;
-    }
+.statHighlight {
+    color: $amber;
+    font-weight: 600;
 }
 
-.runnersList {
+// ── All-Time zone ──
+
+.allTimeZone {
+    padding: 0.75rem 1.25rem 1rem;
+    border-top: 1px solid var(--bs-border-color);
+    background: color-mix(in srgb, var(--bs-secondary-bg) 25%, transparent);
+}
+
+.allTimeHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--bs-secondary-color);
+    margin-bottom: 0.5rem;
+}
+
+.allTimeGames {
     display: flex;
     flex-direction: column;
     gap: 2px;
 }
 
-.runnerRow {
+.allTimeRow {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    padding: 0.45rem 0.6rem;
-    border-radius: 0.5rem;
+    gap: 0.5rem;
+    padding: 0.35rem 0.4rem;
+    border-radius: 0.4rem;
+    text-decoration: none;
     transition: background-color 0.15s ease;
 
     &:hover {
@@ -148,27 +227,63 @@
     }
 }
 
-.runnerMedal {
-    width: 1.5rem;
+.allTimeRank {
+    width: 1.25rem;
     text-align: center;
-    font-size: 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
     flex-shrink: 0;
 }
 
-.runnerName {
+.allTimeArt {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.allTimeName {
     flex: 1;
     min-width: 0;
     font-weight: 500;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
+    color: var(--bs-body-color);
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
-.runnerValue {
-    font-size: 0.8rem;
+.allTimeStat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-family: $mono;
+    font-size: 0.7rem;
     color: var(--bs-secondary-color);
-    font-weight: 500;
+    white-space: nowrap;
     flex-shrink: 0;
-    font-variant-numeric: tabular-nums;
+}
+
+// ── Responsive ──
+
+@media (max-width: 480px) {
+    .hotZone {
+        padding: 0.75rem 1rem;
+    }
+
+    .allTimeZone {
+        padding: 0.75rem 1rem;
+    }
+
+    .hotHeader {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .statGrid {
+        display: none;
+    }
 }
