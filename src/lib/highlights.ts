@@ -75,6 +75,23 @@ export interface WeeklyRunner {
     value: string;
 }
 
+export interface GameActivity {
+    gameId: number;
+    gameDisplay: string;
+    gameImage: string;
+    totalPlaytime: number;
+    totalAttempts: number;
+    totalFinishedAttempts: number;
+    totalPbs: number;
+    totalPbsWithPrevious: number;
+    uniquePlayers: number;
+}
+
+export interface CategoryActivity extends GameActivity {
+    categoryId: number;
+    categoryDisplay: string;
+}
+
 // --- Data fetching ---
 
 export async function getGlobalStats(offset?: string): Promise<GlobalStats> {
@@ -92,7 +109,7 @@ export async function getRecentNotablePBs(limit = 5): Promise<FinishedRunPB[]> {
     cacheTag('notable-pbs');
 
     return apiFetch<FinishedRunPB[]>(
-        `/v1/finished-runs?top_categories=250&min_playtime=100&is_pb=true&sort=-ended_at&limit=${limit}`,
+        `/v1/finished-runs?top_categories=250&min_playtime=50&is_pb=true&sort=-ended_at&limit=${limit}`,
     );
 }
 
@@ -155,6 +172,36 @@ export async function getTopCategoriesForGame(
 
     return apiFetch<CategoryStats[]>(
         `/v1/runs/categories?game_id=${gameId}&sort=-total_run_time&limit=${limit}`,
+    );
+}
+
+export async function getGameActivity(
+    from: string,
+    to: string,
+    limit = 6,
+    minPlayers = 2,
+): Promise<GameActivity[]> {
+    'use cache';
+    cacheLife('hours');
+    cacheTag(`game-activity-${from}-${to}`);
+
+    return apiFetch<GameActivity[]>(
+        `/games/activity?from=${from}&to=${to}&type=games&minPlayers=${minPlayers}&limit=${limit}`,
+    );
+}
+
+export async function getCategoryActivityForGame(
+    gameId: number,
+    from: string,
+    to: string,
+    limit = 2,
+): Promise<CategoryActivity[]> {
+    'use cache';
+    cacheLife('hours');
+    cacheTag(`category-activity-${gameId}-${from}-${to}`);
+
+    return apiFetch<CategoryActivity[]>(
+        `/games/activity?from=${from}&to=${to}&type=categories&gameId=${gameId}&limit=${limit}`,
     );
 }
 
