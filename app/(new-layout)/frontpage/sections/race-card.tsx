@@ -74,7 +74,6 @@ export const RaceCard = ({ race: initialRace, variant }: RaceCardProps) => {
                         {race.displayCategory}
                         {isLive && leader && !leaderFinished && (
                             <>
-                                {' '}
                                 {' · '} Leader: {leader.user}
                             </>
                         )}
