@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import { UserLink } from '~src/components/links/links';
 import {
@@ -136,16 +137,32 @@ const FeaturedCarousel = ({
                 );
             })}
             {pbs.length > 1 && (
-                <div className={styles.dots}>
-                    {pbs.map((_, i) => (
-                        <button
-                            key={i}
-                            type="button"
-                            className={`${styles.dot} ${i === activeIndex ? styles.dotActive : ''}`}
-                            onClick={() => goToSlide(i)}
-                            aria-label={`Show PB ${i + 1}`}
-                        />
-                    ))}
+                <div className={styles.nav}>
+                    <button
+                        type="button"
+                        className={styles.navButton}
+                        onClick={() =>
+                            goToSlide(
+                                (activeIndex - 1 + pbs.length) % pbs.length,
+                            )
+                        }
+                        aria-label="Previous PB"
+                    >
+                        <FaChevronLeft size={10} />
+                    </button>
+                    <span className={styles.navCounter}>
+                        {activeIndex + 1} / {pbs.length}
+                    </span>
+                    <button
+                        type="button"
+                        className={styles.navButton}
+                        onClick={() =>
+                            goToSlide((activeIndex + 1) % pbs.length)
+                        }
+                        aria-label="Next PB"
+                    >
+                        <FaChevronRight size={10} />
+                    </button>
                 </div>
             )}
         </div>
