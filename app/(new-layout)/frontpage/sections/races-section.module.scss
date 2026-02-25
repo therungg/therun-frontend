@@ -1,6 +1,6 @@
 $mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
 $amber: #f59e0b;
-$blue: #3b82f6;
+$green: #608c59;
 
 // ── Group headers ──
 
@@ -78,8 +78,8 @@ $blue: #3b82f6;
 }
 
 .cardImminent {
-    border: 1px solid rgba($blue, 0.3);
-    box-shadow: 0 0 12px rgba($blue, 0.15), 0 0 24px rgba($blue, 0.08);
+    border: 1px solid rgba($green, 0.3);
+    box-shadow: 0 0 12px rgba($green, 0.15), 0 0 24px rgba($green, 0.08);
 }
 
 .cardBg {
@@ -145,9 +145,9 @@ $blue: #3b82f6;
 }
 
 .cardBadgeImminent {
-    color: $blue;
-    background: rgba($blue, 0.08);
-    border: 1px solid rgba($blue, 0.2);
+    color: $green;
+    background: rgba($green, 0.08);
+    border: 1px solid rgba($green, 0.2);
 }
 
 .imminentDot {
@@ -155,7 +155,7 @@ $blue: #3b82f6;
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: $blue;
+    background: $green;
     opacity: 0.85;
 }
 
@@ -208,7 +208,7 @@ $blue: #3b82f6;
 }
 
 .cardImminent .cardTimer {
-    color: $blue;
+    color: $green;
     font-size: 1.6rem;
 }
 
