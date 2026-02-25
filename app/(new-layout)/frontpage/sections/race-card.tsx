@@ -68,7 +68,7 @@ export const RaceCard = ({ race: initialRace, variant }: RaceCardProps) => {
                         <FaUser size={11} />
                     </span>
                 </div>
-                <div className={styles.cardInfo}>
+                <div className={styles.cardBottom}>
                     <span className={styles.cardGame}>{race.displayGame}</span>
                     <span className={styles.cardCategory}>
                         {race.displayCategory}
@@ -84,9 +84,15 @@ export const RaceCard = ({ race: initialRace, variant }: RaceCardProps) => {
                             </>
                         )}
                     </span>
-                </div>
-                <div className={styles.cardTimer}>
-                    <TimerSection race={race} variant={variant} />
+                    <div className={styles.cardTimer}>
+                        <TimerSection race={race} variant={variant} />
+                    </div>
+                    {!isLive && race.participantCount > 0 && (
+                        <span className={styles.cardSocialProof}>
+                            {race.participantCount} runner
+                            {race.participantCount !== 1 ? 's' : ''} waiting
+                        </span>
+                    )}
                 </div>
             </div>
         </a>
