@@ -46,7 +46,14 @@ $blue: #3b82f6;
     opacity: 0.4;
 }
 
-// ── Race cards (live + imminent) ──
+// ── Hero race cards (live + imminent) ──
+
+.cardList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+}
 
 .card {
     display: flex;
@@ -54,52 +61,53 @@ $blue: #3b82f6;
     overflow: hidden;
     text-decoration: none;
     color: inherit;
-    border-radius: 0;
-    transition: transform 0.15s ease;
-
-    &:not(:first-child) {
-        border-top: 1px solid color-mix(in srgb, var(--bs-border-color) 30%, transparent);
-    }
+    border-radius: 8px;
+    min-height: 150px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 
     &:hover {
         text-decoration: none;
         color: inherit;
-        transform: translateX(2px);
+        transform: scale(1.01);
     }
 }
 
 .cardLive {
-    border-left: 3px solid $amber;
-    box-shadow: inset 0 0 30px rgba($amber, 0.06);
+    border: 1px solid rgba($amber, 0.4);
+    animation: glowPulse 2.5s ease-in-out infinite;
 }
 
 .cardImminent {
-    border-left: 3px solid $blue;
-    box-shadow: inset 0 0 30px rgba($blue, 0.04);
+    border: 1px solid rgba($blue, 0.3);
+    box-shadow: 0 0 12px rgba($blue, 0.15), 0 0 24px rgba($blue, 0.08);
 }
 
 .cardBg {
     position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: auto;
+    inset: 0;
+    width: 100%;
     height: 100%;
-    object-fit: contain;
-    object-position: right;
+    object-fit: cover;
+    object-position: center right;
     pointer-events: none;
 }
 
 .cardOverlay {
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-        to right,
-        var(--bs-body-bg) 35%,
-        color-mix(in srgb, var(--bs-body-bg) 75%, transparent) 55%,
-        color-mix(in srgb, var(--bs-body-bg) 25%, transparent) 75%,
-        transparent 100%
-    );
+    background:
+        linear-gradient(
+            to top,
+            rgba(0, 0, 0, 0.85) 0%,
+            rgba(0, 0, 0, 0.6) 40%,
+            rgba(0, 0, 0, 0.2) 70%,
+            transparent 100%
+        ),
+        linear-gradient(
+            to right,
+            rgba(0, 0, 0, 0.5) 0%,
+            transparent 60%
+        );
     pointer-events: none;
 }
 
@@ -108,8 +116,8 @@ $blue: #3b82f6;
     z-index: 1;
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
-    padding: 0.85rem 1.25rem;
+    justify-content: space-between;
+    padding: 0.85rem 1.1rem;
     width: 100%;
 }
 
@@ -123,25 +131,27 @@ $blue: #3b82f6;
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    font-size: 0.6rem;
+    font-size: 0.65rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    padding: 0.2rem 0.55rem;
+    padding: 0.2rem 0.6rem;
     border-radius: 100px;
     white-space: nowrap;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .cardBadgeLive {
-    color: $amber;
-    background: rgba($amber, 0.1);
-    border: 1px solid rgba($amber, 0.2);
+    color: #fff;
+    background: rgba($amber, 0.35);
+    border: 1px solid rgba($amber, 0.5);
 }
 
 .cardBadgeImminent {
-    color: $blue;
-    background: rgba($blue, 0.08);
-    border: 1px solid rgba($blue, 0.15);
+    color: #fff;
+    background: rgba($blue, 0.3);
+    border: 1px solid rgba($blue, 0.4);
 }
 
 .imminentDot {
@@ -150,50 +160,54 @@ $blue: #3b82f6;
     height: 6px;
     border-radius: 50%;
     background: $blue;
-    opacity: 0.7;
+    opacity: 0.85;
 }
 
 .cardParticipants {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    font-size: 0.8rem;
+    gap: 0.3rem;
+    font-size: 0.82rem;
     font-weight: 600;
-    color: var(--bs-secondary-color);
+    color: rgba(255, 255, 255, 0.85);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-.cardInfo {
+.cardBottom {
     display: flex;
     flex-direction: column;
-    gap: 0.1rem;
+    gap: 0.15rem;
 }
 
 .cardGame {
-    font-weight: 700;
-    font-size: 1.15rem;
-    color: var(--bs-body-color);
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: #fff;
     letter-spacing: -0.01em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 
 .cardCategory {
-    font-size: 0.78rem;
-    color: var(--bs-secondary-color);
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.8);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .cardTimer {
     font-family: $mono;
     font-weight: 700;
-    font-size: 1.8rem;
+    font-size: 2.2rem;
     line-height: 1;
     letter-spacing: -0.04em;
-    color: var(--bs-body-color);
     font-variant-numeric: tabular-nums;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    margin-top: 0.15rem;
 }
 
 .cardLive .cardTimer {
@@ -202,7 +216,7 @@ $blue: #3b82f6;
 
 .cardImminent .cardTimer {
     color: $blue;
-    font-size: 1.3rem;
+    font-size: 1.6rem;
 }
 
 .cardReadyCount {
@@ -218,8 +232,13 @@ $blue: #3b82f6;
     font-family: inherit;
     font-weight: 600;
     font-size: 0.85rem;
-    color: var(--bs-secondary-color);
-    opacity: 0.7;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.cardSocialProof {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 0.1rem;
 }
 
 // ── Race rows ──
@@ -410,7 +429,7 @@ $blue: #3b82f6;
     opacity: 0.7;
 }
 
-// ── Pulse animation ──
+// ── Animations ──
 
 @keyframes pulse {
     0%,
@@ -425,9 +444,45 @@ $blue: #3b82f6;
     }
 }
 
+@keyframes glowPulse {
+    0%,
+    100% {
+        box-shadow: 0 0 15px rgba($amber, 0.3), 0 0 30px rgba($amber, 0.15);
+    }
+
+    50% {
+        box-shadow: 0 0 8px rgba($amber, 0.15), 0 0 16px rgba($amber, 0.08);
+    }
+}
+
 // ── Responsive ──
 
 @media (max-width: 480px) {
+    .cardList {
+        gap: 0.4rem;
+        padding: 0.4rem 0.5rem;
+    }
+
+    .card {
+        min-height: 130px;
+    }
+
+    .cardContent {
+        padding: 0.65rem 0.85rem;
+    }
+
+    .cardGame {
+        font-size: 1.1rem;
+    }
+
+    .cardTimer {
+        font-size: 1.6rem;
+    }
+
+    .cardImminent .cardTimer {
+        font-size: 1.3rem;
+    }
+
     .raceRow {
         padding: 0.4rem 1rem;
     }
@@ -439,21 +494,5 @@ $blue: #3b82f6;
     .time,
     .liveTimer {
         font-size: 0.8rem;
-    }
-
-    .cardContent {
-        padding: 0.65rem 1rem;
-    }
-
-    .cardGame {
-        font-size: 1rem;
-    }
-
-    .cardTimer {
-        font-size: 1.4rem;
-    }
-
-    .cardImminent .cardTimer {
-        font-size: 1.1rem;
     }
 }
