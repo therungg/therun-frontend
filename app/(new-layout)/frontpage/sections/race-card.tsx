@@ -59,48 +59,24 @@ export const RaceCard = ({ race: initialRace, variant }: RaceCardProps) => {
             />
             <div className={styles.cardOverlay} />
             <div className={styles.cardContent}>
-                <span className={badgeClassName}>
-                    <span
-                        className={isLive ? styles.liveDot : styles.imminentDot}
-                    />
-                    {isLive ? 'LIVE' : 'STARTING SOON'}
-                    {!isLive && race.ranked && (
-                        <>
-                            {' · '}
-                            <span className={styles.rankedBadge}>RANKED</span>
-                        </>
-                    )}
-                </span>
-                <div className={styles.cardBody}>
-                    <div className={styles.cardLeft}>
-                        <span className={styles.cardGame}>
-                            {race.displayGame}
-                        </span>
-                        <span className={styles.cardCategory}>
-                            {race.displayCategory}
-                            {isLive && leader && !leaderFinished && (
-                                <>
-                                    {' · '} Leader: {leader.user}
-                                </>
-                            )}
-                            {isLive && leader && leaderFinished && (
-                                <>
-                                    {' · '}
-                                    <FaTrophy size={10} /> {leader.user}
-                                </>
-                            )}
-                        </span>
-                        {!isLive && topSeed && (
-                            <span className={styles.cardSeed}>
-                                <FaSeedling size={10} />
-                                {' #1 Seed: '}
-                                {topSeed.user}
+                <div className={styles.cardTop}>
+                    <span className={badgeClassName}>
+                        <span
+                            className={
+                                isLive ? styles.liveDot : styles.imminentDot
+                            }
+                        />
+                        {isLive ? 'LIVE' : 'STARTING SOON'}
+                        {!isLive && race.ranked && (
+                            <>
                                 {' · '}
-                                <DurationToFormatted duration={topSeed.pb} />
-                            </span>
+                                <span className={styles.rankedBadge}>
+                                    RANKED
+                                </span>
+                            </>
                         )}
-                    </div>
-                    <div className={styles.cardRight}>
+                    </span>
+                    <div className={styles.cardTopRight}>
                         <div className={styles.cardTimer}>
                             <TimerSection race={race} variant={variant} />
                         </div>
@@ -109,6 +85,32 @@ export const RaceCard = ({ race: initialRace, variant }: RaceCardProps) => {
                             <FaUser size={11} />
                         </span>
                     </div>
+                </div>
+                <div className={styles.cardBottom}>
+                    <span className={styles.cardGame}>{race.displayGame}</span>
+                    <span className={styles.cardCategory}>
+                        {race.displayCategory}
+                        {isLive && leader && !leaderFinished && (
+                            <>
+                                {' · '} Leader: {leader.user}
+                            </>
+                        )}
+                        {isLive && leader && leaderFinished && (
+                            <>
+                                {' · '}
+                                <FaTrophy size={10} /> {leader.user}
+                            </>
+                        )}
+                    </span>
+                    {!isLive && topSeed && (
+                        <span className={styles.cardSeed}>
+                            <FaSeedling size={10} />
+                            {' #1 Seed: '}
+                            {topSeed.user}
+                            {' · '}
+                            <DurationToFormatted duration={topSeed.pb} />
+                        </span>
+                    )}
                 </div>
             </div>
         </a>
