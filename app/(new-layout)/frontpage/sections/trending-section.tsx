@@ -41,6 +41,7 @@ export const TrendingSection = async () => {
 
     return (
         <Panel
+            panelId="trending"
             title="Trending Games"
             subtitle="What's Hot"
             className="p-0 overflow-hidden"

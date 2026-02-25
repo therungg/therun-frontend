@@ -1,11 +1,13 @@
 'use client';
 
-import { FaClock, FaSeedling, FaTrophy, FaUser } from 'react-icons/fa6';
+import { FaTrophy, FaUser } from 'react-icons/fa6';
 import { RaceTimer } from '~app/(old-layout)/races/[race]/race-timer';
 import { sortRaceParticipants } from '~app/(old-layout)/races/[race]/sort-race-participants';
-import { useRace } from '~app/(old-layout)/races/hooks/use-race';
 import { Race } from '~app/(old-layout)/races/races.types';
-import { DurationToFormatted } from '~src/components/util/datetime';
+import {
+    DurationToFormatted,
+    LocalizedTime,
+} from '~src/components/util/datetime';
 import styles from './races-section.module.scss';
 
 const FALLBACK_IMAGE = '/logo_dark_theme_no_text_transparent.png';
@@ -15,10 +17,7 @@ interface RaceCardProps {
     variant: 'live' | 'imminent';
 }
 
-export const RaceCard = ({ race: initialRace, variant }: RaceCardProps) => {
-    const { raceState } = useRace(initialRace, []);
-    const race = raceState;
-
+export const RaceCard = ({ race, variant }: RaceCardProps) => {
     const imageUrl =
         race.gameImage && race.gameImage !== 'noimage'
             ? race.gameImage
@@ -59,57 +58,101 @@ export const RaceCard = ({ race: initialRace, variant }: RaceCardProps) => {
             />
             <div className={styles.cardOverlay} />
             <div className={styles.cardContent}>
-                <div className={styles.cardTop}>
-                    <span className={badgeClassName}>
-                        <span
-                            className={
-                                isLive ? styles.liveDot : styles.imminentDot
-                            }
-                        />
-                        {isLive ? 'LIVE' : 'STARTING SOON'}
-                        {!isLive && race.ranked && (
-                            <>
-                                {' · '}
-                                <span className={styles.rankedBadge}>
-                                    RANKED
-                                </span>
-                            </>
-                        )}
-                    </span>
-                    <div className={styles.cardTopRight}>
-                        <div className={styles.cardTimer}>
-                            <TimerSection race={race} variant={variant} />
-                        </div>
-                        <span className={styles.cardParticipants}>
+                <div className={styles.cardCenter}>
+                    <div className={styles.cardTitleRow}>
+                        <span className={styles.cardGame}>
+                            {race.displayGame}
+                        </span>
+                        <span className={badgeClassName}>
+                            {isLive ? (
+                                <>
+                                    <span className={styles.liveDot} />
+                                    LIVE
+                                </>
+                            ) : (
+                                <>
+                                    <span className={styles.imminentDot} />
+                                    OPEN LOBBY
+                                </>
+                            )}
+                            {race.ranked && (
+                                <>
+                                    {' · '}
+                                    <span className={styles.rankedBadge}>
+                                        RANKED
+                                    </span>
+                                </>
+                            )}
+                            {' · '}
                             {race.participantCount}
-                            <FaUser size={11} />
+                            <FaUser size={9} />
                         </span>
                     </div>
-                </div>
-                <div className={styles.cardBottom}>
-                    <span className={styles.cardGame}>{race.displayGame}</span>
                     <span className={styles.cardCategory}>
                         {race.displayCategory}
-                        {isLive && leader && !leaderFinished && (
-                            <>
-                                {' · '} Leader: {leader.user}
-                            </>
-                        )}
-                        {isLive && leader && leaderFinished && (
-                            <>
-                                {' · '}
-                                <FaTrophy size={10} /> {leader.user}
-                            </>
-                        )}
                     </span>
-                    {!isLive && topSeed && (
-                        <span className={styles.cardSeed}>
-                            <FaSeedling size={10} />
-                            {' #1 Seed: '}
-                            {topSeed.user}
-                            {' · '}
-                            <DurationToFormatted duration={topSeed.pb} />
-                        </span>
+                </div>
+                <div className={styles.cardFooter}>
+                    {isLive ? (
+                        <div className={styles.cardFooterLive}>
+                            <div className={styles.cardTimer}>
+                                <RaceTimer race={race} />
+                            </div>
+                            <div className={styles.cardFooterStats}>
+                                {leader && (
+                                    <div className={styles.cardStat}>
+                                        <span className={styles.cardStatLabel}>
+                                            {leaderFinished
+                                                ? 'Winner'
+                                                : 'Leader'}
+                                        </span>
+                                        <span className={styles.cardStatValue}>
+                                            {leaderFinished && (
+                                                <FaTrophy size={9} />
+                                            )}{' '}
+                                            {leader.user}
+                                        </span>
+                                    </div>
+                                )}
+                                {race.participants && (
+                                    <RaceProgress
+                                        participants={race.participants}
+                                    />
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className={styles.cardFooterStats}>
+                            <div className={styles.cardStat}>
+                                <span className={styles.cardStatLabel}>
+                                    Hosted by
+                                </span>
+                                <span className={styles.cardStatValue}>
+                                    {race.creator}
+                                </span>
+                            </div>
+                            {topSeed && (
+                                <div className={styles.cardStat}>
+                                    <span className={styles.cardStatLabel}>
+                                        Top Seed
+                                    </span>
+                                    <span className={styles.cardStatValue}>
+                                        {topSeed.user}
+                                        {' · '}
+                                        <DurationToFormatted
+                                            duration={topSeed.pb}
+                                        />{' '}
+                                        PB
+                                    </span>
+                                </div>
+                            )}
+                            <div className={styles.cardStat}>
+                                <span className={styles.cardStatLabel}>
+                                    Starts
+                                </span>
+                                <LobbyStatus race={race} />
+                            </div>
+                        </div>
                     )}
                 </div>
             </div>
@@ -117,42 +160,78 @@ export const RaceCard = ({ race: initialRace, variant }: RaceCardProps) => {
     );
 };
 
-const TimerSection = ({
-    race,
-    variant,
+const RaceProgress = ({
+    participants,
 }: {
-    race: Race;
-    variant: 'live' | 'imminent';
+    participants: Race['participants'];
 }) => {
-    if (variant === 'live') {
-        return <RaceTimer race={race} />;
-    }
+    if (!participants || participants.length === 0) return null;
 
-    if (race.startMethod === 'everyone-ready') {
-        return (
-            <span className={styles.cardReadyCount}>
-                {race.readyParticipantCount}/{race.participantCount} Ready
-            </span>
-        );
-    }
+    const finished = participants.filter(
+        (p) => p.status === 'finished' || p.status === 'confirmed',
+    ).length;
+    const racing = participants.filter(
+        (p) => p.status === 'ready' || p.status === 'started',
+    ).length;
+    const abandoned = participants.filter(
+        (p) => p.status === 'abandoned',
+    ).length;
 
-    if (race.willStartAt) {
-        const minutesUntilStart = Math.max(
-            0,
-            Math.ceil(
-                (new Date(race.willStartAt).getTime() - Date.now()) / 60000,
-            ),
-        );
-        return (
-            <span suppressHydrationWarning>
-                Starts in {minutesUntilStart} min
-            </span>
-        );
-    }
+    const parts: string[] = [];
+    if (racing > 0) parts.push(`${racing} Racing`);
+    if (finished > 0) parts.push(`${finished} Done`);
+    if (abandoned > 0) parts.push(`${abandoned} DNF`);
 
     return (
-        <span className={styles.cardWaiting}>
-            <FaClock size={12} /> Waiting for players...
-        </span>
+        <div className={styles.cardStat}>
+            <span className={styles.cardStatLabel}>Field</span>
+            <span className={styles.cardStatValue}>{parts.join(' · ')}</span>
+        </div>
     );
+};
+
+const LobbyStatus = ({ race }: { race: Race }) => {
+    if (race.startMethod === 'everyone-ready') {
+        return <span className={styles.lobbyStart}>When all ready</span>;
+    }
+
+    if (race.startMethod === 'datetime' && race.willStartAt) {
+        const startDate = new Date(race.willStartAt);
+        const minutesUntilStart = Math.max(
+            0,
+            Math.ceil((startDate.getTime() - Date.now()) / 60000),
+        );
+
+        if (minutesUntilStart >= 720) {
+            return (
+                <LocalizedTime
+                    date={startDate}
+                    options={{
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                    }}
+                />
+            );
+        }
+
+        const label =
+            minutesUntilStart < 60
+                ? `In ${minutesUntilStart} min`
+                : `In ${Math.floor(minutesUntilStart / 60)}h ${minutesUntilStart % 60}m`;
+        return (
+            <span className={styles.lobbyStart} suppressHydrationWarning>
+                {label}
+            </span>
+        );
+    }
+
+    if (race.startMethod === 'moderator') {
+        return (
+            <span className={styles.lobbyStart}>When mod presses start</span>
+        );
+    }
+
+    return <span className={styles.lobbyStart}>Waiting for players</span>;
 };

@@ -1,0 +1,85 @@
+$nav-height: 2.5rem;
+
+// Offset scroll targets so they don't hide behind the sticky nav
+// Panel tabs extend ~4rem above the panel via transform, so account for that
+$tab-height: 4rem;
+
+:global(#live),
+:global(#trending),
+:global(#pbs),
+:global(#pulse),
+:global(#your-stats),
+:global(#races) {
+    scroll-margin-top: $nav-height + $tab-height + 1rem;
+}
+
+
+// Zero-height sentinel sits above the nav; when it scrolls out of view the nav is stuck
+.sentinel {
+    height: 0;
+    pointer-events: none;
+}
+
+.nav {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0 0.5rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    background: transparent;
+    border-bottom: 1px solid transparent;
+    transition:
+        background-color 0.2s ease,
+        border-color 0.2s ease;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+.navStuck {
+    background: var(--bs-body-bg);
+    border-bottom-color: var(--bs-border-color);
+}
+
+.item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.55rem 0.65rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    cursor: pointer;
+    border: none;
+    background: none;
+    border-bottom: 2px solid transparent;
+    transition:
+        color 0.15s ease,
+        border-color 0.15s ease;
+
+    &:hover {
+        color: var(--bs-body-color);
+    }
+
+    svg {
+        flex-shrink: 0;
+    }
+}
+
+.itemActive {
+    color: var(--bs-primary);
+    border-bottom-color: var(--bs-primary);
+
+    &:hover {
+        color: var(--bs-primary);
+    }
+}

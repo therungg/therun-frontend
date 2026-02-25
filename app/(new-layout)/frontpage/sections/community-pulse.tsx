@@ -21,6 +21,7 @@ export const CommunityPulse = async () => {
 
     return (
         <Panel
+            panelId="pulse"
             title="Community Pulse"
             subtitle="Last 24 Hours"
             className="p-0 overflow-hidden"

@@ -10,7 +10,12 @@ export const YourStatsSection = async () => {
 
     if (!session?.user) {
         return (
-            <Panel subtitle="Summary" title="Runner Stats" className="p-4">
+            <Panel
+                panelId="your-stats"
+                subtitle="Summary"
+                title="Runner Stats"
+                className="p-4"
+            >
                 <p className="text-secondary mb-3">
                     Look up any runner&apos;s weekly stats
                 </p>
@@ -39,6 +44,7 @@ export const YourStatsSection = async () => {
 
     return (
         <Panel
+            panelId="your-stats"
             subtitle="Summary"
             title="Your Performance"
             className="p-4"
