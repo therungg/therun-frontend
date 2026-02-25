@@ -81,17 +81,22 @@ export const RacesSection = async () => {
                 </div>
             )}
 
-            {cardRaces.map((race) => (
-                <RaceCard
-                    key={race.raceId}
-                    race={race}
-                    variant={
-                        race.status === 'progress' || race.status === 'starting'
-                            ? 'live'
-                            : 'imminent'
-                    }
-                />
-            ))}
+            {cardRaces.length > 0 && (
+                <div className={styles.cardList}>
+                    {cardRaces.map((race) => (
+                        <RaceCard
+                            key={race.raceId}
+                            race={race}
+                            variant={
+                                race.status === 'progress' ||
+                                race.status === 'starting'
+                                    ? 'live'
+                                    : 'imminent'
+                            }
+                        />
+                    ))}
+                </div>
+            )}
 
             {compactRaces.length > 0 && (
                 <div className={styles.group}>
