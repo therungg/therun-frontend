@@ -99,10 +99,10 @@ $green: #608c59;
     inset: 0;
     background: linear-gradient(
         to right,
-        var(--bs-body-bg) 30%,
-        color-mix(in srgb, var(--bs-body-bg) 85%, transparent) 45%,
-        color-mix(in srgb, var(--bs-body-bg) 40%, transparent) 65%,
-        transparent 85%
+        var(--bs-body-bg) 35%,
+        color-mix(in srgb, var(--bs-body-bg) 90%, transparent) 50%,
+        color-mix(in srgb, var(--bs-body-bg) 50%, transparent) 65%,
+        transparent 80%
     );
     pointer-events: none;
 }
@@ -114,13 +114,29 @@ $green: #608c59;
     flex-direction: column;
     justify-content: space-between;
     padding: 1rem 1.25rem;
-    width: 70%;
+    width: 75%;
 }
 
-.cardTop {
+.cardBody {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: space-between;
+    gap: 1rem;
+}
+
+.cardLeft {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+}
+
+.cardRight {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.25rem;
+    flex-shrink: 0;
 }
 
 .cardBadge {
@@ -166,12 +182,6 @@ $green: #608c59;
     font-size: 0.82rem;
     font-weight: 600;
     color: var(--bs-secondary-color);
-}
-
-.cardBottom {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
 }
 
 .cardGame {
@@ -479,7 +489,6 @@ $green: #608c59;
 
     .cardContent {
         padding: 0.75rem 1rem;
-        width: 85%;
     }
 
     .cardGame {
@@ -487,11 +496,15 @@ $green: #608c59;
     }
 
     .cardTimer {
-        font-size: 1.6rem;
+        font-size: 1.4rem;
     }
 
     .cardImminent .cardTimer {
-        font-size: 1.3rem;
+        font-size: 1.2rem;
+    }
+
+    .cardSeed {
+        display: none;
     }
 
     .raceRow {
