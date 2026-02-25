@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { BunnyIcon } from '~src/icons/bunny-icon';
 import { getColorMode } from '~src/utils/colormode';
 import { safeDecodeURI } from '~src/utils/uri';
@@ -60,10 +61,19 @@ export const PatreonName: React.FunctionComponent<PatreonNameProps> = ({
         <>
             <span style={style}>{name}</span>
             {icon && (
-                <span>
-                    {' '}
-                    <BunnyIcon size={size} />
-                </span>
+                <OverlayTrigger
+                    placement="top"
+                    overlay={
+                        <Tooltip id={`patron-${name}`}>
+                            therun.gg Patron
+                        </Tooltip>
+                    }
+                >
+                    <span>
+                        {' '}
+                        <BunnyIcon size={size} />
+                    </span>
+                </OverlayTrigger>
             )}
         </>
     );

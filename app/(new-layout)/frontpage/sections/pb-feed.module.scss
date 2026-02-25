@@ -132,7 +132,7 @@ $green-bright: #66bb6a;
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
-    font-size: 0.55rem;
+    font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -182,7 +182,7 @@ $green-bright: #66bb6a;
 }
 
 .featuredStatLabel {
-    font-size: 0.6rem;
+    font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -239,7 +239,7 @@ $green-bright: #66bb6a;
 .featuredTimestamp {
     display: inline-flex;
     align-items: center;
-    font-size: 0.55rem;
+    font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -367,7 +367,7 @@ $green-bright: #66bb6a;
 }
 
 .listGameCategory {
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     color: var(--bs-secondary-color);
     opacity: 0.7;
     white-space: nowrap;
@@ -404,7 +404,7 @@ $green-bright: #66bb6a;
     gap: 0.15rem;
     font-family: $mono;
     font-weight: 700;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: $green-bright;
     font-variant-numeric: tabular-nums;
     padding: 0.1rem 0.4rem;
@@ -416,7 +416,7 @@ $green-bright: #66bb6a;
     display: inline-flex;
     align-items: center;
     gap: 0.15rem;
-    font-size: 0.7rem;
+    font-size: 0.78rem;
     font-weight: 700;
     padding: 0.1rem 0.4rem;
     border-radius: 100px;
@@ -426,7 +426,7 @@ $green-bright: #66bb6a;
 }
 
 .listTimestamp {
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--bs-body-color);
     opacity: 0.45;

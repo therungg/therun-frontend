@@ -54,6 +54,15 @@ $red: #ef5350;
     border-color: rgba($gold, 0.2);
 }
 
+.highlightBlue {
+    background: linear-gradient(
+        135deg,
+        rgba(66, 165, 245, 0.1) 0%,
+        rgba(66, 165, 245, 0.03) 100%
+    );
+    border-color: rgba(66, 165, 245, 0.2);
+}
+
 .highlightPrimary {
     background: linear-gradient(
         135deg,
@@ -65,12 +74,17 @@ $red: #ef5350;
 
 .highlightBg {
     position: absolute;
-    inset: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    aspect-ratio: 3 / 4;
     background-size: cover;
     background-position: center;
-    filter: blur(20px);
-    opacity: 0.15;
+    background-repeat: no-repeat;
+    opacity: 0.13;
     pointer-events: none;
+    mask-image: linear-gradient(to right, transparent, black 40%);
+    -webkit-mask-image: linear-gradient(to right, transparent, black 40%);
 }
 
 .highlightBody {
@@ -81,6 +95,16 @@ $red: #ef5350;
     gap: 0.15rem;
 }
 
+.highlightTag {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--bs-secondary-color);
+    opacity: 0.5;
+    margin-bottom: 0.1rem;
+}
+
 .highlightValue {
     font-family: $mono;
     font-size: 1.6rem;
@@ -89,7 +113,7 @@ $red: #ef5350;
     color: var(--bs-emphasis-color);
 }
 
-.streakIcon {
+.highlightIcon {
     margin-right: 0.3rem;
     vertical-align: middle;
 }
@@ -220,6 +244,14 @@ $red: #ef5350;
     font-weight: 600;
     color: var(--bs-secondary-color);
     opacity: 0.5;
+}
+
+.statAllTime {
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    opacity: 0.5;
+    white-space: nowrap;
 }
 
 /* ── Top Game Card ── */
@@ -543,103 +575,43 @@ $red: #ef5350;
     }
 }
 
-// Search component styles
-.searchContainer {
+/* ── Logged-Out CTA ── */
+
+.loggedOutCta {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 1rem 0;
+    gap: 1rem;
+    padding: 2rem 1.25rem;
+    text-align: center;
 }
 
-.searchInputGroup {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    width: 100%;
-    max-width: 320px;
-}
-
-.searchInput {
-    flex: 1;
-    padding: 0.55rem 0.85rem;
-    border-radius: 0.5rem;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
-    background: var(--bs-body-bg);
-    color: var(--bs-body-color);
-    font-size: 0.9rem;
-    transition: all 0.2s ease-in-out;
-
-    &:focus {
-        outline: none;
-        border-color: rgba(var(--bs-primary-rgb), 0.5);
-        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.1);
-    }
-
-    &::placeholder {
-        color: var(--bs-secondary-color);
-        opacity: 0.5;
-    }
-}
-
-.searchButton {
-    padding: 0.55rem 1rem;
-    border: none;
-    border-radius: 0.5rem;
-    background: var(--bs-primary);
-    color: white;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    white-space: nowrap;
-
-    &:hover {
-        opacity: 0.9;
-        transform: translateY(-1px);
-    }
-
-    &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none;
-    }
-}
-
-.suggestionsDropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    margin-top: 0.25rem;
-    background: var(--bs-body-bg);
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
-    border-radius: 0.5rem;
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 1000;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-.suggestionItem {
-    display: block;
-    width: 100%;
-    padding: 0.6rem 0.85rem;
-    background: transparent;
-    border: none;
-    text-align: left;
-    cursor: pointer;
-    color: var(--bs-body-color);
-    font-size: 0.9rem;
-    transition: background-color 0.15s ease-in-out;
-
-    &:hover {
-        background: rgba(var(--bs-primary-rgb), 0.06);
-    }
-}
-
-.suggestionLoading {
-    padding: 0.6rem 0.85rem;
-    font-size: 0.85rem;
+.loggedOutText {
+    font-size: 0.88rem;
     color: var(--bs-secondary-color);
-    opacity: 0.7;
+    line-height: 1.4;
+}
+
+.twitchButton {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.25rem;
+    border: none;
+    border-radius: 0.5rem;
+    background: #9146ff;
+    color: white;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+
+    &:hover {
+        background: #7c3aed;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(145, 70, 255, 0.35);
+        color: white;
+        text-decoration: none;
+    }
 }

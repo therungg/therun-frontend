@@ -14,10 +14,12 @@ interface FeaturedPatron {
 
 interface PatreonPanelViewProps {
     featuredPatrons: FeaturedPatron[];
+    totalPatronCount: number;
 }
 
 export const PatreonPanelView: React.FC<PatreonPanelViewProps> = ({
     featuredPatrons,
+    totalPatronCount,
 }) => {
     return (
         <Panel subtitle="Support" title="Patreon" className="p-4">
@@ -26,10 +28,14 @@ export const PatreonPanelView: React.FC<PatreonPanelViewProps> = ({
                     <BunnyIcon size={32} />
                 </div>
 
-                <h5 className={styles.heading}>Support therun.gg</h5>
+                <h5 className={styles.heading}>
+                    therun.gg is ad-free, thanks to our patrons
+                </h5>
 
                 <p className={styles.description}>
-                    Help keep the site ad-free and unlock perks!
+                    {totalPatronCount > 0
+                        ? `Join ${totalPatronCount} patrons keeping therun.gg free for everyone.`
+                        : 'Help keep the site ad-free and unlock perks!'}
                 </p>
 
                 <a

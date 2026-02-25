@@ -4,6 +4,7 @@ import { FaTrophy, FaUser } from 'react-icons/fa6';
 import { RaceTimer } from '~app/(old-layout)/races/[race]/race-timer';
 import { sortRaceParticipants } from '~app/(old-layout)/races/[race]/sort-race-participants';
 import { Race } from '~app/(old-layout)/races/races.types';
+import { UserLink } from '~src/components/links/links';
 import {
     DurationToFormatted,
     LocalizedTime,
@@ -110,7 +111,10 @@ export const RaceCard = ({ race, variant }: RaceCardProps) => {
                                             {leaderFinished && (
                                                 <FaTrophy size={9} />
                                             )}{' '}
-                                            {leader.user}
+                                            <UserLink
+                                                username={leader.user}
+                                                parentIsUrl
+                                            />
                                         </span>
                                     </div>
                                 )}
@@ -128,7 +132,10 @@ export const RaceCard = ({ race, variant }: RaceCardProps) => {
                                     Hosted by
                                 </span>
                                 <span className={styles.cardStatValue}>
-                                    {race.creator}
+                                    <UserLink
+                                        username={race.creator}
+                                        parentIsUrl
+                                    />
                                 </span>
                             </div>
                             {topSeed && (
@@ -137,7 +144,10 @@ export const RaceCard = ({ race, variant }: RaceCardProps) => {
                                         Top Seed
                                     </span>
                                     <span className={styles.cardStatValue}>
-                                        {topSeed.user}
+                                        <UserLink
+                                            username={topSeed.user}
+                                            parentIsUrl
+                                        />
                                         {' · '}
                                         <DurationToFormatted
                                             duration={topSeed.pb}

@@ -1,0 +1,52 @@
+.content {
+    padding: 0.75rem 1rem;
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 0.5rem 1rem;
+}
+
+.group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.groupLabel {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--bs-secondary-color);
+    opacity: 0.6;
+    padding: 0 0.5rem;
+}
+
+.linkList {
+    display: flex;
+    flex-direction: column;
+}
+
+.linkItem {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 0.5rem;
+    border-radius: 0.4rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--bs-body-color);
+    text-decoration: none;
+    transition: all 0.15s ease;
+
+    &:hover {
+        background: color-mix(in srgb, var(--bs-secondary-bg) 60%, transparent);
+        color: var(--bs-body-color);
+        text-decoration: none;
+        transform: translateX(2px);
+    }
+}
+
+.icon {
+    color: var(--bs-secondary-color);
+    flex-shrink: 0;
+}

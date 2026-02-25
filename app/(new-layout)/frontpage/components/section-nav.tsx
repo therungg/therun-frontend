@@ -15,9 +15,9 @@ const SECTIONS = [
     { id: 'live', label: 'Live', icon: FaPlay },
     { id: 'trending', label: 'Trending', icon: FaFire },
     { id: 'pbs', label: 'PBs', icon: FaTrophy },
+    { id: 'races', label: 'Races', icon: FaFlagCheckered },
     { id: 'pulse', label: 'Pulse', icon: FaHeartPulse },
     { id: 'your-stats', label: 'Your Stats', icon: FaChartLine },
-    { id: 'races', label: 'Races', icon: FaFlagCheckered },
 ] as const;
 
 export const SectionNav = () => {

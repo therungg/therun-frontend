@@ -76,9 +76,16 @@ export default async function PatreonPanel() {
                 ? weightedRandomSelection(eligible, selectCount)
                 : [];
 
-        return <PatreonPanelView featuredPatrons={featured} />;
+        const totalPatronCount = Object.keys(patronMap).length;
+
+        return (
+            <PatreonPanelView
+                featuredPatrons={featured}
+                totalPatronCount={totalPatronCount}
+            />
+        );
     } catch (_error) {
         // Graceful degradation: show CTA without patrons if API fails
-        return <PatreonPanelView featuredPatrons={[]} />;
+        return <PatreonPanelView featuredPatrons={[]} totalPatronCount={0} />;
     }
 }

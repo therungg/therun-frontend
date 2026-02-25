@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { FaTrophy, FaUser } from 'react-icons/fa6';
 import { Race } from '~app/(old-layout)/races/races.types';
+import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import styles from './races-section.module.scss';
 
@@ -50,7 +51,8 @@ export const RaceRow = ({ race, className }: RaceRowProps) => {
                         <>
                             {' · '}
                             <span className={styles.raceWinner}>
-                                <FaTrophy size={9} /> {winnerName}
+                                <FaTrophy size={9} />{' '}
+                                <UserLink username={winnerName} parentIsUrl />
                             </span>
                         </>
                     )}

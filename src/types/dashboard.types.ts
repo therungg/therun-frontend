@@ -50,19 +50,22 @@ export interface DashboardRace {
 }
 
 export interface DashboardHighlight {
-    type:
-        | 'pb_improvement'
-        | 'race_win'
-        | 'race_placement'
-        | 'streak'
-        | 'new_pb'
-        | 'most_played';
+    type: string;
     game?: string;
     category?: string;
     gameImage?: string;
     value?: number;
     secondaryValue?: number;
     label: string;
+}
+
+export interface DashboardGlobalStats {
+    totalRunTime: number;
+    totalAttemptCount: number;
+    totalFinishedAttemptCount: number;
+    totalGames: number;
+    totalCategories: number;
+    totalRuns: number;
 }
 
 export interface DashboardResponse {
@@ -75,4 +78,5 @@ export interface DashboardResponse {
     recentPbs: DashboardPb[];
     recentRaces: DashboardRace[];
     highlight: DashboardHighlight | null;
+    globalStats: DashboardGlobalStats | null;
 }
