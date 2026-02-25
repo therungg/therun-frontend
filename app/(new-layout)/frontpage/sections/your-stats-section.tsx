@@ -1,7 +1,11 @@
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import { getSession } from '~src/actions/session.action';
-import { getGameGlobal } from '~src/components/game/get-game';
 import { getUserSummary } from '~src/lib/summary';
+import { getUserDashboard } from '~src/lib/user-dashboard';
+import type {
+    DashboardRace,
+    DashboardResponse,
+} from '~src/types/dashboard.types';
 import { YourStatsClient } from './your-stats-client';
 import { YourStatsSearch } from './your-stats-search';
 
@@ -25,36 +29,38 @@ export const YourStatsSection = async () => {
     }
 
     const user = session.user;
-    const [weekStats, monthStats] = await Promise.all([
-        getUserSummary(user, 'week', 0),
-        getUserSummary(user, 'month', 0),
-    ]);
+    const [dashboard7d, dashboard30d, dashboardYear, weekSummary] =
+        await Promise.all([
+            getUserDashboard(user, '7d'),
+            getUserDashboard(user, '30d'),
+            getUserDashboard(user, 'year'),
+            getUserSummary(user, 'week', 0),
+        ]);
 
-    // Pre-fetch game data for finished runs
-    const allGames = new Set([
-        ...(weekStats?.finishedRuns ?? []).map((r) => r.game),
-        ...(monthStats?.finishedRuns ?? []).map((r) => r.game),
-    ]);
-    const gameDataArray = await Promise.all(
-        [...allGames].map((game) => getGameGlobal(game)),
-    );
-    const gameDataMap = Object.fromEntries(
-        [...allGames].map((game, i) => [game, gameDataArray[i]]),
-    );
+    const raceData: DashboardRace[] = (weekSummary?.races ?? []).map((r) => ({
+        game: r.game,
+        category: r.category,
+        position: r.position,
+        ratingBefore: r.ratingPrevious,
+        ratingAfter: r.ratingNew,
+        date: r.date,
+    }));
+
+    const dashboards: Record<string, DashboardResponse | null> = {
+        '7d': dashboard7d ? { ...dashboard7d, recentRaces: raceData } : null,
+        '30d': dashboard30d,
+        year: dashboardYear,
+    };
 
     return (
         <Panel
             panelId="your-stats"
             subtitle="Summary"
             title="Your Performance"
-            className="p-4"
+            className="p-0 overflow-hidden"
             link={{ url: `/${user}`, text: 'View Full Stats' }}
         >
-            <YourStatsClient
-                weekStats={weekStats}
-                monthStats={monthStats}
-                gameDataMap={gameDataMap}
-            />
+            <YourStatsClient dashboards={dashboards} username={user} />
         </Panel>
     );
 };
