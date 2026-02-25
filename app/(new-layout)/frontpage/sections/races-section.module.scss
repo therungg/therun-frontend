@@ -236,6 +236,22 @@ $green: #608c59;
     margin-top: 0.1rem;
 }
 
+.rankedBadge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: $amber;
+}
+
+.cardSeed {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.78rem;
+    color: var(--bs-secondary-color);
+    margin-top: 0.1rem;
+}
+
 // ── Race rows ──
 
 .raceRow {
