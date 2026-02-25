@@ -84,30 +84,26 @@ $blue: #3b82f6;
 
 .cardBg {
     position: absolute;
-    inset: 0;
-    width: 100%;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
     height: 100%;
-    object-fit: cover;
-    object-position: center right;
+    object-fit: contain;
+    object-position: right center;
     pointer-events: none;
 }
 
 .cardOverlay {
     position: absolute;
     inset: 0;
-    background:
-        linear-gradient(
-            to top,
-            rgba(0, 0, 0, 0.85) 0%,
-            rgba(0, 0, 0, 0.6) 40%,
-            rgba(0, 0, 0, 0.2) 70%,
-            transparent 100%
-        ),
-        linear-gradient(
-            to right,
-            rgba(0, 0, 0, 0.5) 0%,
-            transparent 60%
-        );
+    background: linear-gradient(
+        to right,
+        var(--bs-body-bg) 30%,
+        color-mix(in srgb, var(--bs-body-bg) 85%, transparent) 45%,
+        color-mix(in srgb, var(--bs-body-bg) 40%, transparent) 65%,
+        transparent 85%
+    );
     pointer-events: none;
 }
 
@@ -143,15 +139,15 @@ $blue: #3b82f6;
 }
 
 .cardBadgeLive {
-    color: #fff;
-    background: rgba($amber, 0.35);
-    border: 1px solid rgba($amber, 0.5);
+    color: $amber;
+    background: rgba($amber, 0.1);
+    border: 1px solid rgba($amber, 0.25);
 }
 
 .cardBadgeImminent {
-    color: #fff;
-    background: rgba($blue, 0.3);
-    border: 1px solid rgba($blue, 0.4);
+    color: $blue;
+    background: rgba($blue, 0.08);
+    border: 1px solid rgba($blue, 0.2);
 }
 
 .imminentDot {
@@ -169,8 +165,7 @@ $blue: #3b82f6;
     gap: 0.3rem;
     font-size: 0.82rem;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.85);
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    color: var(--bs-secondary-color);
 }
 
 .cardBottom {
@@ -182,21 +177,19 @@ $blue: #3b82f6;
 .cardGame {
     font-weight: 800;
     font-size: 1.3rem;
-    color: #fff;
+    color: var(--bs-body-color);
     letter-spacing: -0.01em;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 
 .cardCategory {
     font-size: 0.82rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--bs-secondary-color);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .cardTimer {
@@ -205,9 +198,8 @@ $blue: #3b82f6;
     font-size: 2.2rem;
     line-height: 1;
     letter-spacing: -0.04em;
-    color: #fff;
+    color: var(--bs-body-color);
     font-variant-numeric: tabular-nums;
-    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
     margin-top: 0.15rem;
 }
 
@@ -233,12 +225,14 @@ $blue: #3b82f6;
     font-family: inherit;
     font-weight: 600;
     font-size: 0.85rem;
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--bs-secondary-color);
+    opacity: 0.7;
 }
 
 .cardSocialProof {
     font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--bs-secondary-color);
+    opacity: 0.7;
     margin-top: 0.1rem;
 }
 
