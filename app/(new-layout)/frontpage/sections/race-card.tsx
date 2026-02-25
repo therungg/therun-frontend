@@ -107,11 +107,6 @@ export const RaceCard = ({ race: initialRace, variant }: RaceCardProps) => {
                         <span className={styles.cardParticipants}>
                             {race.participantCount}
                             <FaUser size={11} />
-                            {!isLive && race.participantCount > 0 && (
-                                <span className={styles.cardSocialProof}>
-                                    waiting
-                                </span>
-                            )}
                         </span>
                     </div>
                 </div>
