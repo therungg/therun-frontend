@@ -31,7 +31,9 @@ export const RaceCard = ({ race: initialRace, variant }: RaceCardProps) => {
     const leaderFinished =
         leader?.status === 'finished' || leader?.status === 'confirmed';
 
-    const topSeed = race.timeLeaderboards?.[0];
+    const topSeed = race.participants
+        ?.filter((p) => p.pb && Number.parseInt(p.pb) > 0)
+        .sort((a, b) => Number.parseInt(a.pb) - Number.parseInt(b.pb))[0];
 
     const cardClassName = [
         styles.card,
@@ -101,7 +103,7 @@ export const RaceCard = ({ race: initialRace, variant }: RaceCardProps) => {
                             {' #1 Seed: '}
                             {topSeed.user}
                             {' · '}
-                            <DurationToFormatted duration={topSeed.time} />
+                            <DurationToFormatted duration={topSeed.pb} />
                         </span>
                     )}
                     <div className={styles.cardTimer}>
