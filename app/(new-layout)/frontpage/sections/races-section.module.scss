@@ -114,29 +114,28 @@ $green: #608c59;
     flex-direction: column;
     justify-content: space-between;
     padding: 1rem 1.25rem;
-    width: 75%;
+    width: 100%;
 }
 
-.cardBody {
+.cardTop {
     display: flex;
-    align-items: flex-end;
+    align-items: flex-start;
     justify-content: space-between;
-    gap: 1rem;
 }
 
-.cardLeft {
+.cardTopRight {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+    flex-shrink: 0;
+}
+
+.cardBottom {
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
-    min-width: 0;
-}
-
-.cardRight {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.25rem;
-    flex-shrink: 0;
+    max-width: 70%;
 }
 
 .cardBadge {
@@ -205,11 +204,12 @@ $green: #608c59;
 .cardTimer {
     font-family: $mono;
     font-weight: 700;
-    font-size: 2.2rem;
+    font-size: 1.5rem;
     line-height: 1;
     letter-spacing: -0.04em;
     color: var(--bs-body-color);
     font-variant-numeric: tabular-nums;
+    text-align: right;
 }
 
 .cardLive .cardTimer {
@@ -489,11 +489,11 @@ $green: #608c59;
     }
 
     .cardTimer {
-        font-size: 1.4rem;
+        font-size: 1.2rem;
     }
 
     .cardImminent .cardTimer {
-        font-size: 1.2rem;
+        font-size: 1rem;
     }
 
     .cardSeed {
