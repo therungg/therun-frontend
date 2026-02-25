@@ -2,7 +2,11 @@ import { redirect } from 'next/navigation';
 import { getLayoutPreference } from '~src/actions/layout-preference.action';
 import FrontPage from './frontpage';
 
-export default async function Page() {
+export default async function Page({
+    searchParams,
+}: {
+    searchParams: Promise<{ statsUser?: string }>;
+}) {
     const layoutPreference = await getLayoutPreference();
 
     // If user prefers old layout, redirect them to the classic homepage
@@ -10,5 +14,7 @@ export default async function Page() {
         redirect('/');
     }
 
-    return <FrontPage />;
+    const params = await searchParams;
+
+    return <FrontPage statsUser={params.statsUser} />;
 }

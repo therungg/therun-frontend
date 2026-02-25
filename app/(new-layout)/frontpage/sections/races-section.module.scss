@@ -14,7 +14,7 @@ $green: #608c59;
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.2px;
@@ -140,7 +140,7 @@ $green: #608c59;
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -173,7 +173,7 @@ $green: #608c59;
 }
 
 .rankedBadge {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.06em;
     color: $amber;
@@ -230,7 +230,7 @@ $green: #608c59;
 }
 
 .cardStatLabel {
-    font-size: 0.55rem;
+    font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -239,7 +239,7 @@ $green: #608c59;
 }
 
 .cardStatValue {
-    font-size: 0.78rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: var(--bs-body-color);
     white-space: nowrap;
@@ -266,7 +266,7 @@ $green: #608c59;
 
 
 .lobbyStart {
-    font-size: 0.78rem;
+    font-size: 0.85rem;
     font-weight: 600;
     font-style: italic;
     color: var(--bs-body-color);
@@ -329,7 +329,7 @@ $green: #608c59;
 }
 
 .raceSub {
-    font-size: 0.72rem;
+    font-size: 0.8rem;
     color: var(--bs-secondary-color);
     opacity: 0.7;
     white-space: nowrap;
@@ -372,7 +372,7 @@ $green: #608c59;
     display: inline-flex;
     align-items: center;
     gap: 0.2rem;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: 700;
     padding: 0.1rem 0.4rem;
     border-radius: 100px;
@@ -395,7 +395,7 @@ $green: #608c59;
 .moreLink {
     display: block;
     text-align: center;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     font-weight: 600;
     color: var(--bs-secondary-color);
     text-decoration: none;
@@ -425,7 +425,7 @@ $green: #608c59;
     border: 1px solid color-mix(in srgb, var(--bs-primary) 35%, transparent);
     border-radius: 6px;
     font-weight: 600;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     letter-spacing: 0.01em;
     text-decoration: none;
     transition: all 0.15s ease-in-out;

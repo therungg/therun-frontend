@@ -4,7 +4,13 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useState } from 'react';
-import { FaFire } from 'react-icons/fa';
+import {
+    FaBolt,
+    FaCalendarCheck,
+    FaFire,
+    FaRedo,
+    FaTrophy,
+} from 'react-icons/fa';
 import { DurationToFormatted, FromNow } from '~src/components/util/datetime';
 import type {
     DashboardPb,
@@ -53,20 +59,31 @@ function formatDelta(
     return { text: `↓ ${rounded}%`, direction: 'down' };
 }
 
+const HIGHLIGHT_ACCENTS: Record<string, string> = {
+    pb_improvement: 'Green',
+    new_pb: 'Green',
+    pb_spree: 'Green',
+    pb_machine: 'Green',
+    streak: 'Amber',
+    longest_streak: 'Amber',
+    consistency: 'Amber',
+    grinder: 'Amber',
+    busiest_game: 'Amber',
+    race_win: 'Gold',
+    race_placement: 'Gold',
+    completion_rate: 'Gold',
+    runs_per_pb: 'Gold',
+    comeback: 'Blue',
+    playtime_surge: 'Blue',
+    total_playtime: 'Blue',
+    alltime_playtime: 'Blue',
+    alltime_runs: 'Primary',
+    alltime_games: 'Primary',
+    alltime_finish_rate: 'Gold',
+};
+
 function getHighlightAccent(type: string): string {
-    switch (type) {
-        case 'pb_improvement':
-        case 'new_pb':
-            return 'Green';
-        case 'streak':
-            return 'Amber';
-        case 'race_win':
-        case 'race_placement':
-            return 'Gold';
-        case 'most_played':
-        default:
-            return 'Primary';
-    }
+    return HIGHLIGHT_ACCENTS[type] ?? 'Primary';
 }
 
 function ordinal(n: number): string {
@@ -148,15 +165,11 @@ function DashboardContent({
         recentPbs,
         recentRaces,
         highlight,
+        globalStats,
     } = dashboard;
     const topGame = topGames[0] ?? null;
 
-    const playtimeDelta = formatDelta(stats.playtime, previousStats.playtime);
     const pbsDelta = formatDelta(stats.totalPbs, previousStats.totalPbs);
-    const runsDelta = formatDelta(
-        stats.finishedRuns,
-        previousStats.finishedRuns,
-    );
 
     const activity: ActivityItem[] = [
         ...recentPbs.map(
@@ -189,7 +202,15 @@ function DashboardContent({
                         <DurationToFormatted duration={stats.playtime} human />
                     </div>
                     <div className={styles.statLabel}>Playtime</div>
-                    <DeltaBadge {...playtimeDelta} />
+                    {globalStats && globalStats.totalRunTime > 0 && (
+                        <span className={styles.statAllTime}>
+                            of{' '}
+                            <DurationToFormatted
+                                duration={globalStats.totalRunTime}
+                                human
+                            />
+                        </span>
+                    )}
                 </div>
                 <div className={styles.statCell}>
                     <div className={styles.statValue}>{stats.totalPbs}</div>
@@ -199,7 +220,15 @@ function DashboardContent({
                 <div className={styles.statCell}>
                     <div className={styles.statValue}>{stats.finishedRuns}</div>
                     <div className={styles.statLabel}>Runs</div>
-                    <DeltaBadge {...runsDelta} />
+                    {globalStats &&
+                        globalStats.totalFinishedAttemptCount > 0 && (
+                            <span className={styles.statAllTime}>
+                                of{' '}
+                                {formatCompact(
+                                    globalStats.totalFinishedAttemptCount,
+                                )}
+                            </span>
+                        )}
                 </div>
                 <div className={styles.statCell}>
                     <div className={styles.statValue}>
@@ -208,6 +237,25 @@ function DashboardContent({
                     <div className={styles.statLabel}>Streak</div>
                 </div>
             </div>
+
+            {globalStats &&
+                (globalStats.totalGames > 0 ||
+                    globalStats.totalCategories > 0) && (
+                    <div className={styles.statRibbon}>
+                        <div className={styles.statCell}>
+                            <div className={styles.statValue}>
+                                {globalStats.totalGames}
+                            </div>
+                            <div className={styles.statLabel}>Games</div>
+                        </div>
+                        <div className={styles.statCell}>
+                            <div className={styles.statValue}>
+                                {globalStats.totalCategories}
+                            </div>
+                            <div className={styles.statLabel}>Categories</div>
+                        </div>
+                    </div>
+                )}
 
             {topGame && (
                 <Link
@@ -304,6 +352,109 @@ function DashboardContent({
     );
 }
 
+function formatCompact(n: number): string {
+    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+    if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
+    return String(n);
+}
+
+const HIGHLIGHT_ICONS: Record<string, React.ReactNode> = {
+    streak: <FaFire size={18} className={styles.highlightIcon} />,
+    longest_streak: <FaFire size={18} className={styles.highlightIcon} />,
+    comeback: <FaRedo size={16} className={styles.highlightIcon} />,
+    playtime_surge: <FaBolt size={16} className={styles.highlightIcon} />,
+    consistency: <FaCalendarCheck size={16} className={styles.highlightIcon} />,
+    completion_rate: <FaTrophy size={16} className={styles.highlightIcon} />,
+};
+
+// Duration-based highlight values that should render with DurationToFormatted
+const DURATION_VALUES = new Set([
+    'most_played',
+    'total_playtime',
+    'alltime_playtime',
+]);
+
+const DURATION_SECONDARY = new Set(['pb_improvement', 'new_pb']);
+
+function HighlightValue({
+    highlight,
+    icon,
+}: {
+    highlight: NonNullable<DashboardResponse['highlight']>;
+    icon?: React.ReactNode;
+}) {
+    const primary = highlight.value;
+    const secondary = highlight.secondaryValue;
+
+    const primaryNode = DURATION_VALUES.has(highlight.type) ? (
+        primary != null ? (
+            <DurationToFormatted duration={primary} human />
+        ) : null
+    ) : highlight.type === 'pb_improvement' ? (
+        primary != null ? (
+            `${primary.toFixed(1)}%`
+        ) : null
+    ) : highlight.type === 'playtime_surge' ? (
+        primary != null ? (
+            `+${primary}%`
+        ) : null
+    ) : highlight.type === 'completion_rate' ||
+      highlight.type === 'alltime_finish_rate' ? (
+        primary != null ? (
+            `${primary}%`
+        ) : null
+    ) : highlight.type === 'consistency' ? (
+        `${primary}/${secondary}`
+    ) : primary != null ? (
+        String(primary)
+    ) : null;
+
+    const secondaryNode = DURATION_SECONDARY.has(highlight.type) ? (
+        secondary != null ? (
+            <DurationToFormatted duration={secondary} withMillis />
+        ) : null
+    ) : highlight.type === 'playtime_surge' ? (
+        secondary != null ? (
+            <DurationToFormatted duration={secondary} human />
+        ) : null
+    ) : highlight.type === 'alltime_games' ? (
+        secondary != null ? (
+            `${secondary} categories`
+        ) : null
+    ) : highlight.type === 'alltime_runs' ? (
+        secondary != null ? (
+            `${secondary} finished`
+        ) : null
+    ) : highlight.type === 'race_win' || highlight.type === 'race_placement' ? (
+        secondary != null ? (
+            <span
+                className={clsx(
+                    secondary > 0 ? styles.deltaUp : styles.deltaDown,
+                )}
+            >
+                {secondary > 0 ? '+' : ''}
+                {secondary} rating
+            </span>
+        ) : null
+    ) : null;
+
+    return (
+        <>
+            {primaryNode != null && (
+                <span className={styles.highlightValue}>
+                    {icon}
+                    {primaryNode}
+                </span>
+            )}
+            {secondaryNode != null && (
+                <span className={styles.highlightSecondary}>
+                    {secondaryNode}
+                </span>
+            )}
+        </>
+    );
+}
+
 function HighlightCard({
     highlight,
 }: {
@@ -314,88 +465,8 @@ function HighlightCard({
         styles[`highlight${accent}` as keyof typeof styles] ?? '';
     const showBg = hasValidImage(highlight.gameImage);
 
-    let valueDisplay: React.ReactNode;
-    switch (highlight.type) {
-        case 'pb_improvement':
-            valueDisplay = (
-                <>
-                    <span className={styles.highlightValue}>
-                        {highlight.value != null
-                            ? `${highlight.value.toFixed(1)}%`
-                            : ''}
-                    </span>
-                    {highlight.secondaryValue != null && (
-                        <span className={styles.highlightSecondary}>
-                            <DurationToFormatted
-                                duration={highlight.secondaryValue}
-                                withMillis
-                            />
-                        </span>
-                    )}
-                </>
-            );
-            break;
-        case 'streak':
-            valueDisplay = (
-                <span className={styles.highlightValue}>
-                    <FaFire size={18} className={styles.streakIcon} />
-                    {highlight.value ?? 0} days
-                </span>
-            );
-            break;
-        case 'new_pb':
-            valueDisplay = (
-                <span className={styles.highlightValue}>
-                    {highlight.secondaryValue != null ? (
-                        <DurationToFormatted
-                            duration={highlight.secondaryValue}
-                            withMillis
-                        />
-                    ) : (
-                        'New PB'
-                    )}
-                </span>
-            );
-            break;
-        case 'most_played':
-            valueDisplay = (
-                <span className={styles.highlightValue}>
-                    {highlight.value != null ? (
-                        <DurationToFormatted duration={highlight.value} human />
-                    ) : (
-                        ''
-                    )}
-                </span>
-            );
-            break;
-        case 'race_win':
-        case 'race_placement':
-            valueDisplay = (
-                <>
-                    <span className={styles.highlightValue}>
-                        {highlight.value != null
-                            ? ordinal(highlight.value)
-                            : ''}
-                    </span>
-                    {highlight.secondaryValue != null && (
-                        <span
-                            className={clsx(
-                                styles.highlightSecondary,
-                                highlight.secondaryValue > 0
-                                    ? styles.deltaUp
-                                    : styles.deltaDown,
-                            )}
-                        >
-                            {highlight.secondaryValue > 0 ? '+' : ''}
-                            {highlight.secondaryValue} rating
-                        </span>
-                    )}
-                </>
-            );
-            break;
-        default:
-            valueDisplay = null;
-    }
+    const icon = HIGHLIGHT_ICONS[highlight.type];
+    const valueDisplay = <HighlightValue highlight={highlight} icon={icon} />;
 
     return (
         <div className={clsx(styles.highlight, accentClass)}>
@@ -408,6 +479,7 @@ function HighlightCard({
                 />
             )}
             <div className={styles.highlightBody}>
+                <div className={styles.highlightTag}>Fun Fact</div>
                 {valueDisplay}
                 <div className={styles.highlightLabel}>{highlight.label}</div>
                 {highlight.game && (
