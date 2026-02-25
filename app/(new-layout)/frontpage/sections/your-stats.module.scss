@@ -1,3 +1,127 @@
+$mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+$green: #66bb6a;
+$amber: #f59e0b;
+$gold: #ffd700;
+$silver: #c0c0c0;
+$bronze: #cd7f32;
+$red: #ef5350;
+
+.content {
+    container-type: inline-size;
+    padding: 1rem 1.25rem;
+}
+
+/* ── Hero Highlight ── */
+
+.highlight {
+    position: relative;
+    border-radius: 0.6rem;
+    padding: 1rem 1.15rem;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    background: linear-gradient(
+        135deg,
+        rgba(var(--bs-primary-rgb), 0.08) 0%,
+        rgba(var(--bs-primary-rgb), 0.03) 100%
+    );
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+}
+
+.highlightGreen {
+    background: linear-gradient(
+        135deg,
+        rgba($green, 0.1) 0%,
+        rgba($green, 0.03) 100%
+    );
+    border-color: rgba($green, 0.2);
+}
+
+.highlightAmber {
+    background: linear-gradient(
+        135deg,
+        rgba($amber, 0.1) 0%,
+        rgba($amber, 0.03) 100%
+    );
+    border-color: rgba($amber, 0.2);
+}
+
+.highlightGold {
+    background: linear-gradient(
+        135deg,
+        rgba($gold, 0.1) 0%,
+        rgba($gold, 0.03) 100%
+    );
+    border-color: rgba($gold, 0.2);
+}
+
+.highlightPrimary {
+    background: linear-gradient(
+        135deg,
+        rgba(var(--bs-primary-rgb), 0.1) 0%,
+        rgba(var(--bs-primary-rgb), 0.03) 100%
+    );
+    border-color: rgba(var(--bs-primary-rgb), 0.2);
+}
+
+.highlightBg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    filter: blur(20px);
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+.highlightBody {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.highlightValue {
+    font-family: $mono;
+    font-size: 1.6rem;
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--bs-emphasis-color);
+}
+
+.highlightSecondary {
+    font-family: $mono;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
+.highlightLabel {
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--bs-secondary-color);
+    opacity: 0.8;
+}
+
+.highlightGame {
+    font-size: 0.8rem;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.7;
+}
+
+/* ── Period Toggle ── */
+
+.periodToggleWrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
 .periodToggle {
     display: inline-flex;
     background: var(--bs-tertiary-bg);
@@ -37,19 +161,69 @@
         inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
-.statsGrid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-    margin-top: 1rem;
+/* ── Stat Ribbon ── */
+
+.statRibbon {
+    display: flex;
+    margin-bottom: 1rem;
 }
 
-.statCard {
+.statCell {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 1rem 0.75rem;
+    padding: 0.5rem 0.4rem;
+
+    & + & {
+        border-left: 1px solid var(--bs-border-color);
+    }
+}
+
+.statValue {
+    font-family: $mono;
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--bs-body-color);
+    white-space: nowrap;
+}
+
+.statLabel {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    margin-top: 0.15rem;
+}
+
+.deltaUp {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: $green;
+}
+
+.deltaDown {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: rgba($red, 0.7);
+}
+
+.deltaNeutral {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    opacity: 0.5;
+}
+
+/* ── Top Game Card ── */
+
+.topGameCard {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0.75rem;
     background: linear-gradient(
         135deg,
         var(--bs-tertiary-bg) 0%,
@@ -57,153 +231,257 @@
     );
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.15);
     border-radius: 0.5rem;
-    transition: all 0.2s ease-in-out;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    margin-bottom: 1rem;
 
     &:hover {
         border-color: rgba(var(--bs-primary-rgb), 0.25);
         transform: translateY(-1px);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-}
-
-.statValue {
-    font-size: 1.4rem;
-    font-weight: 800;
-    color: var(--bs-primary);
-    line-height: 1.1;
-    letter-spacing: -0.03em;
-}
-
-.statLabel {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-weight: 600;
-    color: var(--bs-secondary-color);
-    margin-top: 0.25rem;
-}
-
-.recentRunsHeader {
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--bs-secondary-color);
-    opacity: 0.6;
-    margin: 1.25rem 0 0.5rem 0;
-}
-
-.recentRunsList {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-}
-
-.recentRunItem {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.5rem 0.65rem;
-    background: linear-gradient(
-        135deg,
-        var(--bs-tertiary-bg) 0%,
-        color-mix(in srgb, var(--bs-tertiary-bg) 95%, black 5%) 100%
-    );
-    border: 1px solid transparent;
-    border-radius: 0.4rem;
-    text-decoration: none;
-    color: inherit;
-    transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-
-    &:hover {
-        border-color: rgba(var(--bs-primary-rgb), 0.15);
-        background: linear-gradient(
-            135deg,
-            color-mix(in srgb, var(--bs-tertiary-bg) 98%, white 2%) 0%,
-            color-mix(in srgb, var(--bs-tertiary-bg) 93%, white 7%) 100%
-        );
-        transform: translateX(2px);
         text-decoration: none;
         color: inherit;
     }
 }
 
-.runGameImage {
+.topGameImage {
+    width: 36px;
+    height: 48px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.topGameInfo {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.topGameName {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--bs-emphasis-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.topGameStats {
+    font-size: 0.75rem;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── All-Time Favorites ── */
+
+.allTimeLabel {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--bs-secondary-color);
+    opacity: 0.6;
+    margin-bottom: 0.4rem;
+}
+
+.allTimeChips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+}
+
+.allTimeChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.55rem;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--bs-secondary-bg) 50%, transparent);
+    border: 1px solid var(--bs-border-color);
+    text-decoration: none;
+    color: inherit;
+    white-space: nowrap;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+        background: color-mix(in srgb, var(--bs-secondary-bg) 80%, transparent);
+        transform: translateY(-1px);
+        text-decoration: none;
+        color: inherit;
+    }
+}
+
+.allTimeChipImage {
     width: 20px;
+    height: 27px;
+    border-radius: 3px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.allTimeChipName {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.allTimeChipHours {
+    font-family: $mono;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
+/* ── Activity Feed ── */
+
+.activityList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.activityItem {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.5rem;
+    border-radius: 0.35rem;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.04);
+        text-decoration: none;
+        color: inherit;
+    }
+}
+
+.activityImage {
+    width: 15px;
     height: 20px;
     border-radius: 3px;
     object-fit: cover;
     flex-shrink: 0;
 }
 
-.runGameImagePlaceholder {
-    width: 20px;
+.activityImagePlaceholder {
+    width: 15px;
     height: 20px;
     border-radius: 3px;
     flex-shrink: 0;
     background: rgba(var(--bs-primary-rgb), 0.1);
 }
 
-.runInfo {
+.activityInfo {
     flex: 1;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.05rem;
 }
 
-.runGame {
-    font-size: 0.85rem;
+.activityGame {
+    font-size: 0.78rem;
     font-weight: 600;
     color: var(--bs-emphasis-color);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    letter-spacing: -0.02em;
 }
 
-.runCategory {
-    font-size: 0.72rem;
+.activityCategory {
+    font-size: 0.68rem;
     color: var(--bs-secondary-color);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.runTime {
-    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
-    font-size: 0.8rem;
+.activityRight {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-shrink: 0;
+    gap: 0.1rem;
+}
+
+.activityTime {
+    font-family: $mono;
+    font-size: 0.75rem;
     font-weight: 600;
     color: var(--bs-body-color);
     white-space: nowrap;
-    flex-shrink: 0;
 }
 
-.pbBadge {
+.pbDelta {
+    font-family: $mono;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: $green;
+}
+
+.placementBadge {
     display: inline-flex;
     align-items: center;
-    padding: 0.15rem 0.45rem;
-    background: linear-gradient(
-        135deg,
-        rgba(40, 167, 69, 0.9),
-        rgba(32, 134, 55, 0.95)
-    );
-    color: white;
+    justify-content: center;
+    padding: 0.1rem 0.4rem;
     border-radius: 50rem;
     font-size: 0.65rem;
     font-weight: 700;
-    letter-spacing: 0.03em;
-    flex-shrink: 0;
-    box-shadow: 0 1px 4px rgba(40, 167, 69, 0.3);
+    background: rgba(var(--bs-secondary-bg-rgb), 0.5);
+    color: var(--bs-secondary-color);
 }
 
-.runTimestamp {
-    font-size: 0.7rem;
+.placementGold {
+    background: rgba($gold, 0.15);
+    color: $gold;
+}
+
+.placementSilver {
+    background: rgba($silver, 0.15);
+    color: $silver;
+}
+
+.placementBronze {
+    background: rgba($bronze, 0.15);
+    color: $bronze;
+}
+
+.placementDefault {
+    background: rgba(var(--bs-secondary-bg-rgb), 0.5);
+    color: var(--bs-secondary-color);
+}
+
+.ratingUp {
+    font-family: $mono;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: $green;
+}
+
+.ratingDown {
+    font-family: $mono;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: rgba($red, 0.7);
+}
+
+.activityTimestamp {
+    font-size: 0.62rem;
     color: var(--bs-secondary-color);
     opacity: 0.6;
     white-space: nowrap;
-    flex-shrink: 0;
 }
+
+/* ── Empty State ── */
 
 .emptyState {
     text-align: center;
@@ -220,6 +498,44 @@
 .emptyStateHint {
     font-size: 0.8rem;
     opacity: 0.7;
+}
+
+/* ── Responsive (container query for sidebar) ── */
+
+@container (max-width: 320px) {
+    .statRibbon {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .statCell {
+        border-left: none;
+        padding: 0.4rem 0;
+
+        &:nth-child(even) {
+            border-left: 1px solid var(--bs-border-color);
+        }
+
+        &:nth-child(n + 3) {
+            border-top: 1px solid var(--bs-border-color);
+            padding-top: 0.5rem;
+        }
+    }
+
+    .allTimeChip {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .allTimeChipName {
+        max-width: 60px;
+    }
+}
+
+@media (max-width: 480px) {
+    .content {
+        padding: 0.75rem 1rem;
+    }
 }
 
 // Search component styles
