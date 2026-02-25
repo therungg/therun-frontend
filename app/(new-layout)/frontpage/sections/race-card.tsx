@@ -1,10 +1,11 @@
 'use client';
 
-import { FaClock, FaTrophy, FaUser } from 'react-icons/fa6';
+import { FaClock, FaSeedling, FaTrophy, FaUser } from 'react-icons/fa6';
 import { RaceTimer } from '~app/(old-layout)/races/[race]/race-timer';
 import { sortRaceParticipants } from '~app/(old-layout)/races/[race]/sort-race-participants';
 import { useRace } from '~app/(old-layout)/races/hooks/use-race';
 import { Race } from '~app/(old-layout)/races/races.types';
+import { DurationToFormatted } from '~src/components/util/datetime';
 import styles from './races-section.module.scss';
 
 const FALLBACK_IMAGE = '/logo_dark_theme_no_text_transparent.png';
@@ -29,6 +30,8 @@ export const RaceCard = ({ race: initialRace, variant }: RaceCardProps) => {
     const leader = sortedParticipants[0];
     const leaderFinished =
         leader?.status === 'finished' || leader?.status === 'confirmed';
+
+    const topSeed = race.timeLeaderboards?.[0];
 
     const cardClassName = [
         styles.card,
@@ -83,7 +86,24 @@ export const RaceCard = ({ race: initialRace, variant }: RaceCardProps) => {
                                 <FaTrophy size={10} /> {leader.user}
                             </>
                         )}
+                        {!isLive && race.ranked && (
+                            <>
+                                {' · '}
+                                <span className={styles.rankedBadge}>
+                                    RANKED
+                                </span>
+                            </>
+                        )}
                     </span>
+                    {!isLive && topSeed && (
+                        <span className={styles.cardSeed}>
+                            <FaSeedling size={10} />
+                            {' #1 Seed: '}
+                            {topSeed.user}
+                            {' · '}
+                            <DurationToFormatted duration={topSeed.time} />
+                        </span>
+                    )}
                     <div className={styles.cardTimer}>
                         <TimerSection race={race} variant={variant} />
                     </div>
