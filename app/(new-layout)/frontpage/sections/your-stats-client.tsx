@@ -83,28 +83,30 @@ export const YourStatsClient = ({
 
     const dashboard = dashboards[selectedPeriod] ?? null;
 
-    return (
-        <div className={styles.content}>
-            <div className={styles.periodToggleWrap}>
-                <div className={styles.periodToggle}>
-                    {PERIODS.map((p) => (
-                        <button
-                            key={p}
-                            type="button"
-                            className={clsx(
-                                styles.periodButton,
-                                selectedPeriod === p &&
-                                    styles.periodButtonActive,
-                            )}
-                            onClick={() => setSelectedPeriod(p)}
-                        >
-                            {PERIOD_LABELS[p]}
-                        </button>
-                    ))}
-                </div>
+    const periodToggle = (
+        <div className={styles.periodToggleWrap}>
+            <div className={styles.periodToggle}>
+                {PERIODS.map((p) => (
+                    <button
+                        key={p}
+                        type="button"
+                        className={clsx(
+                            styles.periodButton,
+                            selectedPeriod === p && styles.periodButtonActive,
+                        )}
+                        onClick={() => setSelectedPeriod(p)}
+                    >
+                        {PERIOD_LABELS[p]}
+                    </button>
+                ))}
             </div>
+        </div>
+    );
 
-            {!dashboard ? (
+    if (!dashboard) {
+        return (
+            <div className={styles.content}>
+                {periodToggle}
                 <div className={styles.emptyState}>
                     <div className={styles.emptyStateText}>
                         No activity in this period
@@ -113,9 +115,17 @@ export const YourStatsClient = ({
                         Try selecting a different time range
                     </div>
                 </div>
-            ) : (
-                <DashboardContent dashboard={dashboard} username={username} />
-            )}
+            </div>
+        );
+    }
+
+    return (
+        <div className={styles.content}>
+            <DashboardContent
+                dashboard={dashboard}
+                username={username}
+                periodToggle={periodToggle}
+            />
         </div>
     );
 };
@@ -123,9 +133,11 @@ export const YourStatsClient = ({
 function DashboardContent({
     dashboard,
     username,
+    periodToggle,
 }: {
     dashboard: DashboardResponse;
     username: string;
+    periodToggle: React.ReactNode;
 }) {
     const {
         stats,
@@ -168,6 +180,8 @@ function DashboardContent({
     return (
         <>
             {highlight && <HighlightCard highlight={highlight} />}
+
+            {periodToggle}
 
             <div className={styles.statRibbon}>
                 <div className={styles.statCell}>
@@ -324,13 +338,7 @@ function HighlightCard({
         case 'streak':
             valueDisplay = (
                 <span className={styles.highlightValue}>
-                    <FaFire
-                        size={18}
-                        style={{
-                            marginRight: '0.3rem',
-                            verticalAlign: 'middle',
-                        }}
-                    />
+                    <FaFire size={18} className={styles.streakIcon} />
                     {highlight.value ?? 0} days
                 </span>
             );
