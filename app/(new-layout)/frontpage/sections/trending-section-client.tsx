@@ -121,8 +121,9 @@ const HotGameCard = ({
                 {categories.length > 0 && (
                     <span className={styles.categories}>
                         {categories
+                            .slice(0, 2)
                             .map((c) => c.categoryDisplay)
-                            .join(' \u00b7 ')}
+                            .join(' · ')}
                     </span>
                 )}
             </div>

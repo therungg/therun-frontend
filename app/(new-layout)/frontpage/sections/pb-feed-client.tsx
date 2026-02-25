@@ -30,7 +30,12 @@ export const PbFeedClient = ({
     userPictures,
 }: PbFeedClientProps) => {
     return (
-        <Panel title="Personal Bests" subtitle="Recent PBs" className="p-0">
+        <Panel
+            panelId="pbs"
+            title="Personal Bests"
+            subtitle="Recent PBs"
+            className="p-0"
+        >
             {notablePbs.length > 0 && (
                 <FeaturedCarousel
                     pbs={notablePbs}

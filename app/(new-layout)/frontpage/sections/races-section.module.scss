@@ -62,7 +62,8 @@ $green: #608c59;
     text-decoration: none;
     color: inherit;
     border-radius: 8px;
-    min-height: 150px;
+    min-height: 110px;
+    align-items: stretch;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 
     &:hover {
@@ -73,13 +74,13 @@ $green: #608c59;
 }
 
 .cardLive {
-    border: 1px solid rgba($amber, 0.4);
+    border: 1px solid rgba($amber, 0.25);
     animation: glowPulse 2.5s ease-in-out infinite;
 }
 
 .cardImminent {
-    border: 1px solid rgba($green, 0.3);
-    box-shadow: 0 0 12px rgba($green, 0.15), 0 0 24px rgba($green, 0.08);
+    border: 1px solid rgba($green, 0.2);
+    box-shadow: 0 0 8px rgba($green, 0.08), 0 0 16px rgba($green, 0.04);
 }
 
 .cardBg {
@@ -113,29 +114,26 @@ $green: #608c59;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 1rem 1.25rem;
+    gap: 0;
+    padding: 0.75rem 1rem;
     width: 100%;
+    flex: 1;
 }
 
-.cardTop {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
+.cardTitleRow {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 0.5rem;
 }
 
-.cardTopRight {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.15rem;
-    flex-shrink: 0;
+.cardTitleRow .cardGame {
+    min-width: 0;
 }
 
-.cardBottom {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-    max-width: 70%;
+.cardTitleRow .cardBadge {
+    grid-column: 2;
+    white-space: nowrap;
 }
 
 .cardBadge {
@@ -174,70 +172,6 @@ $green: #608c59;
     opacity: 0.85;
 }
 
-.cardParticipants {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--bs-secondary-color);
-}
-
-.cardGame {
-    font-weight: 800;
-    font-size: 1.3rem;
-    color: var(--bs-body-color);
-    letter-spacing: -0.01em;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.cardCategory {
-    font-size: 0.82rem;
-    color: var(--bs-secondary-color);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.cardTimer {
-    font-family: $mono;
-    font-weight: 700;
-    font-size: 1.5rem;
-    line-height: 1;
-    letter-spacing: -0.04em;
-    color: var(--bs-body-color);
-    font-variant-numeric: tabular-nums;
-    text-align: right;
-}
-
-.cardLive .cardTimer {
-    color: $amber;
-}
-
-.cardImminent .cardTimer {
-    color: $green;
-    font-size: 1.6rem;
-}
-
-.cardReadyCount {
-    font-family: $mono;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-}
-
-.cardWaiting {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-family: inherit;
-    font-weight: 600;
-    font-size: 0.85rem;
-    color: var(--bs-secondary-color);
-    opacity: 0.7;
-}
-
 .rankedBadge {
     font-size: 0.65rem;
     font-weight: 700;
@@ -245,22 +179,107 @@ $green: #608c59;
     color: $amber;
 }
 
-.cardSeed {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.78rem;
-    color: var(--bs-secondary-color);
-    margin-top: 0.1rem;
+.cardGame {
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: var(--bs-body-color);
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.3);
 }
 
-// ── Race rows ──
+.cardCategory {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    opacity: 0.75;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cardCenter {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+    gap: 0.15rem;
+}
+
+.cardFooter {
+    flex-shrink: 0;
+    padding-top: 0.4rem;
+}
+
+.cardFooterStats {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 2.5rem;
+}
+
+.cardStat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.1rem;
+    min-width: 0;
+}
+
+.cardStatLabel {
+    font-size: 0.55rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--bs-secondary-color);
+    opacity: 0.5;
+}
+
+.cardStatValue {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cardFooterLive {
+    position: relative;
+}
+
+.cardTimer {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    font-family: $mono;
+    font-weight: 700;
+    font-size: 1.4rem;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+    color: $amber;
+}
+
+
+.lobbyStart {
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-style: italic;
+    color: var(--bs-body-color);
+    white-space: nowrap;
+}
+
+// ── Finished race rows (mirrors PB feed listItem pattern) ──
 
 .raceRow {
     display: flex;
     align-items: center;
     gap: 0.65rem;
-    padding: 0.5rem 1.25rem;
+    padding: 0.55rem 1.25rem;
     border-bottom: 1px solid color-mix(in srgb, var(--bs-border-color) 40%, transparent);
     transition: transform 0.15s ease, background-color 0.15s ease;
     text-decoration: none;
@@ -282,12 +301,13 @@ $green: #608c59;
     }
 }
 
-.gameArt {
-    width: 30px;
-    height: 40px;
+.raceArt {
+    width: 36px;
+    height: 48px;
     border-radius: 4px;
     object-fit: cover;
     flex-shrink: 0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.06);
 }
 
 .raceInfo {
@@ -295,19 +315,20 @@ $green: #608c59;
     min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.1rem;
+    gap: 0.15rem;
 }
 
-.gameName {
-    font-weight: 600;
+.raceName {
+    font-weight: 700;
     font-size: 0.95rem;
+    letter-spacing: -0.01em;
     color: var(--bs-body-color);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.subtitle {
+.raceSub {
     font-size: 0.72rem;
     color: var(--bs-secondary-color);
     opacity: 0.7;
@@ -316,60 +337,48 @@ $green: #608c59;
     text-overflow: ellipsis;
 }
 
-.winner {
+.raceWinner {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
     color: #d4af37;
     font-weight: 600;
 }
 
-.creator {
-    font-weight: 500;
-}
-
-// ── Right section ──
-
 .raceRight {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.1rem;
     flex-shrink: 0;
 }
 
-.time {
+.raceTimeRow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.raceTime {
     font-family: $mono;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: var(--bs-body-color);
     letter-spacing: -0.03em;
     font-variant-numeric: tabular-nums;
 }
 
-.liveTimer {
-    font-family: $mono;
-    font-weight: 700;
-    font-size: 0.9rem;
-    color: var(--bs-primary);
-    font-variant-numeric: tabular-nums;
-}
-
-.pendingText {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.75rem;
-    color: var(--bs-secondary-color);
-    opacity: 0.65;
-    white-space: nowrap;
-}
-
-.participants {
+.raceEntrants {
     display: inline-flex;
     align-items: center;
     gap: 0.2rem;
-    font-size: 0.8rem;
-    font-weight: 600;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.1rem 0.4rem;
+    border-radius: 100px;
+    background: color-mix(in srgb, var(--bs-secondary-bg) 50%, transparent);
     color: var(--bs-secondary-color);
     white-space: nowrap;
-    flex-shrink: 0;
 }
 
 .liveDot {
@@ -382,10 +391,20 @@ $green: #608c59;
     flex-shrink: 0;
 }
 
-// ── Finished row gold accent ──
 
-.rowFinished {
-    border-left: 3px solid #d4af37;
+.moreLink {
+    display: block;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    text-decoration: none;
+    padding: 0.15rem 0;
+
+    &:hover {
+        color: var(--bs-primary);
+        text-decoration: none;
+    }
 }
 
 // ── Start Race CTA ──
@@ -399,31 +418,23 @@ $green: #608c59;
 .startRaceButton {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1.25rem;
-    background: linear-gradient(
-        135deg,
-        color-mix(in srgb, var(--bs-primary) 100%, white 5%),
-        color-mix(in srgb, var(--bs-primary) 85%, black 15%)
-    );
-    color: white;
-    border: none;
-    border-radius: 50rem;
+    gap: 0.4rem;
+    padding: 0.4rem 1rem;
+    background: transparent;
+    color: var(--bs-primary);
+    border: 1px solid color-mix(in srgb, var(--bs-primary) 35%, transparent);
+    border-radius: 6px;
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     letter-spacing: 0.01em;
     text-decoration: none;
-    box-shadow:
-        0 2px 8px rgba(var(--bs-primary-rgb), 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.15s ease-in-out;
 
     &:hover {
+        background: color-mix(in srgb, var(--bs-primary) 10%, transparent);
+        border-color: color-mix(in srgb, var(--bs-primary) 50%, transparent);
         transform: translateY(-1px);
-        box-shadow:
-            0 4px 16px rgba(var(--bs-primary-rgb), 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.25);
-        color: white;
+        color: var(--bs-primary);
         text-decoration: none;
     }
 
@@ -460,11 +471,11 @@ $green: #608c59;
 @keyframes glowPulse {
     0%,
     100% {
-        box-shadow: 0 0 15px rgba($amber, 0.3), 0 0 30px rgba($amber, 0.15);
+        box-shadow: 0 0 8px rgba($amber, 0.15), 0 0 16px rgba($amber, 0.08);
     }
 
     50% {
-        box-shadow: 0 0 8px rgba($amber, 0.15), 0 0 16px rgba($amber, 0.08);
+        box-shadow: 0 0 4px rgba($amber, 0.08), 0 0 8px rgba($amber, 0.04);
     }
 }
 
@@ -477,26 +488,40 @@ $green: #608c59;
     }
 
     .card {
-        min-height: 130px;
-    }
-
-    .cardContent {
-        padding: 0.75rem 1rem;
+        min-height: 100px;
+        container-type: size;
     }
 
     .cardGame {
         font-size: 1.1rem;
     }
 
-    .cardTimer {
-        font-size: 1.2rem;
+    .cardCenter {
+        align-items: center;
+        padding-right: 75cqh;
+        justify-content: flex-start;
     }
 
-    .cardImminent .cardTimer {
-        font-size: 1rem;
+    .cardCenter .cardBadge {
+        order: 2;
+        align-self: center;
+        margin-top: auto;
     }
 
-    .cardSeed {
+    .cardCenter .cardTitleRow {
+        display: contents;
+    }
+
+    .cardCenter .cardCategory {
+        order: 1;
+    }
+
+    .cardCenter .cardGame {
+        order: 0;
+    }
+
+    .cardFooter,
+    .cardFooterLive {
         display: none;
     }
 
@@ -504,12 +529,7 @@ $green: #608c59;
         padding: 0.4rem 1rem;
     }
 
-    .raceRight {
-        gap: 0.35rem;
-    }
-
-    .time,
-    .liveTimer {
+    .raceTime {
         font-size: 0.8rem;
     }
 }
