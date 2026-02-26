@@ -17,6 +17,8 @@ import type {
     DashboardPeriod,
     DashboardRace,
     DashboardResponse,
+    DashboardStreak,
+    DashboardStreakMilestone,
 } from '~src/types/dashboard.types';
 import styles from './your-stats.module.scss';
 
@@ -90,6 +92,60 @@ function ordinal(n: number): string {
     const s = ['th', 'st', 'nd', 'rd'];
     const v = n % 100;
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+export function StreakBar({
+    streak,
+    streakMilestone,
+}: {
+    streak: DashboardStreak | null;
+    streakMilestone: DashboardStreakMilestone | null;
+}) {
+    const current = streak?.current ?? 0;
+    const periodBest = streak?.periodLongest ?? 0;
+    const allTimeBest = streak?.longest ?? 0;
+    const isRecord = current > 0 && current >= allTimeBest;
+
+    if (current === 0) {
+        return (
+            <div className={styles.streakZero}>
+                <FaFire size={12} className={styles.streakIcon} /> No active
+                streak
+            </div>
+        );
+    }
+
+    return (
+        <div className={styles.streakBar}>
+            <span className={styles.streakCurrent}>
+                <FaFire
+                    size={18}
+                    className={clsx(
+                        styles.streakIcon,
+                        isRecord && styles.streakIconRecord,
+                    )}
+                />
+                {current}d
+            </span>
+            <span className={styles.streakMeta}>
+                {isRecord ? (
+                    <span className={styles.streakRecord}>New Record!</span>
+                ) : streakMilestone &&
+                  streakMilestone.type === 'near_record' ? (
+                    <span className={styles.streakMilestone}>
+                        {streakMilestone.message}
+                    </span>
+                ) : (
+                    <>
+                        {periodBest > 0 && (
+                            <span>best this period: {periodBest}d</span>
+                        )}
+                        {allTimeBest > 0 && <span>record: {allTimeBest}d</span>}
+                    </>
+                )}
+            </span>
+        </div>
+    );
 }
 
 export const YourStatsClient = ({

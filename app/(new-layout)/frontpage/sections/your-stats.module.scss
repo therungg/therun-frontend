@@ -11,6 +11,66 @@ $red: #ef5350;
     padding: 1rem 1.25rem;
 }
 
+/* ── Streak Bar ── */
+
+.streakBar {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.6rem 0;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.streakCurrent {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-family: $mono;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: var(--bs-emphasis-color);
+    white-space: nowrap;
+}
+
+.streakIcon {
+    color: $amber;
+    flex-shrink: 0;
+}
+
+.streakIconRecord {
+    color: $gold;
+}
+
+.streakMeta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem 0.4rem;
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+
+.streakMilestone {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: $amber;
+}
+
+.streakRecord {
+    color: $gold;
+    font-weight: 700;
+}
+
+.streakZero {
+    font-size: 0.8rem;
+    color: var(--bs-secondary-color);
+    padding: 0.4rem 0;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
 /* ── Hero Highlight ── */
 
 .highlight {
