@@ -235,6 +235,17 @@ function DashboardContent({
                         {streak?.current ?? 0}d
                     </div>
                     <div className={styles.statLabel}>Streak</div>
+                    {streak && streak.periodLongest > 0 && (
+                        <span className={styles.statAllTime}>
+                            period: {streak.periodLongest}d (
+                            {streak.periodLongestStart.slice(5)})
+                        </span>
+                    )}
+                    {streak && streak.longest > 0 && (
+                        <span className={styles.statAllTime}>
+                            best: {streak.longest}d
+                        </span>
+                    )}
                 </div>
             </div>
 

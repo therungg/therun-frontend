@@ -10,6 +10,9 @@ export interface DashboardStats {
 
 export interface DashboardStreak {
     current: number;
+    periodLongest: number;
+    periodLongestStart: string;
+    periodLongestEnd: string;
     longest: number;
     longestStart: string;
     longestEnd: string;
