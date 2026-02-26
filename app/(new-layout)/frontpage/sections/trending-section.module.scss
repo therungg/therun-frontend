@@ -227,6 +227,13 @@ $amber: #f59e0b;
     text-overflow: ellipsis;
 }
 
+.allTimeStats {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
 .allTimeStat {
     display: inline-flex;
     align-items: center;
@@ -235,7 +242,6 @@ $amber: #f59e0b;
     font-size: 0.85rem;
     color: var(--bs-secondary-color);
     white-space: nowrap;
-    flex-shrink: 0;
 }
 
 // ── Responsive ──
@@ -257,5 +263,19 @@ $amber: #f59e0b;
 
     .statGrid {
         display: none;
+    }
+
+    .allTimeRank {
+        display: none;
+    }
+
+    .allTimeStats {
+        flex-direction: column;
+        gap: 0;
+        align-items: flex-end;
+    }
+
+    .allTimeStat {
+        font-size: 0.7rem;
     }
 }

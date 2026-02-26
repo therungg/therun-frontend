@@ -186,14 +186,17 @@ const AllTimeGameRow = ({
                 unoptimized
             />
             <span className={styles.allTimeName}>{game.gameDisplay}</span>
-            <span className={styles.allTimeStat}>
-                <FaClock size={9} aria-hidden="true" />
-                {Math.round(game.totalRunTime / 3_600_000).toLocaleString()} hrs
-            </span>
-            <span className={styles.allTimeStat}>
-                <FaUsers size={9} aria-hidden="true" />
-                {compact.format(game.uniqueRunners)}
-                <span className="visually-hidden"> players</span>
+            <span className={styles.allTimeStats}>
+                <span className={styles.allTimeStat}>
+                    <FaClock size={9} aria-hidden="true" />
+                    {Math.round(game.totalRunTime / 3_600_000).toLocaleString()}
+                    h
+                </span>
+                <span className={styles.allTimeStat}>
+                    <FaUsers size={9} aria-hidden="true" />
+                    {compact.format(game.uniqueRunners)}
+                    <span className="visually-hidden"> players</span>
+                </span>
             </span>
         </Link>
     );

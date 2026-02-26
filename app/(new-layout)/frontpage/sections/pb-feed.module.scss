@@ -454,11 +454,32 @@ $green-bright: #66bb6a;
 
 @media (max-width: 480px) {
     .featuredSlide {
-        height: 180px;
+        height: 220px;
+    }
+
+    .featuredBg,
+    .featuredOverlay {
+        display: none;
     }
 
     .featuredContent {
-        padding: 1rem 1.25rem;
+        padding: 1.25rem 1.25rem 2.25rem;
+        gap: 0.5rem;
+    }
+
+    .featuredBadges {
+        position: static;
+        transform: none;
+        justify-content: center;
+        margin-bottom: 0.25rem;
+    }
+
+    .featuredTop {
+        gap: 0.6rem;
+    }
+
+    .featuredBottom {
+        gap: 0.5rem;
     }
 
     .featuredAvatar {
