@@ -147,21 +147,21 @@ export const CommunityPulseClient = ({
 
     return (
         <div ref={ref} className={styles.content}>
-            <div className={styles.sectionHeader}>
+            <h3 className={styles.sectionHeader}>
                 <span>Last 24 Hours</span>
                 <Link href="/live" className={styles.liveBar}>
                     <span className={styles.liveDot} />
                     <span className={styles.liveCount}>{liveCount}</span>
                     <span className={styles.liveLabel}>live now</span>
                 </Link>
-            </div>
+            </h3>
             <div className={styles.ticker}>
                 <div className={`${styles.cell} ${styles.hero}`}>
                     <span className={styles.number}>
                         {pbs.toLocaleString()}
                     </span>
                     <span className={styles.label}>
-                        <FaTrophy size={11} /> Personal Bests
+                        <FaTrophy size={11} aria-hidden="true" /> Personal Bests
                     </span>
                 </div>
                 <div className={styles.cell}>
@@ -169,7 +169,8 @@ export const CommunityPulseClient = ({
                         {runs.toLocaleString()}
                     </span>
                     <span className={styles.label}>
-                        <FaFlagCheckered size={11} /> Runs Completed
+                        <FaFlagCheckered size={11} aria-hidden="true" /> Runs
+                        Completed
                     </span>
                 </div>
                 <div className={styles.cell}>
@@ -177,7 +178,7 @@ export const CommunityPulseClient = ({
                         {attempts.toLocaleString()}
                     </span>
                     <span className={styles.label}>
-                        <FaBolt size={11} /> Total Attempts
+                        <FaBolt size={11} aria-hidden="true" /> Total Attempts
                     </span>
                 </div>
                 <div className={styles.cell}>
@@ -185,64 +186,96 @@ export const CommunityPulseClient = ({
                         {hours.toLocaleString()}
                     </span>
                     <span className={styles.label}>
-                        <FaClock size={11} /> Hours Played
+                        <FaClock size={11} aria-hidden="true" /> Hours Played
                     </span>
                 </div>
             </div>
 
-            <div className={styles.sectionHeader}>All Time</div>
+            <h3 className={styles.sectionHeader}>All Time</h3>
             <div className={styles.footer}>
                 <span className={styles.footerChip}>
-                    <FaTrophy size={12} className={styles.chipIcon} />
+                    <FaTrophy
+                        size={12}
+                        className={styles.chipIcon}
+                        aria-hidden="true"
+                    />
                     <span className={styles.chipNumber}>
                         {compact.format(allTime.totalPbs)}
                     </span>
                     <span className={styles.chipLabel}>PBs</span>
                 </span>
                 <span className={styles.footerChip}>
-                    <FaFlagCheckered size={12} className={styles.chipIcon} />
+                    <FaFlagCheckered
+                        size={12}
+                        className={styles.chipIcon}
+                        aria-hidden="true"
+                    />
                     <span className={styles.chipNumber}>
                         {compact.format(allTime.totalFinishedAttemptCount)}
                     </span>
                     <span className={styles.chipLabel}>runs completed</span>
                 </span>
                 <span className={styles.footerChip}>
-                    <FaBolt size={12} className={styles.chipIcon} />
+                    <FaBolt
+                        size={12}
+                        className={styles.chipIcon}
+                        aria-hidden="true"
+                    />
                     <span className={styles.chipNumber}>
                         {compact.format(allTime.totalAttemptCount)}
                     </span>
                     <span className={styles.chipLabel}>attempts</span>
                 </span>
                 <span className={styles.footerChip}>
-                    <FaClock size={12} className={styles.chipIcon} />
+                    <FaClock
+                        size={12}
+                        className={styles.chipIcon}
+                        aria-hidden="true"
+                    />
                     <span className={styles.chipNumber}>
                         {formatHours(allTime.totalRunTime)}
                     </span>
                     <span className={styles.chipLabel}>hours</span>
                 </span>
                 <span className={styles.footerChip}>
-                    <FaUsers size={12} className={styles.chipIcon} />
+                    <FaUsers
+                        size={12}
+                        className={styles.chipIcon}
+                        aria-hidden="true"
+                    />
                     <span className={styles.chipNumber}>
                         {compact.format(allTime.totalRunners)}
                     </span>
                     <span className={styles.chipLabel}>runners</span>
                 </span>
                 <span className={styles.footerChip}>
-                    <FaGamepad size={12} className={styles.chipIcon} />
+                    <FaGamepad
+                        size={12}
+                        className={styles.chipIcon}
+                        aria-hidden="true"
+                    />
                     <span className={styles.chipNumber}>
                         {compact.format(allTime.totalGames)}
                     </span>
                     <span className={styles.chipLabel}>games</span>
                 </span>
                 <span className={styles.footerChip}>
-                    <FaLayerGroup size={12} className={styles.chipIcon} />
+                    <FaLayerGroup
+                        size={12}
+                        className={styles.chipIcon}
+                        aria-hidden="true"
+                    />
                     <span className={styles.chipNumber}>
                         {compact.format(allTime.totalCategories)}
                     </span>
                     <span className={styles.chipLabel}>categories</span>
                 </span>
                 <span className={styles.footerChip}>
-                    <FaPlay size={10} className={styles.chipIcon} />
+                    <FaPlay
+                        size={10}
+                        className={styles.chipIcon}
+                        aria-hidden="true"
+                    />
                     <span className={styles.chipNumber}>
                         {compact.format(allTime.totalRaces)}
                     </span>

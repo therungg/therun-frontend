@@ -86,7 +86,7 @@ export const RacesSectionClient = ({
             {liveRaces.length > 0 && (
                 <div className={styles.cardList}>
                     {showHeaders && (
-                        <div className={styles.groupHeader}>Live Now</div>
+                        <h3 className={styles.groupHeader}>Live Now</h3>
                     )}
                     {liveRaces.map((race) => (
                         <RaceCard
@@ -107,7 +107,7 @@ export const RacesSectionClient = ({
             {pendingRaces.length > 0 && (
                 <div className={styles.cardList}>
                     {showHeaders && (
-                        <div className={styles.groupHeader}>Upcoming</div>
+                        <h3 className={styles.groupHeader}>Upcoming</h3>
                     )}
                     {pendingRaces.map((race) => (
                         <RaceCard
@@ -128,7 +128,8 @@ export const RacesSectionClient = ({
             {hasSession && (
                 <div className={styles.ctaContainer}>
                     <a href="/races/create" className={styles.startRaceButton}>
-                        Start a Race <FaArrowRight size={12} />
+                        Start a Race{' '}
+                        <FaArrowRight size={12} aria-hidden="true" />
                     </a>
                 </div>
             )}
@@ -136,9 +137,9 @@ export const RacesSectionClient = ({
             {finishedRaces.length > 0 && (
                 <div className={styles.group}>
                     {hasCards && (
-                        <div className={styles.groupHeader}>
+                        <h3 className={styles.groupHeader}>
                             Recent Finished Races
-                        </div>
+                        </h3>
                     )}
                     {finishedRaces.map((race) => (
                         <RaceRow key={race.raceId} race={race} />

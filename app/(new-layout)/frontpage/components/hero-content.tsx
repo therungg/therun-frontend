@@ -118,9 +118,26 @@ const SplitTimeline = ({
     className?: string;
 }) => {
     const justCompleted = run.currentSplitIndex - 1;
+    const completed = segments.filter((s) => s !== 'pending').length;
+    const gold = segments.filter((s) => s === 'gold').length;
+    const ahead = segments.filter(
+        (s) => s === 'ahead' || s === 'ahead-muted',
+    ).length;
+    const behind = segments.filter(
+        (s) => s === 'behind' || s === 'behind-muted',
+    ).length;
+
+    const parts = [`${completed} of ${segments.length} splits completed`];
+    if (gold > 0) parts.push(`${gold} gold`);
+    if (ahead > 0) parts.push(`${ahead} ahead`);
+    if (behind > 0) parts.push(`${behind} behind`);
 
     return (
-        <div className={clsx(styles.splitTimeline, className)}>
+        <div
+            className={clsx(styles.splitTimeline, className)}
+            role="img"
+            aria-label={parts.join(', ')}
+        >
             {segments.map((status, i) => (
                 <div
                     key={i}
@@ -234,6 +251,16 @@ const HeroLayout = ({
     const handleTwitchOffline = useCallback(() => {
         markStale(featuredUserRef.current, 'offline');
     }, [markStale]);
+
+    // Set title on the Twitch iframe for accessibility
+    useEffect(() => {
+        const iframe = document.querySelector(
+            '#frontpage-twitch-player iframe',
+        ) as HTMLIFrameElement | null;
+        if (iframe && !iframe.title) {
+            iframe.title = `${currentFeatured.user}'s Twitch stream`;
+        }
+    }, [currentFeatured.user]);
 
     return (
         <div className={clsx(styles.hero, 'mb-3')}>
@@ -371,7 +398,7 @@ const FeaturedRunPanel = ({
                         <div className={styles.avatarWrapper}>
                             <Image
                                 src={run.picture!}
-                                alt={run.user}
+                                alt=""
                                 fill
                                 style={{ objectFit: 'cover' }}
                                 className={styles.avatar}
@@ -532,6 +559,8 @@ const SidebarCard = ({
     const segments = getSplitSegments(run);
     const flash = useSplitFlash(run);
 
+    const isStale = !!staleReason;
+
     return (
         <button
             type="button"
@@ -550,6 +579,9 @@ const SidebarCard = ({
                 isEntering && styles.sidebarCardEnter,
             )}
             onClick={onSelect}
+            aria-disabled={isStale || undefined}
+            tabIndex={isStale ? -1 : undefined}
+            aria-label={`${run.user} playing ${run.game}${staleReason ? ` (${STALE_LABELS[staleReason]})` : ''}`}
         >
             {staleReason && (
                 <div
@@ -591,7 +623,7 @@ const SidebarCard = ({
                         <div className={styles.sidebarAvatar}>
                             <Image
                                 src={run.picture!}
-                                alt={run.user}
+                                alt=""
                                 fill
                                 style={{ objectFit: 'cover' }}
                                 unoptimized

@@ -322,6 +322,8 @@ $green-bright: #66bb6a;
     padding: 0.55rem 1.25rem;
     border-bottom: 1px solid color-mix(in srgb, var(--bs-border-color) 40%, transparent);
     transition: transform 0.15s ease, background-color 0.15s ease;
+    text-decoration: none;
+    color: inherit;
 
     &:nth-child(even) {
         background-color: color-mix(in srgb, var(--bs-secondary-bg) 18%, transparent);
@@ -334,6 +336,8 @@ $green-bright: #66bb6a;
     &:hover {
         background-color: color-mix(in srgb, var(--bs-secondary-bg) 50%, transparent);
         transform: translateX(2px);
+        text-decoration: none;
+        color: inherit;
     }
 }
 
@@ -428,8 +432,7 @@ $green-bright: #66bb6a;
 .listTimestamp {
     font-size: 0.8rem;
     font-weight: 600;
-    color: var(--bs-body-color);
-    opacity: 0.45;
+    color: var(--bs-secondary-color);
     white-space: nowrap;
 }
 
@@ -478,5 +481,17 @@ $green-bright: #66bb6a;
 
     .listItem {
         padding: 0.4rem 1rem;
+    }
+}
+
+/* ── Reduced motion ── */
+
+@media (prefers-reduced-motion: reduce) {
+    .listItem {
+        transition: none;
+    }
+
+    .dot {
+        transition: none;
     }
 }

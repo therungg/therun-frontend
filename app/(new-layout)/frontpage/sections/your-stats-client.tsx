@@ -112,6 +112,7 @@ export const YourStatsClient = ({
                             selectedPeriod === p && styles.periodButtonActive,
                         )}
                         onClick={() => setSelectedPeriod(p)}
+                        aria-pressed={selectedPeriod === p}
                     >
                         {PERIOD_LABELS[p]}
                     </button>
@@ -303,9 +304,7 @@ function DashboardContent({
 
             {allTimeTopGames.length > 0 && (
                 <>
-                    <div className={styles.allTimeLabel}>
-                        All-Time Favorites
-                    </div>
+                    <h3 className={styles.allTimeLabel}>All-Time Favorites</h3>
                     <div className={styles.allTimeChips}>
                         {allTimeTopGames.slice(0, 3).map((game) => (
                             <Link
@@ -340,7 +339,7 @@ function DashboardContent({
 
             {activity.length > 0 && (
                 <>
-                    <div className={styles.allTimeLabel}>Recent Activity</div>
+                    <h3 className={styles.allTimeLabel}>Recent Activity</h3>
                     <div className={styles.activityList}>
                         {activity.map((item) =>
                             item.kind === 'pb' ? (

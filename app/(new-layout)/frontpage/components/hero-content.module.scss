@@ -765,3 +765,31 @@
 .skeletonPanel {
     min-height: 340px;
 }
+
+/* ── Reduced motion ── */
+
+@media (prefers-reduced-motion: reduce) {
+    .liveDot,
+    .splitSegmentCurrent,
+    .viewAllDot {
+        animation: none;
+    }
+
+    .featuredPanelGold,
+    .featuredPanelGreen,
+    .featuredPanelRed,
+    .sidebarCardGold,
+    .sidebarCardGreen,
+    .sidebarCardRed,
+    .sidebarCardEnter,
+    .splitSegmentAheadLatest,
+    .splitSegmentGoldLatest {
+        animation: none;
+    }
+
+    .sidebarCard,
+    .viewAllLink,
+    .viewAllArrow {
+        transition: none;
+    }
+}
