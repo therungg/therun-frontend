@@ -222,12 +222,27 @@ function DashboardContent({
         allTimeTopGames,
         recentPbs,
         recentRaces,
-        highlight,
         globalStats,
     } = dashboard;
+
+    // Backwards compat: use highlights array if available, fall back to single highlight
+    const highlightList: DashboardHighlight[] =
+        dashboard.highlights && dashboard.highlights.length > 0
+            ? dashboard.highlights
+            : dashboard.highlight
+              ? [dashboard.highlight]
+              : [];
+
+    const streakMilestone = dashboard.streakMilestone ?? null;
+
     const topGame = topGames[0] ?? null;
 
     const pbsDelta = formatDelta(stats.totalPbs, previousStats.totalPbs);
+    const playtimeDelta = formatDelta(stats.playtime, previousStats.playtime);
+    const runsDelta = formatDelta(
+        stats.finishedRuns,
+        previousStats.finishedRuns,
+    );
 
     const activity: ActivityItem[] = [
         ...recentPbs.map(
@@ -250,25 +265,25 @@ function DashboardContent({
 
     return (
         <>
-            {highlight && <HighlightCard highlight={highlight} />}
+            {/* 1. Streak Bar */}
+            <StreakBar streak={streak} streakMilestone={streakMilestone} />
 
+            {/* 2. Highlight Carousel */}
+            {highlightList.length > 0 && (
+                <HighlightCarousel highlights={highlightList} />
+            )}
+
+            {/* 3. Period Toggle */}
             {periodToggle}
 
+            {/* 4. Core Stats — 3 cells with deltas */}
             <div className={styles.statRibbon}>
                 <div className={styles.statCell}>
                     <div className={styles.statValue}>
                         <DurationToFormatted duration={stats.playtime} human />
                     </div>
                     <div className={styles.statLabel}>Playtime</div>
-                    {globalStats && globalStats.totalRunTime > 0 && (
-                        <span className={styles.statAllTime}>
-                            of{' '}
-                            <DurationToFormatted
-                                duration={globalStats.totalRunTime}
-                                human
-                            />
-                        </span>
-                    )}
+                    <DeltaBadge {...playtimeDelta} />
                 </div>
                 <div className={styles.statCell}>
                     <div className={styles.statValue}>{stats.totalPbs}</div>
@@ -278,125 +293,14 @@ function DashboardContent({
                 <div className={styles.statCell}>
                     <div className={styles.statValue}>{stats.finishedRuns}</div>
                     <div className={styles.statLabel}>Runs</div>
-                    {globalStats &&
-                        globalStats.totalFinishedAttemptCount > 0 && (
-                            <span className={styles.statAllTime}>
-                                of{' '}
-                                {formatCompact(
-                                    globalStats.totalFinishedAttemptCount,
-                                )}
-                            </span>
-                        )}
-                </div>
-                <div className={styles.statCell}>
-                    <div className={styles.statValue}>
-                        {streak?.current ?? 0}d
-                    </div>
-                    <div className={styles.statLabel}>Streak</div>
-                    {streak && streak.periodLongest > 0 && (
-                        <span className={styles.statAllTime}>
-                            period: {streak.periodLongest}d (
-                            {streak.periodLongestStart.slice(5)})
-                        </span>
-                    )}
-                    {streak && streak.longest > 0 && (
-                        <span className={styles.statAllTime}>
-                            best: {streak.longest}d
-                        </span>
-                    )}
+                    <DeltaBadge {...runsDelta} />
                 </div>
             </div>
 
-            {globalStats &&
-                (globalStats.totalGames > 0 ||
-                    globalStats.totalCategories > 0) && (
-                    <div className={styles.statRibbon}>
-                        <div className={styles.statCell}>
-                            <div className={styles.statValue}>
-                                {globalStats.totalGames}
-                            </div>
-                            <div className={styles.statLabel}>Games</div>
-                        </div>
-                        <div className={styles.statCell}>
-                            <div className={styles.statValue}>
-                                {globalStats.totalCategories}
-                            </div>
-                            <div className={styles.statLabel}>Categories</div>
-                        </div>
-                    </div>
-                )}
-
-            {topGame && (
-                <Link
-                    href={`/${username}/${encodeURIComponent(topGame.gameDisplay)}`}
-                    className={styles.topGameCard}
-                >
-                    {hasValidImage(topGame.gameImage) && (
-                        <Image
-                            src={topGame.gameImage}
-                            alt={topGame.gameDisplay}
-                            width={36}
-                            height={48}
-                            className={styles.topGameImage}
-                            unoptimized
-                        />
-                    )}
-                    <div className={styles.topGameInfo}>
-                        <div className={styles.topGameName}>
-                            {topGame.gameDisplay}
-                        </div>
-                        <div className={styles.topGameStats}>
-                            <DurationToFormatted
-                                duration={topGame.totalPlaytime}
-                                human
-                            />
-                            {' · '}
-                            {topGame.totalAttempts} attempts
-                            {' · '}
-                            {topGame.totalPbs} PBs
-                        </div>
-                    </div>
-                </Link>
-            )}
-
-            {allTimeTopGames.length > 0 && (
-                <>
-                    <h3 className={styles.allTimeLabel}>All-Time Favorites</h3>
-                    <div className={styles.allTimeChips}>
-                        {allTimeTopGames.slice(0, 3).map((game) => (
-                            <Link
-                                key={game.gameDisplay}
-                                href={`/${username}/${encodeURIComponent(game.gameDisplay)}`}
-                                className={styles.allTimeChip}
-                            >
-                                {hasValidImage(game.gameImage) && (
-                                    <Image
-                                        src={game.gameImage}
-                                        alt={game.gameDisplay}
-                                        width={20}
-                                        height={27}
-                                        className={styles.allTimeChipImage}
-                                        unoptimized
-                                    />
-                                )}
-                                <span className={styles.allTimeChipName}>
-                                    {game.gameDisplay}
-                                </span>
-                                <span className={styles.allTimeChipHours}>
-                                    <DurationToFormatted
-                                        duration={game.totalRunTime}
-                                        human
-                                    />
-                                </span>
-                            </Link>
-                        ))}
-                    </div>
-                </>
-            )}
-
+            {/* 5. Recent Activity */}
             {activity.length > 0 && (
                 <>
-                    <h3 className={styles.allTimeLabel}>Recent Activity</h3>
+                    <div className={styles.sectionLabel}>Recent Activity</div>
                     <div className={styles.activityList}>
                         {activity.map((item) =>
                             item.kind === 'pb' ? (
@@ -409,12 +313,103 @@ function DashboardContent({
                                 <RaceActivityItem
                                     key={`race-${item.data.game}-${item.sortDate}`}
                                     race={item.data}
+                                    username={username}
                                 />
                             ),
                         )}
                     </div>
                 </>
             )}
+
+            {/* 6. Top Game */}
+            {topGame && (
+                <>
+                    <div className={styles.sectionLabel}>Top Game</div>
+                    <Link
+                        href={`/${username}/${encodeURIComponent(topGame.gameDisplay)}`}
+                        className={styles.topGameCard}
+                    >
+                        {hasValidImage(topGame.gameImage) && (
+                            <Image
+                                src={topGame.gameImage}
+                                alt={topGame.gameDisplay}
+                                width={36}
+                                height={48}
+                                className={styles.topGameImage}
+                                unoptimized
+                            />
+                        )}
+                        <div className={styles.topGameInfo}>
+                            <div className={styles.topGameName}>
+                                {topGame.gameDisplay}
+                            </div>
+                            <div className={styles.topGameStats}>
+                                <DurationToFormatted
+                                    duration={topGame.totalPlaytime}
+                                    human
+                                />
+                                {' · '}
+                                {topGame.totalAttempts} attempts
+                                {' · '}
+                                {topGame.totalPbs} PBs
+                            </div>
+                        </div>
+                    </Link>
+                </>
+            )}
+
+            {/* 7. All-Time Favorites — ranked list */}
+            {allTimeTopGames.length > 0 && (
+                <>
+                    <div className={styles.sectionLabel}>
+                        All-Time Favorites
+                    </div>
+                    <div className={styles.allTimeList}>
+                        {allTimeTopGames.slice(0, 3).map((game, i) => (
+                            <Link
+                                key={game.gameDisplay}
+                                href={`/${username}/${encodeURIComponent(game.gameDisplay)}`}
+                                className={styles.allTimeRow}
+                            >
+                                <span className={styles.allTimeRank}>
+                                    {i + 1}
+                                </span>
+                                {hasValidImage(game.gameImage) && (
+                                    <Image
+                                        src={game.gameImage}
+                                        alt={game.gameDisplay}
+                                        width={20}
+                                        height={27}
+                                        className={styles.allTimeImage}
+                                        unoptimized
+                                    />
+                                )}
+                                <span className={styles.allTimeName}>
+                                    {game.gameDisplay}
+                                </span>
+                                <span className={styles.allTimeHours}>
+                                    <DurationToFormatted
+                                        duration={game.totalRunTime}
+                                        human
+                                    />
+                                </span>
+                            </Link>
+                        ))}
+                    </div>
+                </>
+            )}
+
+            {/* 8. Global Stats Footer */}
+            {globalStats &&
+                (globalStats.totalGames > 0 ||
+                    globalStats.totalCategories > 0) && (
+                    <div className={styles.globalFooter}>
+                        {globalStats.totalGames} games ·{' '}
+                        {globalStats.totalCategories} categories ·{' '}
+                        {formatCompact(globalStats.totalFinishedAttemptCount)}{' '}
+                        runs
+                    </div>
+                )}
         </>
     );
 }
@@ -685,8 +680,8 @@ function PbActivityItem({
                 <Image
                     src={pb.gameImage}
                     alt={pb.game}
-                    width={15}
-                    height={20}
+                    width={20}
+                    height={27}
                     className={styles.activityImage}
                     unoptimized
                 />
@@ -718,7 +713,13 @@ function PbActivityItem({
     );
 }
 
-function RaceActivityItem({ race }: { race: DashboardRace }) {
+function RaceActivityItem({
+    race,
+    username,
+}: {
+    race: DashboardRace;
+    username: string;
+}) {
     const ratingChange = race.ratingAfter - race.ratingBefore;
 
     const placementColor =
@@ -731,7 +732,22 @@ function RaceActivityItem({ race }: { race: DashboardRace }) {
                 : 'default';
 
     return (
-        <div className={styles.activityItem}>
+        <Link
+            href={`/${username}/${encodeURIComponent(race.game)}`}
+            className={styles.activityItem}
+        >
+            {hasValidImage(race.gameImage) ? (
+                <Image
+                    src={race.gameImage}
+                    alt={race.game}
+                    width={20}
+                    height={27}
+                    className={styles.activityImage}
+                    unoptimized
+                />
+            ) : (
+                <div className={styles.activityImagePlaceholder} />
+            )}
             <div className={styles.activityInfo}>
                 <div className={styles.activityGame}>{race.game}</div>
                 <div className={styles.activityCategory}>{race.category}</div>
@@ -763,6 +779,6 @@ function RaceActivityItem({ race }: { race: DashboardRace }) {
                     <FromNow time={new Date(race.date)} />
                 </span>
             </div>
-        </div>
+        </Link>
     );
 }
