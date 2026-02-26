@@ -64,6 +64,7 @@ export const YourStatsSection = async ({
     const raceData: DashboardRace[] = (weekSummary?.races ?? []).map((r) => ({
         game: r.game,
         category: r.category,
+        gameImage: null,
         position: r.position,
         ratingBefore: r.ratingPrevious,
         ratingAfter: r.ratingNew,
