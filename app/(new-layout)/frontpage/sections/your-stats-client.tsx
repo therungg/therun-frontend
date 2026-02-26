@@ -3,7 +3,7 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
     FaBolt,
     FaCalendarCheck,
@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fa';
 import { DurationToFormatted, FromNow } from '~src/components/util/datetime';
 import type {
+    DashboardHighlight,
     DashboardPb,
     DashboardPeriod,
     DashboardRace,
@@ -433,6 +434,33 @@ const HIGHLIGHT_ICONS: Record<string, React.ReactNode> = {
     completion_rate: <FaTrophy size={16} className={styles.highlightIcon} />,
 };
 
+const HIGHLIGHT_TAGS: Record<string, string> = {
+    new_pb: 'Personal Best',
+    pb_improvement: 'Personal Best',
+    pb_spree: 'Personal Best',
+    pb_machine: 'Personal Best',
+    streak: 'On Fire',
+    longest_streak: 'On Fire',
+    race_win: 'Race Result',
+    race_placement: 'Race Result',
+    consistency: 'Dedication',
+    grinder: 'Dedication',
+    busiest_game: 'Dedication',
+    comeback: 'Comeback',
+    playtime_surge: 'Comeback',
+    completion_rate: 'Efficiency',
+    runs_per_pb: 'Efficiency',
+    alltime_finish_rate: 'Efficiency',
+    total_playtime: 'Milestone',
+    alltime_playtime: 'Milestone',
+    alltime_runs: 'Milestone',
+    alltime_games: 'Milestone',
+};
+
+function getHighlightTag(type: string): string {
+    return HIGHLIGHT_TAGS[type] ?? 'Highlight';
+}
+
 // Duration-based highlight values that should render with DurationToFormatted
 const DURATION_VALUES = new Set([
     'most_played',
@@ -545,7 +573,9 @@ function HighlightCard({
                 />
             )}
             <div className={styles.highlightBody}>
-                <div className={styles.highlightTag}>Fun Fact</div>
+                <div className={styles.highlightTag}>
+                    {getHighlightTag(highlight.type)}
+                </div>
                 {valueDisplay}
                 <div className={styles.highlightLabel}>{highlight.label}</div>
                 {highlight.game && (
@@ -555,6 +585,63 @@ function HighlightCard({
                     </div>
                 )}
             </div>
+        </div>
+    );
+}
+
+export function HighlightCarousel({
+    highlights,
+}: {
+    highlights: DashboardHighlight[];
+}) {
+    const [activeIndex, setActiveIndex] = useState(0);
+
+    const count = highlights.length;
+
+    const advance = useCallback(() => {
+        setActiveIndex((i) => (i + 1) % count);
+    }, [count]);
+
+    useEffect(() => {
+        if (count <= 1) return;
+        const timer = setInterval(advance, 6000);
+        return () => clearInterval(timer);
+    }, [count, advance]);
+
+    // Reset index when highlights change (period switch)
+    useEffect(() => {
+        setActiveIndex(0);
+    }, [highlights]);
+
+    return (
+        <div className={styles.highlightCarousel}>
+            {highlights.map((h, i) => (
+                <div
+                    key={`${h.type}-${h.game ?? ''}-${i}`}
+                    className={clsx(
+                        styles.highlightSlide,
+                        i !== activeIndex && styles.highlightSlideHidden,
+                    )}
+                >
+                    <HighlightCard highlight={h} />
+                </div>
+            ))}
+            {count > 1 && (
+                <div className={styles.carouselDots}>
+                    {highlights.map((_, i) => (
+                        <button
+                            key={i}
+                            type="button"
+                            className={clsx(
+                                styles.carouselDot,
+                                i === activeIndex && styles.carouselDotActive,
+                            )}
+                            onClick={() => setActiveIndex(i)}
+                            aria-label={`Show highlight ${i + 1}`}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
