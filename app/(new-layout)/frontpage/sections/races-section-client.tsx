@@ -23,12 +23,16 @@ export const RacesSectionClient = ({
 }: RacesSectionClientProps) => {
     const races = useRaces(initialActiveRaces);
 
-    const allLive = races.filter(
-        (race) => race.status === 'progress' || race.status === 'starting',
-    );
-    const allPending = races.filter(
-        (race) => race.participantCount > 0 && race.status === 'pending',
-    );
+    const allLive = races
+        .filter(
+            (race) => race.status === 'progress' || race.status === 'starting',
+        )
+        .sort((a, b) => b.participantCount - a.participantCount);
+    const allPending = races
+        .filter(
+            (race) => race.participantCount > 0 && race.status === 'pending',
+        )
+        .sort((a, b) => b.participantCount - a.participantCount);
 
     // Allocate slots: guarantee at least 1 pending if any exist
     let liveSlots: number;
