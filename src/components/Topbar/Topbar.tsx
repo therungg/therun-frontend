@@ -167,6 +167,11 @@ export const Topbar = ({
                                             Move User
                                         </NavDropdown.Item>
                                     </Can>
+                                    <Can I="edit" a="user">
+                                        <NavDropdown.Item href="/admin/exclusions">
+                                            Exclusions
+                                        </NavDropdown.Item>
+                                    </Can>
                                     <NavDropdown.Item
                                         onClick={async () => {
                                             await logout();
