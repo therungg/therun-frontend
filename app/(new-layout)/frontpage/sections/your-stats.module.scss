@@ -101,7 +101,6 @@ $red: #ef5350;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--bs-secondary-color);
-    opacity: 0.5;
     margin-bottom: 0.1rem;
 }
 
@@ -131,7 +130,6 @@ $red: #ef5350;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--bs-secondary-color);
-    opacity: 0.8;
 }
 
 .highlightGame {
@@ -140,7 +138,6 @@ $red: #ef5350;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    opacity: 0.7;
 }
 
 /* ── Period Toggle ── */
@@ -243,14 +240,12 @@ $red: #ef5350;
     font-size: 0.65rem;
     font-weight: 600;
     color: var(--bs-secondary-color);
-    opacity: 0.5;
 }
 
 .statAllTime {
     font-size: 0.6rem;
     font-weight: 600;
     color: var(--bs-secondary-color);
-    opacity: 0.5;
     white-space: nowrap;
 }
 
@@ -321,8 +316,8 @@ $red: #ef5350;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--bs-secondary-color);
-    opacity: 0.6;
     margin-bottom: 0.4rem;
+    margin-top: 0;
 }
 
 .allTimeChips {
@@ -484,7 +479,7 @@ $red: #ef5350;
 
 .placementSilver {
     background: rgba($silver, 0.15);
-    color: $silver;
+    color: #d4d4d4;
 }
 
 .placementBronze {
@@ -514,7 +509,6 @@ $red: #ef5350;
 .activityTimestamp {
     font-size: 0.62rem;
     color: var(--bs-secondary-color);
-    opacity: 0.6;
     white-space: nowrap;
 }
 

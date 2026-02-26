@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FaBolt, FaStar } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
@@ -131,9 +132,14 @@ const FeaturedCarousel = ({
         });
     }, []);
 
-    // Auto-rotate
+    // Auto-rotate (respects prefers-reduced-motion)
     useEffect(() => {
         if (pbs.length <= 1) return;
+
+        const prefersReducedMotion = window.matchMedia(
+            '(prefers-reduced-motion: reduce)',
+        ).matches;
+        if (prefersReducedMotion) return;
 
         resetProgress();
 
@@ -238,11 +244,29 @@ const FeaturedCarousel = ({
         }, ROTATE_INTERVAL);
     };
 
+    const onKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            const prev = activeIndex > 0 ? activeIndex - 1 : pbs.length - 1;
+            onDotClick(prev);
+        } else if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            const next = activeIndex < pbs.length - 1 ? activeIndex + 1 : 0;
+            onDotClick(next);
+        }
+    };
+
     return (
         <div
             className={styles.carouselWrapper}
             onMouseEnter={pause}
             onMouseLeave={resume}
+            onFocus={pause}
+            onBlur={resume}
+            role="region"
+            aria-roledescription="carousel"
+            aria-label="Highlighted personal bests"
+            onKeyDown={onKeyDown}
         >
             <div
                 ref={scrollRef}
@@ -251,6 +275,7 @@ const FeaturedCarousel = ({
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
                 onPointerCancel={onPointerUp}
+                aria-live="polite"
             >
                 {pbs.map((pb, i) => {
                     const imageUrl = gameImages[pb.game] ?? FALLBACK_IMAGE;
@@ -267,6 +292,9 @@ const FeaturedCarousel = ({
                                 slideRefs.current[i] = el;
                             }}
                             className={styles.featuredSlide}
+                            role="group"
+                            aria-roledescription="slide"
+                            aria-label={`Slide ${i + 1} of ${pbs.length}: ${pb.username} - ${pb.game} ${pb.category}`}
                         >
                             <img
                                 src={imageUrl}
@@ -277,7 +305,7 @@ const FeaturedCarousel = ({
                             <div className={styles.featuredContent}>
                                 <div className={styles.featuredBadges}>
                                     <span className={styles.featuredBadge}>
-                                        <FaBolt size={9} />
+                                        <FaBolt size={9} aria-hidden="true" />
                                         Highlighted PB
                                     </span>
                                     <span className={styles.featuredTimestamp}>
@@ -288,7 +316,7 @@ const FeaturedCarousel = ({
                                     {avatarUrl && (
                                         <Image
                                             src={avatarUrl}
-                                            alt={pb.username}
+                                            alt=""
                                             width={52}
                                             height={52}
                                             className={styles.featuredAvatar}
@@ -330,7 +358,10 @@ const FeaturedCarousel = ({
                                         <span
                                             className={styles.featuredFirstPb}
                                         >
-                                            <FaStar size={11} />
+                                            <FaStar
+                                                size={11}
+                                                aria-hidden="true"
+                                            />
                                             First PB!
                                         </span>
                                     ) : null}
@@ -414,11 +445,11 @@ const CompactItem = ({
     const hasImprovement = improvement !== null && improvement > 0;
 
     return (
-        <div className={styles.listItem}>
+        <Link href={`/${pb.username}`} className={styles.listItem}>
             {avatarUrl && (
                 <Image
                     src={avatarUrl}
-                    alt={pb.username}
+                    alt=""
                     width={40}
                     height={40}
                     className={styles.listAvatar}
@@ -426,9 +457,7 @@ const CompactItem = ({
                 />
             )}
             <div className={styles.listInfo}>
-                <span className={styles.listRunnerName}>
-                    <UserLink username={pb.username} />
-                </span>
+                <span className={styles.listRunnerName}>{pb.username}</span>
                 <span className={styles.listGameCategory}>
                     {pb.game} &middot; {pb.category}
                 </span>
@@ -448,7 +477,7 @@ const CompactItem = ({
                         </span>
                     ) : pb.previousPb === null ? (
                         <span className={styles.listFirstPb}>
-                            <FaStar size={9} /> First PB!
+                            <FaStar size={9} aria-hidden="true" /> First PB!
                         </span>
                     ) : null}
                 </span>
@@ -456,6 +485,6 @@ const CompactItem = ({
                     <FromNow time={pb.endedAt} />
                 </span>
             </div>
-        </div>
+        </Link>
     );
 };

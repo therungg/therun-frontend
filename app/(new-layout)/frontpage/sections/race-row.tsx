@@ -51,7 +51,7 @@ export const RaceRow = ({ race, className }: RaceRowProps) => {
                         <>
                             {' · '}
                             <span className={styles.raceWinner}>
-                                <FaTrophy size={9} />{' '}
+                                <FaTrophy size={9} aria-hidden="true" />{' '}
                                 <UserLink username={winnerName} parentIsUrl />
                             </span>
                         </>
@@ -69,7 +69,8 @@ export const RaceRow = ({ race, className }: RaceRowProps) => {
                     )}
                     <span className={styles.raceEntrants}>
                         {race.participantCount}
-                        <FaUser size={9} />
+                        <FaUser size={9} aria-hidden="true" />
+                        <span className="visually-hidden"> participants</span>
                     </span>
                 </span>
             </div>

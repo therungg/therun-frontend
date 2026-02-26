@@ -27,12 +27,16 @@ export const Panel: FC<PropsWithChildren<PanelInterface>> = ({
         <div id={panelId} className={styles.bookmarkFolder}>
             <div className={styles.tab}>
                 <div className={styles.subtitle}>{subtitle}</div>
-                <div className={styles.title}>{title}</div>
+                <h2 className={styles.title}>{title}</h2>
             </div>
             {link && (
                 <a className={styles.url} href={link.url}>
                     {link.text}{' '}
-                    <FaArrowUpRightFromSquare size={14} className="ms-1 mb-1" />
+                    <FaArrowUpRightFromSquare
+                        size={14}
+                        className="ms-1 mb-1"
+                        aria-hidden="true"
+                    />
                 </a>
             )}
             <div {...props}>{children}</div>

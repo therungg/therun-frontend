@@ -104,15 +104,16 @@ const LinkItem = ({ link }: { link: QuickLink }) => {
                 target="_blank"
                 rel="noreferrer"
             >
-                <Icon size={14} className={styles.icon} />
+                <Icon size={14} className={styles.icon} aria-hidden="true" />
                 <span>{link.label}</span>
+                <span className="visually-hidden">(opens in a new tab)</span>
             </a>
         );
     }
 
     return (
         <Link href={link.href} className={styles.linkItem} prefetch={false}>
-            <Icon size={14} className={styles.icon} />
+            <Icon size={14} className={styles.icon} aria-hidden="true" />
             <span>{link.label}</span>
         </Link>
     );
@@ -126,7 +127,7 @@ export const QuickLinks = async () => {
         <Panel subtitle="Navigate" title="Quick Links" className="p-0">
             <div className={styles.content}>
                 <div className={styles.group}>
-                    <div className={styles.groupLabel}>Explore</div>
+                    <h3 className={styles.groupLabel}>Explore</h3>
                     <div className={styles.linkList}>
                         {links.map((link) => (
                             <LinkItem key={link.href} link={link} />
@@ -134,7 +135,7 @@ export const QuickLinks = async () => {
                     </div>
                 </div>
                 <div className={styles.group}>
-                    <div className={styles.groupLabel}>Socials</div>
+                    <h3 className={styles.groupLabel}>Socials</h3>
                     <div className={styles.linkList}>
                         {SOCIAL_LINKS.map((link) => (
                             <LinkItem key={link.href} link={link} />

@@ -126,9 +126,8 @@ $amber: #f59e0b;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: var(--bs-body-color);
+    color: var(--bs-secondary-color);
     margin-top: 0.3rem;
-    opacity: 0.6;
 }
 
 /* ── Section headers ── */
@@ -141,9 +140,9 @@ $amber: #f59e0b;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: var(--bs-body-color);
-    opacity: 0.6;
+    color: var(--bs-secondary-color);
     margin-bottom: 0.3rem;
+    margin-top: 0;
 
     &:not(:first-child) {
         margin-top: 0.75rem;
@@ -225,5 +224,17 @@ $amber: #f59e0b;
 @media (max-width: 480px) {
     .content {
         padding: 0.75rem 1rem;
+    }
+}
+
+/* ── Reduced motion ── */
+
+@media (prefers-reduced-motion: reduce) {
+    .liveDot {
+        animation: none;
+    }
+
+    .footerChip {
+        transition: none;
     }
 }

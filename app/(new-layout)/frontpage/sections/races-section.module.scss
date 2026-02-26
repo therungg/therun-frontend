@@ -20,6 +20,7 @@ $green: #608c59;
     letter-spacing: 1.2px;
     color: var(--bs-secondary-color);
     padding: 0.6rem 1.25rem 0.25rem;
+    margin: 0;
 }
 
 .statusDot {
@@ -235,7 +236,6 @@ $green: #608c59;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: var(--bs-secondary-color);
-    opacity: 0.5;
 }
 
 .cardStatValue {
@@ -450,7 +450,6 @@ $green: #608c59;
     padding: 2rem 1rem;
     font-size: 0.9rem;
     color: var(--bs-secondary-color);
-    opacity: 0.7;
 }
 
 // ── Animations ──
@@ -531,5 +530,24 @@ $green: #608c59;
 
     .raceTime {
         font-size: 0.8rem;
+    }
+}
+
+// ── Reduced motion ──
+
+@media (prefers-reduced-motion: reduce) {
+    .liveDot,
+    .statusLive {
+        animation: none;
+    }
+
+    .cardLive {
+        animation: none;
+    }
+
+    .card,
+    .raceRow,
+    .startRaceButton {
+        transition: none;
     }
 }

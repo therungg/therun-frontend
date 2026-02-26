@@ -80,6 +80,7 @@ export const LayoutSwitcher = () => {
                     <button
                         onClick={() => setIsOpen(true)}
                         className="btn btn-link p-0"
+                        aria-label="Layout settings"
                         style={{
                             fontSize: '0.8rem',
                             color: 'var(--bs-secondary)',

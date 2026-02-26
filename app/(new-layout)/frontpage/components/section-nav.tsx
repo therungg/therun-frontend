@@ -103,6 +103,7 @@ export const SectionNav = () => {
             <nav
                 ref={navRef}
                 className={`${styles.nav} ${isStuck ? styles.navStuck : ''}`}
+                aria-label="Page sections"
             >
                 {SECTIONS.map((section) => {
                     const Icon = section.icon;
@@ -112,8 +113,11 @@ export const SectionNav = () => {
                             type="button"
                             className={`${styles.item} ${activeId === section.id ? styles.itemActive : ''}`}
                             onClick={() => scrollTo(section.id)}
+                            aria-current={
+                                activeId === section.id ? 'true' : undefined
+                            }
                         >
-                            <Icon size={10} />
+                            <Icon size={10} aria-hidden="true" />
                             {section.label}
                         </button>
                     );

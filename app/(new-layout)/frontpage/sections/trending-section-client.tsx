@@ -47,10 +47,10 @@ export const TrendingSectionClient = ({
             {/* Hot Right Now zone */}
             <div className={styles.hotZone}>
                 <div className={styles.hotHeader}>
-                    <div className={styles.hotTitle}>
-                        <FaFire size={12} />
+                    <h3 className={styles.hotTitle}>
+                        <FaFire size={12} aria-hidden="true" />
                         Hot Right Now
-                    </div>
+                    </h3>
                     <span className={styles.periodLabel}>Last 24 hours</span>
                 </div>
 
@@ -68,10 +68,10 @@ export const TrendingSectionClient = ({
 
             {/* All-Time zone */}
             <div className={styles.allTimeZone}>
-                <div className={styles.allTimeHeader}>
-                    <FaCrown size={12} />
+                <h3 className={styles.allTimeHeader}>
+                    <FaCrown size={12} aria-hidden="true" />
                     All-Time
-                </div>
+                </h3>
                 <div className={styles.allTimeGames}>
                     {allTimeGames.map((game, i) => (
                         <AllTimeGameRow
@@ -101,23 +101,21 @@ const HotGameCard = ({
             : FALLBACK_IMAGE;
 
     return (
-        <div className={styles.hotGameCard}>
+        <Link
+            href={`/${safeEncodeURI(game.gameDisplay)}`}
+            className={styles.hotGameCard}
+        >
             <span className={styles.rank}>{rank}</span>
             <Image
                 src={imageUrl}
-                alt={game.gameDisplay}
+                alt=""
                 width={45}
                 height={60}
                 className={styles.gameArt}
                 unoptimized
             />
             <div className={styles.gameInfo}>
-                <Link
-                    href={`/${safeEncodeURI(game.gameDisplay)}`}
-                    className={styles.gameName}
-                >
-                    {game.gameDisplay}
-                </Link>
+                <span className={styles.gameName}>{game.gameDisplay}</span>
                 {categories.length > 0 && (
                     <span className={styles.categories}>
                         {categories
@@ -129,35 +127,35 @@ const HotGameCard = ({
             </div>
             <div className={styles.statGrid}>
                 <div className={`${styles.stat} ${styles.statHighlight}`}>
-                    <FaClock size={11} />
+                    <FaClock size={11} aria-hidden="true" />
                     <span className={styles.statValue}>
                         {formatHoursCompact(game.totalPlaytime)}
                     </span>
                     <span className={styles.statLabel}>hrs</span>
                 </div>
                 <div className={styles.stat}>
-                    <FaUsers size={11} />
+                    <FaUsers size={11} aria-hidden="true" />
                     <span className={styles.statValue}>
                         {compact.format(game.uniquePlayers)}
                     </span>
                     <span className={styles.statLabel}>players</span>
                 </div>
                 <div className={styles.stat}>
-                    <FaBolt size={11} />
+                    <FaBolt size={11} aria-hidden="true" />
                     <span className={styles.statValue}>
                         {compact.format(game.totalAttempts)}
                     </span>
                     <span className={styles.statLabel}>attempts</span>
                 </div>
                 <div className={styles.stat}>
-                    <FaTrophy size={11} />
+                    <FaTrophy size={11} aria-hidden="true" />
                     <span className={styles.statValue}>
                         {compact.format(game.totalPbs)}
                     </span>
                     <span className={styles.statLabel}>PBs</span>
                 </div>
             </div>
-        </div>
+        </Link>
     );
 };
 
@@ -189,12 +187,13 @@ const AllTimeGameRow = ({
             />
             <span className={styles.allTimeName}>{game.gameDisplay}</span>
             <span className={styles.allTimeStat}>
-                <FaClock size={9} />
+                <FaClock size={9} aria-hidden="true" />
                 {Math.round(game.totalRunTime / 3_600_000).toLocaleString()} hrs
             </span>
             <span className={styles.allTimeStat}>
-                <FaUsers size={9} />
+                <FaUsers size={9} aria-hidden="true" />
                 {compact.format(game.uniqueRunners)}
+                <span className="visually-hidden"> players</span>
             </span>
         </Link>
     );

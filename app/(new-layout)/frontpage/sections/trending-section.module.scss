@@ -28,6 +28,7 @@ $amber: #f59e0b;
     text-transform: uppercase;
     letter-spacing: 1.2px;
     color: $amber;
+    margin: 0;
 }
 
 .periodLabel {
@@ -53,9 +54,13 @@ $amber: #f59e0b;
     padding: 0.45rem 0.5rem;
     border-radius: 0.5rem;
     transition: background-color 0.15s ease;
+    text-decoration: none;
+    color: inherit;
 
     &:hover {
         background-color: color-mix(in srgb, var(--bs-secondary-bg) 50%, transparent);
+        text-decoration: none;
+        color: inherit;
     }
 
     &:nth-child(even) {
@@ -171,7 +176,7 @@ $amber: #f59e0b;
     text-transform: uppercase;
     letter-spacing: 1.2px;
     color: var(--bs-secondary-color);
-    margin-bottom: 0.5rem;
+    margin: 0 0 0.5rem;
 }
 
 .allTimeGames {

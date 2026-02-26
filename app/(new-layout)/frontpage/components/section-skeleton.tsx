@@ -2,6 +2,8 @@ export const SectionSkeleton = ({ height = 300 }: { height?: number }) => {
     return (
         <div
             className="rounded-4 placeholder-glow"
+            role="status"
+            aria-label="Loading section"
             style={{
                 height: `${height}px`,
                 backgroundColor: 'var(--bs-secondary-bg)',

@@ -25,7 +25,7 @@ export default async function FrontPage({ statsUser }: { statsUser?: string }) {
                 </Suspense>
             </div>
             <Row className="g-4">
-                <Col lg={8} xs={12}>
+                <Col lg={8} xs={12} as="section" aria-label="Main content">
                     <div className="d-flex flex-column gap-4">
                         <Suspense fallback={<SectionSkeleton height={400} />}>
                             <TrendingSection />
@@ -38,7 +38,7 @@ export default async function FrontPage({ statsUser }: { statsUser?: string }) {
                         </Suspense>
                     </div>
                 </Col>
-                <Col lg={4} xs={12}>
+                <Col lg={4} xs={12} as="aside" aria-label="Stats and community">
                     <div className="d-flex flex-column gap-4">
                         {isLoggedIn && (
                             <Suspense
