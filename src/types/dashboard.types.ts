@@ -46,6 +46,7 @@ export interface DashboardPb {
 export interface DashboardRace {
     game: string;
     category: string;
+    gameImage?: string | null;
     position: number;
     ratingBefore: number;
     ratingAfter: number;
@@ -62,6 +63,12 @@ export interface DashboardHighlight {
     label: string;
 }
 
+export interface DashboardStreakMilestone {
+    type: 'near_record' | 'new_record' | 'at_risk';
+    daysToRecord?: number;
+    message: string;
+}
+
 export interface DashboardGlobalStats {
     totalRunTime: number;
     totalAttemptCount: number;
@@ -76,10 +83,12 @@ export interface DashboardResponse {
     stats: DashboardStats;
     previousStats: DashboardStats;
     streak: DashboardStreak | null;
+    streakMilestone: DashboardStreakMilestone | null;
     topGames: DashboardTopGame[];
     allTimeTopGames: DashboardAllTimeGame[];
     recentPbs: DashboardPb[];
     recentRaces: DashboardRace[];
     highlight: DashboardHighlight | null;
+    highlights: DashboardHighlight[];
     globalStats: DashboardGlobalStats | null;
 }
