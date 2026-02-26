@@ -346,13 +346,6 @@ $red: #ef5350;
     color: var(--bs-secondary-color);
 }
 
-.statAllTime {
-    font-size: 0.6rem;
-    font-weight: 600;
-    color: var(--bs-secondary-color);
-    white-space: nowrap;
-}
-
 /* ── Top Game Card ── */
 
 .topGameCard {
@@ -412,47 +405,55 @@ $red: #ef5350;
     text-overflow: ellipsis;
 }
 
-/* ── All-Time Favorites ── */
+/* ── Section Labels ── */
 
-.allTimeLabel {
+.sectionLabel {
     font-size: 0.72rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--bs-secondary-color);
+    margin-top: 0.75rem;
     margin-bottom: 0.4rem;
-    margin-top: 0;
 }
 
-.allTimeChips {
+/* ── All-Time Favorites (ranked list) ── */
+
+.allTimeList {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-bottom: 1rem;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin-bottom: 0.75rem;
 }
 
-.allTimeChip {
-    display: inline-flex;
+.allTimeRow {
+    display: flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.3rem 0.55rem;
-    border-radius: 8px;
-    background: color-mix(in srgb, var(--bs-secondary-bg) 50%, transparent);
-    border: 1px solid var(--bs-border-color);
+    gap: 0.5rem;
+    padding: 0.3rem 0.4rem;
+    border-radius: 0.35rem;
     text-decoration: none;
     color: inherit;
-    white-space: nowrap;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
     &:hover {
-        background: color-mix(in srgb, var(--bs-secondary-bg) 80%, transparent);
-        transform: translateY(-1px);
+        background: rgba(var(--bs-primary-rgb), 0.04);
         text-decoration: none;
         color: inherit;
     }
 }
 
-.allTimeChipImage {
+.allTimeRank {
+    font-family: $mono;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--bs-secondary-color);
+    width: 1.2rem;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.allTimeImage {
     width: 20px;
     height: 27px;
     border-radius: 3px;
@@ -460,20 +461,23 @@ $red: #ef5350;
     flex-shrink: 0;
 }
 
-.allTimeChipName {
+.allTimeName {
     font-size: 0.78rem;
     font-weight: 600;
     color: var(--bs-body-color);
-    max-width: 100px;
+    flex: 1;
+    min-width: 0;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.allTimeChipHours {
+.allTimeHours {
     font-family: $mono;
     font-size: 0.7rem;
     font-weight: 600;
     color: var(--bs-secondary-color);
+    flex-shrink: 0;
 }
 
 /* ── Activity Feed ── */
@@ -502,16 +506,16 @@ $red: #ef5350;
 }
 
 .activityImage {
-    width: 15px;
-    height: 20px;
+    width: 20px;
+    height: 27px;
     border-radius: 3px;
     object-fit: cover;
     flex-shrink: 0;
 }
 
 .activityImagePlaceholder {
-    width: 15px;
-    height: 20px;
+    width: 20px;
+    height: 27px;
     border-radius: 3px;
     flex-shrink: 0;
     background: rgba(var(--bs-primary-rgb), 0.1);
@@ -635,6 +639,18 @@ $red: #ef5350;
     opacity: 0.7;
 }
 
+/* ── Global Stats Footer ── */
+
+.globalFooter {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    text-align: center;
+    padding: 0.6rem 0 0.25rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid var(--bs-border-color);
+}
+
 /* ── Responsive (container query for sidebar) ── */
 
 @container (max-width: 320px) {
@@ -655,15 +671,6 @@ $red: #ef5350;
             border-top: 1px solid var(--bs-border-color);
             padding-top: 0.5rem;
         }
-    }
-
-    .allTimeChip {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .allTimeChipName {
-        max-width: 60px;
     }
 }
 
