@@ -95,7 +95,7 @@ function ordinal(n: number): string {
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
-function StreakBar({
+function StreakCard({
     streak,
     streakMilestone,
 }: {
@@ -109,42 +109,128 @@ function StreakBar({
 
     if (current === 0) {
         return (
-            <div className={styles.streakZero}>
-                <FaFire size={12} className={styles.streakIcon} /> No active
-                streak
+            <div className={clsx(styles.streakCard, styles.streakCardZero)}>
+                <div className={styles.streakZeroContent}>
+                    <FaFire size={24} className={styles.streakZeroIcon} />
+                    <div className={styles.streakZeroHeading}>
+                        Start Your Streak
+                    </div>
+                    <div className={styles.streakZeroText}>
+                        Every record starts with Day 1. Complete a run today.
+                    </div>
+                    <div className={styles.streakZeroBar}>
+                        <div className={styles.streakZeroTrack} />
+                        <span className={styles.streakZeroLabel}>Day 0</span>
+                    </div>
+                </div>
             </div>
         );
     }
 
+    // Determine intensity tier
+    const ratio = allTimeBest > 0 ? current / allTimeBest : 1;
+    const tier: 'normal' | 'hot' | 'nearRecord' | 'record' = isRecord
+        ? 'record'
+        : streakMilestone?.type === 'near_record'
+          ? 'nearRecord'
+          : ratio >= 0.5
+            ? 'hot'
+            : 'normal';
+
+    // Progress bar percentage — if no all-time best, scale to 30 days
+    const progressMax = allTimeBest > 0 ? allTimeBest : 30;
+    const progressPct = Math.min((current / progressMax) * 100, 100);
+
+    const cardClass = clsx(
+        styles.streakCard,
+        tier === 'hot' && styles.streakCardHot,
+        tier === 'nearRecord' && styles.streakCardNearRecord,
+        tier === 'record' && styles.streakCardRecord,
+    );
+
+    const iconClass = clsx(
+        styles.streakIcon,
+        tier === 'hot' && styles.streakIconHot,
+        tier === 'nearRecord' && styles.streakIconNearRecord,
+        tier === 'record' && styles.streakIconRecord,
+    );
+
+    const fillClass = clsx(
+        styles.streakProgressFill,
+        tier === 'hot' && styles.streakProgressFillHot,
+        tier === 'nearRecord' && styles.streakProgressFillNearRecord,
+        tier === 'record' && styles.streakProgressFillRecord,
+    );
+
+    const milestoneClass = clsx(
+        styles.streakMilestone,
+        tier === 'nearRecord' && styles.streakMilestoneNearRecord,
+        tier === 'record' && styles.streakMilestoneRecord,
+    );
+
     return (
-        <div className={styles.streakBar}>
-            <span className={styles.streakCurrent}>
-                <FaFire
-                    size={18}
-                    className={clsx(
-                        styles.streakIcon,
-                        isRecord && styles.streakIconRecord,
-                    )}
-                />
-                {current}d
-            </span>
-            <span className={styles.streakMeta}>
-                {isRecord ? (
-                    <span className={styles.streakRecord}>New Record!</span>
-                ) : streakMilestone &&
-                  streakMilestone.type === 'near_record' ? (
-                    <span className={styles.streakMilestone}>
-                        {streakMilestone.message}
+        <div className={cardClass}>
+            {/* Hero number */}
+            <div className={styles.streakHero}>
+                <FaFire size={22} className={iconClass} />
+                <span className={styles.streakNumber}>{current}</span>
+                <span className={styles.streakDaysLabel}>
+                    {current === 1 ? 'day' : 'days'}
+                </span>
+            </div>
+
+            {/* Progress bar */}
+            <div className={styles.streakProgressWrap}>
+                <div className={styles.streakProgressTrack}>
+                    <div
+                        className={fillClass}
+                        style={{ width: `${progressPct}%` }}
+                    />
+                </div>
+                <div className={styles.streakProgressLabel}>
+                    <span>
+                        {isRecord
+                            ? 'New record!'
+                            : allTimeBest > 0
+                              ? `${current} of ${allTimeBest} days`
+                              : `${current} days`}
                     </span>
-                ) : (
-                    <>
-                        {periodBest > 0 && (
-                            <span>best this period: {periodBest}d</span>
-                        )}
-                        {allTimeBest > 0 && <span>record: {allTimeBest}d</span>}
-                    </>
-                )}
-            </span>
+                    {allTimeBest > 0 && !isRecord && (
+                        <span>Record: {allTimeBest}d</span>
+                    )}
+                </div>
+            </div>
+
+            {/* Three stats */}
+            <div className={styles.streakStats}>
+                <div className={styles.streakStat}>
+                    <span className={styles.streakStatValue}>{current}</span>
+                    <span className={styles.streakStatLabel}>Current</span>
+                </div>
+                <div className={styles.streakStat}>
+                    <span className={styles.streakStatValue}>{periodBest}</span>
+                    <span className={styles.streakStatLabel}>Period Best</span>
+                </div>
+                <div className={styles.streakStat}>
+                    <span className={styles.streakStatValue}>
+                        {allTimeBest}
+                    </span>
+                    <span className={styles.streakStatLabel}>All-Time</span>
+                </div>
+            </div>
+
+            {/* Milestone message */}
+            {isRecord ? (
+                <div className={milestoneClass}>
+                    <FaBolt size={12} />
+                    New all-time record — keep going!
+                </div>
+            ) : streakMilestone ? (
+                <div className={milestoneClass}>
+                    <FaBolt size={12} />
+                    {streakMilestone.message}
+                </div>
+            ) : null}
         </div>
     );
 }
@@ -265,16 +351,16 @@ function DashboardContent({
 
     return (
         <>
-            {/* 1. Streak Bar */}
-            <StreakBar streak={streak} streakMilestone={streakMilestone} />
+            {/* 1. Period Toggle */}
+            {periodToggle}
 
-            {/* 2. Highlight Carousel */}
+            {/* 2. Streak Card */}
+            <StreakCard streak={streak} streakMilestone={streakMilestone} />
+
+            {/* 3. Highlight Carousel */}
             {highlightList.length > 0 && (
                 <HighlightCarousel highlights={highlightList} />
             )}
-
-            {/* 3. Period Toggle */}
-            {periodToggle}
 
             {/* 4. Core Stats — 3 cells with deltas */}
             <div className={styles.statRibbon}>
