@@ -144,6 +144,42 @@ function ordinal(n: number): string {
     return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
+const STREAK_MILESTONES = [3, 7, 14, 30, 60, 90, 180, 365];
+
+const MILESTONE_LABELS: Record<number, string> = {
+    3: '3 days',
+    7: '1 week',
+    14: '2 weeks',
+    30: '1 month',
+    60: '2 months',
+    90: '3 months',
+    180: '6 months',
+    365: '1 year',
+};
+
+function getNextMilestone(current: number): {
+    target: number;
+    label: string;
+    remaining: number;
+} {
+    for (const m of STREAK_MILESTONES) {
+        if (current < m) {
+            return {
+                target: m,
+                label: MILESTONE_LABELS[m],
+                remaining: m - current,
+            };
+        }
+    }
+    // Past all milestones — next target is next multiple of 365
+    const nextYear = Math.ceil((current + 1) / 365) * 365;
+    return {
+        target: nextYear,
+        label: `${nextYear / 365} years`,
+        remaining: nextYear - current,
+    };
+}
+
 function StreakCard({
     streak,
     streakMilestone,
@@ -157,19 +193,28 @@ function StreakCard({
 
     if (current === 0) return null;
 
-    // Determine intensity tier
-    const ratio = allTimeBest > 0 ? current / allTimeBest : 1;
+    const milestone = getNextMilestone(current);
+    // Previous milestone (or 0) as the bar's start reference
+    const prevMilestone =
+        [...STREAK_MILESTONES].reverse().find((m) => m <= current) ?? 0;
+    const range = milestone.target - prevMilestone;
+    const progressPct = Math.min(
+        ((current - prevMilestone) / range) * 100,
+        100,
+    );
+
+    // Determine intensity tier — based on closeness to next milestone
+    const milestoneRatio = (current - prevMilestone) / range;
+    const nearRecord =
+        streakMilestone?.type === 'near_record' ||
+        (allTimeBest > 0 && current / allTimeBest >= 0.8);
     const tier: 'normal' | 'hot' | 'nearRecord' | 'record' = isRecord
         ? 'record'
-        : streakMilestone?.type === 'near_record' || ratio >= 0.8
+        : nearRecord
           ? 'nearRecord'
-          : ratio >= 0.5
+          : milestoneRatio >= 0.7
             ? 'hot'
             : 'normal';
-
-    // Progress bar percentage — if no all-time best, scale to 30 days
-    const progressMax = allTimeBest > 0 ? allTimeBest : 30;
-    const progressPct = Math.min((current / progressMax) * 100, 100);
 
     const cardClass = clsx(
         styles.streakCard,
@@ -198,6 +243,13 @@ function StreakCard({
         tier === 'record' && styles.streakMilestoneRecord,
     );
 
+    // Progress label
+    const progressLabel = isRecord
+        ? 'New all-time record!'
+        : milestone.remaining === 1
+          ? `1 day to ${milestone.label}!`
+          : `${milestone.remaining} days to ${milestone.label}`;
+
     return (
         <div className={cardClass}>
             <div className={styles.streakTitle}>Your Daily Streak</div>
@@ -205,12 +257,10 @@ function StreakCard({
             <div className={styles.streakHero}>
                 <FaFire size={16} className={iconClass} />
                 <span className={styles.streakNumber}>{current}</span>
-                <span className={styles.streakDaysLabel}>
-                    {current === 1 ? 'day streak' : 'day streak'}
-                </span>
+                <span className={styles.streakDaysLabel}>day streak</span>
             </div>
 
-            {/* Progress bar */}
+            {/* Progress bar toward next milestone */}
             <div className={styles.streakProgressWrap}>
                 <div className={styles.streakProgressTrack}>
                     <div
@@ -218,18 +268,12 @@ function StreakCard({
                         style={{ width: `${progressPct}%` }}
                         role="progressbar"
                         aria-valuenow={current}
-                        aria-valuemin={0}
-                        aria-valuemax={progressMax}
+                        aria-valuemin={prevMilestone}
+                        aria-valuemax={milestone.target}
                     />
                 </div>
                 <div className={styles.streakProgressLabel}>
-                    <span>
-                        {isRecord
-                            ? 'New record!'
-                            : allTimeBest > 0
-                              ? `${current} of ${allTimeBest} days`
-                              : `${current} days`}
-                    </span>
+                    <span>{progressLabel}</span>
                     {allTimeBest > 0 && !isRecord && (
                         <span>Best: {allTimeBest}d</span>
                     )}
@@ -240,7 +284,7 @@ function StreakCard({
             {isRecord ? (
                 <div className={milestoneClass}>
                     <FaBolt size={12} />
-                    New all-time record — keep going!
+                    Keep going — every day is a new record!
                 </div>
             ) : streakMilestone ? (
                 <div className={milestoneClass}>
