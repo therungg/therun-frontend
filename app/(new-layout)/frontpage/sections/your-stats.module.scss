@@ -57,15 +57,6 @@ $streak-hot: #ef4444;
     border-color: rgba($gold, 0.25);
 }
 
-.streakCardZero {
-    background: linear-gradient(
-        135deg,
-        rgba(var(--bs-secondary-color-rgb, 128, 128, 128), 0.06) 0%,
-        rgba(var(--bs-secondary-color-rgb, 128, 128, 128), 0.02) 100%
-    );
-    border-color: rgba(var(--bs-border-color-rgb), 0.15);
-}
-
 .streakHero {
     display: flex;
     align-items: baseline;
@@ -206,54 +197,6 @@ $streak-hot: #ef4444;
     font-weight: 700;
 }
 
-/* Zero state CTA */
-
-.streakZeroContent {
-    text-align: center;
-}
-
-.streakZeroIcon {
-    color: var(--bs-secondary-color);
-    opacity: 0.4;
-    margin-bottom: 0.5rem;
-}
-
-.streakZeroHeading {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--bs-emphasis-color);
-    margin-bottom: 0.35rem;
-}
-
-.streakZeroText {
-    font-size: 0.78rem;
-    color: var(--bs-secondary-color);
-    line-height: 1.4;
-    margin-bottom: 0.75rem;
-}
-
-.streakZeroBar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.streakZeroTrack {
-    flex: 1;
-    height: 6px;
-    border-radius: 3px;
-    background: rgba(var(--bs-emphasis-color-rgb, 255, 255, 255), 0.06);
-}
-
-.streakZeroLabel {
-    font-family: $mono;
-    font-size: 0.65rem;
-    font-weight: 600;
-    color: var(--bs-secondary-color);
-    opacity: 0.6;
-    margin-left: 0.5rem;
-}
-
 /* ── Period Toggle ── */
 
 .periodToggleWrap {
@@ -370,22 +313,13 @@ $streak-hot: #ef4444;
     margin-top: 0.15rem;
 }
 
-.deltaUp {
-    font-size: 0.65rem;
-    font-weight: 600;
-    color: $green;
-}
-
-.deltaDown {
-    font-size: 0.65rem;
-    font-weight: 600;
-    color: rgba($red, 0.7);
-}
-
-.deltaNeutral {
-    font-size: 0.65rem;
+.statAllTime {
+    font-size: 0.58rem;
     font-weight: 600;
     color: var(--bs-secondary-color);
+    opacity: 0.7;
+    margin-top: 0.15rem;
+    white-space: nowrap;
 }
 
 /* ── Top Game Card ── */
@@ -457,69 +391,6 @@ $streak-hot: #ef4444;
     color: var(--bs-secondary-color);
     margin-top: 0.75rem;
     margin-bottom: 0.4rem;
-}
-
-/* ── All-Time Favorites (ranked list) ── */
-
-.allTimeList {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-    margin-bottom: 0.75rem;
-}
-
-.allTimeRow {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.3rem 0.4rem;
-    border-radius: 0.35rem;
-    text-decoration: none;
-    color: inherit;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-
-    &:hover {
-        background: rgba(var(--bs-primary-rgb), 0.04);
-        text-decoration: none;
-        color: inherit;
-    }
-}
-
-.allTimeRank {
-    font-family: $mono;
-    font-size: 0.7rem;
-    font-weight: 700;
-    color: var(--bs-secondary-color);
-    width: 1.2rem;
-    text-align: center;
-    flex-shrink: 0;
-}
-
-.allTimeImage {
-    width: 20px;
-    height: 27px;
-    border-radius: 3px;
-    object-fit: cover;
-    flex-shrink: 0;
-}
-
-.allTimeName {
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--bs-body-color);
-    flex: 1;
-    min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.allTimeHours {
-    font-family: $mono;
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: var(--bs-secondary-color);
-    flex-shrink: 0;
 }
 
 /* ── Activity Feed ── */
@@ -679,18 +550,6 @@ $streak-hot: #ef4444;
 .emptyStateHint {
     font-size: 0.8rem;
     opacity: 0.7;
-}
-
-/* ── Global Stats Footer ── */
-
-.globalFooter {
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: var(--bs-secondary-color);
-    text-align: center;
-    padding: 0.6rem 0 0.25rem;
-    margin-top: 0.5rem;
-    border-top: 1px solid var(--bs-border-color);
 }
 
 /* ── Responsive (container query for sidebar) ── */

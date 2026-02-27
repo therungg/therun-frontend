@@ -39,24 +39,6 @@ function hasValidImage(img: string | null | undefined): img is string {
     return !!img && img !== 'noimage' && img !== '';
 }
 
-function formatDelta(
-    current: number,
-    previous: number,
-): {
-    text: string;
-    direction: 'up' | 'down' | 'neutral';
-} {
-    if (!previous || previous === 0) return { text: '-', direction: 'neutral' };
-    const pct = ((current - previous) / previous) * 100;
-    if (pct === 0) return { text: '-', direction: 'neutral' };
-    const rounded =
-        Math.abs(pct) >= 100
-            ? Math.round(Math.abs(pct))
-            : Math.abs(pct).toFixed(0);
-    if (pct > 0) return { text: `↑ ${rounded}%`, direction: 'up' };
-    return { text: `↓ ${rounded}%`, direction: 'down' };
-}
-
 function ordinal(n: number): string {
     const s = ['th', 'st', 'nd', 'rd'];
     const v = n % 100;
@@ -74,25 +56,7 @@ function StreakCard({
     const allTimeBest = streak?.longest ?? 0;
     const isRecord = current > 0 && current >= allTimeBest;
 
-    if (current === 0) {
-        return (
-            <div className={clsx(styles.streakCard, styles.streakCardZero)}>
-                <div className={styles.streakZeroContent}>
-                    <FaFire size={24} className={styles.streakZeroIcon} />
-                    <div className={styles.streakZeroHeading}>
-                        Start Your Streak
-                    </div>
-                    <div className={styles.streakZeroText}>
-                        Every record starts with Day 1. Complete a run today.
-                    </div>
-                    <div className={styles.streakZeroBar}>
-                        <div className={styles.streakZeroTrack} />
-                        <span className={styles.streakZeroLabel}>Day 0</span>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    if (current === 0) return null;
 
     // Determine intensity tier
     const ratio = allTimeBest > 0 ? current / allTimeBest : 1;
@@ -213,7 +177,8 @@ export const YourStatsClient = ({
         period: '7d',
     });
     const [customFrom, setCustomFrom] = useState('');
-    const [customTo, setCustomTo] = useState('');
+    const today = new Date().toISOString().slice(0, 10);
+    const [customTo, setCustomTo] = useState(today);
     const [customDashboard, setCustomDashboard] =
         useState<DashboardResponse | null>(null);
     const [customLoading, setCustomLoading] = useState(false);
@@ -393,27 +358,12 @@ function DashboardContent({
     username: string;
     periodToggle: React.ReactNode;
 }) {
-    const {
-        stats,
-        previousStats,
-        streak,
-        topGames,
-        allTimeTopGames,
-        recentPbs,
-        recentRaces,
-        globalStats,
-    } = dashboard;
+    const { stats, streak, topGames, recentPbs, recentRaces, globalStats } =
+        dashboard;
 
     const streakMilestone = dashboard.streakMilestone ?? null;
 
     const topGame = topGames[0] ?? null;
-
-    const pbsDelta = formatDelta(stats.totalPbs, previousStats.totalPbs);
-    const playtimeDelta = formatDelta(stats.playtime, previousStats.playtime);
-    const runsDelta = formatDelta(
-        stats.finishedRuns,
-        previousStats.finishedRuns,
-    );
 
     const activity: ActivityItem[] = [
         ...recentPbs.map(
@@ -442,24 +392,38 @@ function DashboardContent({
             {/* 2. Period Toggle */}
             {periodToggle}
 
-            {/* 3. Core Stats — 3 cells with deltas */}
+            {/* 3. Core Stats — period + all-time */}
             <div className={styles.statRibbon}>
                 <div className={styles.statCell}>
                     <div className={styles.statValue}>
                         <DurationToFormatted duration={stats.playtime} human />
                     </div>
                     <div className={styles.statLabel}>Playtime</div>
-                    <DeltaBadge {...playtimeDelta} />
+                    {globalStats && (
+                        <span className={styles.statAllTime}>
+                            <DurationToFormatted
+                                duration={globalStats.totalRunTime}
+                                human
+                            />{' '}
+                            all-time
+                        </span>
+                    )}
                 </div>
                 <div className={styles.statCell}>
                     <div className={styles.statValue}>{stats.totalPbs}</div>
                     <div className={styles.statLabel}>PBs</div>
-                    <DeltaBadge {...pbsDelta} />
                 </div>
                 <div className={styles.statCell}>
                     <div className={styles.statValue}>{stats.finishedRuns}</div>
                     <div className={styles.statLabel}>Runs</div>
-                    <DeltaBadge {...runsDelta} />
+                    {globalStats && (
+                        <span className={styles.statAllTime}>
+                            {formatCompact(
+                                globalStats.totalFinishedAttemptCount,
+                            )}{' '}
+                            all-time
+                        </span>
+                    )}
                 </div>
             </div>
 
@@ -523,59 +487,6 @@ function DashboardContent({
                     </Link>
                 </>
             )}
-
-            {/* 7. All-Time Favorites — ranked list */}
-            {allTimeTopGames.length > 0 && (
-                <>
-                    <div className={styles.sectionLabel}>
-                        All-Time Favorites
-                    </div>
-                    <div className={styles.allTimeList}>
-                        {allTimeTopGames.slice(0, 3).map((game, i) => (
-                            <Link
-                                key={game.gameDisplay}
-                                href={`/${username}/${encodeURIComponent(game.gameDisplay)}`}
-                                className={styles.allTimeRow}
-                            >
-                                <span className={styles.allTimeRank}>
-                                    {i + 1}
-                                </span>
-                                {hasValidImage(game.gameImage) && (
-                                    <Image
-                                        src={game.gameImage}
-                                        alt={game.gameDisplay}
-                                        width={20}
-                                        height={27}
-                                        className={styles.allTimeImage}
-                                        unoptimized
-                                    />
-                                )}
-                                <span className={styles.allTimeName}>
-                                    {game.gameDisplay}
-                                </span>
-                                <span className={styles.allTimeHours}>
-                                    <DurationToFormatted
-                                        duration={game.totalRunTime}
-                                        human
-                                    />
-                                </span>
-                            </Link>
-                        ))}
-                    </div>
-                </>
-            )}
-
-            {/* 8. Global Stats Footer */}
-            {globalStats &&
-                (globalStats.totalGames > 0 ||
-                    globalStats.totalCategories > 0) && (
-                    <div className={styles.globalFooter}>
-                        {globalStats.totalGames} games ·{' '}
-                        {globalStats.totalCategories} categories ·{' '}
-                        {formatCompact(globalStats.totalFinishedAttemptCount)}{' '}
-                        runs
-                    </div>
-                )}
         </>
     );
 }
@@ -584,26 +495,6 @@ function formatCompact(n: number): string {
     if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
     if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
     return String(n);
-}
-
-function DeltaBadge({
-    text,
-    direction,
-}: {
-    text: string;
-    direction: 'up' | 'down' | 'neutral';
-}) {
-    return (
-        <span
-            className={clsx(
-                direction === 'up' && styles.deltaUp,
-                direction === 'down' && styles.deltaDown,
-                direction === 'neutral' && styles.deltaNeutral,
-            )}
-        >
-            {text}
-        </span>
-    );
 }
 
 function PbActivityItem({
