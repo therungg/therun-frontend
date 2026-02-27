@@ -1,5 +1,9 @@
 export type DashboardPeriod = '7d' | '30d' | 'year';
 
+export type DashboardSelection =
+    | { kind: 'preset'; period: DashboardPeriod }
+    | { kind: 'custom'; from: string; to: string };
+
 export interface DashboardStats {
     playtime: number;
     totalRuns: number;

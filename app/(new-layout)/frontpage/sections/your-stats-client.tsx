@@ -4,20 +4,15 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
-import {
-    FaBolt,
-    FaCalendarCheck,
-    FaFire,
-    FaRedo,
-    FaTrophy,
-} from 'react-icons/fa';
+import { FaBolt, FaFire } from 'react-icons/fa';
 import { DurationToFormatted, FromNow } from '~src/components/util/datetime';
+import { apiFetch } from '~src/lib/api-client';
 import type {
-    DashboardHighlight,
     DashboardPb,
     DashboardPeriod,
     DashboardRace,
     DashboardResponse,
+    DashboardSelection,
     DashboardStreak,
     DashboardStreakMilestone,
 } from '~src/types/dashboard.types';
@@ -62,33 +57,6 @@ function formatDelta(
     return { text: `↓ ${rounded}%`, direction: 'down' };
 }
 
-const HIGHLIGHT_ACCENTS: Record<string, string> = {
-    pb_improvement: 'Green',
-    new_pb: 'Green',
-    pb_spree: 'Green',
-    pb_machine: 'Green',
-    streak: 'Amber',
-    longest_streak: 'Amber',
-    consistency: 'Amber',
-    grinder: 'Amber',
-    busiest_game: 'Amber',
-    race_win: 'Gold',
-    race_placement: 'Gold',
-    completion_rate: 'Gold',
-    runs_per_pb: 'Gold',
-    comeback: 'Blue',
-    playtime_surge: 'Blue',
-    total_playtime: 'Blue',
-    alltime_playtime: 'Blue',
-    alltime_runs: 'Primary',
-    alltime_games: 'Primary',
-    alltime_finish_rate: 'Gold',
-};
-
-function getHighlightAccent(type: string): string {
-    return HIGHLIGHT_ACCENTS[type] ?? 'Primary';
-}
-
 function ordinal(n: number): string {
     const s = ['th', 'st', 'nd', 'rd'];
     const v = n % 100;
@@ -103,7 +71,6 @@ function StreakCard({
     streakMilestone: DashboardStreakMilestone | null;
 }) {
     const current = streak?.current ?? 0;
-    const periodBest = streak?.periodLongest ?? 0;
     const allTimeBest = streak?.longest ?? 0;
     const isRecord = current > 0 && current >= allTimeBest;
 
@@ -205,21 +172,19 @@ function StreakCard({
                 </div>
             </div>
 
-            {/* Three stats */}
+            {/* Stats */}
             <div className={styles.streakStats}>
                 <div className={styles.streakStat}>
                     <span className={styles.streakStatValue}>{current}</span>
                     <span className={styles.streakStatLabel}>Current</span>
                 </div>
                 <div className={styles.streakStat}>
-                    <span className={styles.streakStatValue}>{periodBest}</span>
-                    <span className={styles.streakStatLabel}>Period Best</span>
-                </div>
-                <div className={styles.streakStat}>
                     <span className={styles.streakStatValue}>
                         {allTimeBest}
                     </span>
-                    <span className={styles.streakStatLabel}>All-Time</span>
+                    <span className={styles.streakStatLabel}>
+                        All-Time Best
+                    </span>
                 </div>
             </div>
 
@@ -243,34 +208,158 @@ export const YourStatsClient = ({
     dashboards,
     username,
 }: YourStatsClientProps) => {
-    const [selectedPeriod, setSelectedPeriod] = useState<DashboardPeriod>('7d');
+    const [selection, setSelection] = useState<DashboardSelection>({
+        kind: 'preset',
+        period: '7d',
+    });
+    const [customFrom, setCustomFrom] = useState('');
+    const [customTo, setCustomTo] = useState('');
+    const [customDashboard, setCustomDashboard] =
+        useState<DashboardResponse | null>(null);
+    const [customLoading, setCustomLoading] = useState(false);
 
-    const dashboard = dashboards[selectedPeriod] ?? null;
+    const dashboard =
+        selection.kind === 'preset'
+            ? (dashboards[selection.period] ?? null)
+            : customDashboard;
+
+    const fetchCustom = useCallback(
+        async (from: string, to: string) => {
+            if (!from) return;
+            setCustomLoading(true);
+            try {
+                const params = new URLSearchParams({ from });
+                if (to) params.set('to', to);
+                const result = await apiFetch<DashboardResponse>(
+                    `/v1/users/${encodeURIComponent(username)}/dashboard?${params}`,
+                );
+                setCustomDashboard(result);
+            } catch {
+                setCustomDashboard(null);
+            } finally {
+                setCustomLoading(false);
+            }
+        },
+        [username],
+    );
+
+    useEffect(() => {
+        if (selection.kind === 'custom' && customFrom) {
+            fetchCustom(customFrom, customTo);
+        }
+    }, [selection.kind, customFrom, customTo, fetchCustom]);
+
+    const isCustom = selection.kind === 'custom';
 
     const periodToggle = (
-        <div className={styles.periodToggleWrap}>
-            <div className={styles.periodToggle}>
-                {PERIODS.map((p) => (
+        <>
+            <div className={styles.periodToggleWrap}>
+                <div className={styles.periodToggle}>
+                    {PERIODS.map((p) => (
+                        <button
+                            key={p}
+                            type="button"
+                            className={clsx(
+                                styles.periodButton,
+                                !isCustom &&
+                                    selection.kind === 'preset' &&
+                                    selection.period === p &&
+                                    styles.periodButtonActive,
+                            )}
+                            onClick={() =>
+                                setSelection({ kind: 'preset', period: p })
+                            }
+                            aria-pressed={
+                                selection.kind === 'preset' &&
+                                selection.period === p
+                            }
+                        >
+                            {PERIOD_LABELS[p]}
+                        </button>
+                    ))}
                     <button
-                        key={p}
                         type="button"
                         className={clsx(
                             styles.periodButton,
-                            selectedPeriod === p && styles.periodButtonActive,
+                            isCustom && styles.periodButtonActive,
                         )}
-                        onClick={() => setSelectedPeriod(p)}
-                        aria-pressed={selectedPeriod === p}
+                        onClick={() =>
+                            setSelection({
+                                kind: 'custom',
+                                from: customFrom,
+                                to: customTo,
+                            })
+                        }
+                        aria-pressed={isCustom}
                     >
-                        {PERIOD_LABELS[p]}
+                        Custom
                     </button>
-                ))}
+                </div>
             </div>
-        </div>
+            {isCustom && (
+                <div className={styles.datePickerRow}>
+                    <input
+                        type="date"
+                        className={styles.dateInput}
+                        value={customFrom}
+                        onChange={(e) => setCustomFrom(e.target.value)}
+                        max={customTo || undefined}
+                    />
+                    <span className={styles.datePickerSeparator}>to</span>
+                    <input
+                        type="date"
+                        className={styles.dateInput}
+                        value={customTo}
+                        onChange={(e) => setCustomTo(e.target.value)}
+                        min={customFrom || undefined}
+                    />
+                </div>
+            )}
+        </>
     );
+
+    if (isCustom && !customFrom) {
+        return (
+            <div className={styles.content}>
+                <StreakCard
+                    streak={dashboards['7d']?.streak ?? null}
+                    streakMilestone={dashboards['7d']?.streakMilestone ?? null}
+                />
+                {periodToggle}
+                <div className={styles.emptyState}>
+                    <div className={styles.emptyStateText}>
+                        Select a date range
+                    </div>
+                    <div className={styles.emptyStateHint}>
+                        Pick a start date to view your stats
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (isCustom && customLoading) {
+        return (
+            <div className={styles.content}>
+                <StreakCard
+                    streak={dashboards['7d']?.streak ?? null}
+                    streakMilestone={dashboards['7d']?.streakMilestone ?? null}
+                />
+                {periodToggle}
+                <div className={styles.emptyState}>
+                    <div className={styles.emptyStateText}>Loading…</div>
+                </div>
+            </div>
+        );
+    }
 
     if (!dashboard) {
         return (
             <div className={styles.content}>
+                <StreakCard
+                    streak={dashboards['7d']?.streak ?? null}
+                    streakMilestone={dashboards['7d']?.streakMilestone ?? null}
+                />
                 {periodToggle}
                 <div className={styles.emptyState}>
                     <div className={styles.emptyStateText}>
@@ -315,14 +404,6 @@ function DashboardContent({
         globalStats,
     } = dashboard;
 
-    // Backwards compat: use highlights array if available, fall back to single highlight
-    const highlightList: DashboardHighlight[] =
-        dashboard.highlights && dashboard.highlights.length > 0
-            ? dashboard.highlights
-            : dashboard.highlight
-              ? [dashboard.highlight]
-              : [];
-
     const streakMilestone = dashboard.streakMilestone ?? null;
 
     const topGame = topGames[0] ?? null;
@@ -355,18 +436,13 @@ function DashboardContent({
 
     return (
         <>
-            {/* 1. Period Toggle */}
-            {periodToggle}
-
-            {/* 2. Streak Card */}
+            {/* 1. Streak Card */}
             <StreakCard streak={streak} streakMilestone={streakMilestone} />
 
-            {/* 3. Highlight Carousel */}
-            {highlightList.length > 0 && (
-                <HighlightCarousel highlights={highlightList} />
-            )}
+            {/* 2. Period Toggle */}
+            {periodToggle}
 
-            {/* 4. Core Stats — 3 cells with deltas */}
+            {/* 3. Core Stats — 3 cells with deltas */}
             <div className={styles.statRibbon}>
                 <div className={styles.statCell}>
                     <div className={styles.statValue}>
@@ -508,227 +584,6 @@ function formatCompact(n: number): string {
     if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
     if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
     return String(n);
-}
-
-const HIGHLIGHT_ICONS: Record<string, React.ReactNode> = {
-    streak: <FaFire size={18} className={styles.highlightIcon} />,
-    longest_streak: <FaFire size={18} className={styles.highlightIcon} />,
-    comeback: <FaRedo size={16} className={styles.highlightIcon} />,
-    playtime_surge: <FaBolt size={16} className={styles.highlightIcon} />,
-    consistency: <FaCalendarCheck size={16} className={styles.highlightIcon} />,
-    completion_rate: <FaTrophy size={16} className={styles.highlightIcon} />,
-};
-
-const HIGHLIGHT_TAGS: Record<string, string> = {
-    new_pb: 'Personal Best',
-    pb_improvement: 'Personal Best',
-    pb_spree: 'Personal Best',
-    pb_machine: 'Personal Best',
-    streak: 'On Fire',
-    longest_streak: 'On Fire',
-    race_win: 'Race Result',
-    race_placement: 'Race Result',
-    consistency: 'Dedication',
-    grinder: 'Dedication',
-    busiest_game: 'Dedication',
-    comeback: 'Comeback',
-    playtime_surge: 'Comeback',
-    completion_rate: 'Efficiency',
-    runs_per_pb: 'Efficiency',
-    alltime_finish_rate: 'Efficiency',
-    total_playtime: 'Milestone',
-    alltime_playtime: 'Milestone',
-    alltime_runs: 'Milestone',
-    alltime_games: 'Milestone',
-};
-
-function getHighlightTag(type: string): string {
-    return HIGHLIGHT_TAGS[type] ?? 'Highlight';
-}
-
-// Duration-based highlight values that should render with DurationToFormatted
-const DURATION_VALUES = new Set([
-    'most_played',
-    'total_playtime',
-    'alltime_playtime',
-]);
-
-const DURATION_SECONDARY = new Set(['pb_improvement', 'new_pb']);
-
-function HighlightValue({
-    highlight,
-    icon,
-}: {
-    highlight: NonNullable<DashboardResponse['highlight']>;
-    icon?: React.ReactNode;
-}) {
-    const primary = highlight.value;
-    const secondary = highlight.secondaryValue;
-
-    const primaryNode = DURATION_VALUES.has(highlight.type) ? (
-        primary != null ? (
-            <DurationToFormatted duration={primary} human />
-        ) : null
-    ) : highlight.type === 'pb_improvement' ? (
-        primary != null ? (
-            `${primary.toFixed(1)}%`
-        ) : null
-    ) : highlight.type === 'playtime_surge' ? (
-        primary != null ? (
-            `+${primary}%`
-        ) : null
-    ) : highlight.type === 'completion_rate' ||
-      highlight.type === 'alltime_finish_rate' ? (
-        primary != null ? (
-            `${primary}%`
-        ) : null
-    ) : highlight.type === 'consistency' ? (
-        `${primary}/${secondary}`
-    ) : primary != null ? (
-        String(primary)
-    ) : null;
-
-    const secondaryNode = DURATION_SECONDARY.has(highlight.type) ? (
-        secondary != null ? (
-            <DurationToFormatted duration={secondary} withMillis />
-        ) : null
-    ) : highlight.type === 'playtime_surge' ? (
-        secondary != null ? (
-            <DurationToFormatted duration={secondary} human />
-        ) : null
-    ) : highlight.type === 'alltime_games' ? (
-        secondary != null ? (
-            `${secondary} categories`
-        ) : null
-    ) : highlight.type === 'alltime_runs' ? (
-        secondary != null ? (
-            `${secondary} finished`
-        ) : null
-    ) : highlight.type === 'race_win' || highlight.type === 'race_placement' ? (
-        secondary != null ? (
-            <span
-                className={clsx(
-                    secondary > 0 ? styles.deltaUp : styles.deltaDown,
-                )}
-            >
-                {secondary > 0 ? '+' : ''}
-                {secondary} rating
-            </span>
-        ) : null
-    ) : null;
-
-    return (
-        <>
-            {primaryNode != null && (
-                <span className={styles.highlightValue}>
-                    {icon}
-                    {primaryNode}
-                </span>
-            )}
-            {secondaryNode != null && (
-                <span className={styles.highlightSecondary}>
-                    {secondaryNode}
-                </span>
-            )}
-        </>
-    );
-}
-
-function HighlightCard({
-    highlight,
-}: {
-    highlight: NonNullable<DashboardResponse['highlight']>;
-}) {
-    const accent = getHighlightAccent(highlight.type);
-    const accentClass =
-        styles[`highlight${accent}` as keyof typeof styles] ?? '';
-    const showBg = hasValidImage(highlight.gameImage);
-
-    const icon = HIGHLIGHT_ICONS[highlight.type];
-    const valueDisplay = <HighlightValue highlight={highlight} icon={icon} />;
-
-    return (
-        <div className={clsx(styles.highlight, accentClass)}>
-            {showBg && (
-                <div
-                    className={styles.highlightBg}
-                    style={{
-                        backgroundImage: `url(${highlight.gameImage})`,
-                    }}
-                />
-            )}
-            <div className={styles.highlightBody}>
-                <div className={styles.highlightTag}>
-                    {getHighlightTag(highlight.type)}
-                </div>
-                {valueDisplay}
-                <div className={styles.highlightLabel}>{highlight.label}</div>
-                {highlight.game && (
-                    <div className={styles.highlightGame}>
-                        {highlight.game}
-                        {highlight.category ? ` — ${highlight.category}` : ''}
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-}
-
-function HighlightCarousel({
-    highlights,
-}: {
-    highlights: DashboardHighlight[];
-}) {
-    const [activeIndex, setActiveIndex] = useState(0);
-
-    const count = highlights.length;
-
-    const advance = useCallback(() => {
-        setActiveIndex((i) => (i + 1) % count);
-    }, [count]);
-
-    useEffect(() => {
-        if (count <= 1) return;
-        const timer = setInterval(advance, 6000);
-        return () => clearInterval(timer);
-    }, [count, advance]);
-
-    // Reset index when highlights change (period switch)
-    useEffect(() => {
-        setActiveIndex(0);
-    }, [highlights]);
-
-    return (
-        <div className={styles.highlightCarousel}>
-            {highlights.map((h, i) => (
-                <div
-                    key={`${h.type}-${h.game ?? ''}-${i}`}
-                    className={clsx(
-                        styles.highlightSlide,
-                        i !== activeIndex && styles.highlightSlideHidden,
-                    )}
-                >
-                    <HighlightCard highlight={h} />
-                </div>
-            ))}
-            {count > 1 && (
-                <div className={styles.carouselDots}>
-                    {highlights.map((_, i) => (
-                        <button
-                            key={i}
-                            type="button"
-                            className={clsx(
-                                styles.carouselDot,
-                                i === activeIndex && styles.carouselDotActive,
-                            )}
-                            onClick={() => setActiveIndex(i)}
-                            aria-label={`Show highlight ${i + 1}`}
-                        />
-                    ))}
-                </div>
-            )}
-        </div>
-    );
 }
 
 function DeltaBadge({
