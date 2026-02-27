@@ -223,13 +223,6 @@ function StreakCard({
         tier === 'record' && styles.streakCardRecord,
     );
 
-    const iconClass = clsx(
-        styles.streakIcon,
-        tier === 'hot' && styles.streakIconHot,
-        tier === 'nearRecord' && styles.streakIconNearRecord,
-        tier === 'record' && styles.streakIconRecord,
-    );
-
     const fillClass = clsx(
         styles.streakProgressFill,
         tier === 'hot' && styles.streakProgressFillHot,
@@ -243,16 +236,14 @@ function StreakCard({
         tier === 'record' && styles.streakMilestoneRecord,
     );
 
-    // Progress goal text
-    const goalText = isRecord
+    const targetLabel = isRecord
         ? 'New all-time record!'
         : milestone.remaining === 1
-          ? `1 more day to ${milestone.label}`
+          ? `1 day to ${milestone.label}`
           : `${milestone.remaining} days to ${milestone.label}`;
 
     const pctDisplay = Math.round(progressPct);
 
-    // Milestone message
     const milestoneMsg = isRecord
         ? 'Every day is a new record'
         : streakMilestone
@@ -261,25 +252,37 @@ function StreakCard({
 
     return (
         <div className={cardClass}>
-            <div className={styles.streakTitle}>Your Daily Streak</div>
-
-            {/* Hero: icon stacked above the big number */}
-            <div className={styles.streakHeroWrap}>
-                <FaFire size={20} className={iconClass} />
-                <span className={styles.streakNumber}>{current}</span>
-                <span className={styles.streakDaysLabel}>
-                    {current === 1 ? 'day' : 'days'}
-                </span>
+            {/* Top row: label + personal best */}
+            <div className={styles.streakTopRow}>
+                <span className={styles.streakTitle}>Your Daily Streak</span>
+                {allTimeBest > 0 && (
+                    <span className={styles.streakBest}>
+                        Best: <strong>{allTimeBest}d</strong>
+                    </span>
+                )}
             </div>
 
-            {/* Progress toward next milestone */}
-            <div className={styles.streakProgressSection}>
-                <div className={styles.streakProgressHeader}>
-                    <span className={styles.streakProgressGoal}>
-                        {goalText}
+            {/* Hero: fire icon with heat glow + big number */}
+            <div className={styles.streakHeroWrap}>
+                <div className={styles.streakIconWrap}>
+                    <FaFire size={22} className={styles.streakIcon} />
+                </div>
+                <div className={styles.streakHeroText}>
+                    <span className={styles.streakNumber}>{current}</span>
+                    <span className={styles.streakDaysLabel}>
+                        {current === 1 ? 'day' : 'days'}
+                    </span>
+                </div>
+            </div>
+
+            {/* Milestone target with progress */}
+            <div className={styles.streakTarget}>
+                <div className={styles.streakTargetHeader}>
+                    <span className={styles.streakTargetLabel}>
+                        {targetLabel}
                     </span>
                     {!isRecord && (
-                        <span className={styles.streakProgressPct}>
+                        <span className={styles.streakTargetPct}>
                             {pctDisplay}%
                         </span>
                     )}
@@ -296,20 +299,11 @@ function StreakCard({
                 </div>
             </div>
 
-            {/* Footer: best record + milestone nudge */}
-            {(allTimeBest > 0 || milestoneMsg) && (
-                <div className={styles.streakFooter}>
-                    {allTimeBest > 0 && (
-                        <span className={styles.streakBest}>
-                            Best: <strong>{allTimeBest}d</strong>
-                        </span>
-                    )}
-                    {milestoneMsg && (
-                        <div className={milestoneClass}>
-                            <FaBolt size={10} />
-                            {milestoneMsg}
-                        </div>
-                    )}
+            {/* Milestone nudge */}
+            {milestoneMsg && (
+                <div className={milestoneClass}>
+                    <FaBolt size={10} />
+                    {milestoneMsg}
                 </div>
             )}
         </div>

@@ -16,185 +16,104 @@ $red: #ef5350;
 $streak-orange: #f97316;
 $streak-hot: #ef4444;
 
-@keyframes streakPulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
+@keyframes heatBreathe {
+    0%, 100% { transform: scale(1); opacity: 0.35; }
+    50% { transform: scale(1.2); opacity: 0.6; }
 }
 
-@keyframes streakGlow {
-    0%, 100% { filter: drop-shadow(0 0 3px currentColor); }
-    50% { filter: drop-shadow(0 0 8px currentColor); }
+@keyframes heatBreatheIntense {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.35); opacity: 0.85; }
 }
 
 .streakCard {
+    --streak-accent: #{$amber};
+    --streak-accent-rgb: 245, 158, 11;
+
     position: relative;
-    border-radius: 0.75rem;
-    padding: 1rem 1rem 0.85rem;
+    border-radius: 0.85rem;
+    padding: 1.15rem 1.15rem 0.85rem;
     margin-bottom: 0.75rem;
     overflow: hidden;
-    text-align: center;
-    background: linear-gradient(
-        160deg,
-        rgba($amber, 0.06) 0%,
-        rgba($amber, 0.02) 100%
-    );
-    border: 1px solid rgba($amber, 0.12);
+    background: var(--bs-body-bg);
+    border: 1px solid rgba(var(--streak-accent-rgb), 0.1);
+
+    // Atmospheric top wash
+    &::before {
+        content: '';
+        position: absolute;
+        top: -60%;
+        left: -10%;
+        right: -10%;
+        height: 100%;
+        background: radial-gradient(
+            ellipse at 50% 80%,
+            rgba(var(--streak-accent-rgb), 0.07) 0%,
+            transparent 65%
+        );
+        pointer-events: none;
+    }
 }
 
 .streakCardHot {
-    background: linear-gradient(
-        160deg,
-        rgba($streak-orange, 0.08) 0%,
-        rgba($streak-orange, 0.02) 100%
-    );
-    border-color: rgba($streak-orange, 0.15);
+    --streak-accent: #{$streak-orange};
+    --streak-accent-rgb: 249, 115, 22;
+
+    &::before {
+        background: radial-gradient(
+            ellipse at 50% 80%,
+            rgba(var(--streak-accent-rgb), 0.09) 0%,
+            transparent 65%
+        );
+    }
 }
 
 .streakCardNearRecord {
-    background: linear-gradient(
-        160deg,
-        rgba($streak-hot, 0.08) 0%,
-        rgba($streak-hot, 0.02) 100%
-    );
-    border-color: rgba($streak-hot, 0.18);
+    --streak-accent: #{$streak-hot};
+    --streak-accent-rgb: 239, 68, 68;
+
+    &::before {
+        background: radial-gradient(
+            ellipse at 50% 80%,
+            rgba(var(--streak-accent-rgb), 0.1) 0%,
+            transparent 65%
+        );
+    }
 }
 
 .streakCardRecord {
-    background: linear-gradient(
-        160deg,
-        rgba($gold, 0.1) 0%,
-        rgba($gold, 0.03) 100%
-    );
-    border-color: rgba($gold, 0.2);
+    --streak-accent: #{$gold};
+    --streak-accent-rgb: 255, 215, 0;
+
+    &::before {
+        background: radial-gradient(
+            ellipse at 50% 80%,
+            rgba(var(--streak-accent-rgb), 0.12) 0%,
+            transparent 65%
+        );
+    }
 }
 
-/* Title */
+/* ── Top row: label + best ── */
 
-.streakTitle {
-    font-size: 0.6rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--bs-secondary-color);
-    margin-bottom: 0.6rem;
-}
-
-/* Hero: icon above number */
-
-.streakHeroWrap {
+.streakTopRow {
+    position: relative;
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     align-items: center;
     margin-bottom: 0.85rem;
 }
 
-.streakIcon {
-    color: $amber;
-    margin-bottom: 0.35rem;
-    flex-shrink: 0;
-}
-
-.streakIconHot {
-    color: $streak-orange;
-    animation: streakPulse 2s ease-in-out infinite;
-}
-
-.streakIconNearRecord {
-    color: $streak-hot;
-    animation: streakGlow 1.5s ease-in-out infinite;
-}
-
-.streakIconRecord {
-    color: $gold;
-    animation: streakGlow 1.2s ease-in-out infinite;
-}
-
-.streakNumber {
-    font-family: $mono;
-    font-size: 2.4rem;
-    font-weight: 800;
-    line-height: 1;
-    color: var(--bs-emphasis-color);
-    letter-spacing: -0.02em;
-}
-
-.streakDaysLabel {
-    font-size: 0.65rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--bs-secondary-color);
-    margin-top: 0.2rem;
-}
-
-/* Progress toward milestone */
-
-.streakProgressSection {
-    margin-bottom: 0.5rem;
-}
-
-.streakProgressHeader {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 0.4rem;
-}
-
-.streakProgressGoal {
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: var(--bs-body-color);
-}
-
-.streakProgressPct {
-    font-family: $mono;
-    font-size: 0.65rem;
+.streakTitle {
+    font-size: 0.58rem;
     font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
     color: var(--bs-secondary-color);
-}
-
-.streakProgressTrack {
-    height: 5px;
-    border-radius: 99px;
-    background: rgba(var(--bs-emphasis-color-rgb, 255, 255, 255), 0.07);
-    overflow: hidden;
-}
-
-.streakProgressFill {
-    height: 100%;
-    border-radius: 99px;
-    background: $amber;
-    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-    min-width: 3px;
-}
-
-.streakProgressFillHot {
-    background: linear-gradient(90deg, $amber, $streak-orange);
-}
-
-.streakProgressFillNearRecord {
-    background: linear-gradient(90deg, $streak-orange, $streak-hot);
-    box-shadow: 0 0 6px rgba($streak-hot, 0.25);
-}
-
-.streakProgressFillRecord {
-    background: linear-gradient(90deg, $amber, $gold);
-    box-shadow: 0 0 8px rgba($gold, 0.35);
-}
-
-/* Footer: best + milestone */
-
-.streakFooter {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 0.6rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.15);
 }
 
 .streakBest {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     font-weight: 600;
     color: var(--bs-secondary-color);
 
@@ -205,17 +124,161 @@ $streak-hot: #ef4444;
     }
 }
 
+/* ── Hero: icon + number, horizontal ── */
+
+.streakHeroWrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+}
+
+.streakIconWrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    // Heat glow
+    &::before {
+        content: '';
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: radial-gradient(
+            circle,
+            rgba(var(--streak-accent-rgb), 0.5) 0%,
+            rgba(var(--streak-accent-rgb), 0.1) 45%,
+            transparent 70%
+        );
+        animation: heatBreathe 3.5s ease-in-out infinite;
+    }
+}
+
+.streakIcon {
+    position: relative;
+    color: var(--streak-accent);
+}
+
+.streakCardHot .streakIconWrap::before {
+    width: 46px;
+    height: 46px;
+    animation: heatBreathe 2.8s ease-in-out infinite;
+}
+
+.streakCardNearRecord .streakIconWrap::before {
+    width: 50px;
+    height: 50px;
+    animation: heatBreatheIntense 2.2s ease-in-out infinite;
+}
+
+.streakCardRecord .streakIconWrap::before {
+    width: 54px;
+    height: 54px;
+    animation: heatBreatheIntense 1.8s ease-in-out infinite;
+}
+
+.streakHeroText {
+    display: flex;
+    flex-direction: column;
+}
+
+.streakNumber {
+    font-family: $mono;
+    font-size: 2.6rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--bs-emphasis-color);
+    letter-spacing: -0.03em;
+}
+
+.streakDaysLabel {
+    font-size: 0.6rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--bs-secondary-color);
+    margin-top: 0.15rem;
+}
+
+/* ── Milestone target ── */
+
+.streakTarget {
+    position: relative;
+    text-align: left;
+}
+
+.streakTargetHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.35rem;
+}
+
+.streakTargetLabel {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: var(--bs-body-color);
+}
+
+.streakTargetPct {
+    font-family: $mono;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: var(--streak-accent);
+    opacity: 0.8;
+}
+
+.streakProgressTrack {
+    height: 3px;
+    border-radius: 99px;
+    background: rgba(var(--bs-emphasis-color-rgb, 255, 255, 255), 0.06);
+    overflow: hidden;
+}
+
+.streakProgressFill {
+    height: 100%;
+    border-radius: 99px;
+    background: var(--streak-accent);
+    transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+    min-width: 3px;
+}
+
+.streakProgressFillHot {
+    background: linear-gradient(90deg, $amber, $streak-orange);
+}
+
+.streakProgressFillNearRecord {
+    background: linear-gradient(90deg, $streak-orange, $streak-hot);
+    box-shadow: 0 0 6px rgba($streak-hot, 0.2);
+}
+
+.streakProgressFillRecord {
+    background: linear-gradient(90deg, $amber, $gold);
+    box-shadow: 0 0 8px rgba($gold, 0.3);
+}
+
+/* ── Milestone nudge ── */
+
 .streakMilestone {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
-    font-size: 0.65rem;
+    justify-content: center;
+    gap: 0.3rem;
+    margin-top: 0.7rem;
+    padding-top: 0.55rem;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.08);
+    font-size: 0.62rem;
     font-weight: 600;
-    color: $amber;
+    color: var(--streak-accent);
 }
 
 .streakMilestoneNearRecord {
-    color: $streak-orange;
+    color: $streak-hot;
 }
 
 .streakMilestoneRecord {
