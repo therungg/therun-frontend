@@ -16,119 +16,156 @@ $red: #ef5350;
 $streak-orange: #f97316;
 $streak-hot: #ef4444;
 
+@keyframes streakPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes streakGlow {
+    0%, 100% { filter: drop-shadow(0 0 3px currentColor); }
+    50% { filter: drop-shadow(0 0 8px currentColor); }
+}
+
 .streakCard {
     position: relative;
-    border-radius: 0.5rem;
-    padding: 0.7rem 0.9rem;
+    border-radius: 0.75rem;
+    padding: 1rem 1rem 0.85rem;
     margin-bottom: 0.75rem;
     overflow: hidden;
+    text-align: center;
     background: linear-gradient(
-        135deg,
-        rgba($amber, 0.08) 0%,
-        rgba($amber, 0.03) 100%
+        160deg,
+        rgba($amber, 0.06) 0%,
+        rgba($amber, 0.02) 100%
     );
-    border: 1px solid rgba($amber, 0.15);
+    border: 1px solid rgba($amber, 0.12);
 }
 
 .streakCardHot {
     background: linear-gradient(
-        135deg,
-        rgba($streak-orange, 0.1) 0%,
-        rgba($streak-orange, 0.04) 100%
+        160deg,
+        rgba($streak-orange, 0.08) 0%,
+        rgba($streak-orange, 0.02) 100%
     );
-    border-color: rgba($streak-orange, 0.2);
+    border-color: rgba($streak-orange, 0.15);
 }
 
 .streakCardNearRecord {
     background: linear-gradient(
-        135deg,
-        rgba($streak-hot, 0.1) 0%,
-        rgba($streak-hot, 0.04) 100%
+        160deg,
+        rgba($streak-hot, 0.08) 0%,
+        rgba($streak-hot, 0.02) 100%
     );
-    border-color: rgba($streak-hot, 0.2);
+    border-color: rgba($streak-hot, 0.18);
 }
 
 .streakCardRecord {
     background: linear-gradient(
-        135deg,
-        rgba($gold, 0.12) 0%,
-        rgba($gold, 0.04) 100%
+        160deg,
+        rgba($gold, 0.1) 0%,
+        rgba($gold, 0.03) 100%
     );
-    border-color: rgba($gold, 0.25);
+    border-color: rgba($gold, 0.2);
 }
+
+/* Title */
 
 .streakTitle {
-    font-size: 0.62rem;
+    font-size: 0.6rem;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.1em;
     color: var(--bs-secondary-color);
-    margin-bottom: 0.3rem;
-    text-align: center;
+    margin-bottom: 0.6rem;
 }
 
-.streakHero {
+/* Hero: icon above number */
+
+.streakHeroWrap {
     display: flex;
-    align-items: baseline;
-    justify-content: center;
-    gap: 0.3rem;
-    margin-bottom: 0.5rem;
-}
-
-.streakNumber {
-    font-family: $mono;
-    font-size: 1.6rem;
-    font-weight: 800;
-    line-height: 1;
-    color: var(--bs-emphasis-color);
-}
-
-.streakDaysLabel {
-    font-size: 0.62rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--bs-secondary-color);
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 0.85rem;
 }
 
 .streakIcon {
     color: $amber;
+    margin-bottom: 0.35rem;
     flex-shrink: 0;
-    margin-right: 0.15rem;
 }
 
 .streakIconHot {
     color: $streak-orange;
+    animation: streakPulse 2s ease-in-out infinite;
 }
 
 .streakIconNearRecord {
     color: $streak-hot;
+    animation: streakGlow 1.5s ease-in-out infinite;
 }
 
 .streakIconRecord {
     color: $gold;
-    filter: drop-shadow(0 0 4px rgba($gold, 0.5));
+    animation: streakGlow 1.2s ease-in-out infinite;
 }
 
-/* Progress bar */
+.streakNumber {
+    font-family: $mono;
+    font-size: 2.4rem;
+    font-weight: 800;
+    line-height: 1;
+    color: var(--bs-emphasis-color);
+    letter-spacing: -0.02em;
+}
 
-.streakProgressWrap {
-    margin-bottom: 0.55rem;
+.streakDaysLabel {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--bs-secondary-color);
+    margin-top: 0.2rem;
+}
+
+/* Progress toward milestone */
+
+.streakProgressSection {
+    margin-bottom: 0.5rem;
+}
+
+.streakProgressHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.4rem;
+}
+
+.streakProgressGoal {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--bs-body-color);
+}
+
+.streakProgressPct {
+    font-family: $mono;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--bs-secondary-color);
 }
 
 .streakProgressTrack {
-    height: 6px;
-    border-radius: 3px;
-    background: rgba(var(--bs-emphasis-color-rgb, 255, 255, 255), 0.08);
+    height: 5px;
+    border-radius: 99px;
+    background: rgba(var(--bs-emphasis-color-rgb, 255, 255, 255), 0.07);
     overflow: hidden;
 }
 
 .streakProgressFill {
     height: 100%;
-    border-radius: 3px;
-    background: linear-gradient(90deg, $amber, color-mix(in srgb, $amber 70%, $streak-orange));
-    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    min-width: 2px;
+    border-radius: 99px;
+    background: $amber;
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    min-width: 3px;
 }
 
 .streakProgressFillHot {
@@ -137,29 +174,41 @@ $streak-hot: #ef4444;
 
 .streakProgressFillNearRecord {
     background: linear-gradient(90deg, $streak-orange, $streak-hot);
-    box-shadow: 0 0 8px rgba($streak-hot, 0.3);
+    box-shadow: 0 0 6px rgba($streak-hot, 0.25);
 }
 
 .streakProgressFillRecord {
     background: linear-gradient(90deg, $amber, $gold);
-    box-shadow: 0 0 10px rgba($gold, 0.4);
+    box-shadow: 0 0 8px rgba($gold, 0.35);
 }
 
-.streakProgressLabel {
+/* Footer: best + milestone */
+
+.streakFooter {
     display: flex;
     justify-content: space-between;
-    margin-top: 0.25rem;
-    font-size: 0.72rem;
-    font-weight: 600;
-    color: var(--bs-secondary-color);
+    align-items: center;
+    margin-top: 0.6rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.15);
 }
 
-/* Milestone message */
+.streakBest {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+
+    strong {
+        font-family: $mono;
+        font-weight: 700;
+        color: var(--bs-body-color);
+    }
+}
 
 .streakMilestone {
     display: flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: 0.25rem;
     font-size: 0.65rem;
     font-weight: 600;
     color: $amber;
@@ -171,7 +220,6 @@ $streak-hot: #ef4444;
 
 .streakMilestoneRecord {
     color: $gold;
-    font-weight: 700;
 }
 
 /* ── Period Toggle ── */
