@@ -239,8 +239,8 @@ function StreakCard({
     const targetLabel = isRecord
         ? 'New all-time record!'
         : milestone.remaining === 1
-          ? `1 day to ${milestone.label}`
-          : `${milestone.remaining} days to ${milestone.label}`;
+          ? `Next goal: ${milestone.label} — 1 day left`
+          : `Next goal: ${milestone.label} — ${milestone.remaining} days left`;
 
     const pctDisplay = Math.round(progressPct);
 
