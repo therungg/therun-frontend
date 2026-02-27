@@ -240,11 +240,11 @@ function StreakCard({
     const pctDisplay = Math.round(progressPct);
 
     const milestoneMsg = isRecord
-        ? 'New all time record — keep going!'
+        ? 'New all time streak record — keep going!'
         : streakMilestone
           ? streakMilestone.message.replace(
                 'your record',
-                'your all time record',
+                'your all time streak record',
             )
           : null;
 
