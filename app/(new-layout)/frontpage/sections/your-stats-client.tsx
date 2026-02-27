@@ -245,9 +245,12 @@ function StreakCard({
     const pctDisplay = Math.round(progressPct);
 
     const milestoneMsg = isRecord
-        ? 'Every day is a new record'
+        ? 'Every day is a new all time record'
         : streakMilestone
-          ? streakMilestone.message
+          ? streakMilestone.message.replace(
+                'your record',
+                'your all time record',
+            )
           : null;
 
     const longestDateLabel = streak?.longestStart
