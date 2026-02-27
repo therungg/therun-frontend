@@ -57,8 +57,15 @@ function getDateRange(
         start.setDate(now.getDate() + mondayOffset + offset * 7);
         end = new Date(start);
         end.setDate(start.getDate() + 6);
+        const thisYear = now.getFullYear();
+        const showYear =
+            start.getFullYear() !== thisYear || end.getFullYear() !== thisYear;
         const fmt = (d: Date) =>
-            d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            d.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                ...(showYear && { year: 'numeric' }),
+            });
         label = `${fmt(start)} – ${fmt(end)}`;
     } else if (granularity === 'month') {
         start = new Date(now.getFullYear(), now.getMonth() + offset, 1);
