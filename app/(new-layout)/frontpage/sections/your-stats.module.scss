@@ -35,21 +35,53 @@ $streak-hot: #ef4444;
     padding: 1.15rem 1.15rem 0.85rem;
     margin-bottom: 0.75rem;
     overflow: hidden;
-    background: var(--bs-body-bg);
-    border: 1px solid rgba(var(--streak-accent-rgb), 0.1);
+    background:
+        radial-gradient(
+            ellipse at 50% 0%,
+            rgba(var(--streak-accent-rgb), 0.1) 0%,
+            transparent 60%
+        ),
+        radial-gradient(
+            ellipse at 50% 100%,
+            rgba(var(--streak-accent-rgb), 0.04) 0%,
+            transparent 50%
+        ),
+        var(--bs-body-bg);
+    border: 1px solid rgba(var(--streak-accent-rgb), 0.15);
+    box-shadow:
+        0 0 0 1px rgba(var(--streak-accent-rgb), 0.04),
+        0 2px 12px rgba(0, 0, 0, 0.08),
+        0 0 20px rgba(var(--streak-accent-rgb), 0.04);
 
-    // Atmospheric top wash
+    // Top edge highlight
     &::before {
         content: '';
         position: absolute;
-        top: -60%;
-        left: -10%;
-        right: -10%;
-        height: 100%;
+        top: 0;
+        left: 10%;
+        right: 10%;
+        height: 1px;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(var(--streak-accent-rgb), 0.3),
+            transparent
+        );
+        pointer-events: none;
+    }
+
+    // Inner ambient glow
+    &::after {
+        content: '';
+        position: absolute;
+        top: -30%;
+        left: 20%;
+        right: 20%;
+        height: 60%;
         background: radial-gradient(
-            ellipse at 50% 80%,
-            rgba(var(--streak-accent-rgb), 0.07) 0%,
-            transparent 65%
+            ellipse at center,
+            rgba(var(--streak-accent-rgb), 0.06) 0%,
+            transparent 70%
         );
         pointer-events: none;
     }
@@ -59,39 +91,69 @@ $streak-hot: #ef4444;
     --streak-accent: #{$streak-orange};
     --streak-accent-rgb: 249, 115, 22;
 
-    &::before {
-        background: radial-gradient(
-            ellipse at 50% 80%,
-            rgba(var(--streak-accent-rgb), 0.09) 0%,
-            transparent 65%
-        );
-    }
+    background:
+        radial-gradient(
+            ellipse at 50% 0%,
+            rgba(var(--streak-accent-rgb), 0.13) 0%,
+            transparent 60%
+        ),
+        radial-gradient(
+            ellipse at 50% 100%,
+            rgba(var(--streak-accent-rgb), 0.05) 0%,
+            transparent 50%
+        ),
+        var(--bs-body-bg);
+    border-color: rgba(var(--streak-accent-rgb), 0.2);
+    box-shadow:
+        0 0 0 1px rgba(var(--streak-accent-rgb), 0.06),
+        0 2px 16px rgba(0, 0, 0, 0.1),
+        0 0 30px rgba(var(--streak-accent-rgb), 0.06);
 }
 
 .streakCardNearRecord {
     --streak-accent: #{$streak-hot};
     --streak-accent-rgb: 239, 68, 68;
 
-    &::before {
-        background: radial-gradient(
-            ellipse at 50% 80%,
-            rgba(var(--streak-accent-rgb), 0.1) 0%,
-            transparent 65%
-        );
-    }
+    background:
+        radial-gradient(
+            ellipse at 50% 0%,
+            rgba(var(--streak-accent-rgb), 0.14) 0%,
+            transparent 60%
+        ),
+        radial-gradient(
+            ellipse at 50% 100%,
+            rgba(var(--streak-accent-rgb), 0.06) 0%,
+            transparent 50%
+        ),
+        var(--bs-body-bg);
+    border-color: rgba(var(--streak-accent-rgb), 0.22);
+    box-shadow:
+        0 0 0 1px rgba(var(--streak-accent-rgb), 0.08),
+        0 2px 20px rgba(0, 0, 0, 0.12),
+        0 0 40px rgba(var(--streak-accent-rgb), 0.08);
 }
 
 .streakCardRecord {
     --streak-accent: #{$gold};
     --streak-accent-rgb: 255, 215, 0;
 
-    &::before {
-        background: radial-gradient(
-            ellipse at 50% 80%,
-            rgba(var(--streak-accent-rgb), 0.12) 0%,
-            transparent 65%
-        );
-    }
+    background:
+        radial-gradient(
+            ellipse at 50% 0%,
+            rgba(var(--streak-accent-rgb), 0.16) 0%,
+            transparent 55%
+        ),
+        radial-gradient(
+            ellipse at 50% 100%,
+            rgba(var(--streak-accent-rgb), 0.06) 0%,
+            transparent 50%
+        ),
+        var(--bs-body-bg);
+    border-color: rgba(var(--streak-accent-rgb), 0.25);
+    box-shadow:
+        0 0 0 1px rgba(var(--streak-accent-rgb), 0.1),
+        0 4px 24px rgba(0, 0, 0, 0.12),
+        0 0 50px rgba(var(--streak-accent-rgb), 0.1);
 }
 
 /* Title */
@@ -129,13 +191,13 @@ $streak-hot: #ef4444;
     &::before {
         content: '';
         position: absolute;
-        width: 40px;
-        height: 40px;
+        width: 48px;
+        height: 48px;
         border-radius: 50%;
         background: radial-gradient(
             circle,
-            rgba(var(--streak-accent-rgb), 0.5) 0%,
-            rgba(var(--streak-accent-rgb), 0.1) 45%,
+            rgba(var(--streak-accent-rgb), 0.55) 0%,
+            rgba(var(--streak-accent-rgb), 0.15) 40%,
             transparent 70%
         );
         animation: heatBreathe 3.5s ease-in-out infinite;
@@ -145,24 +207,37 @@ $streak-hot: #ef4444;
 .streakIcon {
     position: relative;
     color: var(--streak-accent);
+    filter: drop-shadow(0 0 3px rgba(var(--streak-accent-rgb), 0.4));
 }
 
 .streakCardHot .streakIconWrap::before {
-    width: 46px;
-    height: 46px;
+    width: 54px;
+    height: 54px;
     animation: heatBreathe 2.8s ease-in-out infinite;
 }
 
+.streakCardHot .streakIcon {
+    filter: drop-shadow(0 0 5px rgba(var(--streak-accent-rgb), 0.5));
+}
+
 .streakCardNearRecord .streakIconWrap::before {
-    width: 50px;
-    height: 50px;
+    width: 60px;
+    height: 60px;
     animation: heatBreatheIntense 2.2s ease-in-out infinite;
 }
 
+.streakCardNearRecord .streakIcon {
+    filter: drop-shadow(0 0 6px rgba(var(--streak-accent-rgb), 0.5));
+}
+
 .streakCardRecord .streakIconWrap::before {
-    width: 54px;
-    height: 54px;
+    width: 64px;
+    height: 64px;
     animation: heatBreatheIntense 1.8s ease-in-out infinite;
+}
+
+.streakCardRecord .streakIcon {
+    filter: drop-shadow(0 0 8px rgba(var(--streak-accent-rgb), 0.6));
 }
 
 .streakHeroText {
@@ -177,6 +252,7 @@ $streak-hot: #ef4444;
     line-height: 1;
     color: var(--bs-emphasis-color);
     letter-spacing: -0.03em;
+    text-shadow: 0 0 20px rgba(var(--streak-accent-rgb), 0.15);
 }
 
 .streakDaysLabel {
@@ -217,9 +293,9 @@ $streak-hot: #ef4444;
 }
 
 .streakProgressTrack {
-    height: 3px;
+    height: 4px;
     border-radius: 99px;
-    background: rgba(var(--bs-emphasis-color-rgb, 255, 255, 255), 0.06);
+    background: rgba(var(--bs-emphasis-color-rgb, 255, 255, 255), 0.08);
     overflow: hidden;
 }
 
@@ -237,12 +313,12 @@ $streak-hot: #ef4444;
 
 .streakProgressFillNearRecord {
     background: linear-gradient(90deg, $streak-orange, $streak-hot);
-    box-shadow: 0 0 6px rgba($streak-hot, 0.2);
+    box-shadow: 0 0 8px rgba($streak-hot, 0.3);
 }
 
 .streakProgressFillRecord {
     background: linear-gradient(90deg, $amber, $gold);
-    box-shadow: 0 0 8px rgba($gold, 0.3);
+    box-shadow: 0 0 12px rgba($gold, 0.4);
 }
 
 /* ── Footer ── */
