@@ -200,13 +200,13 @@ function StreakCard({
 
     return (
         <div className={cardClass}>
-            <div className={styles.streakTitle}>Your Streak</div>
-            {/* Hero number */}
+            <div className={styles.streakTitle}>Your Daily Streak</div>
+            {/* Hero number — centered */}
             <div className={styles.streakHero}>
                 <FaFire size={16} className={iconClass} />
                 <span className={styles.streakNumber}>{current}</span>
                 <span className={styles.streakDaysLabel}>
-                    {current === 1 ? 'day' : 'days'}
+                    {current === 1 ? 'day streak' : 'day streak'}
                 </span>
             </div>
 
@@ -231,24 +231,8 @@ function StreakCard({
                               : `${current} days`}
                     </span>
                     {allTimeBest > 0 && !isRecord && (
-                        <span>Record: {allTimeBest}d</span>
+                        <span>Best: {allTimeBest}d</span>
                     )}
-                </div>
-            </div>
-
-            {/* Stats */}
-            <div className={styles.streakStats}>
-                <div className={styles.streakStat}>
-                    <span className={styles.streakStatValue}>{current}</span>
-                    <span className={styles.streakStatLabel}>Current</span>
-                </div>
-                <div className={styles.streakStat}>
-                    <span className={styles.streakStatValue}>
-                        {allTimeBest}
-                    </span>
-                    <span className={styles.streakStatLabel}>
-                        All-Time Best
-                    </span>
                 </div>
             </div>
 

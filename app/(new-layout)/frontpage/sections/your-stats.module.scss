@@ -64,11 +64,13 @@ $streak-hot: #ef4444;
     letter-spacing: 0.06em;
     color: var(--bs-secondary-color);
     margin-bottom: 0.3rem;
+    text-align: center;
 }
 
 .streakHero {
     display: flex;
     align-items: baseline;
+    justify-content: center;
     gap: 0.3rem;
     margin-bottom: 0.5rem;
 }
@@ -149,40 +151,6 @@ $streak-hot: #ef4444;
     margin-top: 0.2rem;
     font-size: 0.58rem;
     font-weight: 600;
-    color: var(--bs-secondary-color);
-}
-
-/* Stats row */
-
-.streakStats {
-    display: flex;
-    margin-bottom: 0.4rem;
-}
-
-.streakStat {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.1rem;
-
-    & + & {
-        border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
-    }
-}
-
-.streakStatValue {
-    font-family: $mono;
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--bs-emphasis-color);
-}
-
-.streakStatLabel {
-    font-size: 0.58rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
     color: var(--bs-secondary-color);
 }
 
