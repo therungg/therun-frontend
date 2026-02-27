@@ -25,7 +25,7 @@ export const YourStatsSection = async ({
                 panelId="your-stats"
                 subtitle="Summary"
                 title="Your Performance"
-                className="p-0 overflow-hidden"
+                className="p-0"
             >
                 <div className={styles.loggedOutCta}>
                     <div className={styles.loggedOutText}>
@@ -82,7 +82,7 @@ export const YourStatsSection = async ({
             panelId="your-stats"
             subtitle="Summary"
             title={impersonating ? `${user}'s Stats` : 'Your Performance'}
-            className="p-0 overflow-hidden"
+            className="p-0"
             link={{ url: `/${user}`, text: 'View Full Stats' }}
         >
             <YourStatsClient dashboards={dashboards} username={user} />
