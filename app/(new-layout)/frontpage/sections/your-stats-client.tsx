@@ -3,7 +3,7 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { FaBolt, FaChevronLeft, FaChevronRight, FaFire } from 'react-icons/fa';
 import { DurationToFormatted, FromNow } from '~src/components/util/datetime';
 import { getUserDashboardCustomRange } from '~src/lib/user-dashboard';
@@ -79,6 +79,27 @@ function getDateRange(
     const toISO = (d: Date) => d.toISOString().slice(0, 10);
     return { from: toISO(start), to: toISO(end), label };
 }
+
+function getPeriodOptions(
+    granularity: PeriodGranularity,
+    count: number,
+): { offset: number; label: string }[] {
+    const options: { offset: number; label: string }[] = [];
+    for (let i = 0; i >= -count + 1; i--) {
+        const { label } = getDateRange(granularity, i);
+        options.push({
+            offset: i,
+            label: i === 0 ? `${label} (current)` : label,
+        });
+    }
+    return options;
+}
+
+const DROPDOWN_COUNTS: Record<PeriodGranularity, number> = {
+    week: 12,
+    month: 12,
+    year: 5,
+};
 
 function hasValidImage(img: string | null | undefined): img is string {
     return !!img && img !== 'noimage' && img !== '';
@@ -227,6 +248,8 @@ export const YourStatsClient = ({
     const [fetchedDashboard, setFetchedDashboard] =
         useState<DashboardResponse | null>(null);
     const [loading, setLoading] = useState(false);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     const isCustom = selection.kind === 'custom';
     const isCurrent = selection.kind === 'current';
@@ -258,6 +281,21 @@ export const YourStatsClient = ({
         [username],
     );
 
+    // Close dropdown on click outside
+    useEffect(() => {
+        if (!dropdownOpen) return;
+        const handler = (e: MouseEvent) => {
+            if (
+                dropdownRef.current &&
+                !dropdownRef.current.contains(e.target as Node)
+            ) {
+                setDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [dropdownOpen]);
+
     // Fetch when navigating to offset or custom periods
     useEffect(() => {
         if (selection.kind === 'offset') {
@@ -274,6 +312,7 @@ export const YourStatsClient = ({
     const selectGranularity = (g: PeriodGranularity) => {
         setSelection({ kind: 'current', granularity: g });
         setFetchedDashboard(null);
+        setDropdownOpen(false);
     };
 
     const navigateOffset = (delta: number) => {
@@ -289,6 +328,21 @@ export const YourStatsClient = ({
                 kind: 'offset',
                 granularity: activeGranularity,
                 offset: newOffset,
+            });
+        }
+    };
+
+    const jumpToOffset = (offset: number) => {
+        if (!activeGranularity) return;
+        setDropdownOpen(false);
+        if (offset === 0) {
+            setSelection({ kind: 'current', granularity: activeGranularity });
+            setFetchedDashboard(null);
+        } else {
+            setSelection({
+                kind: 'offset',
+                granularity: activeGranularity,
+                offset,
             });
         }
     };
@@ -340,7 +394,7 @@ export const YourStatsClient = ({
                 </div>
             </div>
             {activeGranularity && (
-                <div className={styles.periodNavRow}>
+                <div className={styles.periodNavRow} ref={dropdownRef}>
                     <button
                         type="button"
                         className={styles.periodNavArrow}
@@ -349,11 +403,17 @@ export const YourStatsClient = ({
                     >
                         <FaChevronLeft size={10} />
                     </button>
-                    <span className={styles.periodNavLabel}>
+                    <button
+                        type="button"
+                        className={styles.periodNavLabel}
+                        onClick={() => setDropdownOpen((v) => !v)}
+                        aria-expanded={dropdownOpen}
+                        aria-haspopup="listbox"
+                    >
                         {periodNav
                             ? periodNav.label
                             : `This ${activeGranularity}`}
-                    </span>
+                    </button>
                     <button
                         type="button"
                         className={styles.periodNavArrow}
@@ -363,6 +423,37 @@ export const YourStatsClient = ({
                     >
                         <FaChevronRight size={10} />
                     </button>
+                    {dropdownOpen && (
+                        <div className={styles.periodDropdown} role="listbox">
+                            {getPeriodOptions(
+                                activeGranularity,
+                                DROPDOWN_COUNTS[activeGranularity],
+                            ).map((opt) => {
+                                const currentOffset =
+                                    selection.kind === 'offset'
+                                        ? selection.offset
+                                        : 0;
+                                const isActive =
+                                    !isCustom && opt.offset === currentOffset;
+                                return (
+                                    <button
+                                        key={opt.offset}
+                                        type="button"
+                                        role="option"
+                                        aria-selected={isActive}
+                                        className={clsx(
+                                            styles.periodDropdownItem,
+                                            isActive &&
+                                                styles.periodDropdownItemActive,
+                                        )}
+                                        onClick={() => jumpToOffset(opt.offset)}
+                                    >
+                                        {opt.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             )}
             {isCustom && (
