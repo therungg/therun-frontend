@@ -244,6 +244,48 @@ $streak-hot: #ef4444;
         inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
+/* ── Period Navigation ── */
+
+.periodNavRow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.periodNavArrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border: none;
+    border-radius: 0.3rem;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover:not(:disabled) {
+        background: rgba(var(--bs-primary-rgb), 0.08);
+        color: var(--bs-body-color);
+    }
+
+    &:disabled {
+        opacity: 0.25;
+        cursor: default;
+    }
+}
+
+.periodNavLabel {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    min-width: 8rem;
+    text-align: center;
+}
+
 /* ── Date Picker ── */
 
 .datePickerRow {

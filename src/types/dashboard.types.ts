@@ -1,7 +1,10 @@
 export type DashboardPeriod = '7d' | '30d' | 'year';
 
+export type PeriodGranularity = 'week' | 'month' | 'year';
+
 export type DashboardSelection =
-    | { kind: 'preset'; period: DashboardPeriod }
+    | { kind: 'current'; granularity: PeriodGranularity }
+    | { kind: 'offset'; granularity: PeriodGranularity; offset: number }
     | { kind: 'custom'; from: string; to: string };
 
 export interface DashboardStats {

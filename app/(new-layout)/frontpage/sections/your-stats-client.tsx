@@ -4,17 +4,17 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
-import { FaBolt, FaFire } from 'react-icons/fa';
+import { FaBolt, FaChevronLeft, FaChevronRight, FaFire } from 'react-icons/fa';
 import { DurationToFormatted, FromNow } from '~src/components/util/datetime';
 import { getUserDashboardCustomRange } from '~src/lib/user-dashboard';
 import type {
     DashboardPb,
-    DashboardPeriod,
     DashboardRace,
     DashboardResponse,
     DashboardSelection,
     DashboardStreak,
     DashboardStreakMilestone,
+    PeriodGranularity,
 } from '~src/types/dashboard.types';
 import styles from './your-stats.module.scss';
 
@@ -27,13 +27,58 @@ type ActivityItem =
     | { kind: 'pb'; data: DashboardPb; sortDate: number }
     | { kind: 'race'; data: DashboardRace; sortDate: number };
 
-const PERIOD_LABELS: Record<DashboardPeriod, string> = {
-    '7d': '7d',
-    '30d': '30d',
+const GRANULARITIES: PeriodGranularity[] = ['week', 'month', 'year'];
+const GRANULARITY_LABELS: Record<PeriodGranularity, string> = {
+    week: 'Week',
+    month: 'Month',
     year: 'Year',
 };
 
-const PERIODS: DashboardPeriod[] = ['7d', '30d', 'year'];
+/** Map current granularity to the pre-fetched period key */
+const GRANULARITY_TO_PRESET: Record<PeriodGranularity, string> = {
+    week: '7d',
+    month: '30d',
+    year: 'year',
+};
+
+function getDateRange(
+    granularity: PeriodGranularity,
+    offset: number,
+): { from: string; to: string; label: string } {
+    const now = new Date();
+    let start: Date;
+    let end: Date;
+    let label: string;
+
+    if (granularity === 'week') {
+        const day = now.getDay();
+        const mondayOffset = day === 0 ? -6 : 1 - day;
+        start = new Date(now);
+        start.setDate(now.getDate() + mondayOffset + offset * 7);
+        end = new Date(start);
+        end.setDate(start.getDate() + 6);
+        const fmt = (d: Date) =>
+            d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        label = `${fmt(start)} – ${fmt(end)}`;
+    } else if (granularity === 'month') {
+        start = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+        end = new Date(now.getFullYear(), now.getMonth() + offset + 1, 0);
+        label = start.toLocaleDateString('en-US', {
+            month: 'long',
+            year: 'numeric',
+        });
+    } else {
+        start = new Date(now.getFullYear() + offset, 0, 1);
+        end = new Date(now.getFullYear() + offset, 11, 31);
+        label = String(start.getFullYear());
+    }
+
+    // Cap end date to today
+    if (end > now) end = now;
+
+    const toISO = (d: Date) => d.toISOString().slice(0, 10);
+    return { from: toISO(start), to: toISO(end), label };
+}
 
 function hasValidImage(img: string | null | undefined): img is string {
     return !!img && img !== 'noimage' && img !== '';
@@ -173,73 +218,107 @@ export const YourStatsClient = ({
     username,
 }: YourStatsClientProps) => {
     const [selection, setSelection] = useState<DashboardSelection>({
-        kind: 'preset',
-        period: '7d',
+        kind: 'current',
+        granularity: 'week',
     });
     const [customFrom, setCustomFrom] = useState('');
     const today = new Date().toISOString().slice(0, 10);
     const [customTo, setCustomTo] = useState(today);
-    const [customDashboard, setCustomDashboard] =
+    const [fetchedDashboard, setFetchedDashboard] =
         useState<DashboardResponse | null>(null);
-    const [customLoading, setCustomLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
 
-    const dashboard =
-        selection.kind === 'preset'
-            ? (dashboards[selection.period] ?? null)
-            : customDashboard;
+    const isCustom = selection.kind === 'custom';
+    const isCurrent = selection.kind === 'current';
+    const activeGranularity =
+        selection.kind !== 'custom' ? selection.granularity : null;
 
-    const fetchCustom = useCallback(
-        async (from: string, to: string) => {
+    // For "current" periods, use pre-fetched data. For offset/custom, fetch.
+    const dashboard = isCurrent
+        ? (dashboards[GRANULARITY_TO_PRESET[selection.granularity]] ?? null)
+        : fetchedDashboard;
+
+    const fetchRange = useCallback(
+        async (from: string, to?: string) => {
             if (!from) return;
-            setCustomLoading(true);
+            setLoading(true);
             try {
                 const result = await getUserDashboardCustomRange(
                     username,
                     from,
                     to || undefined,
                 );
-                setCustomDashboard(result);
+                setFetchedDashboard(result);
             } catch {
-                setCustomDashboard(null);
+                setFetchedDashboard(null);
             } finally {
-                setCustomLoading(false);
+                setLoading(false);
             }
         },
         [username],
     );
 
+    // Fetch when navigating to offset or custom periods
     useEffect(() => {
-        if (selection.kind === 'custom' && customFrom) {
-            fetchCustom(customFrom, customTo);
+        if (selection.kind === 'offset') {
+            const { from, to } = getDateRange(
+                selection.granularity,
+                selection.offset,
+            );
+            fetchRange(from, to);
+        } else if (selection.kind === 'custom' && customFrom) {
+            fetchRange(customFrom, customTo);
         }
-    }, [selection.kind, customFrom, customTo, fetchCustom]);
+    }, [selection, customFrom, customTo, fetchRange]);
 
-    const isCustom = selection.kind === 'custom';
+    const selectGranularity = (g: PeriodGranularity) => {
+        setSelection({ kind: 'current', granularity: g });
+        setFetchedDashboard(null);
+    };
+
+    const navigateOffset = (delta: number) => {
+        if (!activeGranularity) return;
+        const currentOffset =
+            selection.kind === 'offset' ? selection.offset : 0;
+        const newOffset = currentOffset + delta;
+        if (newOffset === 0) {
+            setSelection({ kind: 'current', granularity: activeGranularity });
+            setFetchedDashboard(null);
+        } else {
+            setSelection({
+                kind: 'offset',
+                granularity: activeGranularity,
+                offset: newOffset,
+            });
+        }
+    };
+
+    // Period navigation label
+    const periodNav =
+        activeGranularity && selection.kind === 'offset'
+            ? getDateRange(activeGranularity, selection.offset)
+            : null;
+
+    const streakData = dashboards['7d']?.streak ?? null;
+    const streakMilestoneData = dashboards['7d']?.streakMilestone ?? null;
 
     const periodToggle = (
         <>
             <div className={styles.periodToggleWrap}>
                 <div className={styles.periodToggle}>
-                    {PERIODS.map((p) => (
+                    {GRANULARITIES.map((g) => (
                         <button
-                            key={p}
+                            key={g}
                             type="button"
                             className={clsx(
                                 styles.periodButton,
                                 !isCustom &&
-                                    selection.kind === 'preset' &&
-                                    selection.period === p &&
+                                    activeGranularity === g &&
                                     styles.periodButtonActive,
                             )}
-                            onClick={() =>
-                                setSelection({ kind: 'preset', period: p })
-                            }
-                            aria-pressed={
-                                selection.kind === 'preset' &&
-                                selection.period === p
-                            }
+                            onClick={() => selectGranularity(g)}
                         >
-                            {PERIOD_LABELS[p]}
+                            {GRANULARITY_LABELS[g]}
                         </button>
                     ))}
                     <button
@@ -255,12 +334,37 @@ export const YourStatsClient = ({
                                 to: customTo,
                             })
                         }
-                        aria-pressed={isCustom}
                     >
                         Custom
                     </button>
                 </div>
             </div>
+            {activeGranularity && (
+                <div className={styles.periodNavRow}>
+                    <button
+                        type="button"
+                        className={styles.periodNavArrow}
+                        onClick={() => navigateOffset(-1)}
+                        aria-label="Previous period"
+                    >
+                        <FaChevronLeft size={10} />
+                    </button>
+                    <span className={styles.periodNavLabel}>
+                        {periodNav
+                            ? periodNav.label
+                            : `This ${activeGranularity}`}
+                    </span>
+                    <button
+                        type="button"
+                        className={styles.periodNavArrow}
+                        onClick={() => navigateOffset(1)}
+                        disabled={isCurrent}
+                        aria-label="Next period"
+                    >
+                        <FaChevronRight size={10} />
+                    </button>
+                </div>
+            )}
             {isCustom && (
                 <div className={styles.datePickerRow}>
                     <input
@@ -287,8 +391,8 @@ export const YourStatsClient = ({
         return (
             <div className={styles.content}>
                 <StreakCard
-                    streak={dashboards['7d']?.streak ?? null}
-                    streakMilestone={dashboards['7d']?.streakMilestone ?? null}
+                    streak={streakData}
+                    streakMilestone={streakMilestoneData}
                 />
                 {periodToggle}
                 <div className={styles.emptyState}>
@@ -303,12 +407,12 @@ export const YourStatsClient = ({
         );
     }
 
-    if (isCustom && customLoading) {
+    if (loading) {
         return (
             <div className={styles.content}>
                 <StreakCard
-                    streak={dashboards['7d']?.streak ?? null}
-                    streakMilestone={dashboards['7d']?.streakMilestone ?? null}
+                    streak={streakData}
+                    streakMilestone={streakMilestoneData}
                 />
                 {periodToggle}
                 <div className={styles.emptyState}>
@@ -322,8 +426,8 @@ export const YourStatsClient = ({
         return (
             <div className={styles.content}>
                 <StreakCard
-                    streak={dashboards['7d']?.streak ?? null}
-                    streakMilestone={dashboards['7d']?.streakMilestone ?? null}
+                    streak={streakData}
+                    streakMilestone={streakMilestoneData}
                 />
                 {periodToggle}
                 <div className={styles.emptyState}>
