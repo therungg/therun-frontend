@@ -23,3 +23,20 @@ export async function getUserDashboard(
         return null;
     }
 }
+
+export async function getUserDashboardCustomRange(
+    username: string,
+    from: string,
+    to?: string,
+): Promise<DashboardResponse | null> {
+    const params = new URLSearchParams({ from });
+    if (to) params.set('to', to);
+
+    try {
+        return await apiFetch<DashboardResponse>(
+            `/v1/users/${encodeURIComponent(username)}/dashboard?${params}`,
+        );
+    } catch {
+        return null;
+    }
+}

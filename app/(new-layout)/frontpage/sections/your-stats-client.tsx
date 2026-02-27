@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { FaBolt, FaFire } from 'react-icons/fa';
 import { DurationToFormatted, FromNow } from '~src/components/util/datetime';
-import { apiFetch } from '~src/lib/api-client';
+import { getUserDashboardCustomRange } from '~src/lib/user-dashboard';
 import type {
     DashboardPb,
     DashboardPeriod,
@@ -228,10 +228,10 @@ export const YourStatsClient = ({
             if (!from) return;
             setCustomLoading(true);
             try {
-                const params = new URLSearchParams({ from });
-                if (to) params.set('to', to);
-                const result = await apiFetch<DashboardResponse>(
-                    `/v1/users/${encodeURIComponent(username)}/dashboard?${params}`,
+                const result = await getUserDashboardCustomRange(
+                    username,
+                    from,
+                    to || undefined,
                 );
                 setCustomDashboard(result);
             } catch {
