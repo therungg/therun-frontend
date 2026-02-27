@@ -131,7 +131,7 @@ function StreakCard({
     const ratio = allTimeBest > 0 ? current / allTimeBest : 1;
     const tier: 'normal' | 'hot' | 'nearRecord' | 'record' = isRecord
         ? 'record'
-        : streakMilestone?.type === 'near_record'
+        : streakMilestone?.type === 'near_record' || ratio >= 0.8
           ? 'nearRecord'
           : ratio >= 0.5
             ? 'hot'
@@ -185,6 +185,10 @@ function StreakCard({
                     <div
                         className={fillClass}
                         style={{ width: `${progressPct}%` }}
+                        role="progressbar"
+                        aria-valuenow={current}
+                        aria-valuemin={0}
+                        aria-valuemax={progressMax}
                     />
                 </div>
                 <div className={styles.streakProgressLabel}>
