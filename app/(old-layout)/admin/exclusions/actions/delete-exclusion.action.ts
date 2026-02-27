@@ -7,7 +7,7 @@ import { confirmPermission } from '~src/rbac/confirm-permission';
 
 export async function deleteExclusionAction(ruleId: number) {
     const user = await getSession();
-    confirmPermission(user, 'edit', 'user');
+    confirmPermission(user, 'moderate', 'admins');
 
     await apiFetch(`/admin/exclusions/${ruleId}`, {
         sessionId: user.id,
