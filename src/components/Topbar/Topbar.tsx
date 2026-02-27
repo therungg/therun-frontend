@@ -167,7 +167,7 @@ export const Topbar = ({
                                             Move User
                                         </NavDropdown.Item>
                                     </Can>
-                                    <Can I="edit" a="user">
+                                    <Can I="moderate" a="admins">
                                         <NavDropdown.Item href="/admin/exclusions">
                                             Exclusions
                                         </NavDropdown.Item>

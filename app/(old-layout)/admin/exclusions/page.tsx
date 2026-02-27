@@ -7,7 +7,7 @@ import { ExclusionsPanel } from './exclusions-panel';
 
 export default async function ExclusionsPage() {
     const user = await getSession();
-    confirmPermission(user, 'edit', 'user');
+    confirmPermission(user, 'moderate', 'admins');
 
     const exclusions = await getExclusions(user.id);
 

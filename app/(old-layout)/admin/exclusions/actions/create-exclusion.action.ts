@@ -12,7 +12,7 @@ export async function createExclusionAction(
     reason?: string,
 ) {
     const user = await getSession();
-    confirmPermission(user, 'edit', 'user');
+    confirmPermission(user, 'moderate', 'admins');
 
     await apiFetch('/admin/exclusions', {
         sessionId: user.id,
