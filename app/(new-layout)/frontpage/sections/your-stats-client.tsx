@@ -723,7 +723,7 @@ function DashboardContent({
                 </div>
                 <div className={styles.statCell}>
                     <div className={styles.statValue}>{stats.finishedRuns}</div>
-                    <div className={styles.statLabel}>Runs</div>
+                    <div className={styles.statLabel}>Finished Runs</div>
                     {globalStats && (
                         <span className={styles.statAllTime}>
                             {formatCompact(
