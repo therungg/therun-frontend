@@ -200,9 +200,10 @@ function StreakCard({
 
     return (
         <div className={cardClass}>
+            <div className={styles.streakTitle}>Your Streak</div>
             {/* Hero number */}
             <div className={styles.streakHero}>
-                <FaFire size={22} className={iconClass} />
+                <FaFire size={16} className={iconClass} />
                 <span className={styles.streakNumber}>{current}</span>
                 <span className={styles.streakDaysLabel}>
                     {current === 1 ? 'day' : 'days'}

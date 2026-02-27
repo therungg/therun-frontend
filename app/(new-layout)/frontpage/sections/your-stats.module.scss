@@ -18,9 +18,9 @@ $streak-hot: #ef4444;
 
 .streakCard {
     position: relative;
-    border-radius: 0.6rem;
-    padding: 1rem 1.15rem;
-    margin-bottom: 1rem;
+    border-radius: 0.5rem;
+    padding: 0.7rem 0.9rem;
+    margin-bottom: 0.75rem;
     overflow: hidden;
     background: linear-gradient(
         135deg,
@@ -57,23 +57,32 @@ $streak-hot: #ef4444;
     border-color: rgba($gold, 0.25);
 }
 
+.streakTitle {
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--bs-secondary-color);
+    margin-bottom: 0.3rem;
+}
+
 .streakHero {
     display: flex;
     align-items: baseline;
-    gap: 0.4rem;
-    margin-bottom: 0.75rem;
+    gap: 0.3rem;
+    margin-bottom: 0.5rem;
 }
 
 .streakNumber {
     font-family: $mono;
-    font-size: 2.2rem;
+    font-size: 1.6rem;
     font-weight: 800;
     line-height: 1;
     color: var(--bs-emphasis-color);
 }
 
 .streakDaysLabel {
-    font-size: 0.7rem;
+    font-size: 0.62rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -102,7 +111,7 @@ $streak-hot: #ef4444;
 /* Progress bar */
 
 .streakProgressWrap {
-    margin-bottom: 0.85rem;
+    margin-bottom: 0.55rem;
 }
 
 .streakProgressTrack {
@@ -137,8 +146,8 @@ $streak-hot: #ef4444;
 .streakProgressLabel {
     display: flex;
     justify-content: space-between;
-    margin-top: 0.3rem;
-    font-size: 0.62rem;
+    margin-top: 0.2rem;
+    font-size: 0.58rem;
     font-weight: 600;
     color: var(--bs-secondary-color);
 }
@@ -147,7 +156,7 @@ $streak-hot: #ef4444;
 
 .streakStats {
     display: flex;
-    margin-bottom: 0.65rem;
+    margin-bottom: 0.4rem;
 }
 
 .streakStat {
@@ -164,7 +173,7 @@ $streak-hot: #ef4444;
 
 .streakStatValue {
     font-family: $mono;
-    font-size: 1rem;
+    font-size: 0.85rem;
     font-weight: 700;
     color: var(--bs-emphasis-color);
 }
@@ -182,8 +191,8 @@ $streak-hot: #ef4444;
 .streakMilestone {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
-    font-size: 0.72rem;
+    gap: 0.3rem;
+    font-size: 0.65rem;
     font-weight: 600;
     color: $amber;
 }
