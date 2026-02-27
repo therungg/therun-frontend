@@ -194,17 +194,10 @@ function StreakCard({
     if (current === 0) return null;
 
     const milestone = getNextMilestone(current);
-    // Previous milestone (or 0) as the bar's start reference
-    const prevMilestone =
-        [...STREAK_MILESTONES].reverse().find((m) => m <= current) ?? 0;
-    const range = milestone.target - prevMilestone;
-    const progressPct = Math.min(
-        ((current - prevMilestone) / range) * 100,
-        100,
-    );
+    const progressPct = Math.min((current / milestone.target) * 100, 100);
 
     // Determine intensity tier — based on closeness to next milestone
-    const milestoneRatio = (current - prevMilestone) / range;
+    const milestoneRatio = current / milestone.target;
     const nearRecord =
         streakMilestone?.type === 'near_record' ||
         (allTimeBest > 0 && current / allTimeBest >= 0.8);
@@ -296,7 +289,7 @@ function StreakCard({
                         style={{ width: `${progressPct}%` }}
                         role="progressbar"
                         aria-valuenow={current}
-                        aria-valuemin={prevMilestone}
+                        aria-valuemin={0}
                         aria-valuemax={milestone.target}
                     />
                 </div>
