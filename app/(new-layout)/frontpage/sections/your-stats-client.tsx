@@ -101,6 +101,32 @@ const DROPDOWN_COUNTS: Record<PeriodGranularity, number> = {
     year: 5,
 };
 
+/** Convert an arbitrary date to the offset for the period containing it. */
+function dateToOffset(granularity: PeriodGranularity, date: Date): number {
+    const now = new Date();
+    if (granularity === 'week') {
+        // Get Monday of the target week and Monday of the current week
+        const getMonday = (d: Date) => {
+            const copy = new Date(d);
+            const day = copy.getDay();
+            copy.setDate(copy.getDate() - (day === 0 ? 6 : day - 1));
+            copy.setHours(0, 0, 0, 0);
+            return copy;
+        };
+        const targetMonday = getMonday(date);
+        const currentMonday = getMonday(now);
+        const diffMs = targetMonday.getTime() - currentMonday.getTime();
+        return Math.round(diffMs / (7 * 24 * 60 * 60 * 1000));
+    } else if (granularity === 'month') {
+        return (
+            (date.getFullYear() - now.getFullYear()) * 12 +
+            (date.getMonth() - now.getMonth())
+        );
+    } else {
+        return date.getFullYear() - now.getFullYear();
+    }
+}
+
 function hasValidImage(img: string | null | undefined): img is string {
     return !!img && img !== 'noimage' && img !== '';
 }
@@ -249,6 +275,7 @@ export const YourStatsClient = ({
         useState<DashboardResponse | null>(null);
     const [loading, setLoading] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [jumpPickerOpen, setJumpPickerOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const isCustom = selection.kind === 'custom';
@@ -313,6 +340,7 @@ export const YourStatsClient = ({
         setSelection({ kind: 'current', granularity: g });
         setFetchedDashboard(null);
         setDropdownOpen(false);
+        setJumpPickerOpen(false);
     };
 
     const navigateOffset = (delta: number) => {
@@ -345,6 +373,13 @@ export const YourStatsClient = ({
                 offset,
             });
         }
+    };
+
+    const jumpToDate = (dateStr: string) => {
+        if (!activeGranularity || !dateStr) return;
+        const date = new Date(dateStr + 'T00:00:00');
+        const offset = dateToOffset(activeGranularity, date);
+        jumpToOffset(offset);
     };
 
     // Period navigation label
@@ -452,6 +487,24 @@ export const YourStatsClient = ({
                                     </button>
                                 );
                             })}
+                            <div className={styles.periodDropdownDivider} />
+                            {jumpPickerOpen ? (
+                                <input
+                                    type="date"
+                                    className={styles.periodDropdownDateInput}
+                                    max={today}
+                                    autoFocus
+                                    onChange={(e) => jumpToDate(e.target.value)}
+                                />
+                            ) : (
+                                <button
+                                    type="button"
+                                    className={styles.periodDropdownJump}
+                                    onClick={() => setJumpPickerOpen(true)}
+                                >
+                                    Jump to date…
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>
