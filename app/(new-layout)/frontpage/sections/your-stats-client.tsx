@@ -250,17 +250,17 @@ function StreakCard({
           ? streakMilestone.message
           : null;
 
+    const longestDateLabel = streak?.longestStart
+        ? new Date(streak.longestStart).toLocaleDateString('en-US', {
+              month: 'short',
+              year: 'numeric',
+          })
+        : null;
+
     return (
         <div className={cardClass}>
-            {/* Top row: label + personal best */}
-            <div className={styles.streakTopRow}>
-                <span className={styles.streakTitle}>Your Daily Streak</span>
-                {allTimeBest > 0 && (
-                    <span className={styles.streakBest}>
-                        Best: <strong>{allTimeBest}d</strong>
-                    </span>
-                )}
-            </div>
+            {/* Title */}
+            <div className={styles.streakTitle}>Your Daily Streak</div>
 
             {/* Hero: fire icon with heat glow + big number */}
             <div className={styles.streakHeroWrap}>
@@ -299,11 +299,25 @@ function StreakCard({
                 </div>
             </div>
 
-            {/* Milestone nudge */}
-            {milestoneMsg && (
-                <div className={milestoneClass}>
-                    <FaBolt size={10} />
-                    {milestoneMsg}
+            {/* Footer: longest streak + milestone nudge */}
+            {(allTimeBest > 0 || milestoneMsg) && (
+                <div className={styles.streakFooter}>
+                    {allTimeBest > 0 && !isRecord && (
+                        <span className={styles.streakBest}>
+                            Longest streak: <strong>{allTimeBest}d</strong>
+                            {longestDateLabel && (
+                                <span className={styles.streakBestDate}>
+                                    {longestDateLabel}
+                                </span>
+                            )}
+                        </span>
+                    )}
+                    {milestoneMsg && (
+                        <div className={milestoneClass}>
+                            <FaBolt size={10} />
+                            {milestoneMsg}
+                        </div>
+                    )}
                 </div>
             )}
         </div>
