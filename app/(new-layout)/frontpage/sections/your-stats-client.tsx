@@ -243,25 +243,47 @@ function StreakCard({
         tier === 'record' && styles.streakMilestoneRecord,
     );
 
-    // Progress label
-    const progressLabel = isRecord
+    // Progress goal text
+    const goalText = isRecord
         ? 'New all-time record!'
         : milestone.remaining === 1
-          ? `1 day to ${milestone.label}!`
+          ? `1 more day to ${milestone.label}`
           : `${milestone.remaining} days to ${milestone.label}`;
+
+    const pctDisplay = Math.round(progressPct);
+
+    // Milestone message
+    const milestoneMsg = isRecord
+        ? 'Every day is a new record'
+        : streakMilestone
+          ? streakMilestone.message
+          : null;
 
     return (
         <div className={cardClass}>
             <div className={styles.streakTitle}>Your Daily Streak</div>
-            {/* Hero number — centered */}
-            <div className={styles.streakHero}>
-                <FaFire size={16} className={iconClass} />
+
+            {/* Hero: icon stacked above the big number */}
+            <div className={styles.streakHeroWrap}>
+                <FaFire size={20} className={iconClass} />
                 <span className={styles.streakNumber}>{current}</span>
-                <span className={styles.streakDaysLabel}>day streak</span>
+                <span className={styles.streakDaysLabel}>
+                    {current === 1 ? 'day' : 'days'}
+                </span>
             </div>
 
-            {/* Progress bar toward next milestone */}
-            <div className={styles.streakProgressWrap}>
+            {/* Progress toward next milestone */}
+            <div className={styles.streakProgressSection}>
+                <div className={styles.streakProgressHeader}>
+                    <span className={styles.streakProgressGoal}>
+                        {goalText}
+                    </span>
+                    {!isRecord && (
+                        <span className={styles.streakProgressPct}>
+                            {pctDisplay}%
+                        </span>
+                    )}
+                </div>
                 <div className={styles.streakProgressTrack}>
                     <div
                         className={fillClass}
@@ -272,26 +294,24 @@ function StreakCard({
                         aria-valuemax={milestone.target}
                     />
                 </div>
-                <div className={styles.streakProgressLabel}>
-                    <span>{progressLabel}</span>
-                    {allTimeBest > 0 && !isRecord && (
-                        <span>Best: {allTimeBest}d</span>
-                    )}
-                </div>
             </div>
 
-            {/* Milestone message */}
-            {isRecord ? (
-                <div className={milestoneClass}>
-                    <FaBolt size={12} />
-                    Keep going — every day is a new record!
+            {/* Footer: best record + milestone nudge */}
+            {(allTimeBest > 0 || milestoneMsg) && (
+                <div className={styles.streakFooter}>
+                    {allTimeBest > 0 && (
+                        <span className={styles.streakBest}>
+                            Best: <strong>{allTimeBest}d</strong>
+                        </span>
+                    )}
+                    {milestoneMsg && (
+                        <div className={milestoneClass}>
+                            <FaBolt size={10} />
+                            {milestoneMsg}
+                        </div>
+                    )}
                 </div>
-            ) : streakMilestone ? (
-                <div className={milestoneClass}>
-                    <FaBolt size={12} />
-                    {streakMilestone.message}
-                </div>
-            ) : null}
+            )}
         </div>
     );
 }
