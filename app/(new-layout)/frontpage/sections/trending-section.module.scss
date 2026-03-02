@@ -270,6 +270,28 @@ $amber: #f59e0b;
         display: none;
     }
 
+    .categories {
+        flex-wrap: nowrap;
+        gap: 0;
+    }
+
+    .category {
+        background: none;
+        border: none;
+        padding: 0;
+        font-size: 0.8rem;
+
+        &::after {
+            content: '·';
+            margin: 0 0.3rem;
+            color: var(--bs-secondary-color);
+        }
+
+        &:last-child::after {
+            display: none;
+        }
+    }
+
     .categoryTime {
         display: none;
     }
