@@ -1,4 +1,4 @@
-@use '../../styles/design-tokens' as *;
+@import '../styles/design-tokens';
 
 .pagination {
     display: flex;
