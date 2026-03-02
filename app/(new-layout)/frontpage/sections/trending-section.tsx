@@ -145,14 +145,21 @@ const HotGameCard = ({
                     {game.gameDisplay}
                 </span>
                 {categories.length > 0 && (
-                    <span className={styles.category}>
-                        <span className={styles.categoryName}>
-                            {categories[0].categoryDisplay}
-                        </span>
-                        <span className={styles.categoryTime}>
-                            {formatHoursCompact(categories[0].totalPlaytime)}h
-                        </span>
-                    </span>
+                    <div className={styles.categories}>
+                        {categories.slice(0, 3).map((c, i) => (
+                            <span
+                                key={c.categoryId}
+                                className={`${styles.category} ${i > 0 ? styles.categoryExtra : ''}`}
+                            >
+                                <span className={styles.categoryName}>
+                                    {c.categoryDisplay}
+                                </span>
+                                <span className={styles.categoryTime}>
+                                    {formatHoursCompact(c.totalPlaytime)}h
+                                </span>
+                            </span>
+                        ))}
+                    </div>
                 )}
             </div>
             <div className={styles.stats}>
