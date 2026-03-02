@@ -1,0 +1,15 @@
+@use '../../styles/design-tokens' as *;
+
+.explorer {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+}
+
+.header {
+    h1 {
+        font-size: clamp(1.4rem, 3vw, 2rem);
+        font-weight: 700;
+        margin: 0;
+    }
+}
