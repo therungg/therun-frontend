@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FaBolt, FaStar } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
-import { UserLink } from '~src/components/links/links';
 import {
     DurationToFormatted,
     FromNow,
@@ -185,7 +184,7 @@ const FeaturedCarousel = ({
         }
     };
 
-    // Drag-to-scroll handlers
+    // Drag/swipe handlers — constrained to ±1 slide
     const onPointerDown = (e: React.PointerEvent) => {
         const el = scrollRef.current;
         if (!el) return;
@@ -207,7 +206,10 @@ const FeaturedCarousel = ({
         if (!el) return;
         const dx = e.clientX - dragState.current.startX;
         if (Math.abs(dx) > 3) dragState.current.moved = true;
-        el.scrollLeft = dragState.current.scrollLeft - dx;
+        // Clamp scroll to at most ±1 slide width from start position
+        const slideWidth = el.clientWidth;
+        const clampedDx = Math.max(-slideWidth, Math.min(slideWidth, dx));
+        el.scrollLeft = dragState.current.scrollLeft - clampedDx;
     };
 
     const onPointerUp = (e: React.PointerEvent) => {
@@ -216,9 +218,24 @@ const FeaturedCarousel = ({
         const el = scrollRef.current;
         if (!el) return;
         el.releasePointerCapture(e.pointerId);
-        el.style.scrollBehavior = 'smooth';
+
+        const dx = e.clientX - dragState.current.startX;
+        const startSlide = Math.round(
+            dragState.current.scrollLeft / el.clientWidth,
+        );
+        const swipeThreshold = el.clientWidth * 0.15;
+
+        let targetSlide = startSlide;
+        if (dx < -swipeThreshold && startSlide < pbs.length - 1) {
+            targetSlide = startSlide + 1;
+        } else if (dx > swipeThreshold && startSlide > 0) {
+            targetSlide = startSlide - 1;
+        }
+
         el.style.scrollSnapType = 'x mandatory';
-        // After snap settles, restart timer
+        el.style.scrollBehavior = 'smooth';
+        scrollToSlide(targetSlide);
+
         setTimeout(() => {
             resetProgress();
             resume();
@@ -302,112 +319,148 @@ const FeaturedCarousel = ({
                                 className={styles.featuredBg}
                             />
                             <div className={styles.featuredOverlay} />
-                            <div className={styles.featuredContent}>
-                                <div className={styles.featuredBadges}>
-                                    <span className={styles.featuredBadge}>
-                                        <FaBolt size={9} aria-hidden="true" />
-                                        Highlighted PB
-                                    </span>
-                                    <span className={styles.featuredTimestamp}>
-                                        <FromNow time={pb.endedAt} />
-                                    </span>
-                                </div>
-                                <div className={styles.featuredTop}>
-                                    {avatarUrl && (
-                                        <Image
-                                            src={avatarUrl}
-                                            alt=""
-                                            width={52}
-                                            height={52}
-                                            className={styles.featuredAvatar}
-                                            unoptimized
-                                        />
-                                    )}
-                                    <div className={styles.featuredIdentity}>
-                                        <span
-                                            className={
-                                                styles.featuredRunnerName
-                                            }
-                                        >
-                                            <UserLink username={pb.username} />
-                                        </span>
-                                        <span
-                                            className={
-                                                styles.featuredGameCategory
-                                            }
-                                        >
-                                            {pb.game} &middot; {pb.category}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className={styles.featuredBottom}>
-                                    <span className={styles.featuredTime}>
-                                        <DurationToFormatted
-                                            duration={pb.time}
-                                        />
-                                    </span>
-                                    {hasImprovement ? (
-                                        <span className={styles.featuredDelta}>
-                                            &minus;
-                                            {getFormattedString(
-                                                improvement.toString(),
-                                                improvement < 60000,
-                                            )}
-                                        </span>
-                                    ) : pb.previousPb === null ? (
-                                        <span
-                                            className={styles.featuredFirstPb}
-                                        >
-                                            <FaStar
-                                                size={11}
+                            <Link
+                                href={`/${pb.username}`}
+                                className={styles.featuredLink}
+                                draggable={false}
+                                onClick={(e) => {
+                                    if (dragState.current.moved) {
+                                        e.preventDefault();
+                                    }
+                                }}
+                            >
+                                <div className={styles.featuredContent}>
+                                    <div className={styles.featuredBadges}>
+                                        <span className={styles.featuredBadge}>
+                                            <FaBolt
+                                                size={9}
                                                 aria-hidden="true"
                                             />
-                                            First PB!
+                                            Highlighted PB
                                         </span>
-                                    ) : null}
+                                        <span
+                                            className={styles.featuredTimestamp}
+                                        >
+                                            <FromNow time={pb.endedAt} />
+                                        </span>
+                                    </div>
+                                    <div className={styles.featuredTop}>
+                                        {avatarUrl && (
+                                            <Image
+                                                src={avatarUrl}
+                                                alt=""
+                                                width={52}
+                                                height={52}
+                                                className={
+                                                    styles.featuredAvatar
+                                                }
+                                                unoptimized
+                                            />
+                                        )}
+                                        <div
+                                            className={styles.featuredIdentity}
+                                        >
+                                            <span
+                                                className={
+                                                    styles.featuredRunnerName
+                                                }
+                                            >
+                                                {pb.username}
+                                            </span>
+                                            <span
+                                                className={
+                                                    styles.featuredGameCategory
+                                                }
+                                            >
+                                                {pb.game} &middot; {pb.category}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div className={styles.featuredBottom}>
+                                        <span className={styles.featuredTime}>
+                                            <DurationToFormatted
+                                                duration={pb.time}
+                                            />
+                                        </span>
+                                        {hasImprovement ? (
+                                            <span
+                                                className={styles.featuredDelta}
+                                            >
+                                                &minus;
+                                                {getFormattedString(
+                                                    improvement.toString(),
+                                                    improvement < 60000,
+                                                )}
+                                            </span>
+                                        ) : pb.previousPb === null ? (
+                                            <span
+                                                className={
+                                                    styles.featuredFirstPb
+                                                }
+                                            >
+                                                <FaStar
+                                                    size={11}
+                                                    aria-hidden="true"
+                                                />
+                                                First PB!
+                                            </span>
+                                        ) : null}
+                                    </div>
+                                    <div className={styles.featuredStats}>
+                                        <div className={styles.featuredStat}>
+                                            <span
+                                                className={
+                                                    styles.featuredStatValue
+                                                }
+                                            >
+                                                {pb.attemptCount.toLocaleString()}
+                                            </span>
+                                            <span
+                                                className={
+                                                    styles.featuredStatLabel
+                                                }
+                                            >
+                                                Attempts
+                                            </span>
+                                        </div>
+                                        <div className={styles.featuredStat}>
+                                            <span
+                                                className={
+                                                    styles.featuredStatValue
+                                                }
+                                            >
+                                                {pb.finishedAttemptCount.toLocaleString()}
+                                            </span>
+                                            <span
+                                                className={
+                                                    styles.featuredStatLabel
+                                                }
+                                            >
+                                                Finished
+                                            </span>
+                                        </div>
+                                        <div className={styles.featuredStat}>
+                                            <span
+                                                className={
+                                                    styles.featuredStatValue
+                                                }
+                                            >
+                                                {Math.round(
+                                                    pb.totalRunTime / 3600000,
+                                                ).toLocaleString()}
+                                                h
+                                            </span>
+                                            <span
+                                                className={
+                                                    styles.featuredStatLabel
+                                                }
+                                            >
+                                                Played
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className={styles.featuredStats}>
-                                    <div className={styles.featuredStat}>
-                                        <span
-                                            className={styles.featuredStatValue}
-                                        >
-                                            {pb.attemptCount.toLocaleString()}
-                                        </span>
-                                        <span
-                                            className={styles.featuredStatLabel}
-                                        >
-                                            Attempts
-                                        </span>
-                                    </div>
-                                    <div className={styles.featuredStat}>
-                                        <span
-                                            className={styles.featuredStatValue}
-                                        >
-                                            {pb.finishedAttemptCount.toLocaleString()}
-                                        </span>
-                                        <span
-                                            className={styles.featuredStatLabel}
-                                        >
-                                            Finished
-                                        </span>
-                                    </div>
-                                    <div className={styles.featuredStat}>
-                                        <span
-                                            className={styles.featuredStatValue}
-                                        >
-                                            {Math.round(
-                                                pb.totalRunTime / 3600000,
-                                            ).toLocaleString()}
-                                            h
-                                        </span>
-                                        <span
-                                            className={styles.featuredStatLabel}
-                                        >
-                                            Played
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                            </Link>
                         </div>
                     );
                 })}
