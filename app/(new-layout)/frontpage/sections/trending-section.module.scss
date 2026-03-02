@@ -270,8 +270,9 @@ $amber: #f59e0b;
         display: none;
     }
 
-    .categoryExtra {
-        display: none;
+    .categories {
+        flex-direction: column;
+        gap: 0.15rem;
     }
 
     .category {

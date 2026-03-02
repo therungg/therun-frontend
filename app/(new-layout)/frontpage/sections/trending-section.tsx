@@ -149,7 +149,7 @@ const HotGameCard = ({
                         {categories.slice(0, 3).map((c, i) => (
                             <span
                                 key={c.categoryId}
-                                className={`${styles.category} ${i > 0 ? styles.categoryExtra : ''}`}
+                                className={styles.category}
                             >
                                 <span className={styles.categoryName}>
                                     {c.categoryDisplay}
