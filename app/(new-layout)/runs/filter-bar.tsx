@@ -32,7 +32,6 @@ interface FilterBarProps {
     filters: RunsFilters;
     onFilterChange: (filters: Partial<RunsFilters>) => void;
     onClearAll: () => void;
-    resultCount?: number;
     isPending?: boolean;
 }
 
@@ -42,8 +41,7 @@ export function FilterBar({
     filters,
     onFilterChange,
     onClearAll,
-    resultCount,
-    isPending,
+    isPending: _isPending,
 }: FilterBarProps) {
     const [openPopover, setOpenPopover] = useState<PopoverType>(null);
     const timeRef = useRef<HTMLDivElement>(null);
@@ -294,14 +292,6 @@ export function FilterBar({
                         </div>
                     )}
                 </div>
-
-                {resultCount !== undefined && (
-                    <span
-                        className={`${styles.resultCount} ${isPending ? styles.pending : ''}`}
-                    >
-                        {resultCount.toLocaleString()} results
-                    </span>
-                )}
             </div>
 
             {/* Row 2: Active filter chips */}
