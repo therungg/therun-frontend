@@ -94,11 +94,29 @@ $amber: #f59e0b;
 }
 
 .categories {
-    font-size: 0.85rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.category {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.75rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+    background: color-mix(in srgb, var(--bs-secondary-bg) 40%, transparent);
+}
+
+.categoryName {
     color: var(--bs-secondary-color);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+}
+
+.categoryTime {
+    font-family: $mono;
+    font-weight: 600;
+    color: var(--bs-body-color);
 }
 
 // ── Inline stats ──
@@ -244,6 +262,10 @@ $amber: #f59e0b;
     }
 
     .statSecondary {
+        display: none;
+    }
+
+    .categoryTime {
         display: none;
     }
 
