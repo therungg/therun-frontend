@@ -1,0 +1,63 @@
+@use '../../styles/design-tokens' as *;
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-lg 0;
+}
+
+.pageBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 $spacing-sm;
+    border-radius: $radius-md;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--bs-body-color);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover:not(:disabled) {
+        background: rgba(var(--bs-body-color-rgb), 0.06);
+    }
+
+    &:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+
+    &.active {
+        background: var(--bs-primary);
+        color: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+        font-weight: 600;
+    }
+}
+
+.ellipsis {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    color: var(--bs-secondary-color);
+    font-size: 0.85rem;
+    user-select: none;
+}
+
+@media (max-width: 479px) {
+    .pageBtn:not(.navBtn) {
+        display: none;
+    }
+
+    .ellipsis {
+        display: none;
+    }
+}
