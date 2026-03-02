@@ -1,12 +1,21 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaBolt, FaClock, FaFire, FaTrophy, FaUsers } from 'react-icons/fa6';
+import {
+    FaBolt,
+    FaClock,
+    FaCrown,
+    FaFire,
+    FaTrophy,
+    FaUsers,
+} from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import {
     type CategoryActivity,
     type GameActivity,
+    type GameWithImage,
     getCategoryActivityForGame,
     getGameActivity,
+    getTopGames,
 } from '~src/lib/highlights';
 import { safeEncodeURI } from '~src/utils/uri';
 import styles from './trending-section.module.scss';
@@ -38,7 +47,10 @@ export const TrendingSection = async () => {
     const from24h = getDateDaysAgo(1);
     const to = getToday();
 
-    const hotGames = await getGameActivity(from24h, to, 5, 2);
+    const [hotGames, allTimeGames] = await Promise.all([
+        getGameActivity(from24h, to, 5, 2),
+        getTopGames(5),
+    ]);
 
     const categoryMap: Record<number, CategoryActivity[]> = {};
     const categoryResults = await Promise.all(
@@ -81,6 +93,24 @@ export const TrendingSection = async () => {
                     </div>
                 )}
             </div>
+
+            {allTimeGames.length > 0 && (
+                <div className={styles.allTimeZone}>
+                    <h3 className={styles.allTimeHeader}>
+                        <FaCrown size={10} aria-hidden="true" />
+                        Most Played All Time
+                    </h3>
+                    <div className={styles.allTimeList}>
+                        {allTimeGames.map((game, i) => (
+                            <AllTimeRow
+                                key={game.gameId}
+                                game={game}
+                                rank={i + 1}
+                            />
+                        ))}
+                    </div>
+                </div>
+            )}
         </Panel>
     );
 };
@@ -156,6 +186,34 @@ const HotGameCard = ({
                     </span>
                 </span>
             </div>
+        </Link>
+    );
+};
+
+const AllTimeRow = ({ game, rank }: { game: GameWithImage; rank: number }) => {
+    const imageUrl =
+        game.gameImage && game.gameImage !== 'noimage'
+            ? game.gameImage
+            : FALLBACK_IMAGE;
+
+    const hours = Math.round(game.totalRunTime / 3_600_000).toLocaleString();
+
+    return (
+        <Link
+            href={`/${safeEncodeURI(game.gameDisplay)}`}
+            className={styles.allTimeRow}
+        >
+            <span className={styles.allTimeRank}>{rank}</span>
+            <Image
+                src={imageUrl}
+                alt=""
+                width={30}
+                height={40}
+                className={styles.allTimeArt}
+                unoptimized
+            />
+            <span className={styles.allTimeName}>{game.gameDisplay}</span>
+            <span className={styles.allTimeHours}>{hours}h</span>
         </Link>
     );
 };
