@@ -257,6 +257,11 @@ $amber: #f59e0b;
 // ── Responsive ──
 
 @media (max-width: 768px) {
+    .stats {
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
     .statSecondary {
         display: none;
     }
