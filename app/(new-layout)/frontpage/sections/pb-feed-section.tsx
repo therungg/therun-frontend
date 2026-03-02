@@ -9,7 +9,7 @@ import { PbFeedClient } from './pb-feed-client';
 export const PbFeedSection = async () => {
     const [notablePbs, allPbs, gameImages] = await Promise.all([
         getRecentNotablePBs(10),
-        getRecentPBs(10),
+        getRecentPBs(15),
         getGameImageMap(),
     ]);
 
