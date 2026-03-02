@@ -356,6 +356,38 @@ $green-bright: #66bb6a;
     }
 }
 
+.listThumbWrap {
+    position: relative;
+    flex-shrink: 0;
+    width: 36px;
+    height: 48px;
+}
+
+.listGameThumb {
+    width: 36px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.listGameThumbFallback {
+    width: 36px;
+    height: 48px;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--bs-secondary-bg) 50%, transparent);
+}
+
+.listAvatarOverlay {
+    position: absolute;
+    bottom: -4px;
+    right: -6px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--bs-body-bg);
+}
+
 .listAvatar {
     width: 40px;
     height: 40px;

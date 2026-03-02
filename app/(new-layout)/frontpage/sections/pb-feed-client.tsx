@@ -50,6 +50,7 @@ export const PbFeedClient = ({
                             key={pb.id}
                             pb={pb}
                             avatarUrl={userPictures[pb.username]}
+                            gameImageUrl={gameImages[pb.game]}
                         />
                     ))}
                 </div>
@@ -490,25 +491,38 @@ const FeaturedCarousel = ({
 const CompactItem = ({
     pb,
     avatarUrl,
+    gameImageUrl,
 }: {
     pb: FinishedRunPB;
     avatarUrl?: string;
+    gameImageUrl?: string;
 }) => {
     const improvement = pb.previousPb !== null ? pb.previousPb - pb.time : null;
     const hasImprovement = improvement !== null && improvement > 0;
 
     return (
         <Link href={`/${pb.username}`} className={styles.listItem}>
-            {avatarUrl && (
-                <Image
-                    src={avatarUrl}
-                    alt=""
-                    width={40}
-                    height={40}
-                    className={styles.listAvatar}
-                    unoptimized
-                />
-            )}
+            <div className={styles.listThumbWrap}>
+                {gameImageUrl ? (
+                    <img
+                        src={gameImageUrl}
+                        alt=""
+                        className={styles.listGameThumb}
+                    />
+                ) : (
+                    <div className={styles.listGameThumbFallback} />
+                )}
+                {avatarUrl && (
+                    <Image
+                        src={avatarUrl}
+                        alt=""
+                        width={24}
+                        height={24}
+                        className={styles.listAvatarOverlay}
+                        unoptimized
+                    />
+                )}
+            </div>
             <div className={styles.listInfo}>
                 <span className={styles.listRunnerName}>{pb.username}</span>
                 <span className={styles.listGameCategory}>
