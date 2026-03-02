@@ -1,13 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import {
-    FaBolt,
-    FaClock,
-    FaCrown,
-    FaFire,
-    FaTrophy,
-    FaUsers,
-} from 'react-icons/fa6';
+import { FaCrown, FaFire } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import {
     type CategoryActivity,
@@ -171,28 +164,28 @@ const HotGameCard = ({
             </div>
             <div className={styles.stats}>
                 <span className={`${styles.stat} ${styles.statHighlight}`}>
-                    <FaClock size={11} aria-hidden="true" />
                     <span className={styles.statValue}>
                         {formatHoursCompact(game.totalPlaytime)}
                     </span>
+                    <span className={styles.statLabel}>Hours</span>
                 </span>
                 <span className={styles.stat}>
-                    <FaUsers size={11} aria-hidden="true" />
                     <span className={styles.statValue}>
                         {compact.format(game.uniquePlayers)}
                     </span>
+                    <span className={styles.statLabel}>Players</span>
                 </span>
                 <span className={`${styles.stat} ${styles.statSecondary}`}>
-                    <FaBolt size={11} aria-hidden="true" />
                     <span className={styles.statValue}>
                         {compact.format(game.totalAttempts)}
                     </span>
+                    <span className={styles.statLabel}>Attempts</span>
                 </span>
                 <span className={`${styles.stat} ${styles.statSecondary}`}>
-                    <FaTrophy size={11} aria-hidden="true" />
                     <span className={styles.statValue}>
                         {compact.format(game.totalPbs)}
                     </span>
+                    <span className={styles.statLabel}>PBs</span>
                 </span>
             </div>
         </Link>
