@@ -6,9 +6,13 @@ import { useCallback, useRef, useState, useTransition } from 'react';
 import { FaFire, FaTrophy } from 'react-icons/fa6';
 import {
     type CategoryActivity,
+    type CategoryStats,
     type GameActivity,
+    type GameWithImage,
     getCategoryActivityForGame,
     getGameActivity,
+    getTopCategoriesForGame,
+    getTopGames,
 } from '~src/lib/highlights';
 import { safeEncodeURI } from '~src/utils/uri';
 import styles from './trending-section.module.scss';
@@ -41,7 +45,7 @@ const PERIODS: PeriodDef[] = [
     { key: '7d', label: '7d', days: 7 },
     { key: '30d', label: '30d', days: 30 },
     { key: '1y', label: '1y', days: 365 },
-    { key: 'all', label: 'All Time', days: 365 * 15 },
+    { key: 'all', label: 'All Time', days: 0 },
 ];
 
 function getDateDaysAgo(days: number): string {
@@ -52,6 +56,38 @@ function getDateDaysAgo(days: number): string {
 
 function getToday(): string {
     return new Date().toISOString().split('T')[0];
+}
+
+// ── Normalizers: map all-time data shapes to GameActivity/CategoryActivity ──
+
+function normalizeGame(g: GameWithImage): GameActivity {
+    return {
+        gameId: g.gameId,
+        gameDisplay: g.gameDisplay,
+        gameImage: g.gameImage,
+        totalPlaytime: g.totalRunTime,
+        totalAttempts: g.totalAttemptCount,
+        totalFinishedAttempts: g.totalFinishedAttemptCount,
+        totalPbs: 0,
+        totalPbsWithPrevious: 0,
+        uniquePlayers: g.uniqueRunners,
+    };
+}
+
+function normalizeCategoryStat(c: CategoryStats): CategoryActivity {
+    return {
+        gameId: c.gameId,
+        categoryId: c.categoryId,
+        gameDisplay: c.gameDisplay,
+        categoryDisplay: c.categoryDisplay,
+        gameImage: c.gameImage ?? '',
+        totalPlaytime: c.totalRunTime,
+        totalAttempts: c.totalAttemptCount,
+        totalFinishedAttempts: c.totalFinishedAttemptCount,
+        totalPbs: 0,
+        totalPbsWithPrevious: 0,
+        uniquePlayers: c.uniqueRunners,
+    };
 }
 
 // ── Cache type ──
@@ -97,20 +133,38 @@ export const TrendingSectionClient = ({
             }
 
             startTransition(async () => {
-                const def = PERIODS.find((p) => p.key === period)!;
-                const from = getDateDaysAgo(def.days);
-                const to = getToday();
-
-                const fetchedGames = await getGameActivity(from, to, 5, 2);
-
+                let fetchedGames: GameActivity[];
                 const catMap: Record<number, CategoryActivity[]> = {};
-                const catResults = await Promise.all(
-                    fetchedGames.map((g) =>
-                        getCategoryActivityForGame(g.gameId, from, to, 3),
-                    ),
-                );
-                for (let i = 0; i < fetchedGames.length; i++) {
-                    catMap[fetchedGames[i].gameId] = catResults[i];
+
+                if (period === 'all') {
+                    const topGames = await getTopGames(5);
+                    fetchedGames = topGames.map(normalizeGame);
+
+                    const catResults = await Promise.all(
+                        topGames.map((g) =>
+                            getTopCategoriesForGame(g.gameId, 3),
+                        ),
+                    );
+                    for (let i = 0; i < topGames.length; i++) {
+                        catMap[topGames[i].gameId] = catResults[i].map(
+                            normalizeCategoryStat,
+                        );
+                    }
+                } else {
+                    const def = PERIODS.find((p) => p.key === period)!;
+                    const from = getDateDaysAgo(def.days);
+                    const to = getToday();
+
+                    fetchedGames = await getGameActivity(from, to, 5, 2);
+
+                    const catResults = await Promise.all(
+                        fetchedGames.map((g) =>
+                            getCategoryActivityForGame(g.gameId, from, to, 3),
+                        ),
+                    );
+                    for (let i = 0; i < fetchedGames.length; i++) {
+                        catMap[fetchedGames[i].gameId] = catResults[i];
+                    }
                 }
 
                 cache.current.set(period, {
