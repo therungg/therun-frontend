@@ -95,7 +95,7 @@ $amber: #f59e0b;
 
 .categories {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 0.3rem;
     overflow: hidden;
 }
@@ -109,6 +109,10 @@ $amber: #f59e0b;
     border-radius: 3px;
     background: color-mix(in srgb, var(--bs-secondary-bg) 80%, transparent);
     border: 1px solid color-mix(in srgb, var(--bs-border-color) 50%, transparent);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
 }
 
 .categoryName {
