@@ -1,0 +1,351 @@
+@use '../../styles/design-tokens' as *;
+@use '../../styles/mixins' as *;
+
+// ── Table wrapper ──
+
+.tableWrapper {
+    position: relative;
+    background: color-mix(
+        in srgb,
+        var(--bs-body-bg) 60%,
+        var(--bs-secondary-bg) 40%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    overflow: hidden;
+}
+
+// ── Loading bar (indeterminate) ──
+
+.loadingBar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    overflow: hidden;
+    z-index: 2;
+
+    &::after {
+        content: '';
+        display: block;
+        width: 40%;
+        height: 100%;
+        background: var(--bs-primary);
+        animation: loadingSlide 1.2s ease-in-out infinite;
+    }
+}
+
+@keyframes loadingSlide {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(350%);
+    }
+}
+
+// ── Table ──
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+// ── Header ──
+
+.thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--bs-secondary-bg);
+}
+
+.th {
+    padding: $spacing-sm $spacing-md;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.thLeft {
+    text-align: left;
+}
+
+.thRight {
+    text-align: right;
+}
+
+.thCenter {
+    text-align: center;
+}
+
+.thSortable {
+    cursor: pointer;
+    transition: color $transition-fast;
+
+    &:hover {
+        color: var(--bs-body-color);
+    }
+}
+
+.thSortActive {
+    color: var(--bs-primary);
+}
+
+.sortArrow {
+    display: inline-block;
+    margin-left: 0.25rem;
+    font-size: 0.6rem;
+    vertical-align: middle;
+}
+
+// ── Column widths ──
+
+.colRunner {
+    width: 18%;
+}
+
+.colGame {
+    width: 26%;
+}
+
+.colCategory {
+    width: 18%;
+}
+
+.colTime {
+    width: 14%;
+}
+
+.colDate {
+    width: 14%;
+}
+
+.colPb {
+    width: 10%;
+}
+
+// ── Body ──
+
+.dimmed {
+    opacity: 0.5;
+    transition: opacity $transition-fast;
+}
+
+// ── Data rows ──
+
+.row {
+    height: 44px;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+    transition:
+        background $transition-fast,
+        transform $transition-fast;
+
+    &:nth-child(even) {
+        background: rgba(var(--bs-secondary-bg-rgb), 0.18);
+    }
+
+    &:hover {
+        background: var(--bs-tertiary-bg);
+        transform: translateX(2px);
+    }
+}
+
+// ── Cells ──
+
+.td {
+    padding: $spacing-xs $spacing-md;
+    font-size: 0.85rem;
+    vertical-align: middle;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tdLeft {
+    text-align: left;
+}
+
+.tdRight {
+    text-align: right;
+}
+
+.tdCenter {
+    text-align: center;
+}
+
+.tdTime {
+    @include monospace-value;
+    text-align: right;
+}
+
+// ── Runner link ──
+
+.runnerLink {
+    color: var(--bs-primary);
+    text-decoration: none;
+    transition: text-decoration $transition-fast;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+// ── PB badge ──
+
+.pbCheck {
+    color: var(--bs-success);
+    font-size: 1rem;
+}
+
+// ── Date cell ──
+
+.dateText {
+    color: var(--bs-secondary-color);
+    font-size: 0.82rem;
+}
+
+// ── Skeleton rows ──
+
+.skeletonRow {
+    height: 44px;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.1);
+}
+
+.skeletonCell {
+    padding: $spacing-xs $spacing-md;
+    vertical-align: middle;
+}
+
+.skeletonBar {
+    height: 14px;
+    border-radius: $radius-sm;
+    background: rgba(var(--bs-secondary-bg-rgb), 0.5);
+    animation: shimmer 1.5s ease-in-out infinite;
+}
+
+.skeletonBarShort {
+    width: 60%;
+}
+
+.skeletonBarMedium {
+    width: 80%;
+}
+
+.skeletonBarFull {
+    width: 90%;
+}
+
+.skeletonBarNarrow {
+    width: 50%;
+    margin-left: auto;
+}
+
+.skeletonBarTiny {
+    width: 24px;
+    margin: 0 auto;
+}
+
+@keyframes shimmer {
+    0%,
+    100% {
+        opacity: 0.4;
+    }
+    50% {
+        opacity: 0.8;
+    }
+}
+
+// ── Empty state ──
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: $spacing-3xl $spacing-lg;
+    gap: $spacing-sm;
+}
+
+.emptyIcon {
+    font-size: 2rem;
+    color: var(--bs-secondary-color);
+    opacity: 0.5;
+    margin-bottom: $spacing-xs;
+}
+
+.emptyTitle {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    margin: 0;
+}
+
+.emptySubtitle {
+    font-size: 0.82rem;
+    color: var(--bs-secondary-color);
+    margin: 0;
+}
+
+.clearButton {
+    margin-top: $spacing-sm;
+    padding: 0.4rem 1rem;
+    border: none;
+    border-radius: $radius-sm;
+    background: var(--bs-primary);
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+        background $transition-fast,
+        box-shadow $transition-fast;
+
+    &:hover {
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.2);
+    }
+}
+
+// ── Responsive ──
+
+@media (max-width: 768px) {
+    .colRunner {
+        width: 22%;
+    }
+
+    .colGame {
+        width: 24%;
+    }
+
+    .colCategory {
+        display: none;
+    }
+
+    .colTime {
+        width: 18%;
+    }
+
+    .colDate {
+        width: 18%;
+    }
+
+    .colPb {
+        width: 10%;
+    }
+
+    .hideMobile {
+        display: none;
+    }
+
+    .th,
+    .td {
+        padding: $spacing-xs $spacing-sm;
+        font-size: 0.78rem;
+    }
+}
