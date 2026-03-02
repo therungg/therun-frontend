@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { FaCrown, FaFire } from 'react-icons/fa6';
+import { FaCrown, FaFire, FaTrophy } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import {
     type CategoryActivity,
@@ -127,9 +127,9 @@ const HotGameCard = ({
     return (
         <Link
             href={`/${safeEncodeURI(game.gameDisplay)}`}
-            className={`${styles.gameCard} ${isTop ? styles.gameCardTop : ''}`}
+            className={styles.gameCard}
         >
-            <span className={styles.rank}>{rank}</span>
+            <RankBadge rank={rank} />
             <Image
                 src={imageUrl}
                 alt=""
@@ -189,6 +189,25 @@ const HotGameCard = ({
                 </span>
             </div>
         </Link>
+    );
+};
+
+const TROPHY_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32'] as const;
+
+const RankBadge = ({ rank }: { rank: number }) => {
+    if (rank <= 3) {
+        return (
+            <span className={styles.rank}>
+                <FaTrophy
+                    size={14}
+                    color={TROPHY_COLORS[rank - 1]}
+                    aria-label={`#${rank}`}
+                />
+            </span>
+        );
+    }
+    return (
+        <span className={`${styles.rank} ${styles.rankNumber}`}>{rank}</span>
     );
 };
 
