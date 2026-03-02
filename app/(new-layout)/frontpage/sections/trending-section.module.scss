@@ -259,7 +259,19 @@ $amber: #f59e0b;
 @media (max-width: 768px) {
     .stats {
         flex-direction: column;
+        align-items: flex-end;
         gap: 0.25rem;
+    }
+
+    .stat {
+        flex-direction: row;
+        align-items: baseline;
+        gap: 0.3rem;
+    }
+
+    .statLabel {
+        width: 3.5rem;
+        text-align: left;
     }
 
     .statSecondary {
