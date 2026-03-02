@@ -44,18 +44,18 @@ $amber: #f59e0b;
     }
 }
 
-.gameCardTop {
-    border-left: 3px solid $amber;
-    padding-left: calc(0.5rem - 3px);
+.rank {
+    width: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
-.rank {
-    width: 1.5rem;
-    text-align: center;
-    font-size: 1rem;
+.rankNumber {
+    font-size: 0.85rem;
     font-weight: 600;
     color: var(--bs-secondary-color);
-    flex-shrink: 0;
 }
 
 .gameArt {
