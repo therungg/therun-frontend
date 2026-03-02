@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useState, useTransition } from 'react';
 import {
-    type PaginatedFinishedRuns,
+    type FinishedRunsResult,
     searchFinishedRuns,
 } from '~src/lib/finished-runs';
 import { parseDuration } from './duration-utils';
@@ -78,7 +78,7 @@ export function RunsExplorer() {
         filtersFromParams(searchParams),
     );
     const [page, setPage] = useState(() => pageFromParams(searchParams));
-    const [data, setData] = useState<PaginatedFinishedRuns | null>(null);
+    const [data, setData] = useState<FinishedRunsResult | null>(null);
 
     const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
     const mountedRef = useRef(false);
@@ -168,7 +168,6 @@ export function RunsExplorer() {
                 filters={filters}
                 onFilterChange={handleFilterChange}
                 onClearAll={handleClearAll}
-                resultCount={data?.totalItems}
                 isPending={isPending}
             />
             <RunsTable
@@ -178,10 +177,10 @@ export function RunsExplorer() {
                 onSortChange={handleSortChange}
                 onClearFilters={handleClearAll}
             />
-            {data && (
+            {data && (page > 1 || data.hasMore) && (
                 <RunsPagination
                     page={page}
-                    totalPages={data.totalPages}
+                    hasMore={data.hasMore}
                     onPageChange={handlePageChange}
                 />
             )}

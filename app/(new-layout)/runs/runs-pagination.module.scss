@@ -50,23 +50,10 @@
     gap: 0.25rem;
 }
 
-.ellipsis {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 36px;
-    height: 36px;
-    color: var(--bs-secondary-color);
+.pageIndicator {
     font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--bs-secondary-color);
+    padding: 0 $spacing-sm;
     user-select: none;
-}
-
-@media (max-width: 479px) {
-    .pageBtn:not(.navBtn) {
-        display: none;
-    }
-
-    .ellipsis {
-        display: none;
-    }
 }

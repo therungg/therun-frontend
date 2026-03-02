@@ -17,17 +17,20 @@ export interface FinishedRunsSearchParams {
     limit?: number;
 }
 
-export interface PaginatedFinishedRuns {
+export interface FinishedRunsResult {
     items: FinishedRunPB[];
-    totalItems: number;
-    page: number;
-    pageSize: number;
-    totalPages: number;
+    hasMore: boolean;
 }
+
+const PAGE_SIZE = 25;
 
 export async function searchFinishedRuns(
     params: FinishedRunsSearchParams,
-): Promise<PaginatedFinishedRuns> {
+): Promise<FinishedRunsResult> {
+    const limit = params.limit ?? PAGE_SIZE;
+    const page = params.page ?? 1;
+    const offset = (page - 1) * limit;
+
     const qs = new URLSearchParams();
     if (params.game) qs.set('game', params.game);
     if (params.category) qs.set('category', params.category);
@@ -38,10 +41,16 @@ export async function searchFinishedRuns(
     if (params.afterDate) qs.set('after_date', params.afterDate);
     if (params.beforeDate) qs.set('before_date', params.beforeDate);
     if (params.sort) qs.set('sort', params.sort);
-    if (params.page) qs.set('page', String(params.page));
-    qs.set('limit', String(params.limit ?? 25));
+    if (offset > 0) qs.set('offset', String(offset));
+    // Request one extra to detect if there are more pages
+    qs.set('limit', String(limit + 1));
 
-    return apiFetch<PaginatedFinishedRuns>(
+    const all = await apiFetch<FinishedRunPB[]>(
         `/v1/finished-runs?${qs.toString()}`,
     );
+
+    const hasMore = all.length > limit;
+    const items = hasMore ? all.slice(0, limit) : all;
+
+    return { items, hasMore };
 }
