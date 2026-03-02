@@ -93,21 +93,12 @@ $amber: #f59e0b;
     font-size: 1.1rem;
 }
 
-.categories {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.3rem;
-}
-
 .category {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: 0.75rem;
-    padding: 0.1rem 0.4rem;
-    border-radius: 3px;
-    background: color-mix(in srgb, var(--bs-secondary-bg) 80%, transparent);
-    border: 1px solid color-mix(in srgb, var(--bs-border-color) 50%, transparent);
+    font-size: 0.85rem;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .categoryName {
@@ -116,8 +107,10 @@ $amber: #f59e0b;
 
 .categoryTime {
     font-family: $mono;
+    font-size: 0.8rem;
     font-weight: 600;
-    color: var(--bs-body-color);
+    color: var(--bs-secondary-color);
+    margin-left: 0.35rem;
 }
 
 // ── Stats ──
@@ -268,28 +261,6 @@ $amber: #f59e0b;
 
     .statSecondary {
         display: none;
-    }
-
-    .categories {
-        flex-wrap: nowrap;
-        gap: 0;
-    }
-
-    .category {
-        background: none;
-        border: none;
-        padding: 0;
-        font-size: 0.8rem;
-
-        &::after {
-            content: '·';
-            margin: 0 0.3rem;
-            color: var(--bs-secondary-color);
-        }
-
-        &:last-child::after {
-            display: none;
-        }
     }
 
     .categoryTime {
