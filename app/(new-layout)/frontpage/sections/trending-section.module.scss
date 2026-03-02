@@ -106,7 +106,8 @@ $amber: #f59e0b;
     font-size: 0.75rem;
     padding: 0.1rem 0.4rem;
     border-radius: 3px;
-    background: color-mix(in srgb, var(--bs-secondary-bg) 40%, transparent);
+    background: color-mix(in srgb, var(--bs-secondary-bg) 80%, transparent);
+    border: 1px solid color-mix(in srgb, var(--bs-border-color) 50%, transparent);
 }
 
 .categoryName {
