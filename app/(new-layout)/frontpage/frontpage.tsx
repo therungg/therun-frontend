@@ -5,6 +5,7 @@ import { FrontpageHero } from './components/frontpage-hero';
 import { SectionNav } from './components/section-nav';
 import { SectionSkeleton } from './components/section-skeleton';
 import { CommunityPulse } from './sections/community-pulse';
+import { MostPopularSection } from './sections/most-popular';
 import { PatreonSection } from './sections/patreon-section';
 import { PbFeedSection } from './sections/pb-feed-section';
 import { QuickLinks } from './sections/quick-links';
@@ -40,6 +41,12 @@ export default async function FrontPage({ statsUser }: { statsUser?: string }) {
                 </Col>
                 <Col lg={4} xs={12} as="aside" aria-label="Stats and community">
                     <div className="d-flex flex-column gap-4">
+                        <Suspense fallback={<SectionSkeleton height={150} />}>
+                            <QuickLinks />
+                        </Suspense>
+                        <Suspense fallback={<SectionSkeleton height={200} />}>
+                            <MostPopularSection />
+                        </Suspense>
                         {isLoggedIn && (
                             <Suspense
                                 fallback={<SectionSkeleton height={300} />}
@@ -49,9 +56,6 @@ export default async function FrontPage({ statsUser }: { statsUser?: string }) {
                         )}
                         <Suspense fallback={<SectionSkeleton height={300} />}>
                             <CommunityPulse />
-                        </Suspense>
-                        <Suspense fallback={<SectionSkeleton height={150} />}>
-                            <QuickLinks />
                         </Suspense>
                         {!isLoggedIn && (
                             <Suspense
