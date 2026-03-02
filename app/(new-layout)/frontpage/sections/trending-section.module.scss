@@ -95,8 +95,9 @@ $amber: #f59e0b;
 
 .categories {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 0.3rem;
+    overflow: hidden;
 }
 
 .category {
@@ -251,6 +252,12 @@ $amber: #f59e0b;
 
 // ── Responsive ──
 
+@media (max-width: 768px) {
+    .statSecondary {
+        display: none;
+    }
+}
+
 @media (max-width: 480px) {
     .content {
         padding: 0.75rem 1rem;
@@ -264,10 +271,6 @@ $amber: #f59e0b;
     .gameArtTop {
         width: 56px;
         height: 75px;
-    }
-
-    .statSecondary {
-        display: none;
     }
 
     .categories {
