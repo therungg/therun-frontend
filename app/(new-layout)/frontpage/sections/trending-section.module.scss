@@ -137,6 +137,86 @@ $amber: #f59e0b;
     }
 }
 
+// ── All-Time footer ──
+
+.allTimeZone {
+    padding: 0.6rem 1.25rem 0.75rem;
+    border-top: 1px solid var(--bs-border-color);
+    background: color-mix(in srgb, var(--bs-secondary-bg) 20%, transparent);
+}
+
+.allTimeHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--bs-secondary-color);
+    margin: 0 0 0.35rem;
+}
+
+.allTimeList {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.allTimeRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.4rem;
+    border-radius: 0.35rem;
+    text-decoration: none;
+    color: inherit;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+        background-color: color-mix(in srgb, var(--bs-secondary-bg) 50%, transparent);
+        text-decoration: none;
+        color: inherit;
+    }
+}
+
+.allTimeRank {
+    width: 1.25rem;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    flex-shrink: 0;
+}
+
+.allTimeArt {
+    width: 30px;
+    height: 40px;
+    border-radius: 3px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.allTimeName {
+    flex: 1;
+    min-width: 0;
+    font-weight: 500;
+    font-size: 0.85rem;
+    color: var(--bs-body-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.allTimeHours {
+    font-family: $mono;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
 // ── Empty state ──
 
 .empty {
@@ -164,6 +244,14 @@ $amber: #f59e0b;
     }
 
     .statSecondary {
+        display: none;
+    }
+
+    .allTimeZone {
+        padding: 0.5rem 1rem 0.6rem;
+    }
+
+    .allTimeRank {
         display: none;
     }
 }
