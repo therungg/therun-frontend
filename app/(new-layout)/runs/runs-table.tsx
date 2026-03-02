@@ -158,6 +158,15 @@ function SortableHeader({
         <th
             className={`${styles.th} ${alignClass} ${styles.thSortable} ${isActive ? styles.thSortActive : ''}`}
             onClick={() => onSortChange(toggleSort(sort, field))}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onSortChange(toggleSort(sort, field));
+                }
+            }}
+            tabIndex={0}
+            role="button"
+            aria-label={`Sort by ${label}`}
         >
             {label}
             {isActive && (

@@ -7,10 +7,10 @@
     display: flex;
     flex-direction: column;
     gap: $spacing-sm;
-    background: color-mix(
-        in srgb,
-        var(--bs-body-bg) 60%,
-        var(--bs-secondary-bg) 40%
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 60%, var(--bs-secondary-bg) 40%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 40%, var(--bs-secondary-bg) 60%) 100%
     );
     border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
     border-radius: $radius-lg;
@@ -91,6 +91,11 @@
         background: rgba(var(--bs-primary-rgb), 0.08);
         color: var(--bs-body-color);
     }
+
+    &:focus-visible {
+        outline: 2px solid var(--bs-primary);
+        outline-offset: 2px;
+    }
 }
 
 .pbToggleActive {
@@ -126,6 +131,11 @@
     &:hover {
         background: rgba(var(--bs-primary-rgb), 0.08);
         color: var(--bs-body-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--bs-primary);
+        outline-offset: 2px;
     }
 }
 
@@ -227,7 +237,7 @@
 }
 
 .dateInput {
-    color-scheme: dark;
+    color-scheme: var(--bs-color-scheme, dark);
 }
 
 // ── Chips row ──
@@ -247,6 +257,18 @@
     align-items: center;
     gap: 0.35rem;
     cursor: default;
+    animation: chipIn 0.15s ease-out;
+}
+
+@keyframes chipIn {
+    from {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 .chipRemove {

@@ -5,10 +5,10 @@
 
 .tableWrapper {
     position: relative;
-    background: color-mix(
-        in srgb,
-        var(--bs-body-bg) 60%,
-        var(--bs-secondary-bg) 40%
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 60%, var(--bs-secondary-bg) 40%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 40%, var(--bs-secondary-bg) 60%) 100%
     );
     border: $section-border;
     border-radius: $radius-lg;
@@ -39,6 +39,9 @@
 @keyframes loadingSlide {
     0% {
         transform: translateX(-100%);
+    }
+    50% {
+        transform: translateX(100%);
     }
     100% {
         transform: translateX(350%);
@@ -91,6 +94,11 @@
 
     &:hover {
         color: var(--bs-body-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--bs-primary);
+        outline-offset: 2px;
     }
 }
 
@@ -226,7 +234,13 @@
 .skeletonBar {
     height: 14px;
     border-radius: $radius-sm;
-    background: rgba(var(--bs-secondary-bg-rgb), 0.5);
+    background: linear-gradient(
+        90deg,
+        rgba(var(--bs-secondary-bg-rgb), 0.4) 25%,
+        rgba(var(--bs-secondary-bg-rgb), 0.7) 50%,
+        rgba(var(--bs-secondary-bg-rgb), 0.4) 75%
+    );
+    background-size: 200% 100%;
     animation: shimmer 1.5s ease-in-out infinite;
 }
 
@@ -253,12 +267,11 @@
 }
 
 @keyframes shimmer {
-    0%,
-    100% {
-        opacity: 0.4;
+    0% {
+        background-position: 200% 0;
     }
-    50% {
-        opacity: 0.8;
+    100% {
+        background-position: -200% 0;
     }
 }
 
@@ -309,6 +322,11 @@
 
     &:hover {
         box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.2);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--bs-primary);
+        outline-offset: 2px;
     }
 }
 
