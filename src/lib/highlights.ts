@@ -154,7 +154,7 @@ export async function getGameImageMap(): Promise<Record<string, string>> {
 
 export async function getTopGames(limit = 3): Promise<GameWithImage[]> {
     'use cache';
-    cacheLife('hours');
+    cacheLife('days');
     cacheTag('top-games');
 
     return apiFetch<GameWithImage[]>(
