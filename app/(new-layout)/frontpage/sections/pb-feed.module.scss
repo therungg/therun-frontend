@@ -16,6 +16,7 @@ $green-bright: #66bb6a;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
     scroll-behavior: smooth;
+    touch-action: none;
     cursor: grab;
 
     &:active {
@@ -39,6 +40,20 @@ $green-bright: #66bb6a;
     height: 210px;
     overflow: hidden;
     border-radius: 0 1rem 0 0;
+}
+
+.featuredLink {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+    user-select: none;
+
+    &:hover {
+        text-decoration: none;
+        color: inherit;
+    }
 }
 
 /* ── Game art — portrait cover, right-aligned ── */
