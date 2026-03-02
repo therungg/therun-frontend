@@ -1,0 +1,309 @@
+@use '../../styles/design-tokens' as *;
+@use '../../styles/mixins' as *;
+
+// ── Filter bar container ──
+
+.filterBar {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    background: color-mix(
+        in srgb,
+        var(--bs-body-bg) 60%,
+        var(--bs-secondary-bg) 40%
+    );
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: $radius-lg;
+    padding: $spacing-md $spacing-lg;
+}
+
+// ── Controls row ──
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    flex-wrap: wrap;
+}
+
+// ── Text inputs ──
+
+.inputGroup {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    flex: 1;
+    min-width: 120px;
+}
+
+.inputLabel {
+    font-size: 0.8rem;
+    font-weight: $label-font-weight;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    user-select: none;
+}
+
+.textInput {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+    background: var(--bs-tertiary-bg);
+    color: var(--bs-body-color);
+    border: 1px solid transparent;
+    border-radius: $radius-sm;
+    outline: none;
+    transition:
+        border-color $transition-fast,
+        box-shadow $transition-fast;
+
+    &::placeholder {
+        color: var(--bs-secondary-color);
+        opacity: 0.5;
+    }
+
+    &:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 2px rgba(var(--bs-primary-rgb), 0.15);
+    }
+}
+
+// ── PB toggle pill ──
+
+.pbToggle {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.4rem 0.75rem;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
+    border-radius: 100px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+        background $transition-fast,
+        color $transition-fast,
+        border-color $transition-fast;
+
+    &:hover:not(.pbToggleActive) {
+        background: rgba(var(--bs-primary-rgb), 0.08);
+        color: var(--bs-body-color);
+    }
+}
+
+.pbToggleActive {
+    background: var(--bs-primary);
+    color: #fff;
+    border-color: var(--bs-primary);
+}
+
+// ── Dropdown triggers (Time / Date) ──
+
+.triggerWrapper {
+    position: relative;
+}
+
+.trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.4rem 0.65rem;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: $radius-sm;
+    font-size: 0.8rem;
+    font-weight: $label-font-weight;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+        background $transition-fast,
+        color $transition-fast,
+        border-color $transition-fast;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.08);
+        color: var(--bs-body-color);
+    }
+}
+
+.triggerActive {
+    background: rgba(var(--bs-primary-rgb), 0.12);
+    color: $badge-color;
+    border-color: rgba(var(--bs-primary-rgb), 0.3);
+}
+
+.triggerOpen {
+    border-color: var(--bs-primary);
+}
+
+// ── Chevron icon rotation ──
+
+.chevron {
+    transition: transform $transition-fast;
+}
+
+.chevronOpen {
+    transform: rotate(180deg);
+}
+
+// ── Popover ──
+
+.popover {
+    position: absolute;
+    top: calc(100% + $spacing-xs);
+    left: 0;
+    z-index: 100;
+    min-width: 220px;
+    padding: $spacing-md;
+    background: var(--bs-body-bg);
+    border: $section-border;
+    border-radius: $radius-md;
+    box-shadow: $shadow-lg;
+
+    // Animated entrance
+    animation: popoverEnter $transition-base forwards;
+    transform-origin: top left;
+}
+
+@keyframes popoverEnter {
+    from {
+        opacity: 0;
+        transform: scaleY(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scaleY(1);
+    }
+}
+
+.popoverFields {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+}
+
+.popoverField {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+}
+
+.popoverLabel {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--bs-secondary-color);
+}
+
+.popoverInput {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+    background: var(--bs-tertiary-bg);
+    color: var(--bs-body-color);
+    border: 1px solid transparent;
+    border-radius: $radius-sm;
+    outline: none;
+    transition:
+        border-color $transition-fast,
+        box-shadow $transition-fast;
+
+    &::placeholder {
+        color: var(--bs-secondary-color);
+        opacity: 0.5;
+    }
+
+    &:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 2px rgba(var(--bs-primary-rgb), 0.15);
+    }
+}
+
+.durationInput {
+    @include monospace-value;
+}
+
+.dateInput {
+    color-scheme: dark;
+}
+
+// ── Chips row ──
+
+.chipsRow {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    flex-wrap: wrap;
+    padding-top: $spacing-xs;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.1);
+}
+
+.chip {
+    @include status-badge;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    cursor: default;
+}
+
+.chipRemove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    opacity: 0.6;
+    cursor: pointer;
+    transition: opacity $transition-fast;
+    line-height: 1;
+
+    &:hover {
+        opacity: 1;
+    }
+}
+
+.clearAll {
+    margin-left: auto;
+    padding: 0;
+    border: none;
+    background: none;
+    font-size: 0.8rem;
+    font-weight: $label-font-weight;
+    color: var(--bs-secondary-color);
+    cursor: pointer;
+    transition: color $transition-fast;
+    white-space: nowrap;
+
+    &:hover {
+        color: var(--bs-body-color);
+    }
+}
+
+// ── Result count / pending state ──
+
+.resultCount {
+    font-size: 0.8rem;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+
+.pending {
+    opacity: 0.5;
+}
+
+// ── Responsive ──
+
+@media (max-width: 768px) {
+    .filterBar {
+        padding: $spacing-sm $spacing-md;
+    }
+
+    .inputGroup {
+        min-width: 100px;
+    }
+}
