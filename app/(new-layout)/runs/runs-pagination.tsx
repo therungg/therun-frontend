@@ -53,7 +53,7 @@ export function RunsPagination({
                 onClick={() => onPageChange(page - 1)}
                 aria-label="Previous page"
             >
-                <FiChevronLeft /> Prev
+                <FiChevronLeft size={14} /> <span>Prev</span>
             </button>
 
             {pages.map((item, idx) =>
@@ -86,7 +86,7 @@ export function RunsPagination({
                 onClick={() => onPageChange(page + 1)}
                 aria-label="Next page"
             >
-                Next <FiChevronRight />
+                <span>Next</span> <FiChevronRight size={14} />
             </button>
         </nav>
     );
