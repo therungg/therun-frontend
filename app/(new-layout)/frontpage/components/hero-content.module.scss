@@ -677,6 +677,30 @@
     transform: translateX(3px);
 }
 
+/* ── Medium desktop: hide game art to give featured panel room ── */
+
+@media (min-width: 992px) and (max-width: 1599px) {
+    .gameArtWrapper {
+        display: none;
+    }
+
+    .featuredContentWithArt {
+        max-width: 100%;
+    }
+
+}
+
+@media (min-width: 992px) and (max-width: 1199px) {
+    .sidebarCardArt,
+    .sidebarCardArtFallback {
+        display: none;
+    }
+
+    .sidebarCardContent {
+        padding-right: 0.65rem;
+    }
+}
+
 /* ── Mobile ── */
 
 @media (max-width: 991px) {
@@ -687,14 +711,6 @@
 
     .featuredContent {
         padding: 1.25rem;
-    }
-
-    .featuredContentWithArt {
-        max-width: 100%;
-    }
-
-    .gameArtWrapper {
-        display: none;
     }
 
     .mainTimer {
@@ -732,6 +748,16 @@
 
     .progressMeta {
         font-size: 0.7rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .gameArtWrapper {
+        display: none;
+    }
+
+    .featuredContentWithArt {
+        max-width: 100%;
     }
 }
 

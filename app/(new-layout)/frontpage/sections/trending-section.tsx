@@ -38,6 +38,7 @@ export const TrendingSection = async () => {
             title="Trending Games"
             subtitle="What's Hot"
             className="p-0 overflow-hidden"
+            link={{ url: '/games', text: 'All Games' }}
         >
             <TrendingSectionClient
                 initialGames={hotGames}

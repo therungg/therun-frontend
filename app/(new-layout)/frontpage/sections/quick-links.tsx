@@ -124,7 +124,12 @@ export const QuickLinks = async () => {
     const links = getLinks(session);
 
     return (
-        <Panel subtitle="Navigate" title="Quick Links" className="p-0">
+        <Panel
+            subtitle="Navigate"
+            title="Quick Links"
+            panelId="quick-links"
+            className="p-0"
+        >
             <div className={styles.content}>
                 <div className={styles.group}>
                     <h3 className={styles.groupLabel}>Explore</h3>

@@ -149,7 +149,7 @@
 // ── Data rows ──
 
 .row {
-    height: 44px;
+    height: 56px;
     border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
     transition:
         background $transition-fast,
@@ -191,11 +191,29 @@
 .tdTime {
     @include monospace-value;
     text-align: right;
+    line-height: 1.2;
+    white-space: normal;
+}
+
+.timeLabel {
+    font-size: 0.72rem;
+    color: var(--bs-secondary-color);
+    font-weight: 400;
+}
+
+.secondaryTime {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--bs-secondary-color);
+    opacity: 0.7;
 }
 
 // ── Runner link ──
 
 .runnerLink {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
     color: var(--bs-primary);
     text-decoration: none;
     transition: text-decoration $transition-fast;
@@ -205,11 +223,73 @@
     }
 }
 
+.userAvatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+// ── Game cell ──
+
+.gameCell {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
+}
+
+.gameName {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.categoryInline {
+    display: none;
+}
+
+.tdGame {
+    padding-top: 0;
+    padding-bottom: 0;
+}
+
+.gameThumb {
+    width: 42px;
+    height: 56px;
+    border-radius: 3px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.gameThumbFallback {
+    width: 42px;
+    height: 56px;
+    border-radius: 3px;
+    object-fit: contain;
+    flex-shrink: 0;
+    opacity: 0.4;
+    padding: 8px;
+}
+
 // ── PB badge ──
+
+.pbCell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.2;
+}
 
 .pbCheck {
     color: var(--bs-success);
     font-size: 1rem;
+}
+
+.pbDelta {
+    @include monospace-value;
+    font-size: 0.7rem;
+    color: var(--bs-success);
+    opacity: 0.8;
 }
 
 // ── Date cell ──
@@ -222,7 +302,7 @@
 // ── Skeleton rows ──
 
 .skeletonRow {
-    height: 44px;
+    height: 56px;
     border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.1);
 }
 
@@ -334,36 +414,99 @@
 
 @media (max-width: 768px) {
     .colRunner {
-        width: 22%;
+        width: 30%;
     }
 
     .colGame {
-        width: 24%;
+        width: 35%;
     }
 
     .colCategory {
-        display: none;
+        width: 0;
     }
 
     .colTime {
-        width: 18%;
+        width: 20%;
     }
 
     .colDate {
-        width: 18%;
+        width: 0;
     }
 
     .colPb {
-        width: 10%;
+        width: 15%;
     }
 
     .hideMobile {
         display: none;
     }
 
+    .row {
+        height: 48px;
+    }
+
+    .skeletonRow {
+        height: 48px;
+    }
+
+    .userAvatar {
+        width: 22px;
+        height: 22px;
+    }
+
+    .gameThumb,
+    .gameThumbFallback {
+        display: none;
+    }
+
+    .tdGame {
+        padding-top: $spacing-xs;
+        padding-bottom: $spacing-xs;
+        white-space: normal;
+    }
+
+    .categoryInline {
+        display: block;
+        font-size: 0.68rem;
+        color: var(--bs-secondary-color);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
     .th,
     .td {
         padding: $spacing-xs $spacing-sm;
         font-size: 0.78rem;
+    }
+
+    .secondaryTime {
+        font-size: 0.65rem;
+    }
+
+    .pbDelta {
+        font-size: 0.6rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .colRunner {
+        width: 35%;
+    }
+
+    .colGame {
+        width: 40%;
+    }
+
+    .colTime {
+        width: 25%;
+    }
+
+    .colPb {
+        width: 0;
+    }
+
+    .hideXs {
+        display: none;
     }
 }

@@ -415,10 +415,12 @@ const FeaturedRunPanel = ({
                             </span>
                         </span>
                     </div>
-                    <div className={styles.liveBadge}>
-                        <span className={styles.liveDot} />
-                        LIVE
-                    </div>
+                    {!staleReason && (
+                        <div className={styles.liveBadge}>
+                            <span className={styles.liveDot} />
+                            LIVE
+                        </div>
+                    )}
                 </div>
 
                 {/* Timer block — total + delta on one line, segment below */}

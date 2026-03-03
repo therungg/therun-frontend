@@ -26,13 +26,16 @@ export interface CategoryStats {
     totalRunTime: number;
     totalAttemptCount: number;
     totalFinishedAttemptCount: number;
+    totalPbs: number;
     uniqueRunners: number;
 }
 
 export interface FinishedRunPB {
     id: number;
     username: string;
+    userPicture: string | null;
     game: string;
+    gameImage: string | null;
     category: string;
     time: number;
     gameTime: number | null;
@@ -67,6 +70,7 @@ export interface GameWithImage {
     totalRunTime: number;
     totalAttemptCount: number;
     totalFinishedAttemptCount: number;
+    totalPbs: number;
     uniqueRunners: number;
 }
 
@@ -103,14 +107,22 @@ export async function getGlobalStats(offset?: string): Promise<GlobalStats> {
     return apiFetch<GlobalStats>(`/v1/runs/global-stats${query}`);
 }
 
+interface PaginatedFinishedRuns {
+    data: FinishedRunPB[];
+    totalCount: number;
+    limit: number;
+    offset: number;
+}
+
 export async function getRecentNotablePBs(limit = 5): Promise<FinishedRunPB[]> {
     'use cache';
     cacheLife('minutes');
     cacheTag('notable-pbs');
 
-    return apiFetch<FinishedRunPB[]>(
+    const res = await apiFetch<PaginatedFinishedRuns>(
         `/v1/finished-runs?top_categories=250&min_playtime=50&is_pb=true&sort=-ended_at&limit=${limit}`,
     );
+    return res.data;
 }
 
 export async function getRecentPBs(limit = 20): Promise<FinishedRunPB[]> {
@@ -118,9 +130,10 @@ export async function getRecentPBs(limit = 20): Promise<FinishedRunPB[]> {
     cacheLife('minutes');
     cacheTag('recent-pbs');
 
-    return apiFetch<FinishedRunPB[]>(
+    const res = await apiFetch<PaginatedFinishedRuns>(
         `/v1/finished-runs?is_pb=true&sort=-ended_at&limit=${limit}`,
     );
+    return res.data;
 }
 
 export async function getMostActiveGames(
