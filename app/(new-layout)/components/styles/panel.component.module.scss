@@ -109,6 +109,17 @@ $tab-height: 4rem;
     z-index: 1;
 }
 
+@media (max-width: 768px) {
+    .bookmarkFolder .url {
+        position: static;
+        display: block;
+        transform: none;
+        text-align: right;
+        padding: 0.5rem 0.75rem 0;
+        font-size: 0.82rem;
+    }
+}
+
 // Dark mode shadow adjustments
 [data-bs-theme="dark"] {
     .bookmarkFolder {

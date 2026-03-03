@@ -256,49 +256,57 @@ const HotGameCard = ({
                 >
                     {game.gameDisplay}
                 </span>
-                {categories.length > 0 && (
-                    <div className={styles.categories}>
-                        {categories.slice(0, 3).map((c) => (
-                            <span
-                                key={c.categoryId}
-                                className={styles.category}
-                            >
-                                <span className={styles.categoryName}>
-                                    {c.categoryDisplay}
+                <div className={styles.gameBottom}>
+                    {categories.length > 0 && (
+                        <div className={styles.categories}>
+                            {categories.slice(0, 3).map((c) => (
+                                <span
+                                    key={c.categoryId}
+                                    className={styles.category}
+                                >
+                                    <span className={styles.categoryName}>
+                                        {c.categoryDisplay}
+                                    </span>
+                                    <span className={styles.categoryTime}>
+                                        {formatHoursCompact(c.totalPlaytime)}h
+                                    </span>
                                 </span>
-                                <span className={styles.categoryTime}>
-                                    {formatHoursCompact(c.totalPlaytime)}h
-                                </span>
+                            ))}
+                        </div>
+                    )}
+                    <div className={styles.stats}>
+                        <span
+                            className={`${styles.stat} ${styles.statHighlight}`}
+                        >
+                            <span className={styles.statValue}>
+                                {formatHoursCompact(game.totalPlaytime)}
                             </span>
-                        ))}
+                            <span className={styles.statLabel}>Hours</span>
+                        </span>
+                        <span className={styles.stat}>
+                            <span className={styles.statValue}>
+                                {compact.format(game.uniquePlayers)}
+                            </span>
+                            <span className={styles.statLabel}>Players</span>
+                        </span>
+                        <span
+                            className={`${styles.stat} ${styles.statSecondary}`}
+                        >
+                            <span className={styles.statValue}>
+                                {compact.format(game.totalAttempts)}
+                            </span>
+                            <span className={styles.statLabel}>Attempts</span>
+                        </span>
+                        <span
+                            className={`${styles.stat} ${styles.statSecondary}`}
+                        >
+                            <span className={styles.statValue}>
+                                {compact.format(game.totalPbs)}
+                            </span>
+                            <span className={styles.statLabel}>PBs</span>
+                        </span>
                     </div>
-                )}
-            </div>
-            <div className={styles.stats}>
-                <span className={`${styles.stat} ${styles.statHighlight}`}>
-                    <span className={styles.statValue}>
-                        {formatHoursCompact(game.totalPlaytime)}
-                    </span>
-                    <span className={styles.statLabel}>Hours</span>
-                </span>
-                <span className={styles.stat}>
-                    <span className={styles.statValue}>
-                        {compact.format(game.uniquePlayers)}
-                    </span>
-                    <span className={styles.statLabel}>Players</span>
-                </span>
-                <span className={`${styles.stat} ${styles.statSecondary}`}>
-                    <span className={styles.statValue}>
-                        {compact.format(game.totalAttempts)}
-                    </span>
-                    <span className={styles.statLabel}>Attempts</span>
-                </span>
-                <span className={`${styles.stat} ${styles.statSecondary}`}>
-                    <span className={styles.statValue}>
-                        {compact.format(game.totalPbs)}
-                    </span>
-                    <span className={styles.statLabel}>PBs</span>
-                </span>
+                </div>
             </div>
         </Link>
     );
