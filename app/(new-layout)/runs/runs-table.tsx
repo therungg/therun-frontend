@@ -12,6 +12,9 @@ interface RunsTableProps {
     sort: string;
     onSortChange: (sort: string) => void;
     onClearFilters: () => void;
+    hideGameImage?: boolean;
+    useGameTime?: boolean;
+    hasCategory?: boolean;
 }
 
 function timeAgo(dateString: string): string {
@@ -38,10 +41,11 @@ function getSortDirection(sort: string, field: string): 'asc' | 'desc' | null {
     return null;
 }
 
-function toggleSort(sort: string, field: string): string {
+function toggleSort(sort: string, field: string, defaultAsc?: boolean): string {
     const dir = getSortDirection(sort, field);
-    if (dir === 'desc') return field;
-    return `-${field}`;
+    if (dir === null) return defaultAsc ? field : `-${field}`;
+    if (dir === 'asc') return `-${field}`;
+    return field;
 }
 
 export function RunsTable({
@@ -50,8 +54,12 @@ export function RunsTable({
     sort,
     onSortChange,
     onClearFilters,
+    hideGameImage,
+    useGameTime,
+    hasCategory,
 }: RunsTableProps) {
     const isInitialLoad = runs === null;
+    const timeField = useGameTime ? 'game_time' : 'time';
     const isEmpty = runs !== null && runs.length === 0 && !isLoading;
 
     return (
@@ -68,8 +76,8 @@ export function RunsTable({
                         className={`${styles.colCategory} ${styles.hideMobile}`}
                     />
                     <col className={styles.colTime} />
-                    <col className={styles.colDate} />
-                    <col className={styles.colPb} />
+                    <col className={`${styles.colDate} ${styles.hideMobile}`} />
+                    <col className={`${styles.colPb} ${styles.hideXs}`} />
                 </colgroup>
 
                 <thead className={styles.thead}>
@@ -85,21 +93,31 @@ export function RunsTable({
                         >
                             Category
                         </th>
-                        <SortableHeader
-                            label="Time"
-                            field="time"
-                            sort={sort}
-                            onSortChange={onSortChange}
-                            align="right"
-                        />
+                        {hasCategory ? (
+                            <SortableHeader
+                                label="Time"
+                                field={timeField}
+                                sort={sort}
+                                onSortChange={onSortChange}
+                                align="right"
+                                defaultAsc
+                            />
+                        ) : (
+                            <th className={`${styles.th} ${styles.thRight}`}>
+                                Time
+                            </th>
+                        )}
                         <SortableHeader
                             label="Date"
                             field="ended_at"
                             sort={sort}
                             onSortChange={onSortChange}
                             align="right"
+                            className={styles.hideMobile}
                         />
-                        <th className={`${styles.th} ${styles.thCenter}`}>
+                        <th
+                            className={`${styles.th} ${styles.thCenter} ${styles.hideXs}`}
+                        >
                             PB
                         </th>
                     </tr>
@@ -109,7 +127,13 @@ export function RunsTable({
                     {isInitialLoad && <SkeletonRows />}
                     {!isInitialLoad &&
                         !isEmpty &&
-                        runs.map((run) => <RunRow key={run.id} run={run} />)}
+                        runs.map((run) => (
+                            <RunRow
+                                key={run.id}
+                                run={run}
+                                hideGameImage={hideGameImage}
+                            />
+                        ))}
                 </tbody>
             </table>
 
@@ -143,12 +167,16 @@ function SortableHeader({
     sort,
     onSortChange,
     align,
+    className,
+    defaultAsc,
 }: {
     label: string;
     field: string;
     sort: string;
     onSortChange: (sort: string) => void;
     align: 'left' | 'right';
+    className?: string;
+    defaultAsc?: boolean;
 }) {
     const dir = getSortDirection(sort, field);
     const isActive = dir !== null;
@@ -156,12 +184,12 @@ function SortableHeader({
 
     return (
         <th
-            className={`${styles.th} ${alignClass} ${styles.thSortable} ${isActive ? styles.thSortActive : ''}`}
-            onClick={() => onSortChange(toggleSort(sort, field))}
+            className={`${styles.th} ${alignClass} ${styles.thSortable} ${isActive ? styles.thSortActive : ''} ${className ?? ''}`}
+            onClick={() => onSortChange(toggleSort(sort, field, defaultAsc))}
             onKeyDown={(e) => {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    onSortChange(toggleSort(sort, field));
+                    onSortChange(toggleSort(sort, field, defaultAsc));
                 }
             }}
             tabIndex={0}
@@ -180,16 +208,58 @@ function SortableHeader({
 
 // ── Data row ──
 
-function RunRow({ run }: { run: FinishedRunPB }) {
+function RunRow({
+    run,
+    hideGameImage,
+}: {
+    run: FinishedRunPB;
+    hideGameImage?: boolean;
+}) {
     return (
         <tr className={styles.row}>
             <td className={`${styles.td} ${styles.tdLeft}`}>
                 <Link href={`/${run.username}`} className={styles.runnerLink}>
+                    {run.userPicture && (
+                        <img
+                            src={run.userPicture}
+                            alt=""
+                            className={styles.userAvatar}
+                        />
+                    )}
                     {run.username}
                 </Link>
             </td>
-            <td className={`${styles.td} ${styles.tdLeft}`} title={run.game}>
-                {run.game}
+            <td
+                className={`${styles.td} ${styles.tdLeft} ${styles.tdGame}`}
+                title={run.game}
+            >
+                <span className={styles.gameCell}>
+                    {!hideGameImage &&
+                        (() => {
+                            const hasImage =
+                                run.gameImage && run.gameImage !== 'noimage';
+                            const src = hasImage
+                                ? run.gameImage!
+                                : '/logo_dark_theme_no_text_transparent.png';
+                            return (
+                                <img
+                                    src={src}
+                                    alt=""
+                                    className={
+                                        hasImage
+                                            ? styles.gameThumb
+                                            : styles.gameThumbFallback
+                                    }
+                                />
+                            );
+                        })()}
+                    <span className={styles.gameName}>
+                        {run.game}
+                        <span className={styles.categoryInline}>
+                            {run.category}
+                        </span>
+                    </span>
+                </span>
             </td>
             <td
                 className={`${styles.td} ${styles.tdLeft} ${styles.hideMobile}`}
@@ -198,9 +268,21 @@ function RunRow({ run }: { run: FinishedRunPB }) {
                 {run.category}
             </td>
             <td className={`${styles.td} ${styles.tdTime}`}>
-                <DurationToFormatted duration={run.time} />
+                <span>
+                    <DurationToFormatted duration={run.gameTime ?? run.time} />
+                    {run.gameTime != null && (
+                        <span className={styles.timeLabel}> IGT</span>
+                    )}
+                </span>
+                {run.gameTime != null && (
+                    <span className={styles.secondaryTime}>
+                        <DurationToFormatted duration={run.time} /> RTA
+                    </span>
+                )}
             </td>
-            <td className={`${styles.td} ${styles.tdRight}`}>
+            <td
+                className={`${styles.td} ${styles.tdRight} ${styles.hideMobile}`}
+            >
                 <span
                     className={styles.dateText}
                     title={new Date(run.endedAt).toLocaleString()}
@@ -208,8 +290,20 @@ function RunRow({ run }: { run: FinishedRunPB }) {
                     {timeAgo(run.endedAt)}
                 </span>
             </td>
-            <td className={`${styles.td} ${styles.tdCenter}`}>
-                {run.isPb && <FiCheck className={styles.pbCheck} />}
+            <td className={`${styles.td} ${styles.tdCenter} ${styles.hideXs}`}>
+                {run.isPb && (
+                    <span className={styles.pbCell}>
+                        <FiCheck className={styles.pbCheck} />
+                        {run.previousPb != null && (
+                            <span className={styles.pbDelta}>
+                                -
+                                <DurationToFormatted
+                                    duration={run.previousPb - run.time}
+                                />
+                            </span>
+                        )}
+                    </span>
+                )}
             </td>
         </tr>
     );
@@ -244,12 +338,14 @@ function SkeletonRows() {
                             className={`${styles.skeletonBar} ${styles.skeletonBarNarrow}`}
                         />
                     </td>
-                    <td className={styles.skeletonCell}>
+                    <td
+                        className={`${styles.skeletonCell} ${styles.hideMobile}`}
+                    >
                         <div
                             className={`${styles.skeletonBar} ${styles.skeletonBarNarrow}`}
                         />
                     </td>
-                    <td className={styles.skeletonCell}>
+                    <td className={`${styles.skeletonCell} ${styles.hideXs}`}>
                         <div
                             className={`${styles.skeletonBar} ${styles.skeletonBarTiny}`}
                         />

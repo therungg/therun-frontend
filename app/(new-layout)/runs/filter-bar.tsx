@@ -2,13 +2,20 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { FiCalendar, FiChevronDown, FiClock, FiX } from 'react-icons/fi';
+import type { CategoryStats } from '~src/lib/game-search';
+import { getCategoriesForGame } from '~src/lib/game-search';
 import styles from './filter-bar.module.scss';
+import { GameAutocomplete } from './game-autocomplete';
+import { UserAutocomplete } from './user-autocomplete';
 
 export interface RunsFilters {
     game: string;
+    gameId: number | null;
+    gameImage: string | null;
     category: string;
     username: string;
     isPb: boolean;
+    useGameTime: boolean;
     minTime: string;
     maxTime: string;
     afterDate: string;
@@ -18,9 +25,12 @@ export interface RunsFilters {
 
 export const DEFAULT_FILTERS: RunsFilters = {
     game: '',
+    gameId: null,
+    gameImage: null,
     category: '',
     username: '',
     isPb: false,
+    useGameTime: false,
     minTime: '',
     maxTime: '',
     afterDate: '',
@@ -33,6 +43,7 @@ interface FilterBarProps {
     onFilterChange: (filters: Partial<RunsFilters>) => void;
     onClearAll: () => void;
     isPending?: boolean;
+    loggedInUser?: string;
 }
 
 type PopoverType = 'time' | 'date' | null;
@@ -42,10 +53,34 @@ export function FilterBar({
     onFilterChange,
     onClearAll,
     isPending: _isPending,
+    loggedInUser,
 }: FilterBarProps) {
     const [openPopover, setOpenPopover] = useState<PopoverType>(null);
+    const [categories, setCategories] = useState<CategoryStats[]>([]);
     const timeRef = useRef<HTMLDivElement>(null);
     const dateRef = useRef<HTMLDivElement>(null);
+
+    // Fetch categories when game changes, clear when game is empty
+    useEffect(() => {
+        if (!filters.game) {
+            setCategories([]);
+            return;
+        }
+        let stale = false;
+        getCategoriesForGame(filters.game).then((cats) => {
+            if (stale) return;
+            setCategories(cats);
+            if (cats.length > 0) {
+                onFilterChange({
+                    gameId: cats[0].gameId,
+                    gameImage: cats[0].gameImage,
+                });
+            }
+        });
+        return () => {
+            stale = true;
+        };
+    }, [filters.game]);
 
     // Close popover on click outside or Escape
     useEffect(() => {
@@ -86,7 +121,13 @@ export function FilterBar({
     if (filters.game) {
         chips.push({
             label: `Game: ${filters.game}`,
-            onRemove: () => onFilterChange({ game: '' }),
+            onRemove: () =>
+                onFilterChange({
+                    game: '',
+                    gameId: null,
+                    gameImage: null,
+                    category: '',
+                }),
         });
     }
     if (filters.category) {
@@ -105,6 +146,12 @@ export function FilterBar({
         chips.push({
             label: 'PB Only',
             onRemove: () => onFilterChange({ isPb: false }),
+        });
+    }
+    if (filters.useGameTime) {
+        chips.push({
+            label: 'Game Time',
+            onRemove: () => onFilterChange({ useGameTime: false }),
         });
     }
     if (filters.minTime) {
@@ -140,40 +187,61 @@ export function FilterBar({
             <div className={styles.controls}>
                 <div className={styles.inputGroup}>
                     <label className={styles.inputLabel}>Game</label>
-                    <input
-                        type="text"
-                        className={styles.textInput}
-                        placeholder="Search game..."
+                    <GameAutocomplete
                         value={filters.game}
-                        onChange={(e) =>
-                            onFilterChange({ game: e.target.value })
+                        onChange={(game) =>
+                            onFilterChange({
+                                game,
+                                gameId: null,
+                                gameImage: null,
+                                category: '',
+                            })
                         }
+                        className={styles.textInput}
                     />
                 </div>
 
-                <div className={styles.inputGroup}>
-                    <label className={styles.inputLabel}>Category</label>
-                    <input
-                        type="text"
-                        className={styles.textInput}
-                        placeholder="Search category..."
-                        value={filters.category}
-                        onChange={(e) =>
-                            onFilterChange({ category: e.target.value })
-                        }
-                    />
-                </div>
+                {filters.game && (
+                    <div className={styles.inputGroup}>
+                        <label className={styles.inputLabel}>Category</label>
+                        {categories.length > 0 ? (
+                            <select
+                                className={styles.selectInput}
+                                value={filters.category}
+                                onChange={(e) =>
+                                    onFilterChange({ category: e.target.value })
+                                }
+                            >
+                                <option value="">All categories</option>
+                                {categories.map((cat) => (
+                                    <option
+                                        key={cat.categoryId}
+                                        value={cat.categoryDisplay}
+                                    >
+                                        {cat.categoryDisplay}
+                                    </option>
+                                ))}
+                            </select>
+                        ) : (
+                            <input
+                                type="text"
+                                className={styles.textInput}
+                                placeholder="Search category..."
+                                value={filters.category}
+                                onChange={(e) =>
+                                    onFilterChange({ category: e.target.value })
+                                }
+                            />
+                        )}
+                    </div>
+                )}
 
                 <div className={styles.inputGroup}>
                     <label className={styles.inputLabel}>Username</label>
-                    <input
-                        type="text"
-                        className={styles.textInput}
-                        placeholder="Search user..."
+                    <UserAutocomplete
                         value={filters.username}
-                        onChange={(e) =>
-                            onFilterChange({ username: e.target.value })
-                        }
+                        onChange={(username) => onFilterChange({ username })}
+                        className={styles.textInput}
                     />
                 </div>
 
@@ -184,6 +252,23 @@ export function FilterBar({
                 >
                     PB Only
                 </button>
+
+                {loggedInUser && (
+                    <button
+                        type="button"
+                        className={`${styles.pbToggle} ${filters.username === loggedInUser ? styles.pbToggleActive : ''}`}
+                        onClick={() =>
+                            onFilterChange({
+                                username:
+                                    filters.username === loggedInUser
+                                        ? ''
+                                        : loggedInUser,
+                            })
+                        }
+                    >
+                        My Runs
+                    </button>
+                )}
 
                 {/* Time trigger + popover */}
                 <div className={styles.triggerWrapper} ref={timeRef}>
@@ -236,6 +321,18 @@ export function FilterBar({
                                     />
                                 </div>
                             </div>
+                            <label className={styles.checkboxLabel}>
+                                <input
+                                    type="checkbox"
+                                    checked={filters.useGameTime}
+                                    onChange={(e) =>
+                                        onFilterChange({
+                                            useGameTime: e.target.checked,
+                                        })
+                                    }
+                                />
+                                Use game time
+                            </label>
                         </div>
                     )}
                 </div>

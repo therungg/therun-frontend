@@ -68,6 +68,31 @@
     }
 }
 
+.selectInput {
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    font-size: 0.85rem;
+    background: var(--bs-tertiary-bg);
+    color: var(--bs-body-color);
+    border: 1px solid transparent;
+    border-radius: $radius-sm;
+    outline: none;
+    cursor: pointer;
+    transition:
+        border-color $transition-fast,
+        box-shadow $transition-fast;
+
+    &:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 2px rgba(var(--bs-primary-rgb), 0.15);
+    }
+
+    option {
+        background: var(--bs-body-bg);
+        color: var(--bs-body-color);
+    }
+}
+
 // ── PB toggle pill ──
 
 .pbToggle {
@@ -240,6 +265,25 @@
     color-scheme: var(--bs-color-scheme, dark);
 }
 
+// ── Checkbox ──
+
+.checkboxLabel {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    margin-top: $spacing-sm;
+    padding-top: $spacing-sm;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.15);
+    font-size: 0.82rem;
+    color: var(--bs-secondary-color);
+    cursor: pointer;
+    user-select: none;
+
+    input[type='checkbox'] {
+        accent-color: var(--bs-primary);
+    }
+}
+
 // ── Chips row ──
 
 .chipsRow {
@@ -325,7 +369,22 @@
         padding: $spacing-sm $spacing-md;
     }
 
+    .controls {
+        gap: $spacing-xs;
+    }
+
     .inputGroup {
-        min-width: 100px;
+        flex: unset;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .inputLabel {
+        display: none;
+    }
+
+    .popover {
+        left: auto;
+        right: 0;
     }
 }

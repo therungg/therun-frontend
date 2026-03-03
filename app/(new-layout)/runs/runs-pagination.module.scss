@@ -1,11 +1,30 @@
 @import '../styles/design-tokens';
 
 .pagination {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-lg 0;
+}
+
+.controls {
     display: flex;
-    justify-content: center;
     align-items: center;
     gap: $spacing-xs;
-    padding: $spacing-lg 0;
+}
+
+.summary {
+    font-size: 0.825rem;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+    justify-self: start;
+}
+
+.pageNumbers {
+    display: flex;
+    align-items: center;
+    gap: 2px;
 }
 
 .pageBtn {
@@ -24,7 +43,7 @@
     cursor: pointer;
     transition: all $transition-fast;
 
-    &:hover:not(:disabled) {
+    &:hover:not(:disabled):not(.active) {
         background: rgba(var(--bs-body-color-rgb), 0.06);
     }
 
@@ -50,10 +69,83 @@
     gap: 0.25rem;
 }
 
-.pageIndicator {
+.ellipsis {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
     font-size: 0.85rem;
-    font-weight: 500;
     color: var(--bs-secondary-color);
-    padding: 0 $spacing-sm;
     user-select: none;
+}
+
+.sizeSelector {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    justify-self: end;
+}
+
+.sizeBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 $spacing-xs;
+    border-radius: $radius-sm;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover:not(.sizeBtnActive) {
+        background: rgba(var(--bs-body-color-rgb), 0.06);
+        color: var(--bs-body-color);
+    }
+
+    &Active {
+        background: rgba(var(--bs-primary-rgb), 0.12);
+        color: var(--bs-primary);
+        font-weight: 600;
+    }
+}
+
+// ── Responsive ──
+
+@media (max-width: 768px) {
+    .pagination {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        gap: $spacing-sm;
+        padding: $spacing-md 0;
+    }
+
+    .summary {
+        justify-self: center;
+        font-size: 0.78rem;
+    }
+
+    .navLabel {
+        display: none;
+    }
+
+    .pageBtn {
+        min-width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    .ellipsis {
+        min-width: 28px;
+        height: 32px;
+    }
+
+    .sizeSelector {
+        display: none;
+    }
 }

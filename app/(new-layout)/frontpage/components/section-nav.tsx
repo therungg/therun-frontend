@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     FaChartLine,
+    FaCompass,
     FaFire,
     FaFlagCheckered,
     FaHeartPulse,
@@ -13,11 +14,12 @@ import styles from './section-nav.module.scss';
 
 const SECTIONS = [
     { id: 'live', label: 'Live', icon: FaPlay },
+    { id: 'quick-links', label: 'Links', icon: FaCompass },
     { id: 'trending', label: 'Trending', icon: FaFire },
     { id: 'pbs', label: 'PBs', icon: FaTrophy },
     { id: 'races', label: 'Races', icon: FaFlagCheckered },
-    { id: 'pulse', label: 'Pulse', icon: FaHeartPulse },
     { id: 'your-stats', label: 'Your Stats', icon: FaChartLine },
+    { id: 'pulse', label: 'Pulse', icon: FaHeartPulse },
 ] as const;
 
 export const SectionNav = () => {

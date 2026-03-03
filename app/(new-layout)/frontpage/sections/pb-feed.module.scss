@@ -375,6 +375,9 @@ $green-bright: #66bb6a;
     height: 48px;
     border-radius: 4px;
     background: color-mix(in srgb, var(--bs-secondary-bg) 50%, transparent);
+    object-fit: contain;
+    opacity: 0.4;
+    padding: 6px;
 }
 
 .listAvatarOverlay {

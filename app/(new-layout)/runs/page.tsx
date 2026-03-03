@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { getSession } from '~src/actions/session.action';
 import buildMetadata from '~src/utils/metadata';
 import { RunsExplorer } from './runs-explorer';
 
@@ -8,10 +9,13 @@ export const metadata = buildMetadata({
         'Browse and filter speedrun completions across all games, categories, and runners.',
 });
 
-export default function RunsPage() {
+export default async function RunsPage() {
+    const session = await getSession();
+    const loggedInUser = session?.username || undefined;
+
     return (
         <Suspense>
-            <RunsExplorer />
+            <RunsExplorer loggedInUser={loggedInUser} />
         </Suspense>
     );
 }

@@ -13,3 +13,66 @@
         margin: 0;
     }
 }
+
+// ── Game hero banner ──
+
+.gameHero {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xl;
+    animation: heroIn $transition-base forwards;
+}
+
+@keyframes heroIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.gameHeroImage {
+    width: 72px;
+    height: 96px;
+    border-radius: $radius-md;
+    object-fit: cover;
+    box-shadow: $shadow-lg;
+    flex-shrink: 0;
+}
+
+.gameHeroInfo {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+
+    h1 {
+        font-size: clamp(1.4rem, 3vw, 2rem);
+        font-weight: 700;
+        margin: 0;
+        line-height: 1.2;
+    }
+}
+
+.gameHeroCategory {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--bs-secondary-color);
+}
+
+@media (max-width: 768px) {
+    .explorer {
+        gap: $spacing-md;
+    }
+
+    .gameHeroImage {
+        width: 54px;
+        height: 72px;
+    }
+
+    .gameHero {
+        gap: $spacing-md;
+    }
+}

@@ -5,7 +5,8 @@ export type PeriodGranularity = 'week' | 'month' | 'year';
 export type DashboardSelection =
     | { kind: 'current'; granularity: PeriodGranularity }
     | { kind: 'offset'; granularity: PeriodGranularity; offset: number }
-    | { kind: 'custom'; from: string; to: string };
+    | { kind: 'custom'; from: string; to: string }
+    | { kind: 'all-time' };
 
 export interface DashboardStats {
     playtime: number;
@@ -60,6 +61,16 @@ export interface DashboardRace {
     date: number;
 }
 
+export interface DashboardProminentRun {
+    game: string;
+    category: string;
+    gameImage: string | null;
+    time: number;
+    previousPb: number | null;
+    endedAt: string;
+    isPb: boolean;
+}
+
 export interface DashboardHighlight {
     type: string;
     game?: string;
@@ -95,6 +106,7 @@ export interface DashboardResponse {
     allTimeTopGames: DashboardAllTimeGame[];
     recentPbs: DashboardPb[];
     recentRaces: DashboardRace[];
+    prominentRuns: DashboardProminentRun[];
     highlight: DashboardHighlight | null;
     highlights: DashboardHighlight[];
     globalStats: DashboardGlobalStats | null;

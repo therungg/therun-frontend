@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useRef, useState, useTransition } from 'react';
-import { FaFire, FaTrophy } from 'react-icons/fa6';
+import { FaTrophy } from 'react-icons/fa6';
 import {
     type CategoryActivity,
     type CategoryStats,
@@ -68,7 +68,7 @@ function normalizeGame(g: GameWithImage): GameActivity {
         totalPlaytime: g.totalRunTime,
         totalAttempts: g.totalAttemptCount,
         totalFinishedAttempts: g.totalFinishedAttemptCount,
-        totalPbs: 0,
+        totalPbs: g.totalPbs,
         totalPbsWithPrevious: 0,
         uniquePlayers: g.uniqueRunners,
     };
@@ -84,7 +84,7 @@ function normalizeCategoryStat(c: CategoryStats): CategoryActivity {
         totalPlaytime: c.totalRunTime,
         totalAttempts: c.totalAttemptCount,
         totalFinishedAttempts: c.totalFinishedAttemptCount,
-        totalPbs: 0,
+        totalPbs: c.totalPbs,
         totalPbsWithPrevious: 0,
         uniquePlayers: c.uniqueRunners,
     };
@@ -181,10 +181,6 @@ export const TrendingSectionClient = ({
     return (
         <div className={styles.content}>
             <div className={styles.header}>
-                <h3 className={styles.headerTitle}>
-                    <FaFire size={12} aria-hidden="true" />
-                    Hot Right Now
-                </h3>
                 <div className={styles.periodToggle}>
                     {PERIODS.map((p) => (
                         <button

@@ -35,6 +35,7 @@ export const PbFeedClient = ({
             title="Personal Bests"
             subtitle="Recent PBs"
             className="p-0"
+            link={{ url: '/runs', text: 'Explore Runs' }}
         >
             {notablePbs.length > 0 && (
                 <FeaturedCarousel
@@ -296,7 +297,11 @@ const FeaturedCarousel = ({
                 aria-live="polite"
             >
                 {pbs.map((pb, i) => {
-                    const imageUrl = gameImages[pb.game] ?? FALLBACK_IMAGE;
+                    const rawImage = gameImages[pb.game];
+                    const imageUrl =
+                        rawImage && rawImage !== 'noimage'
+                            ? rawImage
+                            : FALLBACK_IMAGE;
                     const avatarUrl = userPictures[pb.username];
                     const improvement =
                         pb.previousPb !== null ? pb.previousPb - pb.time : null;
@@ -503,14 +508,18 @@ const CompactItem = ({
     return (
         <Link href={`/${pb.username}`} className={styles.listItem}>
             <div className={styles.listThumbWrap}>
-                {gameImageUrl ? (
+                {gameImageUrl && gameImageUrl !== 'noimage' ? (
                     <img
                         src={gameImageUrl}
                         alt=""
                         className={styles.listGameThumb}
                     />
                 ) : (
-                    <div className={styles.listGameThumbFallback} />
+                    <img
+                        src={FALLBACK_IMAGE}
+                        alt=""
+                        className={styles.listGameThumbFallback}
+                    />
                 )}
                 {avatarUrl && (
                     <Image

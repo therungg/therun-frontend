@@ -8,8 +8,7 @@ import { FaBolt, FaChevronLeft, FaChevronRight, FaFire } from 'react-icons/fa';
 import { DurationToFormatted, FromNow } from '~src/components/util/datetime';
 import { getUserDashboardCustomRange } from '~src/lib/user-dashboard';
 import type {
-    DashboardPb,
-    DashboardRace,
+    DashboardProminentRun,
     DashboardResponse,
     DashboardSelection,
     DashboardStreak,
@@ -22,10 +21,6 @@ interface YourStatsClientProps {
     dashboards: Record<string, DashboardResponse | null>;
     username: string;
 }
-
-type ActivityItem =
-    | { kind: 'pb'; data: DashboardPb; sortDate: number }
-    | { kind: 'race'; data: DashboardRace; sortDate: number };
 
 const GRANULARITIES: PeriodGranularity[] = ['week', 'month', 'year'];
 const GRANULARITY_LABELS: Record<PeriodGranularity, string> = {
@@ -136,12 +131,6 @@ function dateToOffset(granularity: PeriodGranularity, date: Date): number {
 
 function hasValidImage(img: string | null | undefined): img is string {
     return !!img && img !== 'noimage' && img !== '';
-}
-
-function ordinal(n: number): string {
-    const s = ['th', 'st', 'nd', 'rd'];
-    const v = n % 100;
-    return n + (s[(v - 20) % 10] || s[v] || s[0]);
 }
 
 const STREAK_MILESTONES = [3, 7, 14, 30, 60, 90, 180, 365];
@@ -339,11 +328,14 @@ export const YourStatsClient = ({
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     const isCustom = selection.kind === 'custom';
+    const isAllTime = selection.kind === 'all-time';
     const isCurrent = selection.kind === 'current';
     const activeGranularity =
-        selection.kind !== 'custom' ? selection.granularity : null;
+        selection.kind === 'current' || selection.kind === 'offset'
+            ? selection.granularity
+            : null;
 
-    // For "current" periods, use pre-fetched data. For offset/custom, fetch.
+    // For "current" periods, use pre-fetched data. For offset/custom/all-time, fetch.
     const dashboard = isCurrent
         ? (dashboards[GRANULARITY_TO_PRESET[selection.granularity]] ?? null)
         : fetchedDashboard;
@@ -383,7 +375,7 @@ export const YourStatsClient = ({
         return () => document.removeEventListener('mousedown', handler);
     }, [dropdownOpen]);
 
-    // Fetch when navigating to offset or custom periods
+    // Fetch when navigating to offset, custom, or all-time periods
     useEffect(() => {
         if (selection.kind === 'offset') {
             const { from, to } = getDateRange(
@@ -393,6 +385,8 @@ export const YourStatsClient = ({
             fetchRange(from, to);
         } else if (selection.kind === 'custom' && customFrom) {
             fetchRange(customFrom, customTo);
+        } else if (selection.kind === 'all-time') {
+            fetchRange('2000-01-01');
         }
     }, [selection, customFrom, customTo, fetchRange]);
 
@@ -462,6 +456,7 @@ export const YourStatsClient = ({
                             className={clsx(
                                 styles.periodButton,
                                 !isCustom &&
+                                    !isAllTime &&
                                     activeGranularity === g &&
                                     styles.periodButtonActive,
                             )}
@@ -470,6 +465,20 @@ export const YourStatsClient = ({
                             {GRANULARITY_LABELS[g]}
                         </button>
                     ))}
+                    <button
+                        type="button"
+                        className={clsx(
+                            styles.periodButton,
+                            isAllTime && styles.periodButtonActive,
+                        )}
+                        onClick={() => {
+                            setSelection({ kind: 'all-time' });
+                            setDropdownOpen(false);
+                            setJumpPickerOpen(false);
+                        }}
+                    >
+                        All-time
+                    </button>
                     <button
                         type="button"
                         className={clsx(
@@ -666,31 +675,11 @@ function DashboardContent({
     username: string;
     periodToggle: React.ReactNode;
 }) {
-    const { stats, streak, topGames, recentPbs, recentRaces, globalStats } =
-        dashboard;
+    const { stats, streak, topGames, prominentRuns } = dashboard;
 
     const streakMilestone = dashboard.streakMilestone ?? null;
 
-    const topGame = topGames[0] ?? null;
-
-    const activity: ActivityItem[] = [
-        ...recentPbs.map(
-            (pb): ActivityItem => ({
-                kind: 'pb',
-                data: pb,
-                sortDate: new Date(pb.endedAt).getTime(),
-            }),
-        ),
-        ...recentRaces.map(
-            (race): ActivityItem => ({
-                kind: 'race',
-                data: race,
-                sortDate: race.date,
-            }),
-        ),
-    ]
-        .sort((a, b) => b.sortDate - a.sortDate)
-        .slice(0, 5);
+    const top3Games = topGames.slice(0, 3);
 
     return (
         <>
@@ -700,130 +689,113 @@ function DashboardContent({
             {/* 2. Period Toggle */}
             {periodToggle}
 
-            {/* 3. Core Stats — period + all-time */}
+            {/* 3. Core Stats */}
             <div className={styles.statRibbon}>
                 <div className={styles.statCell}>
                     <div className={styles.statValue}>
                         <DurationToFormatted duration={stats.playtime} human />
                     </div>
                     <div className={styles.statLabel}>Playtime</div>
-                    {globalStats && (
-                        <span className={styles.statAllTime}>
-                            <DurationToFormatted
-                                duration={globalStats.totalRunTime}
-                                human
-                            />{' '}
-                            all-time
-                        </span>
-                    )}
+                </div>
+                <div className={styles.statCell}>
+                    <div className={styles.statValue}>{stats.totalRuns}</div>
+                    <div className={styles.statLabel}>Attempts</div>
+                </div>
+                <div className={styles.statCell}>
+                    <div className={styles.statValue}>{stats.finishedRuns}</div>
+                    <div className={styles.statLabel}>Finished</div>
                 </div>
                 <div className={styles.statCell}>
                     <div className={styles.statValue}>{stats.totalPbs}</div>
                     <div className={styles.statLabel}>PBs</div>
                 </div>
-                <div className={styles.statCell}>
-                    <div className={styles.statValue}>{stats.finishedRuns}</div>
-                    <div className={styles.statLabel}>Finished Runs</div>
-                    {globalStats && (
-                        <span className={styles.statAllTime}>
-                            {formatCompact(
-                                globalStats.totalFinishedAttemptCount,
-                            )}{' '}
-                            all-time
-                        </span>
-                    )}
-                </div>
             </div>
 
-            {/* 5. Recent Activity */}
-            {activity.length > 0 && (
+            {/* 4. Top Games */}
+            {top3Games.length > 0 && (
                 <>
-                    <div className={styles.sectionLabel}>Recent Activity</div>
-                    <div className={styles.activityList}>
-                        {activity.map((item) =>
-                            item.kind === 'pb' ? (
-                                <PbActivityItem
-                                    key={`pb-${item.data.game}-${item.sortDate}`}
-                                    pb={item.data}
-                                    username={username}
-                                />
-                            ) : (
-                                <RaceActivityItem
-                                    key={`race-${item.data.game}-${item.sortDate}`}
-                                    race={item.data}
-                                    username={username}
-                                />
-                            ),
-                        )}
+                    <div className={styles.sectionLabel}>
+                        Top Games This Period
+                    </div>
+                    <div className={styles.topGamesList}>
+                        {top3Games.map((game, i) => (
+                            <Link
+                                key={game.gameId}
+                                href={`/${username}/${encodeURIComponent(game.gameDisplay)}`}
+                                className={styles.topGameCard}
+                            >
+                                <span className={styles.topGameRank}>
+                                    {i + 1}
+                                </span>
+                                {hasValidImage(game.gameImage) && (
+                                    <Image
+                                        src={game.gameImage}
+                                        alt={game.gameDisplay}
+                                        width={36}
+                                        height={48}
+                                        className={styles.topGameImage}
+                                        unoptimized
+                                    />
+                                )}
+                                <div className={styles.topGameInfo}>
+                                    <div className={styles.topGameName}>
+                                        {game.gameDisplay}
+                                    </div>
+                                    <div className={styles.topGameStats}>
+                                        <DurationToFormatted
+                                            duration={game.totalPlaytime}
+                                            human
+                                        />
+                                        {' · '}
+                                        {game.totalAttempts} attempts
+                                        {' · '}
+                                        {game.totalPbs} PBs
+                                    </div>
+                                </div>
+                            </Link>
+                        ))}
                     </div>
                 </>
             )}
 
-            {/* 6. Top Game */}
-            {topGame && (
+            {/* 5. Highlights */}
+            {prominentRuns.length > 0 && (
                 <>
-                    <div className={styles.sectionLabel}>Top Game</div>
-                    <Link
-                        href={`/${username}/${encodeURIComponent(topGame.gameDisplay)}`}
-                        className={styles.topGameCard}
-                    >
-                        {hasValidImage(topGame.gameImage) && (
-                            <Image
-                                src={topGame.gameImage}
-                                alt={topGame.gameDisplay}
-                                width={36}
-                                height={48}
-                                className={styles.topGameImage}
-                                unoptimized
+                    <div className={styles.sectionLabel}>Highlights</div>
+                    <div className={styles.activityList}>
+                        {prominentRuns.map((run) => (
+                            <ProminentRunItem
+                                key={`${run.game}-${run.category}-${run.endedAt}`}
+                                run={run}
+                                username={username}
                             />
-                        )}
-                        <div className={styles.topGameInfo}>
-                            <div className={styles.topGameName}>
-                                {topGame.gameDisplay}
-                            </div>
-                            <div className={styles.topGameStats}>
-                                <DurationToFormatted
-                                    duration={topGame.totalPlaytime}
-                                    human
-                                />
-                                {' · '}
-                                {topGame.totalAttempts} attempts
-                                {' · '}
-                                {topGame.totalPbs} PBs
-                            </div>
-                        </div>
-                    </Link>
+                        ))}
+                    </div>
                 </>
             )}
         </>
     );
 }
 
-function formatCompact(n: number): string {
-    if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-    if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`;
-    return String(n);
-}
-
-function PbActivityItem({
-    pb,
+function ProminentRunItem({
+    run,
     username,
 }: {
-    pb: DashboardPb;
+    run: DashboardProminentRun;
     username: string;
 }) {
     const improvementMs =
-        pb.previousPb != null ? pb.previousPb - pb.time : null;
+        run.isPb && run.previousPb != null ? run.previousPb - run.time : null;
 
     return (
         <Link
-            href={`/${username}/${encodeURIComponent(pb.game)}`}
+            href={`/${username}/${encodeURIComponent(run.game)}`}
             className={styles.activityItem}
         >
-            {hasValidImage(pb.gameImage) ? (
+            {hasValidImage(run.gameImage) ? (
                 <Image
-                    src={pb.gameImage}
-                    alt={pb.game}
+                    src={run.gameImage}
+                    alt={run.game}
                     width={20}
                     height={27}
                     className={styles.activityImage}
@@ -833,12 +805,15 @@ function PbActivityItem({
                 <div className={styles.activityImagePlaceholder} />
             )}
             <div className={styles.activityInfo}>
-                <div className={styles.activityGame}>{pb.game}</div>
-                <div className={styles.activityCategory}>{pb.category}</div>
+                <div className={styles.activityGame}>{run.game}</div>
+                <div className={styles.activityCategory}>
+                    {run.category}
+                    {run.isPb && <span className={styles.pbBadge}>PB</span>}
+                </div>
             </div>
             <div className={styles.activityRight}>
                 <span className={styles.activityTime}>
-                    <DurationToFormatted duration={pb.time} withMillis />
+                    <DurationToFormatted duration={run.time} withMillis />
                 </span>
                 {improvementMs != null && improvementMs > 0 && (
                     <span className={styles.pbDelta}>
@@ -850,77 +825,7 @@ function PbActivityItem({
                     </span>
                 )}
                 <span className={styles.activityTimestamp}>
-                    <FromNow time={new Date(pb.endedAt)} />
-                </span>
-            </div>
-        </Link>
-    );
-}
-
-function RaceActivityItem({
-    race,
-    username,
-}: {
-    race: DashboardRace;
-    username: string;
-}) {
-    const ratingChange = race.ratingAfter - race.ratingBefore;
-
-    const placementColor =
-        race.position === 1
-            ? 'gold'
-            : race.position === 2
-              ? 'silver'
-              : race.position === 3
-                ? 'bronze'
-                : 'default';
-
-    return (
-        <Link
-            href={`/${username}/${encodeURIComponent(race.game)}`}
-            className={styles.activityItem}
-        >
-            {hasValidImage(race.gameImage) ? (
-                <Image
-                    src={race.gameImage}
-                    alt={race.game}
-                    width={20}
-                    height={27}
-                    className={styles.activityImage}
-                    unoptimized
-                />
-            ) : (
-                <div className={styles.activityImagePlaceholder} />
-            )}
-            <div className={styles.activityInfo}>
-                <div className={styles.activityGame}>{race.game}</div>
-                <div className={styles.activityCategory}>{race.category}</div>
-            </div>
-            <div className={styles.activityRight}>
-                <span
-                    className={clsx(
-                        styles.placementBadge,
-                        styles[
-                            `placement${placementColor.charAt(0).toUpperCase() + placementColor.slice(1)}` as keyof typeof styles
-                        ],
-                    )}
-                >
-                    {ordinal(race.position)}
-                </span>
-                {ratingChange !== 0 && (
-                    <span
-                        className={
-                            ratingChange > 0
-                                ? styles.ratingUp
-                                : styles.ratingDown
-                        }
-                    >
-                        {ratingChange > 0 ? '+' : ''}
-                        {ratingChange}
-                    </span>
-                )}
-                <span className={styles.activityTimestamp}>
-                    <FromNow time={new Date(race.date)} />
+                    <FromNow time={new Date(run.endedAt)} />
                 </span>
             </div>
         </Link>
