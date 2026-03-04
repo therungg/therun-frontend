@@ -20,6 +20,7 @@ import styles from './your-stats.module.scss';
 interface YourStatsClientProps {
     dashboards: Record<string, DashboardResponse | null>;
     username: string;
+    picture?: string;
 }
 
 const GRANULARITIES: PeriodGranularity[] = ['week', 'month', 'year'];
@@ -312,6 +313,7 @@ function StreakCard({
 export const YourStatsClient = ({
     dashboards,
     username,
+    picture,
 }: YourStatsClientProps) => {
     const [selection, setSelection] = useState<DashboardSelection>({
         kind: 'current',
@@ -444,6 +446,23 @@ export const YourStatsClient = ({
 
     const streakData = dashboards['7d']?.streak ?? null;
     const streakMilestoneData = dashboards['7d']?.streakMilestone ?? null;
+
+    const hasAvatar = picture && picture !== 'noimage';
+    const identityHeader = (
+        <Link href={`/${username}`} className={styles.identityHeader}>
+            {hasAvatar && (
+                <Image
+                    src={picture}
+                    alt=""
+                    width={32}
+                    height={32}
+                    className={styles.identityAvatar}
+                    unoptimized
+                />
+            )}
+            <span className={styles.identityName}>{username}</span>
+        </Link>
+    );
 
     const periodToggle = (
         <>
@@ -603,6 +622,7 @@ export const YourStatsClient = ({
     if (isCustom && !customFrom) {
         return (
             <div className={styles.content}>
+                {identityHeader}
                 <StreakCard
                     streak={streakData}
                     streakMilestone={streakMilestoneData}
@@ -623,6 +643,7 @@ export const YourStatsClient = ({
     if (loading) {
         return (
             <div className={styles.content}>
+                {identityHeader}
                 <StreakCard
                     streak={streakData}
                     streakMilestone={streakMilestoneData}
@@ -638,6 +659,7 @@ export const YourStatsClient = ({
     if (!dashboard) {
         return (
             <div className={styles.content}>
+                {identityHeader}
                 <StreakCard
                     streak={streakData}
                     streakMilestone={streakMilestoneData}
@@ -657,6 +679,7 @@ export const YourStatsClient = ({
 
     return (
         <div className={styles.content}>
+            {identityHeader}
             <DashboardContent
                 dashboard={dashboard}
                 username={username}

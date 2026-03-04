@@ -117,6 +117,15 @@ export default async function Page(props: PageProps) {
     const playtime = formatPlaytime(String(totalPlaytimeMs));
     if (playtime) descParts.push(`${playtime} total playtime`);
     const profileDescription = descParts.join(' | ');
+    const gamePlaytime = new Map<string, number>();
+    for (const run of runs) {
+        const time = parseInt(run.totalRunTime) || 0;
+        gamePlaytime.set(run.game, (gamePlaytime.get(run.game) || 0) + time);
+    }
+    const games = [...gamePlaytime.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([game]) => game);
 
     return (
         <>
@@ -126,6 +135,7 @@ export default async function Page(props: PageProps) {
                     picture: userData.picture,
                     description: profileDescription,
                     socials: userData.socials,
+                    games,
                 })}
             />
             <UserProfile

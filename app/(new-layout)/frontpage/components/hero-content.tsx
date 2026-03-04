@@ -272,22 +272,15 @@ const HeroLayout = ({
                 />
             ))}
             <Row className="g-3">
-                {/* Left: Featured Run */}
-                <Col xl={5} lg={5} md={12}>
-                    <FeaturedRunPanel
-                        run={currentFeatured}
-                        staleReason={staleMap.get(currentFeatured.user)}
-                        countdown={countdownMap.get(currentFeatured.user)}
-                    />
-                </Col>
-
-                {/* Center: Twitch Embed */}
-                <Col xl={4} lg={4} md={12}>
-                    <div
-                        className={clsx(styles.panel, styles.streamPanel)}
-                        style={{ height: '340px' }}
-                    >
-                        <div className="ratio ratio-16x9 w-100 h-100">
+                {/* Left: Featured Run + Stream (joined) */}
+                <Col xl={9} lg={9} md={12}>
+                    <div className={styles.heroGroup}>
+                        <FeaturedRunPanel
+                            run={currentFeatured}
+                            staleReason={staleMap.get(currentFeatured.user)}
+                            countdown={countdownMap.get(currentFeatured.user)}
+                        />
+                        <div className={styles.heroGroupStream}>
                             <TwitchPlayer
                                 channel={currentFeatured.user}
                                 width="100%"
@@ -684,60 +677,48 @@ const HeroSkeleton = () => {
     return (
         <div className={clsx(styles.hero, 'mb-3')}>
             <Row className="g-3">
-                <Col xl={5} lg={5} md={12}>
-                    <div
-                        className={clsx(
-                            styles.panel,
-                            styles.skeletonPanel,
-                            'p-4',
-                        )}
-                    >
-                        <div className="placeholder-glow">
-                            <div className="d-flex align-items-center gap-3 mb-3">
-                                <Placeholder
-                                    as="span"
-                                    className="rounded-circle"
-                                    style={{ width: 48, height: 48 }}
-                                />
-                                <div className="flex-grow-1">
+                <Col xl={9} lg={9} md={12}>
+                    <div className={styles.heroGroup}>
+                        <div className={clsx(styles.skeletonPanel, 'p-4')}>
+                            <div className="placeholder-glow">
+                                <div className="d-flex align-items-center gap-3 mb-3">
                                     <Placeholder
-                                        xs={6}
-                                        className="d-block mb-1"
+                                        as="span"
+                                        className="rounded-circle"
+                                        style={{ width: 48, height: 48 }}
                                     />
-                                    <Placeholder xs={3} />
+                                    <div className="flex-grow-1">
+                                        <Placeholder
+                                            xs={6}
+                                            className="d-block mb-1"
+                                        />
+                                        <Placeholder xs={3} />
+                                    </div>
+                                </div>
+                                <Placeholder xs={8} className="d-block mb-2" />
+                                <Placeholder xs={5} className="d-block mb-4" />
+                                <Placeholder
+                                    xs={12}
+                                    size="lg"
+                                    className="d-block my-4"
+                                    style={{ height: '3rem' }}
+                                />
+                                <div className="d-flex gap-3">
+                                    <Placeholder xs={4} />
+                                    <Placeholder xs={4} />
+                                    <Placeholder xs={4} />
                                 </div>
                             </div>
-                            <Placeholder xs={8} className="d-block mb-2" />
-                            <Placeholder xs={5} className="d-block mb-4" />
-                            <Placeholder
-                                xs={12}
-                                size="lg"
-                                className="d-block my-4"
-                                style={{ height: '3rem' }}
-                            />
-                            <div className="d-flex gap-3">
-                                <Placeholder xs={4} />
-                                <Placeholder xs={4} />
-                                <Placeholder xs={4} />
-                            </div>
                         </div>
-                    </div>
-                </Col>
-                <Col xl={4} lg={4} md={12}>
-                    <div
-                        className={clsx(
-                            styles.panel,
-                            'd-flex align-items-center justify-content-center',
-                        )}
-                        style={{ height: '340px' }}
-                    >
-                        <div
-                            className="spinner-border text-secondary"
-                            role="status"
-                        >
-                            <span className="visually-hidden">
-                                Loading stream...
-                            </span>
+                        <div className="d-flex align-items-center justify-content-center flex-grow-1">
+                            <div
+                                className="spinner-border text-secondary"
+                                role="status"
+                            >
+                                <span className="visually-hidden">
+                                    Loading stream...
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </Col>
