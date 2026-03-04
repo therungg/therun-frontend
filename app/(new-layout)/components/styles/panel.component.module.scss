@@ -111,12 +111,9 @@ $tab-height: 4rem;
 
 @media (max-width: 768px) {
     .bookmarkFolder .url {
-        position: static;
-        display: block;
-        transform: none;
-        text-align: right;
-        padding: 0.5rem 0.75rem 0;
-        font-size: 0.82rem;
+        font-size: 0.72rem;
+        padding: 0.3rem 0.5rem;
+        padding-bottom: 0.6rem;
     }
 }
 
