@@ -55,6 +55,32 @@ export default function buildMetadata(props?: MetadataProps): Metadata {
         keywords: props?.keywords || ['TheRun', 'Speedrun', 'Statistics'],
         manifest: '/site.webmanifest',
         referrer: 'strict-origin-when-cross-origin',
+        icons: {
+            icon: [
+                {
+                    url: '/favicon-32x32.png',
+                    sizes: '32x32',
+                    type: 'image/png',
+                },
+                {
+                    url: '/media/favicon/dark-theme/favicon-32x32.png',
+                    sizes: '32x32',
+                    type: 'image/png',
+                    media: '(prefers-color-scheme: dark)',
+                },
+                {
+                    url: '/favicon-16x16.png',
+                    sizes: '16x16',
+                    type: 'image/png',
+                },
+                {
+                    url: '/media/favicon/dark-theme/favicon-16x16.png',
+                    sizes: '16x16',
+                    type: 'image/png',
+                    media: '(prefers-color-scheme: dark)',
+                },
+            ],
+        },
         other: {
             'msapplication-TileColor': '#007c00',
         },
