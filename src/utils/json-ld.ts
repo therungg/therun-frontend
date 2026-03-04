@@ -3,19 +3,38 @@ import { type EventWithOrganizerName } from '../../types/events.types';
 const BASE_URL = 'https://therun.gg';
 
 export function buildWebSiteJsonLd() {
-    return {
-        '@context': 'https://schema.org',
-        '@type': 'WebSite',
-        name: 'The Run',
-        url: BASE_URL,
-        description:
-            'Free speedrun statistics — live run tracking, leaderboards, personal bests, and race data for speedrunners.',
-        potentialAction: {
-            '@type': 'SearchAction',
-            target: `${BASE_URL}/search?q={search_term_string}`,
-            'query-input': 'required name=search_term_string',
+    return [
+        {
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: 'The Run',
+            alternateName: 'therun.gg',
+            url: BASE_URL,
+            description:
+                'Free speedrun statistics — live run tracking, leaderboards, personal bests, and race data for speedrunners.',
+            potentialAction: {
+                '@type': 'SearchAction',
+                target: `${BASE_URL}/search?q={search_term_string}`,
+                'query-input': 'required name=search_term_string',
+            },
         },
-    };
+        {
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'The Run',
+            alternateName: 'therun.gg',
+            url: BASE_URL,
+            logo: `${BASE_URL}/therun-no-url-with-black-background.png`,
+            description:
+                'Free speedrun statistics platform providing live run tracking, leaderboards, personal bests, race data, and advanced analytics for speedrunners.',
+            sameAs: [
+                'https://discord.gg/therun',
+                'https://twitter.com/theaboringname',
+                'https://bsky.app/profile/therun.gg',
+                'https://github.com/therungg',
+            ],
+        },
+    ];
 }
 
 export function buildPersonJsonLd({
