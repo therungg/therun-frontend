@@ -29,7 +29,8 @@ export interface MetadataProps {
  * @returns
  */
 export default function buildMetadata(props?: MetadataProps): Metadata {
-    const defaultImageUrl = '/therun-no-url-with-black-background.png';
+    const defaultImageUrl =
+        'https://therun.gg/therun-no-url-with-black-background.png';
     const title =
         safeDecodeURI(props?.absoluteTitle || '') ||
         `The Run | ${
@@ -52,7 +53,7 @@ export default function buildMetadata(props?: MetadataProps): Metadata {
         metadataBase: new URL('https://therun.gg'),
         title,
         description,
-        keywords: props?.keywords || ['TheRun', 'Speedrun', 'Statistics'],
+        keywords: props?.keywords || ['therun', 'Speedrun', 'Statistics'],
         manifest: '/site.webmanifest',
         referrer: 'strict-origin-when-cross-origin',
         icons: {
