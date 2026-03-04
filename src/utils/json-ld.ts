@@ -23,25 +23,36 @@ export function buildPersonJsonLd({
     picture,
     description,
     socials,
+    games,
 }: {
     username: string;
     picture?: string;
     description: string;
     socials?: { youtube?: string; twitter?: string; twitch?: string };
+    games?: string[];
 }) {
     const sameAs: string[] = [];
     if (socials?.twitch) sameAs.push(`https://twitch.tv/${socials.twitch}`);
     if (socials?.youtube) sameAs.push(`https://youtube.com/${socials.youtube}`);
     if (socials?.twitter) sameAs.push(`https://twitter.com/${socials.twitter}`);
 
+    const knowsAbout: string[] = ['Speedrunning'];
+    if (games && games.length > 0) knowsAbout.push(...games);
+
     return {
         '@context': 'https://schema.org',
-        '@type': 'Person',
-        name: username,
+        '@type': 'ProfilePage',
+        name: `${username}'s Speedrun Profile`,
         url: `${BASE_URL}/${username}`,
         description,
-        ...(picture ? { image: picture } : {}),
-        ...(sameAs.length > 0 ? { sameAs } : {}),
+        mainEntity: {
+            '@type': 'Person',
+            name: username,
+            url: `${BASE_URL}/${username}`,
+            knowsAbout,
+            ...(picture ? { image: picture } : {}),
+            ...(sameAs.length > 0 ? { sameAs } : {}),
+        },
     };
 }
 
@@ -150,26 +161,65 @@ export function formatPlaytime(ms: string | undefined): string | undefined {
     return `${totalMinutes} minute${totalMinutes !== 1 ? 's' : ''}`;
 }
 
+export function buildRunBreadcrumbJsonLd({
+    username,
+    runUrl,
+    game,
+    category,
+}: {
+    username: string;
+    runUrl: string;
+    game: string;
+    category: string;
+}) {
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+            {
+                '@type': 'ListItem',
+                position: 1,
+                name: username,
+                item: `${BASE_URL}/${username}`,
+            },
+            {
+                '@type': 'ListItem',
+                position: 2,
+                name: `${game} - ${category}`,
+                item: `${BASE_URL}/${runUrl}`,
+            },
+        ],
+    };
+}
+
 interface RunProfileJsonLdInput {
     username: string;
     game: string;
     category: string;
+    runUrl: string;
     personalBest?: string;
     sumOfBests?: string;
     attemptCount?: number;
     finishedAttemptCount?: string;
     totalRunTime?: string;
+    image?: string;
+    dateCreated?: string;
+    dateModified?: string;
 }
 
 export function buildRunProfileJsonLd({
     username,
     game,
     category,
+    runUrl,
     personalBest,
     sumOfBests,
     attemptCount,
     finishedAttemptCount,
     totalRunTime,
+    image,
+    dateCreated,
+    dateModified,
 }: RunProfileJsonLdInput) {
     const pb = formatMillis(personalBest);
     const sob = formatMillis(sumOfBests);
@@ -186,13 +236,16 @@ export function buildRunProfileJsonLd({
         '@context': 'https://schema.org',
         '@type': 'ProfilePage',
         name: `${username}'s ${game} - ${category} Speedruns`,
-        url: `${BASE_URL}/${username}/${encodeURIComponent(game)}/${encodeURIComponent(category)}`,
+        url: `${BASE_URL}/${runUrl}`,
         description,
+        ...(dateCreated ? { dateCreated } : {}),
+        ...(dateModified ? { dateModified } : {}),
         mainEntity: {
             '@type': 'Person',
             name: username,
             url: `${BASE_URL}/${username}`,
-            knowsAbout: `${game} - ${category}`,
+            knowsAbout: [`Speedrunning`, game, `${game} - ${category}`],
+            ...(image ? { image } : {}),
         },
     };
 }

@@ -11,6 +11,47 @@ $red: #ef5350;
     padding: 1rem 1.25rem;
 }
 
+/* ── Identity Header ── */
+
+.identityHeader {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.75rem;
+    margin-bottom: 0.75rem;
+    border-radius: 0.6rem;
+    background: rgba(var(--bs-primary-rgb), 0.06);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.12);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.1);
+        border-color: rgba(var(--bs-primary-rgb), 0.2);
+        text-decoration: none;
+        color: inherit;
+    }
+}
+
+.identityAvatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(var(--bs-primary-rgb), 0.25);
+    flex-shrink: 0;
+}
+
+.identityName {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--bs-emphasis-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* ── Streak Card ── */
 
 $streak-orange: #f97316;

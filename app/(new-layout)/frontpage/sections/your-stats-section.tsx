@@ -85,7 +85,11 @@ export const YourStatsSection = async ({
             className="p-0"
             link={{ url: `/${user}`, text: 'View Full Stats' }}
         >
-            <YourStatsClient dashboards={dashboards} username={user} />
+            <YourStatsClient
+                dashboards={dashboards}
+                username={user}
+                picture={session.picture}
+            />
         </Panel>
     );
 };
