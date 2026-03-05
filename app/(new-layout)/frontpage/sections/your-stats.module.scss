@@ -74,7 +74,7 @@ $streak-hot: #ef4444;
     position: relative;
     border-radius: 0.85rem;
     padding: 1.15rem 1.15rem 0.85rem;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
     overflow: hidden;
     background:
         radial-gradient(
@@ -448,6 +448,12 @@ $streak-hot: #ef4444;
     &:hover {
         color: rgba(255, 255, 255, 0.45);
     }
+}
+
+.streakDivider {
+    height: 1px;
+    background: rgba(255, 255, 255, 0.06);
+    margin-bottom: 1rem;
 }
 
 /* ── Period Toggle ── */
