@@ -240,7 +240,6 @@ const HotGameCard = ({
         <Link
             href={`/${safeEncodeURI(game.gameDisplay)}`}
             className={`${styles.gameCard} ${isTop ? styles.gameCardTop : ''} ${rank >= 4 ? styles.gameCardFaded : ''}`}
-            style={{ '--bg-image': `url(${imageUrl})` } as React.CSSProperties}
         >
             <RankBadge rank={rank} />
             <Image
