@@ -90,31 +90,6 @@ $amber: #f59e0b;
         transform 0.2s ease,
         backdrop-filter 0.2s ease;
 
-    &::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        width: 40%;
-        background: var(--bg-image) center / contain no-repeat;
-        opacity: 0.15;
-        pointer-events: none;
-        transition: opacity 0.2s ease;
-        z-index: 0;
-        mask-image: linear-gradient(to right, transparent 0%, black 50%);
-        -webkit-mask-image: linear-gradient(to right, transparent 0%, black 50%);
-
-        :global([data-bs-theme='light']) & {
-            opacity: 0.08;
-        }
-    }
-
-    > * {
-        position: relative;
-        z-index: 1;
-    }
-
     &:hover {
         background: color-mix(in srgb, var(--bs-body-bg) 65%, transparent);
         backdrop-filter: blur(24px);
@@ -126,13 +101,6 @@ $amber: #f59e0b;
         border-color: color-mix(in srgb, var(--bs-border-color) 40%, transparent);
     }
 
-    &:hover::before {
-        opacity: 0.18;
-
-        :global([data-bs-theme='light']) & {
-            opacity: 0.1;
-        }
-    }
 }
 
 .gameCardTop {
@@ -311,10 +279,6 @@ $amber: #f59e0b;
 
         &:hover {
             transform: none;
-        }
-
-        &::before {
-            transition: none;
         }
     }
 }
