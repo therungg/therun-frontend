@@ -13,22 +13,16 @@
     padding: 0;
 }
 
-/* Joined container: featured panel + stream as one visual unit */
+/* Container: featured panel + stream side by side */
 .heroGroup {
     display: flex;
     height: 340px;
-    border: 1px solid var(--bs-border-color);
-    border-radius: 1rem;
-    overflow: hidden;
-    background: var(--bs-body-bg);
+    gap: 0.5rem;
 }
 
 .heroGroup .featuredPanel {
     flex: 5;
     height: 100%;
-    border: none;
-    border-radius: 0;
-    border-right: 1px solid var(--bs-border-color);
 }
 
 .heroGroup:has(.featuredPanelPbPace) {
@@ -54,6 +48,10 @@
 .heroGroupStream {
     flex: 4;
     min-width: 0;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 1rem;
+    overflow: hidden;
+    background: var(--bs-body-bg);
 }
 
 /* Featured run panel — no .panel border, self-contained */
@@ -751,22 +749,10 @@
     .heroGroup {
         flex-direction: column;
         height: auto;
-        border: none;
-        border-radius: 0;
-        background: none;
         gap: 0.25rem;
     }
 
-    .heroGroup .featuredPanel {
-        border: 1px solid var(--bs-border-color);
-        border-radius: 1rem;
-        border-right: 1px solid var(--bs-border-color);
-    }
-
     .heroGroupStream {
-        border: 1px solid var(--bs-border-color);
-        border-radius: 1rem;
-        overflow: hidden;
         height: 280px;
     }
 
@@ -857,7 +843,9 @@
 .skeletonPanel {
     flex: 5;
     min-height: 340px;
-    border-right: 1px solid var(--bs-border-color);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 1rem;
+    background: var(--bs-body-bg);
 }
 
 /* ── Reduced motion ── */
