@@ -90,6 +90,23 @@ $amber: #f59e0b;
         transform 0.2s ease,
         backdrop-filter 0.2s ease;
 
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: var(--bg-image) right center / cover no-repeat;
+        opacity: 0.1;
+        filter: blur(2px);
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+        z-index: 0;
+    }
+
+    > * {
+        position: relative;
+        z-index: 1;
+    }
+
     &:hover {
         background: color-mix(in srgb, var(--bs-body-bg) 65%, transparent);
         backdrop-filter: blur(24px);
@@ -99,6 +116,10 @@ $amber: #f59e0b;
         text-decoration: none;
         color: inherit;
         border-color: color-mix(in srgb, var(--bs-border-color) 40%, transparent);
+    }
+
+    &:hover::before {
+        opacity: 0.18;
     }
 }
 
