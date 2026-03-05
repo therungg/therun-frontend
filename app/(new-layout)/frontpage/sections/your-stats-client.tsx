@@ -3,7 +3,7 @@
 import clsx from 'clsx';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useCallback, useEffect, useOptimistic, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     FaBolt,
     FaChevronLeft,
@@ -361,13 +361,13 @@ export const YourStatsClient = ({
     hideStreaks: hideStreaksProp,
     isOwner,
 }: YourStatsClientProps) => {
-    const [optimisticHideStreaks, setOptimisticHideStreaks] = useOptimistic(
+    const [streaksHidden, setStreaksHidden] = useState(
         hideStreaksProp ?? false,
     );
 
-    const handleToggleStreaks = async (hide: boolean) => {
-        setOptimisticHideStreaks(hide);
-        await toggleStreakVisibility(hide);
+    const handleToggleStreaks = (hide: boolean) => {
+        setStreaksHidden(hide);
+        toggleStreakVisibility(hide);
     };
 
     const [selection, setSelection] = useState<DashboardSelection>({
@@ -681,7 +681,7 @@ export const YourStatsClient = ({
                 <StreakCard
                     streak={streakData}
                     streakMilestone={streakMilestoneData}
-                    hideStreaks={optimisticHideStreaks}
+                    hideStreaks={streaksHidden}
                     isOwner={isOwner}
                     onToggleStreaks={handleToggleStreaks}
                 />
@@ -705,7 +705,7 @@ export const YourStatsClient = ({
                 <StreakCard
                     streak={streakData}
                     streakMilestone={streakMilestoneData}
-                    hideStreaks={optimisticHideStreaks}
+                    hideStreaks={streaksHidden}
                     isOwner={isOwner}
                     onToggleStreaks={handleToggleStreaks}
                 />
@@ -724,7 +724,7 @@ export const YourStatsClient = ({
                 <StreakCard
                     streak={streakData}
                     streakMilestone={streakMilestoneData}
-                    hideStreaks={optimisticHideStreaks}
+                    hideStreaks={streaksHidden}
                     isOwner={isOwner}
                     onToggleStreaks={handleToggleStreaks}
                 />
@@ -748,7 +748,7 @@ export const YourStatsClient = ({
                 dashboard={dashboard}
                 username={username}
                 periodToggle={periodToggle}
-                hideStreaks={optimisticHideStreaks}
+                hideStreaks={streaksHidden}
                 isOwner={isOwner}
                 onToggleStreaks={handleToggleStreaks}
             />
