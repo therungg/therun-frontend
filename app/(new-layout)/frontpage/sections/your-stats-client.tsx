@@ -33,9 +33,9 @@ interface YourStatsClientProps {
 
 const GRANULARITIES: PeriodGranularity[] = ['week', 'month', 'year'];
 const GRANULARITY_LABELS: Record<PeriodGranularity, string> = {
-    week: 'Week',
-    month: 'Month',
-    year: 'Year',
+    week: '7d',
+    month: '30d',
+    year: '1y',
 };
 
 /** Map current granularity to the pre-fetched period key */
@@ -532,7 +532,7 @@ export const YourStatsClient = ({
                             setJumpPickerOpen(false);
                         }}
                     >
-                        All-time
+                        All Time
                     </button>
                     <button
                         type="button"
