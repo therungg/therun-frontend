@@ -3,7 +3,6 @@ import { Col, Row } from 'react-bootstrap';
 import { getSession } from '~src/actions/session.action';
 import { FrontpageHero } from './components/frontpage-hero';
 import { SectionSkeleton } from './components/section-skeleton';
-import styles from './frontpage.module.scss';
 import { CommunityPulse } from './sections/community-pulse';
 import { PatreonSection } from './sections/patreon-section';
 import { PbFeedSection } from './sections/pb-feed-section';
@@ -17,9 +16,7 @@ export default async function FrontPage({ statsUser }: { statsUser?: string }) {
     const isLoggedIn = !!session?.user;
 
     return (
-        <div
-            className={`d-flex flex-column gap-4 ${styles.frontpageBackground}`}
-        >
+        <div className="d-flex flex-column gap-4">
             <div id="live">
                 <Suspense fallback={<SectionSkeleton height={340} />}>
                     <FrontpageHero />
