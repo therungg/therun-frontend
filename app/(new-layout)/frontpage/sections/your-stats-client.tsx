@@ -274,79 +274,82 @@ function StreakCard({
         : null;
 
     return (
-        <div className={cardClass}>
-            {/* Title */}
-            <div className={styles.streakTitle}>
-                Your Daily Streak
-                {isOwner && (
-                    <button
-                        type="button"
-                        className={styles.streakHideButton}
-                        onClick={() => onToggleStreaks?.(true)}
-                        title="Hide streaks"
-                    >
-                        <FaEyeSlash size={14} />
-                    </button>
+        <>
+            <div className={cardClass}>
+                {/* Title */}
+                <div className={styles.streakTitle}>
+                    Your Daily Streak
+                    {isOwner && (
+                        <button
+                            type="button"
+                            className={styles.streakHideButton}
+                            onClick={() => onToggleStreaks?.(true)}
+                            title="Hide streaks"
+                        >
+                            <FaEyeSlash size={14} />
+                        </button>
+                    )}
+                </div>
+
+                {/* Hero: fire icon with heat glow + big number */}
+                <div className={styles.streakHeroWrap}>
+                    <div className={styles.streakIconWrap}>
+                        <FaFire size={22} className={styles.streakIcon} />
+                    </div>
+                    <div className={styles.streakHeroText}>
+                        <span className={styles.streakNumber}>{current}</span>
+                        <span className={styles.streakDaysLabel}>
+                            {current === 1 ? 'day' : 'days'}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Milestone target with progress */}
+                <div className={styles.streakTarget}>
+                    <div className={styles.streakTargetHeader}>
+                        <span className={styles.streakTargetLabel}>
+                            {targetLabel}
+                        </span>
+                        <span className={styles.streakTargetPct}>
+                            {pctDisplay}%
+                        </span>
+                    </div>
+                    <div className={styles.streakProgressTrack}>
+                        <div
+                            className={fillClass}
+                            style={{ width: `${progressPct}%` }}
+                            role="progressbar"
+                            aria-valuenow={current}
+                            aria-valuemin={0}
+                            aria-valuemax={milestone.target}
+                        />
+                    </div>
+                </div>
+
+                {/* Footer: longest streak + milestone nudge */}
+                {(allTimeBest > 0 || milestoneMsg) && (
+                    <div className={styles.streakFooter}>
+                        {allTimeBest > 0 && !isRecord && (
+                            <span className={styles.streakBest}>
+                                Longest streak: <strong>{allTimeBest}d</strong>
+                                {longestDateLabel && (
+                                    <span className={styles.streakBestDate}>
+                                        {longestDateLabel}
+                                    </span>
+                                )}
+                            </span>
+                        )}
+                        {milestoneMsg && (
+                            <div className={milestoneClass}>
+                                <FaBolt size={10} />
+                                {milestoneMsg}
+                            </div>
+                        )}
+                    </div>
                 )}
             </div>
-
-            {/* Hero: fire icon with heat glow + big number */}
-            <div className={styles.streakHeroWrap}>
-                <div className={styles.streakIconWrap}>
-                    <FaFire size={22} className={styles.streakIcon} />
-                </div>
-                <div className={styles.streakHeroText}>
-                    <span className={styles.streakNumber}>{current}</span>
-                    <span className={styles.streakDaysLabel}>
-                        {current === 1 ? 'day' : 'days'}
-                    </span>
-                </div>
-            </div>
-
-            {/* Milestone target with progress */}
-            <div className={styles.streakTarget}>
-                <div className={styles.streakTargetHeader}>
-                    <span className={styles.streakTargetLabel}>
-                        {targetLabel}
-                    </span>
-                    <span className={styles.streakTargetPct}>
-                        {pctDisplay}%
-                    </span>
-                </div>
-                <div className={styles.streakProgressTrack}>
-                    <div
-                        className={fillClass}
-                        style={{ width: `${progressPct}%` }}
-                        role="progressbar"
-                        aria-valuenow={current}
-                        aria-valuemin={0}
-                        aria-valuemax={milestone.target}
-                    />
-                </div>
-            </div>
-
-            {/* Footer: longest streak + milestone nudge */}
-            {(allTimeBest > 0 || milestoneMsg) && (
-                <div className={styles.streakFooter}>
-                    {allTimeBest > 0 && !isRecord && (
-                        <span className={styles.streakBest}>
-                            Longest streak: <strong>{allTimeBest}d</strong>
-                            {longestDateLabel && (
-                                <span className={styles.streakBestDate}>
-                                    {longestDateLabel}
-                                </span>
-                            )}
-                        </span>
-                    )}
-                    {milestoneMsg && (
-                        <div className={milestoneClass}>
-                            <FaBolt size={10} />
-                            {milestoneMsg}
-                        </div>
-                    )}
-                </div>
-            )}
-        </div>
+            <div className={styles.streakDivider} />
+        </>
     );
 }
 
@@ -662,7 +665,6 @@ export const YourStatsClient = ({
                     isOwner={isOwner}
                     onToggleStreaks={handleToggleStreaks}
                 />
-                <div className={styles.streakDivider} />
                 {periodToggle}
                 <div className={styles.emptyState}>
                     <div className={styles.emptyStateText}>
@@ -686,7 +688,6 @@ export const YourStatsClient = ({
                     isOwner={isOwner}
                     onToggleStreaks={handleToggleStreaks}
                 />
-                <div className={styles.streakDivider} />
                 {periodToggle}
                 <div className={styles.emptyState}>
                     <div className={styles.emptyStateText}>Loading…</div>
@@ -705,7 +706,6 @@ export const YourStatsClient = ({
                     isOwner={isOwner}
                     onToggleStreaks={handleToggleStreaks}
                 />
-                <div className={styles.streakDivider} />
                 {periodToggle}
                 <div className={styles.emptyState}>
                     <div className={styles.emptyStateText}>
@@ -764,7 +764,6 @@ function DashboardContent({
                 isOwner={isOwner}
                 onToggleStreaks={onToggleStreaks}
             />
-            <div className={styles.streakDivider} />
 
             {/* 2. Period Toggle */}
             {periodToggle}
