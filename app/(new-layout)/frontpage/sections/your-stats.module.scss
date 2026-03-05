@@ -201,6 +201,9 @@ $streak-hot: #ef4444;
 
 .streakTitle {
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     font-size: 0.68rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -409,6 +412,55 @@ $streak-hot: #ef4444;
 
 .streakMilestoneRecord {
     color: $gold;
+}
+
+.streakHideButton {
+    all: unset;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    color: var(--color-text-tertiary, rgba(255, 255, 255, 0.4));
+    display: flex;
+    align-items: center;
+    padding: 2px;
+    border-radius: 4px;
+
+    &:hover {
+        color: var(--color-text-secondary, rgba(255, 255, 255, 0.6));
+    }
+}
+
+.streakCard:hover .streakHideButton {
+    opacity: 1;
+}
+
+.streakHiddenPlaceholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.streakHiddenText {
+    font-size: 0.8rem;
+    color: var(--color-text-tertiary, rgba(255, 255, 255, 0.35));
+}
+
+.streakShowButton {
+    all: unset;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--color-link, #60a5fa);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover {
+        color: var(--color-link-hover, #93bbfd);
+    }
 }
 
 /* ── Period Toggle ── */
