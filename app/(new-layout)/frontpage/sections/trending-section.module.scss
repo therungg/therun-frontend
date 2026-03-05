@@ -293,6 +293,16 @@ $amber: #f59e0b;
 
 // ── Responsive ──
 
+@media (prefers-reduced-motion: reduce) {
+    .gameCard {
+        transition: none;
+
+        &::before {
+            transition: none;
+        }
+    }
+}
+
 @media (max-width: 768px) {
     .stats {
         flex-direction: column;
@@ -340,6 +350,15 @@ $amber: #f59e0b;
     .periodButton {
         padding: 0.3rem 0.5rem;
         font-size: 0.7rem;
+    }
+
+    .gameCard {
+        padding: 0.5rem;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+        &:hover {
+            transform: none;
+        }
     }
 }
 
