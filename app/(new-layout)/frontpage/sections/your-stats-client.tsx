@@ -201,16 +201,13 @@ function StreakCard({
         if (!isOwner) return null;
 
         return (
-            <div className={styles.streakHiddenPlaceholder}>
-                <span className={styles.streakHiddenText}>Streaks hidden</span>
-                <button
-                    type="button"
-                    className={styles.streakShowButton}
-                    onClick={() => onToggleStreaks?.(false)}
-                >
-                    Show
-                </button>
-            </div>
+            <button
+                type="button"
+                className={styles.streakShowButton}
+                onClick={() => onToggleStreaks?.(false)}
+            >
+                Show streaks
+            </button>
         );
     }
 
