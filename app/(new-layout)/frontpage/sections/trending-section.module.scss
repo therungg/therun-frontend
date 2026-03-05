@@ -1,5 +1,4 @@
-$mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
-$amber: #f59e0b;
+@use '../../styles/design-tokens' as *;
 
 .content {
     display: flex;
@@ -104,7 +103,7 @@ $amber: #f59e0b;
     align-items: center;
     gap: 0.75rem;
     padding: 0.65rem 0.75rem;
-    border-radius: 0.5rem;
+    border-radius: $radius-md;
     text-decoration: none;
     color: inherit;
     overflow: hidden;
@@ -113,7 +112,7 @@ $amber: #f59e0b;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid color-mix(in srgb, var(--bs-border-color) 20%, transparent);
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    box-shadow: $card-shadow-flat;
 
     transition:
         background-color 0.2s ease,
@@ -125,8 +124,8 @@ $amber: #f59e0b;
         background: color-mix(in srgb, var(--bs-body-bg) 65%, transparent);
         backdrop-filter: blur(24px);
         -webkit-backdrop-filter: blur(24px);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        transform: translateY(-1px);
+        box-shadow: $card-shadow-prominent;
+        transform: translateY($card-hover-translate);
         text-decoration: none;
         color: inherit;
         border-color: color-mix(in srgb, var(--bs-border-color) 40%, transparent);
@@ -155,7 +154,7 @@ $amber: #f59e0b;
     }
 
     .statHighlight .statValue {
-        color: color-mix(in srgb, $amber 70%, var(--bs-secondary-color) 30%);
+        color: color-mix(in srgb, $accent-amber 70%, var(--bs-secondary-color) 30%);
     }
 }
 
@@ -174,8 +173,8 @@ $amber: #f59e0b;
 }
 
 .gameArt {
-    width: 60px;
-    height: 80px;
+    width: $art-width-lg;
+    aspect-ratio: 3 / 4;
     border-radius: 4px;
     object-fit: cover;
     flex-shrink: 0;
@@ -183,8 +182,8 @@ $amber: #f59e0b;
 }
 
 .gameArtTop {
-    width: 72px;
-    height: 96px;
+    width: $art-width-xl;
+    aspect-ratio: 3 / 4;
 }
 
 .gameInfo {
@@ -203,7 +202,7 @@ $amber: #f59e0b;
 
 .gameName {
     font-weight: 600;
-    font-size: 1rem;
+    font-size: $font-size-md;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -227,7 +226,7 @@ $amber: #f59e0b;
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
-    font-size: 0.75rem;
+    font-size: $font-size-xs;
     padding: 0.15rem 0.5rem;
     border-radius: 4px;
     background: color-mix(in srgb, var(--bs-secondary-bg) 60%, transparent);
@@ -248,7 +247,7 @@ $amber: #f59e0b;
 }
 
 .categoryTime {
-    font-family: $mono;
+    font-family: $font-mono;
     font-weight: 600;
     color: var(--bs-body-color);
 }
@@ -271,7 +270,7 @@ $amber: #f59e0b;
 }
 
 .statLabel {
-    font-size: 0.65rem;
+    font-size: $font-size-2xs;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -279,17 +278,17 @@ $amber: #f59e0b;
 }
 
 .statValue {
-    font-family: $mono;
-    font-size: 0.9rem;
+    font-family: $font-mono;
+    font-size: $font-size-base;
     font-weight: 600;
     color: var(--bs-body-color);
 }
 
 .statHighlight {
-    color: $amber;
+    color: $accent-amber;
 
     .statValue {
-        color: $amber;
+        color: $accent-amber;
     }
 }
 
@@ -332,13 +331,13 @@ $amber: #f59e0b;
     }
 
     .gameArt {
-        width: 48px;
-        height: 64px;
+        width: $art-width-md;
+        aspect-ratio: 3 / 4;
     }
 
     .gameArtTop {
-        width: 56px;
-        height: 75px;
+        width: $art-width-md;
+        aspect-ratio: 3 / 4;
     }
 
     .categories {

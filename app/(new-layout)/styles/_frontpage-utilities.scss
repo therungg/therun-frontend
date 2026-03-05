@@ -1,0 +1,117 @@
+@use 'design-tokens' as *;
+
+// ── Card Elevation ──
+
+@mixin card-elevation($level: flat) {
+    @if $level == flat {
+        box-shadow: $card-shadow-flat;
+    } @else if $level == raised {
+        box-shadow: $card-shadow-raised;
+    } @else if $level == prominent {
+        box-shadow: $card-shadow-prominent;
+    }
+    transition: transform $transition-fast, box-shadow $transition-fast;
+}
+
+@mixin card-hover {
+    transform: translateY($card-hover-translate);
+    box-shadow: $card-shadow-raised;
+}
+
+// ── Live Indicator ──
+
+@mixin live-dot($size: 7px, $color: $accent-amber) {
+    display: inline-block;
+    width: $size;
+    height: $size;
+    border-radius: 50%;
+    background: $color;
+    box-shadow: 0 0 6px rgba($color, 0.5), 0 0 12px rgba($color, 0.3);
+    animation: livePulse 2.5s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+@keyframes livePulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.4;
+        transform: scale(0.7);
+    }
+}
+
+// ── Badge / Pill ──
+
+@mixin pill {
+    display: inline-flex;
+    align-items: center;
+    padding: $badge-padding;
+    border-radius: $badge-radius;
+    font-size: $badge-font-size;
+    font-weight: $badge-font-weight;
+    background: $badge-bg;
+    color: $badge-color;
+    white-space: nowrap;
+    transition: background $transition-fast;
+
+    &:hover {
+        background: $badge-bg-hover;
+    }
+}
+
+// ── Stat Cell ──
+
+@mixin stat-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: $spacing-sm $spacing-md;
+}
+
+@mixin stat-label {
+    font-size: $font-size-2xs;
+    font-weight: $label-font-weight;
+    letter-spacing: $label-letter-spacing;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+}
+
+@mixin stat-value {
+    font-family: $font-mono;
+    font-size: $font-size-lg;
+    font-weight: 700;
+    color: var(--bs-body-color);
+}
+
+// ── Game Art ──
+
+@mixin game-art($size: sm) {
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    border-radius: $radius-sm;
+    flex-shrink: 0;
+
+    @if $size == sm {
+        width: $art-width-sm;
+    } @else if $size == md {
+        width: $art-width-md;
+    } @else if $size == lg {
+        width: $art-width-lg;
+    } @else if $size == xl {
+        width: $art-width-xl;
+    }
+}
+
+// ── Section Header (inside panels) ──
+
+@mixin section-header {
+    font-size: $font-size-sm;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--bs-secondary-color);
+    margin-bottom: $spacing-sm;
+}

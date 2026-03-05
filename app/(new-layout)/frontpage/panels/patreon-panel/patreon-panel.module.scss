@@ -1,3 +1,5 @@
+@use '../../../styles/design-tokens' as *;
+
 .ctaContainer {
     text-align: center;
 }
@@ -12,12 +14,12 @@
 .heading {
     margin-bottom: 0.5rem;
     font-weight: 600;
-    font-size: 1.05rem;
+    font-size: $font-size-md;
 }
 
 .description {
     margin-bottom: 0.9rem;
-    font-size: 0.9rem;
+    font-size: $font-size-base;
     color: var(--bs-body-color);
     opacity: 0.8;
 }
@@ -46,7 +48,7 @@
 }
 
 .patronLabel {
-    font-size: 0.8rem;
+    font-size: $font-size-sm;
     font-weight: 600;
     color: var(--bs-body-color);
     opacity: 0.7;
@@ -61,7 +63,7 @@
 }
 
 .patronItem {
-    font-size: 0.9rem;
+    font-size: $font-size-base;
     font-weight: 500;
     display: inline-flex;
     align-items: center;

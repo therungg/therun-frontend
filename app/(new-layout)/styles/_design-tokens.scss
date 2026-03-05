@@ -16,6 +16,14 @@ $section-spacing-vertical: 1rem;
 $section-spacing-horizontal: 1rem;
 $item-spacing: 0.75rem;
 
+// Accent Colors
+$accent-amber: #f59e0b;
+$accent-green: #4caf50;
+$accent-green-bright: #66bb6a;
+$accent-gold: #d4af37;
+$accent-red: #ef4444;
+$accent-red-light: #f87171;
+
 // Badge/Pill Design
 $badge-bg: rgba(96, 140, 89, 0.12);
 $badge-bg-hover: rgba(96, 140, 89, 0.2);
@@ -40,6 +48,26 @@ $heading-letter-spacing: 0.02em;
 $body-line-height: 1.6;
 $label-font-weight: 500;
 $label-letter-spacing: 0.03em;
+
+// Font Size Scale
+$font-size-2xs: 0.65rem;    // tiny labels, badges
+$font-size-xs: 0.72rem;     // small labels
+$font-size-sm: 0.8rem;      // secondary text
+$font-size-base: 0.9rem;    // body text
+$font-size-md: 1rem;        // card titles
+$font-size-lg: 1.15rem;     // stat values
+$font-size-xl: 1.3rem;      // section headings
+$font-size-2xl: 1.5rem;     // panel titles
+$font-size-display: 2.5rem; // hero timer
+
+// Monospace Font
+$font-mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+
+// Game Art Sizes (3:4 aspect ratio)
+$art-width-sm: 36px;   // 1× — list items, activity feeds
+$art-width-md: 48px;   // 1.33× — mobile cards
+$art-width-lg: 60px;   // 1.67× — game cards
+$art-width-xl: 72px;   // 2× — top/featured cards
 
 // Shadows
 $shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -69,3 +97,9 @@ $radius-xl: 1rem;
 // Interactive States
 $hover-lift: -2px;
 $active-lift: 0px;
+
+// Card Elevation
+$card-shadow-flat: $shadow-sm;
+$card-shadow-raised: $shadow-md;
+$card-shadow-prominent: $shadow-lg;
+$card-hover-translate: -2px;
