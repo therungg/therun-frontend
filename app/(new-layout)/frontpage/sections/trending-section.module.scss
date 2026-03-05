@@ -93,16 +93,20 @@ $amber: #f59e0b;
     &::before {
         content: '';
         position: absolute;
-        inset: 0;
-        background: var(--bg-image) right center / cover no-repeat;
-        opacity: 0.12;
-        filter: blur(2px);
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 40%;
+        background: var(--bg-image) center / contain no-repeat;
+        opacity: 0.15;
         pointer-events: none;
         transition: opacity 0.2s ease;
         z-index: 0;
+        mask-image: linear-gradient(to right, transparent 0%, black 50%);
+        -webkit-mask-image: linear-gradient(to right, transparent 0%, black 50%);
 
         :global([data-bs-theme='light']) & {
-            opacity: 0.06;
+            opacity: 0.08;
         }
     }
 
