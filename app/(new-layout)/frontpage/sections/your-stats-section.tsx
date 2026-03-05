@@ -90,7 +90,6 @@ export const YourStatsSection = async ({
             <YourStatsClient
                 dashboards={dashboards}
                 username={user}
-                picture={session.picture}
                 hideStreaks={preferences.hideStreaks ?? false}
                 isOwner={!impersonating}
             />
