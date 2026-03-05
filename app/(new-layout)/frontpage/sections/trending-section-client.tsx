@@ -240,6 +240,7 @@ const HotGameCard = ({
         <Link
             href={`/${safeEncodeURI(game.gameDisplay)}`}
             className={styles.gameCard}
+            style={{ '--bg-image': `url(${imageUrl})` } as React.CSSProperties}
         >
             <RankBadge rank={rank} />
             <Image
@@ -268,7 +269,10 @@ const HotGameCard = ({
                                         {c.categoryDisplay}
                                     </span>
                                     <span className={styles.categoryTime}>
-                                        {formatHoursCompact(c.totalPlaytime)}h
+                                        {Math.round(
+                                            c.totalPlaytime / 3_600_000,
+                                        ).toLocaleString()}
+                                        h
                                     </span>
                                 </span>
                             ))}
