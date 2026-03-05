@@ -1,3 +1,7 @@
+export interface UserPreferences {
+    hideStreaks?: boolean;
+}
+
 export interface User {
     id: string;
     roles?: Role[];
@@ -14,7 +18,7 @@ export interface User {
     banned: false;
     socials: { youtube: string; twitter: string; twitch: string };
     timezone: string;
-    preferences: unknown;
+    preferences: UserPreferences;
     searchName: string;
 }
 
