@@ -1,10 +1,12 @@
 'use client';
 
 import clsx from 'clsx';
+import { EyeOff } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FaBolt, FaChevronLeft, FaChevronRight, FaFire } from 'react-icons/fa';
+import { toggleStreakVisibility } from '~src/actions/user-preferences.action';
 import { DurationToFormatted, FromNow } from '~src/components/util/datetime';
 import { getUserDashboardCustomRange } from '~src/lib/user-dashboard';
 import type {
@@ -21,6 +23,8 @@ interface YourStatsClientProps {
     dashboards: Record<string, DashboardResponse | null>;
     username: string;
     picture?: string;
+    hideStreaks?: boolean;
+    isOwner?: boolean;
 }
 
 const GRANULARITIES: PeriodGranularity[] = ['week', 'month', 'year'];
@@ -173,15 +177,36 @@ function getNextMilestone(current: number): {
 function StreakCard({
     streak,
     streakMilestone,
+    hideStreaks = false,
+    isOwner = false,
 }: {
     streak: DashboardStreak | null;
     streakMilestone: DashboardStreakMilestone | null;
+    hideStreaks?: boolean;
+    isOwner?: boolean;
 }) {
     const current = streak?.current ?? 0;
     const allTimeBest = streak?.longest ?? 0;
     const isRecord = current > 0 && current >= allTimeBest;
 
     if (current === 0) return null;
+
+    if (hideStreaks) {
+        if (!isOwner) return null;
+
+        return (
+            <div className={styles.streakHiddenPlaceholder}>
+                <span className={styles.streakHiddenText}>Streaks hidden</span>
+                <button
+                    type="button"
+                    className={styles.streakShowButton}
+                    onClick={() => toggleStreakVisibility(false)}
+                >
+                    Show
+                </button>
+            </div>
+        );
+    }
 
     const milestone = getNextMilestone(current);
     const progressPct = Math.min((current / milestone.target) * 100, 100);
@@ -248,7 +273,19 @@ function StreakCard({
     return (
         <div className={cardClass}>
             {/* Title */}
-            <div className={styles.streakTitle}>Your Daily Streak</div>
+            <div className={styles.streakTitle}>
+                Your Daily Streak
+                {isOwner && (
+                    <button
+                        type="button"
+                        className={styles.streakHideButton}
+                        onClick={() => toggleStreakVisibility(true)}
+                        title="Hide streaks"
+                    >
+                        <EyeOff size={14} />
+                    </button>
+                )}
+            </div>
 
             {/* Hero: fire icon with heat glow + big number */}
             <div className={styles.streakHeroWrap}>
@@ -314,6 +351,8 @@ export const YourStatsClient = ({
     dashboards,
     username,
     picture,
+    hideStreaks,
+    isOwner,
 }: YourStatsClientProps) => {
     const [selection, setSelection] = useState<DashboardSelection>({
         kind: 'current',
@@ -626,6 +665,8 @@ export const YourStatsClient = ({
                 <StreakCard
                     streak={streakData}
                     streakMilestone={streakMilestoneData}
+                    hideStreaks={hideStreaks}
+                    isOwner={isOwner}
                 />
                 {periodToggle}
                 <div className={styles.emptyState}>
@@ -647,6 +688,8 @@ export const YourStatsClient = ({
                 <StreakCard
                     streak={streakData}
                     streakMilestone={streakMilestoneData}
+                    hideStreaks={hideStreaks}
+                    isOwner={isOwner}
                 />
                 {periodToggle}
                 <div className={styles.emptyState}>
@@ -663,6 +706,8 @@ export const YourStatsClient = ({
                 <StreakCard
                     streak={streakData}
                     streakMilestone={streakMilestoneData}
+                    hideStreaks={hideStreaks}
+                    isOwner={isOwner}
                 />
                 {periodToggle}
                 <div className={styles.emptyState}>
@@ -684,6 +729,8 @@ export const YourStatsClient = ({
                 dashboard={dashboard}
                 username={username}
                 periodToggle={periodToggle}
+                hideStreaks={hideStreaks}
+                isOwner={isOwner}
             />
         </div>
     );
@@ -693,10 +740,14 @@ function DashboardContent({
     dashboard,
     username,
     periodToggle,
+    hideStreaks = false,
+    isOwner = false,
 }: {
     dashboard: DashboardResponse;
     username: string;
     periodToggle: React.ReactNode;
+    hideStreaks?: boolean;
+    isOwner?: boolean;
 }) {
     const { stats, streak, topGames, prominentRuns } = dashboard;
 
@@ -707,7 +758,12 @@ function DashboardContent({
     return (
         <>
             {/* 1. Streak Card */}
-            <StreakCard streak={streak} streakMilestone={streakMilestone} />
+            <StreakCard
+                streak={streak}
+                streakMilestone={streakMilestone}
+                hideStreaks={hideStreaks}
+                isOwner={isOwner}
+            />
 
             {/* 2. Period Toggle */}
             {periodToggle}
