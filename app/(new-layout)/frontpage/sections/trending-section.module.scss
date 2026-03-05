@@ -217,14 +217,19 @@ $amber: #f59e0b;
     align-items: center;
     gap: 0.3rem;
     font-size: 0.75rem;
-    padding: 0.1rem 0.4rem;
-    border-radius: 3px;
-    background: color-mix(in srgb, var(--bs-secondary-bg) 80%, transparent);
-    border: 1px solid color-mix(in srgb, var(--bs-border-color) 50%, transparent);
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--bs-secondary-bg) 60%, transparent);
+    border: 1px solid color-mix(in srgb, var(--bs-border-color) 20%, transparent);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
+    transition: background-color 0.15s ease;
+}
+
+.gameCard:hover .category {
+    background: color-mix(in srgb, var(--bs-secondary-bg) 80%, transparent);
 }
 
 .categoryName {
