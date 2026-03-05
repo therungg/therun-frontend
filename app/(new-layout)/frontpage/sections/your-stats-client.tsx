@@ -1,11 +1,16 @@
 'use client';
 
 import clsx from 'clsx';
-import { EyeOff } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FaBolt, FaChevronLeft, FaChevronRight, FaFire } from 'react-icons/fa';
+import {
+    FaBolt,
+    FaChevronLeft,
+    FaChevronRight,
+    FaEyeSlash,
+    FaFire,
+} from 'react-icons/fa';
 import { toggleStreakVisibility } from '~src/actions/user-preferences.action';
 import { DurationToFormatted, FromNow } from '~src/components/util/datetime';
 import { getUserDashboardCustomRange } from '~src/lib/user-dashboard';
@@ -282,7 +287,7 @@ function StreakCard({
                         onClick={() => toggleStreakVisibility(true)}
                         title="Hide streaks"
                     >
-                        <EyeOff size={14} />
+                        <FaEyeSlash size={14} />
                     </button>
                 )}
             </div>
