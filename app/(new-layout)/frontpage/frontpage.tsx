@@ -2,7 +2,6 @@ import { Suspense } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { getSession } from '~src/actions/session.action';
 import { FrontpageHero } from './components/frontpage-hero';
-import { SectionNav } from './components/section-nav';
 import { SectionSkeleton } from './components/section-skeleton';
 import { CommunityPulse } from './sections/community-pulse';
 import { PatreonSection } from './sections/patreon-section';
@@ -18,7 +17,6 @@ export default async function FrontPage({ statsUser }: { statsUser?: string }) {
 
     return (
         <div className="d-flex flex-column gap-4">
-            <SectionNav />
             <div id="live">
                 <Suspense fallback={<SectionSkeleton height={340} />}>
                     <FrontpageHero />
