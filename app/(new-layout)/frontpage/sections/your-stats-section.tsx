@@ -3,6 +3,7 @@ import { getSession } from '~src/actions/session.action';
 import { getTwitchOAuthURL } from '~src/components/twitch/twitch-oauth';
 import { getUserSummary } from '~src/lib/summary';
 import { getUserDashboard } from '~src/lib/user-dashboard';
+import { getUserPreferences } from '~src/lib/user-preferences';
 import type {
     DashboardRace,
     DashboardResponse,
@@ -53,12 +54,13 @@ export const YourStatsSection = async ({
     const impersonating = isAdmin && statsUser && statsUser !== session.user;
     const user = impersonating ? statsUser : session.user;
 
-    const [dashboard7d, dashboard30d, dashboardYear, weekSummary] =
+    const [dashboard7d, dashboard30d, dashboardYear, weekSummary, preferences] =
         await Promise.all([
             getUserDashboard(user, '7d'),
             getUserDashboard(user, '30d'),
             getUserDashboard(user, 'year'),
             getUserSummary(user, 'week', 0),
+            getUserPreferences(user),
         ]);
 
     const raceData: DashboardRace[] = (weekSummary?.races ?? []).map((r) => ({
@@ -89,6 +91,8 @@ export const YourStatsSection = async ({
                 dashboards={dashboards}
                 username={user}
                 picture={session.picture}
+                hideStreaks={preferences.hideStreaks ?? false}
+                isOwner={!impersonating}
             />
         </Panel>
     );
