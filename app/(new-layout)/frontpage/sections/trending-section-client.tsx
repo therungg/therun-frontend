@@ -32,7 +32,7 @@ const compact = new Intl.NumberFormat('en', {
 
 // ── Period definitions ──
 
-type PeriodKey = '24h' | '7d' | '30d' | '1y' | 'all';
+type PeriodKey = '24h' | '7d' | '30d' | '1y' | 'all' | 'custom';
 
 interface PeriodDef {
     key: PeriodKey;
@@ -113,6 +113,9 @@ export const TrendingSectionClient = ({
     const [categoryMap, setCategoryMap] =
         useState<Record<number, CategoryActivity[]>>(initialCategoryMap);
     const [isPending, startTransition] = useTransition();
+    const today = new Date().toISOString().slice(0, 10);
+    const [customFrom, setCustomFrom] = useState('');
+    const [customTo, setCustomTo] = useState(today);
 
     const cache = useRef<Map<PeriodKey, PeriodData>>(
         new Map([
@@ -120,10 +123,40 @@ export const TrendingSectionClient = ({
         ]),
     );
 
+    const fetchRange = useCallback(
+        (from: string, to: string, cacheKey?: PeriodKey) => {
+            startTransition(async () => {
+                const fetchedGames = await getGameActivity(from, to, 5, 2);
+                const catMap: Record<number, CategoryActivity[]> = {};
+
+                const catResults = await Promise.all(
+                    fetchedGames.map((g) =>
+                        getCategoryActivityForGame(g.gameId, from, to, 3),
+                    ),
+                );
+                for (let i = 0; i < fetchedGames.length; i++) {
+                    catMap[fetchedGames[i].gameId] = catResults[i];
+                }
+
+                if (cacheKey) {
+                    cache.current.set(cacheKey, {
+                        games: fetchedGames,
+                        categoryMap: catMap,
+                    });
+                }
+                setGames(fetchedGames);
+                setCategoryMap(catMap);
+            });
+        },
+        [],
+    );
+
     const switchPeriod = useCallback(
         (period: PeriodKey) => {
             if (period === activePeriod) return;
             setActivePeriod(period);
+
+            if (period === 'custom') return;
 
             const cached = cache.current.get(period);
             if (cached) {
@@ -132,13 +165,11 @@ export const TrendingSectionClient = ({
                 return;
             }
 
-            startTransition(async () => {
-                let fetchedGames: GameActivity[];
-                const catMap: Record<number, CategoryActivity[]> = {};
-
-                if (period === 'all') {
+            if (period === 'all') {
+                startTransition(async () => {
                     const topGames = await getTopGames(5);
-                    fetchedGames = topGames.map(normalizeGame);
+                    const fetchedGames = topGames.map(normalizeGame);
+                    const catMap: Record<number, CategoryActivity[]> = {};
 
                     const catResults = await Promise.all(
                         topGames.map((g) =>
@@ -150,32 +181,28 @@ export const TrendingSectionClient = ({
                             normalizeCategoryStat,
                         );
                     }
-                } else {
-                    const def = PERIODS.find((p) => p.key === period)!;
-                    const from = getDateDaysAgo(def.days);
-                    const to = getToday();
 
-                    fetchedGames = await getGameActivity(from, to, 5, 2);
-
-                    const catResults = await Promise.all(
-                        fetchedGames.map((g) =>
-                            getCategoryActivityForGame(g.gameId, from, to, 3),
-                        ),
-                    );
-                    for (let i = 0; i < fetchedGames.length; i++) {
-                        catMap[fetchedGames[i].gameId] = catResults[i];
-                    }
-                }
-
-                cache.current.set(period, {
-                    games: fetchedGames,
-                    categoryMap: catMap,
+                    cache.current.set(period, {
+                        games: fetchedGames,
+                        categoryMap: catMap,
+                    });
+                    setGames(fetchedGames);
+                    setCategoryMap(catMap);
                 });
-                setGames(fetchedGames);
-                setCategoryMap(catMap);
-            });
+            } else {
+                const def = PERIODS.find((p) => p.key === period)!;
+                fetchRange(getDateDaysAgo(def.days), getToday(), period);
+            }
         },
-        [activePeriod],
+        [activePeriod, fetchRange],
+    );
+
+    const handleCustomDateChange = useCallback(
+        (from: string, to: string) => {
+            if (!from) return;
+            fetchRange(from, to);
+        },
+        [fetchRange],
     );
 
     return (
@@ -192,8 +219,45 @@ export const TrendingSectionClient = ({
                             {p.label}
                         </button>
                     ))}
+                    <button
+                        type="button"
+                        className={`${styles.periodButton} ${activePeriod === 'custom' ? styles.periodButtonActive : ''}`}
+                        onClick={() => switchPeriod('custom')}
+                    >
+                        Custom
+                    </button>
                 </div>
             </div>
+            {activePeriod === 'custom' && (
+                <div className={styles.datePickerRow}>
+                    <input
+                        type="date"
+                        className={styles.dateInput}
+                        value={customFrom}
+                        onChange={(e) => {
+                            setCustomFrom(e.target.value);
+                            handleCustomDateChange(e.target.value, customTo);
+                        }}
+                        max={customTo || undefined}
+                    />
+                    <span className={styles.datePickerSeparator}>to</span>
+                    <input
+                        type="date"
+                        className={styles.dateInput}
+                        value={customTo}
+                        onChange={(e) => {
+                            setCustomTo(e.target.value);
+                            if (customFrom) {
+                                handleCustomDateChange(
+                                    customFrom,
+                                    e.target.value,
+                                );
+                            }
+                        }}
+                        min={customFrom || undefined}
+                    />
+                </div>
+            )}
 
             {games.length === 0 && !isPending ? (
                 <p className={styles.empty}>
