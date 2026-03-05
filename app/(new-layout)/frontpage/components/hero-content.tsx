@@ -710,7 +710,12 @@ const HeroSkeleton = () => {
                                 </div>
                             </div>
                         </div>
-                        <div className="d-flex align-items-center justify-content-center flex-grow-1">
+                        <div
+                            className={clsx(
+                                styles.heroGroupStream,
+                                'd-flex align-items-center justify-content-center',
+                            )}
+                        >
                             <div
                                 className="spinner-border text-secondary"
                                 role="status"
