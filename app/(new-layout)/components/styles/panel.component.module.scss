@@ -1,3 +1,4 @@
+@use '../../styles/design-tokens' as tokens;
 @import '../../styles/bootstrap/variables-dark';
 
 $border-radius: 1.1rem;
@@ -36,14 +37,14 @@ $tab-height: 4rem;
     }
 
     .title {
-        font-size: 1.5rem;
+        font-size: tokens.$font-size-2xl;
         font-weight: 700;
         margin: 0 0.5rem 0 0;
         letter-spacing: 0;
     }
 
     .subtitle {
-        font-size: 0.75rem;
+        font-size: tokens.$font-size-xs;
         text-transform: uppercase;
         margin-bottom: -0.2rem;
         margin-left: 0.2rem;

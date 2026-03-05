@@ -1,5 +1,4 @@
-$mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
-$amber: #f59e0b;
+@use '../../styles/design-tokens' as *;
 
 .content {
     container-type: inline-size;
@@ -14,14 +13,14 @@ $amber: #f59e0b;
     gap: 0.4rem;
     padding: 0.25rem 0.6rem 0.25rem 0.5rem;
     border-radius: 100px;
-    background: rgba($amber, 0.1);
-    border: 1px solid rgba($amber, 0.25);
+    background: rgba($accent-amber, 0.1);
+    border: 1px solid rgba($accent-amber, 0.25);
     text-decoration: none;
     transition: all 0.2s;
 
     &:hover {
-        background: rgba($amber, 0.18);
-        border-color: rgba($amber, 0.4);
+        background: rgba($accent-amber, 0.18);
+        border-color: rgba($accent-amber, 0.4);
     }
 }
 
@@ -30,25 +29,25 @@ $amber: #f59e0b;
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: $amber;
-    box-shadow: 0 0 6px rgba($amber, 0.5), 0 0 12px rgba($amber, 0.3);
+    background: $accent-amber;
+    box-shadow: 0 0 6px rgba($accent-amber, 0.5), 0 0 12px rgba($accent-amber, 0.3);
     animation: pulse 2.5s ease-in-out infinite;
     flex-shrink: 0;
 }
 
 .liveCount {
-    font-family: $mono;
-    font-size: 0.8rem;
+    font-family: $font-mono;
+    font-size: $font-size-sm;
     font-weight: 700;
-    color: $amber;
+    color: $accent-amber;
 }
 
 .liveLabel {
-    font-size: 0.75rem;
+    font-size: $font-size-xs;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: $amber;
+    color: $accent-amber;
     opacity: 0.9;
 }
 
@@ -56,12 +55,12 @@ $amber: #f59e0b;
     0%,
     100% {
         opacity: 1;
-        box-shadow: 0 0 6px rgba($amber, 0.5), 0 0 12px rgba($amber, 0.3);
+        box-shadow: 0 0 6px rgba($accent-amber, 0.5), 0 0 12px rgba($accent-amber, 0.3);
     }
 
     50% {
         opacity: 0.4;
-        box-shadow: 0 0 3px rgba($amber, 0.2);
+        box-shadow: 0 0 3px rgba($accent-amber, 0.2);
     }
 }
 
@@ -98,7 +97,7 @@ $amber: #f59e0b;
 /* ── Numbers ── */
 
 .number {
-    font-family: $mono;
+    font-family: $font-mono;
     font-size: 1.75rem;
     font-weight: 700;
     line-height: 1;
@@ -108,12 +107,12 @@ $amber: #f59e0b;
 
 .hero {
     .number {
-        color: $amber;
-        text-shadow: 0 0 30px rgba($amber, 0.3), 0 0 60px rgba($amber, 0.12);
+        color: $accent-amber;
+        text-shadow: 0 0 30px rgba($accent-amber, 0.3), 0 0 60px rgba($accent-amber, 0.12);
     }
 
     .label {
-        color: $amber;
+        color: $accent-amber;
         opacity: 0.9;
     }
 }
@@ -122,7 +121,7 @@ $amber: #f59e0b;
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
-    font-size: 0.75rem;
+    font-size: $font-size-xs;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -176,8 +175,8 @@ $amber: #f59e0b;
 }
 
 .chipNumber {
-    font-family: $mono;
-    font-size: 0.8rem;
+    font-family: $font-mono;
+    font-size: $font-size-sm;
     font-weight: 700;
     color: var(--bs-body-color);
 }
@@ -188,7 +187,7 @@ $amber: #f59e0b;
 }
 
 .chipLabel {
-    font-size: 0.78rem;
+    font-size: $font-size-sm;
     color: var(--bs-secondary-color);
 }
 

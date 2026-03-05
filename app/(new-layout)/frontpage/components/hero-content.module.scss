@@ -1,3 +1,5 @@
+@use '../../styles/design-tokens' as *;
+
 .hero {
     position: relative;
 }
@@ -5,7 +7,7 @@
 .panel {
     background: var(--bs-body-bg);
     border: 1px solid var(--bs-border-color);
-    border-radius: 1rem;
+    border-radius: $radius-xl;
     overflow: hidden;
 }
 
@@ -49,7 +51,7 @@
     flex: 4;
     min-width: 0;
     border: 1px solid var(--bs-border-color);
-    border-radius: 1rem;
+    border-radius: $radius-xl;
     overflow: hidden;
     background: var(--bs-body-bg);
 }
@@ -60,7 +62,7 @@
     position: relative;
     overflow: hidden;
     height: 340px;
-    border-radius: 1rem;
+    border-radius: $radius-xl;
     background: var(--bs-body-bg);
     border: 1px solid var(--bs-border-color);
     transition: box-shadow 0.3s ease;
@@ -187,7 +189,7 @@
 
 .gameLabelText {
     font-family: var(--font-sans), sans-serif;
-    font-size: 0.85rem;
+    font-size: $font-size-sm;
     color: var(--bs-secondary-color);
     white-space: nowrap;
     overflow: hidden;
@@ -216,7 +218,7 @@
 }
 
 .mainTimer {
-    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+    font-family: $font-mono;
     font-size: 2rem;
     font-weight: 700;
     color: var(--bs-body-color);
@@ -224,7 +226,7 @@
 }
 
 .segmentTimer {
-    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+    font-family: $font-mono;
     font-size: 1rem;
     font-weight: 600;
     color: var(--bs-secondary-color);
@@ -274,7 +276,7 @@
 
 .statLabel {
     font-family: var(--font-sans), sans-serif;
-    font-size: 0.75rem;
+    font-size: $font-size-xs;
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--bs-secondary-color);
@@ -284,9 +286,9 @@
 
 .statValue {
     font-weight: 700;
-    font-size: 1.15rem;
+    font-size: $font-size-lg;
     color: var(--bs-body-color);
-    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+    font-family: $font-mono;
 }
 
 /* Split timeline — colored segments per split */
@@ -381,7 +383,7 @@
 .progressMeta {
     display: flex;
     justify-content: space-between;
-    font-size: 0.8rem;
+    font-size: $font-size-sm;
     color: var(--bs-secondary-color);
     font-weight: 500;
 }
@@ -401,7 +403,7 @@
     padding: 0;
     background: var(--bs-body-bg);
     border: 1px solid var(--bs-border-color);
-    border-radius: 0.75rem;
+    border-radius: $radius-lg;
     cursor: pointer;
     transition: all 0.2s ease;
     flex: 1;
@@ -413,7 +415,7 @@
     border-color: var(--bs-primary);
     border-left: 3px solid var(--bs-primary);
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: $card-shadow-raised;
 }
 
 /* "Watch" hint on hover */
@@ -635,7 +637,7 @@
 .sidebarRunner {
     font-family: var(--font-sans), sans-serif;
     font-weight: 700;
-    font-size: 0.9rem;
+    font-size: $font-size-base;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -643,7 +645,7 @@
 
 .sidebarGame {
     font-family: var(--font-sans), sans-serif;
-    font-size: 0.8rem;
+    font-size: $font-size-sm;
     color: var(--bs-secondary-color);
     white-space: nowrap;
     overflow: hidden;
@@ -659,16 +661,16 @@
 }
 
 .sidebarTimerText {
-    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
-    font-size: 0.85rem;
+    font-family: $font-mono;
+    font-size: $font-size-sm;
     font-weight: 700;
     white-space: nowrap;
 }
 
 .sidebarDelta {
-    font-size: 0.75rem;
+    font-size: $font-size-xs;
     font-weight: 600;
-    font-family: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
+    font-family: $font-mono;
     white-space: nowrap;
 }
 
@@ -686,13 +688,13 @@
     gap: 0.5rem;
     padding: 0.5rem 1rem;
     font-family: var(--font-sans), sans-serif;
-    font-size: 0.8rem;
+    font-size: $font-size-sm;
     font-weight: 600;
     letter-spacing: 0.03em;
     color: var(--bs-body-color);
     text-decoration: none;
     border: 1px solid var(--bs-border-color);
-    border-radius: 0.75rem;
+    border-radius: $radius-lg;
     transition: all 0.2s ease;
 }
 
@@ -700,7 +702,7 @@
     border-color: var(--bs-primary);
     color: var(--bs-primary);
     transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: $card-shadow-raised;
 }
 
 .viewAllDot {

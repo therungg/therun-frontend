@@ -1,10 +1,7 @@
-$mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
-$green: #66bb6a;
-$amber: #f59e0b;
-$gold: #ffd700;
+@use '../../styles/design-tokens' as *;
+
 $silver: #c0c0c0;
 $bronze: #cd7f32;
-$red: #ef5350;
 
 .content {
     container-type: inline-size;
@@ -68,7 +65,7 @@ $streak-hot: #ef4444;
 }
 
 .streakCard {
-    --streak-accent: #{$amber};
+    --streak-accent: #{$accent-amber};
     --streak-accent-rgb: 245, 158, 11;
 
     position: relative;
@@ -175,7 +172,7 @@ $streak-hot: #ef4444;
 }
 
 .streakCardRecord {
-    --streak-accent: #{$gold};
+    --streak-accent: #{$accent-gold};
     --streak-accent-rgb: 255, 215, 0;
 
     background:
@@ -290,7 +287,7 @@ $streak-hot: #ef4444;
 }
 
 .streakNumber {
-    font-family: $mono;
+    font-family: $font-mono;
     font-size: 2.8rem;
     font-weight: 800;
     line-height: 1;
@@ -329,7 +326,7 @@ $streak-hot: #ef4444;
 }
 
 .streakTargetPct {
-    font-family: $mono;
+    font-family: $font-mono;
     font-size: 0.72rem;
     font-weight: 700;
     color: var(--streak-accent);
@@ -352,7 +349,7 @@ $streak-hot: #ef4444;
 }
 
 .streakProgressFillHot {
-    background: linear-gradient(90deg, $amber, $streak-orange);
+    background: linear-gradient(90deg, $accent-amber, $streak-orange);
 }
 
 .streakProgressFillNearRecord {
@@ -361,8 +358,8 @@ $streak-hot: #ef4444;
 }
 
 .streakProgressFillRecord {
-    background: linear-gradient(90deg, $amber, $gold);
-    box-shadow: 0 0 12px rgba($gold, 0.4);
+    background: linear-gradient(90deg, $accent-amber, $accent-gold);
+    box-shadow: 0 0 12px rgba($accent-gold, 0.4);
 }
 
 /* ── Footer ── */
@@ -382,7 +379,7 @@ $streak-hot: #ef4444;
     color: var(--bs-secondary-color);
 
     strong {
-        font-family: $mono;
+        font-family: $font-mono;
         font-weight: 700;
         color: var(--bs-body-color);
     }
@@ -411,7 +408,7 @@ $streak-hot: #ef4444;
 }
 
 .streakMilestoneRecord {
-    color: $gold;
+    color: $accent-gold;
 }
 
 .streakHideButton {
@@ -636,7 +633,7 @@ $streak-hot: #ef4444;
     background: var(--bs-tertiary-bg);
     color: var(--bs-body-color);
     font-size: 0.72rem;
-    font-family: $mono;
+    font-family: $font-mono;
     outline: none;
 
     &:focus {
@@ -661,7 +658,7 @@ $streak-hot: #ef4444;
     background: var(--bs-tertiary-bg);
     color: var(--bs-body-color);
     font-size: 0.75rem;
-    font-family: $mono;
+    font-family: $font-mono;
     outline: none;
     transition: border-color 0.2s ease;
 
@@ -696,8 +693,8 @@ $streak-hot: #ef4444;
 }
 
 .statValue {
-    font-family: $mono;
-    font-size: 1.1rem;
+    font-family: $font-mono;
+    font-size: $font-size-lg;
     font-weight: 700;
     line-height: 1.2;
     color: var(--bs-body-color);
@@ -705,7 +702,7 @@ $streak-hot: #ef4444;
 }
 
 .statLabel {
-    font-size: 0.65rem;
+    font-size: $font-size-2xs;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-weight: 600;
@@ -750,8 +747,8 @@ $streak-hot: #ef4444;
 }
 
 .topGameImage {
-    width: 36px;
-    height: 48px;
+    width: $art-width-sm;
+    aspect-ratio: 3 / 4;
     border-radius: 4px;
     object-fit: cover;
     flex-shrink: 0;
@@ -764,7 +761,7 @@ $streak-hot: #ef4444;
 }
 
 .topGameName {
-    font-size: 0.88rem;
+    font-size: $font-size-base;
     font-weight: 700;
     color: var(--bs-emphasis-color);
     white-space: nowrap;
@@ -783,7 +780,7 @@ $streak-hot: #ef4444;
 /* ── Section Labels ── */
 
 .sectionLabel {
-    font-size: 0.72rem;
+    font-size: $font-size-xs;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -880,7 +877,7 @@ $streak-hot: #ef4444;
 }
 
 .activityTime {
-    font-family: $mono;
+    font-family: $font-mono;
     font-size: 0.75rem;
     font-weight: 600;
     color: var(--bs-body-color);
@@ -888,10 +885,10 @@ $streak-hot: #ef4444;
 }
 
 .pbDelta {
-    font-family: $mono;
+    font-family: $font-mono;
     font-size: 0.65rem;
     font-weight: 600;
-    color: $green;
+    color: $accent-green-bright;
 }
 
 .activityTimestamp {

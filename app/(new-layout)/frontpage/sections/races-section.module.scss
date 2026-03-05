@@ -1,6 +1,4 @@
-$mono: 'SF Mono', 'Monaco', 'Cascadia Code', 'Courier New', monospace;
-$amber: #f59e0b;
-$green: #608c59;
+@use '../../styles/design-tokens' as *;
 
 // ── Group headers ──
 
@@ -14,7 +12,7 @@ $green: #608c59;
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    font-size: 0.75rem;
+    font-size: $font-size-xs;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1.2px;
@@ -32,8 +30,8 @@ $green: #608c59;
 }
 
 .statusLive {
-    background: $amber;
-    box-shadow: 0 0 6px rgba($amber, 0.5), 0 0 12px rgba($amber, 0.3);
+    background: $accent-amber;
+    box-shadow: 0 0 6px rgba($accent-amber, 0.5), 0 0 12px rgba($accent-amber, 0.3);
     animation: pulse 2.5s ease-in-out infinite;
 }
 
@@ -75,13 +73,13 @@ $green: #608c59;
 }
 
 .cardLive {
-    border: 1px solid rgba($amber, 0.25);
+    border: 1px solid rgba($accent-amber, 0.25);
     animation: glowPulse 2.5s ease-in-out infinite;
 }
 
 .cardImminent {
-    border: 1px solid rgba($green, 0.2);
-    box-shadow: 0 0 8px rgba($green, 0.08), 0 0 16px rgba($green, 0.04);
+    border: 1px solid rgba($accent-green, 0.2);
+    box-shadow: 0 0 8px rgba($accent-green, 0.08), 0 0 16px rgba($accent-green, 0.04);
 }
 
 .cardBg {
@@ -153,15 +151,15 @@ $green: #608c59;
 }
 
 .cardBadgeLive {
-    color: $amber;
-    background: rgba($amber, 0.1);
-    border: 1px solid rgba($amber, 0.25);
+    color: $accent-amber;
+    background: rgba($accent-amber, 0.1);
+    border: 1px solid rgba($accent-amber, 0.25);
 }
 
 .cardBadgeImminent {
-    color: $green;
-    background: rgba($green, 0.08);
-    border: 1px solid rgba($green, 0.2);
+    color: $accent-green;
+    background: rgba($accent-green, 0.08);
+    border: 1px solid rgba($accent-green, 0.2);
 }
 
 .imminentDot {
@@ -169,7 +167,7 @@ $green: #608c59;
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: $green;
+    background: $accent-green;
     opacity: 0.85;
 }
 
@@ -177,7 +175,7 @@ $green: #608c59;
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.06em;
-    color: $amber;
+    color: $accent-amber;
 }
 
 .cardGame {
@@ -231,7 +229,7 @@ $green: #608c59;
 }
 
 .cardStatLabel {
-    font-size: 0.7rem;
+    font-size: $font-size-xs;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
@@ -255,13 +253,13 @@ $green: #608c59;
     position: absolute;
     left: 0;
     bottom: 0;
-    font-family: $mono;
+    font-family: $font-mono;
     font-weight: 700;
     font-size: 1.4rem;
     line-height: 1;
     letter-spacing: -0.04em;
     font-variant-numeric: tabular-nums;
-    color: $amber;
+    color: $accent-amber;
 }
 
 
@@ -302,8 +300,8 @@ $green: #608c59;
 }
 
 .raceArt {
-    width: 36px;
-    height: 48px;
+    width: $art-width-sm;
+    aspect-ratio: 3 / 4;
     border-radius: 4px;
     object-fit: cover;
     flex-shrink: 0;
@@ -341,7 +339,7 @@ $green: #608c59;
     display: inline-flex;
     align-items: center;
     gap: 0.15rem;
-    color: #d4af37;
+    color: $accent-gold;
     font-weight: 600;
 }
 
@@ -360,7 +358,7 @@ $green: #608c59;
 }
 
 .raceTime {
-    font-family: $mono;
+    font-family: $font-mono;
     font-weight: 700;
     font-size: 0.95rem;
     color: var(--bs-body-color);
@@ -385,8 +383,8 @@ $green: #608c59;
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: $amber;
-    box-shadow: 0 0 6px rgba($amber, 0.5), 0 0 12px rgba($amber, 0.3);
+    background: $accent-amber;
+    box-shadow: 0 0 6px rgba($accent-amber, 0.5), 0 0 12px rgba($accent-amber, 0.3);
     animation: pulse 2.5s ease-in-out infinite;
     flex-shrink: 0;
 }
@@ -458,23 +456,23 @@ $green: #608c59;
     0%,
     100% {
         opacity: 1;
-        box-shadow: 0 0 6px rgba($amber, 0.5), 0 0 12px rgba($amber, 0.3);
+        box-shadow: 0 0 6px rgba($accent-amber, 0.5), 0 0 12px rgba($accent-amber, 0.3);
     }
 
     50% {
         opacity: 0.4;
-        box-shadow: 0 0 3px rgba($amber, 0.2);
+        box-shadow: 0 0 3px rgba($accent-amber, 0.2);
     }
 }
 
 @keyframes glowPulse {
     0%,
     100% {
-        box-shadow: 0 0 8px rgba($amber, 0.15), 0 0 16px rgba($amber, 0.08);
+        box-shadow: 0 0 8px rgba($accent-amber, 0.15), 0 0 16px rgba($accent-amber, 0.08);
     }
 
     50% {
-        box-shadow: 0 0 4px rgba($amber, 0.08), 0 0 8px rgba($amber, 0.04);
+        box-shadow: 0 0 4px rgba($accent-amber, 0.08), 0 0 8px rgba($accent-amber, 0.04);
     }
 }
 
