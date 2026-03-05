@@ -662,6 +662,7 @@ export const YourStatsClient = ({
                     isOwner={isOwner}
                     onToggleStreaks={handleToggleStreaks}
                 />
+                <div className={styles.streakDivider} />
                 {periodToggle}
                 <div className={styles.emptyState}>
                     <div className={styles.emptyStateText}>
@@ -685,6 +686,7 @@ export const YourStatsClient = ({
                     isOwner={isOwner}
                     onToggleStreaks={handleToggleStreaks}
                 />
+                <div className={styles.streakDivider} />
                 {periodToggle}
                 <div className={styles.emptyState}>
                     <div className={styles.emptyStateText}>Loading…</div>
@@ -703,6 +705,7 @@ export const YourStatsClient = ({
                     isOwner={isOwner}
                     onToggleStreaks={handleToggleStreaks}
                 />
+                <div className={styles.streakDivider} />
                 {periodToggle}
                 <div className={styles.emptyState}>
                     <div className={styles.emptyStateText}>
@@ -761,6 +764,7 @@ function DashboardContent({
                 isOwner={isOwner}
                 onToggleStreaks={onToggleStreaks}
             />
+            <div className={styles.streakDivider} />
 
             {/* 2. Period Toggle */}
             {periodToggle}
