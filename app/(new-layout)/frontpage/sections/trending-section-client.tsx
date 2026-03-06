@@ -302,7 +302,7 @@ const HotGameCard = ({
 
     return (
         <Link
-            href={`/${safeEncodeURI(game.gameDisplay)}`}
+            href={`/games/${safeEncodeURI(game.gameDisplay)}`}
             className={`${styles.gameCard} ${isTop ? styles.gameCardTop : ''} ${rank >= 4 ? styles.gameCardFaded : ''}`}
         >
             <RankBadge rank={rank} />

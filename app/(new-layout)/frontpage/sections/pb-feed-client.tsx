@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { FaBolt, FaStar } from 'react-icons/fa6';
+import { FaBolt, FaStar, FaTrophy } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import {
     DurationToFormatted,
@@ -33,7 +33,8 @@ export const PbFeedClient = ({
         <Panel
             panelId="pbs"
             title="Personal Bests"
-            subtitle="Recent PBs"
+            subtitle="Latest PBs across all runners"
+            icon={FaTrophy}
             className="p-0"
             link={{ url: '/runs', text: 'Explore Runs' }}
         >

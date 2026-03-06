@@ -2,6 +2,7 @@ import Link from 'next/link';
 import {
     FaBluesky,
     FaChartLine,
+    FaCompass,
     FaDiscord,
     FaGithub,
     FaKey,
@@ -125,8 +126,9 @@ export const QuickLinks = async () => {
 
     return (
         <Panel
-            subtitle="Navigate"
+            subtitle="Tools and resources"
             title="Quick Links"
+            icon={FaCompass}
             panelId="quick-links"
             className="p-0"
         >

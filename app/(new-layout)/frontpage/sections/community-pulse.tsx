@@ -1,3 +1,4 @@
+import { FaHeartPulse } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import { getGlobalStats, getLiveCount } from '~src/lib/highlights';
 import { CommunityPulseClient } from './community-pulse-client';
@@ -23,7 +24,8 @@ export const CommunityPulse = async () => {
         <Panel
             panelId="pulse"
             title="Community Pulse"
-            subtitle="Last 24 Hours"
+            subtitle="Runs, PBs, and playtime sitewide"
+            icon={FaHeartPulse}
             className="p-0 overflow-hidden"
         >
             <CommunityPulseClient
