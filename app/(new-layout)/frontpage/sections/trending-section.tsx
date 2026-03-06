@@ -1,3 +1,4 @@
+import { FaFire } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import {
     type CategoryActivity,
@@ -36,7 +37,8 @@ export const TrendingSection = async () => {
         <Panel
             panelId="trending"
             title="Trending Games"
-            subtitle="What's Hot"
+            subtitle="Most active games right now"
+            icon={FaFire}
             className="p-0 overflow-hidden"
             link={{ url: '/games', text: 'All Games' }}
         >

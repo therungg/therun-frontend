@@ -1,3 +1,4 @@
+import { FaChartLine } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import { getSession } from '~src/actions/session.action';
 import { getTwitchOAuthURL } from '~src/components/twitch/twitch-oauth';
@@ -24,8 +25,9 @@ export const YourStatsSection = async ({
         return (
             <Panel
                 panelId="your-stats"
-                subtitle="Summary"
+                subtitle="Your recent activity and highlights"
                 title="Your Performance"
+                icon={FaChartLine}
                 className="p-0"
             >
                 <div className={styles.loggedOutCta}>
@@ -82,8 +84,9 @@ export const YourStatsSection = async ({
     return (
         <Panel
             panelId="your-stats"
-            subtitle="Summary"
+            subtitle="Your recent activity and highlights"
             title={impersonating ? `${user}'s Stats` : 'Your Performance'}
+            icon={FaChartLine}
             className="p-0"
             link={{ url: `/${user}`, text: 'View Full Stats' }}
         >

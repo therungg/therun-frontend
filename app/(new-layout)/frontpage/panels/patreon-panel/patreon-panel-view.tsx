@@ -1,5 +1,6 @@
 'use client';
 
+import { FaPatreon } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import { PatreonName } from '~src/components/patreon/patreon-name';
 import { BunnyIcon } from '~src/icons/bunny-icon';
@@ -22,7 +23,12 @@ export const PatreonPanelView: React.FC<PatreonPanelViewProps> = ({
     totalPatronCount,
 }) => {
     return (
-        <Panel subtitle="Support" title="Patreon" className="p-4">
+        <Panel
+            subtitle="Help keep the site ad-free"
+            title="Patreon"
+            icon={FaPatreon}
+            className="p-4"
+        >
             <div className={styles.ctaContainer}>
                 <div className={styles.iconWrapper}>
                     <BunnyIcon size={32} />

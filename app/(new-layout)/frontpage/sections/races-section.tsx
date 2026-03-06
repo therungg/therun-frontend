@@ -1,3 +1,4 @@
+import { FaFlagCheckered } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import { getSession } from '~src/actions/session.action';
 import { getAllActiveRaces, getPaginatedFinishedRaces } from '~src/lib/races';
@@ -19,8 +20,9 @@ export const RacesSection = async () => {
             panelId="races"
             title="Races"
             subtitle={
-                liveCount > 0 ? `${liveCount} Live Now` : 'Race against friends'
+                liveCount > 0 ? `${liveCount} live now` : 'Race against friends'
             }
+            icon={FaFlagCheckered}
             link={{ url: '/races', text: 'View All Races' }}
             className="p-0 overflow-hidden"
         >

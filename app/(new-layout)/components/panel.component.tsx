@@ -17,7 +17,7 @@ interface PanelInterface extends HTMLAttributes<HTMLDivElement> {
 export const Panel: FC<PropsWithChildren<PanelInterface>> = ({
     title,
     subtitle,
-    icon,
+    icon: Icon,
     panelId,
     link,
     children,
@@ -27,7 +27,16 @@ export const Panel: FC<PropsWithChildren<PanelInterface>> = ({
         <div id={panelId} className={styles.bookmarkFolder}>
             <div className={styles.tab}>
                 <div className={styles.subtitle}>{subtitle}</div>
-                <h2 className={styles.title}>{title}</h2>
+                <h2 className={styles.title}>
+                    {Icon && (
+                        <Icon
+                            size={18}
+                            className={styles.titleIcon}
+                            aria-hidden="true"
+                        />
+                    )}
+                    {title}
+                </h2>
             </div>
             {link && (
                 <a className={styles.url} href={link.url}>
