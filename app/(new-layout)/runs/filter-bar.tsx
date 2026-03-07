@@ -13,6 +13,7 @@ export interface RunsFilters {
     gameId: number | null;
     gameImage: string | null;
     category: string;
+    categoryId: number | null;
     username: string;
     isPb: boolean;
     useGameTime: boolean;
@@ -28,6 +29,7 @@ export const DEFAULT_FILTERS: RunsFilters = {
     gameId: null,
     gameImage: null,
     category: '',
+    categoryId: null,
     username: '',
     isPb: false,
     useGameTime: false,
@@ -127,13 +129,14 @@ export function FilterBar({
                     gameId: null,
                     gameImage: null,
                     category: '',
+                    categoryId: null,
                 }),
         });
     }
     if (filters.category) {
         chips.push({
             label: `Category: ${filters.category}`,
-            onRemove: () => onFilterChange({ category: '' }),
+            onRemove: () => onFilterChange({ category: '', categoryId: null }),
         });
     }
     if (filters.username) {
@@ -195,6 +198,7 @@ export function FilterBar({
                                 gameId: null,
                                 gameImage: null,
                                 category: '',
+                                categoryId: null,
                             })
                         }
                         className={styles.textInput}
@@ -208,9 +212,16 @@ export function FilterBar({
                             <select
                                 className={styles.selectInput}
                                 value={filters.category}
-                                onChange={(e) =>
-                                    onFilterChange({ category: e.target.value })
-                                }
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    const cat = categories.find(
+                                        (c) => c.categoryDisplay === val,
+                                    );
+                                    onFilterChange({
+                                        category: val,
+                                        categoryId: cat?.categoryId ?? null,
+                                    });
+                                }}
                             >
                                 <option value="">All categories</option>
                                 {categories.map((cat) => (

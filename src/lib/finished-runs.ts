@@ -5,6 +5,7 @@ import type { FinishedRunPB } from './highlights';
 
 export interface FinishedRunsSearchParams {
     gameId?: number;
+    categoryId?: number;
     category?: string;
     username?: string;
     isPb?: boolean;
@@ -43,6 +44,8 @@ export async function searchFinishedRuns(
 
     const qs = new URLSearchParams();
     if (params.gameId != null) qs.set('game_id', String(params.gameId));
+    if (params.categoryId != null)
+        qs.set('category_id', String(params.categoryId));
     if (params.category) qs.set('category', params.category);
     if (params.username) qs.set('username', params.username);
     if (params.isPb) qs.set('is_pb', 'true');
