@@ -31,6 +31,7 @@ function filtersFromParams(params: URLSearchParams): RunsFilters {
         gameId: null,
         gameImage: null,
         category: params.get('category') ?? '',
+        categoryId: null,
         username: params.get('username') ?? '',
         isPb: params.get('isPb') === 'true',
         useGameTime: params.get('useGameTime') === 'true',
@@ -126,7 +127,8 @@ export function RunsExplorer({ loggedInUser }: RunsExplorerProps) {
 
         searchFinishedRuns({
             gameId: f.gameId ?? undefined,
-            category: f.category || undefined,
+            categoryId: f.categoryId ?? undefined,
+            category: f.categoryId ? undefined : f.category || undefined,
             username: f.username || undefined,
             isPb: f.isPb || undefined,
             useGameTime: f.useGameTime || undefined,
