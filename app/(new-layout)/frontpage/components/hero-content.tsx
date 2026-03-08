@@ -132,11 +132,15 @@ const SplitTimeline = ({
     if (ahead > 0) parts.push(`${ahead} ahead`);
     if (behind > 0) parts.push(`${behind} behind`);
 
+    // With many splits the 2px gap eats all available width, so drop it
+    const tooManySplits = segments.length > 60;
+
     return (
         <div
             className={clsx(styles.splitTimeline, className)}
             role="img"
             aria-label={parts.join(', ')}
+            style={tooManySplits ? { gap: 0 } : undefined}
         >
             {segments.map((status, i) => (
                 <div
