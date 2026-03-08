@@ -353,12 +353,19 @@ function StreakCard({
     );
 }
 
+function hasActivity(dashboard: DashboardResponse | null | undefined): boolean {
+    return !!dashboard && dashboard.stats.playtime > 0;
+}
+
 function getInitialSelection(
     dashboards: Record<string, DashboardResponse | null>,
 ): DashboardSelection {
-    if (dashboards['7d']) return { kind: 'current', granularity: 'week' };
-    if (dashboards['30d']) return { kind: 'current', granularity: 'month' };
-    if (dashboards['year']) return { kind: 'current', granularity: 'year' };
+    if (hasActivity(dashboards['7d']))
+        return { kind: 'current', granularity: 'week' };
+    if (hasActivity(dashboards['30d']))
+        return { kind: 'current', granularity: 'month' };
+    if (hasActivity(dashboards['year']))
+        return { kind: 'current', granularity: 'year' };
     return { kind: 'all-time' };
 }
 
