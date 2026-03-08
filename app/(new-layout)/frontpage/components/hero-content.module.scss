@@ -276,10 +276,12 @@
     display: flex;
     gap: 2px;
     height: 6px;
+    overflow: hidden;
 }
 
 .splitSegment {
     flex: 1;
+    min-width: 0;
     border-radius: 1px;
     background: var(--bs-border-color);
     transition: background 0.3s ease;

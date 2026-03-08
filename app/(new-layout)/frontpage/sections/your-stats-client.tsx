@@ -353,6 +353,15 @@ function StreakCard({
     );
 }
 
+function getInitialSelection(
+    dashboards: Record<string, DashboardResponse | null>,
+): DashboardSelection {
+    if (dashboards['7d']) return { kind: 'current', granularity: 'week' };
+    if (dashboards['30d']) return { kind: 'current', granularity: 'month' };
+    if (dashboards['year']) return { kind: 'current', granularity: 'year' };
+    return { kind: 'all-time' };
+}
+
 export const YourStatsClient = ({
     dashboards,
     username,
@@ -368,10 +377,9 @@ export const YourStatsClient = ({
         toggleStreakVisibility(hide);
     };
 
-    const [selection, setSelection] = useState<DashboardSelection>({
-        kind: 'current',
-        granularity: 'week',
-    });
+    const [selection, setSelection] = useState<DashboardSelection>(() =>
+        getInitialSelection(dashboards),
+    );
     const [customFrom, setCustomFrom] = useState('');
     const today = new Date().toISOString().slice(0, 10);
     const [customTo, setCustomTo] = useState(today);
