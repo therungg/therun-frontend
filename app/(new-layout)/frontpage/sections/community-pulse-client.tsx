@@ -95,20 +95,23 @@ export const CommunityPulseClient = ({
     liveCount: number;
 }) => {
     const ref = useRef<HTMLDivElement>(null);
-    const [visible, setVisible] = useState(false);
+    const [hasSeen, setHasSeen] = useState(false);
+    const [onScreen, setOnScreen] = useState(false);
     const [liveCount, setLiveCount] = useState(initialLiveCount);
     const [allTime, setAllTime] = useState(initialAllTime);
     const [last24h, setLast24h] = useState(initialLast24h);
 
     useEffect(() => {
+        if (!onScreen) return;
         const interval = setInterval(async () => {
             const count = await getLiveCount();
             if (count > 0) setLiveCount(count);
         }, LIVE_COUNT_POLL_INTERVAL);
         return () => clearInterval(interval);
-    }, []);
+    }, [onScreen]);
 
     useEffect(() => {
+        if (!onScreen) return;
         const interval = setInterval(async () => {
             try {
                 const [stats, stats24hAgo] = await Promise.all([
@@ -122,27 +125,30 @@ export const CommunityPulseClient = ({
             }
         }, STATS_POLL_INTERVAL);
         return () => clearInterval(interval);
-    }, []);
-
-    const onIntersect = useCallback((entries: IntersectionObserverEntry[]) => {
-        if (entries[0].isIntersecting) setVisible(true);
-    }, []);
+    }, [onScreen]);
 
     useEffect(() => {
         const el = ref.current;
         if (!el) return;
-        const obs = new IntersectionObserver(onIntersect, { threshold: 0.2 });
+        const obs = new IntersectionObserver(
+            (entries) => {
+                const isVisible = entries[0].isIntersecting;
+                setOnScreen(isVisible);
+                if (isVisible) setHasSeen(true);
+            },
+            { threshold: 0.2 },
+        );
         obs.observe(el);
         return () => obs.disconnect();
-    }, [onIntersect]);
+    }, []);
 
-    const pbs = useCountUp(last24h.pbs, 1400, visible);
-    const runs = useCountUp(last24h.runs, 1400, visible);
-    const attempts = useCountUp(last24h.attempts, 1400, visible);
+    const pbs = useCountUp(last24h.pbs, 1400, hasSeen);
+    const runs = useCountUp(last24h.runs, 1400, hasSeen);
+    const attempts = useCountUp(last24h.attempts, 1400, hasSeen);
     const hours = useCountUp(
         Math.round(last24h.playtimeMs / 3_600_000),
         1400,
-        visible,
+        hasSeen,
     );
 
     return (

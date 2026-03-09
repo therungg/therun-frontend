@@ -313,6 +313,7 @@ const HotGameCard = ({
                 height={isTop ? 96 : 80}
                 className={`${styles.gameArt} ${isTop ? styles.gameArtTop : ''}`}
                 unoptimized
+                loading="lazy"
             />
             <div className={styles.gameInfo}>
                 <span

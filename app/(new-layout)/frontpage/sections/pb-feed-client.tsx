@@ -117,8 +117,24 @@ const FeaturedCarousel = ({
     const pausedRef = useRef(false);
     const timerRef = useRef<ReturnType<typeof setInterval>>(undefined);
     const progressRef = useRef<HTMLDivElement>(null);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+    const offScreenRef = useRef(false);
 
     const [activeIndex, setActiveIndex] = useState(0);
+
+    // Pause auto-rotation when carousel is off-screen
+    useEffect(() => {
+        const el = wrapperRef.current;
+        if (!el) return;
+        const obs = new IntersectionObserver(
+            ([entry]) => {
+                offScreenRef.current = !entry.isIntersecting;
+            },
+            { threshold: 0 },
+        );
+        obs.observe(el);
+        return () => obs.disconnect();
+    }, []);
 
     // Track which slide is visible via IntersectionObserver
     useEffect(() => {
@@ -182,7 +198,7 @@ const FeaturedCarousel = ({
         resetProgress();
 
         timerRef.current = setInterval(() => {
-            if (!pausedRef.current) {
+            if (!pausedRef.current && !offScreenRef.current) {
                 const el = scrollRef.current;
                 if (!el) return;
                 const nextIndex =
@@ -314,6 +330,7 @@ const FeaturedCarousel = ({
 
     return (
         <div
+            ref={wrapperRef}
             className={styles.carouselWrapper}
             onMouseEnter={pause}
             onMouseLeave={resume}
@@ -360,6 +377,7 @@ const FeaturedCarousel = ({
                                 src={imageUrl}
                                 alt=""
                                 className={styles.featuredBg}
+                                loading="lazy"
                             />
                             <div className={styles.featuredOverlay} />
                             <Link
@@ -398,6 +416,7 @@ const FeaturedCarousel = ({
                                                     styles.featuredAvatar
                                                 }
                                                 unoptimized
+                                                loading="lazy"
                                             />
                                         )}
                                         <div
@@ -551,12 +570,14 @@ const CompactItem = ({
                         src={gameImageUrl}
                         alt=""
                         className={styles.listGameThumb}
+                        loading="lazy"
                     />
                 ) : (
                     <img
                         src={FALLBACK_IMAGE}
                         alt=""
                         className={styles.listGameThumbFallback}
+                        loading="lazy"
                     />
                 )}
                 {avatarUrl && (
@@ -567,6 +588,7 @@ const CompactItem = ({
                         height={24}
                         className={styles.listAvatarOverlay}
                         unoptimized
+                        loading="lazy"
                     />
                 )}
             </div>

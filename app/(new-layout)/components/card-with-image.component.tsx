@@ -48,6 +48,7 @@ export const CardWithImage: FC<PropsWithChildren<CardWithImageProps>> = ({
                     }}
                     alt={imageAlt}
                     className="w-100"
+                    loading="lazy"
                 />
             </div>
             <div className="ms-3 me-2 w-100 text-nowrap">{children}</div>
