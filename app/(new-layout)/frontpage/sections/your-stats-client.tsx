@@ -22,6 +22,7 @@ import type {
     DashboardStreakMilestone,
     PeriodGranularity,
 } from '~src/types/dashboard.types';
+import { useFallbackImage } from '../components/use-fallback-image';
 import styles from './your-stats.module.scss';
 
 interface YourStatsClientProps {
@@ -768,6 +769,7 @@ function DashboardContent({
     const streakMilestone = dashboard.streakMilestone ?? null;
 
     const top3Games = topGames.slice(0, 3);
+    const fallbackImage = useFallbackImage();
 
     return (
         <>
@@ -821,16 +823,18 @@ function DashboardContent({
                                 <span className={styles.topGameRank}>
                                     {i + 1}
                                 </span>
-                                {hasValidImage(game.gameImage) && (
-                                    <Image
-                                        src={game.gameImage}
-                                        alt={game.gameDisplay}
-                                        width={36}
-                                        height={48}
-                                        className={styles.topGameImage}
-                                        unoptimized
-                                    />
-                                )}
+                                <Image
+                                    src={
+                                        hasValidImage(game.gameImage)
+                                            ? game.gameImage
+                                            : fallbackImage
+                                    }
+                                    alt={game.gameDisplay}
+                                    width={36}
+                                    height={48}
+                                    className={styles.topGameImage}
+                                    unoptimized
+                                />
                                 <div className={styles.topGameInfo}>
                                     <div className={styles.topGameName}>
                                         {game.gameDisplay}
@@ -878,6 +882,7 @@ function ProminentRunItem({
     run: DashboardProminentRun;
     username: string;
 }) {
+    const fallbackImage = useFallbackImage();
     const improvementMs =
         run.isPb && run.previousPb != null ? run.previousPb - run.time : null;
 
@@ -886,18 +891,16 @@ function ProminentRunItem({
             href={`/${username}/${encodeURIComponent(run.game)}`}
             className={styles.activityItem}
         >
-            {hasValidImage(run.gameImage) ? (
-                <Image
-                    src={run.gameImage}
-                    alt={run.game}
-                    width={20}
-                    height={27}
-                    className={styles.activityImage}
-                    unoptimized
-                />
-            ) : (
-                <div className={styles.activityImagePlaceholder} />
-            )}
+            <Image
+                src={
+                    hasValidImage(run.gameImage) ? run.gameImage : fallbackImage
+                }
+                alt={run.game}
+                width={20}
+                height={27}
+                className={styles.activityImage}
+                unoptimized
+            />
             <div className={styles.activityInfo}>
                 <div className={styles.activityGame}>{run.game}</div>
                 <div className={styles.activityCategory}>
