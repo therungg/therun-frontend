@@ -20,15 +20,50 @@ interface PbFeedClientProps {
     notablePbs: FinishedRunPB[];
     allPbs: FinishedRunPB[];
     gameImages: Record<string, string>;
-    userPictures: Record<string, string>;
 }
 
 export const PbFeedClient = ({
     notablePbs,
     allPbs,
     gameImages,
-    userPictures,
 }: PbFeedClientProps) => {
+    const [userPictures, setUserPictures] = useState<Record<string, string>>(
+        {},
+    );
+
+    useEffect(() => {
+        const usernames = [
+            ...new Set([
+                ...notablePbs.map((pb) => pb.username),
+                ...allPbs.map((pb) => pb.username),
+            ]),
+        ];
+        if (usernames.length === 0) return;
+
+        const dataUrl = process.env.NEXT_PUBLIC_DATA_URL;
+        Promise.all(
+            usernames.map(async (username) => {
+                try {
+                    const res = await fetch(
+                        `${dataUrl}/users/global/${username}`,
+                    );
+                    if (!res.ok) return [username, ''] as const;
+                    const json = await res.json();
+                    return [username, json.result?.picture ?? ''] as const;
+                } catch {
+                    return [username, ''] as const;
+                }
+            }),
+        ).then((results) => {
+            const pictures: Record<string, string> = {};
+            for (const [username, picture] of results) {
+                if (picture && picture !== 'noimage') {
+                    pictures[username] = picture;
+                }
+            }
+            setUserPictures(pictures);
+        });
+    }, [notablePbs, allPbs]);
     return (
         <Panel
             panelId="pbs"
