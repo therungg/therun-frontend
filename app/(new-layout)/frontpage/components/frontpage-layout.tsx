@@ -199,8 +199,8 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                         </SortableContext>
                     </Col>
                 </Row>
-                <DragOverlay>
-                    {activeId ? (
+                {activeId && (
+                    <DragOverlay>
                         <div
                             style={{
                                 opacity: 0.9,
@@ -210,8 +210,8 @@ export const FrontpageLayout: React.FC<FrontpageLayoutProps> = ({
                         >
                             {sections[activeId]}
                         </div>
-                    ) : null}
-                </DragOverlay>
+                    </DragOverlay>
+                )}
             </DndContext>
         </>
     );

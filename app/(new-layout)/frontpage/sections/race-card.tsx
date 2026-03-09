@@ -56,6 +56,7 @@ export const RaceCard = ({ race, variant }: RaceCardProps) => {
                 alt=""
                 aria-hidden="true"
                 className={styles.cardBg}
+                loading="lazy"
             />
             <div className={styles.cardOverlay} />
             <div className={styles.cardContent}>
