@@ -52,3 +52,13 @@
     color: var(--bs-secondary-color);
     flex-shrink: 0;
 }
+
+.featured {
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    font-weight: 600;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.15);
+    }
+}
+
