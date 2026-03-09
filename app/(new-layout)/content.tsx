@@ -10,11 +10,11 @@ import { useProgressBar } from '~src/components/n-progress.component';
 export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
     children,
 }) => {
-    const { systemTheme } = useTheme();
+    const { systemTheme, resolvedTheme } = useTheme();
     useProgressBar();
     const query = useSearchParams();
 
-    const prefix = systemTheme === 'dark' ? '' : '/lightmode';
+    const prefix = systemTheme === 'light' ? '/lightmode' : '';
 
     useEffect(() => {
         if (query.has('toast')) {
@@ -67,7 +67,7 @@ export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
                 draggable
                 pauseOnHover
                 transition={Bounce}
-                theme={systemTheme || 'dark'}
+                theme={resolvedTheme || 'dark'}
             />
             {children}
         </div>

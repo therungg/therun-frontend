@@ -9,9 +9,8 @@ import {
     DurationToFormatted,
     LocalizedTime,
 } from '~src/components/util/datetime';
+import { useFallbackImage } from '../components/use-fallback-image';
 import styles from './races-section.module.scss';
-
-const FALLBACK_IMAGE = '/logo_dark_theme_no_text_transparent.png';
 
 interface RaceCardProps {
     race: Race;
@@ -19,10 +18,11 @@ interface RaceCardProps {
 }
 
 export const RaceCard = ({ race, variant }: RaceCardProps) => {
+    const fallbackImage = useFallbackImage();
     const imageUrl =
         race.gameImage && race.gameImage !== 'noimage'
             ? race.gameImage
-            : FALLBACK_IMAGE;
+            : fallbackImage;
 
     const isLive = variant === 'live';
 

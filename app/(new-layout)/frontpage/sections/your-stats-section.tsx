@@ -88,7 +88,6 @@ export const YourStatsSection = async ({
             title={impersonating ? `${user}'s Stats` : 'Your Performance'}
             icon={FaChartLine}
             className="p-0"
-            link={{ url: `/${user}`, text: 'View Full Stats' }}
         >
             <YourStatsClient
                 dashboards={dashboards}

@@ -1,24 +1,26 @@
-export type PanelId =
-    | 'stats'
-    | 'current-user-live'
-    | 'race'
-    | 'patreon'
-    | 'latest-pbs';
+export type SectionId =
+    | 'trending'
+    | 'pb-feed'
+    | 'races'
+    | 'quick-links'
+    | 'your-stats'
+    | 'community-pulse'
+    | 'patreon';
 
 export type ColumnId = 'left' | 'right';
 
-export interface PanelConfigItem {
-    id: PanelId;
+export interface SectionConfigItem {
+    id: SectionId;
     visible: boolean;
     order: number;
     column: ColumnId;
 }
 
-export interface PanelConfig {
-    panels: PanelConfigItem[];
+export interface FrontpageConfig {
+    sections: SectionConfigItem[];
 }
 
-export interface PanelMetadata {
+export interface SectionMetadata {
     name: string;
-    defaultColumn: ColumnId;
+    column: ColumnId;
 }
