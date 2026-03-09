@@ -1,7 +1,10 @@
 import { Suspense } from 'react';
-import { Col, Row } from 'react-bootstrap';
+import { getFrontpageConfig } from '~src/actions/frontpage-config.action';
 import { getSession } from '~src/actions/session.action';
+import { DEFAULT_FRONTPAGE_CONFIG } from '~src/lib/frontpage-sections-metadata';
+import type { SectionId } from '../../../types/frontpage-config.types';
 import { FrontpageHero } from './components/frontpage-hero';
+import { FrontpageLayout } from './components/frontpage-layout';
 import { SectionSkeleton } from './components/section-skeleton';
 import { CommunityPulse } from './sections/community-pulse';
 import { PatreonSection } from './sections/patreon-section';
@@ -15,6 +18,48 @@ export default async function FrontPage({ statsUser }: { statsUser?: string }) {
     const session = await getSession();
     const isLoggedIn = !!session?.user;
 
+    const config = isLoggedIn
+        ? await getFrontpageConfig(session.username)
+        : DEFAULT_FRONTPAGE_CONFIG;
+
+    const sections: Record<SectionId, React.ReactNode> = {
+        trending: (
+            <Suspense fallback={<SectionSkeleton height={400} />}>
+                <TrendingSection />
+            </Suspense>
+        ),
+        'pb-feed': (
+            <Suspense fallback={<SectionSkeleton height={400} />}>
+                <PbFeedSection />
+            </Suspense>
+        ),
+        races: (
+            <Suspense fallback={<SectionSkeleton height={400} />}>
+                <RacesSection />
+            </Suspense>
+        ),
+        'quick-links': (
+            <Suspense fallback={<SectionSkeleton height={150} />}>
+                <QuickLinks />
+            </Suspense>
+        ),
+        'your-stats': (
+            <Suspense fallback={<SectionSkeleton height={300} />}>
+                <YourStatsSection statsUser={statsUser} />
+            </Suspense>
+        ),
+        'community-pulse': (
+            <Suspense fallback={<SectionSkeleton height={300} />}>
+                <CommunityPulse />
+            </Suspense>
+        ),
+        patreon: (
+            <Suspense fallback={<SectionSkeleton height={150} />}>
+                <PatreonSection />
+            </Suspense>
+        ),
+    };
+
     return (
         <div className="d-flex flex-column gap-4">
             <div id="live">
@@ -22,48 +67,11 @@ export default async function FrontPage({ statsUser }: { statsUser?: string }) {
                     <FrontpageHero />
                 </Suspense>
             </div>
-            <Row className="g-4">
-                <Col lg={8} xs={12} as="section" aria-label="Main content">
-                    <div className="d-flex flex-column gap-4">
-                        <Suspense fallback={<SectionSkeleton height={400} />}>
-                            <TrendingSection />
-                        </Suspense>
-                        <Suspense fallback={<SectionSkeleton height={400} />}>
-                            <PbFeedSection />
-                        </Suspense>
-                        <Suspense fallback={<SectionSkeleton height={400} />}>
-                            <RacesSection />
-                        </Suspense>
-                    </div>
-                </Col>
-                <Col lg={4} xs={12} as="aside" aria-label="Stats and community">
-                    <div className="d-flex flex-column gap-4">
-                        <Suspense fallback={<SectionSkeleton height={150} />}>
-                            <QuickLinks />
-                        </Suspense>
-                        {isLoggedIn && (
-                            <Suspense
-                                fallback={<SectionSkeleton height={300} />}
-                            >
-                                <YourStatsSection statsUser={statsUser} />
-                            </Suspense>
-                        )}
-                        <Suspense fallback={<SectionSkeleton height={300} />}>
-                            <CommunityPulse />
-                        </Suspense>
-                        {!isLoggedIn && (
-                            <Suspense
-                                fallback={<SectionSkeleton height={300} />}
-                            >
-                                <YourStatsSection statsUser={statsUser} />
-                            </Suspense>
-                        )}
-                        <Suspense fallback={<SectionSkeleton height={150} />}>
-                            <PatreonSection />
-                        </Suspense>
-                    </div>
-                </Col>
-            </Row>
+            <FrontpageLayout
+                initialConfig={config}
+                sections={sections}
+                isAuthenticated={isLoggedIn}
+            />
         </div>
     );
 }

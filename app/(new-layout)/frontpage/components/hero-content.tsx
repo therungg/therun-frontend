@@ -17,6 +17,7 @@ import {
 } from '~src/components/util/datetime';
 import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
 import styles from './hero-content.module.scss';
+import { useFallbackImage } from './use-fallback-image';
 import { type StaleReason, useRunRefresh } from './use-run-refresh';
 
 const TwitchPlayer = dynamic(() =>
@@ -553,6 +554,7 @@ const SidebarCard = ({
     isEntering?: boolean;
     countdown?: number;
 }) => {
+    const fallbackImage = useFallbackImage();
     const hasGameImage = run.gameImage && run.gameImage !== 'noimage';
     const hasAvatar = run.picture && run.picture !== 'noimage';
     const segments = getSplitSegments(run);
@@ -609,7 +611,7 @@ const SidebarCard = ({
             ) : (
                 <div className={styles.sidebarCardArtFallback}>
                     <Image
-                        src="/logo_dark_theme_no_text_transparent.png"
+                        src={fallbackImage}
                         alt="therun.gg"
                         width={40}
                         height={40}

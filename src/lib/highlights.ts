@@ -120,7 +120,7 @@ export async function getRecentNotablePBs(limit = 5): Promise<FinishedRunPB[]> {
     cacheTag('notable-pbs');
 
     const res = await apiFetch<PaginatedFinishedRuns>(
-        `/v1/finished-runs?top_categories=250&min_playtime=50&is_pb=true&sort=-ended_at&limit=${limit}`,
+        `/v1/finished-runs?top_categories=1000&min_playtime=100&is_pb=true&sort=-ended_at&unique_category=true&limit=${limit}`,
     );
     return res.data;
 }

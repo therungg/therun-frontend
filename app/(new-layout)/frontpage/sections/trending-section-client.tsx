@@ -15,9 +15,8 @@ import {
     getTopGames,
 } from '~src/lib/highlights';
 import { safeEncodeURI } from '~src/utils/uri';
+import { useFallbackImage } from '../components/use-fallback-image';
 import styles from './trending-section.module.scss';
-
-const FALLBACK_IMAGE = '/logo_dark_theme_no_text_transparent.png';
 
 function formatHoursCompact(ms: number): string {
     const hours = ms / 3_600_000;
@@ -295,10 +294,11 @@ const HotGameCard = ({
     isTop: boolean;
     categories: CategoryActivity[];
 }) => {
+    const fallbackImage = useFallbackImage();
     const imageUrl =
         game.gameImage && game.gameImage !== 'noimage'
             ? game.gameImage
-            : FALLBACK_IMAGE;
+            : fallbackImage;
 
     return (
         <Link

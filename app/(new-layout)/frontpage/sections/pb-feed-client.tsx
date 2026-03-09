@@ -11,9 +11,9 @@ import {
     getFormattedString,
 } from '~src/components/util/datetime';
 import type { FinishedRunPB } from '~src/lib/highlights';
+import { useFallbackImage } from '../components/use-fallback-image';
 import styles from './pb-feed.module.scss';
 
-const FALLBACK_IMAGE = '/logo_dark_theme_no_text_transparent.png';
 const ROTATE_INTERVAL = 8000;
 
 interface PbFeedClientProps {
@@ -70,6 +70,7 @@ const FeaturedCarousel = ({
     gameImages: Record<string, string>;
     userPictures: Record<string, string>;
 }) => {
+    const FALLBACK_IMAGE = useFallbackImage();
     const scrollRef = useRef<HTMLDivElement>(null);
     const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
     const dragState = useRef({
@@ -503,6 +504,7 @@ const CompactItem = ({
     avatarUrl?: string;
     gameImageUrl?: string;
 }) => {
+    const FALLBACK_IMAGE = useFallbackImage();
     const improvement = pb.previousPb !== null ? pb.previousPb - pb.time : null;
     const hasImprovement = improvement !== null && improvement > 0;
 
