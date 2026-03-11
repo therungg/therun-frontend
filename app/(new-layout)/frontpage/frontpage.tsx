@@ -6,6 +6,7 @@ import type { SectionId } from '../../../types/frontpage-config.types';
 import { FrontpageHero } from './components/frontpage-hero';
 import { FrontpageLayout } from './components/frontpage-layout';
 import { SectionSkeleton } from './components/section-skeleton';
+import { WelcomeBanner } from './components/welcome-banner';
 import { CommunityPulse } from './sections/community-pulse';
 import { PatreonSection } from './sections/patreon-section';
 import { PbFeedSection } from './sections/pb-feed-section';
@@ -62,6 +63,7 @@ export default async function FrontPage({ statsUser }: { statsUser?: string }) {
 
     return (
         <div className="d-flex flex-column gap-4">
+            <WelcomeBanner />
             <div id="live">
                 <Suspense fallback={<SectionSkeleton height={340} />}>
                     <FrontpageHero />
