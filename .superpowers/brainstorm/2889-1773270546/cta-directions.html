@@ -1,0 +1,235 @@
+<h2>New Homepage CTA — Visual Direction</h2>
+<p class="subtitle">Three takes on an eye-catching announcement banner. Click to select your favorite.</p>
+
+<div class="cards" style="display: grid; grid-template-columns: 1fr; gap: 2rem; max-width: 800px; margin: 0 auto;">
+
+  <!-- Option A: Glowing gradient banner -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)" style="padding: 0; overflow: hidden; border: none;">
+    <div class="card-body" style="padding: 0;">
+      <div style="
+        background: linear-gradient(135deg, #0D0F0D 0%, #1a2e1a 50%, #0D0F0D 100%);
+        border: 1px solid rgba(96, 140, 89, 0.4);
+        border-radius: 0.75rem;
+        padding: 1rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      ">
+        <!-- Animated glow effect (simulated) -->
+        <div style="
+          position: absolute;
+          top: -50%;
+          left: -20%;
+          width: 60%;
+          height: 200%;
+          background: radial-gradient(ellipse, rgba(96, 140, 89, 0.15) 0%, transparent 70%);
+          pointer-events: none;
+        "></div>
+        <div style="
+          position: absolute;
+          top: -50%;
+          right: -10%;
+          width: 40%;
+          height: 200%;
+          background: radial-gradient(ellipse, rgba(76, 175, 80, 0.08) 0%, transparent 70%);
+          pointer-events: none;
+        "></div>
+
+        <div style="display: flex; align-items: center; gap: 0.75rem; position: relative; z-index: 1;">
+          <span style="
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: rgba(96, 140, 89, 0.25);
+            border-radius: 50%;
+            font-size: 14px;
+          ">✨</span>
+          <div>
+            <span style="font-weight: 700; color: #E2E8E1; font-size: 0.9rem;">New homepage available</span>
+            <span style="color: rgba(226, 232, 225, 0.6); font-size: 0.85rem;"> — live races, trending games, and a customizable layout</span>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem; position: relative; z-index: 1;">
+          <button style="
+            background: linear-gradient(135deg, #608C59, #4CAF50);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 0.45rem 1.25rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(96, 140, 89, 0.3), inset 0 1px 0 rgba(255,255,255,0.1);
+            letter-spacing: 0.02em;
+          ">Try it out →</button>
+          <button style="
+            background: none;
+            border: none;
+            color: rgba(226, 232, 225, 0.4);
+            cursor: pointer;
+            padding: 4px;
+            font-size: 18px;
+            line-height: 1;
+          ">✕</button>
+        </div>
+      </div>
+      <h3 style="margin-top: 1rem;">A: Ambient Glow</h3>
+      <p>Dark background with soft radial green glows. Gradient button with shadow. Feels premium and atmospheric.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Shimmering border with sparkle -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)" style="padding: 0; overflow: hidden; border: none;">
+    <div class="card-body" style="padding: 0;">
+      <div style="
+        background: linear-gradient(90deg, rgba(96, 140, 89, 0.08), rgba(96, 140, 89, 0.15), rgba(96, 140, 89, 0.08));
+        border-radius: 0.75rem;
+        padding: 1rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        border: 1px solid transparent;
+        background-clip: padding-box;
+        outline: 1px solid rgba(96, 140, 89, 0.35);
+      ">
+        <!-- Top shimmer line -->
+        <div style="
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 1px;
+          background: linear-gradient(90deg, transparent 0%, rgba(102, 187, 106, 0.6) 30%, rgba(102, 187, 106, 0.8) 50%, rgba(102, 187, 106, 0.6) 70%, transparent 100%);
+        "></div>
+
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <div style="
+            width: 6px;
+            height: 6px;
+            background: #66bb6a;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(102, 187, 106, 0.6), 0 0 16px rgba(102, 187, 106, 0.3);
+          "></div>
+          <div>
+            <span style="font-weight: 700; color: #E2E8E1; font-size: 0.9rem;">New homepage available</span>
+            <span style="color: rgba(226, 232, 225, 0.6); font-size: 0.85rem;"> — live races, trending games, and a customizable layout</span>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <button style="
+            background: transparent;
+            color: #7DA876;
+            border: 1px solid rgba(96, 140, 89, 0.5);
+            border-radius: 6px;
+            padding: 0.45rem 1.25rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 0.02em;
+          ">Try it out →</button>
+          <button style="
+            background: none;
+            border: none;
+            color: rgba(226, 232, 225, 0.4);
+            cursor: pointer;
+            padding: 4px;
+            font-size: 18px;
+            line-height: 1;
+          ">✕</button>
+        </div>
+      </div>
+      <h3 style="margin-top: 1rem;">B: Shimmer Line</h3>
+      <p>Bright green shimmer accent along the top edge with a glowing dot indicator. Ghost button. Clean and modern.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Bold gradient with animated pulse -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)" style="padding: 0; overflow: hidden; border: none;">
+    <div class="card-body" style="padding: 0;">
+      <div style="
+        background: linear-gradient(135deg, #1a3318 0%, #2d4a28 40%, #1a3318 100%);
+        border: 1px solid rgba(102, 187, 106, 0.3);
+        border-radius: 0.75rem;
+        padding: 1rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+      ">
+        <!-- Corner accent -->
+        <div style="
+          position: absolute;
+          top: -1px;
+          left: -1px;
+          width: 80px;
+          height: 3px;
+          background: linear-gradient(90deg, #4CAF50, transparent);
+          border-radius: 0 0 4px 0;
+        "></div>
+        <div style="
+          position: absolute;
+          top: -1px;
+          left: -1px;
+          width: 3px;
+          height: 40px;
+          background: linear-gradient(180deg, #4CAF50, transparent);
+          border-radius: 0 0 0 4px;
+        "></div>
+
+        <div style="display: flex; align-items: center; gap: 0.75rem; position: relative; z-index: 1;">
+          <span style="
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, #66bb6a, #4CAF50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+          ">NEW</span>
+          <div>
+            <span style="font-weight: 700; color: #E2E8E1; font-size: 0.9rem;">Homepage redesigned</span>
+            <span style="color: rgba(226, 232, 225, 0.6); font-size: 0.85rem;"> — live races, trending games, and a customizable layout</span>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 0.5rem; position: relative; z-index: 1;">
+          <button style="
+            background: linear-gradient(135deg, #4CAF50, #66bb6a);
+            color: #0D0F0D;
+            border: none;
+            border-radius: 6px;
+            padding: 0.5rem 1.5rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.25);
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+          ">Try it out</button>
+          <button style="
+            background: none;
+            border: none;
+            color: rgba(226, 232, 225, 0.4);
+            cursor: pointer;
+            padding: 4px;
+            font-size: 18px;
+            line-height: 1;
+          ">✕</button>
+        </div>
+      </div>
+      <h3 style="margin-top: 1rem;">C: Bold Corner Accent</h3>
+      <p>Rich dark green gradient with glowing corner accents. Bold gradient button with glow. Strong "NEW" label. Most assertive.</p>
+    </div>
+  </div>
+
+</div>
