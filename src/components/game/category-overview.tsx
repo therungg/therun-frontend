@@ -74,6 +74,7 @@ export const CategoryOverview = ({
                                             category.pbLeaderboard[0].username
                                         }
                                         game={game}
+                                        url={category.pbLeaderboard[0].url}
                                     >
                                         <DurationToFormatted
                                             duration={
@@ -85,9 +86,6 @@ export const CategoryOverview = ({
                                     <UserLink
                                         username={
                                             category.pbLeaderboard[0].username
-                                        }
-                                        url={
-                                            category.pbLeaderboard[0].url || ''
                                         }
                                     />
                                     )
