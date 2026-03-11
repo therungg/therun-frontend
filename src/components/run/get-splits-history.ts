@@ -10,7 +10,8 @@ export const getSplitsHistoryUrl = (
             if (key > 2) return name;
             return safeEncodeURI(name);
         })
-        .join('/');
+        .join('/')
+        .replaceAll('+', '%2b');
 
     if (hasGameTime) {
         filename = filename.replace('history.json', 'history-gametime.json');
