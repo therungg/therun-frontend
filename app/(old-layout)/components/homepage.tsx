@@ -57,9 +57,6 @@ export const Homepage = () => {
                 {/*</Col>*/}
             </Row>
             <div>
-                {/*<div className="px-4">*/}
-                {/*    <NewLayoutCTA />*/}
-                {/*</div>*/}
                 <Row className="text-center">
                     <Col xl={6} className="mt-4">
                         <h2>Recent Personal Bests</h2>
