@@ -5,11 +5,7 @@ import { JsonLd } from '~src/components/json-ld';
 import { getGlobalUser } from '~src/lib/get-global-user';
 import { getRun } from '~src/lib/get-run';
 import { getLiveRunForUser } from '~src/lib/live-runs';
-import {
-    buildRunBreadcrumbJsonLd,
-    buildRunProfileJsonLd,
-    formatMillis,
-} from '~src/utils/json-ld';
+import { buildRunProfileJsonLd, formatMillis } from '~src/utils/json-ld';
 import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 
@@ -64,14 +60,6 @@ export default async function RunPage(props: PageProps) {
                     image: userData?.picture,
                     dateCreated,
                     dateModified,
-                })}
-            />
-            <JsonLd
-                data={buildRunBreadcrumbJsonLd({
-                    username,
-                    runUrl,
-                    game: run.game,
-                    category: run.run,
                 })}
             />
             <RunDetail

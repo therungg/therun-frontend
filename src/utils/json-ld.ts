@@ -180,37 +180,6 @@ export function formatPlaytime(ms: string | undefined): string | undefined {
     return `${totalMinutes} minute${totalMinutes !== 1 ? 's' : ''}`;
 }
 
-export function buildRunBreadcrumbJsonLd({
-    username,
-    runUrl,
-    game,
-    category,
-}: {
-    username: string;
-    runUrl: string;
-    game: string;
-    category: string;
-}) {
-    return {
-        '@context': 'https://schema.org',
-        '@type': 'BreadcrumbList',
-        itemListElement: [
-            {
-                '@type': 'ListItem',
-                position: 1,
-                name: username,
-                item: `${BASE_URL}/${username}`,
-            },
-            {
-                '@type': 'ListItem',
-                position: 2,
-                name: `${game} - ${category}`,
-                item: `${BASE_URL}/${runUrl}`,
-            },
-        ],
-    };
-}
-
 interface RunProfileJsonLdInput {
     username: string;
     game: string;
