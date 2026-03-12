@@ -22,6 +22,7 @@ import type {
     DashboardStreakMilestone,
     PeriodGranularity,
 } from '~src/types/dashboard.types';
+import { safeEncodeURI } from '~src/utils/uri';
 import { useFallbackImage } from '../components/use-fallback-image';
 import styles from './your-stats.module.scss';
 
@@ -817,7 +818,7 @@ function DashboardContent({
                         {top3Games.map((game, i) => (
                             <Link
                                 key={game.gameId}
-                                href={`/${username}/${encodeURIComponent(game.gameDisplay)}`}
+                                href={`/games/${safeEncodeURI(game.gameDisplay)}`}
                                 className={styles.topGameCard}
                             >
                                 <span className={styles.topGameRank}>
@@ -865,7 +866,6 @@ function DashboardContent({
                             <ProminentRunItem
                                 key={`${run.game}-${run.category}-${run.endedAt}`}
                                 run={run}
-                                username={username}
                             />
                         ))}
                     </div>
@@ -875,22 +875,13 @@ function DashboardContent({
     );
 }
 
-function ProminentRunItem({
-    run,
-    username,
-}: {
-    run: DashboardProminentRun;
-    username: string;
-}) {
+function ProminentRunItem({ run }: { run: DashboardProminentRun }) {
     const fallbackImage = useFallbackImage();
     const improvementMs =
         run.isPb && run.previousPb != null ? run.previousPb - run.time : null;
 
     return (
-        <Link
-            href={`/${username}/${encodeURIComponent(run.game)}`}
-            className={styles.activityItem}
-        >
+        <Link href={run.url} className={styles.activityItem}>
             <Image
                 src={
                     hasValidImage(run.gameImage) ? run.gameImage : fallbackImage

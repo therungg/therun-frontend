@@ -49,6 +49,7 @@ export interface DashboardPb {
     time: number;
     previousPb: number | null;
     endedAt: string;
+    url: string;
 }
 
 export interface DashboardRace {
@@ -69,6 +70,7 @@ export interface DashboardProminentRun {
     previousPb: number | null;
     endedAt: string;
     isPb: boolean;
+    url: string;
 }
 
 export interface DashboardHighlight {
