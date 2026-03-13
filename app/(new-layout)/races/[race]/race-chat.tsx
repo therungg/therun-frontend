@@ -172,10 +172,7 @@ const RaceChatFilter: React.FunctionComponent<RaceChatFilterProps> = ({
 
 const Chat = ({ raceMessages }: { raceMessages: RaceMessage[] }) => {
     return (
-        <div
-            className="d-flex flex-column-reverse overflow-y-scroll overflow-x-hidden px-2 py-1 game-border rounded-3 mb-2"
-            style={{ height: '18rem' }}
-        >
+        <div className={styles.chatMessages}>
             {raceMessages.map((message) => (
                 <Chatmessage key={message.time} message={message} />
             ))}
@@ -185,8 +182,8 @@ const Chat = ({ raceMessages }: { raceMessages: RaceMessage[] }) => {
 
 const Chatmessage = ({ message }: { message: RaceMessage }) => {
     return (
-        <div className="d-flex">
-            <span className="me-2">
+        <div className={styles.chatMessage}>
+            <span className={styles.chatTimestamp}>
                 <ChatMessageTime time={message.time} />
             </span>
             <div className="w-100">{getRaceMessage(message)}</div>

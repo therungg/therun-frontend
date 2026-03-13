@@ -9,6 +9,7 @@ import { PatreonBunnySvg } from '~app/(new-layout)/patron/patreon-info';
 import PatreonName from '~src/components/patreon/patreon-name';
 import patreonStyles from '~src/components/patreon/patreon-styles';
 import { User } from '../../../types/session.types';
+import styles from './change-appearance.module.scss';
 
 interface PatreonPreferences {
     hide: boolean;
@@ -48,12 +49,10 @@ export default function PatreonSection({
 const YouAreAPatreon = ({ userPatreonData, session }: PatreonSectionProps) => {
     return (
         <div>
-            <div>
-                <PatreonSettings
-                    userPatreonData={userPatreonData}
-                    session={session}
-                />
-            </div>
+            <PatreonSettings
+                userPatreonData={userPatreonData}
+                session={session}
+            />
         </div>
     );
 };
@@ -83,12 +82,12 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
 
     return (
         <Row>
-            <h1 className="mb-2">Patreon Customization</h1>
-            <div className="mb-4">
+            <h1 className={styles.settingsTitle}>Patreon Customization</h1>
+            <div className={styles.settingsSubtitle}>
                 Thank you for supporting! You can now choose your preferences.
             </div>
-            <div className="d-flex justify-content-center mb-5 fs-xxx-large">
-                <div className="bg-body-secondary py-4 px-5 border border-secondary-subtle">
+            <div className={styles.previewCard}>
+                <div>
                     <PatreonName
                         name={session.username}
                         color={colorPreference}
@@ -98,25 +97,26 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                 </div>
             </div>
             <Col lg={6} className="pe-lg-4">
-                <h3 className="mb-4">Color customization</h3>
+                <h3 className={styles.sectionTitle}>Color customization</h3>
                 {[1, 2, 3].map((n) => {
                     return (
                         <Row key={n} className="w-100 text-center g-3">
                             {patreonStyles()
                                 .filter((style) => style.tier == n)
                                 .map((style, key) => {
+                                    const isUnlocked =
+                                        userPatreonData.tier >= n ||
+                                        session.username == 'joeys64';
+                                    const isSelected =
+                                        colorPreference == style.id;
+
                                     return (
                                         <Col
                                             xs={6}
                                             sm={4}
                                             key={key}
-                                            className="fs-large"
                                             onClick={() => {
-                                                if (
-                                                    userPatreonData.tier >= n ||
-                                                    session.username ==
-                                                        'joeys64'
-                                                ) {
+                                                if (isUnlocked) {
                                                     setColorPreference(
                                                         style.id,
                                                     );
@@ -129,12 +129,12 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                                         >
                                             <div
                                                 className={`${
-                                                    userPatreonData.tier >= n
-                                                        ? 'border border-hover cursor-pointer'
-                                                        : ' '
+                                                    isUnlocked
+                                                        ? styles.colorOption
+                                                        : styles.colorOptionLocked
                                                 } ${
-                                                    colorPreference == style.id
-                                                        ? 'border border-secondary'
+                                                    isSelected
+                                                        ? styles.colorOptionSelected
                                                         : ''
                                                 }`}
                                             >
@@ -168,8 +168,8 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                 })}
             </Col>
             <Col lg={6} className="ps-lg-4">
-                <h3 className="mb-4">Display preferences</h3>
-                <div className="d-flex justify-content-start align-items-center mb-3">
+                <h3 className={styles.sectionTitle}>Display preferences</h3>
+                <div className={styles.switchRow}>
                     <Switch
                         name="switch"
                         onChange={(checked) => {
@@ -177,14 +177,14 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                         }}
                         checked={!hide}
                     />
-                    <label htmlFor="switch" className="ms-2">
+                    <label htmlFor="switch">
                         Display me as Patreon{' '}
                         <span className="d-none d-lg-inline">
                             (overrides all other settings when switched off)
                         </span>
                     </label>
                 </div>
-                <div className="d-flex justify-content-start align-items-center mb-3">
+                <div className={styles.switchRow}>
                     <Switch
                         name="switch"
                         onChange={(checked) => {
@@ -192,11 +192,11 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                         }}
                         checked={showIcon}
                     />
-                    <label htmlFor="switch" className="ms-2 text-nowrap">
+                    <label htmlFor="switch">
                         Show the <PatreonBunnySvg /> next to my name
                     </label>
                 </div>
-                <div className="d-flex justify-content-start align-items-center mb-3">
+                <div className={styles.switchRow}>
                     <Switch
                         name="switch"
                         onChange={(checked) => {
@@ -204,13 +204,13 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                         }}
                         checked={featureOnOverview}
                     />
-                    <label htmlFor="switch" className="ms-2 text-nowrap">
+                    <label htmlFor="switch">
                         Display my name on the Support page
                     </label>
                 </div>
                 {(userPatreonData.tier > 2 ||
                     session.username == 'joeys64') && (
-                    <div className="d-flex justify-content-start align-items-center mb-3">
+                    <div className={styles.switchRow}>
                         <Switch
                             name="switch"
                             onChange={(checked) => {
@@ -218,14 +218,14 @@ const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
                             }}
                             checked={featureInScrollbar}
                         />
-                        <label htmlFor="switch" className="ms-2 text-nowrap">
+                        <label htmlFor="switch">
                             Display my name in the scrolling bar
                         </label>
                     </div>
                 )}
                 <div className="d-flex justify-content-end">
                     <Button
-                        className="btn-lg px-3 ml-3 mt-3 mt-lg-0 w-192p h-3r fw-medium btn btn-primary fs-large"
+                        className={`btn-lg btn btn-primary ${styles.saveButton}`}
                         onClick={async () => {
                             await axios.post(
                                 `/api/users/${session.id}-${session.username}/patreon-settings`,

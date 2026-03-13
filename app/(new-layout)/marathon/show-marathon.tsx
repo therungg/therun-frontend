@@ -7,6 +7,7 @@ import { LiveDataMap, LiveRun } from '~app/(new-layout)/live/live.types';
 import { liveRunArrayToMap } from '~app/(new-layout)/live/utilities';
 import MarathonRun from '~src/components/marathon/marathon-run';
 import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
+import styles from './marathon.module.scss';
 
 export default function ShowMarathon({
     liveDataMap,
@@ -51,7 +52,11 @@ export default function ShowMarathon({
     }, [selectedUser, updatedLiveDataMap]);
 
     if (!session.username) {
-        return <div>Please login to use this feature.</div>;
+        return (
+            <p className={styles.statusMessage}>
+                Please login to use this feature.
+            </p>
+        );
     }
 
     if (!currentUserData && !selectedUser) {
@@ -62,7 +67,7 @@ export default function ShowMarathon({
                     setSelectedUser={setSelectedUser}
                     updatedLiveDataMap={updatedLiveDataMap}
                 />
-                <p className="text-center mt-3">
+                <p className={styles.statusMessage}>
                     Please select or type a username to begin.
                 </p>
             </>
@@ -81,7 +86,7 @@ export default function ShowMarathon({
                     setSelectedUser={setSelectedUser}
                     updatedLiveDataMap={updatedLiveDataMap}
                 />
-                <p className="text-center mt-3">
+                <p className={styles.statusMessage}>
                     Waiting for user data to become available... Please try a
                     reset, which will upload the data.
                 </p>
@@ -96,7 +101,7 @@ export default function ShowMarathon({
                 setSelectedUser={setSelectedUser}
                 updatedLiveDataMap={updatedLiveDataMap}
             />
-            <hr />
+            <hr className={styles.divider} />
             {currentUserData?.gameData && (
                 <MarathonRun runData={currentUserData} session={session} />
             )}
@@ -115,13 +120,18 @@ const BasePage: React.FunctionComponent<BasePageProps> = ({
     updatedLiveDataMap,
 }) => {
     return (
-        <div className="text-center">
-            <h1>Marathon Dashboard</h1>
+        <div className={styles.page}>
+            <h1 className={styles.title}>Marathon Dashboard</h1>
             <Row>
                 <Col md={6} className="mb-3 m-md-0">
-                    <label htmlFor="selectMarathonUser">Select a user:</label>
+                    <label
+                        htmlFor="selectMarathonUser"
+                        className={styles.formLabel}
+                    >
+                        Select a user:
+                    </label>
                     <select
-                        className="form-select"
+                        className={styles.formSelect}
                         value={selectedUser}
                         id="selectMarathonUser"
                         onChange={(e) => {
@@ -135,10 +145,12 @@ const BasePage: React.FunctionComponent<BasePageProps> = ({
                     </select>
                 </Col>
                 <Col md={6}>
-                    <label htmlFor="searchBox">Or poll for user:</label>
+                    <label htmlFor="searchBox" className={styles.formLabel}>
+                        Or poll for user:
+                    </label>
                     <input
                         type="search"
-                        className="form-control"
+                        className={styles.formInput}
                         placeholder="Poll for a user"
                         onChange={(e) => {
                             setSelectedUser(e.target.value);
