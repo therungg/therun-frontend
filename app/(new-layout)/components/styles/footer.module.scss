@@ -1,0 +1,36 @@
+@use '../../styles/design-tokens' as *;
+
+.footer {
+    border-top: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    padding: $spacing-md 0;
+    margin-top: auto;
+}
+
+.links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: $spacing-lg;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.link {
+    font-size: $font-size-xs;
+    color: var(--bs-secondary-color);
+    text-decoration: none;
+    transition: color $transition-fast;
+
+    &:hover {
+        color: var(--bs-primary);
+    }
+}
+
+.copyright {
+    font-size: $font-size-2xs;
+    color: var(--bs-secondary-color);
+    text-align: center;
+    margin-top: $spacing-sm;
+}

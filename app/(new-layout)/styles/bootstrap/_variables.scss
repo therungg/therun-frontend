@@ -118,7 +118,7 @@ $navbar-light-brand-hover-color: var(--bs-link-hover-color);
 
 // Navbar Dark
 $navbar-dark-color: #fff;
-$navbar-dark-hover-color: $link-hover-color-dark;
+$navbar-dark-hover-color: $navbar-dark-color;
 $navbar-dark-active-color: $navbar-dark-color;
 $navbar-dark-toggler-border-color: $link-color-dark;
 $navbar-dark-brand-color: var(--bs-link-color);

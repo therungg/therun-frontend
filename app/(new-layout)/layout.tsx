@@ -8,6 +8,7 @@ import buildMetadata from '~src/utils/metadata';
 import { Header } from './header';
 
 import './styles/_imports.scss';
+import { Footer } from './components/footer';
 import { Content } from './content';
 import styles from './layout.module.scss';
 
@@ -40,6 +41,9 @@ export default async function RootLayout({
                         {sessionError ? <SessionErrorBoundary /> : children}
                     </Content>
                 </main>
+                <div className={styles.footer}>
+                    <Footer />
+                </div>
             </div>
         </Providers>
     );
