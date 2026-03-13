@@ -76,12 +76,12 @@ interface Last24h {
 const LIVE_COUNT_POLL_INTERVAL = 120_000; // 2 minutes
 const STATS_POLL_INTERVAL = 900_000; // 15 minutes
 
-function deriveLast24h(current: GlobalStats, ago: GlobalStats): Last24h {
+function deriveLast24h(stats24h: GlobalStats): Last24h {
     return {
-        pbs: current.totalPbs - ago.totalPbs,
-        runs: current.totalFinishedAttemptCount - ago.totalFinishedAttemptCount,
-        attempts: current.totalAttemptCount - ago.totalAttemptCount,
-        playtimeMs: current.totalRunTime - ago.totalRunTime,
+        pbs: stats24h.totalPbs,
+        runs: stats24h.totalFinishedAttemptCount,
+        attempts: stats24h.totalAttemptCount,
+        playtimeMs: stats24h.totalRunTime,
     };
 }
 
@@ -114,12 +114,12 @@ export const CommunityPulseClient = ({
         if (!onScreen) return;
         const interval = setInterval(async () => {
             try {
-                const [stats, stats24hAgo] = await Promise.all([
+                const [stats, stats24h] = await Promise.all([
                     getGlobalStats(),
                     getGlobalStats('24h'),
                 ]);
                 setAllTime(stats);
-                setLast24h(deriveLast24h(stats, stats24hAgo));
+                setLast24h(deriveLast24h(stats24h));
             } catch {
                 // keep existing values
             }
