@@ -6,6 +6,8 @@ import styles from './styles/panel.component.module.scss';
 interface PanelInterface extends HTMLAttributes<HTMLDivElement> {
     title: string;
     subtitle: string;
+    mobileTitle?: string;
+    mobileSubtitle?: string;
     icon?: IconType;
     panelId?: string;
     link?: {
@@ -17,6 +19,8 @@ interface PanelInterface extends HTMLAttributes<HTMLDivElement> {
 export const Panel: FC<PropsWithChildren<PanelInterface>> = ({
     title,
     subtitle,
+    mobileTitle,
+    mobileSubtitle,
     icon: Icon,
     panelId,
     link,
@@ -26,7 +30,22 @@ export const Panel: FC<PropsWithChildren<PanelInterface>> = ({
     return (
         <div id={panelId} className={styles.bookmarkFolder}>
             <div className={styles.tab}>
-                <div className={styles.subtitle}>{subtitle}</div>
+                {mobileSubtitle ? (
+                    <>
+                        <div
+                            className={`${styles.subtitle} ${styles.desktopOnly}`}
+                        >
+                            {subtitle}
+                        </div>
+                        <div
+                            className={`${styles.subtitle} ${styles.mobileOnly}`}
+                        >
+                            {mobileSubtitle}
+                        </div>
+                    </>
+                ) : (
+                    <div className={styles.subtitle}>{subtitle}</div>
+                )}
                 <h2 className={styles.title}>
                     {Icon && (
                         <Icon
@@ -35,7 +54,16 @@ export const Panel: FC<PropsWithChildren<PanelInterface>> = ({
                             aria-hidden="true"
                         />
                     )}
-                    {title}
+                    {mobileTitle ? (
+                        <>
+                            <span className={styles.desktopOnly}>{title}</span>
+                            <span className={styles.mobileOnly}>
+                                {mobileTitle}
+                            </span>
+                        </>
+                    ) : (
+                        title
+                    )}
                 </h2>
             </div>
             {link && (

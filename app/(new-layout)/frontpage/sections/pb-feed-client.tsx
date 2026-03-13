@@ -69,6 +69,7 @@ export const PbFeedClient = ({
             panelId="pbs"
             title="Personal Bests"
             subtitle="Latest PBs across all runners"
+            mobileSubtitle="Recent PB's"
             icon={FaTrophy}
             className="p-0"
             link={{ url: '/runs', text: 'Explore Runs' }}
