@@ -31,7 +31,7 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
                     <Col key={race.raceId} xl={6} lg={12} xs={12}>
                         <a
                             href={`/races/${race.raceId}`}
-                            className="text-decoration-none"
+                            className={styles.cardLink}
                         >
                             <div className={styles.inProgressCard}>
                                 <Row className="flex-grow-1 h-100">

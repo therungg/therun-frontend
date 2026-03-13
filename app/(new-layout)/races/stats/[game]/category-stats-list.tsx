@@ -58,7 +58,7 @@ export const CategoryStatsPanel = ({ stats }: { stats: CategoryStats }) => {
             href={`/races/stats/${safeEncodeURI(game)}/${safeEncodeURI(
                 category,
             )}`}
-            className="text-decoration-none"
+            className="card-link-wrapper"
         >
             <div
                 className={`bg-body-secondary game-border mh-100 h-100 card border-2 mt-2 px-3 py-2 ${styles.liveRunContainer}`}

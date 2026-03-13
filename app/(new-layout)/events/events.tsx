@@ -38,7 +38,7 @@ export const Events = ({ events }: { events: EventSearchResult }) => {
                                     <Col key={event.id} xl={12} lg={6} md={12}>
                                         <Link
                                             href={`/events/${event.slug}`}
-                                            className="text-decoration-none"
+                                            className="card-link-wrapper"
                                             prefetch={false}
                                         >
                                             <SpeedrunEventCard event={event} />

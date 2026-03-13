@@ -93,7 +93,7 @@ export const ViewUserRaces = ({
                     >
                         <a
                             href={`/races/${race.raceId}`}
-                            className="text-decoration-none"
+                            className="card-link-wrapper"
                         >
                             <div className={styles.raceCard}>
                                 <Row className="h-100 g-0">

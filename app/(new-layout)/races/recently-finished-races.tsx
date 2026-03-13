@@ -27,7 +27,7 @@ export const RecentlyFinishedRaces = ({ races }: { races: Race[] }) => {
 
 export const RecentlyFinishedRace = ({ race }: { race: Race }) => {
     return (
-        <a href={`/races/${race.raceId}`} className="text-decoration-none">
+        <a href={`/races/${race.raceId}`} className={styles.cardLink}>
             <div key={race.raceId} className={styles.raceListItem}>
                 <GameImage
                     alt={`Image for ${race.displayGame}`}

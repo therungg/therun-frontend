@@ -73,7 +73,7 @@ export const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
                             href={`/races/stats/${encodeURI(game)}/${encodeURI(
                                 favoriteCategory,
                             )}`}
-                            className="text-decoration-none"
+                            className="card-link-wrapper"
                             style={{ color: 'inherit' }}
                         >
                             <ShowUserCategoryStats category={useStat} />
@@ -93,7 +93,7 @@ export const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
                                     href={`/races/stats/${encodeURI(
                                         game,
                                     )}/${encodeURI(categoryName)}`}
-                                    className="text-decoration-none"
+                                    className="card-link-wrapper"
                                     style={{ color: 'inherit' }}
                                 >
                                     <div className="d-flex h-100">

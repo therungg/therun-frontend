@@ -41,7 +41,7 @@ const RaceStatsPerGameDisplay = ({
                                 href={`/races/stats/${safeEncodeURI(
                                     gameStats.displayValue,
                                 )}`}
-                                className="text-decoration-none"
+                                className="card-link-wrapper"
                             >
                                 <StatsPerGame stats={gameStats} />
                             </a>
