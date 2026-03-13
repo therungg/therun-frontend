@@ -9,8 +9,8 @@ import { Col, Placeholder, Row } from 'react-bootstrap';
 import {
     LiveRun,
     WebsocketLiveRunMessage,
-} from '~app/(old-layout)/live/live.types';
-import { LiveSplitTimerComponent } from '~app/(old-layout)/live/live-split-timer.component';
+} from '~app/(new-layout)/live/live.types';
+import { LiveSplitTimerComponent } from '~app/(new-layout)/live/live-split-timer.component';
 import {
     DifferenceFromOne,
     DurationToFormatted,

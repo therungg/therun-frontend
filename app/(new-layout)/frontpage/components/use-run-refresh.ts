@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     LiveRun,
     WebsocketLiveRunMessage,
-} from '~app/(old-layout)/live/live.types';
+} from '~app/(new-layout)/live/live.types';
 import { getLiveCount } from '~src/lib/highlights';
 import { getTopNLiveRuns } from '~src/lib/live-runs';
 

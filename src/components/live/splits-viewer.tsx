@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
-import { LiveRun } from '~app/(old-layout)/live/live.types';
-import { LiveSplitTimerComponent } from '~app/(old-layout)/live/live-split-timer.component';
+import { LiveRun } from '~app/(new-layout)/live/live.types';
+import { LiveSplitTimerComponent } from '~app/(new-layout)/live/live-split-timer.component';
 import { SplitStatus } from '~src/types/splits.types';
 import styles from '../css/LiveRun.module.scss';
 import SplitName from '../transformers/split-name';

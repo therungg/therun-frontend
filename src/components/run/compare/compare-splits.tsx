@@ -1,7 +1,7 @@
 import levenshtein from 'js-levenshtein';
 import React, { useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
-import { StatsData } from '~app/(old-layout)/games/[game]/game.types';
+import { StatsData } from '~app/(new-layout)/games/[game]/game.types';
 import { AppContext } from '~src/common/app.context';
 import { Run, RunHistory, SplitsHistory } from '~src/common/types';
 import { getSplitsHistoryUrl } from '~src/components/run/get-splits-history';

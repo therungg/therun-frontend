@@ -4,8 +4,8 @@ import {
     StoryOption,
     StoryPreferences,
     StoryWithSplitsStories,
-} from '~app/(old-layout)/live/story.types';
-import { getPronounsFromString } from '~app/(old-layout)/stories/manage/get-pronouns-from-string';
+} from '~app/(new-layout)/live/story.types';
+import { getPronounsFromString } from '~app/(new-layout)/stories/manage/get-pronouns-from-string';
 import { User } from '../../types/session.types';
 
 export const getStoryByUser = async (username: string) => {

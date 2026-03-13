@@ -1,5 +1,5 @@
 import { Table } from 'react-bootstrap';
-import { UserStats } from '~app/(old-layout)/races/races.types';
+import { UserStats } from '~app/(new-layout)/races/races.types';
 import { DurationToFormatted } from '~src/components/util/datetime';
 
 export const UserRaceStatsTable = ({ raceStats }: { raceStats: UserStats }) => {

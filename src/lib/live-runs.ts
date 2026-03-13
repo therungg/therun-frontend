@@ -1,7 +1,7 @@
 'use server';
 
 import { cacheLife } from 'next/cache';
-import { type LiveRun } from '~app/(old-layout)/live/live.types';
+import { type LiveRun } from '~app/(new-layout)/live/live.types';
 import { type Tournament } from '~src/components/tournament/tournament-info';
 import { safeEncodeURI } from '~src/utils/uri';
 

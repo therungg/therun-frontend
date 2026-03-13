@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { apiResponse } from '~app/(old-layout)/api/response';
+import { apiResponse } from '~app/(new-layout)/api/response';
 import { getSession } from '~src/actions/session.action';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 

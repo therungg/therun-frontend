@@ -3,7 +3,7 @@ import { FaPlusCircle } from 'react-icons/fa';
 import { Badge } from '~app/(new-layout)/components/badge.component';
 import { Card } from '~app/(new-layout)/components/card.component';
 import { Panel } from '~app/(new-layout)/components/panel.component';
-import { Race } from '~app/(old-layout)/races/races.types';
+import { Race } from '~app/(new-layout)/races/races.types';
 import { getSession } from '~src/actions/session.action';
 import { getAllActiveRaces, getPaginatedFinishedRaces } from '~src/lib/races';
 import { RaceCard } from './race-card';

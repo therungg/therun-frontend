@@ -1,0 +1,30 @@
+import React from 'react';
+import { GameStats, GlobalStats } from '~app/(new-layout)/races/races.types';
+import { RaceStatsCards } from '~app/(new-layout)/races/stats/race-stats-cards';
+import { RaceStatsPerGame } from '~app/(new-layout)/races/stats/race-stats-per-game';
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+} from '~src/components/breadcrumbs/breadcrumb';
+
+interface RaceStatsProps {
+    globalRaceStats: GlobalStats;
+    globalGameStats: GameStats[];
+}
+
+export const RaceStats = ({
+    globalRaceStats,
+    globalGameStats,
+}: RaceStatsProps) => {
+    const breadcrumbs: BreadcrumbItem[] = [
+        { content: 'Races', href: '/races' },
+        { content: 'Race Stats' },
+    ];
+    return (
+        <div>
+            <Breadcrumb breadcrumbs={breadcrumbs} />
+            <RaceStatsCards globalRaceStats={globalRaceStats} />
+            <RaceStatsPerGame globalGameStats={globalGameStats} />
+        </div>
+    );
+};

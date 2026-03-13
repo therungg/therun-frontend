@@ -1,4 +1,4 @@
-import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { SendMarathonDataButton } from './send-marathon-data-button';
 
 export const SuggestedEvents = ({

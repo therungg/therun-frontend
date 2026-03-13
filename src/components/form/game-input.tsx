@@ -5,7 +5,7 @@ import {
     Category,
     Game,
     PaginatedGameResult,
-} from '~app/(old-layout)/games/games.types';
+} from '~app/(new-layout)/games/games.types';
 import styles from '~src/components/css/LiveRun.module.scss';
 import { GameImage } from '~src/components/image/gameimage';
 

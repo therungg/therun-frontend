@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { FaTrophy, FaUser } from 'react-icons/fa6';
-import { Race } from '~app/(old-layout)/races/races.types';
+import { Race } from '~app/(new-layout)/races/races.types';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { useFallbackImage } from '../components/use-fallback-image';

@@ -1,7 +1,7 @@
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useReducer, useState } from 'react';
 import { Col, Image, Row, Table } from 'react-bootstrap';
-import { GlobalGameData } from '~app/(old-layout)/[username]/[game]/[run]/run';
+import { GlobalGameData } from '~app/(new-layout)/[username]/[game]/[run]/run';
 import { GameImage } from '~src/components/image/gameimage';
 import { Can, subject } from '~src/rbac/Can.component';
 import { getColorMode } from '~src/utils/colormode';

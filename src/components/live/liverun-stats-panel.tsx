@@ -1,7 +1,7 @@
 import moment from 'moment/moment';
 import React, { useEffect, useState } from 'react';
-import { Runs } from '~app/(old-layout)/[username]/[game]/[run]/run';
-import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { Runs } from '~app/(new-layout)/[username]/[game]/[run]/run';
+import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { UserLink } from '../links/links';
 import { getSplitsHistoryUrl } from '../run/get-splits-history';
 import { CurrentRunDetails } from './current-run-details';

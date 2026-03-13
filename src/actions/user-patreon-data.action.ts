@@ -1,6 +1,6 @@
 'use server';
 
-import type { UserPatreonData } from '~app/(old-layout)/change-appearance/patreon-section';
+import type { UserPatreonData } from '~app/(new-layout)/change-appearance/patreon-section';
 import { getBaseUrl } from '~src/actions/base-url.action';
 import { getSession } from '~src/actions/session.action';
 import { safeEncodeURI } from '~src/utils/uri';

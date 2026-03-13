@@ -1,7 +1,7 @@
 import React from 'react';
 import useSWR from 'swr';
-import { Live } from '~app/(old-layout)/live/live';
-import { liveRunArrayToMap } from '~app/(old-layout)/live/utilities';
+import { Live } from '~app/(new-layout)/live/live';
+import { liveRunArrayToMap } from '~app/(new-layout)/live/utilities';
 import { fetcher } from '~src/utils/fetcher';
 
 export const LiveRunsForGame = ({ game, category }) => {

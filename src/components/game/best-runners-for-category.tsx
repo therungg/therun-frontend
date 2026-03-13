@@ -1,6 +1,6 @@
 import React from 'react';
 import { Table } from 'react-bootstrap';
-import { CategoryLeaderboard } from '~app/(old-layout)/games/[game]/game.types';
+import { CategoryLeaderboard } from '~app/(new-layout)/games/[game]/game.types';
 import { UserLink } from '../links/links';
 import { DurationToFormatted, FromNow } from '../util/datetime';
 

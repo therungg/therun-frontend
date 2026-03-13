@@ -5,10 +5,10 @@ import { FC, HTMLAttributes, PropsWithChildren } from 'react';
 import { FaClock, FaRocket, FaTrophy, FaUser } from 'react-icons/fa6';
 import { CardWithImage } from '~app/(new-layout)/components/card-with-image.component';
 import { PingAnimation } from '~app/(new-layout)/components/ping-animation.component';
-import { RaceTimer } from '~app/(old-layout)/races/[race]/race-timer';
-import { sortRaceParticipants } from '~app/(old-layout)/races/[race]/sort-race-participants';
-import { useRace } from '~app/(old-layout)/races/hooks/use-race';
-import { Race } from '~app/(old-layout)/races/races.types';
+import { RaceTimer } from '~app/(new-layout)/races/[race]/race-timer';
+import { sortRaceParticipants } from '~app/(new-layout)/races/[race]/sort-race-participants';
+import { useRace } from '~app/(new-layout)/races/hooks/use-race';
+import { Race } from '~app/(new-layout)/races/races.types';
 import {
     DurationToFormatted,
     FromNow,

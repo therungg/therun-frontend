@@ -17,7 +17,7 @@ import type {
     RaceParticipant,
     RaceTimeStat,
     UserStats,
-} from '~app/(old-layout)/races/races.types';
+} from '~app/(new-layout)/races/races.types';
 import { type PaginationFetcher } from '~src/components/pagination/pagination.types';
 
 const racesApiUrl = process.env.NEXT_PUBLIC_RACE_API_URL as string;

@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { apiResponse } from '~app/(old-layout)/api/response';
+import { apiResponse } from '~app/(new-layout)/api/response';
 import { getUploadKey } from '~src/lib/get-upload-key';
 
 export async function GET(

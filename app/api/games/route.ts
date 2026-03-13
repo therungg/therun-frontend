@@ -1,5 +1,5 @@
 import { cacheLife } from 'next/cache';
-import { apiResponse } from '~app/(old-layout)/api/response';
+import { apiResponse } from '~app/(new-layout)/api/response';
 import { getGamesPagesFromSearchParams } from '~src/components/game/get-tabulated-game-stats';
 
 export async function GET(request: Request) {

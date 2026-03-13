@@ -1,5 +1,5 @@
 import { ForbiddenError, subject } from '@casl/ability';
-import { Race } from '~app/(old-layout)/races/races.types';
+import { Race } from '~app/(new-layout)/races/races.types';
 import { User } from '../../types/session.types';
 import { actions, defineAbilityFor, subjects } from './ability';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { Count } from '~app/(old-layout)/games/[game]/game.types';
+import { Count } from '~app/(new-layout)/games/[game]/game.types';
 import { paginateArray } from '~src/components/pagination/paginate-array';
 import {
     PaginatedData,

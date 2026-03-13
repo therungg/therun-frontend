@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Table } from 'react-bootstrap';
-import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { RunHistory, SplitsHistory } from '../../common/types';
 import SplitName from '../transformers/split-name';
 import { DurationToFormatted } from '../util/datetime';

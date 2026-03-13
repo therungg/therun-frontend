@@ -1,8 +1,8 @@
 'use client';
 
 import { FaArrowRight } from 'react-icons/fa6';
-import { useRaces } from '~app/(old-layout)/races/hooks/use-race';
-import { Race } from '~app/(old-layout)/races/races.types';
+import { useRaces } from '~app/(new-layout)/races/hooks/use-race';
+import { Race } from '~app/(new-layout)/races/races.types';
 import { RaceCard } from './race-card';
 import { RaceRow } from './race-row';
 import styles from './races-section.module.scss';

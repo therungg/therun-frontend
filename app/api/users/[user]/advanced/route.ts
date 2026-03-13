@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { apiResponse } from '~app/(old-layout)/api/response';
+import { apiResponse } from '~app/(new-layout)/api/response';
 import { getAdvancedUserStats } from '~src/lib/get-advanced-user-stats';
 
 export const maxDuration = 60;

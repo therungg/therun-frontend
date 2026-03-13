@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { WebsocketLiveRunMessage } from '~app/(old-layout)/live/live.types';
+import { WebsocketLiveRunMessage } from '~app/(new-layout)/live/live.types';
 import { useLiveRunsWebsocket } from '../websocket/use-reconnect-websocket';
 import { type MarathonEvent } from './send-marathon-data-button';
 
