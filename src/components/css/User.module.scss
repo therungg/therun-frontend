@@ -1,8 +1,16 @@
+@use '~app/(new-layout)/styles/design-tokens' as *;
+@use '~app/(new-layout)/styles/mixins' as *;
+
+// ============================================
+// User Profile Styles
+// ============================================
+
+// Filter row for game selector
 .filterRow {
-    margin-bottom: 1rem;
+    margin-bottom: $spacing-lg;
     position: absolute;
     width: 101.6%;
-    padding-top: 1rem;
+    padding-top: $spacing-lg;
 }
 
 .sameGameRunHeader {
@@ -19,7 +27,6 @@
     display: none;
 }
 
-
 .hideSelectArrow {
     -webkit-appearance: none !important;
     -moz-appearance: none !important;
@@ -28,18 +35,303 @@
     appearance: none !important;
 }
 
+// Game image in overview
 .image {
     float: left;
     min-width: 100px;
     min-height: 132px;
-    margin-right: 1rem;
-    margin-top: 0.5rem;
+    margin-right: $spacing-lg;
+    margin-top: $spacing-sm;
     display: flex;
     justify-self: center;
 }
 
-@media screen and (max-width: 767.98px) {
+// ============================================
+// Profile Section Card
+// ============================================
 
+.profileSection {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    padding: $spacing-2xl;
+    box-shadow: $shadow-sm;
+}
+
+// ============================================
+// Stat Card Grid (for UserStats / RaceStats)
+// ============================================
+
+.statGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $spacing-md;
+}
+
+.statCard {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-md;
+    padding: $spacing-md $spacing-lg;
+    transition: all $transition-base;
+
+    &:hover {
+        box-shadow: $shadow-md;
+        border-color: rgba(var(--bs-primary-rgb), 0.25);
+    }
+}
+
+.statLabel {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--bs-secondary-color);
+    margin-bottom: $spacing-xs;
+}
+
+.statValue {
+    @include monospace-value;
+    font-size: $font-size-lg;
+    color: var(--bs-body-color);
+}
+
+// ============================================
+// Data Table (for overview, sessions, etc.)
+// ============================================
+
+.tableWrapper {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 60%, var(--bs-secondary-bg) 40%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 40%, var(--bs-secondary-bg) 60%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    overflow: hidden;
+}
+
+.dataTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: $font-size-sm;
+    margin-bottom: 0;
+
+    thead {
+        background: var(--bs-secondary-bg);
+
+        th {
+            padding: $spacing-sm $spacing-md;
+            font-size: $font-size-xs;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--bs-secondary-color);
+            border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+            white-space: nowrap;
+        }
+    }
+
+    tbody {
+        tr {
+            transition: background-color $transition-fast;
+
+            &:nth-child(even) {
+                background: rgba(var(--bs-secondary-bg-rgb), 0.18);
+            }
+
+            &:hover {
+                background: var(--bs-tertiary-bg);
+            }
+        }
+
+        td {
+            padding: $spacing-xs $spacing-md;
+            border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+            vertical-align: middle;
+        }
+    }
+}
+
+.numericCell {
+    @include monospace-value;
+}
+
+// ============================================
+// Section Headings
+// ============================================
+
+.sectionHeading {
+    font-size: $font-size-xl;
+    font-weight: $heading-font-weight;
+    letter-spacing: $heading-letter-spacing;
+    margin-bottom: $spacing-lg;
+    color: var(--bs-body-color);
+}
+
+// ============================================
+// Game Section in Overview
+// ============================================
+
+.gameSection {
+    margin-bottom: $spacing-2xl;
+}
+
+.gameTitle {
+    font-size: $font-size-xl;
+    font-weight: $heading-font-weight;
+    margin-bottom: $spacing-sm;
+}
+
+.categoryVars {
+    display: flex;
+    margin-bottom: $spacing-sm;
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.varLabel {
+    font-style: italic;
+    color: var(--bs-secondary-color);
+}
+
+.varValue {
+    font-weight: 600;
+    font-size: $font-size-sm;
+}
+
+// ============================================
+// Highlighted Run
+// ============================================
+
+.highlightedRun {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 90%, var(--bs-primary) 10%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 95%, var(--bs-primary) 5%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    padding: $spacing-lg;
+    box-shadow: $shadow-sm;
+    margin-top: $spacing-lg;
+}
+
+// ============================================
+// Activity Stats
+// ============================================
+
+.activityHeader {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-xl;
+    margin-bottom: $spacing-lg;
+}
+
+.activityStat {
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+
+    span {
+        @include monospace-value;
+        font-size: $font-size-md;
+        color: var(--bs-body-color);
+    }
+}
+
+.graphSection {
+    margin-top: $spacing-lg;
+    margin-bottom: $spacing-3xl;
+}
+
+.graphTitle {
+    font-size: $font-size-xl;
+    font-weight: $heading-font-weight;
+    letter-spacing: $heading-letter-spacing;
+    margin-bottom: $spacing-md;
+}
+
+// ============================================
+// Action Icons (delete, edit, highlight)
+// ============================================
+
+.actionIcon {
+    display: flex;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--bs-secondary-color);
+    transition: color $transition-fast;
+
+    &:hover {
+        color: var(--bs-body-color);
+    }
+}
+
+// ============================================
+// Live Section
+// ============================================
+
+.liveSection {
+    margin-bottom: $spacing-lg;
+}
+
+// ============================================
+// Races Section
+// ============================================
+
+.racesHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-md;
+}
+
+.racesNewBadge {
+    @include status-badge;
+    margin-left: $spacing-sm;
+}
+
+// ============================================
+// Game Filter Select
+// ============================================
+
+.gameFilter {
+    border: $section-border;
+    border-radius: $radius-md;
+    background: color-mix(in srgb, var(--bs-body-bg) 95%, var(--bs-primary) 5%);
+    font-size: $font-size-sm;
+    transition: border-color $transition-fast;
+
+    &:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.15);
+    }
+}
+
+// ============================================
+// No Runs State
+// ============================================
+
+.noRuns {
+    text-align: center;
+    padding: $spacing-3xl;
+    color: var(--bs-secondary-color);
+    font-size: $font-size-base;
+}
+
+// ============================================
+// Responsive
+// ============================================
+
+@media screen and (max-width: 767.98px) {
     .filterRow {
         position: relative;
         float: left;
@@ -65,5 +357,17 @@
 
     .image {
         display: none;
+    }
+
+    .statGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .profileSection {
+        padding: $spacing-lg;
+    }
+
+    .activityHeader {
+        gap: $spacing-md;
     }
 }

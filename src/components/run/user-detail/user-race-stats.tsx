@@ -1,51 +1,36 @@
-import { Table } from 'react-bootstrap';
 import { UserStats } from '~app/(new-layout)/races/races.types';
+import styles from '~src/components/css/User.module.scss';
 import { DurationToFormatted } from '~src/components/util/datetime';
 
 export const UserRaceStatsTable = ({ raceStats }: { raceStats: UserStats }) => {
     return (
-        <>
-            <Table striped bordered hover>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th style={{ textAlign: 'right' }}>Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Total Races</td>
-                        <td style={{ textAlign: 'right' }}>
-                            {raceStats.totalRaces}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Finished Races</td>
-                        <td style={{ textAlign: 'right' }}>
-                            {raceStats.totalFinishedRaces}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Finished %</td>
-                        <td style={{ textAlign: 'right' }}>
-                            {(
-                                (raceStats.totalFinishedRaces /
-                                    raceStats.totalRaces) *
-                                100
-                            ).toFixed(0)}
-                            %
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Total Race Time</td>
-                        <td style={{ textAlign: 'right' }}>
-                            <DurationToFormatted
-                                duration={raceStats.totalRaceTime}
-                            />
-                        </td>
-                    </tr>
-                </tbody>
-            </Table>
-        </>
+        <div className={styles.statGrid}>
+            <div className={styles.statCard}>
+                <div className={styles.statLabel}>Total Races</div>
+                <div className={styles.statValue}>{raceStats.totalRaces}</div>
+            </div>
+            <div className={styles.statCard}>
+                <div className={styles.statLabel}>Finished Races</div>
+                <div className={styles.statValue}>
+                    {raceStats.totalFinishedRaces}
+                </div>
+            </div>
+            <div className={styles.statCard}>
+                <div className={styles.statLabel}>Finished %</div>
+                <div className={styles.statValue}>
+                    {(
+                        (raceStats.totalFinishedRaces / raceStats.totalRaces) *
+                        100
+                    ).toFixed(0)}
+                    %
+                </div>
+            </div>
+            <div className={styles.statCard}>
+                <div className={styles.statLabel}>Total Race Time</div>
+                <div className={styles.statValue}>
+                    <DurationToFormatted duration={raceStats.totalRaceTime} />
+                </div>
+            </div>
+        </div>
     );
 };

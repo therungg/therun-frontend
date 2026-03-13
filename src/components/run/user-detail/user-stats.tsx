@@ -1,5 +1,5 @@
-import { Table } from 'react-bootstrap';
 import { Run } from '../../../common/types';
+import styles from '../../css/User.module.scss';
 import { DurationToFormatted, IsoToFormatted } from '../../util/datetime';
 
 export const UserStats = ({ runs }: { runs: Run[] }) => {
@@ -24,58 +24,52 @@ export const UserStats = ({ runs }: { runs: Run[] }) => {
 
     return (
         <>
-            <h2>Stats</h2>
-            <Table striped bordered hover>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th style={{ textAlign: 'right' }}>Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Total Games</td>
-                        <td style={{ textAlign: 'right' }}>{games}</td>
-                    </tr>
-                    <tr>
-                        <td>Total Categories</td>
-                        <td style={{ textAlign: 'right' }}>{runs.length}</td>
-                    </tr>
-                    <tr>
-                        <td>Total time played</td>
-                        <td style={{ textAlign: 'right' }}>
-                            <DurationToFormatted duration={totalPlayTime} />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Total attempts</td>
-                        <td style={{ textAlign: 'right' }}>{totalAttempts}</td>
-                    </tr>
-                    <tr>
-                        <td>Total completed attempts</td>
-                        <td style={{ textAlign: 'right' }}>
-                            {totalFinishedAttempts}
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Total completion %</td>
-                        <td style={{ textAlign: 'right' }}>
-                            {(
-                                (parseInt(totalFinishedAttempts) /
-                                    totalAttempts) *
-                                100
-                            ).toFixed(2)}
-                            %
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>Last active</td>
-                        <td style={{ textAlign: 'right' }}>
-                            <IsoToFormatted iso={lastSessionTime} />
-                        </td>
-                    </tr>
-                </tbody>
-            </Table>
+            <h2 className={styles.sectionHeading}>Stats</h2>
+            <div className={styles.statGrid}>
+                <div className={styles.statCard}>
+                    <div className={styles.statLabel}>Total Games</div>
+                    <div className={styles.statValue}>{games}</div>
+                </div>
+                <div className={styles.statCard}>
+                    <div className={styles.statLabel}>Total Categories</div>
+                    <div className={styles.statValue}>{runs.length}</div>
+                </div>
+                <div className={styles.statCard}>
+                    <div className={styles.statLabel}>Total time played</div>
+                    <div className={styles.statValue}>
+                        <DurationToFormatted duration={totalPlayTime} />
+                    </div>
+                </div>
+                <div className={styles.statCard}>
+                    <div className={styles.statLabel}>Total attempts</div>
+                    <div className={styles.statValue}>{totalAttempts}</div>
+                </div>
+                <div className={styles.statCard}>
+                    <div className={styles.statLabel}>Completed attempts</div>
+                    <div className={styles.statValue}>
+                        {totalFinishedAttempts}
+                    </div>
+                </div>
+                <div className={styles.statCard}>
+                    <div className={styles.statLabel}>Completion %</div>
+                    <div className={styles.statValue}>
+                        {(
+                            (parseInt(totalFinishedAttempts) / totalAttempts) *
+                            100
+                        ).toFixed(2)}
+                        %
+                    </div>
+                </div>
+                <div
+                    className={styles.statCard}
+                    style={{ gridColumn: '1 / -1' }}
+                >
+                    <div className={styles.statLabel}>Last active</div>
+                    <div className={styles.statValue}>
+                        <IsoToFormatted iso={lastSessionTime} />
+                    </div>
+                </div>
+            </div>
         </>
     );
 };
