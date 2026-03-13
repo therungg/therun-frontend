@@ -1,0 +1,50 @@
+@use '../design-tokens' as *;
+
+.filterBar {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    flex-wrap: wrap;
+    margin-bottom: $spacing-lg;
+}
+
+.searchInput {
+    background: color-mix(in srgb, var(--bs-body-bg) 95%, var(--bs-primary) 5%);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: $radius-md;
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-sm;
+    color: var(--bs-body-color);
+    transition: border-color $transition-fast, box-shadow $transition-fast;
+    min-width: 200px;
+
+    &:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+        outline: none;
+    }
+}
+
+.filterChip {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-xs $spacing-sm;
+    font-size: $font-size-xs;
+    border-radius: $radius-sm;
+    background: color-mix(in srgb, var(--bs-primary) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--bs-primary) 20%, transparent);
+    color: var(--bs-body-color);
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+        background: color-mix(in srgb, var(--bs-primary) 18%, transparent);
+    }
+}
+
+.filterChipActive {
+    background: color-mix(in srgb, var(--bs-primary) 20%, transparent);
+    border-color: color-mix(in srgb, var(--bs-primary) 35%, transparent);
+    font-weight: 600;
+}

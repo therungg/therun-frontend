@@ -1,0 +1,41 @@
+@use '../design-tokens' as *;
+@use '../mixins' as *;
+
+.card {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
+    );
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: $radius-lg;
+    padding: $spacing-lg;
+    box-shadow: $shadow-sm;
+    transition: all $transition-base;
+
+    &:hover {
+        box-shadow: $shadow-md;
+        border-color: rgba(var(--bs-primary-rgb), 0.25);
+    }
+}
+
+.label {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--bs-secondary-color);
+    margin-bottom: $spacing-xs;
+}
+
+.value {
+    @include monospace-value;
+    font-size: $font-size-lg;
+    color: var(--bs-body-color);
+}
+
+.subtitle {
+    font-size: $font-size-xs;
+    color: var(--bs-secondary-color);
+    margin-top: $spacing-xs;
+}
