@@ -1,0 +1,41 @@
+@use '../design-tokens' as *;
+
+.input,
+.select,
+.textarea {
+    background: color-mix(in srgb, var(--bs-body-bg) 95%, var(--bs-primary) 5%);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: $radius-md;
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-base;
+    color: var(--bs-body-color);
+    transition: border-color $transition-fast, box-shadow $transition-fast;
+
+    &:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+        outline: none;
+    }
+
+    &::placeholder {
+        color: var(--bs-secondary-color);
+        opacity: 0.6;
+    }
+}
+
+.textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.label {
+    display: block;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    margin-bottom: $spacing-xs;
+}
+
+.fieldGroup {
+    margin-bottom: $spacing-lg;
+}

@@ -1,0 +1,27 @@
+@use '../design-tokens' as *;
+
+.header {
+    margin-bottom: $spacing-xl;
+}
+
+.title {
+    font-size: $font-size-2xl;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--bs-body-color);
+    margin: 0;
+}
+
+.subtitle {
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+    margin-top: $spacing-xs;
+}
+
+.headerWithAction {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-md;
+    flex-wrap: wrap;
+}
