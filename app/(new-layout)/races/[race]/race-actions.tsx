@@ -15,6 +15,7 @@ import { CommentOnRaceForm } from '~app/(new-layout)/races/components/forms/race
 import { Race } from '~app/(new-layout)/races/races.types';
 import { isRaceModerator } from '~src/rbac/confirm-permission';
 import { User } from '../../../../types/session.types';
+import styles from './race-detail.module.scss';
 
 export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
     if (!user?.username) return null;
@@ -75,9 +76,9 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
             1000 * 60 * 10;
 
     return (
-        <div className="rounded-3 px-4 pt-2 pb-4 mb-3 game-border bg-body-secondary">
-            <span className="h4 w-100 flex-center">Race actions</span>
-            <hr />
+        <div className={styles.actionsPanel}>
+            <span className={styles.panelTitle}>Race actions</span>
+            <hr className={styles.panelDivider} />
             {userFinished && (
                 <div className="d-flex">
                     <ConfirmFinalTimeForm

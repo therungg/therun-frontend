@@ -1,0 +1,19 @@
+@use '../../styles/design-tokens' as *;
+
+.loginRequired {
+    text-align: center;
+    padding: $spacing-3xl $spacing-lg;
+
+    h1 {
+        font-size: $font-size-2xl;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        margin-bottom: $spacing-md;
+    }
+
+    p {
+        font-size: $font-size-base;
+        color: var(--bs-secondary-color);
+        line-height: 1.7;
+    }
+}

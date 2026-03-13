@@ -6,13 +6,15 @@ import { FromNow } from '~src/components/util/datetime';
 import { ClockIcon } from '~src/icons/clock-icon';
 import { PencilIcon } from '~src/icons/pencil-icon';
 import { PersonIcon } from '~src/icons/person-icon';
-import styles from '../../../src/components/css/LiveRun.module.scss';
+import styles from './races.module.scss';
 
 export const PendingRaces = ({ races }: { races: Race[] }) => {
     return (
-        <div className="bg-body-secondary mb-3 game-border px-4 py-3 rounded-3">
-            <span className="h3">Upcoming Races</span>
-            <hr />
+        <div className={styles.sidePanel}>
+            <div className={styles.sidePanelHeader}>
+                <span className="h3">Upcoming Races</span>
+            </div>
+            <hr className={styles.sidePanelDivider} />
             {races.length === 0 && <span>No races upcoming</span>}
             {races.length > 0 &&
                 races.map((race) => {
@@ -25,11 +27,7 @@ export const PendingRaces = ({ races }: { races: Race[] }) => {
 export const PendingRace = ({ race }: { race: Race }) => {
     return (
         <a href={`/races/${race.raceId}`} className="text-decoration-none">
-            <div
-                key={race.raceId}
-                className={`d-flex mb-3 ${styles.liveRunContainer} rounded-3`}
-                style={{ color: 'var(--bs-body-color)' }}
-            >
+            <div key={race.raceId} className={styles.raceListItem}>
                 <GameImage
                     alt={`Image for ${race.displayGame}`}
                     src={race.gameImage}
@@ -38,17 +36,12 @@ export const PendingRace = ({ race }: { race: Race }) => {
                     width={48 * 1.3}
                     className="rounded-3"
                 />
-                <div className="px-3 w-100">
+                <div className={styles.raceListContent}>
                     <div className="d-flex justify-content-between gap-2">
-                        <div
-                            className="h5 m-0 p-0"
-                            style={{
-                                color: 'var(--bs-link-color)',
-                            }}
-                        >
+                        <div className={styles.raceListGameName}>
                             {race.displayGame}
                         </div>
-                        <span className="text-nowrap">
+                        <span className={styles.participantCount}>
                             <span className="me-1">
                                 {race.startMethod !== 'datetime' && (
                                     <span>{race.readyParticipantCount}/</span>
@@ -59,8 +52,10 @@ export const PendingRace = ({ race }: { race: Race }) => {
                         </span>
                     </div>
                     <div className="d-flex justify-content-between">
-                        <div className="fst-italic">{race.displayCategory}</div>
-                        <span>
+                        <div className={styles.raceListCategory}>
+                            {race.displayCategory}
+                        </div>
+                        <span className={styles.raceListMeta}>
                             <span className="me-2">
                                 <UserLink
                                     username={race.creator}
@@ -74,7 +69,7 @@ export const PendingRace = ({ race }: { race: Race }) => {
                     {race.startMethod === 'datetime' && (
                         <div className="d-flex justify-content-between">
                             <div></div>
-                            <div>
+                            <div className={styles.raceListMeta}>
                                 Starts{' '}
                                 <FromNow
                                     time={new Date(race.willStartAt as string)}

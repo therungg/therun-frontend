@@ -5,6 +5,7 @@ import React, { ReactElement } from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
 import { FromNow } from '~src/components/util/datetime';
 import { BunnyIcon } from '~src/icons/bunny-icon';
+import styles from './blog.module.scss';
 
 export interface BlogInterface {
     title: string;
@@ -17,45 +18,34 @@ export interface BlogInterface {
 // This should probably use a CMS, but whatever, this works
 export const Blog = () => {
     return (
-        <div>
+        <div className={styles.blogPage}>
             <h1>Blog</h1>
-            <p style={{ textAlign: 'center', marginTop: '5rem' }}>
-                <small>The latest news and updates</small>
-            </p>
+            <p className={styles.subtitle}>The latest news and updates</p>
 
-            <Row>
-                <Col />
-                <Col xl={6} lg={8} md={12}>
-                    <div>
-                        {getBlogs()
-                            .reverse()
-                            .map((blog) => {
-                                return (
-                                    <div key={blog.title}>
-                                        <hr />
-                                        <div style={{ textAlign: 'center' }}>
-                                            <h2>
-                                                <a href={blog.url}>
-                                                    {blog.title}
-                                                </a>
-                                            </h2>
-                                            <small>
-                                                {blog.date.toDateString()},{' '}
-                                                <FromNow time={blog.date} />
-                                            </small>
-                                        </div>
+            <div>
+                {getBlogs()
+                    .reverse()
+                    .map((blog) => {
+                        return (
+                            <div key={blog.title} className={styles.blogCard}>
+                                <h2 className={styles.blogCardTitle}>
+                                    <a href={blog.url}>{blog.title}</a>
+                                </h2>
+                                <div className={styles.blogCardDate}>
+                                    {blog.date.toDateString()},{' '}
+                                    <FromNow time={blog.date} />
+                                </div>
 
-                                        <p style={{ marginTop: '1rem' }}>
-                                            {blog.short}
-                                        </p>
-                                        <a href={blog.url}>Read more...</a>
-                                    </div>
-                                );
-                            })}
-                    </div>
-                </Col>
-                <Col />
-            </Row>
+                                <p className={styles.blogCardExcerpt}>
+                                    {blog.short}
+                                </p>
+                                <a href={blog.url} className={styles.readMore}>
+                                    Read more...
+                                </a>
+                            </div>
+                        );
+                    })}
+            </div>
         </div>
     );
 };
