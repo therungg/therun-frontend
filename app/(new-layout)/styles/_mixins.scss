@@ -1,26 +1,28 @@
+@use 'design-tokens' as dt;
+
 // ============================================
 // Mixins - Reusable Style Patterns
 // ============================================
 
 // Interactive Card Hover Effect
 @mixin interactive-card-hover {
-    transition: all $transition-base;
+    transition: all dt.$transition-base;
     cursor: pointer;
 
     &:hover {
-        transform: translateY($hover-lift);
-        box-shadow: $shadow-lg;
+        transform: translateY(dt.$hover-lift);
+        box-shadow: dt.$shadow-lg;
         border-color: var(--bs-primary);
     }
 
     &:active {
-        transform: translateY($active-lift);
+        transform: translateY(dt.$active-lift);
     }
 }
 
 // Subtle Interactive Hover (for nested elements)
 @mixin subtle-hover {
-    transition: all $transition-fast;
+    transition: all dt.$transition-fast;
 
     &:hover {
         background: linear-gradient(
@@ -34,16 +36,16 @@
 
 // Status Badge
 @mixin status-badge {
-    font-size: $badge-font-size;
-    font-weight: $badge-font-weight;
-    background: $badge-bg;
-    padding: $badge-padding;
-    border-radius: $badge-radius;
-    color: $badge-color;
-    transition: background $transition-fast;
+    font-size: dt.$badge-font-size;
+    font-weight: dt.$badge-font-weight;
+    background: dt.$badge-bg;
+    padding: dt.$badge-padding;
+    border-radius: dt.$badge-radius;
+    color: dt.$badge-color;
+    transition: background dt.$transition-fast;
 
     &:hover {
-        background: $badge-bg-hover;
+        background: dt.$badge-bg-hover;
     }
 }
 
@@ -53,7 +55,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.25rem 0;
-    margin-bottom: $spacing-sm;
+    margin-bottom: dt.$spacing-sm;
 
     h5 {
         font-weight: 600;
@@ -76,9 +78,9 @@
 // Status Section Border
 @mixin status-section($color) {
     border-left: 2px solid $color;
-    padding-left: $spacing-md;
-    border-radius: $radius-md;
+    padding-left: dt.$spacing-md;
+    border-radius: dt.$radius-md;
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
     border-left: 2px solid $color;
-    padding: $spacing-md;
+    padding: dt.$spacing-md;
 }

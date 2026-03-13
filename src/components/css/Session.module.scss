@@ -1,5 +1,5 @@
-@use '~app/(new-layout)/styles/design-tokens' as *;
-@use '~app/(new-layout)/styles/mixins' as *;
+@use '../../../app/(new-layout)/styles/design-tokens' as *;
+@use '../../../app/(new-layout)/styles/mixins' as *;
 
 // ============================================
 // Session / History - Shared Styles

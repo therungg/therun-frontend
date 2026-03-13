@@ -1,4 +1,4 @@
-import { apiResponse } from '~app/(new-layout)/api/response';
+import { apiResponse } from '~app/api/response';
 import { getRandomTopLiveRun } from '~src/lib/live-runs';
 
 export async function GET() {

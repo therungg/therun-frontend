@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { apiResponse } from '~app/(new-layout)/api/response';
+import { apiResponse } from '~app/api/response';
 
 export async function POST(request: NextRequest) {
     const setCurrentRunApi = process.env.NEXT_PUBLIC_SET_LIVE_RUN_API_URL || '';

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { apiResponse } from '~app/(new-layout)/api/response';
+import { apiResponse } from '~app/api/response';
 import { findUserOrRun } from '~src/components/search/find-user-or-run';
 
 export async function GET(request: NextRequest) {

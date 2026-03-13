@@ -1,5 +1,5 @@
 import nodemailer from 'nodemailer';
-import { apiResponse } from '~app/(new-layout)/api/response';
+import { apiResponse } from '~app/api/response';
 
 export async function POST(request: Request) {
     const body = await request.json();

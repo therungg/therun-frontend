@@ -1,6 +1,6 @@
 import { cacheLife } from 'next/cache';
 import { NextRequest } from 'next/server';
-import { apiResponse } from '~app/(new-layout)/api/response';
+import { apiResponse } from '~app/api/response';
 import { getGame } from '~src/components/game/get-game';
 
 export async function GET(

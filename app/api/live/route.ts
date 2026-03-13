@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { apiResponse } from '~app/(new-layout)/api/response';
+import { apiResponse } from '~app/api/response';
 import { getAllLiveRuns, getTopNLiveRuns } from '~src/lib/live-runs';
 
 export async function GET(request: NextRequest) {

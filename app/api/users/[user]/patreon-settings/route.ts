@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { apiResponse } from '~app/(new-layout)/api/response';
+import { apiResponse } from '~app/api/response';
 import { savePatreonSettings } from '~src/lib/save-patreon-settings';
 
 export async function POST(
