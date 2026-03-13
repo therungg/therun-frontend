@@ -37,7 +37,9 @@ export const TrendingSection = async () => {
         <Panel
             panelId="trending"
             title="Trending Games"
+            mobileTitle="Games"
             subtitle="Most active games right now"
+            mobileSubtitle="What's hot right now"
             icon={FaFire}
             className="p-0 overflow-hidden"
             link={{ url: '/games', text: 'All Games' }}

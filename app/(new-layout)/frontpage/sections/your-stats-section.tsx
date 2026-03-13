@@ -26,6 +26,7 @@ export const YourStatsSection = async ({
             <Panel
                 panelId="your-stats"
                 subtitle="Your recent activity and highlights"
+                mobileSubtitle="Activity & highlights"
                 title="Your Performance"
                 icon={FaChartLine}
                 className="p-0"
@@ -85,6 +86,7 @@ export const YourStatsSection = async ({
         <Panel
             panelId="your-stats"
             subtitle="Your recent activity and highlights"
+            mobileSubtitle="Activity & highlights"
             title={impersonating ? `${user}'s Stats` : 'Your Performance'}
             icon={FaChartLine}
             className="p-0"
