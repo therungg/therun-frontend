@@ -19,7 +19,7 @@ export const CurrentTournaments = ({
                                 href={`/tournaments/${safeEncodeURI(
                                     tournament.name,
                                 )}`}
-                                className="text-decoration-none"
+                                className="card-link-wrapper"
                             >
                                 <Card
                                     className={`${tournamentStyles.currentTournamentCard} h-100`}

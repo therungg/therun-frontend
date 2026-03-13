@@ -47,7 +47,7 @@ export const GlobalRaceStats = ({
                             href={`/races/stats/${safeEncodeURI(
                                 gameStat.displayValue,
                             )}`}
-                            className="text-decoration-none"
+                            className={styles.cardLink}
                             key={gameStat.value}
                         >
                             <ShowGameStat gameStat={gameStat} />

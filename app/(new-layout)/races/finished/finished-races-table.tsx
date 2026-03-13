@@ -86,7 +86,7 @@ export const FinishedRaceWithCategory = ({ races }: { races: Race[] }) => {
                     <Col xs={12} key={race.raceId}>
                         <a
                             href={`/races/${race.raceId}`}
-                            className="text-decoration-none"
+                            className={raceStyles.cardLink}
                         >
                             <div className={raceStyles.finishedRaceCard}>
                                 <div
@@ -143,7 +143,7 @@ export const FinishedRaceWithGameCategory = ({ races }: { races: Race[] }) => {
                     <Col xxl={4} md={6} key={race.raceId} className="mt-1 mb-4">
                         <a
                             href={`/races/${race.raceId}`}
-                            className="text-decoration-none"
+                            className={raceStyles.cardLink}
                         >
                             <div className={raceStyles.finishedRaceCard}>
                                 <Row className="h-100">

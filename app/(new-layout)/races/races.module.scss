@@ -108,11 +108,15 @@
     height: 100%;
 }
 
-.inProgressCard a {
+.cardLink {
     text-decoration: none;
     color: inherit;
     display: block;
     height: 100%;
+
+    &:hover {
+        color: inherit;
+    }
 }
 
 .inProgressImg {

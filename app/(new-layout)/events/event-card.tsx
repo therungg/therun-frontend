@@ -16,7 +16,7 @@ export const SpeedrunEventCard = ({ event }: { event: EventFromSearch }) => {
     return (
         <Link
             href={`/events/${event.slug}`}
-            className="text-decoration-none"
+            className="card-link-wrapper"
             prefetch={false}
         >
             <div

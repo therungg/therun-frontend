@@ -30,7 +30,7 @@ export const UpcomingTournaments = ({
                             href={`/tournaments/${safeEncodeURI(
                                 tournament.name,
                             )}`}
-                            className="text-decoration-none"
+                            className="card-link-wrapper"
                             key={tournament.name}
                         >
                             <UpcomingTournament tournament={tournament} />
