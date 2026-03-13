@@ -1,10 +1,51 @@
-# *
 User-agent: *
-Allow: /
-Disallow: /api/*
+Disallow: /api/
 
-# Host
-Host: https://therun.gg
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Claude-Web
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: Cohere-AI
+Disallow: /
+
+User-agent: Meta-ExternalAgent
+Disallow: /
+
+User-agent: FacebookBot
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
 
 # Sitemaps
 Sitemap: https://therun.gg/sitemap.xml
+Sitemap: https://therun.gg/dynamic-sitemap/sitemap/0.xml
+Sitemap: https://therun.gg/dynamic-sitemap/sitemap/1.xml
+Sitemap: https://therun.gg/dynamic-sitemap/sitemap/2.xml
+Sitemap: https://therun.gg/dynamic-sitemap/sitemap/3.xml
+Sitemap: https://therun.gg/dynamic-sitemap/sitemap/4.xml
+Sitemap: https://therun.gg/dynamic-sitemap/sitemap/5.xml
+Sitemap: https://therun.gg/dynamic-sitemap/sitemap/6.xml
