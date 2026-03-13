@@ -1,11 +1,10 @@
 'use client';
 
 import React, { useContext } from 'react';
-import { Card, Col, Row } from 'react-bootstrap';
+import { Col, Row } from 'react-bootstrap';
 import { RacePlacings } from '~app/(new-layout)/races/components/race-placings';
 import { RaceGameContext } from '~app/(new-layout)/races/context/race-game-context-provider';
 import { PaginatedRaces, Race } from '~app/(new-layout)/races/races.types';
-import styles from '~src/components/css/LiveRun.module.scss';
 import { PaginationContextProvider } from '~src/components/pagination/pagination.context-provider';
 import { PaginationFetcher } from '~src/components/pagination/pagination.types';
 import PaginationControl from '~src/components/pagination/pagination-control';
@@ -13,6 +12,7 @@ import usePagination from '~src/components/pagination/use-pagination';
 import { FromNow } from '~src/components/util/datetime';
 import { PersonIcon } from '~src/icons/person-icon';
 import { getPaginatedFinishedRaces } from '~src/lib/races';
+import raceStyles from '../races.module.scss';
 
 export const FinishedRaceTable = ({
     paginatedRaces,
@@ -88,43 +88,44 @@ export const FinishedRaceWithCategory = ({ races }: { races: Race[] }) => {
                             href={`/races/${race.raceId}`}
                             className="text-decoration-none"
                         >
-                            <div className="bg-body-secondary game-border mh-100 h-100 card game-border">
-                                <Card
-                                    className={`h-100 game-border px-3 py-2 ${styles.liveRunContainer}`}
-                                    style={{
-                                        minHeight: '8rem',
-                                    }}
+                            <div className={raceStyles.finishedRaceCard}>
+                                <div
+                                    className={raceStyles.finishedRaceCardInner}
                                 >
-                                    <div className="w-100 h-100">
-                                        <div className="d-flex justify-content-between gap-2">
-                                            <span className="fst-italic">
-                                                {race.displayCategory}
-                                            </span>
+                                    <div className="d-flex justify-content-between gap-2">
+                                        <span
+                                            className={
+                                                raceStyles.raceListCategory
+                                            }
+                                        >
+                                            {race.displayCategory}
+                                        </span>
 
-                                            <span>
-                                                <FromNow
-                                                    time={
-                                                        race.endTime as string
-                                                    }
-                                                />
-                                            </span>
-                                            <span>
-                                                <span className="me-1">
-                                                    {race.participantCount}
-                                                </span>
-                                                <PersonIcon />
-                                            </span>
-                                        </div>
-                                        <div className="d-flex justify-content-between"></div>
-                                        <hr className="my-1 p-0" />
-                                        <div>
-                                            <RacePlacings
-                                                race={race}
-                                                amount={3}
+                                        <span
+                                            className={raceStyles.raceListMeta}
+                                        >
+                                            <FromNow
+                                                time={race.endTime as string}
                                             />
-                                        </div>
+                                        </span>
+                                        <span
+                                            className={
+                                                raceStyles.participantCount
+                                            }
+                                        >
+                                            <span className="me-1">
+                                                {race.participantCount}
+                                            </span>
+                                            <PersonIcon />
+                                        </span>
                                     </div>
-                                </Card>
+                                    <hr
+                                        className={raceStyles.finishedDivider}
+                                    />
+                                    <div>
+                                        <RacePlacings race={race} amount={3} />
+                                    </div>
+                                </div>
                             </div>
                         </a>
                     </Col>
@@ -144,72 +145,82 @@ export const FinishedRaceWithGameCategory = ({ races }: { races: Race[] }) => {
                             href={`/races/${race.raceId}`}
                             className="text-decoration-none"
                         >
-                            <div className="bg-body-secondary game-border mh-100 h-100 card game-border">
-                                <Card
-                                    className={`h-100 game-border ${styles.liveRunContainer}`}
-                                >
-                                    <Row className="h-100">
-                                        <Col lg={3} md={4} xs={3}>
-                                            <Card.Img
-                                                className="rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
-                                                src={
-                                                    race.gameImage &&
-                                                    race.gameImage !== 'noimage'
-                                                        ? race.gameImage
-                                                        : `/logo_dark_theme_no_text_transparent.png`
+                            <div className={raceStyles.finishedRaceCard}>
+                                <Row className="h-100">
+                                    <Col lg={3} md={4} xs={3}>
+                                        <img
+                                            className={raceStyles.inProgressImg}
+                                            src={
+                                                race.gameImage &&
+                                                race.gameImage !== 'noimage'
+                                                    ? race.gameImage
+                                                    : `/logo_dark_theme_no_text_transparent.png`
+                                            }
+                                            height={100}
+                                            width={20}
+                                            alt={race.displayGame}
+                                        />
+                                    </Col>
+                                    <Col
+                                        lg={9}
+                                        md={8}
+                                        xs={9}
+                                        className={
+                                            raceStyles.finishedRaceCardBody
+                                        }
+                                    >
+                                        <div className="d-flex justify-content-between gap-2">
+                                            <div
+                                                className={
+                                                    raceStyles.cardGameName
                                                 }
-                                                height={100}
-                                                width={20}
-                                            />
-                                        </Col>
-                                        <Col
-                                            lg={9}
-                                            md={8}
-                                            xs={9}
-                                            className="p-2 ps-1 pe-4 d-flex flex-column"
-                                        >
-                                            <div className="w-100 h-100">
-                                                <div className="d-flex justify-content-between gap-2">
-                                                    <div
-                                                        className="h5 m-0 p-0 text-truncate"
-                                                        style={{
-                                                            color: 'var(--bs-link-color)',
-                                                        }}
-                                                    >
-                                                        {race.displayGame}
-                                                    </div>
-                                                    <span className="text-nowrap">
-                                                        <span className="me-1">
-                                                            {
-                                                                race.participantCount
-                                                            }
-                                                        </span>
-                                                        <PersonIcon />
-                                                    </span>
-                                                </div>
-                                                <div className="d-flex justify-content-between">
-                                                    <div className="fst-italic">
-                                                        {race.displayCategory}
-                                                    </div>
-                                                    <span>
-                                                        <FromNow
-                                                            time={
-                                                                race.endTime as string
-                                                            }
-                                                        />
-                                                    </span>
-                                                </div>
-                                                <hr className="my-1 p-0" />
-                                                <div>
-                                                    <RacePlacings
-                                                        race={race}
-                                                        amount={3}
-                                                    />
-                                                </div>
+                                            >
+                                                {race.displayGame}
                                             </div>
-                                        </Col>
-                                    </Row>
-                                </Card>
+                                            <span
+                                                className={
+                                                    raceStyles.participantCount
+                                                }
+                                            >
+                                                <span className="me-1">
+                                                    {race.participantCount}
+                                                </span>
+                                                <PersonIcon />
+                                            </span>
+                                        </div>
+                                        <div className="d-flex justify-content-between">
+                                            <div
+                                                className={
+                                                    raceStyles.raceListCategory
+                                                }
+                                            >
+                                                {race.displayCategory}
+                                            </div>
+                                            <span
+                                                className={
+                                                    raceStyles.raceListMeta
+                                                }
+                                            >
+                                                <FromNow
+                                                    time={
+                                                        race.endTime as string
+                                                    }
+                                                />
+                                            </span>
+                                        </div>
+                                        <hr
+                                            className={
+                                                raceStyles.finishedDivider
+                                            }
+                                        />
+                                        <div>
+                                            <RacePlacings
+                                                race={race}
+                                                amount={3}
+                                            />
+                                        </div>
+                                    </Col>
+                                </Row>
                             </div>
                         </a>
                     </Col>

@@ -15,6 +15,7 @@ import {
 } from '~app/(new-layout)/races/races.types';
 import { RacesWelcomeMessage } from '~app/(new-layout)/races/races-welcome-message';
 import { RecentlyFinishedRaces } from '~app/(new-layout)/races/recently-finished-races';
+import styles from './races.module.scss';
 
 interface RaceOverviewProps {
     races: Race[];
@@ -38,7 +39,7 @@ export const RaceOverview = ({
         <>
             <Row className="mb-3">
                 <Col md={12} lg={7} className="d-flex">
-                    <h1>Races</h1>
+                    <h1 className={styles.pageTitle}>Races</h1>
                 </Col>
                 <Col
                     md={12}
