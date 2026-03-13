@@ -34,7 +34,7 @@ export const InProgressRaces = ({ races }: { races: Race[] }) => {
                             className="text-decoration-none"
                         >
                             <div className={styles.inProgressCard}>
-                                <Row className="flex-grow-1">
+                                <Row className="flex-grow-1 h-100">
                                     <Col xs={4}>
                                         <img
                                             className={styles.inProgressImg}
