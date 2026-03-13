@@ -1,21 +1,21 @@
 'use client';
 
 import { FormEvent, useState, useTransition } from 'react';
-import { Badge, Button, Form } from 'react-bootstrap';
 import {
     ExclusionRule,
     ExclusionType,
 } from '../../../../types/exclusions.types';
+import styles from '../admin.module.scss';
 import { createExclusionAction } from './actions/create-exclusion.action';
 import { deleteExclusionAction } from './actions/delete-exclusion.action';
 
 const EXCLUSION_TYPES: ExclusionType[] = ['user', 'game', 'category', 'run'];
 
-const TYPE_BADGE_VARIANT: Record<ExclusionType, string> = {
-    user: 'danger',
-    game: 'success',
-    category: 'warning',
-    run: 'info',
+const TYPE_BADGE_STYLE: Record<ExclusionType, string> = {
+    user: 'badgeDanger',
+    game: 'badgeSuccess',
+    category: 'badgeWarning',
+    run: 'badgeInfo',
 };
 
 type FilterTab = 'all' | ExclusionType;
@@ -98,20 +98,22 @@ export const ExclusionsPanel = ({
     ];
 
     return (
-        <div className="container mt-5">
-            <div className="card shadow-sm border-0 mb-4">
-                <div className="card-header bg-primary text-white">
-                    <h4 className="mb-0">Create Exclusion Rule</h4>
+        <div className={styles.pageWide}>
+            <h1 className={styles.pageTitle}>Exclusion Rules</h1>
+
+            {/* Create Form */}
+            <div className={styles.panel} style={{ marginBottom: '1.5rem' }}>
+                <div className={styles.panelHeader}>
+                    <h4 className={styles.panelTitle}>Create Exclusion Rule</h4>
                 </div>
-                <div className="card-body">
-                    {error && (
-                        <div className="alert alert-danger mb-3">{error}</div>
-                    )}
+                <div className={styles.panelBody}>
+                    {error && <div className={styles.alertDanger}>{error}</div>}
                     <form onSubmit={handleCreate}>
                         <div className="row g-3 align-items-end">
                             <div className="col-md-3">
-                                <Form.Label>Type</Form.Label>
-                                <Form.Select
+                                <label className={styles.formLabel}>Type</label>
+                                <select
+                                    className={styles.select}
                                     value={type}
                                     onChange={(e) =>
                                         setType(e.target.value as ExclusionType)
@@ -123,12 +125,15 @@ export const ExclusionsPanel = ({
                                                 t.slice(1)}
                                         </option>
                                     ))}
-                                </Form.Select>
+                                </select>
                             </div>
                             <div className="col-md-3">
-                                <Form.Label>Target ID</Form.Label>
-                                <Form.Control
+                                <label className={styles.formLabel}>
+                                    Target ID
+                                </label>
+                                <input
                                     type="number"
+                                    className={styles.formInput}
                                     value={targetId}
                                     onChange={(e) =>
                                         setTargetId(e.target.value)
@@ -138,124 +143,128 @@ export const ExclusionsPanel = ({
                                 />
                             </div>
                             <div className="col-md-4">
-                                <Form.Label>Reason (optional)</Form.Label>
-                                <Form.Control
+                                <label className={styles.formLabel}>
+                                    Reason (optional)
+                                </label>
+                                <input
                                     type="text"
+                                    className={styles.formInput}
                                     value={reason}
                                     onChange={(e) => setReason(e.target.value)}
                                     placeholder="Enter reason"
                                 />
                             </div>
                             <div className="col-md-2">
-                                <Button
+                                <button
                                     type="submit"
-                                    variant="primary"
+                                    className={styles.btnPrimary}
                                     disabled={isCreating}
-                                    className="w-100"
+                                    style={{ width: '100%' }}
                                 >
                                     {isCreating ? 'Creating...' : 'Create'}
-                                </Button>
+                                </button>
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
 
-            <div className="d-flex gap-2 mb-3">
+            {/* Filter Tabs */}
+            <div className={styles.filterRow}>
                 {tabs.map((tab) => (
-                    <Button
+                    <button
                         key={tab.value}
-                        variant={
+                        className={
                             activeTab === tab.value
-                                ? 'primary'
-                                : 'outline-secondary'
+                                ? styles.filterChipActive
+                                : styles.filterChip
                         }
-                        size="sm"
                         onClick={() => setActiveTab(tab.value)}
                     >
                         {tab.label}
-                    </Button>
+                    </button>
                 ))}
             </div>
 
-            <div className="card shadow-sm border-0">
-                <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h4 className="mb-0">Exclusion Rules</h4>
-                    <span>{filteredExclusions.length} Rules</span>
+            {/* Exclusions Table */}
+            <div className={styles.panel}>
+                <div className={styles.panelHeader}>
+                    <h4 className={styles.panelTitle}>Exclusion Rules</h4>
+                    <span className={styles.panelCount}>
+                        {filteredExclusions.length} Rules
+                    </span>
                 </div>
-                <div className="card-body p-0">
-                    <div className="table-responsive">
-                        <table className="table table-hover mb-0">
-                            <thead className="table-light">
+                <div style={{ overflowX: 'auto' }}>
+                    <table className={styles.table}>
+                        <thead className={styles.tableHeader}>
+                            <tr>
+                                <th>ID</th>
+                                <th>Type</th>
+                                <th>Target ID</th>
+                                <th>Reason</th>
+                                <th>Created At</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className={styles.tableBody}>
+                            {filteredExclusions.length === 0 ? (
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Type</th>
-                                    <th>Target ID</th>
-                                    <th>Reason</th>
-                                    <th>Created At</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredExclusions.length === 0 ? (
-                                    <tr>
-                                        <td
-                                            colSpan={6}
-                                            className="text-center py-4 text-muted"
-                                        >
+                                    <td
+                                        colSpan={6}
+                                        style={{
+                                            textAlign: 'center',
+                                            padding: '2rem',
+                                        }}
+                                    >
+                                        <span className={styles.noData}>
                                             No exclusion rules found.
+                                        </span>
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredExclusions.map((rule) => (
+                                    <tr key={rule.id}>
+                                        <td>{rule.id}</td>
+                                        <td>
+                                            <span
+                                                className={
+                                                    styles[
+                                                        TYPE_BADGE_STYLE[
+                                                            rule.type
+                                                        ] as keyof typeof styles
+                                                    ] || ''
+                                                }
+                                            >
+                                                {rule.type}
+                                            </span>
+                                        </td>
+                                        <td>{rule.targetId}</td>
+                                        <td>{rule.reason ?? '-'}</td>
+                                        <td>
+                                            {new Date(
+                                                rule.createdAt,
+                                            ).toLocaleDateString()}
+                                        </td>
+                                        <td>
+                                            <button
+                                                className={styles.btnDanger}
+                                                disabled={
+                                                    deletingId === rule.id
+                                                }
+                                                onClick={() =>
+                                                    handleDelete(rule.id)
+                                                }
+                                            >
+                                                {deletingId === rule.id
+                                                    ? 'Deleting...'
+                                                    : 'Delete'}
+                                            </button>
                                         </td>
                                     </tr>
-                                ) : (
-                                    filteredExclusions.map((rule) => (
-                                        <tr key={rule.id}>
-                                            <td className="align-middle">
-                                                {rule.id}
-                                            </td>
-                                            <td className="align-middle">
-                                                <Badge
-                                                    bg={
-                                                        TYPE_BADGE_VARIANT[
-                                                            rule.type
-                                                        ]
-                                                    }
-                                                >
-                                                    {rule.type}
-                                                </Badge>
-                                            </td>
-                                            <td className="align-middle">
-                                                {rule.targetId}
-                                            </td>
-                                            <td className="align-middle">
-                                                {rule.reason ?? '-'}
-                                            </td>
-                                            <td className="align-middle">
-                                                {new Date(
-                                                    rule.createdAt,
-                                                ).toLocaleDateString()}
-                                            </td>
-                                            <td className="align-middle">
-                                                <Button
-                                                    variant="outline-danger"
-                                                    size="sm"
-                                                    disabled={
-                                                        deletingId === rule.id
-                                                    }
-                                                    onClick={() =>
-                                                        handleDelete(rule.id)
-                                                    }
-                                                >
-                                                    {deletingId === rule.id
-                                                        ? 'Deleting...'
-                                                        : 'Delete'}
-                                                </Button>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

@@ -1,0 +1,78 @@
+@use '../styles/design-tokens' as *;
+
+.patronPage {
+    h1 {
+        font-size: $font-size-2xl;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+
+    h2 {
+        font-size: $font-size-xl;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+    }
+
+    h3 {
+        font-size: $font-size-md;
+        font-weight: 600;
+    }
+
+    p {
+        font-size: $font-size-base;
+        line-height: 1.7;
+        color: var(--bs-body-color);
+    }
+
+    a {
+        color: var(--bs-primary);
+        transition: color $transition-fast;
+
+        &:hover {
+            color: color-mix(in srgb, var(--bs-primary) 80%, white 20%);
+        }
+    }
+
+    hr {
+        border-color: rgba(var(--bs-primary-rgb), 0.15);
+    }
+}
+
+.supportCard {
+    background: color-mix(in srgb, var(--bs-body-bg) 97%, var(--bs-primary) 3%);
+    border: $section-border;
+    border-radius: $radius-lg;
+    padding: $spacing-2xl $spacing-3xl;
+    transition: box-shadow $transition-base;
+
+    &:hover {
+        box-shadow: $shadow-md;
+    }
+}
+
+.supportCardPrimary {
+    composes: supportCard;
+    border: 2px solid rgba(var(--bs-primary-rgb), 0.3);
+}
+
+.supportCardSecondary {
+    composes: supportCard;
+    border: 2px solid rgba(var(--bs-secondary-rgb), 0.3);
+}
+
+.benefitsTable {
+    :global(.table) {
+        th {
+            font-size: $font-size-sm;
+            font-weight: $heading-font-weight;
+            letter-spacing: $heading-letter-spacing;
+            border-bottom: $section-border;
+        }
+
+        td {
+            font-size: $font-size-base;
+            line-height: 1.6;
+            border-bottom: $section-border;
+        }
+    }
+}

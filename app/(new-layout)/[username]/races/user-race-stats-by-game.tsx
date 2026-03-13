@@ -1,8 +1,8 @@
 import Image from 'next/image';
 import React from 'react';
 import { UserStats } from '~app/(new-layout)/races/races.types';
-import styles from '~src/components/css/LiveRun.module.scss';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import styles from './user-races.module.scss';
 
 export const UserRaceStatsByGame = ({ stats }: { stats: UserStats[][] }) => {
     return (
@@ -39,11 +39,7 @@ export const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
     const favoriteCategory = useStat.displayValue.split('#')[1];
     return (
         <div>
-            <div
-                key={useStat.displayValue}
-                className="mb-3 rounded-3 w-100 game-border bg-body-secondary"
-                style={{ color: 'var(--bs-body-color)' }}
-            >
+            <div key={useStat.displayValue} className={styles.gameStatsCard}>
                 <div className="d-flex">
                     {useStat.image && useStat.image !== 'noimage' && (
                         <Image
@@ -52,23 +48,27 @@ export const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
                             src={useStat.image}
                             height={64 * 2.3}
                             width={48 * 2.3}
-                            className={`${
+                            className={
                                 stats.length > 1
-                                    ? 'rounded-top-3 rounded-end-0'
-                                    : 'rounded-3'
-                            }`}
+                                    ? styles.gameStatsImage
+                                    : undefined
+                            }
                         />
                     )}
                     <div className="w-100">
-                        <div className="px-3 w-100">
-                            <div className="d-flex w-100 h5 pt-2 text-truncate mb-0">
+                        <div className={styles.gameStatsHeader}>
+                            <div
+                                className={`d-flex w-100 text-truncate ${styles.gameStatsTitle}`}
+                            >
                                 <a href={`/races/stats/${encodeURI(game)}`}>
                                     {game}
                                 </a>
                             </div>
-                            <div className="fst-italic">{favoriteCategory}</div>
+                            <div className={styles.gameStatsCategory}>
+                                {favoriteCategory}
+                            </div>
                         </div>
-                        <hr className="m-0 p-0 mt-1 mb-2" />
+                        <hr className={styles.gameStatsDivider} />
                         <a
                             href={`/races/stats/${encodeURI(game)}/${encodeURI(
                                 favoriteCategory,
@@ -87,7 +87,7 @@ export const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
                         return (
                             <div
                                 key={game + category.displayValue}
-                                className={`border-top h-100 ${styles.liveRunContainer}`}
+                                className={styles.categoryRow}
                             >
                                 <a
                                     href={`/races/stats/${encodeURI(
@@ -97,19 +97,12 @@ export const UserRaceStatsForGame = ({ stats }: { stats: UserStats[] }) => {
                                     style={{ color: 'inherit' }}
                                 >
                                     <div className="d-flex h-100">
-                                        <div className="ps-2 d-flex align-items-center border-end">
-                                            <span
-                                                className="text-truncate"
-                                                style={{
-                                                    width: '6.34rem',
-                                                }}
-                                            >
+                                        <div className={styles.categoryName}>
+                                            <span className="text-truncate">
                                                 {categoryName}
                                             </span>
                                         </div>
-                                        <div
-                                            className={`w-100 ${styles.liveRunContainer}`}
-                                        >
+                                        <div className="w-100">
                                             <ShowUserCategoryStats
                                                 category={category}
                                             />
@@ -131,11 +124,7 @@ const UserRaceStatsForGameWithoutUrls = ({ stats }: { stats: UserStats[] }) => {
     const favoriteCategory = useStat.displayValue.split('#')[1];
     return (
         <>
-            <div
-                key={useStat.displayValue}
-                className="mb-3 rounded-3 w-100 game-border border-secondary bg-body-secondary overflow-hidden"
-                style={{ color: 'var(--bs-body-color)' }}
-            >
+            <div key={useStat.displayValue} className={styles.gameStatsCard}>
                 <div className="d-flex">
                     {useStat.image && useStat.image !== 'noimage' && (
                         <Image
@@ -144,26 +133,28 @@ const UserRaceStatsForGameWithoutUrls = ({ stats }: { stats: UserStats[] }) => {
                             src={useStat.image}
                             height={64 * 2.3}
                             width={48 * 2.3}
-                            className={`${
+                            className={
                                 stats.length > 1
-                                    ? 'rounded-top-3 rounded-end-0'
-                                    : 'rounded-3'
-                            }`}
+                                    ? styles.gameStatsImage
+                                    : undefined
+                            }
                         />
                     )}
                     <div className="flex-grow-1">
-                        <div className="px-3">
+                        <div className={styles.gameStatsHeader}>
                             <div
-                                className="h5 pt-2 text-truncate mb-0"
+                                className={`text-truncate ${styles.gameStatsTitle}`}
                                 style={{
                                     color: 'var(--bs-link-color)',
                                 }}
                             >
                                 {game}
                             </div>
-                            <div className="fst-italic">{favoriteCategory}</div>
+                            <div className={styles.gameStatsCategory}>
+                                {favoriteCategory}
+                            </div>
                         </div>
-                        <hr className="m-0 p-0 mt-1 mb-2" />
+                        <hr className={styles.gameStatsDivider} />
                         <ShowUserCategoryStats category={useStat} />
                     </div>
                 </div>
@@ -174,22 +165,15 @@ const UserRaceStatsForGameWithoutUrls = ({ stats }: { stats: UserStats[] }) => {
                         return (
                             <div
                                 key={game + category.displayValue}
-                                className="border-top h-100"
+                                className={styles.categoryRow}
                             >
                                 <div className="d-flex h-100">
-                                    <div className="ps-2 d-flex align-items-center border-end">
-                                        <span
-                                            className="text-truncate"
-                                            style={{
-                                                width: '6.34rem',
-                                            }}
-                                        >
+                                    <div className={styles.categoryName}>
+                                        <span className="text-truncate">
                                             {categoryName}
                                         </span>
                                     </div>
-                                    <div
-                                        className={`w-100 ${styles.liveRunContainer}`}
-                                    >
+                                    <div className="w-100">
                                         <ShowUserCategoryStats
                                             category={category}
                                         />
@@ -210,9 +194,7 @@ export const ShowUserCategoryStats = ({
     category: UserStats;
 }) => {
     return (
-        <div
-            className={`d-flex justify-content-between px-3 my-1 ${styles.liveRunContainer}`}
-        >
+        <div className={styles.categoryStats}>
             <div>
                 <div>
                     Races: <b>{category.totalRaces}</b>

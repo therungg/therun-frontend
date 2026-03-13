@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PaginatedData } from '~src/components/pagination/pagination.types';
 import { UserWithRoles } from '../../../../types/users.types';
+import styles from '../admin.module.scss';
 
 export const UserPagination = ({
     userPagination,
@@ -24,19 +25,19 @@ export const UserPagination = ({
     };
 
     return (
-        <div className="d-flex justify-content-between mt-3">
+        <div className={styles.pagination}>
             <button
-                className="btn btn-primary"
+                className={styles.btnOutline}
                 disabled={currentPage === 1}
                 onClick={() => handlePageChange(currentPage - 1)}
             >
                 Previous
             </button>
-            <div>
+            <span className={styles.paginationInfo}>
                 Page {currentPage} of {totalPages}
-            </div>
+            </span>
             <button
-                className="btn btn-primary"
+                className={styles.btnOutline}
                 disabled={currentPage === totalPages}
                 onClick={() => handlePageChange(currentPage + 1)}
             >

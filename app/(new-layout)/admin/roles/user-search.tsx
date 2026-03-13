@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useDebounceValue } from 'usehooks-ts';
+import styles from '../admin.module.scss';
 
 export const UserSearch = ({ searchQuery }: { searchQuery: string }) => {
     const [searchInput, setSearchInput] = useState(searchQuery);
@@ -28,19 +29,23 @@ export const UserSearch = ({ searchQuery }: { searchQuery: string }) => {
     };
 
     return (
-        <form className="mb-3 input-group">
+        <div className={styles.searchGroup}>
             <input
                 type="text"
-                className="form-control"
+                className={styles.searchGroupInput}
                 placeholder="Search users..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
             />
             {searchInput && (
-                <button type="button" className="btn" onClick={clearSearch}>
+                <button
+                    type="button"
+                    className={styles.btnClear}
+                    onClick={clearSearch}
+                >
                     x
                 </button>
             )}
-        </form>
+        </div>
     );
 };

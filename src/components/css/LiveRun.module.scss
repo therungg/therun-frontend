@@ -1,180 +1,320 @@
-.splitRow {
+@use '~app/(new-layout)/styles/design-tokens' as *;
+@use '~app/(new-layout)/styles/mixins' as *;
 
-  &Active {
-    background-color: var(--split-active-color);
-  }
+// ============================================
+// Live Run Card
+// ============================================
 
-  :hover {
-    background-color: var(--bs-tertiary-bg);
-    cursor: pointer;
-  }
+.liveRunContainer {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-sm;
+    transition: all $transition-base;
 
-  &:not(:last-child) {
-    border-bottom: var(--bs-border-width) var(--bs-border-style) var(--bs-tertiary-bg);
-  }
-}
+    &:hover {
+        cursor: pointer;
+        box-shadow: $shadow-lg;
+        transform: translateY($hover-lift);
+        border-color: rgba(var(--bs-primary-rgb), 0.3);
+    }
 
-.liveRunContainer:hover {
-  cursor: pointer;
-  background-color: var(--bs-tertiary-bg) !important;
+    &:active {
+        transform: translateY($active-lift);
+    }
 }
 
 a > .liveRunContainer {
-  text-underline: none;
+    text-decoration: none;
 }
 
-// ToDo: Remove in the future
-.timerBody {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
+// ============================================
+// Splits Viewer
+// ============================================
+
+.splitsViewer {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-sm;
+    overflow: hidden;
+}
+
+.splitsHeader {
+    padding: $spacing-md $spacing-lg;
+    border-bottom: $section-border;
+}
+
+.splitsScrollArea {
+    background: color-mix(in srgb, var(--bs-body-bg) 60%, var(--bs-secondary-bg) 40%);
+}
+
+.splitRow {
+    transition: background-color $transition-fast;
+
+    &Active {
+        background-color: color-mix(in srgb, var(--bs-primary) 12%, var(--bs-body-bg) 88%);
+    }
+
+    &:hover {
+        background-color: var(--bs-tertiary-bg);
+        cursor: pointer;
+    }
+
+    &:not(:last-child) {
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.15);
+    }
 }
 
 .splitName {
-  width: 250px;
+    width: 250px;
 
-  @media screen and (max-width: 1899.98px) {
-    width: 220px;
-  }
+    @media screen and (max-width: 1899.98px) {
+        width: 220px;
+    }
 
-  @media screen and (min-width: 1199.98px) and (max-width: 1599.98px) {
-    width: 185px;
-  }
+    @media screen and (min-width: 1199.98px) and (max-width: 1599.98px) {
+        width: 185px;
+    }
 
-  @media screen and (min-width: 1200px) and (max-width: 1599.98px) {
-    width: 141px;
-  }
+    @media screen and (min-width: 1200px) and (max-width: 1599.98px) {
+        width: 141px;
+    }
 }
 
 .finalSplitRow {
-  background-color: blue;
+    background-color: color-mix(in srgb, var(--bs-primary) 15%, var(--bs-body-bg) 85%);
+    font-weight: 600;
 
-  &:hover {
-    background-color: var(--bs-border-color);
-    cursor: pointer;
-  }
+    &:hover {
+        background-color: var(--bs-tertiary-bg);
+        cursor: pointer;
+    }
 }
 
-.sortButton {
-  background-color: var(--bs-secondary-bg);
-  width: 100%;
-  height: 100%;
-  border-color: var(--bs-tertiary-bg);
-
-  &Active {
-    background-color: var(--bs-tertiary-bg);
-  }
-
-  &:hover {
-    background-color: var(--bs-tertiary-bg);
-    border-color: var(--bs-tertiary-bg);
-  }
+.splitsFooter {
+    border-top: $section-border;
+    padding: $spacing-sm $spacing-md;
 }
 
-.tournamentInfo {
-  width: 100%;
+// ============================================
+// Stats Panel
+// ============================================
 
-  &Logo {
-    margin-bottom: 0;
-  }
+.statsPanel {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-sm;
+    padding: $spacing-lg;
 }
 
-.tournamentHowDoesThisWorkButton {
-  margin-bottom: -1.5rem;
-  font-size: 1.5rem;
-  height: 100%;
-  display: flex;
-  justify-content: flex-end;
-  align-items: flex-end;
-  margin-top: 1rem;
+.statsPanelTitle {
+    font-size: $font-size-lg;
+    font-weight: $heading-font-weight;
+    letter-spacing: $heading-letter-spacing;
 }
 
-.tournamentTimer {
-  margin-bottom: -5rem;
+.statsPanelSelect {
+    border: $section-border;
+    border-radius: $radius-md;
+    background: color-mix(in srgb, var(--bs-body-bg) 95%, var(--bs-primary) 5%);
+    font-size: $font-size-sm;
+    transition: border-color $transition-fast;
+
+    &:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.15);
+    }
+}
+
+.statsPanelDivider {
+    border-color: rgba(var(--bs-primary-rgb), 0.1);
+    margin: $spacing-sm 0;
+}
+
+// ============================================
+// Stats Rows (Current Run Details, General Stats)
+// ============================================
+
+.statsRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-xs 0;
+
+    &:not(:last-child) {
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.1);
+    }
+}
+
+.statsLabel {
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.statsValue {
+    @include monospace-value;
+    font-size: $font-size-sm;
+    text-align: end;
+}
+
+// ============================================
+// Timer
+// ============================================
+
+.timerBody {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
 }
 
 .timer {
-  font-size: x-large;
+    @include monospace-value;
+    font-size: $font-size-xl;
 }
 
+// ============================================
+// Sort & Filter Controls
+// ============================================
+
+.sortButton {
+    background: color-mix(in srgb, var(--bs-body-bg) 95%, var(--bs-primary) 5%);
+    width: 100%;
+    height: 100%;
+    border: $section-border;
+    border-radius: $radius-md;
+    transition: all $transition-fast;
+
+    &Active {
+        background-color: var(--bs-tertiary-bg);
+        border-color: rgba(var(--bs-primary-rgb), 0.25);
+    }
+
+    &:hover {
+        background-color: var(--bs-tertiary-bg);
+        border-color: rgba(var(--bs-primary-rgb), 0.25);
+    }
+}
+
+// ============================================
+// Tournament Info
+// ============================================
+
+.tournamentInfo {
+    width: 100%;
+
+    &Logo {
+        margin-bottom: 0;
+    }
+}
+
+.tournamentHowDoesThisWorkButton {
+    margin-bottom: -$spacing-2xl;
+    font-size: $font-size-2xl;
+    height: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+    margin-top: $spacing-lg;
+}
+
+.tournamentTimer {
+    margin-bottom: -5rem;
+}
+
+// ============================================
+// Responsive
+// ============================================
+
 @media screen and (max-width: 1199.98px) {
+    .metadataBody {
+        max-width: 320px;
+    }
 
-  .metadataBody {
-    max-width: 320px;
-  }
+    .tournamentInfoLogo {
+        margin-bottom: 0;
+    }
 
-  .tournamentInfoLogo {
-    margin-bottom: 0;
-  }
+    .tournamentHowDoesThisWorkButton {
+        margin-bottom: $spacing-lg;
+    }
 
-  .tournamentHowDoesThisWorkButton {
-    margin-bottom: 1rem;
-  }
-
-  .tournamentTimer {
-    margin-bottom: 0;
-  }
+    .tournamentTimer {
+        margin-bottom: 0;
+    }
 }
 
 @media screen and (max-width: 575.98px) {
-  .infoBody {
-    margin-left: 0.8rem;
-    margin-right: 0.8rem;
-  }
+    .infoBody {
+        margin-left: $spacing-md;
+        margin-right: $spacing-md;
+    }
 
-  .metadataBody {
-    max-width: 210px;
-  }
+    .metadataBody {
+        max-width: 210px;
+    }
 }
 
 @media screen and (max-width: 767.98px) {
-
-  .username {
-    font-size: large;
-  }
+    .username {
+        font-size: $font-size-lg;
+    }
 }
 
 @media screen and (min-width: 1199.98px) {
-  @media screen and (max-width: 1599.98px) {
-    .infoBody {
-      margin-left: 1.2rem;
-      margin-right: 1.2rem;
+    @media screen and (max-width: 1599.98px) {
+        .infoBody {
+            margin-left: $spacing-lg;
+            margin-right: $spacing-lg;
+        }
+
+        .metadataBody {
+            max-width: 293px;
+        }
     }
 
-    .metadataBody {
-      max-width: 293px;
-    }
-  }
+    @media screen and (max-width: 1399.98px) {
+        .metadataBody {
+            max-width: 250px;
+        }
 
-  @media screen and (max-width: 1399.98px) {
-    .metadataBody {
-      max-width: 250px;
-    }
+        .username {
+            font-size: $font-size-lg;
+        }
 
-    .username {
-      font-size: large;
-    }
+        .game {
+            font-size: $font-size-base;
+        }
 
-    .game {
-      font-size: medium;
-    }
+        .category {
+            font-size: $font-size-base;
+        }
 
-    .category {
-      font-size: medium;
-    }
+        .timer {
+            font-size: $font-size-lg;
+        }
 
-    .timer {
-      font-size: large;
-    }
+        .delta {
+            font-size: $font-size-base;
+        }
 
-    .delta {
-      font-size: medium;
+        .infoBody {
+            margin-left: $spacing-lg;
+            margin-right: $spacing-lg;
+        }
     }
-
-    .infoBody {
-      margin-left: 1rem;
-      margin-right: 1rem;
-    }
-  }
 }

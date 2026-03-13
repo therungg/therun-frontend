@@ -1,101 +1,122 @@
+@use '~app/(new-layout)/styles/design-tokens' as *;
+@use '~app/(new-layout)/styles/mixins' as *;
+
 .card {
-  white-space: nowrap;
-  color: var(--bs-body-color);
-  background-color: var(--bs-secondary-bg);
-  border-radius: 10px;
-  border-width: 2px;
-  border-color: var(--bs-secondary-bg);
-  min-height: 9.5rem;
+    white-space: nowrap;
+    color: var(--bs-body-color);
+    background: color-mix(in srgb, var(--bs-secondary-bg) 97%, var(--bs-primary) 3%);
+    border-radius: $radius-lg;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+    min-height: 9.5rem;
+    box-shadow: $shadow-sm;
+    transition: box-shadow $transition-base, border-color $transition-base, transform $transition-base;
+
+    &:hover {
+        box-shadow: $shadow-md;
+        border-color: rgba(var(--bs-primary-rgb), 0.25);
+        transform: translateY(-1px);
+    }
 }
 
 .cardBody {
-  --bs-card-spacer-x: clamp(.2rem, 2%, .6rem);
-  --bs-card-spacer-y: clamp(.2rem, 2%, .6rem);
+    --bs-card-spacer-x: clamp(0.2rem, 2%, 0.6rem);
+    --bs-card-spacer-y: clamp(0.2rem, 2%, 0.6rem);
+    font-size: $font-size-base;
+}
+
+.categoryName {
+    font-size: $font-size-sm;
+    font-weight: $label-font-weight;
+}
+
+.timeValue {
+    @include monospace-value;
+    font-size: $font-size-sm;
 }
 
 .timeUser {
-  display: flex;
+    display: flex;
 }
 
 .filter {
-  display: flex !important;
-  margin-bottom: 1rem;
-  width: 40%;
+    display: flex !important;
+    margin-bottom: $spacing-lg;
+    width: 40%;
 }
 
 .image {
-  float: left;
-  min-width: 100px;
-  display: flex;
-  align-items: center;
-  margin-right: 0.5rem;
+    float: left;
+    min-width: 100px;
+    display: flex;
+    align-items: center;
+    margin-right: $spacing-sm;
 
-  img {
-    min-height: 9.5rem;
-  }
+    img {
+        min-height: 9.5rem;
+        border-radius: $radius-md 0 0 $radius-md;
+    }
 }
 
 .backupImage {
-  display: flex;
-  align-items: center;
-  min-height: 142px;
+    display: flex;
+    align-items: center;
+    min-height: 142px;
 }
 
 .userLink {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+    font-size: $font-size-sm;
 }
 
 .hiddenLeaderboardRow {
-  display: none;
+    display: none;
 }
 
 @media screen and (min-width: 0px) {
-  .timeUser {
-    padding-right: 0.5rem;
-  }
+    .timeUser {
+        padding-right: $spacing-sm;
+    }
 }
 
 @media screen and (min-width: 576px) {
-
-  .timeUser {
-    padding-right: 0.5rem;
-  }
+    .timeUser {
+        padding-right: $spacing-sm;
+    }
 }
 
 @media screen and (min-width: 768px) {
-
-  .timeUser {
-    padding-right: 1rem;
-  }
+    .timeUser {
+        padding-right: $spacing-lg;
+    }
 }
 
 @media screen and (min-width: 992px) {
-
-  .timeUser {
-    padding-right: 1rem;
-  }
+    .timeUser {
+        padding-right: $spacing-lg;
+    }
 }
 
 @media screen and (max-width: 991.98px) {
-  .filter {
-    width: 60%;
-  }
+    .filter {
+        width: 60%;
+    }
 }
 
 @media screen and (max-width: 767.98px) {
-  .filter {
-    width: 80%;
-  }
+    .filter {
+        width: 80%;
+    }
 }
 
 @media screen and (max-width: 575.98px) {
-  .filter {
-    width: 100%;
-  }
-  .image {
-    display: none;
-  }
+    .filter {
+        width: 100%;
+    }
+
+    .image {
+        display: none;
+    }
 }

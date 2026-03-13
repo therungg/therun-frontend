@@ -7,7 +7,7 @@ import { Button, Form } from 'react-bootstrap';
 import { FaFilter } from 'react-icons/fa';
 import { FaHeart } from 'react-icons/fa6';
 import { eventTierShortNames } from 'types/events.types';
-import styles from './event.styles.module.css';
+import styles from './event.styles.module.scss';
 import { EventLocation } from './event-location';
 
 const VIEW_MORE_THRESHOLD = 5;
@@ -31,7 +31,10 @@ export const EventFilters: FC<PropsWithChildren<FilterInput>> = ({
                 <Button
                     variant="outline-primary"
                     onClick={() => setShowFilters(!showFilters)}
-                    className="w-100 color-text"
+                    className={clsx(
+                        'w-100 color-text',
+                        styles.filterToggleButton,
+                    )}
                 >
                     {showFilters ? (
                         <span>
@@ -106,7 +109,7 @@ const Filter = ({
                         id={categoryKey}
                         placeholder={`Search ${categoryKey}`}
                         value={search}
-                        className="w-75"
+                        className={clsx('w-75', styles.filterSearch)}
                         onChange={(e) => {
                             setSearch(e.target.value);
                             setViewMore(false);
@@ -127,7 +130,7 @@ const Filter = ({
                     ))}
                 {allowViewMore && (
                     <div
-                        className="text-primary cursor-pointer my-1"
+                        className={styles.viewMoreToggle}
                         onClick={() => setViewMore(!viewMore)}
                     >
                         {viewMore
@@ -199,24 +202,19 @@ const FilterBody: FC<PropsWithChildren<{ header: string }>> = ({
     const [hidden, setHidden] = useState(false);
 
     return (
-        <div className="mb-4">
-            <div className="d-flex justify-content-between align-items-center mb-1 w-75">
-                <h5 className="fw-bold">
+        <div className={styles.filterGroup}>
+            <div className={styles.filterGroupHeader}>
+                <h5>
                     <FilterCategory category={header} />
                 </h5>
                 <span
-                    className="cursor-pointer text-muted w-sm-75"
+                    className={styles.filterToggle}
                     onClick={() => setHidden(!hidden)}
                 >
                     {hidden ? '▲' : '▼'}
                 </span>
             </div>
-            <hr
-                className={clsx(
-                    'mt-0 mb-2 ms-1 me-4',
-                    styles['event-filter-divider'],
-                )}
-            />
+            <hr className={styles.filterDivider} />
             {!hidden && children}
         </div>
     );
@@ -351,16 +349,9 @@ const FilterValue = ({
     }
 
     return (
-        <span className={styles['event-filter']}>
+        <span className={styles.filterItem}>
             {filterKey}{' '}
-            <span
-                className={clsx(
-                    'text-muted fs-smaller',
-                    styles['event-filter'],
-                )}
-            >
-                ({filterValue})
-            </span>
+            <span className={styles.filterCount}>({filterValue})</span>
         </span>
     );
 };

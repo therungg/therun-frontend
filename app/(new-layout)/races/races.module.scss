@@ -1,0 +1,636 @@
+@use '../styles/design-tokens' as *;
+@use '../styles/mixins' as *;
+
+// ── Sidebar Panels (Pending, Stats, Finished) ──
+
+.sidePanel {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 60%, var(--bs-secondary-bg) 40%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 40%, var(--bs-secondary-bg) 60%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    padding: $spacing-lg $spacing-2xl;
+    margin-bottom: $spacing-lg;
+    box-shadow: $shadow-sm;
+}
+
+.sidePanelHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
+
+    h3, .h3 {
+        font-size: $font-size-xl;
+        font-weight: $heading-font-weight;
+        letter-spacing: $heading-letter-spacing;
+        margin: 0;
+    }
+
+    a {
+        font-size: $font-size-sm;
+    }
+}
+
+.sidePanelDivider {
+    border-color: rgba(var(--bs-primary-rgb), 0.15);
+    opacity: 0.6;
+    margin: $spacing-sm 0;
+}
+
+// ── Race List Item (used in Pending, Finished sidebar) ──
+
+.raceListItem {
+    display: flex;
+    padding: $spacing-sm;
+    border-radius: $radius-md;
+    transition: all $transition-base;
+    cursor: pointer;
+    color: var(--bs-body-color);
+    text-decoration: none;
+    margin-bottom: $spacing-sm;
+
+    &:hover {
+        background: color-mix(in srgb, var(--bs-tertiary-bg) 80%, transparent);
+        transform: translateX(2px);
+        text-decoration: none;
+        color: var(--bs-body-color);
+    }
+}
+
+.raceListContent {
+    padding: 0 $spacing-md;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.raceListGameName {
+    font-size: $font-size-md;
+    font-weight: $heading-font-weight;
+    color: var(--bs-link-color);
+    margin: 0;
+    padding: 0;
+}
+
+.raceListCategory {
+    font-size: $font-size-sm;
+    font-style: italic;
+    color: var(--bs-secondary-color);
+}
+
+.raceListMeta {
+    font-size: $font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.participantCount {
+    white-space: nowrap;
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+// ── In-Progress Race Cards ──
+
+.inProgressCard {
+    @include interactive-card-hover;
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
+    );
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: $radius-lg;
+    overflow: hidden;
+    height: 100%;
+}
+
+.inProgressCard a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.inProgressImg {
+    border-radius: 0;
+    border-top-left-radius: $radius-lg;
+    border-bottom-left-radius: $radius-lg;
+    object-fit: cover;
+    height: 100%;
+    display: inline-block;
+    min-width: 5rem;
+    max-width: 10rem;
+}
+
+.inProgressBody {
+    padding: $spacing-sm $spacing-md;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.cardGameName {
+    font-size: $font-size-md;
+    font-weight: 700;
+    color: var(--bs-link-color);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cardCategory {
+    font-style: italic;
+    font-size: $font-size-sm;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cardDivider {
+    border-color: rgba(var(--bs-primary-rgb), 0.15);
+    opacity: 0.5;
+    margin: $spacing-xs 0;
+}
+
+.cardCustomName {
+    font-size: $font-size-sm;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.timerBadge {
+    @include monospace-value;
+    font-size: $font-size-sm;
+    color: var(--bs-primary);
+    white-space: nowrap;
+}
+
+// ── Race Detail Header (single race page) ──
+
+.raceHeader {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 60%, var(--bs-secondary-bg) 40%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 40%, var(--bs-secondary-bg) 60%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    box-shadow: $shadow-sm;
+
+    &[data-aborted='true'] {
+        border-color: $accent-red;
+    }
+}
+
+.raceHeaderImg {
+    border-radius: 0;
+    border-top-left-radius: $radius-lg;
+    border-bottom-left-radius: $radius-lg;
+    object-fit: cover;
+    height: 100%;
+    display: inline-block;
+    min-width: 5rem;
+    max-height: 18rem;
+    max-width: 10rem;
+}
+
+.raceHeaderBody {
+    padding: $spacing-sm $spacing-md;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.raceHeaderGameLink {
+    font-size: $font-size-md;
+    font-weight: 700;
+    color: var(--bs-link-color);
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.raceHeaderCategory {
+    font-style: italic;
+    font-size: $font-size-sm;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.abortedBadge {
+    color: $accent-red;
+    font-size: $font-size-sm;
+    font-weight: $heading-font-weight;
+    white-space: nowrap;
+}
+
+.unrankedBadge {
+    font-style: italic;
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+
+.categoryDivider {
+    border-color: rgba(var(--bs-primary-rgb), 0.15);
+    opacity: 0.5;
+    margin: 0;
+    padding-bottom: $spacing-sm;
+}
+
+// ── Standings Table ──
+
+.standingsPanel {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 60%, var(--bs-secondary-bg) 40%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 40%, var(--bs-secondary-bg) 60%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    padding: $spacing-sm $spacing-lg $spacing-md;
+    margin-bottom: $spacing-md;
+    box-shadow: $shadow-sm;
+}
+
+.standingsTitle {
+    font-size: $font-size-xl;
+    font-weight: $heading-font-weight;
+    text-align: center;
+    margin-bottom: 0;
+}
+
+.standingsDivider {
+    border-color: rgba(var(--bs-primary-rgb), 0.15);
+    opacity: 0.6;
+    margin: $spacing-xs 0 $spacing-sm;
+}
+
+.standingsTable {
+    width: 100%;
+    text-align: right;
+    border-collapse: collapse;
+
+    th {
+        padding: $spacing-xs 0;
+        font-size: $font-size-xs;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--bs-secondary-color);
+        border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+    }
+
+    td {
+        padding: $spacing-xs 0;
+        font-size: $font-size-sm;
+        vertical-align: middle;
+    }
+
+    tbody tr {
+        transition: background-color $transition-fast;
+
+        &:hover {
+            background: color-mix(in srgb, var(--bs-tertiary-bg) 60%, transparent);
+        }
+    }
+}
+
+.standingsPlacing {
+    text-align: left;
+    font-weight: $heading-font-weight;
+}
+
+.standingsUser {
+    display: flex;
+    justify-self: end;
+    flex-grow: 1;
+}
+
+.standingsTime {
+    @include monospace-value;
+    font-size: $font-size-sm;
+    white-space: nowrap;
+}
+
+// ── Stats Panel ──
+
+.statsPanel {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 60%, var(--bs-secondary-bg) 40%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 40%, var(--bs-secondary-bg) 60%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    padding: $spacing-md $spacing-lg;
+    margin-bottom: $spacing-sm;
+    box-shadow: $shadow-sm;
+}
+
+.statsTitle {
+    font-size: $font-size-xl;
+    font-weight: $heading-font-weight;
+    text-align: center;
+    width: 100%;
+}
+
+.statsDivider {
+    border-color: rgba(var(--bs-primary-rgb), 0.15);
+    opacity: 0.6;
+    margin: $spacing-xs 0 $spacing-sm;
+}
+
+.statsSubheading {
+    font-size: $font-size-base;
+    font-weight: $heading-font-weight;
+    margin-bottom: $spacing-xs;
+}
+
+.statsLeaderboardEntry {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    padding: $spacing-xs 0;
+    font-size: $font-size-sm;
+}
+
+// ── Global Stats ──
+
+.globalStatRow {
+    display: flex;
+    justify-content: space-between;
+    padding: $spacing-xs 0;
+    font-size: $font-size-sm;
+}
+
+.globalStatLabel {
+    color: var(--bs-secondary-color);
+}
+
+.globalStatValue {
+    @include monospace-value;
+    font-weight: 700;
+    color: var(--bs-body-color);
+}
+
+.gameStatItem {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: $spacing-sm;
+    border-radius: $radius-md;
+    transition: all $transition-base;
+    color: var(--bs-body-color);
+    text-decoration: none;
+
+    &:hover {
+        background: color-mix(in srgb, var(--bs-tertiary-bg) 80%, transparent);
+        transform: translateX(2px);
+        text-decoration: none;
+        color: var(--bs-body-color);
+    }
+}
+
+.gameStatContent {
+    padding: 0 $spacing-md;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.gameStatName {
+    font-size: $font-size-md;
+    font-weight: $heading-font-weight;
+    color: var(--bs-link-color);
+    margin-bottom: $spacing-xs;
+}
+
+.gameStatMeta {
+    display: flex;
+    justify-content: space-between;
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+// ── Participant Detail Cards ──
+
+.participantCard {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
+    );
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: $radius-lg;
+    padding: $spacing-sm $spacing-lg $spacing-xs;
+    height: 100%;
+    transition: all $transition-base;
+
+    &Highlighted {
+        background: var(--bs-tertiary-bg);
+    }
+
+    &Streaming {
+        cursor: pointer;
+
+        &:hover {
+            box-shadow: $shadow-md;
+            border-color: rgba(var(--bs-primary-rgb), 0.3);
+        }
+    }
+}
+
+.participantHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    font-size: $font-size-lg;
+}
+
+.participantMeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: $font-size-sm;
+}
+
+.participantDivider {
+    border-color: rgba(var(--bs-primary-rgb), 0.1);
+    margin: $spacing-sm 0;
+}
+
+.participantTimerArea {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    font-size: $font-size-lg;
+    min-height: 5.2rem;
+}
+
+.participantLiveData {
+    font-size: $font-size-sm;
+}
+
+.participantComment {
+    font-style: italic;
+    font-size: $font-size-sm;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 50%;
+}
+
+// ── Chat Panel ──
+
+.chatPanel {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 60%, var(--bs-secondary-bg) 40%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 40%, var(--bs-secondary-bg) 60%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    padding: $spacing-sm $spacing-lg;
+    margin-bottom: $spacing-md;
+    height: 24rem;
+}
+
+.chatFilters {
+    display: flex;
+    height: 2rem;
+    gap: $spacing-md;
+    font-size: $font-size-sm;
+}
+
+.chatMessages {
+    display: flex;
+    flex-direction: column-reverse;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: $spacing-xs $spacing-sm;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+    border-radius: $radius-md;
+    margin-bottom: $spacing-sm;
+    height: 18rem;
+}
+
+.chatMessage {
+    display: flex;
+    font-size: $font-size-sm;
+    padding: 1px 0;
+}
+
+.chatTimestamp {
+    @include monospace-value;
+    font-size: $font-size-xs;
+    color: var(--bs-secondary-color);
+    margin-right: $spacing-sm;
+    flex-shrink: 0;
+}
+
+// ── Race Actions Panel ──
+
+.actionsPanel {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 60%, var(--bs-secondary-bg) 40%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 40%, var(--bs-secondary-bg) 60%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    padding: $spacing-sm $spacing-lg $spacing-lg;
+    margin-bottom: $spacing-md;
+}
+
+.actionsTitle {
+    font-size: $font-size-xl;
+    font-weight: $heading-font-weight;
+    text-align: center;
+    width: 100%;
+}
+
+.actionsDivider {
+    border-color: rgba(var(--bs-primary-rgb), 0.15);
+    opacity: 0.6;
+    margin: $spacing-xs 0 $spacing-sm;
+}
+
+// ── Finished Race Cards ──
+
+.finishedRaceCard {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
+    );
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: $radius-lg;
+    overflow: hidden;
+    height: 100%;
+    transition: all $transition-base;
+
+    &:hover {
+        box-shadow: $shadow-md;
+        border-color: rgba(var(--bs-primary-rgb), 0.25);
+        transform: translateY($hover-lift);
+    }
+}
+
+.finishedRaceCardBody {
+    padding: $spacing-sm $spacing-md;
+    width: 100%;
+    height: 100%;
+}
+
+.finishedRaceCardInner {
+    padding: $spacing-sm $spacing-md;
+    min-height: 8rem;
+}
+
+.finishedDivider {
+    border-color: rgba(var(--bs-primary-rgb), 0.1);
+    margin: $spacing-xs 0;
+    padding: 0;
+}
+
+// ── Empty State ──
+
+.emptyState {
+    text-align: center;
+    padding: $spacing-3xl $spacing-lg;
+    font-size: $font-size-base;
+    color: var(--bs-secondary-color);
+
+    p {
+        margin-bottom: $spacing-sm;
+    }
+
+    a {
+        font-weight: $heading-font-weight;
+    }
+}
+
+// ── Page Header ──
+
+.pageTitle {
+    font-size: $font-size-2xl;
+    font-weight: 700;
+    letter-spacing: $heading-letter-spacing;
+}

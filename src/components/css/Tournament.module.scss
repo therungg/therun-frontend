@@ -1,0 +1,462 @@
+@use '~app/(new-layout)/styles/design-tokens' as *;
+@use '~app/(new-layout)/styles/mixins' as *;
+
+// ============================================
+// Tournament List Page
+// ============================================
+
+.pageHeader {
+    font-weight: $heading-font-weight;
+    letter-spacing: $heading-letter-spacing;
+    margin-bottom: $spacing-2xl;
+}
+
+.sectionTitle {
+    font-weight: $heading-font-weight;
+    letter-spacing: $heading-letter-spacing;
+    font-size: $font-size-xl;
+    margin-bottom: $spacing-lg;
+}
+
+// ============================================
+// Tournament Info Box (sidebar)
+// ============================================
+
+.infoBox {
+    background: color-mix(in srgb, var(--bs-secondary-bg) 97%, var(--bs-primary) 3%);
+    border: $section-border;
+    border-radius: $radius-lg;
+    padding: $spacing-2xl;
+    margin-bottom: $spacing-lg;
+    box-shadow: $shadow-sm;
+
+    h2 {
+        font-weight: $heading-font-weight;
+        font-size: $font-size-xl;
+        letter-spacing: $heading-letter-spacing;
+        margin-bottom: $spacing-md;
+    }
+
+    hr {
+        border-color: rgba(var(--bs-primary-rgb), 0.12);
+        margin: $spacing-md 0;
+    }
+
+    ul {
+        margin-bottom: $spacing-xs;
+        padding-left: $spacing-2xl;
+
+        li {
+            margin-bottom: $spacing-xs;
+            font-size: $font-size-base;
+            line-height: $body-line-height;
+        }
+    }
+}
+
+// ============================================
+// Current Tournament Cards
+// ============================================
+
+.currentTournamentCard {
+    background: color-mix(in srgb, var(--bs-secondary-bg) 97%, var(--bs-primary) 3%);
+    border: $section-border;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-sm;
+    overflow: hidden;
+    transition: box-shadow $transition-base, border-color $transition-base, transform $transition-base;
+
+    &:hover {
+        box-shadow: $shadow-md;
+        border-color: rgba(var(--bs-primary-rgb), 0.25);
+        transform: translateY(-1px);
+    }
+}
+
+.currentTournamentTitle {
+    font-size: $font-size-md;
+    font-weight: $heading-font-weight;
+    margin: 0;
+    padding: 0;
+}
+
+.currentTournamentGame {
+    font-size: $font-size-sm;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.currentTournamentMeta {
+    font-size: $font-size-sm;
+    opacity: 0.7;
+}
+
+// ============================================
+// Upcoming Tournament Cards
+// ============================================
+
+.upcomingSection {
+    background: color-mix(in srgb, var(--bs-secondary-bg) 97%, var(--bs-primary) 3%);
+    border: $section-border;
+    border-radius: $radius-lg;
+    padding: $spacing-2xl;
+    box-shadow: $shadow-sm;
+
+    h2 {
+        font-weight: $heading-font-weight;
+        font-size: $font-size-xl;
+        letter-spacing: $heading-letter-spacing;
+        margin-bottom: $spacing-md;
+    }
+
+    hr {
+        border-color: rgba(var(--bs-primary-rgb), 0.12);
+        margin: $spacing-md 0;
+    }
+}
+
+.upcomingCard {
+    background: color-mix(in srgb, var(--bs-tertiary-bg) 95%, var(--bs-primary) 5%);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+    border-radius: $radius-md;
+    margin-bottom: $spacing-md;
+    transition: background $transition-base, border-color $transition-base, transform $transition-base;
+
+    &:hover {
+        background: color-mix(in srgb, var(--bs-tertiary-bg) 90%, var(--bs-primary) 10%);
+        border-color: rgba(var(--bs-primary-rgb), 0.2);
+        transform: translateY(-1px);
+    }
+}
+
+.upcomingCardTitle {
+    font-weight: $heading-font-weight;
+    font-size: $font-size-md;
+    margin-bottom: $spacing-xs;
+}
+
+.upcomingCardGame {
+    font-size: $font-size-sm;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.upcomingCardMeta {
+    font-size: $font-size-sm;
+    opacity: 0.7;
+}
+
+// ============================================
+// Finished Tournaments Table
+// ============================================
+
+.finishedTable {
+    border-radius: $radius-md;
+    overflow: hidden;
+    box-shadow: $shadow-sm;
+    font-size: $font-size-base;
+
+    thead th {
+        font-weight: $heading-font-weight;
+        font-size: $font-size-sm;
+        letter-spacing: $heading-letter-spacing;
+        text-transform: uppercase;
+        background: color-mix(in srgb, var(--bs-secondary-bg) 95%, var(--bs-primary) 5%);
+        border-bottom: 2px solid rgba(var(--bs-primary-rgb), 0.15);
+        padding: $spacing-md $spacing-lg;
+    }
+
+    tbody td {
+        padding: $spacing-sm $spacing-lg;
+        vertical-align: middle;
+    }
+}
+
+// ============================================
+// List Tournament Cards (finished cards with logos)
+// ============================================
+
+.listCard {
+    background: color-mix(in srgb, var(--bs-secondary-bg) 97%, var(--bs-primary) 3%);
+    border: $section-border;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-sm;
+    transition: box-shadow $transition-base, border-color $transition-base;
+
+    &:hover {
+        box-shadow: $shadow-md;
+        border-color: rgba(var(--bs-primary-rgb), 0.2);
+    }
+
+    .listCardHeader {
+        border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+        background: transparent;
+        padding: $spacing-md $spacing-lg;
+
+        a {
+            font-weight: $heading-font-weight;
+            font-size: $font-size-md;
+        }
+
+        i {
+            font-size: $font-size-sm;
+            opacity: 0.7;
+        }
+    }
+
+    .listCardBody {
+        padding: $spacing-md $spacing-lg;
+        font-size: $font-size-base;
+
+        b {
+            font-weight: $label-font-weight;
+        }
+    }
+}
+
+// ============================================
+// Tournament Detail Page - Header Card
+// ============================================
+
+.detailCard {
+    background: color-mix(in srgb, var(--bs-secondary-bg) 97%, var(--bs-primary) 3%);
+    border: $section-border;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-md;
+    overflow: hidden;
+    margin-bottom: $spacing-lg;
+
+    h1 {
+        font-weight: $heading-font-weight;
+        letter-spacing: $heading-letter-spacing;
+    }
+}
+
+.detailRecord {
+    @include monospace-value;
+    font-size: $font-size-lg;
+}
+
+.detailTimer {
+    font-size: $font-size-lg;
+    text-align: right;
+}
+
+// ============================================
+// Tournament Info Table (inside Info tab)
+// ============================================
+
+.infoTable {
+    border-radius: $radius-md;
+    overflow: hidden;
+    font-size: $font-size-base;
+    margin-bottom: $spacing-3xl;
+
+    th {
+        font-weight: $label-font-weight;
+        padding: $spacing-sm $spacing-lg;
+    }
+
+    td {
+        padding: $spacing-sm $spacing-lg;
+    }
+}
+
+.infoSection {
+    h3 {
+        font-weight: $heading-font-weight;
+        font-size: $font-size-xl;
+        letter-spacing: $heading-letter-spacing;
+        margin-bottom: $spacing-md;
+    }
+
+    ul {
+        padding-left: $spacing-2xl;
+
+        li {
+            margin-bottom: $spacing-xs;
+            font-size: $font-size-base;
+            line-height: $body-line-height;
+
+            a {
+                transition: color $transition-fast;
+            }
+        }
+    }
+}
+
+// ============================================
+// Tournament Runs Table
+// ============================================
+
+.runsTable {
+    border-radius: $radius-md;
+    overflow: hidden;
+    box-shadow: $shadow-sm;
+    font-size: $font-size-base;
+
+    thead th {
+        font-weight: $heading-font-weight;
+        font-size: $font-size-sm;
+        letter-spacing: $heading-letter-spacing;
+        text-transform: uppercase;
+        background: color-mix(in srgb, var(--bs-secondary-bg) 95%, var(--bs-primary) 5%);
+        border-bottom: 2px solid rgba(var(--bs-primary-rgb), 0.15);
+        padding: $spacing-md $spacing-lg;
+    }
+
+    tbody td {
+        padding: $spacing-sm $spacing-lg;
+        vertical-align: middle;
+        @include monospace-value;
+    }
+
+    // User column should not be monospace
+    tbody td:first-child {
+        font-family: inherit;
+        font-weight: inherit;
+        letter-spacing: inherit;
+        font-variant-numeric: inherit;
+    }
+}
+
+.runsSearch {
+    .input-group-text {
+        background: color-mix(in srgb, var(--bs-body-bg) 95%, var(--bs-primary) 5%);
+        border: $section-border;
+        border-right: none;
+        border-radius: $radius-md 0 0 $radius-md;
+    }
+
+    .form-control {
+        border: $section-border;
+        border-left: none;
+        border-radius: 0 $radius-md $radius-md 0;
+        font-size: $font-size-base;
+
+        &:focus {
+            border-color: rgba(var(--bs-primary-rgb), 0.3);
+            box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.1);
+        }
+    }
+}
+
+.runsPagination {
+    font-size: $font-size-sm;
+    opacity: 0.7;
+    text-align: center;
+    margin-top: $spacing-md;
+}
+
+// ============================================
+// WR Stats Table
+// ============================================
+
+.wrTable {
+    border-radius: $radius-md;
+    overflow: hidden;
+    box-shadow: $shadow-sm;
+    font-size: $font-size-base;
+
+    thead th {
+        font-weight: $heading-font-weight;
+        font-size: $font-size-sm;
+        letter-spacing: $heading-letter-spacing;
+        text-transform: uppercase;
+        background: color-mix(in srgb, var(--bs-secondary-bg) 95%, var(--bs-primary) 5%);
+        border-bottom: 2px solid rgba(var(--bs-primary-rgb), 0.15);
+        padding: $spacing-md $spacing-lg;
+    }
+
+    tbody td {
+        padding: $spacing-sm $spacing-lg;
+        vertical-align: middle;
+    }
+}
+
+// ============================================
+// Seeding Table
+// ============================================
+
+.seedingTable {
+    border-radius: $radius-md;
+    overflow: hidden;
+    box-shadow: $shadow-sm;
+    font-size: $font-size-base;
+
+    thead th {
+        font-weight: $heading-font-weight;
+        font-size: $font-size-sm;
+        letter-spacing: $heading-letter-spacing;
+        text-transform: uppercase;
+        background: color-mix(in srgb, var(--bs-secondary-bg) 95%, var(--bs-primary) 5%);
+        border-bottom: 2px solid rgba(var(--bs-primary-rgb), 0.15);
+        padding: $spacing-md $spacing-lg;
+    }
+
+    tbody td {
+        padding: $spacing-sm $spacing-lg;
+        vertical-align: middle;
+
+        &:not(:first-child):not(:nth-child(2)) {
+            @include monospace-value;
+        }
+    }
+}
+
+// ============================================
+// Tournament Stats
+// ============================================
+
+.statsSection {
+    h3 {
+        font-weight: $heading-font-weight;
+        font-size: $font-size-xl;
+        letter-spacing: $heading-letter-spacing;
+        margin-bottom: $spacing-md;
+    }
+}
+
+// ============================================
+// WR History Legend
+// ============================================
+
+.wrLegendPlayer {
+    display: flex;
+    align-items: flex-end;
+    height: 3rem;
+    font-size: $font-size-lg;
+    font-weight: $heading-font-weight;
+}
+
+.wrLegendSymbol {
+    height: 3rem;
+    width: 3rem;
+}
+
+// ============================================
+// Tournament Tabs
+// ============================================
+
+.tournamentTabs {
+    font-size: $font-size-base;
+}
+
+// ============================================
+// Admin Fieldset
+// ============================================
+
+.adminFieldset {
+    border: $section-border;
+    border-radius: $radius-md;
+    padding: $spacing-sm $spacing-lg $spacing-lg;
+    margin-bottom: $spacing-lg;
+
+    legend {
+        font-weight: $heading-font-weight;
+        font-size: $font-size-base;
+        padding: 0 $spacing-sm;
+        width: auto;
+        margin-bottom: 0;
+    }
+}

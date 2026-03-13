@@ -1,0 +1,347 @@
+@use '../../styles/design-tokens' as *;
+@use '../../styles/mixins' as *;
+
+// ============================================
+// Event Card
+// ============================================
+
+.eventCard {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-sm;
+    transition: all $transition-base;
+    overflow: hidden;
+
+    &:hover {
+        box-shadow: $shadow-lg;
+        border-color: rgba(var(--bs-primary-rgb), 0.3);
+        transform: translateY($hover-lift);
+
+        .eventCardInfo {
+            border-color: rgba(var(--bs-primary-rgb), 0.25);
+        }
+    }
+
+    &:active {
+        transform: translateY($active-lift);
+    }
+}
+
+.eventCardRow {
+    width: 100%;
+}
+
+.eventCardInfo {
+    background: color-mix(in srgb, var(--bs-body-bg) 90%, var(--bs-primary) 10%);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.12);
+    border-radius: $radius-md;
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-sm;
+    transition: border-color $transition-fast, background $transition-fast;
+}
+
+.eventCardTitle {
+    font-size: $font-size-2xl;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--bs-body-color);
+}
+
+.eventCardDescription {
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+    border-left: 2px solid rgba(var(--bs-primary-rgb), 0.25);
+    padding-left: $spacing-sm;
+    margin-top: $spacing-sm;
+}
+
+@media (min-width: 1200px) {
+    .eventCard {
+        min-height: 13rem;
+    }
+}
+
+// ============================================
+// Event Filters Sidebar
+// ============================================
+
+.filterSidebar {
+    // wrapper for filter groups
+}
+
+.filterGroup {
+    margin-bottom: $spacing-xl;
+}
+
+.filterGroupHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-sm;
+
+    h5 {
+        font-size: $font-size-sm;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: $label-letter-spacing;
+        margin: 0;
+        color: var(--bs-body-color);
+    }
+}
+
+.filterToggle {
+    cursor: pointer;
+    color: var(--bs-secondary-color);
+    font-size: $font-size-xs;
+    transition: color $transition-fast;
+
+    &:hover {
+        color: var(--bs-primary);
+    }
+}
+
+.filterDivider {
+    border-color: rgba(var(--bs-primary-rgb), 0.15);
+    margin: 0 0 $spacing-sm 0;
+    width: 80%;
+    opacity: 0.6;
+}
+
+.filterItem {
+    cursor: pointer;
+    font-size: $font-size-sm;
+    transition: color $transition-fast;
+
+    &:hover {
+        color: var(--bs-primary);
+    }
+}
+
+.filterCount {
+    font-size: $font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.filterSearch {
+    background: color-mix(in srgb, var(--bs-body-bg) 95%, var(--bs-primary) 5%);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: $radius-sm;
+    font-size: $font-size-xs;
+    transition: border-color $transition-fast, box-shadow $transition-fast;
+
+    &:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+    }
+}
+
+.viewMoreToggle {
+    font-size: $font-size-xs;
+    font-weight: 500;
+    color: var(--bs-primary);
+    cursor: pointer;
+    margin-top: $spacing-xs;
+    transition: opacity $transition-fast;
+
+    &:hover {
+        opacity: 0.8;
+    }
+}
+
+.filterToggleButton {
+    border: $section-border;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    transition: all $transition-fast;
+}
+
+// ============================================
+// Event Search Bar
+// ============================================
+
+.searchWrapper {
+    margin-bottom: $spacing-lg;
+
+    .searchIcon {
+        background: color-mix(in srgb, var(--bs-body-bg) 90%, var(--bs-primary) 10%);
+        border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+        border-right: none;
+        border-radius: $radius-md 0 0 $radius-md;
+        color: var(--bs-secondary-color);
+        transition: all $transition-fast;
+    }
+
+    .searchInput {
+        background: color-mix(in srgb, var(--bs-body-bg) 95%, var(--bs-primary) 5%);
+        border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+        border-left: none;
+        border-radius: 0 $radius-md $radius-md 0;
+        font-size: $font-size-sm;
+        color: var(--bs-body-color);
+        transition: border-color $transition-fast, box-shadow $transition-fast;
+
+        &:focus {
+            border-color: var(--bs-primary);
+            box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+            outline: none;
+        }
+    }
+
+    &:focus-within {
+        .searchIcon {
+            border-color: var(--bs-primary);
+            color: var(--bs-primary);
+        }
+
+        .searchInput {
+            border-color: var(--bs-primary);
+        }
+    }
+}
+
+// ============================================
+// Event Detail Page
+// ============================================
+
+.detailHero {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 90%, var(--bs-primary) 10%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-md;
+    overflow: hidden;
+}
+
+.detailSection {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 94%, var(--bs-primary) 6%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 98%, var(--bs-primary) 2%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-sm;
+    padding: $spacing-xl;
+}
+
+.detailSectionTitle {
+    font-size: $font-size-xl;
+    font-weight: $heading-font-weight;
+    letter-spacing: $heading-letter-spacing;
+    margin-bottom: $spacing-md;
+    color: var(--bs-body-color);
+}
+
+.detailDescription {
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+    border-radius: $radius-md;
+    padding: $spacing-lg;
+    background: color-mix(in srgb, var(--bs-body-bg) 97%, var(--bs-primary) 3%);
+    max-height: 50rem;
+    overflow-y: auto;
+}
+
+.detailInfoItem {
+    display: flex;
+    margin-bottom: $spacing-lg;
+
+    .detailInfoIcon {
+        margin-right: $spacing-sm;
+        margin-top: $spacing-xs;
+        flex-shrink: 0;
+    }
+
+    .detailInfoLabel {
+        font-size: $font-size-xs;
+        color: var(--bs-secondary-color);
+        text-transform: uppercase;
+        letter-spacing: $label-letter-spacing;
+    }
+
+    .detailInfoValue {
+        font-size: $font-size-md;
+        font-weight: 600;
+        color: var(--bs-body-color);
+    }
+}
+
+.detailInfoPanel {
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+    border-radius: $radius-md;
+    padding: $spacing-lg;
+    background: color-mix(in srgb, var(--bs-body-bg) 97%, var(--bs-primary) 3%);
+}
+
+.detailLink {
+    display: flex;
+    margin-top: $spacing-md;
+
+    a {
+        color: var(--bs-body-color);
+        font-weight: 600;
+        display: block;
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        transition: color $transition-fast;
+
+        &:hover {
+            color: var(--bs-primary);
+        }
+    }
+}
+
+.eventTag {
+    @include status-badge;
+    margin: $spacing-xs;
+}
+
+// ============================================
+// Event Badges
+// ============================================
+
+.badgeRow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: $spacing-xs;
+    margin-top: $spacing-xs;
+}
+
+.eventBadge {
+    font-size: $font-size-xs;
+    font-weight: $badge-font-weight;
+    padding: 0.2rem 0.6rem;
+    border-radius: $radius-sm;
+    letter-spacing: 0.02em;
+}
+
+// ============================================
+// Page Header
+// ============================================
+
+.pageHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-md;
+    flex-wrap: wrap;
+    margin-bottom: $spacing-xl;
+}
+
+.pageTitle {
+    font-size: $font-size-2xl;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--bs-body-color);
+    margin: 0;
+}

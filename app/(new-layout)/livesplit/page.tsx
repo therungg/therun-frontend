@@ -3,6 +3,7 @@ import { getBaseUrl } from '~src/actions/base-url.action';
 import { getSession } from '~src/actions/session.action';
 import buildMetadata from '~src/utils/metadata';
 import { CopyUploadKey } from './copy-upload-key.component';
+import styles from './livesplit.module.scss';
 
 export default async function Livesplit() {
     const session = await getSession();
@@ -12,32 +13,30 @@ export default async function Livesplit() {
     );
     const { result } = (await data.json()) as { result: string };
     let content = (
-        <div className="fs-large">
+        <div className={styles.loginPrompt}>
             Please log in first to access your LiveSplit Key.
         </div>
     );
 
     if (session.username) {
         content = (
-            <div className="mt-4 p-3 fw-lighter fs-responsive-larger card bg-body-secondary">
+            <div className={styles.keyCard}>
                 <CopyUploadKey uploadKey={result} />
             </div>
         );
     }
     return (
-        <div className="text-center list-style-inside mb-5 fs-larger">
-            <h1 className="fs-responsive-xxx-large fw-medium pt-4">
-                LiveSplit Key
-            </h1>
+        <div className={styles.page}>
+            <h1 className={styles.pageTitle}>LiveSplit Key</h1>
             {content}
-            <div className="my-5 pt-5">
+            <div className={styles.infoSection}>
                 <h2>What can I do with this?</h2>
-                <p className="mb-4">
+                <p>
                     Your LiveSplit key connects your LiveSplit to therun. Your
                     runs will be tracked live, and your stats will be
                     automatically updated after every run.
                 </p>
-                <p className="mb-4">
+                <p>
                     Check out the{' '}
                     <Link href="/live" prefetch={false}>
                         Live page
@@ -49,13 +48,13 @@ export default async function Livesplit() {
                     upload runs to your profile.
                 </p>
             </div>
-            <div className="mb-5">
+            <div className={styles.infoSection}>
                 <h2>How does it work?</h2>
-                <p className="mb-4">
+                <p>
                     You can install the LiveSplit component in these 2 easy
                     steps.
                 </p>
-                <ol className="mb-4">
+                <ol>
                     <li>
                         Open the layout editor in LiveSplit. Add the component
                         to your layout. It is under the Other dropdown.
@@ -66,7 +65,7 @@ export default async function Livesplit() {
                     </li>
                 </ol>
 
-                <p className="mb-4">
+                <p>
                     Now, you will never have to upload your runs again! In
                     addition, your live runs will show up in real time on your
                     profile, and on the dedicated{' '}
@@ -89,7 +88,7 @@ export default async function Livesplit() {
                     .
                 </p>
             </div>
-            <div>
+            <div className={styles.troubleshootSection}>
                 <h2>Troubleshooting</h2>
                 <p>
                     If your splits do not get uploaded or your runs do not show

@@ -1,10 +1,11 @@
 'use client';
 import type React from 'react';
 import { Image } from 'react-bootstrap';
+import styles from '../styles/shared/content-page.module.scss';
 
 export const Contact = () => {
     return (
-        <div>
+        <div className={styles.content}>
             <h1>Contact me</h1>
             <p>
                 Therun.gg is in an Beta version and will improve and change a

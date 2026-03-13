@@ -1,0 +1,440 @@
+@use '../styles/design-tokens' as *;
+@use '../styles/mixins' as *;
+
+// ── Page Container ──
+.page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: $spacing-xl $spacing-lg;
+}
+
+.pageWide {
+    margin: 0 auto;
+    padding: $spacing-xl $spacing-lg;
+}
+
+// ── Page Header ──
+.pageTitle {
+    font-size: $font-size-2xl;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--bs-body-color);
+    margin: 0 0 $spacing-xs;
+}
+
+.pageSubtitle {
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+    margin-bottom: $spacing-xl;
+}
+
+// ── Card Panel ──
+.panel {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 60%, var(--bs-secondary-bg) 40%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 40%, var(--bs-secondary-bg) 60%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    box-shadow: $shadow-sm;
+}
+
+.panelHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-md $spacing-lg;
+    background: var(--bs-secondary-bg);
+    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+}
+
+.panelTitle {
+    font-size: $font-size-md;
+    font-weight: 700;
+    color: var(--bs-body-color);
+    margin: 0;
+}
+
+.panelCount {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    background: color-mix(in srgb, var(--bs-primary) 10%, transparent);
+    padding: $spacing-xs $spacing-sm;
+    border-radius: $radius-sm;
+}
+
+.panelBody {
+    padding: $spacing-lg;
+}
+
+// ── Table ──
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: $font-size-sm;
+}
+
+.tableHeader {
+    th {
+        padding: $spacing-sm $spacing-md;
+        font-size: $font-size-xs;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--bs-secondary-color);
+        border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+        white-space: nowrap;
+        background: var(--bs-secondary-bg);
+    }
+}
+
+.tableBody {
+    tr {
+        transition: background-color $transition-fast;
+
+        &:nth-child(even) {
+            background: rgba(var(--bs-secondary-bg-rgb), 0.18);
+        }
+
+        &:hover {
+            background: var(--bs-tertiary-bg);
+        }
+    }
+
+    td {
+        padding: $spacing-sm $spacing-md;
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+        vertical-align: middle;
+    }
+}
+
+// ── Search Input ──
+.searchInput {
+    background: color-mix(in srgb, var(--bs-body-bg) 95%, var(--bs-primary) 5%);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: $radius-md;
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-sm;
+    color: var(--bs-body-color);
+    width: 100%;
+    transition: border-color $transition-fast, box-shadow $transition-fast;
+
+    &:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+        outline: none;
+    }
+
+    &::placeholder {
+        color: var(--bs-secondary-color);
+        opacity: 0.6;
+    }
+}
+
+// ── Select ──
+.select {
+    background: color-mix(in srgb, var(--bs-body-bg) 95%, var(--bs-primary) 5%);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: $radius-md;
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-sm;
+    color: var(--bs-body-color);
+    width: 100%;
+    transition: border-color $transition-fast, box-shadow $transition-fast;
+
+    &:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+        outline: none;
+    }
+}
+
+// ── Form Fields ──
+.formLabel {
+    display: block;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    margin-bottom: $spacing-xs;
+}
+
+.formInput {
+    background: color-mix(in srgb, var(--bs-body-bg) 95%, var(--bs-primary) 5%);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: $radius-md;
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-base;
+    color: var(--bs-body-color);
+    width: 100%;
+    transition: border-color $transition-fast, box-shadow $transition-fast;
+
+    &:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+        outline: none;
+    }
+
+    &::placeholder {
+        color: var(--bs-secondary-color);
+        opacity: 0.6;
+    }
+}
+
+.formGroup {
+    margin-bottom: $spacing-lg;
+}
+
+// ── Buttons ──
+.btnPrimary {
+    background: var(--bs-primary);
+    color: #fff;
+    border: none;
+    border-radius: $radius-md;
+    padding: $spacing-sm $spacing-lg;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover:not(:disabled) {
+        filter: brightness(1.1);
+        box-shadow: $shadow-md;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+.btnOutline {
+    background: transparent;
+    color: var(--bs-body-color);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.25);
+    border-radius: $radius-md;
+    padding: $spacing-sm $spacing-lg;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover:not(:disabled) {
+        background: color-mix(in srgb, var(--bs-primary) 10%, transparent);
+        border-color: var(--bs-primary);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+.btnDanger {
+    background: transparent;
+    color: $accent-red;
+    border: 1px solid rgba($accent-red, 0.3);
+    border-radius: $radius-md;
+    padding: $spacing-xs $spacing-sm;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover:not(:disabled) {
+        background: rgba($accent-red, 0.1);
+        border-color: $accent-red;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}
+
+.btnClear {
+    background: color-mix(in srgb, var(--bs-body-bg) 90%, var(--bs-primary) 10%);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: 0 $radius-md $radius-md 0;
+    padding: $spacing-sm $spacing-md;
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+        background: color-mix(in srgb, var(--bs-body-bg) 80%, var(--bs-primary) 20%);
+        color: var(--bs-body-color);
+    }
+}
+
+// ── Search Group ──
+.searchGroup {
+    display: flex;
+    margin-bottom: $spacing-lg;
+}
+
+.searchGroupInput {
+    composes: searchInput;
+    border-radius: $radius-md 0 0 $radius-md;
+    border-right: none;
+
+    &:focus {
+        border-right: none;
+    }
+}
+
+// ── Filter Row ──
+.filterRow {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    flex-wrap: wrap;
+    margin-bottom: $spacing-lg;
+}
+
+// ── Filter Chip / Tab ──
+.filterChip {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: $spacing-xs $spacing-sm;
+    font-size: $font-size-xs;
+    font-weight: 500;
+    border-radius: $radius-sm;
+    background: color-mix(in srgb, var(--bs-primary) 8%, transparent);
+    border: 1px solid color-mix(in srgb, var(--bs-primary) 15%, transparent);
+    color: var(--bs-body-color);
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+        background: color-mix(in srgb, var(--bs-primary) 15%, transparent);
+    }
+}
+
+.filterChipActive {
+    composes: filterChip;
+    background: color-mix(in srgb, var(--bs-primary) 20%, transparent);
+    border-color: color-mix(in srgb, var(--bs-primary) 35%, transparent);
+    font-weight: 600;
+}
+
+// ── Pagination ──
+.pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-md 0;
+    margin-top: $spacing-lg;
+}
+
+.paginationInfo {
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+// ── Badges ──
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: 0.3rem 0.6rem;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    border-radius: $radius-sm;
+    line-height: 1;
+}
+
+.badgeDanger {
+    composes: badge;
+    background: rgba($accent-red, 0.15);
+    color: $accent-red-light;
+}
+
+.badgeSuccess {
+    composes: badge;
+    background: rgba($accent-green, 0.15);
+    color: $accent-green-bright;
+}
+
+.badgeWarning {
+    composes: badge;
+    background: rgba($accent-amber, 0.15);
+    color: $accent-amber;
+}
+
+.badgeInfo {
+    composes: badge;
+    background: rgba(var(--bs-info-rgb), 0.15);
+    color: var(--bs-info);
+}
+
+.badgeMuted {
+    composes: badge;
+    background: rgba(var(--bs-secondary-rgb), 0.15);
+    color: var(--bs-secondary-color);
+}
+
+.badgeRemove {
+    background: none;
+    border: none;
+    color: inherit;
+    opacity: 0.7;
+    cursor: pointer;
+    padding: 0;
+    margin-left: $spacing-xs;
+    font-size: $font-size-sm;
+    line-height: 1;
+    transition: opacity $transition-fast;
+
+    &:hover {
+        opacity: 1;
+    }
+
+    &:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+}
+
+.badgeClickable {
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+        filter: brightness(1.15);
+        box-shadow: $shadow-sm;
+    }
+}
+
+// ── Alert ──
+.alert {
+    padding: $spacing-md $spacing-lg;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    margin-top: $spacing-md;
+}
+
+.alertSuccess {
+    composes: alert;
+    background: rgba($accent-green, 0.1);
+    border: 1px solid rgba($accent-green, 0.25);
+    color: $accent-green-bright;
+}
+
+.alertDanger {
+    composes: alert;
+    background: rgba($accent-red, 0.1);
+    border: 1px solid rgba($accent-red, 0.25);
+    color: $accent-red-light;
+}
+
+// ── No Data ──
+.noData {
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+    font-style: italic;
+}

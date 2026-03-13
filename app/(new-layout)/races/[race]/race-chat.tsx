@@ -14,6 +14,7 @@ import {
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { User } from '../../../../types/session.types';
+import styles from './race-detail.module.scss';
 
 interface FilterOptions {
     chat: boolean;
@@ -88,13 +89,8 @@ export const RaceChat = ({
     });
 
     return (
-        <div
-            style={{
-                height: '24rem',
-            }}
-            className="rounded-3 px-4 py-2 mb-3 game-border bg-body-secondary"
-        >
-            <div style={{ height: '2rem' }}>
+        <div className={styles.chatPanel}>
+            <div className={styles.chatFilters}>
                 <ChatFilterOptions
                     filterOptions={filterOptions}
                     setFilterOptions={setFilterOptions}

@@ -1,6 +1,8 @@
+import styles from '~src/components/css/Tournament.module.scss';
+
 export const TournamentInfoBox = () => {
     return (
-        <div className="game-border bg-body-secondary rounded-2 px-4 py-3 mb-3">
+        <div className={styles.infoBox}>
             <h2>Tournaments</h2>
             <hr />
             <div className="mb-3">
@@ -9,7 +11,7 @@ export const TournamentInfoBox = () => {
                 usually take a day or a weekend. Here is how The Run helps
                 making organizing tournaments much easier:
             </div>
-            <ul className="mb-1">
+            <ul>
                 <li>Automatically generates multiple leaderboards</li>
                 <li>Shows live status of all participants</li>
                 <li>Run overview of all runs in the tournament</li>

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Button, Col, Image, Row } from 'react-bootstrap';
 import Switch from 'react-switch';
 import { Title } from '~src/components/title';
+import styles from '../styles/shared/content-page.module.scss';
 
 export const Media = () => {
     const [loaded, setLoaded] = useState(false);
@@ -55,7 +56,7 @@ export const Media = () => {
     }, [loaded]);
 
     return (
-        <div>
+        <div className={styles.content}>
             <Title>Media</Title>
             <p>
                 I created a little media kit with the logo, some banners, and

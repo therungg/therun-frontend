@@ -1,5 +1,5 @@
 import { Card, Col, Row } from 'react-bootstrap';
-import styles from '~src/components/css/LiveRun.module.scss';
+import tournamentStyles from '~src/components/css/Tournament.module.scss';
 import { Tournament } from '~src/components/tournament/tournament-info';
 import { FromNow } from '~src/components/util/datetime';
 import { safeEncodeURI } from '~src/utils/uri';
@@ -22,7 +22,7 @@ export const CurrentTournaments = ({
                                 className="text-decoration-none"
                             >
                                 <Card
-                                    className={`${styles.liveRunContainer} game-border h-100`}
+                                    className={`${tournamentStyles.currentTournamentCard} h-100`}
                                 >
                                     <Row className="flex-grow-1">
                                         <Col xs={4}>
@@ -45,7 +45,7 @@ export const CurrentTournaments = ({
                                         >
                                             <div className="d-flex justify-content-between gap-3">
                                                 <Card.Title
-                                                    className="m-0 p-0 h5 text-truncate"
+                                                    className={`${tournamentStyles.currentTournamentTitle} text-truncate`}
                                                     style={{
                                                         color: 'var(--bs-link-color)',
                                                     }}
@@ -55,7 +55,9 @@ export const CurrentTournaments = ({
                                             </div>
 
                                             <div className="d-flex justify-content-between gap-3 mb-0 pb-2 w-100 border-bottom">
-                                                <div className="pb-0 mb-0 w-100 fst-italic text-truncate">
+                                                <div
+                                                    className={`${tournamentStyles.currentTournamentGame} pb-0 mb-0 w-100 text-truncate`}
+                                                >
                                                     {
                                                         tournament
                                                             .eligibleRuns[0]
@@ -69,7 +71,9 @@ export const CurrentTournaments = ({
                                                     {tournament.organizer}
                                                 </Card.Text>
                                             </div>
-                                            <div className="h-100 d-flex align-items-end justify-content-between">
+                                            <div
+                                                className={`${tournamentStyles.currentTournamentMeta} h-100 d-flex align-items-end justify-content-between`}
+                                            >
                                                 <div>
                                                     Started{' '}
                                                     <FromNow

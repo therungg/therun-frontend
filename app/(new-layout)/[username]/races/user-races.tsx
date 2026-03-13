@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card, Col, Row } from 'react-bootstrap';
+import { Col, Row } from 'react-bootstrap';
 import { RaceParticipantTimer } from '~app/(new-layout)/races/[race]/race-timer';
 import { RacePlacings } from '~app/(new-layout)/races/components/race-placings';
 import {
@@ -9,7 +9,6 @@ import {
     RaceParticipant,
     RaceParticipantWithLiveData,
 } from '~app/(new-layout)/races/races.types';
-import styles from '~src/components/css/LiveRun.module.scss';
 import { racesFetcher } from '~src/components/pagination/fetchers/races-fetcher';
 import { paginateArray } from '~src/components/pagination/paginate-array';
 import { PaginationContextProvider } from '~src/components/pagination/pagination.context-provider';
@@ -17,6 +16,7 @@ import PaginationControl from '~src/components/pagination/pagination-control';
 import usePagination from '~src/components/pagination/use-pagination';
 import { FromNow } from '~src/components/util/datetime';
 import { PersonIcon } from '~src/icons/person-icon';
+import styles from './user-races.module.scss';
 
 export const UserRaces = ({
     participations,
@@ -95,54 +95,46 @@ export const ViewUserRaces = ({
                             href={`/races/${race.raceId}`}
                             className="text-decoration-none"
                         >
-                            <div
-                                className={`bg-body-secondary game-border mh-100 h-100 card game-border ${styles.liveRunContainer}`}
-                            >
-                                <Card
-                                    className={`game-border h-100 ${styles.liveRunContainer}`}
-                                >
-                                    <Row className="h-100">
-                                        <Col xs={3} sm={3}>
-                                            <Card.Img
-                                                className="rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
-                                                src={
-                                                    race.gameImage &&
-                                                    race.gameImage !== 'noimage'
-                                                        ? race.gameImage
-                                                        : `/logo_dark_theme_no_text_transparent.png`
-                                                }
-                                                height={10}
-                                                width={5}
-                                            />
-                                        </Col>
-                                        <Col
-                                            xs={9}
-                                            sm={9}
-                                            className="p-2 ps-1 pe-4 d-flex flex-column"
-                                        >
-                                            <div className="justify-content-between d-flex">
-                                                <span
-                                                    className="h4 text-truncate"
-                                                    style={{
-                                                        color: 'var(--bs-link-color)',
-                                                    }}
-                                                >
-                                                    {race.displayGame}
-                                                </span>
-                                                <span className="fs-5 text-truncate">
-                                                    {race.displayCategory}
-                                                </span>
-                                            </div>
-                                            <hr className="m-0" />
-                                            <ViewUserRace
-                                                race={race}
-                                                participation={
-                                                    userParticipation
-                                                }
-                                            />
-                                        </Col>
-                                    </Row>
-                                </Card>
+                            <div className={styles.raceCard}>
+                                <Row className="h-100 g-0">
+                                    <Col xs={3} sm={3}>
+                                        <img
+                                            className={styles.raceCardImage}
+                                            src={
+                                                race.gameImage &&
+                                                race.gameImage !== 'noimage'
+                                                    ? race.gameImage
+                                                    : `/logo_dark_theme_no_text_transparent.png`
+                                            }
+                                            alt={race.displayGame}
+                                        />
+                                    </Col>
+                                    <Col
+                                        xs={9}
+                                        sm={9}
+                                        className={styles.raceCardBody}
+                                    >
+                                        <div className="justify-content-between d-flex">
+                                            <span
+                                                className={`text-truncate ${styles.raceGameTitle}`}
+                                            >
+                                                {race.displayGame}
+                                            </span>
+                                            <span
+                                                className={`text-truncate ${styles.raceCategoryTitle}`}
+                                            >
+                                                {race.displayCategory}
+                                            </span>
+                                        </div>
+                                        <hr
+                                            className={styles.gameStatsDivider}
+                                        />
+                                        <ViewUserRace
+                                            race={race}
+                                            participation={userParticipation}
+                                        />
+                                    </Col>
+                                </Row>
                             </div>
                         </a>
                     </Col>
@@ -159,24 +151,24 @@ export const ViewUserRace = ({
     participation: RaceParticipant;
 }) => {
     if (race.status === 'aborted') {
-        return <div className="pt-2">Race was aborted</div>;
+        return <div className={styles.raceDetail}>Race was aborted</div>;
     }
     return (
-        <div className="pt-2">
+        <div className={styles.raceDetail}>
             {participation.status === 'abandoned' && 'Abandoned'}
             {participation.status !== 'abandoned' && (
                 <div>
                     <div className="d-flex justify-content-between">
                         <div>
                             Time:{' '}
-                            <span className="fst-italic">
+                            <span className={styles.raceTime}>
                                 <RaceParticipantTimer
                                     raceParticipant={participation}
                                     race={race}
                                 />
                             </span>
                         </div>
-                        <span className="text-nowrap">
+                        <span className={styles.raceParticipants}>
                             <span className="me-1">
                                 {race.participantCount}
                             </span>

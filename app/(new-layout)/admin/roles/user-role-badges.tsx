@@ -2,12 +2,12 @@
 
 import { usePathname } from 'next/navigation';
 import { useTransition } from 'react';
-import { Badge } from 'react-bootstrap';
 import { toast } from 'react-toastify';
 import { removeRoleFromUserAction } from '~app/(new-layout)/admin/roles/actions/remove-role-from-user.action';
 import { Can, subject } from '~src/rbac/Can.component';
 import { ManageableRole } from '../../../../types/roles.types';
 import { UserWithRoles } from '../../../../types/users.types';
+import styles from '../admin.module.scss';
 
 const ROLE_ORDER: ManageableRole[] = [
     'admin',
@@ -17,9 +17,9 @@ const ROLE_ORDER: ManageableRole[] = [
     'race-admin',
 ];
 
-export const ROLE_COLORS: Partial<Record<ManageableRole, string>> = {
-    admin: 'danger',
-    'role-admin': 'dark',
+const ROLE_STYLE: Partial<Record<ManageableRole, string>> = {
+    admin: 'badgeDanger',
+    'role-admin': 'badgeMuted',
 };
 
 export const UserRoleBadges = ({ user }: { user: UserWithRoles }) => {
@@ -38,50 +38,55 @@ export const UserRoleBadges = ({ user }: { user: UserWithRoles }) => {
     });
 
     return sortedRoles.length > 0 ? (
-        sortedRoles.map((role) => {
-            const badgeColor = ROLE_COLORS[role as ManageableRole] || 'success';
-
-            return (
-                <Badge
-                    pill
-                    bg={badgeColor}
-                    key={user.username + '-' + role}
-                    className="me-1 d-inline-flex align-items-center"
-                    style={{
-                        height: '2rem',
-                    }}
-                >
-                    {role}
-                    <Can I="moderate" this={subject('roles', { role })}>
-                        <button
-                            className="btn btn-link btn-sm text-white ms-1 p-0"
-                            onClick={() => {
-                                if (
-                                    confirm(
-                                        `Are you sure you want to remove the role ${role} for user ${user.username}?`,
-                                    )
-                                ) {
-                                    startTransition(async () => {
-                                        await removeRoleFromUserAction(
-                                            user.id,
-                                            role,
-                                            path,
-                                        );
-                                        toast.success(
-                                            `Succesfully removed role ${role} for user ${user.username}`,
-                                        );
-                                    });
-                                }
-                            }}
-                            disabled={isPending}
-                        >
-                            ×
-                        </button>
-                    </Can>
-                </Badge>
-            );
-        })
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
+            {sortedRoles.map((role) => {
+                const styleKey =
+                    ROLE_STYLE[role as ManageableRole] || 'badgeSuccess';
+                return (
+                    <span
+                        className={
+                            styles[styleKey as keyof typeof styles] || ''
+                        }
+                        key={user.username + '-' + role}
+                    >
+                        {role}
+                        <Can I="moderate" this={subject('roles', { role })}>
+                            <button
+                                className={styles.badgeRemove}
+                                onClick={() => {
+                                    if (
+                                        confirm(
+                                            `Are you sure you want to remove the role ${role} for user ${user.username}?`,
+                                        )
+                                    ) {
+                                        startTransition(async () => {
+                                            await removeRoleFromUserAction(
+                                                user.id,
+                                                role,
+                                                path,
+                                            );
+                                            toast.success(
+                                                `Succesfully removed role ${role} for user ${user.username}`,
+                                            );
+                                        });
+                                    }
+                                }}
+                                disabled={isPending}
+                            >
+                                x
+                            </button>
+                        </Can>
+                    </span>
+                );
+            })}
+        </div>
     ) : (
-        <span className="text-muted">No Roles</span>
+        <span className={styles.noData}>No Roles</span>
     );
+};
+
+// Re-export for backwards compatibility
+export const ROLE_COLORS: Partial<Record<ManageableRole, string>> = {
+    admin: 'danger',
+    'role-admin': 'dark',
 };

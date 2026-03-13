@@ -1,17 +1,26 @@
+@use '~app/(new-layout)/styles/design-tokens' as *;
+@use '~app/(new-layout)/styles/mixins' as *;
+
 .category {
     width: 100%;
     text-align: left;
+    font-size: $font-size-base;
 }
 
 .game {
     text-align: center;
-    margin-left: 1rem;
-    font-size: larger;
-    padding-top: 0.4rem;
+    margin-left: $spacing-lg;
+    font-size: $font-size-lg;
+    font-weight: $heading-font-weight;
+    padding-top: $spacing-xs;
 }
 
 .bestTimeUser {
     float: right;
+}
+
+.timeValue {
+    @include monospace-value;
 }
 
 .popularGameCell {
@@ -27,11 +36,54 @@
 }
 
 .popularGameContainer {
-    margin-right: 3rem;
+    margin-right: $spacing-3xl;
 }
 
 .popularGame {
     text-align: center;
     margin-right: 0;
-    font-size: smaller;
+    font-size: $font-size-sm;
+}
+
+// Data table pattern for game tables
+.dataTable {
+    border-collapse: separate;
+    border-spacing: 0;
+
+    thead {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+
+        th {
+            font-size: $font-size-xs;
+            font-weight: $heading-font-weight;
+            letter-spacing: $label-letter-spacing;
+            text-transform: uppercase;
+            padding: $spacing-sm $spacing-md;
+            border-bottom: $section-border;
+            white-space: nowrap;
+            background: var(--bs-body-bg);
+        }
+    }
+
+    tbody {
+        tr {
+            transition: background-color $transition-fast;
+
+            &:nth-child(odd) {
+                background: color-mix(in srgb, var(--bs-body-bg) 97%, var(--bs-primary) 3%);
+            }
+
+            &:hover {
+                background: color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%);
+            }
+        }
+
+        td {
+            font-size: $font-size-base;
+            padding: $spacing-sm $spacing-md;
+            vertical-align: middle;
+        }
+    }
 }

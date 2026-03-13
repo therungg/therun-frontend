@@ -21,7 +21,7 @@ export const AllGamesCardBody: React.FunctionComponent<AllGamesBodyProps> = ({
                             <b>{category.display}</b>
                         </Col>
                         <Col md={6} sm={7} className="d-flex">
-                            <div className="w-3r">
+                            <div className="w-3r font-monospace">
                                 <DurationToFormatted
                                     duration={
                                         category.gameTime

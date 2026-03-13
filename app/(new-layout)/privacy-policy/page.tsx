@@ -1,4 +1,5 @@
 import buildMetadata from '~src/utils/metadata';
+import styles from '../styles/shared/content-page.module.scss';
 
 export const metadata = buildMetadata({
     title: 'Privacy Policy',
@@ -8,7 +9,7 @@ export const metadata = buildMetadata({
 
 export default function PrivacyPolicy() {
     return (
-        <div>
+        <div className={styles.content}>
             <p>The Run Privacy Policy</p>
             <p>
                 This privacy policy will explain how our The Run uses the

@@ -16,7 +16,10 @@ export const AllGamesImage: React.FunctionComponent<AllGamesImageProps> = ({
     const { theme } = useTheme();
     const gameUrl = getGameUrl(game);
     return (
-        <div className="float-start d-flex d-none d-sm-block align-items-center me-2">
+        <div
+            className="float-start d-flex d-none d-sm-block align-items-center me-2"
+            style={{ overflow: 'hidden', borderRadius: '0.75rem 0 0 0.75rem' }}
+        >
             <a href={`/games/${gameUrl}`}>
                 {game.image && game.image != 'noimage' && (
                     <GameImage

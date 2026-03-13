@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import Image from 'next/image';
 import Link from 'next/link';
 import { redirect, usePathname } from 'next/navigation';
-import { Badge, Col, Row } from 'react-bootstrap';
+import { Col, Row } from 'react-bootstrap';
 import {
     FaCalendarAlt,
     FaFileAlt,
@@ -30,7 +30,7 @@ import {
 import { Can, subject } from '~src/rbac/Can.component';
 import { EventWithOrganizerName } from '../../../../types/events.types';
 import { deleteEventAction } from '../actions/delete-event.action';
-import styles from '../event.styles.module.css';
+import styles from '../event.styles.module.scss';
 import { EventBadges } from '../event-badges';
 import { EventDates } from '../event-dates';
 import { EventLocation } from '../event-location';
@@ -82,11 +82,11 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
             <div className="mt-3">
                 <div
                     className={clsx(
-                        'container-fluid p-0 game-border mt-3 rounded-4 d-flex align-items-center shadow-lg border border-secondary',
-                        styles['event-card'],
+                        'container-fluid p-0 mt-3 d-flex align-items-center',
+                        styles.detailHero,
                     )}
                 >
-                    <Row className={clsx(styles['event-card-row'])}>
+                    <Row className={styles.eventCardRow}>
                         <Col xl={2} lg={3} md={4} sm={5}>
                             <div className="w-100 d-flex justify-content-center align-items-center">
                                 <Image
@@ -98,20 +98,27 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                                     height={200}
                                     width={200}
                                     style={{ objectFit: 'contain' }}
-                                    className="rounded-4 ms-xl-1"
+                                    className="rounded-3 ms-xl-1"
                                 />
                             </div>
                         </Col>
                         <Col xl={10} lg={9} md={8} sm={7}>
                             <div className="ms-4 pt-4">
-                                <h1 className="fw-bold">{event.name}</h1>
+                                <h1 className={styles.eventCardTitle}>
+                                    {event.name}
+                                </h1>
                                 <p className="mb-1">
                                     <EventDates event={event} />
                                 </p>
                                 <div className="d-flex">
                                     <EventBadges event={event} />
                                 </div>
-                                <div className="card-text text-muted mt-3 border-start ps-2 mb-3">
+                                <div
+                                    className={clsx(
+                                        styles.eventCardDescription,
+                                        'mb-3',
+                                    )}
+                                >
                                     {event.shortDescription}
                                 </div>
                             </div>
@@ -120,226 +127,275 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
                 </div>
 
                 {/* Description and Details Section */}
-                <div className="card mt-4">
-                    <div className="card-body">
-                        <Row className="row-gap-3 mb-2">
-                            <Col xl={8} lg={8}>
-                                <h3 className="card-title">
-                                    <FaFileAlt className="me-2 mb-2 text-primary" />
-                                    Event Description
-                                </h3>
-                                <div
-                                    className="card-text border rounded-2 p-3 bg-body-tertiary"
-                                    style={{
-                                        maxHeight: '50rem',
-                                        overflowY: 'auto',
-                                        backgroundColor: 'var(--bg-body)',
-                                    }}
-                                    dangerouslySetInnerHTML={{
-                                        __html: event.description,
-                                    }}
-                                ></div>
-                            </Col>
-                            <Col xl={4} lg={4}>
-                                <h3 className="card-title mb-2">
-                                    <FaHeart className="me-2 text-primary" />
-                                    Event Details
-                                </h3>
-                                <div className="card-text border rounded-2 p-3 bg-body-tertiary">
-                                    <div className="d-flex mb-3">
-                                        <FaUserAlt className="me-2 text-primary flex-center h-100 mt-2" />
-                                        <div className="ms-2 mb-1">
-                                            <div>Organizer</div>
-                                            <div className="fw-bold fs-5">
-                                                {event.organizerName}
-                                            </div>
+                <div className={clsx(styles.detailSection, 'mt-4')}>
+                    <Row className="row-gap-3 mb-2">
+                        <Col xl={8} lg={8}>
+                            <h3 className={styles.detailSectionTitle}>
+                                <FaFileAlt className="me-2 mb-1 text-primary" />
+                                Event Description
+                            </h3>
+                            <div
+                                className={styles.detailDescription}
+                                dangerouslySetInnerHTML={{
+                                    __html: event.description,
+                                }}
+                            ></div>
+                        </Col>
+                        <Col xl={4} lg={4}>
+                            <h3 className={styles.detailSectionTitle}>
+                                <FaHeart className="me-2 text-primary" />
+                                Event Details
+                            </h3>
+                            <div className={styles.detailInfoPanel}>
+                                <div className={styles.detailInfoItem}>
+                                    <FaUserAlt
+                                        className={clsx(
+                                            'text-primary',
+                                            styles.detailInfoIcon,
+                                        )}
+                                    />
+                                    <div className="ms-2 mb-1">
+                                        <div className={styles.detailInfoLabel}>
+                                            Organizer
+                                        </div>
+                                        <div className={styles.detailInfoValue}>
+                                            {event.organizerName}
                                         </div>
                                     </div>
-                                    {event.location && (
-                                        <div className="d-flex mb-3">
-                                            <FaMapMarkerAlt className="me-2 text-danger flex-center h-100 mt-2" />
-                                            <div className="ms-2 mb-1">
-                                                <div>Location</div>
-                                                <div className="fw-bold fs-5">
-                                                    <EventLocation
-                                                        location={
-                                                            event.location
-                                                        }
-                                                        margin={2}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
-                                    <div className="d-flex">
-                                        <FaCalendarAlt className="me-2 text-primary flex-center h-100 mt-2" />
-                                        <div className="ms-2 mb-1">
-                                            <div>Dates</div>
-                                            <div className="fw-bold fs-5">
-                                                <EventDates event={event} />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    {event.isForCharity && (
-                                        <div className="d-flex mt-3">
-                                            <FaHeart className="me-2 text-danger flex-center h-100 mt-2" />
-                                            <div className="ms-2 mb-1">
-                                                <div>Charity</div>
-                                                <div className="fw-bold fs-5">
-                                                    <div className="fw-bold fs-5">
-                                                        {event.charityName ||
-                                                            'Event is for charity!'}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
-                                <div className="mt-2">
-                                    <h3 className="card-title mb-2">
-                                        <FaLink className="text-primary" />{' '}
-                                        Links
-                                    </h3>
-
-                                    <div className="card-text border rounded-2 px-3 pb-3 bg-body-tertiary">
-                                        <EventLink
-                                            text="Event URL"
-                                            url={
-                                                event.url ??
-                                                'https://therun.gg/events/' +
-                                                    event.slug
-                                            }
+                                {event.location && (
+                                    <div className={styles.detailInfoItem}>
+                                        <FaMapMarkerAlt
+                                            className={clsx(
+                                                'text-danger',
+                                                styles.detailInfoIcon,
+                                            )}
                                         />
-                                        <EventLink
-                                            text="Schedule URL"
-                                            url={event.scheduleUrl}
-                                        />
-                                        <EventLink
-                                            text="Twitch URL"
-                                            url={event.twitch}
-                                        />
-                                        <EventLink
-                                            text="Charity URL"
-                                            url={event.charityUrl}
-                                        />
-                                        <EventLink
-                                            text="Discord URL"
-                                            url={event.discord}
-                                        />
-                                        <EventLink
-                                            text="Bluesky URL"
-                                            url={event.bluesky}
-                                        />
-                                        <EventLink
-                                            text={
-                                                event.submissionsUrl &&
-                                                event.submissionsUrl
-                                                    .toLowerCase()
-                                                    .includes('oengus')
-                                                    ? 'Oengus URL'
-                                                    : 'Submissions URL'
-                                            }
-                                            url={event.submissionsUrl}
-                                        />
-                                        <EventLink
-                                            text="Twitter URL"
-                                            url={event.twitter}
-                                        />
+                                        <div className="ms-2 mb-1">
+                                            <div
+                                                className={
+                                                    styles.detailInfoLabel
+                                                }
+                                            >
+                                                Location
+                                            </div>
+                                            <div
+                                                className={
+                                                    styles.detailInfoValue
+                                                }
+                                            >
+                                                <EventLocation
+                                                    location={event.location}
+                                                    margin={2}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                    {event.restreams &&
-                                        event.restreams.length > 0 && (
-                                            <div className="mt-2">
-                                                <h3 className="card-title mb-2">
-                                                    <FaRetweet className="text-primary" />{' '}
-                                                    Restreams
-                                                </h3>
+                                )}
+                                <div className={styles.detailInfoItem}>
+                                    <FaCalendarAlt
+                                        className={clsx(
+                                            'text-primary',
+                                            styles.detailInfoIcon,
+                                        )}
+                                    />
+                                    <div className="ms-2 mb-1">
+                                        <div className={styles.detailInfoLabel}>
+                                            Dates
+                                        </div>
+                                        <div className={styles.detailInfoValue}>
+                                            <EventDates event={event} />
+                                        </div>
+                                    </div>
+                                </div>
+                                {event.isForCharity && (
+                                    <div className={styles.detailInfoItem}>
+                                        <FaHeart
+                                            className={clsx(
+                                                'text-danger',
+                                                styles.detailInfoIcon,
+                                            )}
+                                        />
+                                        <div className="ms-2 mb-1">
+                                            <div
+                                                className={
+                                                    styles.detailInfoLabel
+                                                }
+                                            >
+                                                Charity
+                                            </div>
+                                            <div
+                                                className={
+                                                    styles.detailInfoValue
+                                                }
+                                            >
+                                                {event.charityName ||
+                                                    'Event is for charity!'}
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="mt-2">
+                                <h3 className={styles.detailSectionTitle}>
+                                    <FaLink className="text-primary" /> Links
+                                </h3>
 
-                                                <div className="card-text border rounded-2 px-3 pb-3 bg-body-tertiary">
-                                                    {event.restreams.map(
-                                                        (restream) => {
-                                                            return (
+                                <div className={styles.detailInfoPanel}>
+                                    <EventLink
+                                        text="Event URL"
+                                        url={
+                                            event.url ??
+                                            'https://therun.gg/events/' +
+                                                event.slug
+                                        }
+                                    />
+                                    <EventLink
+                                        text="Schedule URL"
+                                        url={event.scheduleUrl}
+                                    />
+                                    <EventLink
+                                        text="Twitch URL"
+                                        url={event.twitch}
+                                    />
+                                    <EventLink
+                                        text="Charity URL"
+                                        url={event.charityUrl}
+                                    />
+                                    <EventLink
+                                        text="Discord URL"
+                                        url={event.discord}
+                                    />
+                                    <EventLink
+                                        text="Bluesky URL"
+                                        url={event.bluesky}
+                                    />
+                                    <EventLink
+                                        text={
+                                            event.submissionsUrl &&
+                                            event.submissionsUrl
+                                                .toLowerCase()
+                                                .includes('oengus')
+                                                ? 'Oengus URL'
+                                                : 'Submissions URL'
+                                        }
+                                        url={event.submissionsUrl}
+                                    />
+                                    <EventLink
+                                        text="Twitter URL"
+                                        url={event.twitter}
+                                    />
+                                </div>
+                                {event.restreams &&
+                                    event.restreams.length > 0 && (
+                                        <div className="mt-2">
+                                            <h3
+                                                className={
+                                                    styles.detailSectionTitle
+                                                }
+                                            >
+                                                <FaRetweet className="text-primary" />{' '}
+                                                Restreams
+                                            </h3>
+
+                                            <div
+                                                className={
+                                                    styles.detailInfoPanel
+                                                }
+                                            >
+                                                {event.restreams.map(
+                                                    (restream) => {
+                                                        return (
+                                                            <div
+                                                                className={
+                                                                    styles.detailLink
+                                                                }
+                                                                key={
+                                                                    restream.language
+                                                                }
+                                                            >
+                                                                <FaRetweet
+                                                                    className={clsx(
+                                                                        'text-primary',
+                                                                        styles.detailInfoIcon,
+                                                                    )}
+                                                                />
                                                                 <div
-                                                                    className="d-flex mt-3"
-                                                                    key={
-                                                                        restream.language
-                                                                    }
+                                                                    className="ms-2 mb-1"
+                                                                    style={{
+                                                                        minWidth: 0,
+                                                                        flex: 1,
+                                                                    }}
                                                                 >
-                                                                    <FaRetweet className="me-2 flex-center h-100 mt-2 text-primary" />
                                                                     <div
-                                                                        className="ms-2 mb-1"
-                                                                        style={{
-                                                                            minWidth: 0,
-                                                                            flex: 1,
-                                                                        }}
+                                                                        className={
+                                                                            styles.detailInfoLabel
+                                                                        }
                                                                     >
-                                                                        <div>
-                                                                            {
-                                                                                restream.language
-                                                                            }{' '}
-                                                                            restream
-                                                                            by{' '}
-                                                                            {
-                                                                                restream.organizer
+                                                                        {
+                                                                            restream.language
+                                                                        }{' '}
+                                                                        restream
+                                                                        by{' '}
+                                                                        {
+                                                                            restream.organizer
+                                                                        }
+                                                                    </div>
+                                                                    <div
+                                                                        className={
+                                                                            styles.detailInfoValue
+                                                                        }
+                                                                    >
+                                                                        <a
+                                                                            href={
+                                                                                restream.url
                                                                             }
-                                                                        </div>
-                                                                        <div
-                                                                            className="fw-bold fs-6"
+                                                                            className="color-text"
+                                                                            rel="noreferrer"
+                                                                            target="_blank"
                                                                             style={{
                                                                                 width: '100%',
+                                                                                overflow:
+                                                                                    'hidden',
+                                                                                textOverflow:
+                                                                                    'ellipsis',
+                                                                                whiteSpace:
+                                                                                    'nowrap',
                                                                             }}
                                                                         >
-                                                                            <a
-                                                                                href={
-                                                                                    restream.url
-                                                                                }
-                                                                                className="color-text"
-                                                                                rel="noreferrer"
-                                                                                target="_blank"
-                                                                                style={{
-                                                                                    width: '100%',
-                                                                                    overflow:
-                                                                                        'hidden',
-                                                                                    textOverflow:
-                                                                                        'ellipsis',
-                                                                                    whiteSpace:
-                                                                                        'nowrap',
-                                                                                }}
-                                                                            >
-                                                                                {
-                                                                                    restream.url
-                                                                                }
-                                                                            </a>
-                                                                        </div>
+                                                                            {
+                                                                                restream.url
+                                                                            }
+                                                                        </a>
                                                                     </div>
                                                                 </div>
-                                                            );
-                                                        },
-                                                    )}
-                                                </div>
+                                                            </div>
+                                                        );
+                                                    },
+                                                )}
                                             </div>
-                                        )}
-                                </div>
-                            </Col>
-                        </Row>
-                        <h3 className="card-title mt-3 mt-md-0">
-                            <FaTags className="me-2 text-primary" />
-                            Event Tags
-                        </h3>
-                        <div>
-                            {(event.tags ?? []).map((tag) => {
-                                return (
-                                    <Badge
-                                        key={tag}
-                                        bg="primary"
-                                        className="ms-2 pt-2 pb-2 px-3 mt-2"
-                                        pill={true}
-                                        style={{ fillOpacity: '50%' }}
-                                    >
-                                        <span className="fs-6">{tag}</span>
-                                    </Badge>
-                                );
-                            })}
-                        </div>
+                                        </div>
+                                    )}
+                            </div>
+                        </Col>
+                    </Row>
+                    <h3
+                        className={clsx(
+                            styles.detailSectionTitle,
+                            'mt-3 mt-md-0',
+                        )}
+                    >
+                        <FaTags className="me-2 text-primary" />
+                        Event Tags
+                    </h3>
+                    <div>
+                        {(event.tags ?? []).map((tag) => {
+                            return (
+                                <span key={tag} className={styles.eventTag}>
+                                    {tag}
+                                </span>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
@@ -382,27 +438,15 @@ const EventLink = ({ text, url }: { text: string; url: string | null }) => {
     return (
         <>
             {url && (
-                <div className="d-flex mt-3">
+                <div className={styles.detailLink}>
                     <Icon
-                        className="me-2 flex-center h-100 mt-2"
+                        className={styles.detailInfoIcon}
                         style={{ color: iconColor }}
                     />
                     <div className="ms-2 mb-1" style={{ minWidth: 0, flex: 1 }}>
-                        <div>{text}</div>
-                        <div className="fw-bold fs-6" style={{ width: '100%' }}>
-                            <a
-                                href={url}
-                                className="color-text"
-                                rel="noreferrer"
-                                target="_blank"
-                                style={{
-                                    display: 'block',
-                                    width: '100%',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                }}
-                            >
+                        <div className={styles.detailInfoLabel}>{text}</div>
+                        <div className={styles.detailInfoValue}>
+                            <a href={url} rel="noreferrer" target="_blank">
                                 {url}
                             </a>
                         </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Card, Col, Row } from 'react-bootstrap';
+import styles from './data.module.scss';
 import type { EntityTab, Filters } from './types';
 import { DEFAULT_FILTERS } from './types';
 
@@ -51,50 +51,35 @@ interface PresetCardsProps {
 
 export function PresetCards({ onApply }: PresetCardsProps) {
     return (
-        <Row className="g-3 mb-4">
+        <div className={styles.presetGrid}>
             {PRESETS.map((preset) => (
-                <Col xs={6} lg={3} key={preset.label}>
-                    <Card
-                        className="h-100 border bg-body-secondary"
-                        role="button"
-                        style={{
-                            cursor: 'pointer',
-                            transition:
-                                'background-color 0.15s, border-color 0.15s',
-                            borderColor: 'var(--bs-border-color)',
-                        }}
-                        onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor =
-                                'var(--bs-tertiary-bg)';
-                            e.currentTarget.style.borderColor =
-                                'var(--bs-primary)';
-                        }}
-                        onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '';
-                            e.currentTarget.style.borderColor =
-                                'var(--bs-border-color)';
-                        }}
-                        onClick={() =>
+                <div
+                    key={preset.label}
+                    className={styles.presetCard}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() =>
+                        onApply(preset.tab, {
+                            ...DEFAULT_FILTERS,
+                            ...preset.filters,
+                        } as Filters)
+                    }
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
                             onApply(preset.tab, {
                                 ...DEFAULT_FILTERS,
                                 ...preset.filters,
-                            } as Filters)
+                            } as Filters);
                         }
-                    >
-                        <Card.Body className="py-3 px-3">
-                            <div className="fw-semibold small mb-1">
-                                {preset.label}
-                            </div>
-                            <div
-                                className="text-secondary lh-sm"
-                                style={{ fontSize: '0.75rem' }}
-                            >
-                                {preset.description}
-                            </div>
-                        </Card.Body>
-                    </Card>
-                </Col>
+                    }}
+                >
+                    <div className={styles.presetLabel}>{preset.label}</div>
+                    <div className={styles.presetDescription}>
+                        {preset.description}
+                    </div>
+                </div>
             ))}
-        </Row>
+        </div>
     );
 }
