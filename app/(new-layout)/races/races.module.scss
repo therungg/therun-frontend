@@ -111,6 +111,8 @@
 .inProgressCard a {
     text-decoration: none;
     color: inherit;
+    display: block;
+    height: 100%;
 }
 
 .inProgressImg {
@@ -118,14 +120,13 @@
     border-top-left-radius: $radius-lg;
     border-bottom-left-radius: $radius-lg;
     object-fit: cover;
+    width: 100%;
     height: 100%;
-    display: inline-block;
-    min-width: 5rem;
-    max-width: 10rem;
+    display: block;
 }
 
 .inProgressBody {
-    padding: $spacing-sm $spacing-md;
+    padding: $spacing-sm $spacing-md $spacing-sm $spacing-xs;
     display: flex;
     flex-direction: column;
     height: 100%;
