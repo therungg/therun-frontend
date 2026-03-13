@@ -1,16 +1,39 @@
+@use '~app/(new-layout)/styles/design-tokens' as *;
+@use '~app/(new-layout)/styles/mixins' as *;
+
+// ============================================
+// Session / History - Shared Styles
+// ============================================
+
+// Columns hidden on mobile
 .optionalColumn {
 }
+
+// ============================================
+// Filter Links (run history inline filters)
+// ============================================
+
+.filter {
+    margin-right: $spacing-lg;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    cursor: pointer;
+    font-style: italic;
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+    transition: color $transition-fast;
+
+    &:hover {
+        color: var(--bs-body-color);
+    }
+}
+
+// ============================================
+// Responsive
+// ============================================
 
 @media screen and (max-width: 767.98px) {
     .optionalColumn {
         display: none;
     }
-}
-
-.filter {
-    margin-right: 1rem;
-    text-decoration: underline;
-    text-decoration-style: dotted;
-    cursor: pointer;
-    font-style: italic;
 }
