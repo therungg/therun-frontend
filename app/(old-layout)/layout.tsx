@@ -3,12 +3,12 @@ import '~src/styles/_import.scss';
 import { Viewport } from 'next';
 import { getSession } from '~src/actions/session.action';
 import { SessionErrorBoundary } from '~src/components/errors/session.error-boundary';
+import { Providers } from '~src/components/providers';
+import { Scripts } from '~src/components/scripts';
 import buildMetadata from '~src/utils/metadata';
 import { Content } from './content';
 import { Footer } from './footer';
 import { Header } from './header';
-import { Providers } from './providers';
-import { Scripts } from './scripts';
 
 export const metadata = buildMetadata();
 export const viewport: Viewport = {

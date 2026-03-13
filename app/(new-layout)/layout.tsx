@@ -1,9 +1,9 @@
 import { Viewport } from 'next';
 import React, { Suspense } from 'react';
-import { Providers } from '~app/(old-layout)/providers';
-import { Scripts } from '~app/(old-layout)/scripts';
 import { getSession } from '~src/actions/session.action';
 import { SessionErrorBoundary } from '~src/components/errors/session.error-boundary';
+import { Providers } from '~src/components/providers';
+import { Scripts } from '~src/components/scripts';
 import buildMetadata from '~src/utils/metadata';
 import { Header } from './header';
 
