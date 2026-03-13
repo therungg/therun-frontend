@@ -40,6 +40,7 @@ $tab-height: 4rem;
         font-weight: 700;
         margin: 0 0.5rem 0 0;
         letter-spacing: 0;
+        white-space: nowrap;
     }
 
     .subtitle {
@@ -116,11 +117,29 @@ $tab-height: 4rem;
     z-index: 1;
 }
 
+.desktopOnly {
+    display: inline;
+}
+
+.mobileOnly {
+    display: none;
+}
+
 @media (max-width: 768px) {
     .bookmarkFolder .url {
         font-size: 0.72rem;
         padding: 0.3rem 0.5rem;
         padding-bottom: 0.6rem;
+    }
+}
+
+@media (max-width: 1200px) {
+    .desktopOnly {
+        display: none;
+    }
+
+    .mobileOnly {
+        display: inline;
     }
 }
 
