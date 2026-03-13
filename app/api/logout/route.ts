@@ -1,6 +1,6 @@
 import { revalidatePath } from 'next/cache';
-import { apiResponse } from '~app/(new-layout)/api/response';
-import { getBaseUrl } from '../../../../src/actions/base-url.action';
+import { apiResponse } from '~app/api/response';
+import { getBaseUrl } from '~src/actions/base-url.action';
 
 export async function POST() {
     const baseUrl = await getBaseUrl();

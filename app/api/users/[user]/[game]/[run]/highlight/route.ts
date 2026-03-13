@@ -1,6 +1,6 @@
 import { revalidateTag } from 'next/cache';
 import { NextRequest } from 'next/server';
-import { apiResponse } from '~app/(new-layout)/api/response';
+import { apiResponse } from '~app/api/response';
 import { safeDecodeURI, safeEncodeURI } from '~src/utils/uri';
 
 export async function PUT(

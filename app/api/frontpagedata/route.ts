@@ -1,4 +1,4 @@
-import { apiResponse } from '~app/(new-layout)/api/response';
+import { apiResponse } from '~app/api/response';
 import { getTabulatedGameStatsPopular } from '~src/components/game/get-tabulated-game-stats';
 import { getPersonalBestRuns } from '~src/lib/get-personal-best-runs';
 
