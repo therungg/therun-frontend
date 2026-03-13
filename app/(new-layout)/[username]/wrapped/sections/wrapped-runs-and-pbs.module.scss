@@ -1,0 +1,12 @@
+@use '../../../../styles/design-tokens' as *;
+
+.interactiveItem {
+    transition: all $transition-base;
+    cursor: pointer;
+
+    &:hover {
+        background-color: var(--bs-tertiary-bg) !important;
+        box-shadow: $shadow-md;
+        transform: translateY($hover-lift);
+    }
+}

@@ -1,18 +1,21 @@
+@use '~app/(new-layout)/styles/design-tokens' as *;
+@use '~app/(new-layout)/styles/mixins' as *;
+
 .gamesNavigationContainer {
-  position: relative;
+    position: relative;
 }
 
 .navigation {
-  margin-bottom: 1rem;
-  position: absolute;
-  width: 101.6%;
-  padding-top: 1rem;
+    margin-bottom: $spacing-lg;
+    position: absolute;
+    width: 101.6%;
+    padding-top: $spacing-lg;
 }
 
 .tabsContainer {
-  position: relative;
-  z-index: 1;
-  margin-bottom: 1rem;
+    position: relative;
+    z-index: 1;
+    margin-bottom: $spacing-lg;
 }
 
 .statsVertical {
@@ -20,26 +23,63 @@
 }
 
 .form {
+    select {
+        border-radius: $radius-md;
+        border: $section-border;
+        font-size: $font-size-base;
+        transition: border-color $transition-fast;
+
+        &:focus {
+            border-color: var(--bs-primary);
+            box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.15);
+        }
+    }
 }
 
 .optionalColumn {
 }
 
 .tableVertical {
-
     tr {
         border-bottom: 1px var(--bs-table-border-color) solid;
-        > *:first-child { padding-left: 0 }
-        > *:last-child { padding-right: 0 }
-        &:last-child { border-bottom: none}
-        &:not(:first-child) .tableVerticalHeader { margin-top: 2rem}
+
+        > *:first-child {
+            padding-left: 0;
+        }
+
+        > *:last-child {
+            padding-right: 0;
+        }
+
+        &:last-child {
+            border-bottom: none;
+        }
+
+        &:not(:first-child) .tableVerticalHeader {
+            margin-top: $spacing-3xl;
+        }
     }
 }
 
 .tableVerticalHeader {
     --bs-table-accent-bg: var(--bs-table-striped-bg);
     text-align: center;
-    border-top: 2rem solid transparent;
+    border-top: $spacing-3xl solid transparent;
+    font-size: $font-size-sm;
+    font-weight: $heading-font-weight;
+    letter-spacing: $label-letter-spacing;
+    text-transform: uppercase;
+}
+
+.gameHeader {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+}
+
+.gameHeaderImage {
+    border-radius: $radius-md;
+    overflow: hidden;
 }
 
 @media screen and (max-width: 767.98px) {
@@ -53,16 +93,16 @@
         padding: 0;
         position: revert;
     }
+
     .form {
         margin: 0;
         padding: 0;
     }
 
     .tableVertical {
-
         tr {
             > *:last-child:not(:only-child) {
-                text-align: right
+                text-align: right;
             }
         }
     }

@@ -14,6 +14,7 @@ import {
     BreadcrumbItem,
 } from '~src/components/breadcrumbs/breadcrumb';
 import { UserRaceStatsTable } from '~src/components/run/user-detail/user-race-stats';
+import styles from './user-races.module.scss';
 
 interface UserRaceProfileProps {
     username: string;
@@ -36,14 +37,18 @@ export const UserRaceProfile = ({
     ];
 
     if (!participations || participations.length === 0) {
-        return <div>Unfortunately, this user has not done any races yet.</div>;
+        return (
+            <div className={styles.noRaces}>
+                Unfortunately, this user has not done any races yet.
+            </div>
+        );
     }
     return (
-        <div>
+        <div className={styles.profileContainer}>
             <Breadcrumb breadcrumbs={breadcrumbs} />
             <Row>
                 <Col xl={7} xxl={7}>
-                    <h2>Races</h2>
+                    <h2 className={styles.sectionHeading}>Races</h2>
                     <UserRaces
                         participations={participations}
                         initialRaces={initialRaces}
@@ -51,7 +56,7 @@ export const UserRaceProfile = ({
                     />
                 </Col>
                 <Col xl={5} xxl={5}>
-                    <h2>Stats</h2>
+                    <h2 className={styles.sectionHeading}>Stats</h2>
                     <UserRaceStatsTable raceStats={globalStats} />
                     <UserRaceStatsByGame stats={categoryStatsMap} />
                 </Col>

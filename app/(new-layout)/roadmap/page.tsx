@@ -1,4 +1,5 @@
 import buildMetadata from '~src/utils/metadata';
+import styles from '../styles/shared/content-page.module.scss';
 
 export const metadata = buildMetadata({
     title: 'Roadmap',
@@ -9,7 +10,7 @@ export const metadata = buildMetadata({
 // TODO: Link to the Github Issues or other project planning in the future
 export default function Roadmap() {
     return (
-        <div>
+        <div className={styles.content}>
             <h1>Roadmap</h1>
 
             <p>

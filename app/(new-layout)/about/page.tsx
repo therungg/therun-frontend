@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Title } from '~src/components/title';
 import buildMetadata from '~src/utils/metadata';
+import styles from '../styles/shared/content-page.module.scss';
 
 export const metadata = buildMetadata({
     title: 'About',
@@ -10,7 +11,7 @@ export const metadata = buildMetadata({
 
 export default function About() {
     return (
-        <div>
+        <div className={styles.content}>
             <Title>About The Run</Title>
             <p>The Run is a free, ad-less statistics tool for speedrunners.</p>
             <h2></h2>

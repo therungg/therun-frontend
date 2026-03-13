@@ -4,6 +4,7 @@ import { UserSearch } from '~app/(new-layout)/admin/roles/user-search';
 import { PaginatedData } from '~src/components/pagination/pagination.types';
 import { RoleEntity } from '../../../../types/roles.types';
 import { UserWithRoles } from '../../../../types/users.types';
+import styles from '../admin.module.scss';
 import { UserRoleBadges } from './user-role-badges';
 import { UserRoleFilter } from './user-role-filter';
 
@@ -19,45 +20,44 @@ export const UsersTable = ({
     const users = userPagination.items;
 
     return (
-        <div className="container mt-5">
+        <div className={styles.pageWide}>
+            <h1 className={styles.pageTitle}>User Roles</h1>
             <UserSearch searchQuery={searchQuery} />
             <UserRoleFilter roles={roles} />
-            <div className="card shadow-sm border-0">
-                <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h4 className="mb-0">User List</h4>
-                    <span>{userPagination.totalItems} Users</span>
+            <div className={styles.panel}>
+                <div className={styles.panelHeader}>
+                    <h4 className={styles.panelTitle}>User List</h4>
+                    <span className={styles.panelCount}>
+                        {userPagination.totalItems} Users
+                    </span>
                 </div>
-                <div className="card-body p-0">
-                    <div className="table-responsive">
-                        <table className="table table-hover mb-0">
-                            <thead className="table-light">
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Username</th>
-                                    <th>Roles</th>
-                                    <th>Add Role</th>
+                <div style={{ overflowX: 'auto' }}>
+                    <table className={styles.table}>
+                        <thead className={styles.tableHeader}>
+                            <tr>
+                                <th>ID</th>
+                                <th>Username</th>
+                                <th>Roles</th>
+                                <th>Add Role</th>
+                            </tr>
+                        </thead>
+                        <tbody className={styles.tableBody}>
+                            {users.map((user) => (
+                                <tr key={user.id}>
+                                    <td>{user.id}</td>
+                                    <td style={{ fontWeight: 600 }}>
+                                        {user.username}
+                                    </td>
+                                    <td>
+                                        <UserRoleBadges user={user} />
+                                    </td>
+                                    <td>
+                                        <UserAddRole user={user} />
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {users.map((user) => (
-                                    <tr key={user.id}>
-                                        <td className="align-middle">
-                                            {user.id}
-                                        </td>
-                                        <td className="align-middle fw-bold">
-                                            {user.username}
-                                        </td>
-                                        <td className="align-middle">
-                                            <UserRoleBadges user={user} />
-                                        </td>
-                                        <td>
-                                            <UserAddRole user={user} />
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 

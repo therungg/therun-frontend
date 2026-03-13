@@ -9,23 +9,19 @@ import {
 import { LocalizedTime } from '~src/components/util/datetime';
 import { PersonIcon } from '~src/icons/person-icon';
 import { safeEncodeURI } from '~src/utils/uri';
+import styles from './race-detail.module.scss';
 
 export const RaceHeader = ({ race }: { race: Race }) => {
     return (
         <div
-            className="bg-body-secondary mh-100 game-border card border-0"
-            style={{ borderColor: race.status === 'aborted' ? 'red' : '' }}
+            className={styles.raceHeader}
+            data-aborted={race.status === 'aborted'}
         >
-            <Card className="game-border h-100">
+            <Card className="border-0 bg-transparent h-100">
                 <Row style={{ minHeight: '10rem' }}>
                     <Col xs={4} sm={2}>
                         <Card.Img
-                            className="rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
-                            style={{
-                                minWidth: '5rem',
-                                maxHeight: '18rem',
-                                maxWidth: '10rem',
-                            }}
+                            className={styles.raceHeaderImg}
                             src={
                                 race.gameImage && race.gameImage !== 'noimage'
                                     ? race.gameImage
@@ -35,18 +31,9 @@ export const RaceHeader = ({ race }: { race: Race }) => {
                             width={20}
                         />
                     </Col>
-                    <Col
-                        xs={8}
-                        sm={10}
-                        className="p-2 ps-1 pe-4 d-flex flex-column"
-                    >
+                    <Col xs={8} sm={10} className={styles.raceHeaderBody}>
                         <div className="d-flex justify-content-between gap-3">
-                            <Card.Title
-                                className="m-0 p-0 h5 text-truncate"
-                                style={{
-                                    color: 'var(--bs-link-color)',
-                                }}
-                            >
+                            <Card.Title className={styles.gameLink}>
                                 <a
                                     href={`/races/stats/${safeEncodeURI(
                                         race.displayGame,
@@ -55,7 +42,7 @@ export const RaceHeader = ({ race }: { race: Race }) => {
                                     {race.displayGame}
                                 </a>
                             </Card.Title>
-                            <span className="text-nowrap">
+                            <span className={styles.participantCount}>
                                 <span className="me-1">
                                     {race.participantCount}
                                 </span>
@@ -63,43 +50,35 @@ export const RaceHeader = ({ race }: { race: Race }) => {
                             </span>
                         </div>
 
-                        <div className="d-flex justify-content-between gap-3 mb-0 pb-2 w-100 border-bottom">
-                            <div className="pb-0 mb-0 w-100 fst-italic text-truncate">
+                        <div className={styles.categoryRow}>
+                            <div className={styles.categoryText}>
                                 {race.displayCategory}
                             </div>
                             {race.status === 'aborted' && (
-                                <div
-                                    className="text-nowrap"
-                                    style={{ color: 'red' }}
-                                >
+                                <div className={styles.abortedBadge}>
                                     Race was aborted
                                 </div>
                             )}
                             {race.status !== 'aborted' && !race.ranked && (
-                                <div className="text-nowrap fst-italic">
+                                <div className={styles.unrankedBadge}>
                                     Unranked
                                 </div>
                             )}
                         </div>
 
                         {race.customName && (
-                            <div className="pt-1 pb-2">
+                            <div className={styles.customName}>
                                 <Card.Text className="text-truncate">
                                     {race.customName}
                                 </Card.Text>
                             </div>
                         )}
-                        <div className="pt-1">
-                            <Card.Text
-                                className="text-truncate"
-                                style={{
-                                    whiteSpace: 'pre-line',
-                                }}
-                            >
+                        <div className={styles.description}>
+                            <Card.Text className="text-truncate">
                                 {race.description}
                             </Card.Text>
                         </div>
-                        <div className="h-100 d-flex align-items-end justify-content-between">
+                        <div className={styles.headerFooter}>
                             <div>
                                 <RaceParticipantStatusOverview
                                     participants={

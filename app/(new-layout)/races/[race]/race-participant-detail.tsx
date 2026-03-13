@@ -15,7 +15,7 @@ import {
     DifferenceFromOne,
     DurationToFormatted,
 } from '~src/components/util/datetime';
-import styles from '../../../../src/components/css/LiveRun.module.scss';
+import styles from './race-detail.module.scss';
 
 interface RaceParticipantDetailProps {
     race: Race;
@@ -84,44 +84,36 @@ export const RaceParticipantDetailView = ({
 }) => {
     return (
         <div
-            className={`px-4 pt-2 pb-1 card game-border h-100 ${
-                isHighlighted ? 'bg-body-tertiary' : 'bg-body-secondary'
-            } game-border mh-100 mb-3 ${
-                participant.liveData &&
-                participant.liveData.streaming &&
-                styles.liveRunContainer
+            className={`${styles.participantCard} ${
+                isHighlighted ? styles.participantCardHighlighted : ''
+            } ${
+                participant.liveData && participant.liveData.streaming
+                    ? styles.participantCardStreaming
+                    : ''
             }`}
         >
-            <div>
-                <span className="justify-content-between w-100 d-flex">
-                    <span className="fs-5 text-nowrap">
-                        <span className="text-truncate">
-                            <UserLink
-                                username={participant.user}
-                                parentIsUrl={false}
-                                icon={false}
-                                url={`/${participant.user}/races`}
-                            />
+            <div className={styles.participantHeader}>
+                <span className={styles.participantName}>
+                    <UserLink
+                        username={participant.user}
+                        parentIsUrl={false}
+                        icon={false}
+                        url={`/${participant.user}/races`}
+                    />
+                    {participant.liveData?.streaming && (
+                        <span className="ms-1">
+                            <TwitchIcon height={22} color="#6441a5" />
                         </span>
-                        {participant.liveData?.streaming && (
-                            <span className="ms-1">
-                                <TwitchIcon height={22} color="#6441a5" />
-                            </span>
-                        )}
-                    </span>
-                    <span className="fs-5">
-                        {participant.status !== 'abandoned' && (
-                            <span className="justify-content-end">
-                                #{placing}
-                            </span>
-                        )}
-                        {participant.status === 'abandoned' && (
-                            <span className="justify-content-end">-</span>
-                        )}
-                    </span>
+                    )}
+                </span>
+                <span className={styles.participantPlacing}>
+                    {participant.status !== 'abandoned' && (
+                        <span>#{placing}</span>
+                    )}
+                    {participant.status === 'abandoned' && <span>-</span>}
                 </span>
             </div>
-            <div className="justify-content-between d-flex">
+            <div className={styles.participantMeta}>
                 <span>
                     {participant.pb && (
                         <span>
@@ -138,8 +130,8 @@ export const RaceParticipantDetailView = ({
                 <RaceParticipantRatingDisplay raceParticipant={participant} />
                 {readableRaceParticipantStatus(participant.status)}
             </div>
-            <hr style={{ margin: '0.7rem 0' }} />
-            <div style={{ minHeight: '5.2rem' }} className="d-flex">
+            <hr className={styles.participantDivider} />
+            <div className={styles.participantBody}>
                 <RaceParticipantDetailBody
                     participant={participant}
                     race={race}
@@ -163,8 +155,8 @@ const RaceParticipantDetailBody = ({
     const percentage = getPercentageDoneFromLiverun(participant);
 
     return (
-        <div className="w-100">
-            <span className="flex-center w-100 fs-5">
+        <div className={styles.participantLiveData}>
+            <span className={styles.timerDisplay}>
                 {participant.status === 'abandoned' &&
                     !participant.disqualified && (
                         <>
@@ -183,7 +175,7 @@ const RaceParticipantDetailBody = ({
                     />
                 )}
             </span>
-            <hr style={{ margin: '0.7rem 0' }} />
+            <hr className={styles.participantDivider} />
             {participant.liveData && participant.status === 'started' && (
                 <>
                     <div className="justify-content-between d-flex">
@@ -215,17 +207,15 @@ const RaceParticipantDetailBody = ({
                 </>
             )}
             {race.status === 'progress' && participant.status === 'ready' && (
-                <div className="flex-center align-items-center fst-italic h-50">
-                    Awaiting Live Data...{' '}
-                </div>
+                <div className={styles.awaitingData}>Awaiting Live Data...</div>
             )}
             {participant.comment && !participant.disqualifiedReason && (
-                <div className="fst-italic flex-center align-items-center h-50">
+                <div className={styles.participantComment}>
                     &quot;{participant.comment}&quot;
                 </div>
             )}
             {participant.disqualifiedReason && (
-                <div className="fst-italic flex-center align-items-center h-50">
+                <div className={styles.participantComment}>
                     DQ by {participant.disqualifiedBy} with reason: &quot;
                     {participant.disqualifiedReason}&quot;
                 </div>

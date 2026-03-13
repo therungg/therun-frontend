@@ -4,16 +4,17 @@ import { Accordion } from 'react-bootstrap';
 import AccordionBody from 'react-bootstrap/AccordionBody';
 import AccordionHeader from 'react-bootstrap/AccordionHeader';
 import AccordionItem from 'react-bootstrap/AccordionItem';
+import styles from './faq.module.scss';
 
 export const Faq = () => {
     return (
-        <div>
+        <div className={styles.faqPage}>
             <h1>Frequently Asked Questions</h1>
 
             <p>Here are some questions people may or may not have asked!</p>
 
             <h2>General</h2>
-            <Accordion>
+            <Accordion className={styles.accordion}>
                 <AccordionItem eventKey="help">
                     <AccordionHeader>How can I help?</AccordionHeader>
                     <AccordionBody>
@@ -65,29 +66,32 @@ export const Faq = () => {
                         </p>
                     </AccordionBody>
                 </AccordionItem>
-                <h2 style={{ marginTop: '1rem' }}>Troubleshooting</h2>
+            </Accordion>
+
+            <h2>Troubleshooting</h2>
+            <Accordion className={styles.accordion}>
+                <AccordionItem eventKey="features">
+                    <AccordionHeader>
+                        Why can&apos;t I do X? Is there a way to do Y?
+                    </AccordionHeader>
+                    <AccordionBody>
+                        <p>
+                            This site is still in beta, so there are a lot of
+                            feature that are still missing or implemented
+                            sub-optimally. You can check out the{' '}
+                            <Link href="/roadmap" prefetch={false}>
+                                Roadmap
+                            </Link>{' '}
+                            to see if the feature you want is already on there.
+                            If not, don&apos;t hesitate to{' '}
+                            <Link href="/contact" prefetch={false}>
+                                contact me
+                            </Link>{' '}
+                            and request the feature!
+                        </p>
+                    </AccordionBody>
+                </AccordionItem>
                 <AccordionItem eventKey="a">
-                    <AccordionItem eventKey="features">
-                        <AccordionHeader>
-                            Why can&apos;t I do X? Is there a way to do Y?
-                        </AccordionHeader>
-                        <AccordionBody>
-                            <p>
-                                This site is still in beta, so there are a lot
-                                of feature that are still missing or implemented
-                                sub-optimally. You can check out the{' '}
-                                <Link href="/roadmap" prefetch={false}>
-                                    Roadmap
-                                </Link>{' '}
-                                to see if the feature you want is already on
-                                there. If not, don&apos;t hesitate to{' '}
-                                <Link href="/contact" prefetch={false}>
-                                    contact me
-                                </Link>{' '}
-                                and request the feature!
-                            </p>
-                        </AccordionBody>
-                    </AccordionItem>
                     <AccordionHeader>
                         The PB Time on my profile shows up as <i>Unknown</i>.
                         What gives?

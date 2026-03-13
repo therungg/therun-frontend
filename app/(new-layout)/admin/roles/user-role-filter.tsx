@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { RoleEntity } from '../../../../types/roles.types';
+import styles from '../admin.module.scss';
 
 interface RolesDropdownProps {
     roles: RoleEntity[];
@@ -18,11 +19,12 @@ export const UserRoleFilter: React.FC<RolesDropdownProps> = ({ roles }) => {
     };
 
     return (
-        <div className="mb-3">
+        <div className={styles.filterRow}>
             <select
-                className="form-select"
+                className={styles.select}
                 value={selectedRole || ''}
                 onChange={(e) => handleRoleChange(e.target.value)}
+                style={{ maxWidth: '300px' }}
             >
                 <option value="">Filter by Role</option>
                 {roles.map((role) => (

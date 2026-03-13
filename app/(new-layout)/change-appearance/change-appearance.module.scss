@@ -1,0 +1,106 @@
+@use '../../styles/design-tokens' as *;
+
+// Login with Patreon
+.loginContainer {
+    text-align: center;
+    padding: $spacing-xl 0;
+
+    p {
+        font-size: $font-size-base;
+        line-height: 1.7;
+        margin-bottom: $spacing-lg;
+    }
+}
+
+.loginPrompt {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: $spacing-lg;
+    margin-top: $spacing-md;
+}
+
+// Patreon settings
+.settingsTitle {
+    font-size: $font-size-2xl;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: $spacing-sm;
+}
+
+.settingsSubtitle {
+    font-size: $font-size-base;
+    color: var(--bs-secondary-color);
+    margin-bottom: $spacing-xl;
+}
+
+.previewCard {
+    display: flex;
+    justify-content: center;
+    margin-bottom: $spacing-3xl;
+
+    > div {
+        background: linear-gradient(
+            135deg,
+            color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%) 0%,
+            color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
+        );
+        border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+        border-radius: $radius-lg;
+        padding: $spacing-lg $spacing-xl;
+        box-shadow: $shadow-sm;
+    }
+}
+
+.sectionTitle {
+    font-size: $font-size-xl;
+    font-weight: 600;
+    margin-bottom: $spacing-lg;
+}
+
+.colorOption {
+    font-size: $font-size-md;
+    cursor: pointer;
+    border-radius: $radius-md;
+    overflow: hidden;
+    transition: all $transition-fast;
+
+    &:hover {
+        box-shadow: $shadow-md;
+    }
+}
+
+.colorOptionSelected {
+    border: 2px solid var(--bs-primary) !important;
+    box-shadow: $shadow-md;
+}
+
+.colorOptionLocked {
+    cursor: default;
+    opacity: 0.5;
+}
+
+.switchRow {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: $spacing-md;
+    gap: $spacing-sm;
+
+    label {
+        font-size: $font-size-base;
+        white-space: nowrap;
+    }
+}
+
+.saveButton {
+    font-size: $font-size-md !important;
+    font-weight: 500;
+    padding: $spacing-sm $spacing-xl;
+    border-radius: $radius-md;
+    transition: all $transition-fast;
+
+    &:hover {
+        box-shadow: $shadow-md;
+    }
+}

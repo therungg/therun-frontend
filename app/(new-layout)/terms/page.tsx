@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import buildMetadata from '~src/utils/metadata';
+import styles from '../styles/shared/content-page.module.scss';
 
 export const metadata = buildMetadata({
     title: 'Terms & Conditions',
@@ -8,7 +9,7 @@ export const metadata = buildMetadata({
 
 export default function Terms() {
     return (
-        <div>
+        <div className={styles.content}>
             Hi there. <br />
             <br /> If you continue to use this website, you are agreeing to
             comply with and be bound by the following terms and conditions of

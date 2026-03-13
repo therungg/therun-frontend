@@ -4,6 +4,7 @@ import { Race } from '~app/(new-layout)/races/races.types';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { TrophyIcon } from '~src/icons/trophy-icon';
+import styles from './race-detail.module.scss';
 
 export const RaceStats = ({ race }: { race: Race }) => {
     if (
@@ -13,25 +14,28 @@ export const RaceStats = ({ race }: { race: Race }) => {
         return;
     }
     return (
-        <div className="game-border bg-body-secondary p-3 rounded mb-2">
-            <h4 className="w-100 d-flex justify-content-center">Stats</h4>
-            <hr />
+        <div className={styles.statsPanel}>
+            <h4 className={styles.panelTitle}>Stats</h4>
+            <hr className={styles.panelDivider} />
             <Row>
                 <Col sm={6} className="mb-3 mb-md-1">
-                    <div className="fs-5 mb-1">Top Ratings</div>
+                    <div className={styles.statsSubheading}>Top Ratings</div>
                     {race.mmrLeaderboards.map((stat, i) => {
                         return (
-                            <div key={`${stat.user}-mmr`}>
+                            <div
+                                key={`${stat.user}-mmr`}
+                                className={styles.leaderboardEntry}
+                            >
+                                <TrophyIcon
+                                    trophyColor={
+                                        i === 0
+                                            ? 'gold'
+                                            : i === 1
+                                              ? 'silver'
+                                              : 'bronze'
+                                    }
+                                />
                                 <span className="text-truncate">
-                                    <TrophyIcon
-                                        trophyColor={
-                                            i === 0
-                                                ? 'gold'
-                                                : i === 1
-                                                  ? 'silver'
-                                                  : 'bronze'
-                                        }
-                                    />
                                     <b>{stat.mmr}</b> -{' '}
                                     <UserLink
                                         username={stat.user}
@@ -42,21 +46,26 @@ export const RaceStats = ({ race }: { race: Race }) => {
                         );
                     })}
                 </Col>
-                <Col sm={6} className="mb-3 mb-xl-1 px-2">
-                    <div className="fs-5 mb-1">Top Times This Month</div>
+                <Col sm={6} className="mb-3 mb-xl-1">
+                    <div className={styles.statsSubheading}>
+                        Top Times This Month
+                    </div>
                     {race.timeLeaderboards.map((stat, i) => {
                         return (
-                            <div key={`${stat.user}-time`}>
+                            <div
+                                key={`${stat.user}-time`}
+                                className={styles.leaderboardEntry}
+                            >
+                                <TrophyIcon
+                                    trophyColor={
+                                        i === 0
+                                            ? 'gold'
+                                            : i === 1
+                                              ? 'silver'
+                                              : 'bronze'
+                                    }
+                                />
                                 <span className="text-truncate">
-                                    <TrophyIcon
-                                        trophyColor={
-                                            i === 0
-                                                ? 'gold'
-                                                : i === 1
-                                                  ? 'silver'
-                                                  : 'bronze'
-                                        }
-                                    />
                                     <b>
                                         <DurationToFormatted
                                             duration={stat.time}

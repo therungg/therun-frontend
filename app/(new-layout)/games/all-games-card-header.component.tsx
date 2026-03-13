@@ -19,7 +19,7 @@ export const AllGamesCardHeader: React.FunctionComponent<
                 <a href={`/games/${gameUrl}`} className="fs-large">
                     {game.display}
                 </a>
-                <div className="float-end">
+                <div className="float-end font-monospace">
                     <i className="align-self-center">
                         <DurationToFormatted duration={game.sort.toString()} />
                     </i>

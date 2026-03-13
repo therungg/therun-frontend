@@ -1,0 +1,81 @@
+@use '../../styles/design-tokens' as *;
+
+.page {
+    text-align: center;
+    list-style-position: inside;
+    margin-bottom: $spacing-3xl;
+    font-size: $font-size-md;
+}
+
+.pageTitle {
+    font-size: $font-size-display;
+    font-weight: 500;
+    padding-top: $spacing-lg;
+
+    @media (max-width: 768px) {
+        font-size: $font-size-2xl;
+    }
+}
+
+.keyCard {
+    margin-top: $spacing-lg;
+    padding: $spacing-md;
+    font-weight: 300;
+    border-radius: $radius-lg;
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
+    );
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    box-shadow: $shadow-sm;
+}
+
+.loginPrompt {
+    font-size: $font-size-lg;
+}
+
+.infoSection {
+    margin-top: $spacing-3xl;
+    padding-top: $spacing-3xl;
+
+    h2 {
+        font-size: $font-size-xl;
+        font-weight: 600;
+        margin-bottom: $spacing-md;
+    }
+
+    p {
+        margin-bottom: $spacing-lg;
+        line-height: 1.7;
+    }
+
+    a {
+        color: var(--bs-primary);
+        transition: color $transition-fast;
+
+        &:hover {
+            color: color-mix(in srgb, var(--bs-primary) 80%, white 20%);
+        }
+    }
+}
+
+.troubleshootSection {
+    h2 {
+        font-size: $font-size-xl;
+        font-weight: 600;
+        margin-bottom: $spacing-md;
+    }
+
+    ul {
+        padding-left: $spacing-xl;
+        margin-bottom: $spacing-lg;
+        text-align: left;
+        display: inline-block;
+    }
+
+    li {
+        margin-bottom: $spacing-xs;
+        line-height: 1.7;
+    }
+}

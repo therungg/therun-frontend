@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Search as SearchIcon } from 'react-bootstrap-icons';
 import { useDebounceValue } from 'usehooks-ts';
+import styles from './event.styles.module.scss';
 
 export const EventSearch = () => {
     const router = useRouter();
@@ -29,28 +30,36 @@ export const EventSearch = () => {
     }, [debouncedSearch]);
 
     return (
-        <div className="input-group mw-search">
-            <span
-                className="input-group-text"
-                onClick={() => {
-                    const searchElement = document.getElementById('search');
-                    if (document.activeElement !== searchElement) {
-                        searchElement?.focus();
-                    }
-                }}
-            >
-                <SearchIcon size={18} />
-            </span>
-            <input
-                type="search"
-                className="form-control"
-                placeholder="Search Event"
-                onChange={(e) => {
-                    setSearchInput(e.target.value);
-                }}
-                value={searchInput ?? ''}
-                id="search"
-            />
+        <div className={styles.searchWrapper}>
+            <div className="input-group mw-search">
+                <span
+                    className={styles.searchIcon}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '0 0.75rem',
+                        cursor: 'pointer',
+                    }}
+                    onClick={() => {
+                        const searchElement = document.getElementById('search');
+                        if (document.activeElement !== searchElement) {
+                            searchElement?.focus();
+                        }
+                    }}
+                >
+                    <SearchIcon size={18} />
+                </span>
+                <input
+                    type="search"
+                    className={styles.searchInput}
+                    placeholder="Search Event"
+                    onChange={(e) => {
+                        setSearchInput(e.target.value);
+                    }}
+                    value={searchInput ?? ''}
+                    id="search"
+                />
+            </div>
         </div>
     );
 };

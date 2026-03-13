@@ -37,7 +37,7 @@ export const RecentFinishedRuns: React.FC<Props> = ({
             <td>
                 <UserLink username={username} />
             </td>
-            <td>
+            <td className="font-monospace">
                 <DurationToFormatted duration={time} />
             </td>
         </tr>

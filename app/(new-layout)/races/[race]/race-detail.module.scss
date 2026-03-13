@@ -1,0 +1,376 @@
+@use '../../styles/design-tokens' as *;
+@use '../../styles/mixins' as *;
+
+// ── Race Header ──
+
+.raceHeader {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 60%, var(--bs-secondary-bg) 40%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 40%, var(--bs-secondary-bg) 60%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    box-shadow: $shadow-sm;
+
+    &[data-aborted='true'] {
+        border-color: $accent-red;
+    }
+}
+
+.raceHeaderImg {
+    border-radius: 0;
+    border-top-left-radius: $radius-lg;
+    border-bottom-left-radius: $radius-lg;
+    object-fit: cover;
+    height: 100%;
+    display: inline-block;
+    min-width: 5rem;
+    max-height: 18rem;
+    max-width: 10rem;
+}
+
+.raceHeaderBody {
+    padding: $spacing-sm $spacing-md $spacing-sm $spacing-xs;
+    display: flex;
+    flex-direction: column;
+}
+
+.gameLink {
+    font-size: $font-size-md;
+    font-weight: 700;
+    color: var(--bs-link-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin: 0;
+    padding: 0;
+}
+
+.categoryRow {
+    display: flex;
+    justify-content: space-between;
+    gap: $spacing-md;
+    padding-bottom: $spacing-sm;
+    border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.12);
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.categoryText {
+    font-style: italic;
+    font-size: $font-size-sm;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.abortedBadge {
+    color: $accent-red;
+    font-size: $font-size-sm;
+    font-weight: $heading-font-weight;
+    white-space: nowrap;
+}
+
+.unrankedBadge {
+    font-style: italic;
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+
+.participantCount {
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+    white-space: nowrap;
+}
+
+.customName {
+    font-size: $font-size-sm;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-top: $spacing-xs;
+}
+
+.description {
+    font-size: $font-size-sm;
+    padding-top: $spacing-xs;
+    white-space: pre-line;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.headerFooter {
+    flex: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+// ── Standings Panel ──
+
+.standingsPanel {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 60%, var(--bs-secondary-bg) 40%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 40%, var(--bs-secondary-bg) 60%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    padding: $spacing-sm $spacing-lg $spacing-md;
+    margin-bottom: $spacing-md;
+    box-shadow: $shadow-sm;
+}
+
+.panelTitle {
+    font-size: $font-size-xl;
+    font-weight: $heading-font-weight;
+    text-align: center;
+    margin-bottom: 0;
+}
+
+.panelDivider {
+    border-color: rgba(var(--bs-primary-rgb), 0.15);
+    opacity: 0.6;
+    margin: $spacing-xs 0 $spacing-sm;
+}
+
+.standingsTable {
+    width: 100%;
+    text-align: right;
+    border-collapse: collapse;
+
+    th {
+        padding: $spacing-xs 0;
+        font-size: $font-size-xs;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--bs-secondary-color);
+        border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+    }
+
+    td {
+        padding: $spacing-xs 0;
+        font-size: $font-size-sm;
+        vertical-align: middle;
+    }
+
+    tbody tr {
+        transition: background-color $transition-fast;
+
+        &:hover {
+            background: color-mix(in srgb, var(--bs-tertiary-bg) 60%, transparent);
+        }
+    }
+}
+
+.placingCell {
+    text-align: left;
+    font-weight: $heading-font-weight;
+}
+
+.userCell {
+    display: flex;
+    justify-self: end;
+    flex-grow: 1;
+}
+
+.timeCell {
+    @include monospace-value;
+    font-size: $font-size-sm;
+    white-space: nowrap;
+}
+
+// ── Stats Panel ──
+
+.statsPanel {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 60%, var(--bs-secondary-bg) 40%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 40%, var(--bs-secondary-bg) 60%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    padding: $spacing-md $spacing-lg;
+    margin-bottom: $spacing-sm;
+    box-shadow: $shadow-sm;
+}
+
+.statsSubheading {
+    font-size: $font-size-base;
+    font-weight: $heading-font-weight;
+    margin-bottom: $spacing-xs;
+}
+
+.leaderboardEntry {
+    display: flex;
+    align-items: center;
+    gap: $spacing-xs;
+    padding: 2px 0;
+    font-size: $font-size-sm;
+}
+
+// ── Participant Detail Cards ──
+
+.participantCard {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
+    );
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: $radius-lg;
+    padding: $spacing-sm $spacing-lg $spacing-xs;
+    height: 100%;
+    transition: all $transition-base;
+    margin-bottom: $spacing-md;
+}
+
+.participantCardHighlighted {
+    background: var(--bs-tertiary-bg);
+}
+
+.participantCardStreaming {
+    cursor: pointer;
+
+    &:hover {
+        box-shadow: $shadow-md;
+        border-color: rgba(var(--bs-primary-rgb), 0.3);
+    }
+}
+
+.participantHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.participantName {
+    font-size: $font-size-lg;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.participantPlacing {
+    font-size: $font-size-lg;
+    white-space: nowrap;
+}
+
+.participantMeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: $font-size-sm;
+}
+
+.participantDivider {
+    border-color: rgba(var(--bs-primary-rgb), 0.1);
+    margin: $spacing-sm 0;
+}
+
+.participantBody {
+    min-height: 5.2rem;
+    display: flex;
+    width: 100%;
+}
+
+.participantLiveData {
+    width: 100%;
+    font-size: $font-size-sm;
+}
+
+.timerDisplay {
+    @include monospace-value;
+    font-size: $font-size-lg;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.participantComment {
+    font-style: italic;
+    font-size: $font-size-sm;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 50%;
+}
+
+.awaitingData {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-style: italic;
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+    height: 50%;
+}
+
+// ── Chat Panel ──
+
+.chatPanel {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 60%, var(--bs-secondary-bg) 40%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 40%, var(--bs-secondary-bg) 60%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    padding: $spacing-sm $spacing-lg;
+    margin-bottom: $spacing-md;
+    height: 24rem;
+}
+
+.chatFilters {
+    display: flex;
+    height: 2rem;
+    gap: $spacing-sm;
+    font-size: $font-size-sm;
+}
+
+.chatMessages {
+    display: flex;
+    flex-direction: column-reverse;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: $spacing-xs $spacing-sm;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+    border-radius: $radius-md;
+    margin-bottom: $spacing-sm;
+    height: 18rem;
+}
+
+.chatMessage {
+    display: flex;
+    font-size: $font-size-sm;
+    padding: 1px 0;
+}
+
+.chatTimestamp {
+    @include monospace-value;
+    font-size: $font-size-xs;
+    color: var(--bs-secondary-color);
+    margin-right: $spacing-sm;
+    flex-shrink: 0;
+}
+
+// ── Actions Panel ──
+
+.actionsPanel {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 60%, var(--bs-secondary-bg) 40%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 40%, var(--bs-secondary-bg) 60%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    padding: $spacing-sm $spacing-lg $spacing-lg;
+    margin-bottom: $spacing-md;
+}

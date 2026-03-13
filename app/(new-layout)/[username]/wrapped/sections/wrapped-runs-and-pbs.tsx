@@ -4,7 +4,6 @@ import { SectionBody } from '~app/(new-layout)/[username]/wrapped/sections/secti
 import { SectionTitle } from '~app/(new-layout)/[username]/wrapped/sections/section-title';
 import { SectionWrapper } from '~app/(new-layout)/[username]/wrapped/sections/section-wrapper';
 import { WrappedWithData } from '~app/(new-layout)/[username]/wrapped/wrapped-types';
-import styles from '~src/components/css/LiveRun.module.scss';
 import { GameImage } from '~src/components/image/gameimage';
 import { TruncatedTextTooltip } from '~src/components/tooltip';
 import {
@@ -14,6 +13,7 @@ import {
     getDateAsMonthDay,
 } from '~src/components/util/datetime';
 import { TrophyIcon } from '~src/icons/trophy-icon';
+import styles from './wrapped-runs-and-pbs.module.scss';
 
 interface WrappedRunsAndPbsProps {
     wrapped: WrappedWithData;
@@ -228,7 +228,7 @@ const GameOverview: React.FC<
                         return (
                             <Col key={key}>
                                 <div
-                                    className={`mb-4 bg-body-secondary bg-opacity-50 game-border border-2 border-secondary py-3 rounded-3 ${styles.liveRunContainer}`}
+                                    className={`mb-4 bg-body-secondary bg-opacity-50 game-border border-2 border-secondary py-3 rounded-3 ${styles.interactiveItem}`}
                                     onClick={() => {
                                         setSelectedGame(key);
                                     }}
@@ -462,7 +462,7 @@ const ShowGame: React.FC<
                             return (
                                 <div
                                     key={category}
-                                    className={`mb-3 bg-body-secondary bg-opacity-50 game-border border-secondary py-2 rounded-3 ${styles.liveRunContainer}`}
+                                    className={`mb-3 bg-body-secondary bg-opacity-50 game-border border-secondary py-2 rounded-3 ${styles.interactiveItem}`}
                                     onClick={() => {
                                         setSelectedCategory(category);
                                     }}

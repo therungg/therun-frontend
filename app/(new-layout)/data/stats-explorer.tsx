@@ -2,10 +2,10 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { Suspense, useCallback, useState } from 'react';
-import { Button, Nav } from 'react-bootstrap';
 import useSWR from 'swr';
 import { fetcher } from '~src/utils/fetcher';
 import { buildQueryUrl } from './build-query-url';
+import styles from './data.module.scss';
 import { FilterBar } from './filter-bar';
 import { PresetCards } from './presets';
 import { ResultsTable } from './results-table';
@@ -114,45 +114,42 @@ function StatsExplorerInner() {
     };
 
     return (
-        <div className="d-flex flex-column gap-3" onKeyDown={handleKeyDown}>
+        <div
+            style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}
+            onKeyDown={handleKeyDown}
+        >
             <PresetCards onApply={handlePreset} />
 
-            <Nav
-                variant="pills"
-                activeKey={tab}
-                onSelect={(k) => k && handleTabChange(k as EntityTab)}
-                className="gap-1 flex-nowrap overflow-auto"
-            >
+            <div className={styles.tabNav}>
                 {ENTITY_TABS.map((t) => (
-                    <Nav.Item key={t.value}>
-                        <Nav.Link
-                            eventKey={t.value}
-                            className="py-1 px-3 text-nowrap"
-                        >
-                            {t.label}
-                        </Nav.Link>
-                    </Nav.Item>
+                    <button
+                        key={t.value}
+                        className={
+                            tab === t.value ? styles.tabActive : styles.tab
+                        }
+                        onClick={() => handleTabChange(t.value)}
+                    >
+                        {t.label}
+                    </button>
                 ))}
-            </Nav>
+            </div>
 
-            <div className="bg-body-secondary rounded-3 p-3">
+            <div className={styles.filterPanel}>
                 <FilterBar
                     tab={tab}
                     filters={filters}
                     onChange={handleFilterChange}
                 />
-                <div className="d-flex gap-2 align-items-center mt-2">
-                    <Button variant="primary" size="sm" onClick={handleSearch}>
-                        Search
-                    </Button>
-                    <Button
-                        variant="link"
-                        size="sm"
-                        className="text-secondary text-decoration-none p-0"
-                        onClick={handleReset}
+                <div className={styles.filterActions}>
+                    <button
+                        className={styles.btnPrimary}
+                        onClick={handleSearch}
                     >
+                        Search
+                    </button>
+                    <button className={styles.btnReset} onClick={handleReset}>
                         Reset
-                    </Button>
+                    </button>
                 </div>
             </div>
 

@@ -1,9 +1,11 @@
+import clsx from 'clsx';
 import { FaCrown, FaHeart } from 'react-icons/fa6';
 import {
     EventFromSearch,
     EventWithOrganizerName,
     eventTierShortNames,
 } from 'types/events.types';
+import styles from './event.styles.module.scss';
 
 export const EventBadges = ({
     event,
@@ -15,11 +17,16 @@ export const EventBadges = ({
         new Date().getTime() > new Date(event.startsAt).getTime();
 
     return (
-        <div className="d-flex align-items-center mt-0 flex-wrap">
+        <div className={styles.badgeRow}>
             {
                 // This was vibe coded
                 isLive && (
-                    <span className="badge bg-danger text-white me-2">
+                    <span
+                        className={clsx(
+                            'badge bg-danger text-white',
+                            styles.eventBadge,
+                        )}
+                    >
                         <span className="ping-dot-container me-1">
                             <span className="ping-dot-ping"></span>
                             <span className="ping-dot"></span>
@@ -29,15 +36,15 @@ export const EventBadges = ({
                 )
             }
             <span
-                className={`badge me-2 ${
-                    event.tier === 1
-                        ? 'bg-warning text-dark'
-                        : event.tier === 2
-                          ? 'bg-success text-white'
-                          : event.tier === 3
-                            ? 'bg-primary text-white'
-                            : 'bg-secondary text-white'
-                }`}
+                className={clsx('badge', styles.eventBadge, {
+                    'bg-warning text-dark': event.tier === 1,
+                    'bg-success text-white': event.tier === 2,
+                    'bg-primary text-white': event.tier === 3,
+                    'bg-secondary text-white':
+                        event.tier !== 1 &&
+                        event.tier !== 2 &&
+                        event.tier !== 3,
+                })}
             >
                 {eventTierShortNames[
                     event.tier as keyof typeof eventTierShortNames
@@ -45,23 +52,37 @@ export const EventBadges = ({
                 {event.tier === 1 && <FaCrown />}
             </span>
             <span
-                className={`badge me-2 ${
-                    event.isOffline
-                        ? 'bg-danger text-white'
-                        : 'bg-info text-dark'
-                }`}
+                className={clsx('badge', styles.eventBadge, {
+                    'bg-danger text-white': event.isOffline,
+                    'bg-info text-dark': !event.isOffline,
+                })}
             >
                 {event.isOffline ? 'Offline' : 'Online'}
             </span>
-            <span className="badge bg-primary text-white me-2">
+            <span
+                className={clsx(
+                    'badge bg-primary text-white',
+                    styles.eventBadge,
+                )}
+            >
                 {event.type}
             </span>
             {event.isForCharity && (
-                <span className="badge bg-info text-dark me-2">
+                <span
+                    className={clsx(
+                        'badge bg-info text-dark',
+                        styles.eventBadge,
+                    )}
+                >
                     For Charity <FaHeart size={8} />
                 </span>
             )}
-            <span className="badge bg-secondary text-white me-2">
+            <span
+                className={clsx(
+                    'badge bg-secondary text-white',
+                    styles.eventBadge,
+                )}
+            >
                 {event.language}
             </span>
         </div>

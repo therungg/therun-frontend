@@ -7,6 +7,7 @@ import { Paginate } from '~src/components/server-pagination/Paginate';
 import { PlusIcon } from '~src/icons/plus-icon';
 import { EventSearchResult } from '~src/lib/events';
 import { Can } from '~src/rbac/Can.component';
+import styles from './event.styles.module.scss';
 import { SpeedrunEventCard } from './event-card';
 import { EventFilters } from './event-filters';
 import { EventSearch } from './event-search';
@@ -14,27 +15,16 @@ import { EventSearch } from './event-search';
 export const Events = ({ events }: { events: EventSearchResult }) => {
     return (
         <div>
-            <Row className="mb-3">
-                <Col md={12} lg={7} className="d-flex">
-                    <h1>Events</h1>
-                </Col>
-                <Col
-                    md={12}
-                    lg={5}
-                    className="d-flex mt-3 mt-lg-0 justify-content-end align-items-center"
-                >
-                    <Can I="create" an="event">
-                        <Link href="/events/create" prefetch={false}>
-                            <IconButton
-                                icon={<PlusIcon />}
-                                iconPosition="right"
-                            >
-                                Create new event
-                            </IconButton>
-                        </Link>
-                    </Can>
-                </Col>
-            </Row>
+            <div className={styles.pageHeader}>
+                <h1 className={styles.pageTitle}>Events</h1>
+                <Can I="create" an="event">
+                    <Link href="/events/create" prefetch={false}>
+                        <IconButton icon={<PlusIcon />} iconPosition="right">
+                            Create new event
+                        </IconButton>
+                    </Link>
+                </Can>
+            </div>
             <Row>
                 <Col xl={2} lg={3} md={4} sm={5} xs={12}>
                     <EventFilters filters={events.facets} />

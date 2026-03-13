@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+import styles from '../admin.module.scss';
 import { moveUserAction } from './actions/move-user.action';
 
 export const MoveUserForm = () => {
@@ -33,42 +34,42 @@ export const MoveUserForm = () => {
     };
 
     return (
-        <div className="container mt-5" style={{ maxWidth: '600px' }}>
-            <div className="card shadow-sm border-0">
-                <div className="card-header bg-primary text-white">
-                    <h4 className="mb-0">Move User</h4>
+        <div className={styles.page} style={{ maxWidth: '600px' }}>
+            <div className={styles.panel}>
+                <div className={styles.panelHeader}>
+                    <h4 className={styles.panelTitle}>Move User</h4>
                 </div>
-                <div className="card-body">
-                    <p className="text-muted mb-4">
+                <div className={styles.panelBody}>
+                    <p
+                        className={styles.pageSubtitle}
+                        style={{ marginBottom: '1.5rem' }}
+                    >
                         Move a user from one username to another. This will
                         transfer all data to the new username.
                     </p>
                     <form onSubmit={handleSubmit}>
-                        <div className="mb-3">
-                            <label
-                                htmlFor="from"
-                                className="form-label fw-bold"
-                            >
+                        <div className={styles.formGroup}>
+                            <label htmlFor="from" className={styles.formLabel}>
                                 From (current username)
                             </label>
                             <input
                                 type="text"
                                 id="from"
-                                className="form-control"
+                                className={styles.formInput}
                                 value={from}
                                 onChange={(e) => setFrom(e.target.value)}
                                 placeholder="Current username"
                                 required
                             />
                         </div>
-                        <div className="mb-3">
-                            <label htmlFor="to" className="form-label fw-bold">
+                        <div className={styles.formGroup}>
+                            <label htmlFor="to" className={styles.formLabel}>
                                 To (new username)
                             </label>
                             <input
                                 type="text"
                                 id="to"
-                                className="form-control"
+                                className={styles.formInput}
                                 value={to}
                                 onChange={(e) => setTo(e.target.value)}
                                 placeholder="New username"
@@ -77,12 +78,13 @@ export const MoveUserForm = () => {
                         </div>
                         <button
                             type="submit"
-                            className="btn btn-primary w-100"
+                            className={styles.btnPrimary}
                             disabled={
                                 status === 'loading' ||
                                 !from.trim() ||
                                 !to.trim()
                             }
+                            style={{ width: '100%' }}
                         >
                             {status === 'loading'
                                 ? 'Moving user...'
@@ -91,15 +93,13 @@ export const MoveUserForm = () => {
                     </form>
 
                     {status === 'success' && (
-                        <div className="alert alert-success mt-3 mb-0">
+                        <div className={styles.alertSuccess}>
                             User moved successfully.
                         </div>
                     )}
 
                     {status === 'error' && (
-                        <div className="alert alert-danger mt-3 mb-0">
-                            {errorMessage}
-                        </div>
+                        <div className={styles.alertDanger}>{errorMessage}</div>
                     )}
                 </div>
             </div>

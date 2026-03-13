@@ -1,9 +1,11 @@
+@use '../../../styles/design-tokens' as *;
+
 .socialIcon {
-    transition: transform 0.2s;
+    transition: transform $transition-base;
 }
+
 .socialIcon:hover {
     transform: scale(1.1);
-    transition: transform 0.2s;
 }
 
 @media (min-width: 768px) {

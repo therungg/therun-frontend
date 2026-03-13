@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import React from 'react';
-import { Button, Container, Row } from 'react-bootstrap';
+import { Button, Container } from 'react-bootstrap';
 import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
 import { User } from '../../../types/session.types';
+import styles from './change-appearance.module.scss';
 
 export const LoginWithPatreon = ({
     session,
@@ -16,12 +17,10 @@ export const LoginWithPatreon = ({
     if (!session.username) {
         return (
             <Container>
-                <Row className="justify-content-center mt-3 g-3">
+                <div className={styles.loginPrompt}>
                     To connect your Patreon account, login with Twitch first.
-                    <p className="d-flex justify-content-center">
-                        <TwitchLoginButton url="/api/change-appearance" />
-                    </p>
-                </Row>
+                    <TwitchLoginButton url="/api/change-appearance" />
+                </div>
             </Container>
         );
     }
@@ -31,8 +30,8 @@ export const LoginWithPatreon = ({
     const url = `https://patreon.com/oauth2/authorize?response_type=code&client_id=QLyBxIC3dSTxWEVqx_YJZCJSHHWxyt3LhE8Nue4_aOXmYlMsq9whaL2-VcqyCf1n&scope=identity&redirect_uri=${redirectUri}`;
 
     return (
-        <Container className="text-center">
-            <p className="mb-3">
+        <Container className={styles.loginContainer}>
+            <p>
                 To match your Patreon with your therun.gg account, link your
                 Patreon account here!
             </p>

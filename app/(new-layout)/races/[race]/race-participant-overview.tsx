@@ -10,6 +10,7 @@ import {
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { TrophyIcon } from '~src/icons/trophy-icon';
+import styles from './race-detail.module.scss';
 
 interface RaceParticipantOverviewProps {
     race: Race;
@@ -30,19 +31,17 @@ export const RaceParticipantOverview = ({
     );
 
     return (
-        <div className="px-4 pt-2 pb-3 mb-3 card game-border mh-100">
-            <span className="h4 flex-center mb-0">Standings</span>
-            <hr />
-            <table className="w-100 text-end">
+        <div className={styles.standingsPanel}>
+            <span className={styles.panelTitle}>Standings</span>
+            <hr className={styles.panelDivider} />
+            <table className={styles.standingsTable}>
                 <thead>
                     <tr>
-                        <th className="py-1 text-start">#</th>
-                        <th className="py-1 d-flex justify-self-end flex-grow-1">
-                            Username
-                        </th>
-                        <th className="py-1">Rating</th>
-                        <th className="py-1">%</th>
-                        <th className="py-1">Status</th>
+                        <th className={styles.placingCell}>#</th>
+                        <th className={styles.userCell}>Username</th>
+                        <th>Rating</th>
+                        <th>%</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
                 <tbody ref={parent}>
@@ -79,11 +78,11 @@ export const RaceParticipantItem = ({
     return (
         <>
             <tr>
-                <td className="text-start">
+                <td className={styles.placingCell}>
                     {participant.status !== 'abandoned' && `${placing}.`}
                     {participant.status == 'abandoned' && `-`}
                 </td>
-                <td className="d-flex justify-self-end flex-grow-1">
+                <td className={styles.userCell}>
                     <UserLink
                         username={participant.user}
                         url={`/${participant.user}/races`}
@@ -103,7 +102,7 @@ export const RaceParticipantItem = ({
                     {percentage > 0 && `${percentage.toFixed(0)}%`}
                     {percentage === 0 && '-'}
                 </td>
-                <td className="text-nowrap">
+                <td className={styles.timeCell}>
                     <RaceParticipantStatus
                         race={race}
                         participant={participant}

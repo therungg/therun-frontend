@@ -32,7 +32,7 @@ export const BestRunnersForCategory: React.FC<Props> = ({ data }) => {
                                     username={leaderboard.username}
                                 />
                             </td>
-                            <td style={{ fontWeight: 'bolder' }}>
+                            <td className="font-monospace">
                                 <DurationToFormatted
                                     duration={leaderboard.stat as string}
                                 />

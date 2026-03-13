@@ -1,0 +1,186 @@
+@use '../../../styles/design-tokens' as *;
+@use '../../../styles/mixins' as *;
+
+// ============================================
+// User Race Card
+// ============================================
+
+.raceCard {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    overflow: hidden;
+    transition: all $transition-base;
+    height: 100%;
+
+    &:hover {
+        box-shadow: $shadow-md;
+        border-color: rgba(var(--bs-primary-rgb), 0.25);
+        transform: translateY($hover-lift);
+    }
+}
+
+.raceCardImage {
+    border-radius: 0;
+    border-top-left-radius: $radius-lg;
+    border-bottom-left-radius: $radius-lg;
+    height: 100%;
+    display: inline-block;
+    object-fit: cover;
+}
+
+.raceCardBody {
+    padding: $spacing-sm;
+    padding-left: $spacing-xs;
+    padding-right: $spacing-lg;
+    display: flex;
+    flex-direction: column;
+}
+
+.raceGameTitle {
+    font-size: $font-size-lg;
+    font-weight: $heading-font-weight;
+    color: var(--bs-link-color);
+}
+
+.raceCategoryTitle {
+    font-size: $font-size-base;
+}
+
+.raceDetail {
+    padding-top: $spacing-sm;
+}
+
+.raceTime {
+    @include monospace-value;
+    font-style: italic;
+}
+
+.raceParticipants {
+    white-space: nowrap;
+}
+
+// ============================================
+// User Race Stats by Game Card
+// ============================================
+
+.gameStatsCard {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    margin-bottom: $spacing-md;
+    overflow: hidden;
+    color: var(--bs-body-color);
+}
+
+.gameStatsImage {
+    border-top-left-radius: $radius-lg;
+}
+
+.gameStatsHeader {
+    padding: 0 $spacing-md;
+    width: 100%;
+}
+
+.gameStatsTitle {
+    font-size: $font-size-lg;
+    font-weight: $heading-font-weight;
+    padding-top: $spacing-sm;
+    margin-bottom: 0;
+}
+
+.gameStatsCategory {
+    font-style: italic;
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.gameStatsDivider {
+    margin: 0;
+    padding: 0;
+    margin-top: $spacing-xs;
+    margin-bottom: $spacing-sm;
+    border-color: rgba(var(--bs-primary-rgb), 0.15);
+}
+
+.categoryRow {
+    border-top: $section-border;
+    transition: background-color $transition-fast;
+
+    &:hover {
+        background-color: var(--bs-tertiary-bg);
+        cursor: pointer;
+    }
+}
+
+.categoryName {
+    width: 6.34rem;
+    padding-left: $spacing-sm;
+    display: flex;
+    align-items: center;
+    border-right: $section-border;
+}
+
+// ============================================
+// Category Stats Display
+// ============================================
+
+.categoryStats {
+    display: flex;
+    justify-content: space-between;
+    padding: $spacing-xs $spacing-md;
+    transition: background-color $transition-fast;
+
+    &:hover {
+        background-color: var(--bs-tertiary-bg);
+        cursor: pointer;
+    }
+}
+
+.categoryStatsLabel {
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.categoryStatsValue {
+    @include monospace-value;
+    font-size: $font-size-sm;
+}
+
+// ============================================
+// User Race Profile Layout
+// ============================================
+
+.profileContainer {
+    margin-top: $spacing-sm;
+}
+
+.sectionHeading {
+    font-size: $font-size-2xl;
+    font-weight: $heading-font-weight;
+    letter-spacing: $heading-letter-spacing;
+    margin-bottom: $spacing-lg;
+}
+
+.noRaces {
+    text-align: center;
+    padding: $spacing-3xl;
+    color: var(--bs-secondary-color);
+    font-size: $font-size-base;
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
+    );
+    border: $section-border;
+    border-radius: $radius-lg;
+    box-shadow: $shadow-sm;
+}

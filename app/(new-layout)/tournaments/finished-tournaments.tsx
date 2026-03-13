@@ -2,6 +2,7 @@
 
 import { useContext } from 'react';
 import { Table } from 'react-bootstrap';
+import styles from '~src/components/css/Tournament.module.scss';
 import { PaginationContext } from '~src/components/pagination/pagination.context';
 import { PaginationContextProvider } from '~src/components/pagination/pagination.context-provider';
 import PaginationControl from '~src/components/pagination/pagination-control';
@@ -32,9 +33,15 @@ export const FinishedTournamentsPaginated = ({
     const { setSearch } = useContext(PaginationContext);
     return (
         <div>
-            <h3>Finished Tournaments</h3>
+            <h3 className={styles.sectionTitle}>Finished Tournaments</h3>
             <PaginationSearch text="Search for tournament/organizer/game" />
-            <Table responsive striped bordered hover className="mt-3">
+            <Table
+                responsive
+                striped
+                bordered
+                hover
+                className={`${styles.finishedTable} mt-3`}
+            >
                 <thead>
                     <tr>
                         <th>Name</th>

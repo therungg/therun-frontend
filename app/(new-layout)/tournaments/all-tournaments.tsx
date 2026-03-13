@@ -6,6 +6,7 @@ import { CurrentTournaments } from '~app/(new-layout)/tournaments/current-tourna
 import { FinishedTournaments } from '~app/(new-layout)/tournaments/finished-tournaments';
 import { TournamentInfoBox } from '~app/(new-layout)/tournaments/tournament-info-box';
 import { UpcomingTournaments } from '~app/(new-layout)/tournaments/upcoming-tournaments';
+import styles from '~src/components/css/Tournament.module.scss';
 import { Tournament } from '~src/components/tournament/tournament-info';
 import { FromNow } from '~src/components/util/datetime';
 import { safeEncodeURI } from '~src/utils/uri';
@@ -45,7 +46,7 @@ export function AllTournaments({
 }: AllTournamentsProps) {
     return (
         <div>
-            <h1>Tournaments</h1>
+            <h1 className={styles.pageHeader}>Tournaments</h1>
             <Row>
                 <Col xl={8}>
                     <CurrentTournaments tournaments={ongoingTournaments} />
@@ -95,8 +96,8 @@ export const ListTournaments = ({
                                 </a>
                             </div>
                         )}
-                        <Card className="card-columns">
-                            <Card.Header className="border-0">
+                        <Card className={`${styles.listCard} card-columns`}>
+                            <Card.Header className={styles.listCardHeader}>
                                 <div className="overflow-hidden">
                                     <a
                                         href={`/tournaments/${safeEncodeURI(
@@ -116,7 +117,7 @@ export const ListTournaments = ({
                                     </div>
                                 </div>
                             </Card.Header>
-                            <Card.Body>
+                            <Card.Body className={styles.listCardBody}>
                                 <Row>
                                     <Col xs={5} md={6}>
                                         <b>Start Date:</b>

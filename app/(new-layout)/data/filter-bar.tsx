@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Col, Form, Row } from 'react-bootstrap';
+import styles from './data.module.scss';
 import type { EntityTab, Filters, Metric } from './types';
 import { METRIC_OPTIONS, TAB_FILTERS, USER_METRIC_OPTIONS } from './types';
 
@@ -17,13 +17,13 @@ export function FilterBar({ tab, filters, onChange }: FilterBarProps) {
         tab === 'users' ? USER_METRIC_OPTIONS : METRIC_OPTIONS;
 
     return (
-        <Row className="g-2 align-items-end">
+        <div className={styles.filterRow}>
             {visibleFilters.map((key) => {
                 if (key === 'metric') {
                     return (
-                        <Col xs={6} md="auto" key={key}>
-                            <Form.Select
-                                size="sm"
+                        <div key={key}>
+                            <select
+                                className={styles.filterSelect}
                                 value={filters.metric}
                                 onChange={(e) =>
                                     onChange('metric', e.target.value as Metric)
@@ -35,21 +35,19 @@ export function FilterBar({ tab, filters, onChange }: FilterBarProps) {
                                         {opt.label}
                                     </option>
                                 ))}
-                            </Form.Select>
-                        </Col>
+                            </select>
+                        </div>
                     );
                 }
 
                 return (
-                    <Col xs={6} md="auto" key={key}>
-                        {renderFilter(key, filters, onChange)}
-                    </Col>
+                    <div key={key}>{renderFilter(key, filters, onChange)}</div>
                 );
             })}
 
-            <Col xs={6} md="auto">
-                <Form.Select
-                    size="sm"
+            <div>
+                <select
+                    className={styles.filterSelect}
                     value={filters.limit}
                     onChange={(e) => onChange('limit', e.target.value)}
                     style={{ width: '5rem' }}
@@ -58,9 +56,9 @@ export function FilterBar({ tab, filters, onChange }: FilterBarProps) {
                     <option value="50">50</option>
                     <option value="100">100</option>
                     <option value="200">200</option>
-                </Form.Select>
-            </Col>
-        </Row>
+                </select>
+            </div>
+        </div>
     );
 }
 
@@ -72,8 +70,8 @@ function renderFilter(
     switch (key) {
         case 'game':
             return (
-                <Form.Control
-                    size="sm"
+                <input
+                    className={styles.filterInput}
                     type="text"
                     placeholder="Game"
                     value={filters.game}
@@ -83,8 +81,8 @@ function renderFilter(
             );
         case 'category':
             return (
-                <Form.Control
-                    size="sm"
+                <input
+                    className={styles.filterInput}
                     type="text"
                     placeholder="Category"
                     value={filters.category}
@@ -94,8 +92,8 @@ function renderFilter(
             );
         case 'username':
             return (
-                <Form.Control
-                    size="sm"
+                <input
+                    className={styles.filterInput}
                     type="text"
                     placeholder="Username"
                     value={filters.username}
@@ -105,8 +103,8 @@ function renderFilter(
             );
         case 'minPlaytime':
             return (
-                <Form.Control
-                    size="sm"
+                <input
+                    className={styles.filterInput}
                     type="number"
                     placeholder="Min hours"
                     value={filters.minPlaytime}
@@ -116,8 +114,8 @@ function renderFilter(
             );
         case 'minAttempts':
             return (
-                <Form.Control
-                    size="sm"
+                <input
+                    className={styles.filterInput}
                     type="number"
                     placeholder="Min attempts"
                     value={filters.minAttempts}
@@ -128,14 +126,9 @@ function renderFilter(
         case 'afterDate':
             return (
                 <div>
-                    <div
-                        className="text-secondary mb-1"
-                        style={{ fontSize: '0.7rem' }}
-                    >
-                        After
-                    </div>
-                    <Form.Control
-                        size="sm"
+                    <div className={styles.filterLabel}>After</div>
+                    <input
+                        className={styles.filterInput}
                         type="date"
                         value={filters.afterDate}
                         onChange={(e) => onChange('afterDate', e.target.value)}
@@ -145,14 +138,9 @@ function renderFilter(
         case 'beforeDate':
             return (
                 <div>
-                    <div
-                        className="text-secondary mb-1"
-                        style={{ fontSize: '0.7rem' }}
-                    >
-                        Before
-                    </div>
-                    <Form.Control
-                        size="sm"
+                    <div className={styles.filterLabel}>Before</div>
+                    <input
+                        className={styles.filterInput}
                         type="date"
                         value={filters.beforeDate}
                         onChange={(e) => onChange('beforeDate', e.target.value)}
@@ -161,8 +149,8 @@ function renderFilter(
             );
         case 'isPb':
             return (
-                <Form.Select
-                    size="sm"
+                <select
+                    className={styles.filterSelect}
                     value={filters.isPb}
                     onChange={(e) => onChange('isPb', e.target.value)}
                     style={{ minWidth: '7rem' }}
@@ -170,12 +158,12 @@ function renderFilter(
                     <option value="">Any</option>
                     <option value="true">PBs only</option>
                     <option value="false">Non-PBs only</option>
-                </Form.Select>
+                </select>
             );
         case 'topGames':
             return (
-                <Form.Control
-                    size="sm"
+                <input
+                    className={styles.filterInput}
                     type="number"
                     placeholder="Top N games"
                     value={filters.topGames}
@@ -185,8 +173,8 @@ function renderFilter(
             );
         case 'topCategories':
             return (
-                <Form.Control
-                    size="sm"
+                <input
+                    className={styles.filterInput}
                     type="number"
                     placeholder="Top N categories"
                     value={filters.topCategories}
