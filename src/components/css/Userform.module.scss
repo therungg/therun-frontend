@@ -1,52 +1,52 @@
+@use '~app/(new-layout)/styles/design-tokens' as *;
+@use '~app/(new-layout)/styles/mixins' as *;
+
+// ============================================
+// User Form - Edit Run / Profile Forms
+// ============================================
+
 fieldset.fieldset {
-    padding: 0.5rem 2rem;
+    padding: $spacing-sm $spacing-3xl;
 }
 
 .editInfoButton {
     width: 15rem;
     height: 2.5rem;
-    background-color: var(--bs-secondary-bg);
-    border-color: var(--bs-link-color);
-    font-weight: 0;
+    background-color: color-mix(in srgb, var(--bs-body-bg) 95%, var(--bs-primary) 5%);
+    border: $section-border;
+    border-color: var(--bs-primary);
+    border-radius: $radius-md;
+    font-weight: $label-font-weight;
+    font-size: $font-size-base;
     color: var(--bs-body-color);
-}
+    transition: all $transition-fast;
 
-.editInfoButton:hover {
-    background-color: var(--bs-link-color);
-    border-color: var(--bs-link-color);
-}
-
-.editInfoButton:active {
-    background-color: var(--bs-link-color);
-    border-color: var(--bs-link-color);
-}
-
-.editInfoButton:focus {
-    background-color: var(--bs-link-color);
-    border-color: var(--bs-link-color);
+    &:hover,
+    &:active,
+    &:focus {
+        background-color: var(--bs-primary);
+        border-color: var(--bs-primary);
+        color: white;
+    }
 }
 
 .cancelButton {
-    margin-left: 1rem;
+    margin-left: $spacing-lg;
     width: 5rem;
     height: 2.5rem;
-    background-color: var(--bs-secondary-bg);
-    border-color: darkred;
-    font-weight: 0;
+    background-color: color-mix(in srgb, var(--bs-body-bg) 95%, $accent-red 5%);
+    border: 1px solid $accent-red;
+    border-radius: $radius-md;
+    font-weight: $label-font-weight;
+    font-size: $font-size-base;
     color: var(--bs-body-color);
-}
+    transition: all $transition-fast;
 
-.cancelButton:hover {
-    background-color: darkred;
-    border-color: darkred;
-}
-
-.cancelButton:active {
-    background-color: darkred;
-    border-color: darkred;
-}
-
-.cancelButton:focus {
-    background-color: darkred;
-    border-color: darkred;
+    &:hover,
+    &:active,
+    &:focus {
+        background-color: $accent-red;
+        border-color: $accent-red;
+        color: white;
+    }
 }

@@ -1,7 +1,15 @@
+@use '~app/(new-layout)/styles/design-tokens' as *;
+@use '~app/(new-layout)/styles/mixins' as *;
+
+// ============================================
+// Split Stats - Accordion Detail View
+// ============================================
+
 .graph {
     min-width: 25rem;
 }
 
+// Columns visible on large screens, hidden on smaller
 .splitDetailColumn {
 }
 
@@ -9,23 +17,43 @@
     display: none;
 }
 
+// Mobile comparison dropdown (hidden on desktop)
 .splitComparisonOption {
     display: none;
 }
 
+.hideSelectArrow {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    text-indent: 0.01px;
+    text-overflow: "";
+    appearance: none !important;
+}
+
 .consistencyColor {
     color: var(--bs-body-color);
+    @include monospace-value;
+    font-size: $font-size-sm;
 }
+
+// ============================================
+// Options Row (toggle switches)
+// ============================================
 
 .options {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: $spacing-sm;
 }
 
 .middleOption {
-    margin: 0 2rem;
+    margin: 0 $spacing-3xl;
 }
+
+// ============================================
+// Responsive
+// ============================================
 
 @media screen and (max-width: 1199.98px) {
     .splitDetailColumn {
@@ -37,12 +65,16 @@
     }
 
     .middleOption {
-        margin: 0 1rem 0 0;
+        margin: 0 $spacing-lg 0 0;
     }
 }
 
 @media screen and (max-width: 767.98px) {
     .options {
         display: revert;
+    }
+
+    .graph {
+        min-width: auto;
     }
 }

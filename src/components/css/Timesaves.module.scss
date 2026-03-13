@@ -1,67 +1,96 @@
+@use '~app/(new-layout)/styles/design-tokens' as *;
+@use '~app/(new-layout)/styles/mixins' as *;
+
+// ============================================
+// Timesaves - Number Input & Visual Bars
+// ============================================
+
 .numberInput {
-    background-color: var(--bs-secondary-bg);
+    background-color: color-mix(in srgb, var(--bs-body-bg) 95%, var(--bs-primary) 5%);
     color: var(--bs-body-color);
-    border: none;
+    border: $section-border;
+    border-radius: $radius-md;
     background-image: none;
     width: 8rem;
-    margin-left: 0.5rem;
+    margin-left: $spacing-sm;
+    font-size: $font-size-base;
+    padding: $spacing-xs $spacing-sm;
+    transition: border-color $transition-fast, background-color $transition-fast;
+
+    &:active {
+        color: var(--bs-body-color);
+    }
+
+    &:focus {
+        background-color: var(--bs-tertiary-bg);
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.15);
+        color: var(--bs-body-color);
+        outline: none;
+    }
+
+    &:after {
+        display: none;
+    }
+
+    &:hover {
+        cursor: text;
+        border-color: rgba(var(--bs-primary-rgb), 0.25);
+    }
 }
 
-.numberInput:active {
-    color: var(--bs-body-color);
-}
-
-.numberInput:focus {
-    background-color: var(--bs-tertiary-bg);
-    border-color: var(--bs-link-color);
-    box-shadow: 1px var(--bs-link-color);
-    color: var(--bs-body-color);
-}
-
-.numberInput:after {
-    display: none;
-}
-
-.numberInput:hover {
-    cursor: text;
-}
+// ============================================
+// Mode Toggle (segment/total switch)
+// ============================================
 
 .modeToggle {
     display: flex;
     justify-content: center;
     align-items: center;
+    gap: $spacing-sm;
 }
 
+// Columns hidden on narrower screens
 .optionalColumn {
 }
 
+// ============================================
+// Visual Timesave Bars
+// ============================================
+
 .visual {
-    margin-top: 1rem;
+    margin-top: $spacing-lg;
 }
 
 .visualTimesave {
     height: 5rem;
     color: var(--bs-body-color);
-    margin-bottom: 4px;
-    border-radius: 20px;
-    padding-left: 2rem;
+    margin-bottom: $spacing-xs;
+    border-radius: $radius-xl;
+    padding-left: $spacing-3xl;
+    transition: opacity $transition-fast;
 }
 
 .visualSplitname {
     height: 100%;
-    font-size: 1.5rem;
-    font-weight: bold;
+    font-size: $font-size-2xl;
+    font-weight: $heading-font-weight;
     display: flex;
     align-items: center;
 }
 
 .visualSplitData {
-    padding-top: 0.3rem;
+    padding-top: $spacing-xs;
     display: flex;
     align-items: center;
     height: 100%;
-    font-size: 1.1rem;
+    font-size: $font-size-lg;
+    @include monospace-value;
 }
+
+// ============================================
+// Responsive
+// ============================================
 
 @media screen and (max-width: 991.98px) {
     .optionalColumn {

@@ -1,26 +1,31 @@
+@use '~app/(new-layout)/styles/design-tokens' as *;
+@use '~app/(new-layout)/styles/mixins' as *;
+
+// ============================================
+// Date Picker (Run History filters)
+// ============================================
+
 .datePicker {
-    background-color: var(--bs-secondary-bg);
+    background-color: color-mix(in srgb, var(--bs-body-bg) 95%, var(--bs-primary) 5%);
     color: var(--bs-body-color);
     width: 7rem;
-    border-radius: 0.25rem;
-    font-size: 1rem;
+    border-radius: $radius-md;
+    font-size: $font-size-base;
     height: 38px;
     cursor: pointer;
-    border-color: var(--bs-body-color);
-    border: 1px solid;
-    padding: 0.5rem 0.5rem 0.5rem 0.8rem;
-}
+    border: $section-border;
+    padding: $spacing-sm $spacing-sm $spacing-sm $spacing-md;
+    transition: border-color $transition-fast, background-color $transition-fast;
 
-.datePicker:hover {
-    background-color: var(--bs-tertiary-bg);
-}
+    &:hover {
+        background-color: var(--bs-tertiary-bg);
+        border-color: rgba(var(--bs-primary-rgb), 0.25);
+    }
 
-.datePicker:active {
-    border-color: revert;
-    box-shadow: none;
-}
-
-.datePicker:focus {
-    border-color: revert;
-    box-shadow: none;
+    &:active,
+    &:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.15);
+        outline: none;
+    }
 }
