@@ -11,6 +11,7 @@ import { getRunmap } from '~app/(new-layout)/[username]/runmap.component';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { UserStats as UserRaceStats } from '~app/(new-layout)/races/races.types';
 import { Run, RunSession } from '~src/common/types';
+import styles from '~src/components/css/User.module.scss';
 import { GametimeForm } from '~src/components/gametime/gametime-form';
 import { LiveIcon, LiveUserRun } from '~src/components/live/live-user-run';
 import { HighlightedRun } from '~src/components/run/dashboard/highlighted-run';
@@ -132,7 +133,7 @@ export const UserProfile = ({
                         className="my-3 my-md-0 game-filter-mb game-filter-mw"
                     >
                         <select
-                            className="form-select"
+                            className={`form-select ${styles.gameFilter}`}
                             onChange={(e) => {
                                 setCurrentGame(e.target.value.split('#')[0]);
                             }}
@@ -186,8 +187,8 @@ export const UserProfile = ({
                         </Col>
                         <Col xl={4} lg={12}>
                             {!!liveRun && !Array.isArray(liveRun) && (
-                                <div className="mb-3">
-                                    <h2>
+                                <div className={styles.liveSection}>
+                                    <h2 className={styles.sectionHeading}>
                                         Currently Live!&nbsp;
                                         <Link href="/live" prefetch={false}>
                                             <LiveIcon />
@@ -211,14 +212,18 @@ export const UserProfile = ({
                             <UserStats runs={currentRuns} />
                             {raceStats && (
                                 <div>
-                                    <span className="justify-content-between d-flex">
-                                        <div className="d-flex">
-                                            <h2>Races</h2>
+                                    <div className={styles.racesHeader}>
+                                        <div className="d-flex align-items-center">
+                                            <h2
+                                                className={
+                                                    styles.sectionHeading
+                                                }
+                                                style={{ marginBottom: 0 }}
+                                            >
+                                                Races
+                                            </h2>
                                             <span
-                                                style={{
-                                                    color: 'var(--bs-gold)',
-                                                }}
-                                                className="ms-2"
+                                                className={styles.racesNewBadge}
                                             >
                                                 New!
                                             </span>
@@ -228,7 +233,7 @@ export const UserProfile = ({
                                                 User Race Profile
                                             </a>
                                         </div>
-                                    </span>
+                                    </div>
                                     <UserRaceStatsTable raceStats={raceStats} />
                                 </div>
                             )}
@@ -249,7 +254,9 @@ export const UserProfile = ({
                 <Tab title="Sessions" eventKey="sessions">
                     <Row>
                         <Col>
-                            <h2>Speedrun Sessions</h2>
+                            <h2 className={styles.sectionHeading}>
+                                Speedrun Sessions
+                            </h2>
                             <SessionOverview
                                 sessions={
                                     hasGameTime &&
@@ -263,7 +270,7 @@ export const UserProfile = ({
                     </Row>
                 </Tab>
                 <Tab title="Twitch stream" eventKey="stream">
-                    <h2>Twitch stream</h2>
+                    <h2 className={styles.sectionHeading}>Twitch stream</h2>
 
                     <TwitchEmbed
                         channel={username}
@@ -287,7 +294,7 @@ const NoRuns = (username: string, session: User, userData: UserData) => {
                 userData={userData}
             />
             <hr />
-            <div>
+            <div className={styles.noRuns}>
                 Unfortunately, {username} has not uploaded runs yet, or their
                 upload has not yet been processed (should not take long). If the
                 user has uploaded runs, but this page still shows, please{' '}

@@ -5,6 +5,7 @@ import useSWR from 'swr';
 import { VictoryAxis, VictoryBar, VictoryChart, VictoryTooltip } from 'victory';
 import CalendarHeatmap from '../../../public/js/calendar-heatmap.component';
 import { fetcher } from '../../utils/fetcher';
+import styles from '../css/User.module.scss';
 import { getFormattedString } from '../util/datetime';
 
 export interface PlaytimeStats {
@@ -58,13 +59,10 @@ export const Stats = ({ username }: { username: string }) => {
         <div>
             <Row>
                 <Col>
-                    <h2>Activity Stats</h2>
+                    <h2 className={styles.sectionHeading}>Activity Stats</h2>
                 </Col>
             </Row>
-            <div
-                className="playtime-graph"
-                style={{ marginTop: '1rem', marginBottom: '2rem' }}
-            >
+            <div className={`playtime-graph ${styles.graphSection}`}>
                 <PlayTimeTable
                     playtimePerDay={playtimeStats.playtimePerDayMap}
                     playtimePerYear={playtimeStats.playtimePerYearMap}
@@ -121,27 +119,22 @@ export const PlayTimeTable = ({
 
     return (
         <div>
-            <div style={{ display: 'flex', marginBottom: '1rem' }}>
+            <div className={styles.activityHeader}>
                 {!!currentYear && (
-                    <div>
-                        Selected year:{' '}
-                        <span style={{ fontSize: 'larger' }}>
-                            {currentYear}
-                        </span>
+                    <div className={styles.activityStat}>
+                        Selected year: <span>{currentYear}</span>
                     </div>
                 )}
-                <div style={{ marginLeft: currentYear ? '2rem' : '' }}>
+                <div className={styles.activityStat}>
                     Total playtime:{' '}
-                    <span style={{ fontSize: 'larger' }}>
-                        {getFormattedString(total.toString())}
-                    </span>
+                    <span>{getFormattedString(total.toString())}</span>
                 </div>
                 {!!currentYear &&
                     playtimePerYear[currentYear] &&
                     playtimePerYear[currentYear].total && (
-                        <div style={{ marginLeft: '2rem' }}>
+                        <div className={styles.activityStat}>
                             Playtime in {currentYear}:{' '}
-                            <span style={{ fontSize: 'larger' }}>
+                            <span>
                                 {getFormattedString(
                                     playtimePerYear[
                                         currentYear
@@ -199,7 +192,7 @@ export const PlaytimePerMonthGraph = ({
 
     return (
         <div>
-            <h3>Playtime per month</h3>
+            <h3 className={styles.graphTitle}>Playtime per month</h3>
             <VictoryChart
                 padding={{ top: 10, left: 0, right: 0, bottom: 70 }}
                 domainPadding={{ x: [30, 30], y: [10, 10] }}
@@ -313,7 +306,7 @@ export const PlayTimePerDayOfWeekGraph = ({
 
     return (
         <div>
-            <h3>Playtime per day of week</h3>
+            <h3 className={styles.graphTitle}>Playtime per day of week</h3>
             <VictoryChart
                 padding={{ top: 10, left: 0, right: 0, bottom: 70 }}
                 domainPadding={{ x: [30, 30], y: [10, 10] }}
@@ -416,7 +409,7 @@ export const PlaytimePerHourGraph = ({
 
     return (
         <div>
-            <h3>Playtime per hour of day</h3>
+            <h3 className={styles.graphTitle}>Playtime per hour of day</h3>
             <VictoryChart
                 padding={{ top: 10, left: 0, right: 0, bottom: 70 }}
                 domainPadding={{ x: [30, 30], y: [10, 10] }}

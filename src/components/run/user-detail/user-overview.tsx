@@ -1,6 +1,6 @@
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useReducer, useState } from 'react';
-import { Col, Image, Row, Table } from 'react-bootstrap';
+import { Col, Image, Row } from 'react-bootstrap';
 import { GlobalGameData } from '~app/(new-layout)/[username]/[game]/[run]/run';
 import { GameImage } from '~src/components/image/gameimage';
 import { Can, subject } from '~src/rbac/Can.component';
@@ -93,7 +93,7 @@ export const UserOverview = ({
                 return (
                     <div
                         key={n}
-                        className="clearfix"
+                        className={`clearfix ${styles.gameSection}`}
                         style={{
                             marginLeft:
                                 sameGame && globalData && images.length > 0
@@ -136,15 +136,12 @@ export const UserOverview = ({
                             </div>
                         )}
                         {!sameGame && (
-                            <h2>{!sameGame && <GameLink game={game} />}</h2>
+                            <h2 className={styles.gameTitle}>
+                                {!sameGame && <GameLink game={game} />}
+                            </h2>
                         )}
                         {vars.length > 0 && (
-                            <small
-                                style={{
-                                    display: 'flex',
-                                    marginBottom: '0.3rem',
-                                }}
-                            >
+                            <div className={styles.categoryVars}>
                                 <Row style={{ width: '100%' }}>
                                     {vars.map((variable) => {
                                         const splitVariables =
@@ -160,176 +157,203 @@ export const UserOverview = ({
                                                 key={k}
                                                 style={{ whiteSpace: 'nowrap' }}
                                             >
-                                                <i>{k}</i>:{' '}
-                                                <b className="fs-15p">{v}</b>
+                                                <span
+                                                    className={styles.varLabel}
+                                                >
+                                                    {k}
+                                                </span>
+                                                :{' '}
+                                                <span
+                                                    className={styles.varValue}
+                                                >
+                                                    {v}
+                                                </span>
                                             </Col>
                                         );
                                     })}
                                 </Row>
-                            </small>
+                            </div>
                         )}
-                        <Table key={game} bordered hover responsive>
-                            <thead
-                                className={
-                                    sameGame ? styles.sameGameRunHeader : ''
-                                }
-                            >
-                                <tr>
-                                    <th style={{ width: '40%' }}>Run</th>
-                                    <th style={{ width: '13%' }}>PB</th>
-                                    <th style={{ width: '13%' }}>Attempts</th>
-                                    <th style={{ width: '13%' }}>Played</th>
-                                    <th style={{ width: '29%' }}>PB Time</th>
-                                    <Can
-                                        I="delete"
-                                        this={subject('run', username)}
-                                    >
-                                        <th>Delete</th>
-                                        <th>Edit</th>
-                                        <th>Highlight</th>
-                                    </Can>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {orderedRuns.map((run: Run, runKey) => {
-                                    const useRun =
-                                        gameTime &&
-                                        !!run.gameTimeData &&
-                                        !forceRealTime &&
-                                        run.gameTimeData.personalBest &&
-                                        parseInt(
-                                            run.gameTimeData.personalBest,
-                                        ) > 1000
-                                            ? { ...run, ...run.gameTimeData }
-                                            : run;
+                        <div className={styles.tableWrapper}>
+                            <table className={styles.dataTable}>
+                                <thead
+                                    className={
+                                        sameGame ? styles.sameGameRunHeader : ''
+                                    }
+                                >
+                                    <tr>
+                                        <th style={{ width: '40%' }}>Run</th>
+                                        <th style={{ width: '13%' }}>PB</th>
+                                        <th style={{ width: '13%' }}>
+                                            Attempts
+                                        </th>
+                                        <th style={{ width: '13%' }}>Played</th>
+                                        <th style={{ width: '29%' }}>
+                                            PB Time
+                                        </th>
+                                        <Can
+                                            I="delete"
+                                            this={subject('run', username)}
+                                        >
+                                            <th>Delete</th>
+                                            <th>Edit</th>
+                                            <th>Highlight</th>
+                                        </Can>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {orderedRuns.map((run: Run, runKey) => {
+                                        const useRun =
+                                            gameTime &&
+                                            !!run.gameTimeData &&
+                                            !forceRealTime &&
+                                            run.gameTimeData.personalBest &&
+                                            parseInt(
+                                                run.gameTimeData.personalBest,
+                                            ) > 1000
+                                                ? {
+                                                      ...run,
+                                                      ...run.gameTimeData,
+                                                  }
+                                                : run;
 
-                                    return (
-                                        <tr key={run.uploadTime.toString()}>
-                                            <td style={{ width: '40%' }}>
-                                                <div
-                                                    style={{ display: 'flex' }}
-                                                >
-                                                    <UserGameCategoryLink
-                                                        username={run.user}
-                                                        category={run.run}
-                                                        game={run.game}
-                                                        url={
-                                                            run.customUrl
-                                                                ? `${run.user}/${run.customUrl}`
-                                                                : run.url
-                                                        }
-                                                    >
-                                                        {run.run}
-                                                    </UserGameCategoryLink>
-
-                                                    {run.highlighted && (
-                                                        <div
-                                                            style={{
-                                                                marginLeft:
-                                                                    '0.5rem',
-                                                            }}
-                                                        >
-                                                            <StarFilledInIcon />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td style={{ width: '13%' }}>
-                                                <DurationToFormatted
-                                                    duration={
-                                                        useRun.personalBest
-                                                    }
-                                                    gameTime={
-                                                        gameTime &&
-                                                        !!run.gameTimeData
-                                                            ?.personalBest &&
-                                                        !forceRealTime
-                                                    }
-                                                />{' '}
-                                                {gameTime &&
-                                                    !forceRealTime &&
-                                                    !!run.gameTimeData
-                                                        ?.personalBest &&
-                                                    '(IGT)'}
-                                            </td>
-                                            <td style={{ width: '13%' }}>
-                                                {run.attemptCount}
-                                            </td>
-                                            <td style={{ width: '13%' }}>
-                                                <DurationToFormatted
-                                                    duration={run.totalRunTime}
-                                                />
-                                            </td>
-                                            <td
-                                                className="text-nowrap"
-                                                style={{ width: '29%' }}
-                                            >
-                                                <IsoToFormatted
-                                                    iso={
-                                                        gameTime &&
-                                                        !!run.gameTimeData
-                                                            ?.personalBestTime
-                                                            ? run.gameTimeData
-                                                                  ?.personalBestTime
-                                                            : run.personalBestTime
-                                                    }
-                                                />
-                                            </td>
-                                            <Can
-                                                I="delete"
-                                                this={subject('run', username)}
-                                            >
-                                                <td>
+                                        return (
+                                            <tr key={run.uploadTime.toString()}>
+                                                <td style={{ width: '40%' }}>
                                                     <div
                                                         style={{
                                                             display: 'flex',
-                                                            justifyContent:
-                                                                'center',
-                                                            cursor: 'pointer',
-                                                        }}
-                                                        onClick={async () => {
-                                                            if (
-                                                                confirm(
-                                                                    `Are you sure you want to delete ${run.game} - ${run.run}?`,
-                                                                )
-                                                            ) {
-                                                                const userIdentifier = `${session.id}-${username}`;
-                                                                const deleteUrl =
-                                                                    run.url.replace(
-                                                                        username,
-                                                                        userIdentifier,
-                                                                    );
-                                                                await fetch(
-                                                                    `/api/users/${deleteUrl}`,
-                                                                    {
-                                                                        method: 'DELETE',
-                                                                    },
-                                                                );
-
-                                                                delete runs.get(
-                                                                    originalGame,
-                                                                )[runKey];
-
-                                                                router.refresh();
-                                                                forceUpdate();
-                                                            }
                                                         }}
                                                     >
-                                                        <TrashIcon />
+                                                        <UserGameCategoryLink
+                                                            username={run.user}
+                                                            category={run.run}
+                                                            game={run.game}
+                                                            url={
+                                                                run.customUrl
+                                                                    ? `${run.user}/${run.customUrl}`
+                                                                    : run.url
+                                                            }
+                                                        >
+                                                            {run.run}
+                                                        </UserGameCategoryLink>
+
+                                                        {run.highlighted && (
+                                                            <div
+                                                                style={{
+                                                                    marginLeft:
+                                                                        '0.5rem',
+                                                                }}
+                                                            >
+                                                                <StarFilledInIcon />
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </td>
-                                                <td>
-                                                    <div
-                                                        style={{
-                                                            display: 'flex',
-                                                            justifyContent:
-                                                                'center',
-                                                        }}
-                                                    >
+                                                <td
+                                                    className={
+                                                        styles.numericCell
+                                                    }
+                                                    style={{ width: '13%' }}
+                                                >
+                                                    <DurationToFormatted
+                                                        duration={
+                                                            useRun.personalBest
+                                                        }
+                                                        gameTime={
+                                                            gameTime &&
+                                                            !!run.gameTimeData
+                                                                ?.personalBest &&
+                                                            !forceRealTime
+                                                        }
+                                                    />{' '}
+                                                    {gameTime &&
+                                                        !forceRealTime &&
+                                                        !!run.gameTimeData
+                                                            ?.personalBest &&
+                                                        '(IGT)'}
+                                                </td>
+                                                <td
+                                                    className={
+                                                        styles.numericCell
+                                                    }
+                                                    style={{ width: '13%' }}
+                                                >
+                                                    {run.attemptCount}
+                                                </td>
+                                                <td
+                                                    className={
+                                                        styles.numericCell
+                                                    }
+                                                    style={{ width: '13%' }}
+                                                >
+                                                    <DurationToFormatted
+                                                        duration={
+                                                            run.totalRunTime
+                                                        }
+                                                    />
+                                                </td>
+                                                <td style={{ width: '29%' }}>
+                                                    <IsoToFormatted
+                                                        iso={
+                                                            gameTime &&
+                                                            !!run.gameTimeData
+                                                                ?.personalBestTime
+                                                                ? run
+                                                                      .gameTimeData
+                                                                      ?.personalBestTime
+                                                                : run.personalBestTime
+                                                        }
+                                                    />
+                                                </td>
+                                                <Can
+                                                    I="delete"
+                                                    this={subject(
+                                                        'run',
+                                                        username,
+                                                    )}
+                                                >
+                                                    <td>
                                                         <div
-                                                            style={{
-                                                                cursor: 'pointer',
+                                                            className={
+                                                                styles.actionIcon
+                                                            }
+                                                            onClick={async () => {
+                                                                if (
+                                                                    confirm(
+                                                                        `Are you sure you want to delete ${run.game} - ${run.run}?`,
+                                                                    )
+                                                                ) {
+                                                                    const userIdentifier = `${session.id}-${username}`;
+                                                                    const deleteUrl =
+                                                                        run.url.replace(
+                                                                            username,
+                                                                            userIdentifier,
+                                                                        );
+                                                                    await fetch(
+                                                                        `/api/users/${deleteUrl}`,
+                                                                        {
+                                                                            method: 'DELETE',
+                                                                        },
+                                                                    );
+
+                                                                    delete runs.get(
+                                                                        originalGame,
+                                                                    )[runKey];
+
+                                                                    router.refresh();
+                                                                    forceUpdate();
+                                                                }
                                                             }}
+                                                        >
+                                                            <TrashIcon />
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div
+                                                            className={
+                                                                styles.actionIcon
+                                                            }
                                                             onClick={() => {
                                                                 if (
                                                                     openedEdit[0] ==
@@ -352,20 +376,12 @@ export const UserOverview = ({
                                                         >
                                                             <EditIcon />
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div
-                                                        style={{
-                                                            display: 'flex',
-                                                            justifyContent:
-                                                                'center',
-                                                        }}
-                                                    >
+                                                    </td>
+                                                    <td>
                                                         <div
-                                                            style={{
-                                                                cursor: 'pointer',
-                                                            }}
+                                                            className={
+                                                                styles.actionIcon
+                                                            }
                                                             onClick={async () => {
                                                                 const userIdentifier = `${session.id}-${username}`;
                                                                 const editUrl =
@@ -400,14 +416,14 @@ export const UserOverview = ({
                                                                 <StarFilledInIcon />
                                                             )}
                                                         </div>
-                                                    </div>
-                                                </td>
-                                            </Can>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </Table>
+                                                    </td>
+                                                </Can>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
 
                         {orderedRuns.map((run: Run, runKey) => {
                             return (
