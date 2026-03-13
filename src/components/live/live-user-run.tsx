@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Col, Image, Row } from 'react-bootstrap';
 import { Twitch as TwitchIcon } from 'react-bootstrap-icons';
-import { Count } from '~app/(old-layout)/games/[game]/game.types';
-import { LiveRun } from '~app/(old-layout)/live/live.types';
-import { LiveSplitTimerComponent } from '~app/(old-layout)/live/live-split-timer.component';
-import { CombinedLeaderboardStat } from '~app/(old-layout)/tournaments/[tournament]/get-combined-tournament-leaderboard.component';
+import { Count } from '~app/(new-layout)/games/[game]/game.types';
+import { LiveRun } from '~app/(new-layout)/live/live.types';
+import { LiveSplitTimerComponent } from '~app/(new-layout)/live/live-split-timer.component';
+import { CombinedLeaderboardStat } from '~app/(new-layout)/tournaments/[tournament]/get-combined-tournament-leaderboard.component';
 import { GameImage } from '~src/components/image/gameimage';
 import { getColorMode } from '~src/utils/colormode';
 import styles from '../css/LiveRun.module.scss';

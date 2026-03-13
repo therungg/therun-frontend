@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Col } from 'react-bootstrap';
 import { TwitchEmbed } from 'react-twitch-embed';
-import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { Split } from '~src/common/types';
 import { LiverunStatsPanel } from '~src/components/live/liverun-stats-panel';
 import { SplitStatus, Status } from '~src/types/splits.types';

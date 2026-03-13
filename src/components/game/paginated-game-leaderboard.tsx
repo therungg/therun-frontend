@@ -1,5 +1,5 @@
 import React, { memo, ReactElement, useMemo } from 'react';
-import { Count } from '~app/(old-layout)/games/[game]/game.types';
+import { Count } from '~app/(new-layout)/games/[game]/game.types';
 import { getLeaderboard } from '~src/components/game/game-leaderboards';
 import { leaderboardFetcher } from '~src/components/pagination/fetchers/leaderboard-fetcher';
 import { PaginationContextProvider } from '~src/components/pagination/pagination.context-provider';

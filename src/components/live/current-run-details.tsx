@@ -1,6 +1,6 @@
 import React from 'react';
 import { Col, Row } from 'react-bootstrap';
-import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { LiveRun } from '~app/(new-layout)/live/live.types';
 import {
     Difference,
     DifferenceFromOne,

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { LiveRun } from '~app/(new-layout)/live/live.types';
 import {
     MarathonEvent,
     SendMarathonDataButton,

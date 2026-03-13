@@ -1,6 +1,6 @@
 import { cacheLife } from 'next/cache';
 import { NextRequest } from 'next/server';
-import { apiResponse } from '~app/(old-layout)/api/response';
+import { apiResponse } from '~app/(new-layout)/api/response';
 import { getTournamentStatsByName } from '~src/components/tournament/getTournaments';
 
 export async function GET(

@@ -1,7 +1,7 @@
 import moment from 'moment/moment';
 import { useEffect, useState } from 'react';
 import { Table } from 'react-bootstrap';
-import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { LiveRun } from '~app/(new-layout)/live/live.types';
 import {
     DifferenceFromOne,
     DurationToFormatted,

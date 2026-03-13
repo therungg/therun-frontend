@@ -1,6 +1,6 @@
 import { cacheLife } from 'next/cache';
 import { NextRequest } from 'next/server';
-import { apiResponse } from '~app/(old-layout)/api/response';
+import { apiResponse } from '~app/(new-layout)/api/response';
 import { editUser } from '~src/lib/edit-user';
 import { getUserRuns } from '~src/lib/get-user-runs';
 

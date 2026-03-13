@@ -1,6 +1,6 @@
 import { cacheLife } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
-import { apiResponse } from '~app/(old-layout)/api/response';
+import { apiResponse } from '~app/(new-layout)/api/response';
 import { getCategory } from '~src/components/game/get-game';
 import { safeEncodeURI } from '~src/utils/uri';
 

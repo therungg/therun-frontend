@@ -2,18 +2,18 @@
 
 import { useEffect } from 'react';
 import useWebSocket, { Options, ReadyState } from 'react-use-websocket';
-import { WebsocketLiveRunMessage } from '~app/(old-layout)/live/live.types';
+import { WebsocketLiveRunMessage } from '~app/(new-layout)/live/live.types';
 import {
     SplitStory,
     Story,
     WebsocketStoryMessage,
-} from '~app/(old-layout)/live/story.types';
+} from '~app/(new-layout)/live/story.types';
 import {
     Race,
     RaceMessage,
     RaceParticipant,
     WebsocketRaceMessage,
-} from '~app/(old-layout)/races/races.types';
+} from '~app/(new-layout)/races/races.types';
 
 type WebsocketType = 'username' | 'race' | 'story';
 

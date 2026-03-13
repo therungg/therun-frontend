@@ -1,5 +1,5 @@
 import { cacheLife } from 'next/cache';
-import { Game, PaginatedGameResult } from '~app/(old-layout)/games/games.types';
+import { Game, PaginatedGameResult } from '~app/(new-layout)/games/games.types';
 import { getApiKey } from '~src/actions/api-key.action';
 
 const fetchData = async (url: string) => {

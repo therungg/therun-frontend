@@ -1,0 +1,52 @@
+import { Col, Row } from 'react-bootstrap';
+import RaceGameContextProvider from '~app/(new-layout)/races/context/race-game-context-provider';
+import {
+    PaginatedRaces,
+    RaceGameStatsByGameWithCategoryStats,
+} from '~app/(new-layout)/races/races.types';
+import { CategoryStatsList } from '~app/(new-layout)/races/stats/[game]/category-stats-list';
+import { FinishedRacesByGameTable } from '~app/(new-layout)/races/stats/[game]/finished-races-by-game-table';
+import { StatsPerGame } from '~app/(new-layout)/races/stats/race-stats-per-game';
+import {
+    Breadcrumb,
+    BreadcrumbItem,
+} from '~src/components/breadcrumbs/breadcrumb';
+
+export const GameStats = ({
+    stats,
+    paginatedRaces,
+}: {
+    stats: RaceGameStatsByGameWithCategoryStats;
+    paginatedRaces: PaginatedRaces;
+}) => {
+    const breadcrumbs: BreadcrumbItem[] = [
+        { content: 'Races', href: '/races' },
+        { content: 'Race Stats', href: '/races/stats' },
+        {
+            content: stats.stats.displayValue,
+            href: `/${stats.stats.displayValue}`,
+        },
+    ];
+    return (
+        <div>
+            <Breadcrumb breadcrumbs={breadcrumbs} />
+            <RaceGameContextProvider game={stats.stats.displayValue}>
+                <Row>
+                    <Col xs={12} lg={8}>
+                        <h2>{stats.stats.displayValue} Races</h2>
+                        <StatsPerGame stats={stats.stats} isLink={false} />
+                        <h2 className="mt-4">Categories</h2>
+                        <CategoryStatsList stats={stats.categories} />
+                    </Col>
+                    <Col xs={12} lg={4}>
+                        <h2>Recent Races</h2>
+                        <FinishedRacesByGameTable
+                            game={stats.stats.displayValue}
+                            paginatedRaces={paginatedRaces}
+                        />
+                    </Col>
+                </Row>
+            </RaceGameContextProvider>
+        </div>
+    );
+};

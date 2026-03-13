@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
-import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { LiveUserRun } from '../live/live-user-run';
 import { Stats } from '../run/dashboard/stats';
 import EventDisplay from './event-display';

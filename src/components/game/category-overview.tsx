@@ -1,6 +1,6 @@
 import { Dispatch } from 'react';
 import { Table } from 'react-bootstrap';
-import { CategoryLeaderboard } from '~app/(old-layout)/games/[game]/game.types';
+import { CategoryLeaderboard } from '~app/(new-layout)/games/[game]/game.types';
 import {
     GameCategoryLink,
     UserGameCategoryLink,

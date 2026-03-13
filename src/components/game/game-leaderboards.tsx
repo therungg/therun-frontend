@@ -4,7 +4,7 @@ import { Search as SearchIcon } from 'react-bootstrap-icons';
 import {
     Count,
     GameLeaderboard,
-} from '~app/(old-layout)/games/[game]/game.types';
+} from '~app/(new-layout)/games/[game]/game.types';
 import { UserLink } from '../links/links';
 import { DurationToFormatted, getFormattedString } from '../util/datetime';
 

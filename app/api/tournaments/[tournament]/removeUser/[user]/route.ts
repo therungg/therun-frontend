@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { apiResponse } from '~app/(old-layout)/api/response';
+import { apiResponse } from '~app/(new-layout)/api/response';
 import { banUserFromTournament } from '~src/components/tournament/getTournaments';
 
 export async function GET(

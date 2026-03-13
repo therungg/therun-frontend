@@ -1,6 +1,6 @@
 'use server';
 
-import type { Game } from '~app/(old-layout)/games/games.types';
+import type { Game } from '~app/(new-layout)/games/games.types';
 import { getGamesPage } from '~src/components/game/get-tabulated-game-stats';
 import { apiFetch } from './api-client';
 import type { CategoryStats } from './highlights';

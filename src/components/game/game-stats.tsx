@@ -1,5 +1,5 @@
 import { Table } from 'react-bootstrap';
-import { CumulativeGameStat } from '~app/(old-layout)/games/[game]/game.types';
+import { CumulativeGameStat } from '~app/(new-layout)/games/[game]/game.types';
 import { DurationToFormatted } from '../util/datetime';
 
 export const GameStats = ({

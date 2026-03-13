@@ -1,4 +1,4 @@
-import { Race, RaceParticipant } from '~app/(old-layout)/races/races.types';
+import { Race, RaceParticipant } from '~app/(new-layout)/races/races.types';
 import {
     PaginatedData,
     PaginationFetcher,

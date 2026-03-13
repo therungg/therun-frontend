@@ -1,9 +1,9 @@
 'use client';
 
 import { FaTrophy, FaUser } from 'react-icons/fa6';
-import { RaceTimer } from '~app/(old-layout)/races/[race]/race-timer';
-import { sortRaceParticipants } from '~app/(old-layout)/races/[race]/sort-race-participants';
-import { Race } from '~app/(old-layout)/races/races.types';
+import { RaceTimer } from '~app/(new-layout)/races/[race]/race-timer';
+import { sortRaceParticipants } from '~app/(new-layout)/races/[race]/sort-race-participants';
+import { Race } from '~app/(new-layout)/races/races.types';
 import { UserLink } from '~src/components/links/links';
 import {
     DurationToFormatted,

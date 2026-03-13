@@ -1,4 +1,4 @@
-import { LiveRun } from '~app/(old-layout)/live/live.types';
+import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { Run } from '../../../common/types';
 import { getFormattedString } from '../../util/datetime';
 import { MarathonEvent } from '../send-marathon-data-button';
