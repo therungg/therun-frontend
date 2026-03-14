@@ -40,8 +40,8 @@ export const SplitsViewer = ({
     if (!activeLiveRun.splits) return <></>;
 
     return (
-        <div className="bg-body-tertiary h-340p border border-tertiary">
-            <Row className="overflow-hidden h-15 px-4 py-0">
+        <div className={styles.splitsViewer}>
+            <Row className={`overflow-hidden ${styles.splitsHeader}`}>
                 <Col xs={6}>
                     <div className="text-truncate" title={activeLiveRun.game}>
                         {activeLiveRun.game}
@@ -87,7 +87,7 @@ export const SplitsViewer = ({
             <hr className="border-bottom m-0" />
             <div
                 id="scrollBox"
-                className="bg-body-secondary overflow-y-auto h-55 w-100"
+                className={`overflow-y-auto h-55 w-100 ${styles.splitsScrollArea}`}
             >
                 <table className="w-100">
                     <tbody>

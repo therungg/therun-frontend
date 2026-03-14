@@ -57,7 +57,9 @@ export const UserRaceProfile = ({
                 </Col>
                 <Col xl={5} xxl={5}>
                     <h2 className={styles.sectionHeading}>Stats</h2>
-                    <UserRaceStatsTable raceStats={globalStats} />
+                    <div className="mb-3">
+                        <UserRaceStatsTable raceStats={globalStats} />
+                    </div>
                     <UserRaceStatsByGame stats={categoryStatsMap} />
                 </Col>
             </Row>

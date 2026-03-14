@@ -90,22 +90,25 @@ export const LiveSplitTimerComponent: React.FunctionComponent<
                         )}
 
                         {!splitTime && (
-                            <div
-                                className={
-                                    'd-flex align-items-center justify-content-end ' +
-                                    timerClassName
-                                }
-                            >
-                                <Flag
-                                    className="me-2"
-                                    height={16}
-                                    dark={dark}
-                                />
-                                <DurationAsTimer
-                                    duration={
-                                        lastSplitStatus?.time?.toString() || ''
+                            <div>
+                                <div
+                                    className={
+                                        'd-flex align-items-center justify-content-end ' +
+                                        timerClassName
                                     }
-                                />
+                                >
+                                    <Flag
+                                        className="me-2"
+                                        height={16}
+                                        dark={dark}
+                                    />
+                                    <DurationAsTimer
+                                        duration={
+                                            lastSplitStatus?.time?.toString() ||
+                                            ''
+                                        }
+                                    />
+                                </div>
                                 {withDiff && (
                                     <DifferenceFromOne diff={liveRun.delta} />
                                 )}

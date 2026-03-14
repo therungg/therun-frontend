@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import React, { useEffect, useState } from 'react';
 import { Col, Image, Row } from 'react-bootstrap';
 import { Twitch as TwitchIcon } from 'react-bootstrap-icons';
@@ -12,6 +13,53 @@ import { UserLink } from '../links/links';
 import patreonStyles from '../patreon/patreon-styles';
 import { usePatreons } from '../patreon/use-patreons';
 import { DurationToFormatted } from '../util/datetime';
+import {
+    getSplitSegments,
+    type SplitStatus,
+    useSplitFlash,
+} from './split-utils';
+
+const SplitTimeline = ({
+    segments,
+    currentSplitIndex,
+}: {
+    segments: SplitStatus[];
+    currentSplitIndex: number;
+}) => {
+    const justCompleted = currentSplitIndex - 1;
+    const tooManySplits = segments.length > 60;
+
+    return (
+        <div
+            className={styles.splitTimeline}
+            style={tooManySplits ? { gap: 0 } : undefined}
+        >
+            {segments.map((status, i) => (
+                <div
+                    key={i}
+                    className={clsx(
+                        styles.splitSegment,
+                        status === 'gold' && styles.splitSegmentGold,
+                        status === 'ahead' && styles.splitSegmentAhead,
+                        status === 'ahead-muted' &&
+                            styles.splitSegmentAheadMuted,
+                        status === 'behind' && styles.splitSegmentBehind,
+                        status === 'behind-muted' &&
+                            styles.splitSegmentBehindMuted,
+                        status === 'neutral' && styles.splitSegmentNeutral,
+                        i === currentSplitIndex && styles.splitSegmentCurrent,
+                        i === justCompleted &&
+                            (status === 'ahead' || status === 'ahead-muted') &&
+                            styles.splitSegmentAheadLatest,
+                        i === justCompleted &&
+                            status === 'gold' &&
+                            styles.splitSegmentGoldLatest,
+                    )}
+                />
+            ))}
+        </div>
+    );
+};
 
 export const LiveUserRun = ({
     liveRun,
@@ -34,6 +82,9 @@ export const LiveUserRun = ({
         gradient: string;
     }>({ borderColor: '', gradient: '' });
     const { data: patreons, isLoading } = usePatreons();
+    const segments = getSplitSegments(liveRun);
+    const flash = useSplitFlash(liveRun);
+
     useEffect(function () {
         setDark(getColorMode() !== 'light');
     }, []);
@@ -86,15 +137,21 @@ export const LiveUserRun = ({
         if (userSeed > -1) seed = userSeed + 1;
     }
 
+    const hasGameImage =
+        liveRun.gameImage &&
+        liveRun.gameImage.length > 0 &&
+        liveRun.gameImage !== 'noimage';
+
     return (
         <div
-            className={`card d-flex flex-row rounded-2 h-110p overflow-hidden w-100 game-border ${
-                styles.liveRunContainer
-            } ${
-                liveRun.user == currentlyActive
-                    ? 'bg-body-tertiary'
-                    : 'bg-body-secondary'
-            }`}
+            className={clsx(
+                'card',
+                styles.liveRunContainer,
+                liveRun.user === currentlyActive && styles.liveRunActive,
+                flash === 'gold' && styles.liveRunGold,
+                flash === 'ahead' && styles.liveRunGreen,
+                flash === 'behind' && styles.liveRunRed,
+            )}
             style={
                 liveUserStyles.gradient
                     ? {
@@ -103,128 +160,118 @@ export const LiveUserRun = ({
                           borderWidth: '2px',
                       }
                     : {
-                          borderColor: liveUserStyles.borderColor,
+                          borderColor: liveUserStyles.borderColor || undefined,
                           borderWidth:
                               liveUserStyles.gradient ||
                               liveUserStyles.borderColor
                                   ? '2px'
-                                  : '',
+                                  : undefined,
                       }
             }
         >
-            {liveRun.gameImage &&
-                liveRun.gameImage.length > 0 &&
-                liveRun.gameImage != 'noimage' && (
-                    <div
-                        style={{
-                            minWidth: '81px',
-                            maxWidth: '81px',
-                        }}
-                    >
+            <div className="d-flex h-100">
+                {hasGameImage && (
+                    <div className={styles.liveRunArt}>
                         <GameImage
                             alt={liveRun.game}
-                            src={liveRun.gameImage}
+                            src={liveRun.gameImage!}
                             quality="small"
                             height={108}
                             width={81}
-                            style={
-                                liveUserStyles.gradient ||
-                                liveUserStyles.borderColor
-                                    ? {
-                                          height: '106px',
-                                      }
-                                    : {}
-                            }
+                            className={styles.liveRunArtImage}
                         />
                     </div>
                 )}
-            {(!liveRun.gameImage ||
-                liveRun.gameImage.length < 1 ||
-                liveRun.gameImage == 'noimage') && (
-                <div
-                    style={{
-                        minWidth: '81px',
-                        maxWidth: '81px',
-                    }}
-                >
-                    <Image
-                        alt="Logo"
-                        src={
-                            dark
-                                ? '/logo_dark_theme_no_text_transparent.png'
-                                : '/logo_light_theme_no_text_transparent.png'
-                        }
-                        width="75px"
-                        height="75px"
-                        className="mt-3"
-                    />
-                </div>
-            )}
-
-            <Row
-                className="h-100 py-2 px-3 flex-1 w-100 justify-content-between"
-                style={{
-                    minWidth: 'calc(100% - 81px + var(--bs-gutter-x))',
-                    maxWidth: 'calc(100% - 81px + var(--bs-gutter-x))',
-                }}
-            >
-                <Col xs={7} className="mw-350p ps-3">
-                    <div className="fs-responsive-large d-flex">
-                        {ranking && !seed && (
-                            <div>
-                                #{ranking}
-                                &nbsp;-&nbsp;
-                            </div>
-                        )}
-                        {seed && <div>#{seed}&nbsp;-&nbsp;</div>}
-                        <UserLink
-                            username={liveRun.user}
-                            parentIsUrl={isUrl}
-                            icon={false}
+                {!hasGameImage && (
+                    <div className={styles.liveRunArt}>
+                        <Image
+                            alt="Logo"
+                            src={
+                                dark
+                                    ? '/logo_dark_theme_no_text_transparent.png'
+                                    : '/logo_light_theme_no_text_transparent.png'
+                            }
+                            width="60px"
+                            height="60px"
+                            className="m-auto"
                         />
-                        {liveRun.currentlyStreaming && (
-                            <div className="ms-2">
-                                <TwitchIcon height={22} color="#6441a5" />
-                            </div>
-                        )}
                     </div>
-                    {showGameCategory && (
-                        <div className="text-truncate fs-large">
-                            {liveRun.game}
-                        </div>
-                    )}
-                    {showGameCategory && (
-                        <div className="text-truncate fs-large">
-                            {liveRun.category}
-                        </div>
-                    )}
+                )}
 
-                    {!showGameCategory && tournamentPb && (
-                        <div className="text-truncate">
-                            Tournament PB -{' '}
-                            {!!tournamentPb && (
-                                <DurationToFormatted duration={tournamentPb} />
-                            )}
-                        </div>
-                    )}
-
-                    {!showGameCategory &&
-                        liveRun.pb &&
-                        Math.trunc(liveRun.pb) !==
-                            Math.trunc(Number(tournamentPb)) && (
-                            <div className="text-truncate">
-                                Personal Best -{' '}
-                                <DurationToFormatted duration={liveRun.pb} />
+                <div className={styles.liveRunContent}>
+                    <Row className="flex-1 w-100 justify-content-between align-items-start g-0">
+                        <Col xs={7} className="ps-1">
+                            <div className="d-flex align-items-center gap-1">
+                                {ranking && !seed && (
+                                    <span>#{ranking}&nbsp;-&nbsp;</span>
+                                )}
+                                {seed && <span>#{seed}&nbsp;-&nbsp;</span>}
+                                <UserLink
+                                    username={liveRun.user}
+                                    parentIsUrl={isUrl}
+                                    icon={false}
+                                />
+                                {liveRun.currentlyStreaming && (
+                                    <TwitchIcon
+                                        height={18}
+                                        color="#6441a5"
+                                        className="ms-1 flex-shrink-0"
+                                    />
+                                )}
                             </div>
-                        )}
-                </Col>
-                <Col
-                    xs={5}
-                    className="d-flex justify-content-end align-items-center"
-                >
-                    <LiveSplitTimerComponent liveRun={liveRun} dark={dark} />
-                </Col>
-            </Row>
+                            {showGameCategory && (
+                                <div className="text-truncate fs-large">
+                                    {liveRun.game}
+                                </div>
+                            )}
+                            {showGameCategory && (
+                                <div className={styles.liveRunCategory}>
+                                    {liveRun.category}
+                                </div>
+                            )}
+
+                            {!showGameCategory && tournamentPb && (
+                                <div className="text-truncate">
+                                    Tournament PB -{' '}
+                                    {!!tournamentPb && (
+                                        <DurationToFormatted
+                                            duration={tournamentPb}
+                                        />
+                                    )}
+                                </div>
+                            )}
+
+                            {!showGameCategory &&
+                                liveRun.pb &&
+                                Math.trunc(liveRun.pb) !==
+                                    Math.trunc(Number(tournamentPb)) && (
+                                    <div className="text-truncate">
+                                        Personal Best -{' '}
+                                        <DurationToFormatted
+                                            duration={liveRun.pb}
+                                        />
+                                    </div>
+                                )}
+                        </Col>
+                        <Col
+                            xs={5}
+                            className="d-flex justify-content-end align-items-center"
+                        >
+                            <LiveSplitTimerComponent
+                                liveRun={liveRun}
+                                dark={dark}
+                            />
+                        </Col>
+                    </Row>
+
+                    {liveRun.splits && liveRun.splits.length > 0 && (
+                        <SplitTimeline
+                            segments={segments}
+                            currentSplitIndex={liveRun.currentSplitIndex}
+                        />
+                    )}
+                </div>
+            </div>
         </div>
     );
 };

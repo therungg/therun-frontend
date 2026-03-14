@@ -1,21 +1,85 @@
+import clsx from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 import { Col } from 'react-bootstrap';
 import { TwitchEmbed } from 'react-twitch-embed';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
+import { LiveSplitTimerComponent } from '~app/(new-layout)/live/live-split-timer.component';
 import { Split } from '~src/common/types';
 import { LiverunStatsPanel } from '~src/components/live/liverun-stats-panel';
 import { SplitStatus, Status } from '~src/types/splits.types';
 import { getColorMode } from '~src/utils/colormode';
+import styles from '../css/LiveRun.module.scss';
+import { UserLink } from '../links/links';
 import patreonStyles from '../patreon/patreon-styles';
 import { usePatreons } from '../patreon/use-patreons';
+import { DurationToFormatted } from '../util/datetime';
+import {
+    getSplitSegments,
+    type SplitStatus as TimelineSplitStatus,
+    useSplitFlash,
+} from './split-utils';
 import { SplitsViewer } from './splits-viewer';
+
+const SplitTimeline = ({
+    segments,
+    currentSplitIndex,
+}: {
+    segments: TimelineSplitStatus[];
+    currentSplitIndex: number;
+}) => {
+    const justCompleted = currentSplitIndex - 1;
+    const tooManySplits = segments.length > 60;
+
+    return (
+        <div
+            className={styles.splitTimeline}
+            style={tooManySplits ? { gap: 0 } : undefined}
+        >
+            {segments.map((status, i) => (
+                <div
+                    key={i}
+                    className={clsx(
+                        styles.splitSegment,
+                        status === 'gold' && styles.splitSegmentGold,
+                        status === 'ahead' && styles.splitSegmentAhead,
+                        status === 'ahead-muted' &&
+                            styles.splitSegmentAheadMuted,
+                        status === 'behind' && styles.splitSegmentBehind,
+                        status === 'behind-muted' &&
+                            styles.splitSegmentBehindMuted,
+                        status === 'neutral' && styles.splitSegmentNeutral,
+                        i === currentSplitIndex && styles.splitSegmentCurrent,
+                        i === justCompleted &&
+                            (status === 'ahead' || status === 'ahead-muted') &&
+                            styles.splitSegmentAheadLatest,
+                        i === justCompleted &&
+                            status === 'gold' &&
+                            styles.splitSegmentGoldLatest,
+                    )}
+                />
+            ))}
+        </div>
+    );
+};
+
+type StaleReason = 'reset' | 'finished' | 'offline';
+
+const STALE_LABELS: Record<StaleReason, string> = {
+    finished: 'Finished',
+    reset: 'Reset',
+    offline: 'Offline',
+};
 
 export const RecommendedStream = ({
     liveRun,
     stream = null,
+    staleReason = null,
+    countdown = null,
 }: {
     liveRun: LiveRun;
     stream?: string | null;
+    staleReason?: StaleReason | null;
+    countdown?: number | null;
 }) => {
     const [dark, setDark] = useState(true);
     const [activeLiveRun, setActiveLiveRun] = useState(liveRun);
@@ -25,7 +89,6 @@ export const RecommendedStream = ({
     const [recommendedStyles, setRecommendedStyles] = useState({});
     const [manuallyChangedSplit, setManuallyChangedSplit] = useState(false);
 
-    // Not sure how else to do this, but this works
     const pixelsForSplit = 27.9;
 
     const usePrevious = <T,>(value: T): T | undefined => {
@@ -37,6 +100,9 @@ export const RecommendedStream = ({
     };
 
     const previous = usePrevious({ activeLiveRun });
+
+    const segments = getSplitSegments(activeLiveRun);
+    const flash = useSplitFlash(activeLiveRun);
 
     useEffect(function () {
         setDark(getColorMode() !== 'light');
@@ -113,8 +179,109 @@ export const RecommendedStream = ({
         liveRun.currentSplitIndex,
     );
 
+    const onPbPace = liveRun.delta < 0;
+
     return (
         <>
+            {/* Runner identity bar */}
+            <Col xs={12}>
+                <div
+                    className={clsx(
+                        styles.heroIdentityBar,
+                        staleReason === 'finished'
+                            ? styles.heroIdentityFinished
+                            : staleReason
+                              ? styles.heroIdentityStale
+                              : [
+                                    flash === 'gold' && styles.liveRunGold,
+                                    flash === 'ahead' && styles.liveRunGreen,
+                                    flash === 'behind' && styles.liveRunRed,
+                                ],
+                    )}
+                >
+                    {staleReason && (
+                        <div
+                            className={clsx(
+                                styles.heroStaleBadge,
+                                staleReason === 'finished' &&
+                                    styles.heroStaleBadgeFinished,
+                            )}
+                        >
+                            {STALE_LABELS[staleReason]}
+                            {countdown != null && ` · ${countdown}`}
+                        </div>
+                    )}
+                    <div className={styles.heroIdentityLeft}>
+                        <div className={styles.heroRunnerName}>
+                            <UserLink username={liveRun.user} />
+                        </div>
+                        <span className={styles.heroGameLabel}>
+                            {liveRun.game}
+                            {' · '}
+                            <span className={styles.heroCategoryLabel}>
+                                {liveRun.category}
+                            </span>
+                        </span>
+                    </div>
+                    <div className={styles.heroStatsRow}>
+                        <div className={styles.heroStatItem}>
+                            <span className={styles.heroStatLabel}>PB</span>
+                            <span className={styles.heroStatValue}>
+                                <DurationToFormatted duration={liveRun.pb} />
+                            </span>
+                        </div>
+                        <div className={styles.heroStatItem}>
+                            <span className={styles.heroStatLabel}>SOB</span>
+                            <span className={styles.heroStatValue}>
+                                <DurationToFormatted duration={liveRun.sob} />
+                            </span>
+                        </div>
+                        <div className={styles.heroStatItem}>
+                            <span className={styles.heroStatLabel}>
+                                Best Possible
+                            </span>
+                            <span className={styles.heroStatValue}>
+                                <DurationToFormatted
+                                    duration={liveRun.bestPossible}
+                                />
+                            </span>
+                        </div>
+                    </div>
+                    <div className={styles.heroTimerArea}>
+                        <LiveSplitTimerComponent
+                            liveRun={activeLiveRun}
+                            dark={dark}
+                            withDiff={false}
+                            timerClassName={styles.heroTimer}
+                            className="d-flex justify-content-end"
+                        />
+                        {onPbPace && !liveRun.hasReset && (
+                            <span className={styles.heroPbPaceBadge}>
+                                PB Pace
+                            </span>
+                        )}
+                    </div>
+                </div>
+                {activeLiveRun.splits && activeLiveRun.splits.length > 0 && (
+                    <div className={styles.heroTimelineWrapper}>
+                        <SplitTimeline
+                            segments={segments}
+                            currentSplitIndex={activeLiveRun.currentSplitIndex}
+                        />
+                        <div className={styles.heroProgressMeta}>
+                            <span>
+                                {activeLiveRun.currentSplitName || 'Done'}
+                            </span>
+                            <span>
+                                {activeLiveRun.currentSplitIndex}/
+                                {activeLiveRun.splits.length} splits
+                            </span>
+                        </div>
+                    </div>
+                )}
+            </Col>
+
+            {/* Main content panels */}
             <Col xl={3} lg={5} md={12} className="overflow-hidden">
                 <SplitsViewer
                     activeLiveRun={activeLiveRun}
@@ -122,33 +289,34 @@ export const RecommendedStream = ({
                     dark={dark}
                     setSelectedSplit={(e) => {
                         setSelectedSplit(e);
-
                         setManuallyChangedSplit(
                             e !== activeLiveRun.currentSplitIndex,
                         );
                     }}
                 />
             </Col>
-            <Col xl={5} lg={7} md={12} className="h-340p">
-                <TwitchEmbed
-                    channel={
-                        stream
-                            ? stream
-                            : activeLiveRun.login &&
-                                activeLiveRun.login.toLowerCase() !==
-                                    activeLiveRun.user.toLowerCase()
-                              ? activeLiveRun.login
-                              : activeLiveRun.user
-                    }
-                    width="100%"
-                    height="100%"
-                    muted
-                    withChat={false}
-                />
+            <Col xl={5} lg={7} md={12}>
+                <div className={styles.heroStreamPanel}>
+                    <TwitchEmbed
+                        channel={
+                            stream
+                                ? stream
+                                : activeLiveRun.login &&
+                                    activeLiveRun.login.toLowerCase() !==
+                                        activeLiveRun.user.toLowerCase()
+                                  ? activeLiveRun.login
+                                  : activeLiveRun.user
+                        }
+                        width="100%"
+                        height="100%"
+                        muted
+                        withChat={false}
+                    />
+                </div>
             </Col>
-            <Col xl={4} className="h-340p">
+            <Col xl={4}>
                 <div
-                    className="bg-body-secondary h-100 px-3 py-2"
+                    className={styles.heroStatsPanel}
                     style={
                         recommendedStyles.gradient
                             ? {
@@ -157,12 +325,14 @@ export const RecommendedStream = ({
                                   borderWidth: '2px',
                               }
                             : {
-                                  borderColor: recommendedStyles.borderColor,
+                                  borderColor:
+                                      recommendedStyles.borderColor ||
+                                      undefined,
                                   borderWidth:
                                       recommendedStyles.gradient ||
                                       recommendedStyles.borderColor
                                           ? '2px'
-                                          : '1px',
+                                          : undefined,
                               }
                     }
                 >
