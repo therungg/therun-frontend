@@ -1,9 +1,9 @@
 'use client';
-import Link from 'next/link';
 import React, { CSSProperties, useMemo, useState } from 'react';
 import { Alert } from 'react-bootstrap';
 import { CheckCircle, CloudUpload } from 'react-bootstrap-icons';
 import Dropzone, { useDropzone } from 'react-dropzone';
+import Link from '~src/components/link';
 import { UserLink } from '../links/links';
 import { useUploadMutation } from './upload';
 
@@ -103,9 +103,7 @@ export const Dragdrop = ({
                         <UserLink username={username}>Your profile</UserLink> in
                         around 1 minute. If your splits don&apos;t show up or
                         there seems to be something wrong with them, please{' '}
-                        <Link href="/contact" prefetch={false}>
-                            Contact me!
-                        </Link>
+                        <Link href="/contact">Contact me!</Link>
                     </p>
                 </Alert>
             ) : (

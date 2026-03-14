@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '~src/components/link';
 import buildMetadata from '~src/utils/metadata';
 import styles from '../styles/shared/content-page.module.scss';
 
@@ -14,10 +14,8 @@ export default function Terms() {
             <br /> If you continue to use this website, you are agreeing to
             comply with and be bound by the following terms and conditions of
             use, which together with the{' '}
-            <Link href="/privacy-policy" prefetch={false}>
-                Privacy policy
-            </Link>{' '}
-            govern The Runs relationship with you in relation to this website.
+            <Link href="/privacy-policy">Privacy policy</Link> govern The Runs
+            relationship with you in relation to this website.
             <br />
             <br />
             If you disagree with any part of these terms and conditions, please

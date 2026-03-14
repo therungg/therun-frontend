@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import Link from '~src/components/link';
 import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
 import styles from './how-it-works.module.scss';
 
@@ -42,7 +42,7 @@ export default function HowItWorksPanels({
                     <p className={styles.stepBody}>Please login first!</p>
                 ) : (
                     <div className={styles.stepAction}>
-                        <Link href="/upload" prefetch={false}>
+                        <Link href="/upload">
                             <button>Upload now!</button>
                         </Link>
                     </div>

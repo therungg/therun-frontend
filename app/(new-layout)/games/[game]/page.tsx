@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { cacheLife } from 'next/cache';
-import Link from 'next/link';
 import { getGame } from '~src/components/game/get-game';
+import Link from '~src/components/link';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import { Game } from './game';
@@ -32,9 +32,7 @@ export default async function GamePage(props: PageProps) {
                 Unfortunately, Nobody has uploaded runs for this game yet, or
                 the upload is not processed yet. If you have uploaded runs for
                 the game, but this page still shows, please{' '}
-                <Link href="/contact" prefetch={false}>
-                    contact me!
-                </Link>
+                <Link href="/contact">contact me!</Link>
                 {JSON.stringify(data)}
             </>
         );

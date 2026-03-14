@@ -1,9 +1,9 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { useCallback, useRef, useState, useTransition } from 'react';
 import { FaTrophy } from 'react-icons/fa6';
+import Link from '~src/components/link';
 import {
     type CategoryActivity,
     type CategoryStats,

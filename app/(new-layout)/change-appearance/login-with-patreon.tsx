@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import React from 'react';
 import { Button, Container } from 'react-bootstrap';
+import Link from '~src/components/link';
 import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
 import { User } from '../../../types/session.types';
 import styles from './change-appearance.module.scss';
@@ -35,7 +35,7 @@ export const LoginWithPatreon = ({
                 To match your Patreon with your therun.gg account, link your
                 Patreon account here!
             </p>
-            <Link passHref href={url} prefetch={false}>
+            <Link passHref href={url}>
                 <Button className="patreon">Link with Patreon</Button>
             </Link>
         </Container>

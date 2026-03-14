@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import React, { useEffect, useReducer, useState } from 'react';
 import { Col, Row, Tab, Tabs } from 'react-bootstrap';
 import { TwitchEmbed } from 'react-twitch-embed';
@@ -13,6 +12,7 @@ import { UserStats as UserRaceStats } from '~app/(new-layout)/races/races.types'
 import { Run, RunSession } from '~src/common/types';
 import styles from '~src/components/css/User.module.scss';
 import { GametimeForm } from '~src/components/gametime/gametime-form';
+import Link from '~src/components/link';
 import { LiveIcon, LiveUserRun } from '~src/components/live/live-user-run';
 import { HighlightedRun } from '~src/components/run/dashboard/highlighted-run';
 import { SessionOverview } from '~src/components/run/user-detail/session-overview';
@@ -190,7 +190,7 @@ export const UserProfile = ({
                                 <div className={styles.liveSection}>
                                     <h2 className={styles.sectionHeading}>
                                         Currently Live!&nbsp;
-                                        <Link href="/live" prefetch={false}>
+                                        <Link href="/live">
                                             <LiveIcon />
                                         </Link>
                                     </h2>
@@ -300,9 +300,7 @@ const NoRuns = (username: string, session: User, userData: UserData) => {
                 Unfortunately, {username} has not uploaded runs yet, or their
                 upload has not yet been processed (should not take long). If the
                 user has uploaded runs, but this page still shows, please{' '}
-                <Link href="/contact" prefetch={false}>
-                    contact me!
-                </Link>
+                <Link href="/contact">contact me!</Link>
             </div>
         </>
     );

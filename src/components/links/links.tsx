@@ -1,6 +1,6 @@
 'use client';
-import Link from 'next/link';
 import { ReactNode } from 'react';
+import Link from '~src/components/link';
 import { safeEncodeURI } from '~src/utils/uri';
 import PatreonName from '../patreon/patreon-name';
 import { usePatreons } from '../patreon/use-patreons';
@@ -105,7 +105,6 @@ export const UserGameCategoryLink = ({
                           category,
                       )}`
             }
-            prefetch={false}
         >
             {children ? children : `${display(game)} - ${display(category)}`}
         </Link>
@@ -116,7 +115,7 @@ export const GameLink: React.FunctionComponent<
     React.PropsWithChildren<GameLinkProps>
 > = ({ game, children }) => {
     return (
-        <Link href={`/games/${safeEncodeURI(game)}`} prefetch={false}>
+        <Link href={`/games/${safeEncodeURI(game)}`}>
             {children ? children : display(game)}
         </Link>
     );

@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { FiCheck, FiClock } from 'react-icons/fi';
+import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { FinishedRunPB } from '~src/lib/highlights';
 import styles from './runs-table.module.scss';

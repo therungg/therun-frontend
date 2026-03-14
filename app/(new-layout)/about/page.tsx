@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '~src/components/link';
 import { Title } from '~src/components/title';
 import buildMetadata from '~src/utils/metadata';
 import styles from '../styles/shared/content-page.module.scss';
@@ -85,15 +85,11 @@ export default function About() {
                 </li>
                 <li>
                     Automatic uploads through a{' '}
-                    <Link href="/livesplit" prefetch={false}>
-                        LiveSplit Component{' '}
-                    </Link>
+                    <Link href="/livesplit">LiveSplit Component </Link>
                 </li>
                 <li>
                     Live Run tracking from the Component on the{' '}
-                    <Link href="/live" prefetch={false}>
-                        Runs page
-                    </Link>
+                    <Link href="/live">Runs page</Link>
                 </li>
                 <li>
                     A{' '}
@@ -128,10 +124,7 @@ export default function About() {
                     </li>
                     <li>
                         Upload your .lss file by going to the{' '}
-                        <Link href="/upload" prefetch={false}>
-                            Upload
-                        </Link>{' '}
-                        page.
+                        <Link href="/upload">Upload</Link> page.
                     </li>
                     <li>
                         Wait for 10 to 30 seconds for your splits to be

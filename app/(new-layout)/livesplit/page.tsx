@@ -1,6 +1,6 @@
-import Link from 'next/link';
 import { getBaseUrl } from '~src/actions/base-url.action';
 import { getSession } from '~src/actions/session.action';
+import Link from '~src/components/link';
 import buildMetadata from '~src/utils/metadata';
 import { CopyUploadKey } from './copy-upload-key.component';
 import styles from './livesplit.module.scss';
@@ -37,11 +37,8 @@ export default async function Livesplit() {
                     automatically updated after every run.
                 </p>
                 <p>
-                    Check out the{' '}
-                    <Link href="/live" prefetch={false}>
-                        Live page
-                    </Link>{' '}
-                    to see runs in progress!
+                    Check out the <Link href="/live">Live page</Link> to see
+                    runs in progress!
                 </p>
                 <p>
                     Treat this key like a password. Anyone who has this key can
@@ -69,11 +66,8 @@ export default async function Livesplit() {
                     Now, you will never have to upload your runs again! In
                     addition, your live runs will show up in real time on your
                     profile, and on the dedicated{' '}
-                    <Link href="/live" prefetch={false}>
-                        Live page
-                    </Link>
-                    ! It also allows you to join Tournaments, or to participate
-                    in Races!
+                    <Link href="/live">Live page</Link>! It also allows you to
+                    join Tournaments, or to participate in Races!
                 </p>
 
                 <p>

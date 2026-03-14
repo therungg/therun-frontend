@@ -1,5 +1,4 @@
 'use client';
-import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
 import { Col, Row, Tab, Tabs } from 'react-bootstrap';
 import { StatsData } from '~app/(new-layout)/games/[game]/game.types';
@@ -7,6 +6,7 @@ import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { AppContext } from '~src/common/app.context';
 import { Run, RunHistory, RunSession, SplitsHistory } from '~src/common/types';
 import { GametimeForm } from '~src/components/gametime/gametime-form';
+import Link from '~src/components/link';
 import { UserGameLink, UserLink } from '~src/components/links/links';
 import { LiveIcon, LiveUserRun } from '~src/components/live/live-user-run';
 import { CompareSplits } from '~src/components/run/compare/compare-splits';
@@ -222,7 +222,7 @@ export default function RunDetail({
                 <div className="mb-3 mw-550p">
                     <h2>
                         Currently Live!&nbsp;
-                        <Link href="/live" prefetch={false}>
+                        <Link href="/live">
                             <LiveIcon />
                         </Link>
                     </h2>

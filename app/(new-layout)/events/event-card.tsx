@@ -2,10 +2,10 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
-import Link from 'next/link';
 import { FC, PropsWithChildren } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { FaCalendarAlt, FaMapMarkerAlt, FaUser } from 'react-icons/fa';
+import Link from '~src/components/link';
 import { EventFromSearch } from '../../../types/events.types';
 import styles from './event.styles.module.scss';
 import { EventBadges } from './event-badges';
@@ -14,11 +14,7 @@ import { EventLocation } from './event-location';
 
 export const SpeedrunEventCard = ({ event }: { event: EventFromSearch }) => {
     return (
-        <Link
-            href={`/events/${event.slug}`}
-            className="card-link-wrapper"
-            prefetch={false}
-        >
+        <Link href={`/events/${event.slug}`} className="card-link-wrapper">
             <div
                 className={clsx(
                     'container-fluid p-0 mt-3 d-flex align-items-center',

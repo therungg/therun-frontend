@@ -2,7 +2,6 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
     FaBolt,
@@ -12,6 +11,7 @@ import {
     FaFire,
 } from 'react-icons/fa';
 import { toggleStreakVisibility } from '~src/actions/user-preferences.action';
+import Link from '~src/components/link';
 import { DurationToFormatted, FromNow } from '~src/components/util/datetime';
 import { getUserDashboardCustomRange } from '~src/lib/user-dashboard';
 import type {

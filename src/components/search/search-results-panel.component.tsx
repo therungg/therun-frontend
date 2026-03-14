@@ -1,8 +1,8 @@
 import Image from 'next/image';
-import Link from 'next/link';
 import React from 'react';
 import { Controller as ControllerIcon } from 'react-bootstrap-icons';
 import { GameImage } from '~src/components/image/gameimage';
+import Link from '~src/components/link';
 import { getFormattedString } from '~src/components/util/datetime';
 import type { RunResult, UserResult } from './find-user-or-run';
 import styles from './search-results-panel.module.scss';
@@ -149,11 +149,7 @@ const UserResultCard = ({
     user: UserResult;
     urlSuffix: string;
 }) => (
-    <Link
-        href={`/${user.user}${urlSuffix}`}
-        className={styles.resultItem}
-        prefetch={false}
-    >
+    <Link href={`/${user.user}${urlSuffix}`} className={styles.resultItem}>
         <Image
             src={user.picture}
             alt=""
@@ -187,11 +183,7 @@ const RunResultCard = ({
     const formattedPb = pb ? getFormattedString(pb) : null;
 
     return (
-        <Link
-            href={`/${run.url}${urlSuffix}`}
-            className={styles.resultItem}
-            prefetch={false}
-        >
+        <Link href={`/${run.url}${urlSuffix}`} className={styles.resultItem}>
             {run.image ? (
                 <GameImage
                     src={run.image}

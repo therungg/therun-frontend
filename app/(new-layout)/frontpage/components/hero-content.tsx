@@ -3,7 +3,6 @@
 import clsx from 'clsx';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Col, Placeholder, Row } from 'react-bootstrap';
 import {
@@ -11,6 +10,7 @@ import {
     WebsocketLiveRunMessage,
 } from '~app/(new-layout)/live/live.types';
 import { LiveSplitTimerComponent } from '~app/(new-layout)/live/live-split-timer.component';
+import Link from '~src/components/link';
 import {
     getSplitSegments,
     type SplitStatus,
