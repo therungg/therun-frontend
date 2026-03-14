@@ -74,7 +74,8 @@ export const useSplitFlash = (run: LiveRun): CardFlash => {
 
             setFlash(highlight);
             clearTimeout(timeoutRef.current);
-            timeoutRef.current = setTimeout(() => setFlash(null), 3000);
+            const duration = highlight === 'gold' ? 5000 : 3000;
+            timeoutRef.current = setTimeout(() => setFlash(null), duration);
         }
         prevSplitIndexRef.current = run.currentSplitIndex;
     });

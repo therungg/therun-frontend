@@ -1,6 +1,7 @@
 import clsx from 'clsx';
+import NextImage from 'next/image';
 import { useEffect, useRef, useState } from 'react';
-import { Col } from 'react-bootstrap';
+import { Col, Row } from 'react-bootstrap';
 import { TwitchEmbed } from 'react-twitch-embed';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { LiveSplitTimerComponent } from '~app/(new-layout)/live/live-split-timer.component';
@@ -103,6 +104,7 @@ export const RecommendedStream = ({
 
     const segments = getSplitSegments(activeLiveRun);
     const flash = useSplitFlash(activeLiveRun);
+    const hasAvatar = liveRun.picture && liveRun.picture !== 'noimage';
 
     useEffect(function () {
         setDark(getColorMode() !== 'light');
@@ -179,26 +181,24 @@ export const RecommendedStream = ({
         liveRun.currentSplitIndex,
     );
 
-    const onPbPace = liveRun.delta < 0;
-
     return (
-        <>
-            {/* Runner identity bar */}
-            <Col xs={12}>
-                <div
-                    className={clsx(
-                        styles.heroIdentityBar,
-                        staleReason === 'finished'
-                            ? styles.heroIdentityFinished
-                            : staleReason
-                              ? styles.heroIdentityStale
-                              : [
-                                    flash === 'gold' && styles.liveRunGold,
-                                    flash === 'ahead' && styles.liveRunGreen,
-                                    flash === 'behind' && styles.liveRunRed,
-                                ],
-                    )}
-                >
+        <Col xs={12}>
+            <div
+                className={clsx(
+                    styles.heroWrapper,
+                    staleReason === 'finished'
+                        ? styles.heroIdentityFinished
+                        : staleReason
+                          ? styles.heroIdentityStale
+                          : [
+                                flash === 'gold' && styles.liveRunGold,
+                                flash === 'ahead' && styles.liveRunGreen,
+                                flash === 'behind' && styles.liveRunRed,
+                            ],
+                )}
+            >
+                {/* Runner identity bar */}
+                <div className={styles.heroIdentityBar}>
                     {staleReason && (
                         <div
                             className={clsx(
@@ -212,16 +212,29 @@ export const RecommendedStream = ({
                         </div>
                     )}
                     <div className={styles.heroIdentityLeft}>
-                        <div className={styles.heroRunnerName}>
-                            <UserLink username={liveRun.user} />
-                        </div>
-                        <span className={styles.heroGameLabel}>
-                            {liveRun.game}
-                            {' · '}
-                            <span className={styles.heroCategoryLabel}>
-                                {liveRun.category}
+                        {hasAvatar && (
+                            <div className={styles.heroAvatar}>
+                                <NextImage
+                                    src={liveRun.picture!}
+                                    alt=""
+                                    fill
+                                    style={{ objectFit: 'cover' }}
+                                    className={styles.heroAvatarImg}
+                                />
+                            </div>
+                        )}
+                        <div>
+                            <div className={styles.heroRunnerName}>
+                                <UserLink username={liveRun.user} />
+                            </div>
+                            <span className={styles.heroGameLabel}>
+                                {liveRun.game}
+                                {' · '}
+                                <span className={styles.heroCategoryLabel}>
+                                    {liveRun.category}
+                                </span>
                             </span>
-                        </span>
+                        </div>
                     </div>
                     <div className={styles.heroStatsRow}>
                         <div className={styles.heroStatItem}>
@@ -253,13 +266,8 @@ export const RecommendedStream = ({
                             dark={dark}
                             withDiff={false}
                             timerClassName={styles.heroTimer}
-                            className="d-flex justify-content-end"
+                            className={null}
                         />
-                        {onPbPace && !liveRun.hasReset && (
-                            <span className={styles.heroPbPaceBadge}>
-                                PB Pace
-                            </span>
-                        )}
                     </div>
                 </div>
                 {activeLiveRun.splits && activeLiveRun.splits.length > 0 && (
@@ -279,70 +287,73 @@ export const RecommendedStream = ({
                         </div>
                     </div>
                 )}
-            </Col>
 
-            {/* Main content panels */}
-            <Col xl={3} lg={5} md={12} className="overflow-hidden">
-                <SplitsViewer
-                    activeLiveRun={activeLiveRun}
-                    currentSplitSplitStatus={currentSplitSplitStatus}
-                    dark={dark}
-                    setSelectedSplit={(e) => {
-                        setSelectedSplit(e);
-                        setManuallyChangedSplit(
-                            e !== activeLiveRun.currentSplitIndex,
-                        );
-                    }}
-                />
-            </Col>
-            <Col xl={5} lg={7} md={12}>
-                <div className={styles.heroStreamPanel}>
-                    <TwitchEmbed
-                        channel={
-                            stream
-                                ? stream
-                                : activeLiveRun.login &&
-                                    activeLiveRun.login.toLowerCase() !==
-                                        activeLiveRun.user.toLowerCase()
-                                  ? activeLiveRun.login
-                                  : activeLiveRun.user
-                        }
-                        width="100%"
-                        height="100%"
-                        muted
-                        withChat={false}
-                    />
-                </div>
-            </Col>
-            <Col xl={4}>
-                <div
-                    className={styles.heroStatsPanel}
-                    style={
-                        recommendedStyles.gradient
-                            ? {
-                                  borderImageSource: recommendedStyles.gradient,
-                                  borderImageSlice: 1,
-                                  borderWidth: '2px',
-                              }
-                            : {
-                                  borderColor:
-                                      recommendedStyles.borderColor ||
-                                      undefined,
-                                  borderWidth:
-                                      recommendedStyles.gradient ||
-                                      recommendedStyles.borderColor
-                                          ? '2px'
-                                          : undefined,
-                              }
-                    }
-                >
-                    <LiverunStatsPanel
-                        liveRun={liveRun}
-                        selectedSplit={selectedSplit}
-                    />
-                </div>
-            </Col>
-        </>
+                {/* Main content panels */}
+                <Row className="g-3 mt-0">
+                    <Col xl={3} lg={5} md={12} className="overflow-hidden">
+                        <SplitsViewer
+                            activeLiveRun={activeLiveRun}
+                            currentSplitSplitStatus={currentSplitSplitStatus}
+                            dark={dark}
+                            setSelectedSplit={(e) => {
+                                setSelectedSplit(e);
+                                setManuallyChangedSplit(
+                                    e !== activeLiveRun.currentSplitIndex,
+                                );
+                            }}
+                        />
+                    </Col>
+                    <Col xl={5} lg={7} md={12}>
+                        <div className={styles.heroStreamPanel}>
+                            <TwitchEmbed
+                                channel={
+                                    stream
+                                        ? stream
+                                        : activeLiveRun.login &&
+                                            activeLiveRun.login.toLowerCase() !==
+                                                activeLiveRun.user.toLowerCase()
+                                          ? activeLiveRun.login
+                                          : activeLiveRun.user
+                                }
+                                width="100%"
+                                height="100%"
+                                muted
+                                withChat={false}
+                            />
+                        </div>
+                    </Col>
+                    <Col xl={4}>
+                        <div
+                            className={styles.heroStatsPanel}
+                            style={
+                                recommendedStyles.gradient
+                                    ? {
+                                          borderImageSource:
+                                              recommendedStyles.gradient,
+                                          borderImageSlice: 1,
+                                          borderWidth: '2px',
+                                      }
+                                    : {
+                                          borderColor:
+                                              recommendedStyles.borderColor ||
+                                              undefined,
+                                          borderWidth:
+                                              recommendedStyles.gradient ||
+                                              recommendedStyles.borderColor
+                                                  ? '2px'
+                                                  : undefined,
+                                      }
+                            }
+                        >
+                            <LiverunStatsPanel
+                                liveRun={liveRun}
+                                selectedSplit={selectedSplit}
+                            />
+                        </div>
+                    </Col>
+                </Row>
+            </div>
+        </Col>
     );
 };
 

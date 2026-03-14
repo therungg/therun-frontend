@@ -268,7 +268,6 @@ const FeaturedRunPanel = ({
                     : staleReason
                       ? styles.featuredPanelStale
                       : [
-                            onPbPace && styles.featuredPanelPbPace,
                             flash === 'gold' && styles.featuredPanelGold,
                             flash === 'ahead' && styles.featuredPanelGreen,
                             flash === 'behind' && styles.featuredPanelRed,

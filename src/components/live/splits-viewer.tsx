@@ -2,11 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { LiveSplitTimerComponent } from '~app/(new-layout)/live/live-split-timer.component';
+import { GameImage } from '~src/components/image/gameimage';
 import { SplitStatus } from '~src/types/splits.types';
 import styles from '../css/LiveRun.module.scss';
 import SplitName from '../transformers/split-name';
 import { Difference, DurationToFormatted } from '../util/datetime';
 import { getSplitStatus } from './recommended-stream';
+import {
+    getSplitSegments,
+    type SplitStatus as TimelineStatus,
+} from './split-utils';
 
 const PERSONAL_BEST = 'Personal Best';
 
@@ -39,8 +44,27 @@ export const SplitsViewer = ({
 
     if (!activeLiveRun.splits) return <></>;
 
+    const segments = getSplitSegments(activeLiveRun);
+
+    const hasGameImage =
+        activeLiveRun.gameImage &&
+        activeLiveRun.gameImage.length > 0 &&
+        activeLiveRun.gameImage !== 'noimage';
+
     return (
         <div className={styles.splitsViewer}>
+            {hasGameImage && (
+                <div className={styles.splitsWatermark}>
+                    <GameImage
+                        src={activeLiveRun.gameImage!}
+                        alt=""
+                        quality="large"
+                        fill
+                        sizes="300px"
+                        className={styles.splitsWatermarkImage}
+                    />
+                </div>
+            )}
             <Row className={`overflow-hidden ${styles.splitsHeader}`}>
                 <Col xs={6}>
                     <div className="text-truncate" title={activeLiveRun.game}>
@@ -99,13 +123,34 @@ export const SplitsViewer = ({
                                 k,
                             );
 
+                            const seg = segments[k];
+                            let splitStatusClass = '';
+                            let diffColor: string | undefined;
+
+                            if (seg === 'gold') {
+                                splitStatusClass = styles.splitRowGold;
+                                diffColor = '#fbbf24';
+                            } else if (
+                                seg === 'ahead' ||
+                                seg === 'ahead-muted'
+                            ) {
+                                splitStatusClass = styles.splitRowAhead;
+                                diffColor = '#4ade80';
+                            } else if (
+                                seg === 'behind' ||
+                                seg === 'behind-muted'
+                            ) {
+                                splitStatusClass = styles.splitRowBehind;
+                                diffColor = '#f87171';
+                            }
+
                             return (
                                 <tr
                                     key={split.name + k + activeLiveRun.user}
                                     className={`w-100 ${styles.splitRow} ${
                                         splitStatus.isActive
                                             ? styles.splitRowActive
-                                            : ''
+                                            : splitStatusClass
                                     }`}
                                     onClick={() => {
                                         setSelectedSplit(k);
@@ -133,8 +178,9 @@ export const SplitsViewer = ({
                                                         ]?.toString() || ''
                                                     }
                                                     withMillis={false}
-                                                    isGold={splitStatus.isGold}
+                                                    isGold={seg === 'gold'}
                                                     human={false}
+                                                    colorOverride={diffColor}
                                                 />
                                             ) : splitStatus.status ==
                                                   'skipped' ||

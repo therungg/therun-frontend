@@ -1,4 +1,5 @@
 import clsx from 'clsx';
+import NextImage from 'next/image';
 import React, { useEffect, useState } from 'react';
 import { Col, Image, Row } from 'react-bootstrap';
 import { Twitch as TwitchIcon } from 'react-bootstrap-icons';
@@ -142,6 +143,8 @@ export const LiveUserRun = ({
         liveRun.gameImage.length > 0 &&
         liveRun.gameImage !== 'noimage';
 
+    const hasAvatar = liveRun.picture && liveRun.picture !== 'noimage';
+
     return (
         <div
             className={clsx(
@@ -169,7 +172,7 @@ export const LiveUserRun = ({
                       }
             }
         >
-            <div className="d-flex h-100">
+            <div className="d-flex flex-fill">
                 {hasGameImage && (
                     <div className={styles.liveRunArt}>
                         <GameImage
@@ -202,6 +205,17 @@ export const LiveUserRun = ({
                     <Row className="flex-1 w-100 justify-content-between align-items-start g-0">
                         <Col xs={7} className="ps-1">
                             <div className="d-flex align-items-center gap-1">
+                                {hasAvatar && (
+                                    <div className={styles.liveRunAvatar}>
+                                        <NextImage
+                                            src={liveRun.picture!}
+                                            alt=""
+                                            fill
+                                            style={{ objectFit: 'cover' }}
+                                            className={styles.liveRunAvatarImg}
+                                        />
+                                    </div>
+                                )}
                                 {ranking && !seed && (
                                     <span>#{ranking}&nbsp;-&nbsp;</span>
                                 )}
@@ -216,6 +230,7 @@ export const LiveUserRun = ({
                                         height={18}
                                         color="#6441a5"
                                         className="ms-1 flex-shrink-0"
+                                        title="Live on Twitch"
                                     />
                                 )}
                             </div>

@@ -209,7 +209,9 @@ export const UserProfile = ({
                                 </div>
                             )}
 
-                            <UserStats runs={currentRuns} />
+                            <div className="mb-4">
+                                <UserStats runs={currentRuns} />
+                            </div>
                             {raceStats && (
                                 <div>
                                     <div className={styles.racesHeader}>
