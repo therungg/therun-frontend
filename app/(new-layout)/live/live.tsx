@@ -1,6 +1,6 @@
 /* eslint-disable */
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
 import { Funnel, Search as SearchIcon } from 'react-bootstrap-icons';
 import { FilterControl } from '~app/(new-layout)/live/filter-control';
@@ -27,6 +27,16 @@ import { SkeletonLiveRun } from '~src/components/skeleton/live/skeleton-live-run
 import { useLiveRunsWebsocket } from '~src/components/websocket/use-reconnect-websocket';
 import { getLiveRunForUser } from '~src/lib/live-runs';
 
+type StaleReason = 'reset' | 'finished' | 'offline';
+
+const GRACE_PERIODS: Record<StaleReason, number> = {
+    reset: 15_000,
+    finished: 60_000,
+    offline: 10_000,
+};
+
+const SWAP_COUNTDOWN_S = 5;
+
 export const Live = ({
     liveDataMap,
     username,
@@ -49,6 +59,106 @@ export const Live = ({
     const [loadingUserData, setLoadingUserData] = useState(true);
     const lastMessage = useLiveRunsWebsocket();
 
+    // Stale detection state
+    const [staleReason, setStaleReason] = useState<StaleReason | null>(null);
+    const [countdown, setCountdown] = useState<number | null>(null);
+    const staleReasonRef = useRef<StaleReason | null>(null);
+    const graceTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+    const countdownIntervalRef =
+        useRef<ReturnType<typeof setInterval>>(undefined);
+    const countdownRef = useRef<number | null>(null);
+    const updatedLiveDataMapRef = useRef(updatedLiveDataMap);
+    updatedLiveDataMapRef.current = updatedLiveDataMap;
+    const currentlyViewingRef = useRef(currentlyViewing);
+    currentlyViewingRef.current = currentlyViewing;
+
+    const clearStaleTimers = useCallback(() => {
+        if (graceTimerRef.current) {
+            clearTimeout(graceTimerRef.current);
+            graceTimerRef.current = undefined;
+        }
+        if (countdownIntervalRef.current) {
+            clearInterval(countdownIntervalRef.current);
+            countdownIntervalRef.current = undefined;
+        }
+        countdownRef.current = null;
+    }, []);
+
+    const clearStaleState = useCallback(() => {
+        clearStaleTimers();
+        staleReasonRef.current = null;
+        setStaleReason(null);
+        setCountdown(null);
+    }, [clearStaleTimers]);
+
+    const selectNextRun = useCallback(() => {
+        clearStaleState();
+
+        const map = updatedLiveDataMapRef.current;
+        const currentUser = currentlyViewingRef.current;
+
+        // Find next active run (not the current stale one)
+        const candidates = Object.values(map).filter(
+            (run) =>
+                run.user !== currentUser &&
+                !run.hasReset &&
+                run.currentSplitIndex >= 0 &&
+                run.currentSplitIndex < run.splits.length,
+        );
+
+        if (candidates.length > 0) {
+            candidates.sort((a, b) => b.importance - a.importance);
+            setCurrentlyViewing(candidates[0].user);
+        } else {
+            const fallback = getRecommendedStream(map, undefined);
+            if (fallback && fallback !== currentUser) {
+                setCurrentlyViewing(fallback);
+            }
+        }
+    }, [clearStaleState]);
+
+    const markStale = useCallback(
+        (reason: StaleReason) => {
+            // Don't re-mark — use ref to avoid closure staleness
+            if (staleReasonRef.current) return;
+
+            staleReasonRef.current = reason;
+            setStaleReason(reason);
+            clearStaleTimers();
+
+            // After grace period, start countdown
+            graceTimerRef.current = setTimeout(() => {
+                countdownRef.current = SWAP_COUNTDOWN_S;
+                setCountdown(SWAP_COUNTDOWN_S);
+
+                countdownIntervalRef.current = setInterval(() => {
+                    countdownRef.current = (countdownRef.current ?? 1) - 1;
+                    setCountdown(countdownRef.current);
+
+                    if (countdownRef.current <= 0) {
+                        selectNextRun();
+                    }
+                }, 1000);
+            }, GRACE_PERIODS[reason]);
+        },
+        [clearStaleTimers, selectNextRun],
+    );
+
+    // Clear stale state when user manually selects a different run
+    const handleSelectRun = useCallback(
+        (user: string) => {
+            clearStaleState();
+            setCurrentlyViewing(user);
+            window.scrollTo(0, 0);
+        },
+        [clearStaleState],
+    );
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => clearStaleTimers();
+    }, [clearStaleTimers]);
+
     useEffect(() => {
         if (lastMessage !== null) {
             if (
@@ -65,13 +175,23 @@ export const Live = ({
 
                 if (lastMessage.type == 'UPDATE') {
                     newMap[user] = lastMessage.run;
+
+                    // Detect stale for the currently viewed run
+                    if (user === currentlyViewing) {
+                        const run = lastMessage.run;
+                        if (run.hasReset || run.currentSplitIndex < 0) {
+                            markStale('reset');
+                        } else if (run.currentSplitIndex >= run.splits.length) {
+                            markStale('finished');
+                        }
+                    }
                 }
 
                 if (lastMessage.type == 'DELETE') {
                     delete newMap[user];
 
                     if (currentlyViewing == user) {
-                        setCurrentlyViewing(getRecommendedStream(newMap));
+                        markStale('offline');
                     }
                 }
 
@@ -108,6 +228,24 @@ export const Live = ({
             setLoadingUserData(false);
         }
     }, [currentlyViewing]);
+
+    // Check if the loaded run is already stale when currentlyViewing changes
+    const markStaleRef = useRef(markStale);
+    markStaleRef.current = markStale;
+    useEffect(() => {
+        if (
+            !loadingUserData &&
+            currentlyViewing &&
+            updatedLiveDataMap[currentlyViewing]
+        ) {
+            const run = updatedLiveDataMap[currentlyViewing];
+            if (run.hasReset || run.currentSplitIndex < 0) {
+                markStaleRef.current('reset');
+            } else if (run.currentSplitIndex >= run.splits.length) {
+                markStaleRef.current('finished');
+            }
+        }
+    }, [loadingUserData, currentlyViewing]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Sync filters from URL params on mount
     useEffect(() => {
@@ -161,6 +299,8 @@ export const Live = ({
                     <Row className="g-3 mb-3">
                         <RecommendedStream
                             liveRun={updatedLiveDataMap[currentlyViewing]}
+                            staleReason={staleReason}
+                            countdown={countdown}
                         />
                     </Row>
                 )}
@@ -257,11 +397,7 @@ export const Live = ({
                     return (
                         <Col
                             key={liveRun.user}
-                            onClick={() => {
-                                setCurrentlyViewing(liveRun.user);
-
-                                window.scrollTo(0, 0);
-                            }}
+                            onClick={() => handleSelectRun(liveRun.user)}
                         >
                             <LiveUserRun
                                 liveRun={liveRun}
