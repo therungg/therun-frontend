@@ -52,16 +52,25 @@ export const LiverunStatsPanel: React.FunctionComponent<
         }
     }, [dataLoading, gameData, liveRun]);
 
-    if (!liveRun.gameData) {
-        return <div>Could not load game data.. Sorry!</div>;
-    }
-
-    if (!dataLoading && !gameData[liveRun.user]) {
-        return <>Could not load game data.. Sorry!</>;
+    if (!liveRun.gameData || (!dataLoading && !gameData[liveRun.user])) {
+        return (
+            <div className="placeholder-glow d-flex flex-column gap-2">
+                <span className="placeholder col-8" />
+                <span className="placeholder col-5" />
+                <span className="placeholder col-6" />
+            </div>
+        );
     }
 
     if (dataLoading) {
-        return <>Loading detailed data...</>;
+        return (
+            <div className="placeholder-glow d-flex flex-column gap-2">
+                <span className="placeholder col-7" />
+                <span className="placeholder col-4" />
+                <span className="placeholder col-9" />
+                <span className="placeholder col-5" />
+            </div>
+        );
     }
 
     const { runs, splits, sessions } = gameData[liveRun.user] as Runs;

@@ -11,6 +11,9 @@
     border-radius: $radius-xl;
     overflow: hidden;
     transition: all $transition-base;
+    min-height: 108px;
+    display: flex;
+    flex-direction: column;
 
     &:hover {
         cursor: pointer;
@@ -31,7 +34,7 @@
 
 // Flash animations
 .liveRunGold {
-    animation: cardGoldFlash 3s ease-out forwards;
+    animation: cardGoldFlash 5s ease-out forwards;
 }
 
 .liveRunGreen {
@@ -46,14 +49,29 @@
     0% {
         border-color: #fcd34d;
         box-shadow:
-            0 0 30px 8px rgba(251, 191, 36, 0.7),
-            0 0 60px 16px rgba(251, 191, 36, 0.3);
+            0 0 40px 12px rgba(251, 191, 36, 0.8),
+            0 0 80px 24px rgba(251, 191, 36, 0.35),
+            inset 0 0 20px 4px rgba(251, 191, 36, 0.1);
+    }
+    15% {
+        border-color: #fbbf24;
+        box-shadow:
+            0 0 20px 6px rgba(251, 191, 36, 0.5),
+            0 0 50px 16px rgba(251, 191, 36, 0.2),
+            inset 0 0 10px 2px rgba(251, 191, 36, 0.05);
+    }
+    30% {
+        border-color: #fcd34d;
+        box-shadow:
+            0 0 35px 10px rgba(251, 191, 36, 0.65),
+            0 0 70px 20px rgba(251, 191, 36, 0.28),
+            inset 0 0 15px 3px rgba(251, 191, 36, 0.08);
     }
     50% {
         border-color: #f59e0b;
         box-shadow:
-            0 0 20px 5px rgba(251, 191, 36, 0.4),
-            0 0 40px 10px rgba(251, 191, 36, 0.15);
+            0 0 18px 5px rgba(251, 191, 36, 0.35),
+            0 0 40px 10px rgba(251, 191, 36, 0.12);
     }
     100% {
         border-color: var(--bs-border-color);
@@ -116,6 +134,20 @@ a > .liveRunContainer {
     display: flex;
     flex-direction: column;
     padding: $spacing-sm $spacing-md $spacing-xs $spacing-md;
+}
+
+.liveRunAvatar {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    position: relative;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1.5px solid var(--bs-border-color);
+}
+
+.liveRunAvatarImg {
+    border-radius: 50%;
 }
 
 .liveRunCategory {
@@ -267,6 +299,7 @@ a > .liveRunContainer {
 // ============================================
 
 .splitsViewer {
+    position: relative;
     background: var(--bs-body-bg);
     border: 1px solid var(--bs-border-color);
     border-radius: $radius-xl;
@@ -274,13 +307,38 @@ a > .liveRunContainer {
     height: 340px;
 }
 
+.splitsWatermark {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.06;
+}
+
+.splitsWatermarkImage {
+    object-fit: cover;
+}
+
+// Ensure all content layers sit above the watermark
+.splitsViewer > :not(.splitsWatermark) {
+    position: relative;
+    z-index: 1;
+}
+
 .splitsHeader {
-    padding: $spacing-sm $spacing-lg;
+    padding: $spacing-xs $spacing-lg;
     height: 15%;
+    font-size: $font-size-sm;
+
+    select {
+        font-size: $font-size-xs;
+        padding-top: 0.2rem;
+        padding-bottom: 0.2rem;
+    }
 }
 
 .splitsScrollArea {
-    background: color-mix(in srgb, var(--bs-body-bg) 60%, var(--bs-secondary-bg) 40%);
+    background: color-mix(in srgb, var(--bs-secondary-bg) 40%, transparent 60%);
 }
 
 .splitRow {
@@ -288,6 +346,21 @@ a > .liveRunContainer {
 
     &Active {
         background-color: color-mix(in srgb, var(--bs-primary) 12%, var(--bs-body-bg) 88%);
+    }
+
+    &Gold {
+        border-left: 2.5px solid #f59e0b;
+        background-color: rgba(251, 191, 36, 0.06);
+    }
+
+    &Ahead {
+        border-left: 2.5px solid #4ade80;
+        background-color: rgba(74, 222, 128, 0.05);
+    }
+
+    &Behind {
+        border-left: 2.5px solid #f87171;
+        background-color: rgba(248, 113, 113, 0.05);
     }
 
     &:hover {
@@ -549,6 +622,11 @@ a > .liveRunContainer {
 // Hero Section (Recommended Stream)
 // ============================================
 
+.heroWrapper {
+    border-radius: $radius-xl;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
 .heroIdentityBar {
     position: relative;
     display: flex;
@@ -597,14 +675,29 @@ a > .liveRunContainer {
 
 .heroIdentityLeft {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: $spacing-sm;
     min-width: 0;
     flex-shrink: 0;
 }
 
+.heroAvatar {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    position: relative;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--bs-border-color);
+}
+
+.heroAvatarImg {
+    border-radius: 50%;
+}
+
 .heroRunnerName {
     font-size: $font-size-xl;
-    font-weight: 700;
+    font-weight: 800;
     line-height: 1.2;
     white-space: nowrap;
     overflow: hidden;
@@ -669,22 +762,8 @@ a > .liveRunContainer {
 
 .heroTimer {
     @include monospace-value;
-    font-size: $font-size-2xl;
+    font-size: $font-size-xl;
     line-height: 1;
-}
-
-.heroPbPaceBadge {
-    flex-shrink: 0;
-    padding: 0.15rem 0.5rem;
-    background: rgba(34, 197, 94, 0.15);
-    border: 1px solid rgba(34, 197, 94, 0.3);
-    border-radius: 0.25rem;
-    font-size: $font-size-2xs;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: rgb(34, 197, 94);
-    margin-top: $spacing-xs;
 }
 
 .heroTimelineWrapper {
@@ -726,21 +805,33 @@ a > .liveRunContainer {
 
 @media screen and (max-width: 991.98px) {
     .heroIdentityBar {
-        flex-direction: column;
-        align-items: stretch;
-        gap: $spacing-sm;
-    }
-
-    .heroStatsRow {
         flex-wrap: wrap;
+        gap: $spacing-sm;
+        padding: $spacing-sm $spacing-md;
     }
 
-    .heroStatItem {
-        flex: 1 1 33%;
+    .heroIdentityLeft {
+        flex: 1 1 auto;
+        min-width: 0;
     }
 
     .heroTimerArea {
-        align-items: center;
+        flex: 0 0 auto;
+        margin-left: auto;
+        align-items: flex-end;
+    }
+
+    .heroStatsRow {
+        flex: 1 1 100%;
+        flex-wrap: nowrap;
+        border-top: 1px solid var(--bs-border-color);
+        padding-top: $spacing-xs;
+        margin-top: $spacing-xs;
+    }
+
+    .heroStatItem {
+        flex: 1;
+        padding: $spacing-xs $spacing-xs;
     }
 
     .heroStreamPanel {

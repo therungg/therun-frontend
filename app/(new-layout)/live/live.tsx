@@ -247,10 +247,21 @@ export const Live = ({
         }
     }, [loadingUserData, currentlyViewing]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Sync filters from URL params on mount
+    // Sync filters and sort from URL params on mount
     useEffect(() => {
         const parsedFilters = parseFilterParams(window.location.search);
         setFilters(parsedFilters);
+
+        const params = new URLSearchParams(window.location.search);
+        const sortParam = params.get('sort');
+        if (
+            sortParam &&
+            ['importance', 'runtime', 'runner', 'game', 'delta'].includes(
+                sortParam,
+            )
+        ) {
+            setSortOption(sortParam as SortOption);
+        }
     }, []);
 
     // Update URL when filters change
@@ -270,6 +281,23 @@ export const Live = ({
 
         window.history.replaceState({}, '', newUrl);
     }, [filters]);
+
+    // Update URL when sort option changes
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+
+        if (sortOption && sortOption !== 'importance') {
+            params.set('sort', sortOption);
+        } else {
+            params.delete('sort');
+        }
+
+        const newUrl = params.toString()
+            ? `${window.location.pathname}?${params.toString()}`
+            : window.location.pathname;
+
+        window.history.replaceState({}, '', newUrl);
+    }, [sortOption]);
 
     return (
         <>
@@ -356,10 +384,27 @@ export const Live = ({
                             </div>
                         </div>
                         <div className="d-flex align-items-center gap-2 justify-content-start justify-content-lg-end">
-                            <Funnel
-                                size={16}
-                                className="text-muted flex-shrink-0"
-                            />
+                            <span className="position-relative flex-shrink-0">
+                                <Funnel size={16} className="text-muted" />
+                                {(() => {
+                                    const count = [
+                                        filters.liveOnTwitch,
+                                        filters.ongoing,
+                                        filters.pbPace,
+                                    ].filter(Boolean).length;
+                                    return count > 0 ? (
+                                        <span
+                                            className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary"
+                                            style={{
+                                                fontSize: '0.6rem',
+                                                padding: '0.15em 0.4em',
+                                            }}
+                                        >
+                                            {count}
+                                        </span>
+                                    ) : null;
+                                })()}
+                            </span>
                             <FilterControl
                                 filters={filters}
                                 onChange={setFilters}
@@ -368,7 +413,7 @@ export const Live = ({
                     </div>
                 </Col>
             </Row>
-            <Row xs={1} lg={2} xl={3} className="g-3">
+            <Row xs={1} md={2} lg={2} xl={3} className="g-3">
                 {Object.values(updatedLiveDataMap).length == 0 && (
                     <div>Unfortunately, nobody is running live now...</div>
                 )}

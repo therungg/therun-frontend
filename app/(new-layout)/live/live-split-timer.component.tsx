@@ -137,7 +137,10 @@ export const LiveSplitTimerComponent: React.FunctionComponent<
                 )}
 
             {liveRun.hasReset && (
-                <div className={timerClassName}>
+                <div
+                    className={timerClassName}
+                    style={{ color: 'var(--bs-danger)', opacity: 0.7 }}
+                >
                     {splitTime ? '-' : 'Reset'}
                 </div>
             )}

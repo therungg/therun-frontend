@@ -76,6 +76,7 @@ export const Difference = ({
     isGold = false,
     human = true,
     inline = false,
+    colorOverride,
 }: {
     one: string;
     two: string;
@@ -83,6 +84,7 @@ export const Difference = ({
     isGold?: boolean;
     human?: boolean;
     inline?: boolean;
+    colorOverride?: string;
 }) => {
     const diff = parseInt(one) - parseInt(two);
 
@@ -98,6 +100,16 @@ export const Difference = ({
         true,
     )}`;
 
+    const color =
+        colorOverride ??
+        (isGold
+            ? 'var(--bs-gold)'
+            : diff <= 0
+              ? // eslint-disable-next-line sonarjs/no-duplicate-string
+                'var(--bs-link-color)'
+              : // eslint-disable-next-line sonarjs/no-duplicate-string
+                'var(--bs-red)');
+
     return (
         <abbr
             title={`${diff <= 0 ? '-' : '+'}${getFormattedString(
@@ -109,31 +121,9 @@ export const Difference = ({
             )}`}
         >
             {inline ? (
-                <span
-                    style={{
-                        color: isGold
-                            ? 'var(--bs-gold)'
-                            : diff <= 0
-                              ? // eslint-disable-next-line sonarjs/no-duplicate-string
-                                'var(--bs-link-color)'
-                              : // eslint-disable-next-line sonarjs/no-duplicate-string
-                                'var(--bs-red)',
-                    }}
-                >
-                    {formatted}
-                </span>
+                <span style={{ color }}>{formatted}</span>
             ) : (
-                <div
-                    style={{
-                        color: isGold
-                            ? 'var(--bs-gold)'
-                            : diff <= 0
-                              ? 'var(--bs-link-color)'
-                              : 'var(--bs-red)',
-                    }}
-                >
-                    {formatted}
-                </div>
+                <div style={{ color }}>{formatted}</div>
             )}
         </abbr>
     );
