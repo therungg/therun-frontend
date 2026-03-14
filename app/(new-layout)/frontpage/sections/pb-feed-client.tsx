@@ -1,10 +1,10 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FaBolt, FaStar, FaTrophy } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
+import Link from '~src/components/link';
 import {
     DurationToFormatted,
     FromNow,

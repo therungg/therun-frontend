@@ -1,7 +1,7 @@
-import Link from 'next/link';
 import React, { memo } from 'react';
 import { Button } from 'react-bootstrap';
 import { PatreonBunnySvg } from '~app/(new-layout)/patron/patreon-info';
+import Link from '~src/components/link';
 import { BunnyIcon } from '~src/icons/bunny-icon';
 import styles from '../hearts.module.scss';
 import { WrappedWithData } from '../wrapped-types';
@@ -76,7 +76,7 @@ export const WrappedOutroThanks = memo<WrappedOutroThanksProps>(
                             do to support!
                         </p>
                         <p>
-                            <Link href="/patron" prefetch={false}>
+                            <Link href="/patron">
                                 <Button
                                     variant="secondary"
                                     className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"

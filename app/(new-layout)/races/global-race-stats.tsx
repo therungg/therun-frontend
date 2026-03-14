@@ -1,7 +1,7 @@
-import Link from 'next/link';
 import React, { ReactElement } from 'react';
 import { GameStats, GlobalStats } from '~app/(new-layout)/races/races.types';
 import { GameImage } from '~src/components/image/gameimage';
+import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { safeEncodeURI } from '~src/utils/uri';
 import styles from './races.module.scss';
@@ -17,9 +17,7 @@ export const GlobalRaceStats = ({
         <div className={styles.sidePanel}>
             <div className={styles.sidePanelHeader}>
                 <span className="h3">Race Stats</span>
-                <Link href="/races/stats" prefetch={false}>
-                    View all stats
-                </Link>
+                <Link href="/races/stats">View all stats</Link>
             </div>
             <hr className={styles.sidePanelDivider} />
             <div>

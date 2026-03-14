@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '~src/components/link';
 import styles from './styles/footer.module.scss';
 
 const links = [
@@ -17,11 +17,7 @@ export const Footer = () => {
                 <ul className={styles.links}>
                     {links.map(({ href, label }) => (
                         <li key={href}>
-                            <Link
-                                href={href}
-                                className={styles.link}
-                                prefetch={false}
-                            >
+                            <Link href={href} className={styles.link}>
                                 {label}
                             </Link>
                         </li>

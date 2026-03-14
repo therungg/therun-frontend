@@ -2,7 +2,6 @@
 
 import clsx from 'clsx';
 import Image from 'next/image';
-import Link from 'next/link';
 import { redirect, usePathname } from 'next/navigation';
 import { Col, Row } from 'react-bootstrap';
 import {
@@ -27,6 +26,7 @@ import {
     Breadcrumb,
     BreadcrumbItem,
 } from '~src/components/breadcrumbs/breadcrumb';
+import Link from '~src/components/link';
 import { Can, subject } from '~src/rbac/Can.component';
 import { EventWithOrganizerName } from '../../../../types/events.types';
 import { deleteEventAction } from '../actions/delete-event.action';
@@ -51,10 +51,7 @@ export const ViewEvent = ({ event }: { event: EventWithOrganizerName }) => {
 
                 <div className="d-flex justify-content-end">
                     <Can I="edit" this={subject('event', event)}>
-                        <Link
-                            href={`/events/${event.id}/edit`}
-                            prefetch={false}
-                        >
+                        <Link href={`/events/${event.id}/edit`}>
                             <Button>Edit Event</Button>
                         </Link>
                     </Can>

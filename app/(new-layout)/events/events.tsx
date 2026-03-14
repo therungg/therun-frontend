@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { Col, Row } from 'react-bootstrap';
 import { IconButton } from '~src/components/Button/IconButton';
+import Link from '~src/components/link';
 import { Paginate } from '~src/components/server-pagination/Paginate';
 import { PlusIcon } from '~src/icons/plus-icon';
 import { EventSearchResult } from '~src/lib/events';
@@ -18,7 +18,7 @@ export const Events = ({ events }: { events: EventSearchResult }) => {
             <div className={styles.pageHeader}>
                 <h1 className={styles.pageTitle}>Events</h1>
                 <Can I="create" an="event">
-                    <Link href="/events/create" prefetch={false}>
+                    <Link href="/events/create">
                         <IconButton icon={<PlusIcon />} iconPosition="right">
                             Create new event
                         </IconButton>
@@ -39,7 +39,6 @@ export const Events = ({ events }: { events: EventSearchResult }) => {
                                         <Link
                                             href={`/events/${event.slug}`}
                                             className="card-link-wrapper"
-                                            prefetch={false}
                                         >
                                             <SpeedrunEventCard event={event} />
                                         </Link>

@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import {
     FaBluesky,
     FaChartLine,
@@ -13,6 +12,7 @@ import {
 } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import { getSession } from '~src/actions/session.action';
+import Link from '~src/components/link';
 import styles from './quick-links.module.scss';
 
 interface QuickLink {
@@ -139,7 +139,7 @@ const LinkItem = ({ link }: { link: QuickLink }) => {
     }
 
     return (
-        <Link href={link.href} className={className} prefetch={false}>
+        <Link href={link.href} className={className}>
             <Icon
                 size={14}
                 className={styles.icon}

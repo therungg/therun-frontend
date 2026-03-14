@@ -1,8 +1,8 @@
-import Link from 'next/link';
 import { Button } from 'react-bootstrap';
 import { CreateNextRaceButton } from '~app/(new-layout)/races/components/buttons/create-next-race-button';
 import { RaceActionProps } from '~app/(new-layout)/races/components/buttons/race-action-button';
 import { Race } from '~app/(new-layout)/races/races.types';
+import Link from '~src/components/link';
 import { User } from '../../../../types/session.types';
 
 interface CreateNextRaceProps extends Omit<RaceActionProps, 'raceId'> {
@@ -54,7 +54,7 @@ const GoToNextRace = (props: GoToNextRaceProps) => {
     return (
         <div className="mb-4">
             <span className="mb-2">A new race has been created!</span>
-            <Link href={url} prefetch={false}>
+            <Link href={url}>
                 <Button {...props} variant="primary">
                     Go to next race
                 </Button>

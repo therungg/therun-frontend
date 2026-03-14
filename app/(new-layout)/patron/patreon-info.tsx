@@ -1,9 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import React from 'react';
 import { Col, Row, Table } from 'react-bootstrap';
 import { Button } from '~src/components/Button/Button';
+import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { usePatreons } from '~src/components/patreon/use-patreons';
 import { BunnyIcon } from '~src/icons/bunny-icon';
@@ -30,7 +30,6 @@ export function PatreonInfo({ session }: { session: { username: string } }) {
                             target="_blank"
                             rel="noreferrer"
                             href="https://patreon.com/therungg"
-                            prefetch={false}
                         >
                             <Button
                                 variant="secondary"
@@ -52,7 +51,6 @@ export function PatreonInfo({ session }: { session: { username: string } }) {
                             target="_blank"
                             rel="noreferrer"
                             href={stripePaymentButton}
-                            prefetch={false}
                         >
                             <Button className="btn-lg border-2 px-3 h-3r fw-medium w-240p h-4r fs-large mw-100">
                                 Donate with Stripe

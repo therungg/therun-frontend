@@ -1,8 +1,8 @@
 'use client';
 import Image from 'next/image';
-import Link from 'next/link';
 import React, { ReactElement } from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
+import Link from '~src/components/link';
 import { FromNow } from '~src/components/util/datetime';
 import { BunnyIcon } from '~src/icons/bunny-icon';
 import styles from './blog.module.scss';
@@ -174,12 +174,10 @@ export const getBlogs = (): BlogInterface[] => {
                         Now that the tool is pretty much stable (almost no
                         uploads have failed for a couple of weeks now, most bugs
                         are gone), I can start working on the{' '}
-                        <Link href="/roadmap" prefetch={false}>
-                            Toadmap
-                        </Link>{' '}
-                        (Roadmap, but funny. Get it? Please laugh) I put
-                        together again. Here&apos;s what I&apos;m looking
-                        forward to building next:
+                        <Link href="/roadmap">Toadmap</Link> (Roadmap, but
+                        funny. Get it? Please laugh) I put together again.
+                        Here&apos;s what I&apos;m looking forward to building
+                        next:
                     </p>
                     <ul>
                         <li>
@@ -252,11 +250,9 @@ export const getBlogs = (): BlogInterface[] => {
                         Thanks so much to everyone who uploaded, gave feedback
                         or just checked out the tool. If you have any feedback,
                         remarks or just want to talk, please do not hesitate to{' '}
-                        <Link href="/contact" prefetch={false}>
-                            contact me
-                        </Link>
-                        . Let&apos;s keep working to make this thing used by
-                        many for a long time to come!
+                        <Link href="/contact">contact me</Link>. Let&apos;s keep
+                        working to make this thing used by many for a long time
+                        to come!
                     </p>
                 </div>
             ),
@@ -425,11 +421,8 @@ export const getBlogs = (): BlogInterface[] => {
                         a <b>custom built LiveSplit Component</b>. The component
                         will track your live runs and display them in real time,
                         along with your stream, on the{' '}
-                        <Link href="/live" prefetch={false}>
-                            Live Page
-                        </Link>
-                        . Furthermore, it will upload your splits after every
-                        reset.{' '}
+                        <Link href="/live">Live Page</Link>. Furthermore, it
+                        will upload your splits after every reset.{' '}
                         <b>
                             You never have to manually upload your runs again!
                         </b>
@@ -437,12 +430,10 @@ export const getBlogs = (): BlogInterface[] => {
                     <h2>How does it work?</h2>
                     <p>
                         It is simple! Just follow the instructions on{' '}
-                        <Link href="/livesplit" prefetch={false}>
-                            this page
-                        </Link>{' '}
-                        and you are done! Forever! Never upload manually again.
-                        All your stats will be tracked forever, and you will be
-                        featured on the Live page forever!
+                        <Link href="/livesplit">this page</Link> and you are
+                        done! Forever! Never upload manually again. All your
+                        stats will be tracked forever, and you will be featured
+                        on the Live page forever!
                     </p>
                     <p>
                         In short, you install the LiveSplit Component{' '}
@@ -455,10 +446,8 @@ export const getBlogs = (): BlogInterface[] => {
                         </a>
                         . Plug the .dll file into your Components folder. Then,
                         get the upload-key from the{' '}
-                        <Link href="/upload-key" prefetch={false}>
-                            upload-key page
-                        </Link>{' '}
-                        and plug that into the LiveSplit Layout. Done!
+                        <Link href="/upload-key">upload-key page</Link> and plug
+                        that into the LiveSplit Layout. Done!
                     </p>
                     <h2>Features</h2>
                     <p>
@@ -472,9 +461,7 @@ export const getBlogs = (): BlogInterface[] => {
                         tracked in real-time. When you are running, your current
                         run will be displayed on your profile, your run detail
                         page, but most importantly: on the{' '}
-                        <Link href="/live" prefetch={false}>
-                            Live Page!
-                        </Link>
+                        <Link href="/live">Live Page!</Link>
                     </p>
                     <p>
                         The live page was inspired by{' '}
@@ -581,11 +568,7 @@ export const getBlogs = (): BlogInterface[] => {
                 <>
                     <p>
                         tl;dr:{' '}
-                        <Link
-                            href="/races"
-                            className="fst-italic"
-                            prefetch={false}
-                        >
+                        <Link href="/races" className="fst-italic">
                             Race on therun.gg, in real time, with cool stats,
                             graphs. Easy, fun, and fully free.
                         </Link>
@@ -625,11 +608,7 @@ export const getBlogs = (): BlogInterface[] => {
                         It keeps the site running and allows me to build more
                         cool stuff!
                     </p>{' '}
-                    <Link
-                        href="/patron"
-                        className="w-100 flex-center"
-                        prefetch={false}
-                    >
+                    <Link href="/patron" className="w-100 flex-center">
                         <Button
                             variant="secondary"
                             className="btn-lg me-sm-3 px-3 w-160p h-3r fw-medium"
@@ -740,7 +719,7 @@ export const getBlogs = (): BlogInterface[] => {
                     <h5>With the LiveSplit Component</h5>
                     <p>
                         I recommend using the{' '}
-                        <Link href="/upload-key" prefetch={false}>
+                        <Link href="/upload-key">
                             therun.gg LiveSplit Component
                         </Link>
                         , which will allow the site to track you during your
