@@ -27,13 +27,7 @@ export function TopbarUtilities({
     sessionError,
 }: TopbarUtilitiesProps) {
     return (
-        <div
-            style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-            }}
-        >
+        <>
             <GlobalSearch />
             <DarkModeSlider />
             <UserMenu
@@ -41,6 +35,6 @@ export function TopbarUtilities({
                 picture={picture}
                 sessionError={sessionError}
             />
-        </div>
+        </>
     );
 }
