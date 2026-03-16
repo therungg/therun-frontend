@@ -1,0 +1,77 @@
+.group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.trigger {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    background: none;
+    border: none;
+    color: var(--bs-body-color);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    position: relative;
+    text-decoration: none;
+
+    &::after {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        right: 0.5rem;
+        bottom: 0;
+        height: 2px;
+        background-color: currentColor;
+        transform: scaleX(0);
+        transition: transform 0.2s ease;
+    }
+}
+
+.dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 100;
+    min-width: 180px;
+    padding: 0.25rem 0;
+    background-color: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s ease, visibility 0.15s ease;
+}
+
+.item {
+    display: block;
+    padding: 0.375rem 0.75rem;
+    color: var(--bs-body-color);
+    text-decoration: none;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+
+    &:hover {
+        background-color: var(--bs-tertiary-bg);
+        color: var(--bs-body-color);
+    }
+}
+
+.active {
+    font-weight: 600;
+}
+
+// Desktop hover behavior — only on devices that support hover
+@media (hover: hover) {
+    .group:hover .trigger::after {
+        transform: scaleX(1);
+    }
+
+    .group:hover .dropdown {
+        opacity: 1;
+        visibility: visible;
+    }
+}

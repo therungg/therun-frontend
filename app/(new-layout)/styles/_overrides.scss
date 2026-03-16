@@ -30,29 +30,3 @@
         background-color: var(--bs-tertiary-bg) !important;
     }
 }
-
-// Navbar link hover: keep text color, show underline
-.navbar .nav-link {
-    position: relative;
-    text-decoration: none !important;
-
-    &:hover {
-        color: var(--bs-navbar-color) !important;
-    }
-
-    &::after {
-        content: '';
-        position: absolute;
-        left: 0.5rem;
-        right: 0.5rem;
-        bottom: 0.25rem;
-        height: 2px;
-        background-color: currentColor;
-        transform: scaleX(0);
-        transition: transform 0.2s ease;
-    }
-
-    &:hover::after {
-        transform: scaleX(1);
-    }
-}
