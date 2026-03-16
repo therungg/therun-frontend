@@ -102,6 +102,7 @@ export function NavGroup({ label, items, children }: NavGroupProps) {
                         ? { opacity: 1, visibility: 'visible' as const }
                         : undefined
                 }
+                onKeyDown={handleItemKeyDown}
             >
                 {children ??
                     items?.map((item) => (
@@ -111,7 +112,6 @@ export function NavGroup({ label, items, children }: NavGroupProps) {
                             className={`${styles.item} ${pathname === item.href ? styles.active : ''}`}
                             role="menuitem"
                             tabIndex={open ? 0 : -1}
-                            onKeyDown={handleItemKeyDown}
                             onClick={() => setOpen(false)}
                         >
                             {item.label}
