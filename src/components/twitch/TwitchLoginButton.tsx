@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Nav } from 'react-bootstrap';
 import { Button } from '~src/components/Button/Button';
 import { getTwitchOAuthURL } from './twitch-oauth';
 
@@ -14,8 +13,8 @@ export const TwitchLoginButton: React.FunctionComponent<
 > = ({ url = '' }) => {
     const loginUrl = getTwitchOAuthURL({ redirect: url });
     return (
-        <Nav.Link href={loginUrl.href}>
+        <a href={loginUrl.href} style={{ textDecoration: 'none' }}>
             <Button className="twitch">Login with Twitch</Button>
-        </Nav.Link>
+        </a>
     );
 };
