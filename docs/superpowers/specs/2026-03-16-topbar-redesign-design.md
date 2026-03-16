@@ -33,11 +33,21 @@ Single `<header>` with two zones in a flex row:
 
 ## Dropdowns
 
-- CSS `:hover` triggered on desktop (on the parent `<div>` wrapping label + panel)
-- Each nav group label is a `<button>` or `<a>` element
+- CSS `:hover` triggered on desktop via `@media (hover: hover)` — avoids sticky hover on touch-capable laptops/tablets
+- Fallback: click/touch opens dropdown on devices reporting `hover: none`
+- Each nav group label is a `<button>` element (not `<a>`, since it toggles a panel rather than navigating)
 - Dropdown panel is a `<div>` with vertical list of `<a>` links
 - No click required on desktop; click opens on mobile
 - Simple vertical list, minimal shadow, tight padding, no rounded corners
+
+### Keyboard Navigation
+
+- Nav group buttons are focusable via Tab
+- Enter/Space opens the dropdown
+- Escape closes the open dropdown and returns focus to its trigger button
+- Arrow Down/Up moves through dropdown items
+- Tab from last dropdown item closes dropdown and moves to next nav group
+- Dropdown items and panels use `role="menu"` / `role="menuitem"`, `aria-expanded`, and `aria-haspopup="true"` on trigger buttons
 
 ## Mobile (below `lg` breakpoint)
 
@@ -47,6 +57,7 @@ Single `<header>` with two zones in a flex row:
 - Search input prominent at top of mobile menu
 - Dark mode toggle and user avatar remain visible in topbar on mobile
 - Checkbox-based toggle (like lichess) or state-based — implementation detail
+- Focus trap: when mobile menu is open, Tab cycles within the overlay only
 
 ## Styling
 
@@ -58,6 +69,8 @@ Single `<header>` with two zones in a flex row:
 - Follows existing CSS custom properties for dark/light mode
 - No images in nav chrome except logo and user avatar
 - Font: inherit from site (no special topbar font)
+- Logo text: "The Run" — drop the "beta" superscript
+- Active page indicator: nav group labels and dropdown items can highlight the current route via `usePathname()` (underline or font weight change)
 
 ## Component Architecture
 
@@ -90,6 +103,36 @@ interface NavGroupProps {
 ```
 
 Items with `condition: false` are not rendered. If all items have `condition: false`, the entire group is hidden.
+
+### RBAC Pattern for Admin Group
+
+The Admin group cannot use the simple `condition` boolean because each item requires a different RBAC check, and the `<Can>` component is a JSX wrapper (not a hook). The Admin group is rendered as a special case:
+
+```tsx
+<Can I="view-restricted" a="admins">
+    {/* Render Admin NavGroup — at least one item is visible if we get here */}
+    <NavGroup label="Admin" items={[...]}>
+        {/* Individual items also wrapped in <Can> where permissions differ */}
+    </NavGroup>
+</Can>
+```
+
+Alternatively, the Admin group can accept `children` instead of `items` for cases where JSX wrappers like `<Can>` are needed around individual items. The `NavGroup` component should support both patterns: `items` array for simple groups, `children` for complex conditional rendering.
+
+## UserMenu Component
+
+The `UserMenu` handles:
+- **Logged in**: Avatar + dropdown with Profile (`/{username}`) and Logout
+- **Logout**: POST to `/api/logout`, then `router.push('/') + router.refresh()` (requires `useRouter`)
+- **Session error**: "Reset session" button calling `resetSession` server action + `window.location.reload()`
+- **Not logged in**: `TwitchLoginButton` component
+
+## TopbarSkeleton
+
+The current skeleton uses Bootstrap utility classes (`d-none`, `d-lg-block`) and Bootstrap CSS variables (`--bs-secondary-bg`, `--bs-body-bg`). The updated skeleton must:
+- Replace Bootstrap display classes with CSS module equivalents or `@media` queries
+- Replace Bootstrap CSS variable references with the site's own CSS custom properties
+- Keep `react-content-loader` for the skeleton shapes
 
 ## What Changes
 
