@@ -41,7 +41,7 @@ export const Topbar = ({
         <Link
             key={href}
             href={href}
-            className={`${navGroupStyles.item} ${pathname === href ? navGroupStyles.active : ''}`}
+            className={`${navGroupStyles.item} ${pathname.startsWith(href) ? navGroupStyles.active : ''}`}
             role="menuitem"
         >
             {label}
@@ -59,12 +59,12 @@ export const Topbar = ({
                 {username && <NavGroup label="Tools" items={toolsItems} />}
                 <AdminNavGroup adminLink={adminLink} />
                 <NavGroup label="About" items={aboutItems} />
-                <Link href="/patron" className={topbarStyles.supportLink}>
-                    Support us <BunnyIcon />
-                </Link>
             </div>
 
             <div className={topbarStyles.utilities}>
+                <Link href="/patron" className={topbarStyles.supportLink}>
+                    Support us <BunnyIcon />
+                </Link>
                 <TopbarUtilities
                     username={username}
                     picture={picture}

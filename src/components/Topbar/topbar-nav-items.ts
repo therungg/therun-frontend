@@ -1,12 +1,14 @@
 export interface NavItem {
     href: string;
     label: string;
+    /** Show a live pulse indicator next to the label */
+    live?: boolean;
 }
 
 // Static groups (always visible, no auth/RBAC conditions)
 export const runItems: NavItem[] = [
     { href: '/upload', label: 'Upload' },
-    { href: '/live', label: 'Live' },
+    { href: '/live', label: 'Live', live: true },
     { href: '/runs', label: 'Runs' },
 ];
 

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import styles from './NavGroup.module.scss';
 import type { NavItem } from './topbar-nav-items';
 
@@ -16,6 +16,24 @@ export function NavGroup({ label, items, children }: NavGroupProps) {
     const pathname = usePathname();
     const [open, setOpen] = useState(false);
     const groupRef = useRef<HTMLDivElement>(null);
+
+    // Close on click outside (#7)
+    useEffect(() => {
+        if (!open) return;
+
+        const handleClickOutside = (e: MouseEvent) => {
+            if (
+                groupRef.current &&
+                !groupRef.current.contains(e.target as Node)
+            ) {
+                setOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () =>
+            document.removeEventListener('mousedown', handleClickOutside);
+    }, [open]);
 
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
         if (e.key === 'Escape') {
@@ -78,6 +96,9 @@ export function NavGroup({ label, items, children }: NavGroupProps) {
 
     if (!children && (!items || items.length === 0)) return null;
 
+    // Check if any child item is active (startsWith for sub-routes, #9)
+    const isGroupActive = items?.some((item) => pathname.startsWith(item.href));
+
     return (
         <div
             className={styles.group}
@@ -86,7 +107,7 @@ export function NavGroup({ label, items, children }: NavGroupProps) {
         >
             <button
                 type="button"
-                className={styles.trigger}
+                className={`${styles.trigger} ${isGroupActive ? styles.active : ''}`}
                 aria-expanded={open}
                 aria-haspopup="true"
                 onClick={() => setOpen((prev) => !prev)}
@@ -113,11 +134,12 @@ export function NavGroup({ label, items, children }: NavGroupProps) {
                         <Link
                             key={item.href}
                             href={item.href}
-                            className={`${styles.item} ${pathname === item.href ? styles.active : ''}`}
+                            className={`${styles.item} ${pathname.startsWith(item.href) ? styles.active : ''}`}
                             role="menuitem"
                             tabIndex={open ? 0 : -1}
                             onClick={() => setOpen(false)}
                         >
+                            {item.live && <span className={styles.liveDot} />}
                             {item.label}
                         </Link>
                     ))}
