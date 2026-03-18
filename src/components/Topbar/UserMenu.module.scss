@@ -21,43 +21,65 @@
     height: 28px;
     border-radius: 50%;
     object-fit: cover;
+    transition: box-shadow 0.15s ease;
+
+    &:hover {
+        box-shadow: 0 0 0 2px rgba(96, 140, 89, 0.3);
+    }
 }
 
 .dropdown {
     position: absolute;
-    top: 100%;
+    top: calc(100% + 4px);
     right: 0;
     z-index: 100;
     min-width: 160px;
-    padding: 0.25rem 0;
-    background-color: var(--bs-body-bg);
-    border: 1px solid var(--bs-border-color);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    padding: 4px;
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05);
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.15s ease, visibility 0.15s ease;
+    transform: translateY(-4px);
+    transition: opacity 0.15s ease, visibility 0.15s ease, transform 0.15s ease;
+
+    :global([data-bs-theme='dark']) & {
+        background: rgba(30, 43, 28, 0.9);
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
 }
 
 .dropdownOpen {
     opacity: 1;
     visibility: visible;
+    transform: translateY(0);
 }
 
 .item {
     display: block;
-    padding: 0.375rem 0.75rem;
+    padding: 7px 12px;
     color: var(--bs-body-color);
     text-decoration: none;
-    font-size: 0.8125rem;
+    font-size: 0.825rem;
     white-space: nowrap;
     background: none;
     border: none;
     width: 100%;
     text-align: left;
     cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.1s ease;
 
     &:hover {
-        background-color: var(--bs-tertiary-bg);
+        background: rgba(96, 140, 89, 0.1);
+    }
+
+    :global([data-bs-theme='dark']) &:hover {
+        background: rgba(96, 140, 89, 0.15);
     }
 }
 
@@ -65,5 +87,6 @@
     .container:hover .dropdown {
         opacity: 1;
         visibility: visible;
+        transform: translateY(0);
     }
 }
