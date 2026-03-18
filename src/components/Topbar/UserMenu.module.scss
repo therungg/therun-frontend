@@ -56,8 +56,10 @@
     z-index: 100;
     min-width: 180px;
     padding: 5px;
-    background: var(--bs-body-bg);
-    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
     border-radius: 10px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.05);
     opacity: 0;
@@ -66,6 +68,7 @@
     transition: opacity 0.15s ease, visibility 0.15s ease, transform 0.15s ease;
 
     :global([data-bs-theme='dark']) & {
+        background: rgba(30, 43, 28, 0.9);
         border-color: rgba(255, 255, 255, 0.08);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.15);
     }
