@@ -237,12 +237,33 @@
 }
 
 .cardStatValue {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--bs-body-color);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+// ── Inline user avatars (next to usernames in cards) ──
+
+.inlineAvatarWrapper {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    position: relative;
+    display: inline-block;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 1.5px solid var(--bs-border-color);
+    vertical-align: middle;
+}
+
+.inlineAvatar {
+    border-radius: 50%;
 }
 
 .cardFooterLive {
@@ -299,13 +320,35 @@
     }
 }
 
+.raceArtWrap {
+    position: relative;
+    flex-shrink: 0;
+    width: $art-width-sm;
+    height: 48px;
+}
+
 .raceArt {
     width: $art-width-sm;
     aspect-ratio: 3 / 4;
     border-radius: 4px;
     object-fit: cover;
-    flex-shrink: 0;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+.raceAvatarOverlay {
+    position: absolute;
+    bottom: -4px;
+    right: -6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--bs-body-bg);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.raceAvatarImg {
+    border-radius: 50%;
 }
 
 .raceInfo {
