@@ -1,0 +1,80 @@
+<h2>Nav Item Hover & Active States</h2>
+<p class="subtitle">What should happen when you hover over a nav group? The current bar just does a thin underline scale-in. These are more expressive options.</p>
+
+<div class="cards">
+  <!-- Option A: Pill Background -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border-radius: 8px; padding: 8px 16px; display: flex; gap: 4px; align-items: center; border: 1px solid rgba(0,0,0,0.06);">
+        <style>
+          .hover-demo-a .nav-item { padding: 6px 12px; font-size: 13px; color: #555; border-radius: 6px; transition: all 0.15s ease; cursor: pointer; font-family: system-ui; }
+          .hover-demo-a .nav-item:hover { background: rgba(96,140,89,0.1); color: #333; }
+          .hover-demo-a .nav-item.active { background: rgba(96,140,89,0.15); color: #4a6b45; font-weight: 600; }
+        </style>
+        <div class="hover-demo-a" style="display: flex; gap: 2px;">
+          <div class="nav-item active">Run</div>
+          <div class="nav-item">Compete</div>
+          <div class="nav-item">Explore</div>
+          <div class="nav-item">Tools</div>
+          <div class="nav-item">About</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. Pill Fill</h3>
+      <p>Soft rounded background appears on hover with a green tint. Active page gets a slightly stronger fill. Clean, lichess-like. The most universally refined approach.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Bottom Indicator -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border-radius: 8px; padding: 8px 16px; display: flex; gap: 4px; align-items: center; border: 1px solid rgba(0,0,0,0.06);">
+        <style>
+          .hover-demo-b .nav-item { padding: 6px 12px; font-size: 13px; color: #555; position: relative; transition: color 0.15s ease; cursor: pointer; font-family: system-ui; }
+          .hover-demo-b .nav-item::after { content: ''; position: absolute; bottom: -2px; left: 8px; right: 8px; height: 2px; background: #608C59; border-radius: 1px; transform: scaleX(0); transition: transform 0.2s ease; }
+          .hover-demo-b .nav-item:hover { color: #333; }
+          .hover-demo-b .nav-item:hover::after { transform: scaleX(1); }
+          .hover-demo-b .nav-item.active { color: #608C59; font-weight: 600; }
+          .hover-demo-b .nav-item.active::after { transform: scaleX(1); }
+        </style>
+        <div class="hover-demo-b" style="display: flex; gap: 2px;">
+          <div class="nav-item active">Run</div>
+          <div class="nav-item">Compete</div>
+          <div class="nav-item">Explore</div>
+          <div class="nav-item">Tools</div>
+          <div class="nav-item">About</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. Green Underline Slide</h3>
+      <p>Colored underline slides in from center on hover. Active page has a persistent green underline. More traditional, editorial feel. What you have now but with color and better timing.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Combined -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border-radius: 8px; padding: 8px 16px; display: flex; gap: 4px; align-items: center; border: 1px solid rgba(0,0,0,0.06);">
+        <style>
+          .hover-demo-c .nav-item { padding: 6px 12px; font-size: 13px; color: #555; border-radius: 6px; position: relative; transition: all 0.15s ease; cursor: pointer; font-family: system-ui; }
+          .hover-demo-c .nav-item:hover { background: rgba(96,140,89,0.08); color: #333; }
+          .hover-demo-c .nav-item.active { color: #608C59; font-weight: 600; }
+          .hover-demo-c .nav-item.active::after { content: ''; position: absolute; bottom: -1px; left: 25%; right: 25%; height: 2px; background: #608C59; border-radius: 1px; }
+        </style>
+        <div class="hover-demo-c" style="display: flex; gap: 2px;">
+          <div class="nav-item active">Run</div>
+          <div class="nav-item">Compete</div>
+          <div class="nav-item">Explore</div>
+          <div class="nav-item">Tools</div>
+          <div class="nav-item">About</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. Pill Hover + Underline Active</h3>
+      <p>Hover gets a soft pill fill. Active page gets a short green underline indicator beneath the label. Combines both signals — hover is background, active is underline. Layered and intentional.</p>
+    </div>
+  </div>
+</div>
