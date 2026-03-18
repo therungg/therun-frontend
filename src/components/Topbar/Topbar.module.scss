@@ -42,8 +42,12 @@
 .utilities {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.5rem;
     margin-left: auto;
+
+    @media (min-width: 992px) {
+        gap: 1rem;
+    }
 }
 
 .supportLink {
