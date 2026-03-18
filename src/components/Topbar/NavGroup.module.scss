@@ -17,12 +17,12 @@
 .trigger {
     display: flex;
     align-items: center;
-    padding: 6px 12px;
+    padding: 8px 14px;
     background: none;
     border: none;
     color: var(--bs-body-color);
     opacity: 0.65;
-    font-size: 0.855rem;
+    font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
     white-space: nowrap;
@@ -50,8 +50,8 @@
     top: calc(100% + 4px);
     left: 0;
     z-index: 100;
-    min-width: 180px;
-    padding: 4px;
+    min-width: 200px;
+    padding: 5px;
     background: rgba(255, 255, 255, 0.82);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -72,10 +72,10 @@
 
 .item {
     display: block;
-    padding: 7px 12px;
+    padding: 8px 14px;
     color: var(--bs-body-color);
     text-decoration: none;
-    font-size: 0.825rem;
+    font-size: 0.9375rem;
     white-space: nowrap;
     border-radius: 6px;
     transition: background 0.1s ease;

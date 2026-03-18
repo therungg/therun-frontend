@@ -56,8 +56,8 @@ export function UserMenu({ username, picture, sessionError }: UserMenuProps) {
                     <Image
                         src={picture}
                         alt={username}
-                        width={28}
-                        height={28}
+                        width={32}
+                        height={32}
                         className={styles.avatar}
                         unoptimized
                     />
