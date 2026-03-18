@@ -5,6 +5,20 @@ body {
   flex-direction: column;
 }
 
+// Timesaves visual-mode gradient colors (strongest → subtlest green)
+:root {
+  --color-positive-0: rgba(96, 140, 89, 0.45);
+  --color-positive-1: rgba(96, 140, 89, 0.40);
+  --color-positive-2: rgba(96, 140, 89, 0.35);
+  --color-positive-3: rgba(96, 140, 89, 0.30);
+  --color-positive-4: rgba(96, 140, 89, 0.25);
+  --color-positive-5: rgba(96, 140, 89, 0.20);
+  --color-positive-6: rgba(96, 140, 89, 0.16);
+  --color-positive-7: rgba(96, 140, 89, 0.12);
+  --color-positive-8: rgba(96, 140, 89, 0.09);
+  --color-positive-9: rgba(96, 140, 89, 0.06);
+}
+
 #basic-nav-dropdown {
   text-decoration: none;
   color: var(--bs-link-color);
