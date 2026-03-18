@@ -27,7 +27,7 @@ export function TopbarLogo() {
                 className={styles.logoImage}
                 suppressHydrationWarning
             />
-            <span suppressHydrationWarning>The Run</span>
+            <span suppressHydrationWarning>therun.gg</span>
         </Link>
     );
 }
