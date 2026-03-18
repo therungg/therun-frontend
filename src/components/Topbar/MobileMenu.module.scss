@@ -2,27 +2,41 @@
     display: none;
     background: none;
     border: none;
-    padding: 0.375rem;
+    padding: 0.5rem;
     cursor: pointer;
     color: var(--bs-body-color);
+    border-radius: 6px;
+    transition: background 0.15s ease;
+    margin-left: auto;
+
+    &:hover {
+        background: rgba(96, 140, 89, 0.08);
+    }
+
+    &:focus-visible {
+        background: rgba(96, 140, 89, 0.08);
+        outline: none;
+    }
 
     @media (max-width: 991.98px) {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: 5px;
     }
 }
 
 .bar {
     display: block;
-    width: 20px;
+    width: 22px;
     height: 2px;
     background-color: currentColor;
-    transition: transform 0.2s ease, opacity 0.2s ease;
+    border-radius: 1px;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .barOpen:nth-child(1) {
-    transform: translateY(6px) rotate(45deg);
+    transform: translateY(7px) rotate(45deg);
 }
 
 .barOpen:nth-child(2) {
@@ -30,49 +44,99 @@
 }
 
 .barOpen:nth-child(3) {
-    transform: translateY(-6px) rotate(-45deg);
+    transform: translateY(-7px) rotate(-45deg);
 }
 
 .overlay {
     position: fixed;
-    inset: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
     z-index: 99;
-    background-color: var(--bs-body-bg);
-    padding: 4rem 1.5rem 1.5rem;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 4.5rem 1.5rem 2rem;
     overflow-y: auto;
+    transform: translateX(100%);
     opacity: 0;
     visibility: hidden;
-    transition: opacity 0.2s ease, visibility 0.2s ease;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    :global([data-bs-theme='dark']) & {
+        background: rgba(18, 26, 17, 0.95);
+    }
+
+    @media (min-width: 480px) {
+        width: 320px;
+        border-left: 1px solid rgba(0, 0, 0, 0.06);
+        box-shadow: -8px 0 32px rgba(0, 0, 0, 0.1);
+
+        :global([data-bs-theme='dark']) & {
+            border-left-color: rgba(255, 255, 255, 0.06);
+        }
+    }
 }
 
 .overlayOpen {
+    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+// Scrim behind the slide-in panel on wider phones
+.scrim {
+    position: fixed;
+    inset: 0;
+    z-index: 98;
+    background: rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.scrimOpen {
     opacity: 1;
     visibility: visible;
 }
 
 .section {
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.5rem;
 }
 
 .sectionLabel {
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
     color: var(--bs-secondary-color);
-    margin-bottom: 0.375rem;
-    padding: 0 0.25rem;
+    margin-bottom: 0.5rem;
+    padding: 0 0.75rem;
 }
 
 .link {
-    display: block;
-    padding: 0.5rem 0.25rem;
+    display: flex;
+    align-items: center;
+    padding: 0.625rem 0.75rem;
     color: var(--bs-body-color);
     text-decoration: none;
-    font-size: 0.9375rem;
+    font-size: 1rem;
+    border-radius: 8px;
+    transition: background 0.1s ease;
 
     &:hover {
-        color: var(--bs-primary);
+        background: rgba(96, 140, 89, 0.08);
+    }
+
+    &:active {
+        background: rgba(96, 140, 89, 0.12);
+    }
+
+    :global([data-bs-theme='dark']) &:hover {
+        background: rgba(96, 140, 89, 0.12);
     }
 }
 
@@ -80,9 +144,15 @@
     display: flex;
     align-items: center;
     gap: 0.375rem;
-    padding: 0.5rem 0.25rem;
-    color: var(--bs-body-color);
+    padding: 0.625rem 0.75rem;
+    color: var(--bs-primary);
     text-decoration: none;
-    font-size: 0.9375rem;
+    font-size: 1rem;
     font-weight: 500;
+    border-radius: 8px;
+    transition: background 0.1s ease;
+
+    &:hover {
+        background: rgba(96, 140, 89, 0.08);
+    }
 }

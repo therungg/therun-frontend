@@ -151,11 +151,16 @@ export function MobileMenu({ username }: MobileMenuProps) {
                     className={`${styles.bar} ${open ? styles.barOpen : ''}`}
                 />
             </button>
+            {/* biome-ignore lint/a11y/useKeyWithClickEvents: scrim click closes menu */}
+            <div
+                className={`${styles.scrim} ${open ? styles.scrimOpen : ''}`}
+                onClick={close}
+            />
             <div
                 className={`${styles.overlay} ${open ? styles.overlayOpen : ''}`}
                 ref={overlayRef}
             >
-                <div style={{ marginBottom: '1rem' }}>
+                <div style={{ marginBottom: '1.25rem' }}>
                     <GlobalSearch />
                 </div>
                 {renderSection('Run', filteredRunItems)}
