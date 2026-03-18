@@ -99,7 +99,11 @@ export function NavGroup({ label, items, children }: NavGroupProps) {
                 role="menu"
                 style={
                     open
-                        ? { opacity: 1, visibility: 'visible' as const }
+                        ? {
+                              opacity: 1,
+                              visibility: 'visible' as const,
+                              transform: 'translateY(0)',
+                          }
                         : undefined
                 }
                 onKeyDown={handleItemKeyDown}
