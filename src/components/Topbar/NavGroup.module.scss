@@ -43,6 +43,21 @@
         transform: scaleX(0);
         transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
+
+    // Focus-visible matches the pill hover style (#8)
+    &:focus-visible {
+        background: rgba(96, 140, 89, 0.08);
+        opacity: 1;
+        outline: none;
+
+        &::after {
+            transform: scaleX(1);
+        }
+
+        :global([data-bs-theme='dark']) & {
+            background: rgba(96, 140, 89, 0.12);
+        }
+    }
 }
 
 .dropdown {
@@ -71,7 +86,9 @@
 }
 
 .item {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     padding: 8px 14px;
     color: var(--bs-body-color);
     text-decoration: none;
@@ -85,7 +102,16 @@
         color: var(--bs-body-color);
     }
 
+    &:focus-visible {
+        background: rgba(96, 140, 89, 0.1);
+        outline: none;
+    }
+
     :global([data-bs-theme='dark']) &:hover {
+        background: rgba(96, 140, 89, 0.15);
+    }
+
+    :global([data-bs-theme='dark']) &:focus-visible {
         background: rgba(96, 140, 89, 0.15);
     }
 }
@@ -100,6 +126,28 @@
 
     :global([data-bs-theme='dark']) & {
         color: #7DA876;
+    }
+}
+
+// Live pulse dot (#5)
+.liveDot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #ef4444;
+    box-shadow: 0 0 4px rgba(239, 68, 68, 0.5);
+    animation: pulse 2s ease-in-out infinite;
+    flex-shrink: 0;
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
     }
 }
 

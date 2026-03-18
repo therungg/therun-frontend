@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { resetSession } from '~src/actions/reset-session.action';
 import { Button } from '~src/components/Button/Button';
 import { NameAsPatreon } from '~src/components/patreon/patreon-name';
@@ -19,6 +19,7 @@ interface UserMenuProps {
 export function UserMenu({ username, picture, sessionError }: UserMenuProps) {
     const router = useRouter();
     const [open, setOpen] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     const logout = useCallback(async () => {
         await fetch('/api/logout', { method: 'POST' });
@@ -30,6 +31,24 @@ export function UserMenu({ username, picture, sessionError }: UserMenuProps) {
         await resetSession();
         window.location.reload();
     }, []);
+
+    // Close on click outside (#7)
+    useEffect(() => {
+        if (!open) return;
+
+        const handleClickOutside = (e: MouseEvent) => {
+            if (
+                containerRef.current &&
+                !containerRef.current.contains(e.target as Node)
+            ) {
+                setOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () =>
+            document.removeEventListener('mousedown', handleClickOutside);
+    }, [open]);
 
     if (sessionError) {
         return (
@@ -44,7 +63,11 @@ export function UserMenu({ username, picture, sessionError }: UserMenuProps) {
     }
 
     return (
-        <div className={styles.container} onMouseLeave={() => setOpen(false)}>
+        <div
+            className={styles.container}
+            ref={containerRef}
+            onMouseLeave={() => setOpen(false)}
+        >
             <button
                 type="button"
                 className={styles.trigger}
