@@ -1,0 +1,20 @@
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: var(--bs-body-color);
+    font-weight: 700;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    margin-right: 0.25rem;
+    transition: opacity 0.15s ease;
+
+    &:hover {
+        opacity: 0.8;
+    }
+}
+
+.logoImage {
+    border-radius: 4px;
+}
