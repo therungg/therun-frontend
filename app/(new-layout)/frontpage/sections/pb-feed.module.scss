@@ -103,13 +103,19 @@
     gap: 0.75rem;
 }
 
-.featuredAvatar {
-    width: 52px;
-    height: 52px;
-    border-radius: 50%;
-    object-fit: cover;
+.featuredAvatarWrapper {
     flex-shrink: 0;
-    border: 2px solid rgba(255, 255, 255, 0.15);
+    width: 44px;
+    height: 44px;
+    position: relative;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid var(--bs-border-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.featuredAvatar {
+    border-radius: 50%;
 }
 
 .featuredIdentity {
@@ -382,11 +388,16 @@
     position: absolute;
     bottom: -4px;
     right: -6px;
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
-    object-fit: cover;
+    overflow: hidden;
     border: 2px solid var(--bs-body-bg);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.listAvatar {
+    border-radius: 50%;
 }
 
 .listInfo {
@@ -521,9 +532,9 @@
         gap: 0.5rem;
     }
 
-    .featuredAvatar {
-        width: 44px;
-        height: 44px;
+    .featuredAvatarWrapper {
+        width: 36px;
+        height: 36px;
     }
 
     .featuredRunnerName {

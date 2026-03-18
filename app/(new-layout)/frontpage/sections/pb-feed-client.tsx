@@ -87,7 +87,11 @@ export const PbFeedClient = ({
                         <CompactItem
                             key={pb.id}
                             pb={pb}
-                            avatarUrl={userPictures[pb.username]}
+                            avatarUrl={
+                                pb.userPicture && pb.userPicture !== 'noimage'
+                                    ? pb.userPicture
+                                    : userPictures[pb.username]
+                            }
                             gameImageUrl={gameImages[pb.game]}
                         />
                     ))}
@@ -357,7 +361,10 @@ const FeaturedCarousel = ({
                         rawImage && rawImage !== 'noimage'
                             ? rawImage
                             : FALLBACK_IMAGE;
-                    const avatarUrl = userPictures[pb.username];
+                    const avatarUrl =
+                        pb.userPicture && pb.userPicture !== 'noimage'
+                            ? pb.userPicture
+                            : userPictures[pb.username] || null;
                     const improvement =
                         pb.previousPb !== null ? pb.previousPb - pb.time : null;
                     const hasImprovement =
@@ -408,17 +415,25 @@ const FeaturedCarousel = ({
                                     </div>
                                     <div className={styles.featuredTop}>
                                         {avatarUrl && (
-                                            <Image
-                                                src={avatarUrl}
-                                                alt=""
-                                                width={52}
-                                                height={52}
+                                            <div
                                                 className={
-                                                    styles.featuredAvatar
+                                                    styles.featuredAvatarWrapper
                                                 }
-                                                unoptimized
-                                                loading="lazy"
-                                            />
+                                            >
+                                                <Image
+                                                    src={avatarUrl}
+                                                    alt=""
+                                                    fill
+                                                    style={{
+                                                        objectFit: 'cover',
+                                                    }}
+                                                    className={
+                                                        styles.featuredAvatar
+                                                    }
+                                                    unoptimized
+                                                    loading="lazy"
+                                                />
+                                            </div>
                                         )}
                                         <div
                                             className={styles.featuredIdentity}
@@ -582,15 +597,17 @@ const CompactItem = ({
                     />
                 )}
                 {avatarUrl && (
-                    <Image
-                        src={avatarUrl}
-                        alt=""
-                        width={24}
-                        height={24}
-                        className={styles.listAvatarOverlay}
-                        unoptimized
-                        loading="lazy"
-                    />
+                    <div className={styles.listAvatarOverlay}>
+                        <Image
+                            src={avatarUrl}
+                            alt=""
+                            fill
+                            style={{ objectFit: 'cover' }}
+                            className={styles.listAvatar}
+                            unoptimized
+                            loading="lazy"
+                        />
+                    </div>
                 )}
             </div>
             <div className={styles.listInfo}>

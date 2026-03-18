@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { FaTrophy, FaUser } from 'react-icons/fa6';
 import { RaceTimer } from '~app/(new-layout)/races/[race]/race-timer';
 import { sortRaceParticipants } from '~app/(new-layout)/races/[race]/sort-race-participants';
@@ -15,9 +16,27 @@ import styles from './races-section.module.scss';
 interface RaceCardProps {
     race: Race;
     variant: 'live' | 'imminent';
+    userPictures: Record<string, string>;
 }
 
-export const RaceCard = ({ race, variant }: RaceCardProps) => {
+const InlineAvatar = ({ src }: { src?: string }) => {
+    if (!src) return null;
+    return (
+        <span className={styles.inlineAvatarWrapper}>
+            <Image
+                src={src}
+                alt=""
+                fill
+                style={{ objectFit: 'cover' }}
+                className={styles.inlineAvatar}
+                unoptimized
+                loading="lazy"
+            />
+        </span>
+    );
+};
+
+export const RaceCard = ({ race, variant, userPictures }: RaceCardProps) => {
     const fallbackImage = useFallbackImage();
     const imageUrl =
         race.gameImage && race.gameImage !== 'noimage'
@@ -119,6 +138,9 @@ export const RaceCard = ({ race, variant }: RaceCardProps) => {
                                                     aria-hidden="true"
                                                 />
                                             )}{' '}
+                                            <InlineAvatar
+                                                src={userPictures[leader.user]}
+                                            />
                                             <UserLink
                                                 username={leader.user}
                                                 parentIsUrl
@@ -140,6 +162,9 @@ export const RaceCard = ({ race, variant }: RaceCardProps) => {
                                     Hosted by
                                 </span>
                                 <span className={styles.cardStatValue}>
+                                    <InlineAvatar
+                                        src={userPictures[race.creator]}
+                                    />
                                     <UserLink
                                         username={race.creator}
                                         parentIsUrl
@@ -152,6 +177,9 @@ export const RaceCard = ({ race, variant }: RaceCardProps) => {
                                         Top Seed
                                     </span>
                                     <span className={styles.cardStatValue}>
+                                        <InlineAvatar
+                                            src={userPictures[topSeed.user]}
+                                        />
                                         <UserLink
                                             username={topSeed.user}
                                             parentIsUrl

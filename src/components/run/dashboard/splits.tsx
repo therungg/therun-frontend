@@ -44,6 +44,34 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
         .replaceAll('NG+', 'NG%2B');
 
     const url = `${process.env.NEXT_PUBLIC_SPLITS_CLOUDFRONT_URL}/${splitsFile}`;
+    const fallbackUrl = `${process.env.NEXT_PUBLIC_SPLITS_CLOUDFRONT_URL}/${splitsFile.replaceAll('+', '%2B')}`;
+    const downloadFilename = `${run.user}_${run.game}_${run.run}.lss`;
+
+    const handleDownload = async () => {
+        toast.info(
+            `If you want to remove the run history on these splits, use 'Edit Splits' -> 'Other...' -> 'Clear History' from within LiveSplit.`,
+        );
+
+        let response = await fetch(url);
+        if (!response.ok) {
+            response = await fetch(fallbackUrl);
+        }
+
+        if (!response.ok) {
+            toast.error('Failed to download splits file.');
+            return;
+        }
+
+        const blob = new Blob([await response.blob()], {
+            type: 'application/octet-stream',
+        });
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = downloadFilename;
+        a.click();
+        URL.revokeObjectURL(blobUrl);
+    };
 
     const theme = useTheme();
 
@@ -66,14 +94,12 @@ export const Splits = ({ splits, gameTime = false, run }: SplitsProps) => {
                     {run.splitsFile && (
                         <a
                             rel="noreferrer"
-                            target="_blank"
                             style={{ marginLeft: '0.5rem' }}
                             href={url}
-                            download={`${run.user}_${run.game}_${run.run}.lss`}
-                            onClick={() => {
-                                toast.info(
-                                    `If you want to remove the run history on these splits, use 'Edit Splits' -> 'Other...' -> 'Clear History' from within LiveSplit.`,
-                                );
+                            download={downloadFilename}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleDownload();
                             }}
                         >
                             <DownloadIcon />

@@ -14,14 +14,17 @@ interface RacesSectionClientProps {
     initialActiveRaces: Race[];
     initialFinishedRaces: Race[];
     hasSession: boolean;
+    initialUserPictures: Record<string, string>;
 }
 
 export const RacesSectionClient = ({
     initialActiveRaces,
     initialFinishedRaces,
     hasSession,
+    initialUserPictures,
 }: RacesSectionClientProps) => {
     const races = useRaces(initialActiveRaces);
+    const userPictures = initialUserPictures;
 
     const allLive = races
         .filter(
@@ -93,6 +96,7 @@ export const RacesSectionClient = ({
                             key={race.raceId}
                             race={race}
                             variant="live"
+                            userPictures={userPictures}
                         />
                     ))}
                     {extraLive > 0 && (
@@ -114,6 +118,7 @@ export const RacesSectionClient = ({
                             key={race.raceId}
                             race={race}
                             variant="imminent"
+                            userPictures={userPictures}
                         />
                     ))}
                     {extraPending > 0 && (
@@ -142,7 +147,11 @@ export const RacesSectionClient = ({
                         </h3>
                     )}
                     {finishedRaces.map((race) => (
-                        <RaceRow key={race.raceId} race={race} />
+                        <RaceRow
+                            key={race.raceId}
+                            race={race}
+                            userPictures={userPictures}
+                        />
                     ))}
                 </div>
             )}

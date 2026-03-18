@@ -11,9 +11,10 @@ import styles from './races-section.module.scss';
 interface RaceRowProps {
     race: Race;
     className?: string;
+    userPictures: Record<string, string>;
 }
 
-export const RaceRow = ({ race, className }: RaceRowProps) => {
+export const RaceRow = ({ race, className, userPictures }: RaceRowProps) => {
     const fallbackImage = useFallbackImage();
     const imageUrl =
         race.gameImage && race.gameImage !== 'noimage'
@@ -35,14 +36,29 @@ export const RaceRow = ({ race, className }: RaceRowProps) => {
             href={`/races/${race.raceId}`}
             className={`${styles.raceRow} ${className ?? ''}`}
         >
-            <Image
-                src={imageUrl}
-                alt={race.displayGame}
-                width={36}
-                height={48}
-                className={styles.raceArt}
-                unoptimized
-            />
+            <div className={styles.raceArtWrap}>
+                <Image
+                    src={imageUrl}
+                    alt={race.displayGame}
+                    width={36}
+                    height={48}
+                    className={styles.raceArt}
+                    unoptimized
+                />
+                {winnerName && userPictures[winnerName] && (
+                    <div className={styles.raceAvatarOverlay}>
+                        <Image
+                            src={userPictures[winnerName]}
+                            alt=""
+                            fill
+                            style={{ objectFit: 'cover' }}
+                            className={styles.raceAvatarImg}
+                            unoptimized
+                            loading="lazy"
+                        />
+                    </div>
+                )}
+            </div>
             <div className={styles.raceInfo}>
                 <span className={styles.raceName}>{race.displayGame}</span>
                 <span className={styles.raceSub}>

@@ -366,6 +366,7 @@
 
 @media (max-width: 768px) {
     .filterBar {
+        position: relative;
         padding: $spacing-sm $spacing-md;
     }
 
@@ -383,8 +384,14 @@
         display: none;
     }
 
+    .triggerWrapper {
+        position: static;
+    }
+
     .popover {
-        left: auto;
+        left: 0;
         right: 0;
+        min-width: unset;
+        width: auto;
     }
 }
