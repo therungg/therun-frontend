@@ -17,8 +17,8 @@
 }
 
 .avatar {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
     object-fit: cover;
     transition: box-shadow 0.15s ease;
@@ -33,8 +33,8 @@
     top: calc(100% + 4px);
     right: 0;
     z-index: 100;
-    min-width: 160px;
-    padding: 4px;
+    min-width: 180px;
+    padding: 5px;
     background: rgba(255, 255, 255, 0.82);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
@@ -61,10 +61,10 @@
 
 .item {
     display: block;
-    padding: 7px 12px;
+    padding: 8px 14px;
     color: var(--bs-body-color);
     text-decoration: none;
-    font-size: 0.825rem;
+    font-size: 0.9375rem;
     white-space: nowrap;
     background: none;
     border: none;
