@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BunnyIcon } from '~src/icons/bunny-icon';
 import { Can } from '~src/rbac/Can.component';
@@ -23,6 +24,10 @@ const GlobalSearch = dynamic(
     { ssr: false },
 );
 
+const DarkModeSlider = dynamic(() => import('../dark-mode-slider'), {
+    ssr: false,
+});
+
 interface MobileMenuProps {
     username?: string;
 }
@@ -30,6 +35,7 @@ interface MobileMenuProps {
 export function MobileMenu({ username }: MobileMenuProps) {
     const [open, setOpen] = useState(false);
     const overlayRef = useRef<HTMLDivElement>(null);
+    const pathname = usePathname();
 
     const close = useCallback(() => setOpen(false), []);
 
@@ -80,9 +86,10 @@ export function MobileMenu({ username }: MobileMenuProps) {
                 <Link
                     key={item.href}
                     href={item.href}
-                    className={styles.link}
+                    className={`${styles.link} ${pathname.startsWith(item.href) ? styles.linkActive : ''}`}
                     onClick={close}
                 >
+                    {item.live && <span className={styles.liveDot} />}
                     {item.label}
                 </Link>
             ))}
@@ -95,7 +102,6 @@ export function MobileMenu({ username }: MobileMenuProps) {
         : runItems.filter((item) => item.href !== '/upload');
 
     // Collect admin items with RBAC — render a single Admin section
-    // Each permission check wraps its own items
     const adminSection = (
         <div className={styles.section}>
             <div className={styles.sectionLabel}>Admin</div>
@@ -160,24 +166,57 @@ export function MobileMenu({ username }: MobileMenuProps) {
                 className={`${styles.overlay} ${open ? styles.overlayOpen : ''}`}
                 ref={overlayRef}
             >
-                <div style={{ marginBottom: '1.25rem' }}>
+                {/* Close button at top of panel */}
+                <div className={styles.header}>
+                    <span className={styles.headerTitle}>Menu</span>
+                    <button
+                        type="button"
+                        className={styles.closeButton}
+                        onClick={close}
+                        aria-label="Close menu"
+                    >
+                        <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                        >
+                            <path d="M4 4l12 12M16 4L4 16" />
+                        </svg>
+                    </button>
+                </div>
+
+                <div className={styles.searchWrapper}>
                     <GlobalSearch />
                 </div>
-                {renderSection('Run', filteredRunItems)}
-                {renderSection('Compete', competeItems)}
-                {renderSection('Explore', exploreItems)}
-                {username && renderSection('Tools', toolsItems)}
-                <Can I="view-restricted" a="admins">
-                    {adminSection}
-                </Can>
-                {renderSection('About', aboutItems)}
-                <Link
-                    href="/patron"
-                    className={styles.standalone}
-                    onClick={close}
-                >
-                    Support us <BunnyIcon />
-                </Link>
+
+                <div className={styles.sections}>
+                    {renderSection('Run', filteredRunItems)}
+                    {renderSection('Compete', competeItems)}
+                    {renderSection('Explore', exploreItems)}
+                    {username && renderSection('Tools', toolsItems)}
+                    <Can I="view-restricted" a="admins">
+                        {adminSection}
+                    </Can>
+                    {renderSection('About', aboutItems)}
+                </div>
+
+                {/* Footer area with support + dark mode */}
+                <div className={styles.footer}>
+                    <Link
+                        href="/patron"
+                        className={styles.supportButton}
+                        onClick={close}
+                    >
+                        <BunnyIcon /> Support us
+                    </Link>
+                    <div className={styles.footerToggle}>
+                        <DarkModeSlider />
+                    </div>
+                </div>
             </div>
         </>
     );
