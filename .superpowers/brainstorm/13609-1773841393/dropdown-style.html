@@ -1,0 +1,77 @@
+<h2>Dropdown Menu Style</h2>
+<p class="subtitle">When you hover a nav group and the menu opens — what should it look and feel like?</p>
+
+<div class="cards">
+  <!-- Option A: Clean Minimal -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="padding: 20px; background: #f5f5f5; border-radius: 8px; position: relative; min-height: 200px;">
+        <!-- Bar context -->
+        <div style="background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); height: 40px; display: flex; align-items: center; padding: 0 12px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.06); margin-bottom: 8px;">
+          <span style="font-size: 12px; color: #333; font-weight: 600; margin-right: 16px;">The Run</span>
+          <span style="font-size: 12px; color: #608C59; font-weight: 500; background: rgba(96,140,89,0.1); padding: 4px 10px; border-radius: 5px;">Run ▾</span>
+        </div>
+        <!-- Dropdown -->
+        <div style="width: 180px; margin-left: 60px; background: white; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.06); overflow: hidden;">
+          <div style="padding: 4px;">
+            <div style="padding: 8px 12px; font-size: 13px; color: #333; border-radius: 6px; background: rgba(96,140,89,0.08); font-family: system-ui;">Upload</div>
+            <div style="padding: 8px 12px; font-size: 13px; color: #555; border-radius: 6px; font-family: system-ui;">Live</div>
+            <div style="padding: 8px 12px; font-size: 13px; color: #555; border-radius: 6px; font-family: system-ui;">Runs</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. Rounded & Padded</h3>
+      <p>Generous border-radius, inner padding so items have rounded hover states too. Soft shadow, slight border. Feels like a floating card — modern, Apple-like.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Tight & Sharp -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="padding: 20px; background: #f5f5f5; border-radius: 8px; position: relative; min-height: 200px;">
+        <!-- Bar context -->
+        <div style="background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); height: 40px; display: flex; align-items: center; padding: 0 12px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.06); margin-bottom: 0;">
+          <span style="font-size: 12px; color: #333; font-weight: 600; margin-right: 16px;">The Run</span>
+          <span style="font-size: 12px; color: #608C59; font-weight: 500; background: rgba(96,140,89,0.1); padding: 4px 10px; border-radius: 5px;">Run ▾</span>
+        </div>
+        <!-- Dropdown - flush with bar -->
+        <div style="width: 170px; margin-left: 60px; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.12); border: 1px solid rgba(0,0,0,0.08); border-top: none;">
+          <div style="padding: 6px 14px; font-size: 13px; color: #333; background: rgba(96,140,89,0.06); border-left: 2px solid #608C59; font-family: system-ui;">Upload</div>
+          <div style="padding: 6px 14px; font-size: 13px; color: #555; border-left: 2px solid transparent; font-family: system-ui;">Live</div>
+          <div style="padding: 6px 14px; font-size: 13px; color: #555; border-left: 2px solid transparent; font-family: system-ui;">Runs</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. Flush & Structured</h3>
+      <p>Connects directly to the bar — no gap, no radius. Left-border accent on hover/active items. Dense and utilitarian. Lichess-style — efficient, no frills.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Elevated Glass -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="padding: 20px; background: #f5f5f5; border-radius: 8px; position: relative; min-height: 200px;">
+        <!-- Bar context -->
+        <div style="background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); height: 40px; display: flex; align-items: center; padding: 0 12px; border-radius: 6px; border: 1px solid rgba(0,0,0,0.06); margin-bottom: 6px;">
+          <span style="font-size: 12px; color: #333; font-weight: 600; margin-right: 16px;">The Run</span>
+          <span style="font-size: 12px; color: #608C59; font-weight: 500; background: rgba(96,140,89,0.1); padding: 4px 10px; border-radius: 5px;">Run ▾</span>
+        </div>
+        <!-- Dropdown - glass -->
+        <div style="width: 180px; margin-left: 60px; background: rgba(255,255,255,0.85); backdrop-filter: blur(16px); border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 6px rgba(0,0,0,0.06); border: 1px solid rgba(255,255,255,0.5); overflow: hidden;">
+          <div style="padding: 4px;">
+            <div style="padding: 8px 12px; font-size: 13px; color: #333; border-radius: 6px; background: rgba(96,140,89,0.1); font-family: system-ui;">Upload</div>
+            <div style="padding: 8px 12px; font-size: 13px; color: #555; border-radius: 6px; font-family: system-ui;">Live</div>
+            <div style="padding: 8px 12px; font-size: 13px; color: #555; border-radius: 6px; font-family: system-ui;">Runs</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. Floating Glass</h3>
+      <p>Matches the frosted glass of the bar itself. Generous radius, elevated shadow, slight gap from bar. The dropdown feels like it's hovering in space. Cohesive with the glass bar treatment you chose.</p>
+    </div>
+  </div>
+</div>
