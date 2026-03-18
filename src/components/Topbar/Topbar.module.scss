@@ -1,9 +1,14 @@
 .topbar {
     display: flex;
     align-items: center;
-    height: 56px;
-    padding: 0 1.5rem;
+    height: 48px;
+    padding: 0 1rem;
     gap: 0.25rem;
+
+    @media (min-width: 992px) {
+        height: 56px;
+        padding: 0 1.5rem;
+    }
     background: rgba(255, 255, 255, 0.72);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
@@ -42,7 +47,11 @@
 }
 
 .supportLink {
-    display: flex;
+    display: none;
+
+    @media (min-width: 992px) {
+        display: flex;
+    }
     align-items: center;
     gap: 0.25rem;
     padding: 5px 14px;

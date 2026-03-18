@@ -7,14 +7,18 @@
     font-weight: 700;
     font-size: 1.05rem;
     white-space: nowrap;
-    margin-right: 1.5rem;
-    padding-right: 1.5rem;
-    border-right: 1px solid rgba(0, 0, 0, 0.08);
-
-    :global([data-bs-theme='dark']) & {
-        border-right-color: rgba(255, 255, 255, 0.08);
-    }
+    margin-right: 0.5rem;
     transition: opacity 0.15s ease;
+
+    @media (min-width: 992px) {
+        margin-right: 1.5rem;
+        padding-right: 1.5rem;
+        border-right: 1px solid rgba(0, 0, 0, 0.08);
+
+        :global([data-bs-theme='dark']) & {
+            border-right-color: rgba(255, 255, 255, 0.08);
+        }
+    }
 
     &:hover {
         opacity: 0.8;
