@@ -1,0 +1,84 @@
+@use '../styles/design-tokens' as *;
+
+.page {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: $spacing-xl $spacing-lg;
+}
+
+.hero {
+    text-align: center;
+    padding: $spacing-3xl $spacing-lg $spacing-2xl;
+
+    h1 {
+        font-size: $font-size-2xl;
+        font-weight: 700;
+        letter-spacing: -0.03em;
+        margin-bottom: $spacing-md;
+    }
+}
+
+.tagline {
+    font-size: $font-size-base;
+    color: var(--bs-secondary-color);
+    max-width: 540px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: $spacing-xl;
+    padding: $spacing-lg 0;
+}
+
+.card {
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-primary) 8%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-primary) 4%) 100%
+    );
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: $radius-lg;
+    padding: $spacing-xl;
+    box-shadow: $shadow-sm;
+    transition: all $transition-base;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+
+    &:hover {
+        box-shadow: $shadow-md;
+        border-color: rgba(var(--bs-primary-rgb), 0.25);
+    }
+}
+
+.cardIcon {
+    font-size: $font-size-xl;
+    line-height: 1;
+}
+
+.cardTitle {
+    font-size: $font-size-md;
+    font-weight: 600;
+}
+
+.cardDescription {
+    font-size: $font-size-sm;
+    line-height: 1.6;
+    color: var(--bs-secondary-color);
+    flex: 1;
+}
+
+.cardLink {
+    font-size: $font-size-sm;
+    color: var(--bs-primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color $transition-fast;
+
+    &:hover {
+        color: color-mix(in srgb, var(--bs-primary) 80%, white 20%);
+    }
+}
