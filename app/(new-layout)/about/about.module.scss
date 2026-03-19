@@ -26,6 +26,19 @@
     line-height: 1.6;
 }
 
+.group {
+    margin-bottom: $spacing-2xl;
+}
+
+.groupLabel {
+    font-size: $font-size-xs;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--bs-secondary-color);
+    margin-bottom: $spacing-lg;
+}
+
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
