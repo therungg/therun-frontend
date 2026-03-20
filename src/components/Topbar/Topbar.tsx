@@ -35,7 +35,7 @@ export const Topbar = ({
         <Link
             key={href}
             href={href}
-            className={`${navGroupStyles.item} ${pathname.startsWith(href) ? navGroupStyles.active : ''}`}
+            className={`${navGroupStyles.item} ${pathname === href || pathname.startsWith(`${href}/`) ? navGroupStyles.active : ''}`}
             role="menuitem"
         >
             {label}
@@ -43,7 +43,7 @@ export const Topbar = ({
     );
 
     return (
-        <nav className={topbarStyles.topbar}>
+        <nav className={topbarStyles.topbar} aria-label="Main navigation">
             <TopbarLogo />
 
             <div className={topbarStyles.nav}>

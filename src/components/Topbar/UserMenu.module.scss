@@ -49,6 +49,25 @@
     }
 }
 
+.avatarFallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(96, 140, 89, 0.15);
+    color: var(--bs-primary);
+    font-size: 0.875rem;
+    font-weight: 600;
+    flex-shrink: 0;
+
+    :global([data-bs-theme='dark']) & {
+        background: rgba(96, 140, 89, 0.2);
+        color: #7DA876;
+    }
+}
+
 .dropdown {
     position: absolute;
     top: calc(100% + 4px);
@@ -118,5 +137,14 @@
         opacity: 1;
         visibility: visible;
         transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .trigger,
+    .avatar,
+    .dropdown,
+    .item {
+        transition: none;
     }
 }

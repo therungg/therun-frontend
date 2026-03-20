@@ -3,7 +3,13 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+    type SyntheticEvent,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from 'react';
 import { resetSession } from '~src/actions/reset-session.action';
 import { Button } from '~src/components/Button/Button';
 import { NameAsPatreon } from '~src/components/patreon/patreon-name';
@@ -19,6 +25,7 @@ interface UserMenuProps {
 export function UserMenu({ username, picture, sessionError }: UserMenuProps) {
     const router = useRouter();
     const [open, setOpen] = useState(false);
+    const [avatarError, setAvatarError] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
     const logout = useCallback(async () => {
@@ -75,7 +82,7 @@ export function UserMenu({ username, picture, sessionError }: UserMenuProps) {
                 aria-expanded={open}
                 aria-haspopup="true"
             >
-                {picture && (
+                {picture && !avatarError ? (
                     <Image
                         src={picture}
                         alt={username}
@@ -83,7 +90,14 @@ export function UserMenu({ username, picture, sessionError }: UserMenuProps) {
                         height={32}
                         className={styles.avatar}
                         unoptimized
+                        onError={(_e: SyntheticEvent<HTMLImageElement>) =>
+                            setAvatarError(true)
+                        }
                     />
+                ) : (
+                    <span className={styles.avatarFallback}>
+                        {username.charAt(0).toUpperCase()}
+                    </span>
                 )}
                 <NameAsPatreon name={username} />
             </button>
