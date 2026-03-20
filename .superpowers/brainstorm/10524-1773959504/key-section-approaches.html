@@ -1,0 +1,74 @@
+<h2>LiveSplit Key Section — Design Direction</h2>
+<p class="subtitle">The key is the hero of the page. Which approach feels right?</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 24px; background: #1a1a2e;">
+      <!-- Mockup A: Password-field style -->
+      <div style="max-width: 480px; margin: 0 auto;">
+        <div style="text-align: center; margin-bottom: 16px;">
+          <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(76, 175, 80, 0.1); border: 1px solid rgba(76, 175, 80, 0.3); border-radius: 20px; padding: 4px 14px; font-size: 12px; color: #4caf50;">
+            <span style="width: 6px; height: 6px; background: #4caf50; border-radius: 50%; display: inline-block;"></span>
+            Key Active
+          </div>
+        </div>
+        <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 12px;">
+          <div style="flex: 1; font-family: monospace; font-size: 15px; color: #888; letter-spacing: 3px;">••••••••••••••••••••</div>
+          <button style="background: none; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 8px 12px; color: #ccc; font-size: 12px; cursor: pointer;">Show</button>
+          <button style="background: #4caf50; border: none; border-radius: 8px; padding: 8px 16px; color: white; font-size: 12px; font-weight: 600; cursor: pointer;">Copy</button>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Password Field Style</h3>
+      <p>Masked by default with show/hide toggle and prominent copy button. Status badge shows key is active. Familiar input-field pattern.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 24px; background: #1a1a2e;">
+      <!-- Mockup B: Hero card with glow -->
+      <div style="max-width: 480px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, rgba(76, 175, 80, 0.08), rgba(76, 175, 80, 0.02)); border: 1px solid rgba(76, 175, 80, 0.2); border-radius: 16px; padding: 28px; text-align: center; box-shadow: 0 0 40px rgba(76, 175, 80, 0.06);">
+          <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #888; margin-bottom: 16px;">Your LiveSplit Key</div>
+          <div style="font-family: monospace; font-size: 18px; color: #e0e0e0; letter-spacing: 2px; margin-bottom: 20px; word-break: break-all;">••••••••••••••••••••</div>
+          <div style="display: flex; gap: 10px; justify-content: center;">
+            <button style="background: none; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 10px 20px; color: #ccc; font-size: 13px; cursor: pointer;">Reveal Key</button>
+            <button style="background: #4caf50; border: none; border-radius: 8px; padding: 10px 20px; color: white; font-size: 13px; font-weight: 600; cursor: pointer;">Copy to Clipboard</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Hero Card with Accent Glow</h3>
+      <p>Elevated card with subtle green glow and gradient border. Key is centered and prominent. Feels special — like an API key dashboard.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 24px; background: #1a1a2e;">
+      <!-- Mockup C: Compact code block -->
+      <div style="max-width: 480px; margin: 0 auto;">
+        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; overflow: hidden;">
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 14px; background: rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.06);">
+            <span style="font-size: 11px; color: #888;">livesplit-key</span>
+            <div style="display: flex; gap: 6px;">
+              <button style="background: none; border: none; color: #888; font-size: 11px; cursor: pointer;">👁 Show</button>
+              <button style="background: none; border: none; color: #4caf50; font-size: 11px; cursor: pointer;">📋 Copy</button>
+            </div>
+          </div>
+          <div style="padding: 16px; font-family: monospace; font-size: 14px; color: #666; letter-spacing: 2px;">
+            ••••••••••••••••••••••••••••
+          </div>
+        </div>
+        <div style="text-align: center; margin-top: 10px;">
+          <span style="font-size: 11px; color: #666;">Treat this key like a password</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Code Block Style</h3>
+      <p>Terminal/code-block aesthetic with header bar. Compact and developer-friendly. Feels like copying an API key from a dashboard.</p>
+    </div>
+  </div>
+</div>

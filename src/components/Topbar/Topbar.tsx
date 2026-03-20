@@ -1,31 +1,21 @@
 'use client';
-import dynamic from 'next/dynamic';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useTheme } from 'next-themes';
-import { useCallback, useEffect, useState } from 'react';
-import { Container, Nav, Navbar, NavDropdown } from 'react-bootstrap';
-import { Upload } from 'react-bootstrap-icons';
-import { resetSession } from '~src/actions/reset-session.action';
-import { Button } from '~src/components/Button/Button';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { BunnyIcon } from '~src/icons/bunny-icon';
 import { Can } from '~src/rbac/Can.component';
-import { TwitchLoginButton } from '../twitch/TwitchLoginButton';
-import { TwitchUser } from '../twitch/TwitchUser';
-
-const DarkModeSlider = dynamic(() => import('../dark-mode-slider'), {
-    ssr: false,
-});
-
-const GlobalSearch = dynamic(
-    () =>
-        import('~src/components/search/global-search.component').then(
-            (mod) => mod.GlobalSearch,
-        ),
-    {
-        ssr: false,
-    },
-);
+import { MobileMenu } from './MobileMenu';
+import { NavGroup } from './NavGroup';
+import navGroupStyles from './NavGroup.module.scss';
+import topbarStyles from './Topbar.module.scss';
+import { TopbarLogo } from './TopbarLogo';
+import { TopbarUtilities } from './TopbarUtilities';
+import {
+    aboutItems,
+    competeItems,
+    exploreItems,
+    toolsItems,
+} from './topbar-nav-items';
 
 interface TopbarProps {
     username: string;
@@ -38,167 +28,70 @@ export const Topbar = ({
     picture,
     sessionError,
 }: Partial<TopbarProps>) => {
-    const router = useRouter();
-    const { theme = 'dark', resolvedTheme } = useTheme();
-    const [show, setShow] = useState(false);
-    const [mounted, setMounted] = useState(false);
+    const pathname = usePathname();
 
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    const handleResetSession = useCallback(async () => {
-        await resetSession();
-        window.location.reload();
-    }, []);
-
-    async function logout() {
-        await fetch('/api/logout', {
-            method: 'POST',
-        });
-        router.push('/');
-        router.refresh();
-    }
-    const showDropdown = () => {
-        setShow(true);
-    };
-    const hideDropdown = () => {
-        setShow(false);
-    };
-
-    const currentTheme = mounted ? resolvedTheme || theme : 'dark';
+    // Helper for admin items rendered via children
+    const adminLink = (href: string, label: string) => (
+        <Link
+            key={href}
+            href={href}
+            className={`${navGroupStyles.item} ${pathname === href || pathname.startsWith(`${href}/`) ? navGroupStyles.active : ''}`}
+            role="menuitem"
+        >
+            {label}
+        </Link>
+    );
 
     return (
-        <>
-            <Navbar
-                expand="lg"
-                onMouseLeave={hideDropdown}
-                data-bs-theme={currentTheme}
-                suppressHydrationWarning
-            >
-                <Container>
-                    <Navbar.Brand href="/" className="d-flex">
-                        <Image
-                            unoptimized
-                            alt="TheRun"
-                            src={`/logo_${currentTheme}_theme_no_text_transparent.png`}
-                            height="44"
-                            width="44"
-                            className="img-fluid align-self-start me-2"
-                            suppressHydrationWarning
-                        />
-                        <span className="align-self-center">
-                            The Run{' '}
-                            <i>
-                                <sup>beta</sup>
-                            </i>
-                        </span>
-                    </Navbar.Brand>
-                    <Navbar.Toggle aria-controls="basic-navbar-nav" />
-                    <Navbar.Collapse id="basic-navbar-nav">
-                        <Nav className="me-auto">
-                            {username && (
-                                <Nav.Link className="mh-2r" href="/upload">
-                                    <div className="d-flex">
-                                        <b>Upload</b>
+        <nav className={topbarStyles.topbar} aria-label="Main navigation">
+            <TopbarLogo />
 
-                                        <span className="ms-2">
-                                            <Upload size={18} />
-                                        </span>
-                                    </div>
-                                </Nav.Link>
-                            )}
+            <div className={topbarStyles.nav}>
+                <NavGroup label="Explore" items={exploreItems} />
+                <NavGroup label="Compete" items={competeItems} />
+                {username && <NavGroup label="Tools" items={toolsItems} />}
+                <AdminNavGroup adminLink={adminLink} />
+                <NavGroup label="About" items={aboutItems} />
+            </div>
 
-                            <Nav.Link href="/races">Races</Nav.Link>
-                            <Nav.Link href="/live">Live</Nav.Link>
-                            <Can I="view-restricted" a="admins">
-                                <Nav.Link href="/data">Stats</Nav.Link>
-                            </Can>
+            <div className={topbarStyles.utilities}>
+                <Link href="/patron" className={topbarStyles.supportLink}>
+                    Support us <BunnyIcon />
+                </Link>
+                <TopbarUtilities
+                    username={username}
+                    picture={picture}
+                    sessionError={sessionError}
+                />
+            </div>
 
-                            {/*{username && (*/}
-                            {/*    <Nav.Link href="/stories/manage">*/}
-                            {/*        Story Mode*/}
-                            {/*    </Nav.Link>*/}
-                            {/*)}*/}
-                            <Nav.Link href="/patron">
-                                Support us! <BunnyIcon />
-                            </Nav.Link>
-                        </Nav>
-                        <Nav className="ml-auto mb-2 mb-lg-0 me-lg-2">
-                            <GlobalSearch />
-                        </Nav>
-                        <Nav className="ml-auto">
-                            {' '}
-                            <DarkModeSlider />
-                        </Nav>
-                        <Nav
-                            className="ml-auto"
-                            onMouseEnter={showDropdown}
-                            onClick={showDropdown}
-                        >
-                            {username && (
-                                <NavDropdown
-                                    show={show}
-                                    title={
-                                        <TwitchUser
-                                            username={username}
-                                            picture={picture || ''}
-                                        />
-                                    }
-                                    id="basic-nav-dropdown"
-                                >
-                                    <NavDropdown.Item href={`/${username}`}>
-                                        Profile
-                                    </NavDropdown.Item>
-                                    <NavDropdown.Item href="/livesplit">
-                                        LiveSplit Key
-                                    </NavDropdown.Item>
-                                    <NavDropdown.Item href="/change-appearance">
-                                        Name Appearance
-                                    </NavDropdown.Item>
-                                    <NavDropdown.Item href="/stories/manage">
-                                        Story Preferences
-                                    </NavDropdown.Item>
-                                    <Can I="moderate" a="roles">
-                                        <NavDropdown.Item href="/admin/roles">
-                                            Admin Panel
-                                        </NavDropdown.Item>
-                                        <NavDropdown.Item href="/admin/move-user">
-                                            Move User
-                                        </NavDropdown.Item>
-                                    </Can>
-                                    <Can I="moderate" a="admins">
-                                        <NavDropdown.Item href="/admin/exclusions">
-                                            Exclusions
-                                        </NavDropdown.Item>
-                                    </Can>
-                                    <NavDropdown.Item
-                                        onClick={async () => {
-                                            await logout();
-                                        }}
-                                    >
-                                        Logout
-                                    </NavDropdown.Item>
-                                </NavDropdown>
-                            )}
-                            {sessionError && (
-                                <div className="ms-2">
-                                    <Button
-                                        className="btn btn-primary"
-                                        onClick={handleResetSession}
-                                    >
-                                        Reset session
-                                    </Button>
-                                </div>
-                            )}
-                            {!sessionError && !username && (
-                                <TwitchLoginButton url="/api" />
-                            )}
-                        </Nav>
-                    </Navbar.Collapse>
-                </Container>
-            </Navbar>
-        </>
+            <MobileMenu username={username} />
+        </nav>
     );
 };
+
 Topbar.displayName = 'Topbar';
+
+// Separate component for Admin group — uses children pattern for per-item RBAC
+function AdminNavGroup({
+    adminLink,
+}: {
+    adminLink: (href: string, label: string) => React.ReactNode;
+}) {
+    return (
+        <Can I="view-restricted" a="admins">
+            <NavGroup label="Admin">
+                <Can I="view-restricted" a="admins">
+                    {adminLink('/data', 'Stats')}
+                </Can>
+                <Can I="moderate" a="roles">
+                    {adminLink('/admin/roles', 'Roles')}
+                    {adminLink('/admin/move-user', 'Move User')}
+                </Can>
+                <Can I="moderate" a="admins">
+                    {adminLink('/admin/exclusions', 'Exclusions')}
+                </Can>
+            </NavGroup>
+        </Can>
+    );
+}

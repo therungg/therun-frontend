@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Search as SearchIcon } from 'react-bootstrap-icons';
-import styles from './search-results-panel.module.scss';
+import styles from './search-input.module.scss';
 import { type SearchItemKind } from './use-fuzzy-search';
 
 interface SearchInputProps {
@@ -32,25 +32,25 @@ export const SearchInput = React.memo(
             };
 
             return (
-                <div className="input-group" style={{ position: 'relative' }}>
-                    <label
-                        htmlFor="global-search"
-                        className="input-group-text w-42p"
-                    >
+                <div
+                    className={`${styles.wrapper} ${isFocused ? styles.wrapperFocused : ''}`}
+                >
+                    <span className={styles.icon}>
                         {isSearching ? (
                             <div
                                 className="spinner-border spinner-border-sm"
                                 role="status"
+                                style={{ width: 14, height: 14 }}
                             />
                         ) : (
-                            <SearchIcon size={18} />
+                            <SearchIcon size={15} />
                         )}
-                    </label>
+                    </span>
                     <input
                         ref={searchRef}
                         type="search"
                         autoComplete="off"
-                        className="form-control"
+                        className={styles.input}
                         placeholder={getPlaceholderText(filters)}
                         onChange={onChange}
                         value={query}
@@ -80,7 +80,6 @@ const ShortcutBadge = () => {
 };
 
 const getPlaceholderText = (filters: SearchItemKind[]) => {
-    // TODO: Localize this.
     const labels: Record<SearchItemKind, string> = {
         user: 'User',
         run: 'Run',

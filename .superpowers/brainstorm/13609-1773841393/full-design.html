@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Topbar Design — Full Preview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #f5f5f5; min-height: 100vh; }
+
+  .preview-label { text-align: center; padding: 16px; font-size: 13px; color: #888; letter-spacing: 0.05em; text-transform: uppercase; }
+
+  /* === TOPBAR === */
+  .topbar {
+    display: flex;
+    align-items: center;
+    height: 48px;
+    padding: 0 1.25rem;
+    background: rgba(255,255,255,0.72);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  /* Logo */
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: #222;
+    font-weight: 700;
+    font-size: 0.95rem;
+    white-space: nowrap;
+    margin-right: 0.5rem;
+  }
+  .logo-icon {
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(135deg, #608C59, #7DA876);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 800;
+    font-size: 14px;
+  }
+
+  /* Nav */
+  .nav { display: flex; align-items: center; gap: 1px; }
+
+  .nav-group { position: relative; }
+
+  .nav-trigger {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    background: none;
+    border: none;
+    color: #555;
+    font-size: 0.855rem;
+    font-weight: 500;
+    cursor: pointer;
+    border-radius: 6px;
+    position: relative;
+    transition: all 0.15s ease;
+    font-family: inherit;
+  }
+  .nav-trigger::after {
+    content: '';
+    position: absolute;
+    bottom: 1px;
+    left: 10px;
+    right: 10px;
+    height: 2px;
+    background: #608C59;
+    border-radius: 1px;
+    transform: scaleX(0);
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .nav-trigger:hover {
+    background: rgba(96,140,89,0.08);
+    color: #333;
+  }
+  .nav-trigger:hover::after {
+    transform: scaleX(1);
+  }
+  .nav-trigger.active {
+    color: #608C59;
+    font-weight: 600;
+  }
+  .nav-trigger.active::after {
+    transform: scaleX(1);
+  }
+
+  /* Dropdown */
+  .dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 180px;
+    background: rgba(255,255,255,0.82);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.05);
+    border: 1px solid rgba(255,255,255,0.5);
+    padding: 4px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-4px);
+    transition: opacity 0.15s ease, visibility 0.15s ease, transform 0.15s ease;
+  }
+  .nav-group:hover .dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  .dropdown-item {
+    display: block;
+    padding: 7px 12px;
+    color: #444;
+    text-decoration: none;
+    font-size: 0.825rem;
+    border-radius: 6px;
+    transition: all 0.1s ease;
+  }
+  .dropdown-item:hover {
+    background: rgba(96,140,89,0.1);
+    color: #333;
+  }
+  .dropdown-item.active {
+    color: #608C59;
+    font-weight: 600;
+  }
+
+  /* Support link */
+  .support-link {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    margin-left: 2px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #608C59;
+    text-decoration: none;
+    border: 1px solid rgba(96,140,89,0.25);
+    border-radius: 20px;
+    background: rgba(96,140,89,0.04);
+    transition: all 0.15s ease;
+    white-space: nowrap;
+  }
+  .support-link:hover {
+    background: rgba(96,140,89,0.1);
+    border-color: rgba(96,140,89,0.4);
+  }
+
+  /* Utilities */
+  .utilities {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-left: auto;
+  }
+
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    background: rgba(0,0,0,0.03);
+    border: 1px solid rgba(0,0,0,0.06);
+    border-radius: 8px;
+    color: #999;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-width: 160px;
+  }
+  .search-box:hover {
+    background: rgba(0,0,0,0.05);
+    border-color: rgba(0,0,0,0.1);
+  }
+  .search-box .kbd {
+    margin-left: auto;
+    padding: 1px 5px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 3px;
+    font-size: 10px;
+    color: #aaa;
+    font-family: inherit;
+  }
+
+  .theme-toggle {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(0,0,0,0.03);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.15s ease;
+    color: #666;
+  }
+  .theme-toggle:hover {
+    background: rgba(0,0,0,0.06);
+  }
+
+  .avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #608C59, #7DA876);
+    cursor: pointer;
+    transition: box-shadow 0.15s ease;
+  }
+  .avatar:hover {
+    box-shadow: 0 0 0 2px rgba(96,140,89,0.3);
+  }
+
+  /* === PAGE CONTENT BELOW === */
+  .page-content {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1.25rem;
+  }
+  .content-block {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .content-block h2 { font-size: 1.1rem; color: #333; margin-bottom: 8px; }
+  .content-block .skeleton { height: 10px; background: #eee; border-radius: 5px; margin-bottom: 8px; }
+
+  /* === DARK MODE === */
+  .dark-preview { background: #121a11; }
+  .dark-preview .topbar {
+    background: rgba(18,26,17,0.8);
+    border-bottom-color: rgba(255,255,255,0.06);
+  }
+  .dark-preview .logo { color: #d0dece; }
+  .dark-preview .nav-trigger { color: #8a9a88; }
+  .dark-preview .nav-trigger:hover { background: rgba(96,140,89,0.12); color: #c0d0be; }
+  .dark-preview .nav-trigger.active { color: #7DA876; }
+  .dark-preview .dropdown {
+    background: rgba(30,43,28,0.9);
+    border-color: rgba(255,255,255,0.08);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.15);
+  }
+  .dark-preview .dropdown-item { color: #8a9a88; }
+  .dark-preview .dropdown-item:hover { background: rgba(96,140,89,0.15); color: #c0d0be; }
+  .dark-preview .support-link { color: #7DA876; border-color: rgba(96,140,89,0.2); background: rgba(96,140,89,0.06); }
+  .dark-preview .search-box { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.06); color: #667766; }
+  .dark-preview .search-box .kbd { background: rgba(255,255,255,0.06); color: #556655; }
+  .dark-preview .theme-toggle { background: rgba(255,255,255,0.04); color: #8a9a88; }
+  .dark-preview .content-block { background: #1a2318; }
+  .dark-preview .content-block h2 { color: #c0d0be; }
+  .dark-preview .content-block .skeleton { background: rgba(255,255,255,0.06); }
+</style>
+</head>
+<body>
+
+<div class="preview-label">Light Mode</div>
+
+<!-- LIGHT MODE PREVIEW -->
+<div style="border-radius: 12px; overflow: hidden; margin: 0 20px 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); background: #f5f5f5;">
+  <div class="topbar">
+    <a class="logo" href="#">
+      <div class="logo-icon">T</div>
+      <span>The Run</span>
+    </a>
+
+    <div class="nav">
+      <div class="nav-group">
+        <button class="nav-trigger active">Run</button>
+        <div class="dropdown">
+          <a class="dropdown-item" href="#">Upload</a>
+          <a class="dropdown-item active" href="#">Live</a>
+          <a class="dropdown-item" href="#">Runs</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <button class="nav-trigger">Compete</button>
+        <div class="dropdown">
+          <a class="dropdown-item" href="#">Races</a>
+          <a class="dropdown-item" href="#">Tournaments</a>
+          <a class="dropdown-item" href="#">Events</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <button class="nav-trigger">Explore</button>
+        <div class="dropdown">
+          <a class="dropdown-item" href="#">Games</a>
+          <a class="dropdown-item" href="#">Recap</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <button class="nav-trigger">About</button>
+        <div class="dropdown">
+          <a class="dropdown-item" href="#">How It Works</a>
+          <a class="dropdown-item" href="#">Blog</a>
+          <a class="dropdown-item" href="#">FAQ</a>
+          <a class="dropdown-item" href="#">Roadmap</a>
+        </div>
+      </div>
+      <a class="support-link" href="#">🐰 Support us</a>
+    </div>
+
+    <div class="utilities">
+      <div class="search-box">
+        <span>🔍</span>
+        <span>Search...</span>
+        <span class="kbd">⌘K</span>
+      </div>
+      <button class="theme-toggle">☀️</button>
+      <div class="avatar"></div>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <div class="content-block">
+      <h2>Live Runs</h2>
+      <div class="skeleton" style="width: 80%;"></div>
+      <div class="skeleton" style="width: 55%;"></div>
+      <div class="skeleton" style="width: 65%;"></div>
+    </div>
+    <div class="content-block">
+      <h2>Recent Activity</h2>
+      <div class="skeleton" style="width: 70%;"></div>
+      <div class="skeleton" style="width: 45%;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="preview-label">Dark Mode</div>
+
+<!-- DARK MODE PREVIEW -->
+<div class="dark-preview" style="border-radius: 12px; overflow: hidden; margin: 0 20px 40px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+  <div class="topbar">
+    <a class="logo" href="#">
+      <div class="logo-icon">T</div>
+      <span>The Run</span>
+    </a>
+
+    <div class="nav">
+      <div class="nav-group">
+        <button class="nav-trigger active">Run</button>
+        <div class="dropdown">
+          <a class="dropdown-item" href="#">Upload</a>
+          <a class="dropdown-item active" href="#">Live</a>
+          <a class="dropdown-item" href="#">Runs</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <button class="nav-trigger">Compete</button>
+        <div class="dropdown">
+          <a class="dropdown-item" href="#">Races</a>
+          <a class="dropdown-item" href="#">Tournaments</a>
+          <a class="dropdown-item" href="#">Events</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <button class="nav-trigger">Explore</button>
+        <div class="dropdown">
+          <a class="dropdown-item" href="#">Games</a>
+          <a class="dropdown-item" href="#">Recap</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <button class="nav-trigger">About</button>
+        <div class="dropdown">
+          <a class="dropdown-item" href="#">How It Works</a>
+          <a class="dropdown-item" href="#">Blog</a>
+          <a class="dropdown-item" href="#">FAQ</a>
+          <a class="dropdown-item" href="#">Roadmap</a>
+        </div>
+      </div>
+      <a class="support-link" href="#">🐰 Support us</a>
+    </div>
+
+    <div class="utilities">
+      <div class="search-box">
+        <span>🔍</span>
+        <span>Search...</span>
+        <span class="kbd">⌘K</span>
+      </div>
+      <button class="theme-toggle">🌙</button>
+      <div class="avatar"></div>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <div class="content-block">
+      <h2>Live Runs</h2>
+      <div class="skeleton" style="width: 80%;"></div>
+      <div class="skeleton" style="width: 55%;"></div>
+      <div class="skeleton" style="width: 65%;"></div>
+    </div>
+    <div class="content-block">
+      <h2>Recent Activity</h2>
+      <div class="skeleton" style="width: 70%;"></div>
+      <div class="skeleton" style="width: 45%;"></div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

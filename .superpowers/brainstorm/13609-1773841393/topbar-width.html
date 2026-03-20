@@ -1,0 +1,70 @@
+<h2>Topbar Width Treatment</h2>
+<p class="subtitle">Should the glass bar span the full viewport or sit inside the content container?</p>
+
+<div class="cards">
+  <!-- Option A: Full-width -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: #f0f0f0; border-radius: 8px; overflow: hidden;">
+        <!-- Full-width bar -->
+        <div style="background: rgba(255,255,255,0.75); backdrop-filter: blur(12px); height: 40px; display: flex; align-items: center; padding: 0 24px; border-bottom: 1px solid rgba(0,0,0,0.06);">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div style="width: 22px; height: 22px; background: #608C59; border-radius: 4px;"></div>
+            <span style="font-size: 12px; font-weight: 600; color: #333;">The Run</span>
+          </div>
+          <div style="display: flex; gap: 2px; margin-left: 14px;">
+            <div style="padding: 4px 8px; font-size: 11px; color: #555;">Run</div>
+            <div style="padding: 4px 8px; font-size: 11px; color: #555;">Compete</div>
+            <div style="padding: 4px 8px; font-size: 11px; color: #555;">Explore</div>
+          </div>
+          <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
+            <div style="width: 80px; height: 20px; background: rgba(0,0,0,0.04); border-radius: 4px;"></div>
+            <div style="width: 20px; height: 20px; background: #608C59; border-radius: 50%;"></div>
+          </div>
+        </div>
+        <!-- Content area with container -->
+        <div style="max-width: 70%; margin: 16px auto; padding: 0 12px;">
+          <div style="height: 6px; width: 50%; background: rgba(0,0,0,0.06); border-radius: 3px; margin-bottom: 6px;"></div>
+          <div style="height: 6px; width: 35%; background: rgba(0,0,0,0.04); border-radius: 3px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. Full-Width Edge-to-Edge</h3>
+      <p>Bar spans the entire viewport. Content below is contained. The bar becomes a permanent horizon line — wide, authoritative. Standard for most major sites (GitHub, lichess, YouTube).</p>
+    </div>
+  </div>
+
+  <!-- Option B: Contained/Floating -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: #f0f0f0; border-radius: 8px; overflow: hidden; padding: 8px 16px 0;">
+        <!-- Floating contained bar -->
+        <div style="max-width: 85%; margin: 0 auto; background: rgba(255,255,255,0.75); backdrop-filter: blur(12px); height: 40px; display: flex; align-items: center; padding: 0 16px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div style="width: 22px; height: 22px; background: #608C59; border-radius: 4px;"></div>
+            <span style="font-size: 12px; font-weight: 600; color: #333;">The Run</span>
+          </div>
+          <div style="display: flex; gap: 2px; margin-left: 14px;">
+            <div style="padding: 4px 8px; font-size: 11px; color: #555;">Run</div>
+            <div style="padding: 4px 8px; font-size: 11px; color: #555;">Compete</div>
+            <div style="padding: 4px 8px; font-size: 11px; color: #555;">Explore</div>
+          </div>
+          <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
+            <div style="width: 80px; height: 20px; background: rgba(0,0,0,0.04); border-radius: 4px;"></div>
+            <div style="width: 20px; height: 20px; background: #608C59; border-radius: 50%;"></div>
+          </div>
+        </div>
+        <!-- Content area -->
+        <div style="max-width: 85%; margin: 16px auto; padding: 0;">
+          <div style="height: 6px; width: 50%; background: rgba(0,0,0,0.06); border-radius: 3px; margin-bottom: 6px;"></div>
+          <div style="height: 6px; width: 35%; background: rgba(0,0,0,0.04); border-radius: 3px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. Floating Contained</h3>
+      <p>Bar floats inside the page with rounded corners and a gap from edges. Feels like a glass island. More unique and premium, but loses the anchoring effect. Arc browser / macOS vibes.</p>
+    </div>
+  </div>
+</div>

@@ -1,5 +1,32 @@
 @use '../styles/design-tokens' as *;
 
+.page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: $spacing-xl $spacing-lg $spacing-3xl;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: $spacing-2xl;
+}
+
+.pageTitle {
+    font-size: $font-size-display;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: $spacing-xs;
+
+    @media (max-width: 768px) {
+        font-size: $font-size-2xl;
+    }
+}
+
+.subtitle {
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
 .loginRequired {
     text-align: center;
     padding: $spacing-3xl $spacing-lg;
@@ -16,4 +43,33 @@
         color: var(--bs-secondary-color);
         line-height: 1.7;
     }
+}
+
+.infoCard {
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-md;
+    margin-bottom: $spacing-2xl;
+    padding: $spacing-xl;
+    background: rgba(var(--bs-body-color-rgb), 0.03);
+    border: 1px solid rgba(var(--bs-body-color-rgb), 0.06);
+    border-radius: $radius-lg;
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+    line-height: 1.6;
+
+    a {
+        color: var(--bs-primary);
+        transition: color $transition-fast;
+
+        &:hover {
+            color: color-mix(in srgb, var(--bs-primary) 80%, white 20%);
+        }
+    }
+}
+
+.infoIcon {
+    font-size: $font-size-xl;
+    flex-shrink: 0;
+    line-height: 1;
 }

@@ -146,25 +146,22 @@ export const FinishedRaceWithGameCategory = ({ races }: { races: Race[] }) => {
                             className={raceStyles.cardLink}
                         >
                             <div className={raceStyles.finishedRaceCard}>
-                                <Row className="h-100">
-                                    <Col lg={3} md={4} xs={3}>
-                                        <img
-                                            className={raceStyles.inProgressImg}
-                                            src={
-                                                race.gameImage &&
-                                                race.gameImage !== 'noimage'
-                                                    ? race.gameImage
-                                                    : `/logo_dark_theme_no_text_transparent.png`
-                                            }
-                                            height={100}
-                                            width={20}
-                                            alt={race.displayGame}
-                                        />
-                                    </Col>
-                                    <Col
-                                        lg={9}
-                                        md={8}
-                                        xs={9}
+                                <div
+                                    className={
+                                        raceStyles.finishedRaceCardLayout
+                                    }
+                                >
+                                    <img
+                                        className={raceStyles.finishedRaceImg}
+                                        src={
+                                            race.gameImage &&
+                                            race.gameImage !== 'noimage'
+                                                ? race.gameImage
+                                                : `/logo_dark_theme_no_text_transparent.png`
+                                        }
+                                        alt={race.displayGame}
+                                    />
+                                    <div
                                         className={
                                             raceStyles.finishedRaceCardBody
                                         }
@@ -219,8 +216,8 @@ export const FinishedRaceWithGameCategory = ({ races }: { races: Race[] }) => {
                                                 amount={3}
                                             />
                                         </div>
-                                    </Col>
-                                </Row>
+                                    </div>
+                                </div>
                             </div>
                         </a>
                     </Col>

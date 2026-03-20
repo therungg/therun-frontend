@@ -6,6 +6,7 @@ import ShowRunStory from '~app/(new-layout)/stories/manage/show-run-story';
 import { getSession } from '~src/actions/session.action';
 import { getLiveRunForUser } from '~src/lib/live-runs';
 import { getStoryOptions, getStoryPreferencesByUser } from '~src/lib/stories';
+import styles from './manage-stories.module.scss';
 
 const ManageStories = async () => {
     const session = await getSession();
@@ -15,36 +16,35 @@ const ManageStories = async () => {
     const allStoryOptions = await getStoryOptions();
 
     return (
-        <>
-            <div className="rounded-3 px-4 pt-2 mt-4 pb-2 mb-3 border border-secondary bg-body-secondary text-center">
-                <div className="w-100 text-center align-self-center align-content-center flex-center">
-                    <div className="w-75">
-                        <h3>Story Mode by therun.gg</h3>
-                        <div style={{ fontSize: 'large' }}>
-                            <p>
-                                Welcome to <b>Story Mode</b>, {session.username}
-                                . Thanks for checking it out!
-                            </p>
-                            <p>
-                                Please note that the Twitch bot will only
-                                activate if you have at least <b>14 started</b>{' '}
-                                and <b>4 finished</b> attempts for the category.
-                            </p>
-                            <p>
-                                Also, you need to have the LiveSplit component
-                                enabled.
-                            </p>
-                        </div>
-                    </div>
+        <div className={styles.page}>
+            <div className={styles.header}>
+                <h1 className={styles.pageTitle}>Story Mode</h1>
+                <p className={styles.subtitle}>
+                    Configure how therun.gg Twitch bot narrates your runs with
+                    live commentary and stats
+                </p>
+            </div>
+
+            <div className={styles.requirements}>
+                <div className={styles.requirementItem}>
+                    <span className={styles.requirementIcon}>📋</span>
+                    Requires at least <strong>14 started</strong> and{' '}
+                    <strong>4 finished</strong> attempts for the category
+                </div>
+                <div className={styles.requirementItem}>
+                    <span className={styles.requirementIcon}>🔗</span>
+                    LiveSplit component must be enabled
                 </div>
             </div>
+
             <ShowRunStory username={username} liveData={liveData} />
+
             <SetStoryPreferences
                 storyPreferences={storyPreferences}
                 user={session}
                 storyOptions={allStoryOptions}
             />
-        </>
+        </div>
     );
 };
 
