@@ -16,6 +16,7 @@ export function NavGroup({ label, items, children }: NavGroupProps) {
     const pathname = usePathname();
     const [open, setOpen] = useState(false);
     const groupRef = useRef<HTMLDivElement>(null);
+    const triggerRef = useRef<HTMLElement>(null);
 
     // Close on click outside (#7)
     useEffect(() => {
@@ -38,9 +39,7 @@ export function NavGroup({ label, items, children }: NavGroupProps) {
     const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
         if (e.key === 'Escape') {
             setOpen(false);
-            groupRef.current
-                ?.querySelector<HTMLButtonElement>('button')
-                ?.focus();
+            triggerRef.current?.focus();
         }
         if (e.key === 'ArrowDown') {
             e.preventDefault();
@@ -88,16 +87,16 @@ export function NavGroup({ label, items, children }: NavGroupProps) {
         }
         if (e.key === 'Escape') {
             setOpen(false);
-            groupRef.current
-                ?.querySelector<HTMLButtonElement>('button')
-                ?.focus();
+            triggerRef.current?.focus();
         }
     }, []);
 
     if (!children && (!items || items.length === 0)) return null;
 
-    // Check if any child item is active (startsWith for sub-routes, #9)
-    const isGroupActive = items?.some((item) => pathname.startsWith(item.href));
+    const isActive = (href: string) =>
+        pathname === href || pathname.startsWith(`${href}/`);
+
+    const isGroupActive = items?.some((item) => isActive(item.href));
     const firstHref = items?.[0]?.href;
 
     return (
@@ -109,6 +108,7 @@ export function NavGroup({ label, items, children }: NavGroupProps) {
         >
             {firstHref ? (
                 <Link
+                    ref={triggerRef as React.Ref<HTMLAnchorElement>}
                     href={firstHref}
                     className={`${styles.trigger} ${isGroupActive ? styles.active : ''}`}
                     aria-expanded={open}
@@ -119,6 +119,7 @@ export function NavGroup({ label, items, children }: NavGroupProps) {
                 </Link>
             ) : (
                 <button
+                    ref={triggerRef as React.Ref<HTMLButtonElement>}
                     type="button"
                     className={`${styles.trigger} ${isGroupActive ? styles.active : ''}`}
                     aria-expanded={open}
@@ -148,7 +149,7 @@ export function NavGroup({ label, items, children }: NavGroupProps) {
                         <Link
                             key={item.href}
                             href={item.href}
-                            className={`${styles.item} ${pathname.startsWith(item.href) ? styles.active : ''}`}
+                            className={`${styles.item} ${isActive(item.href) ? styles.active : ''}`}
                             role="menuitem"
                             tabIndex={open ? 0 : -1}
                             onClick={() => setOpen(false)}

@@ -295,3 +295,18 @@
 .footerToggle {
     flex-shrink: 0;
 }
+
+@media (prefers-reduced-motion: reduce) {
+    .overlay,
+    .scrim,
+    .bar,
+    .link,
+    .closeButton,
+    .supportButton {
+        transition: none;
+    }
+
+    .liveDot {
+        animation: none;
+    }
+}

@@ -78,6 +78,9 @@ export function MobileMenu({ username }: MobileMenuProps) {
         };
     }, [open, close]);
 
+    const isActive = (href: string) =>
+        pathname === href || pathname.startsWith(`${href}/`);
+
     const renderSection = (label: string, items: NavItem[]) => (
         <div className={styles.section} key={label}>
             <div className={styles.sectionLabel}>{label}</div>
@@ -85,7 +88,7 @@ export function MobileMenu({ username }: MobileMenuProps) {
                 <Link
                     key={item.href}
                     href={item.href}
-                    className={`${styles.link} ${pathname.startsWith(item.href) ? styles.linkActive : ''}`}
+                    className={`${styles.link} ${isActive(item.href) ? styles.linkActive : ''}`}
                     onClick={close}
                 >
                     {item.live && <span className={styles.liveDot} />}
@@ -151,7 +154,6 @@ export function MobileMenu({ username }: MobileMenuProps) {
                     className={`${styles.bar} ${open ? styles.barOpen : ''}`}
                 />
             </button>
-            {/* biome-ignore lint/a11y/useKeyWithClickEvents: scrim click closes menu */}
             <div
                 className={`${styles.scrim} ${open ? styles.scrimOpen : ''}`}
                 onClick={close}
@@ -159,6 +161,9 @@ export function MobileMenu({ username }: MobileMenuProps) {
             <div
                 className={`${styles.overlay} ${open ? styles.overlayOpen : ''}`}
                 ref={overlayRef}
+                role="dialog"
+                aria-modal={open}
+                aria-label="Navigation menu"
             >
                 {/* Close button at top of panel */}
                 <div className={styles.header}>
