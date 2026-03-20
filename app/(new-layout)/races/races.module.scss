@@ -598,10 +598,25 @@
     }
 }
 
-.finishedRaceCardBody {
-    padding: $spacing-sm $spacing-md;
-    width: 100%;
+.finishedRaceCardLayout {
+    display: flex;
     height: 100%;
+}
+
+.finishedRaceImg {
+    border-top-left-radius: $radius-lg;
+    border-bottom-left-radius: $radius-lg;
+    object-fit: cover;
+    width: 5rem;
+    flex-shrink: 0;
+}
+
+.finishedRaceCardBody {
+    flex: 1;
+    min-width: 0;
+    padding: $spacing-sm $spacing-lg $spacing-sm $spacing-md;
+    display: flex;
+    flex-direction: column;
 }
 
 .finishedRaceCardInner {

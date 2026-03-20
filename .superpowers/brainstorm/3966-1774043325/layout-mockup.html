@@ -1,0 +1,119 @@
+<h2>Getting Started — Layout</h2>
+<p class="subtitle">How should the page feel? Dark theme approximates the actual site.</p>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <!-- Mockup A: Cards within phases -->
+      <div style="background: #1a1a2e; border-radius: 8px; padding: 20px; font-family: system-ui; color: #e0e0e0; font-size: 12px;">
+        <div style="text-align: center; margin-bottom: 16px;">
+          <div style="font-size: 18px; font-weight: 700; color: #fff;">Getting Started</div>
+          <div style="color: #888; font-size: 11px; margin-top: 4px;">Your guide to using The Run</div>
+        </div>
+        <!-- Phase 1 -->
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 8px; font-weight: 600;">Set Up Your Account</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+            <div style="background: linear-gradient(135deg, #1e1e36, #1a1a2e); border: 1px solid rgba(110, 86, 207, 0.2); border-radius: 6px; padding: 10px;">
+              <div style="font-size: 20px; font-weight: 700; color: #6e56cf; opacity: 0.4; margin-bottom: 4px;">01</div>
+              <div style="font-weight: 600; font-size: 11px; margin-bottom: 4px;">Sign in with Twitch</div>
+              <div style="color: #888; font-size: 9px; line-height: 1.4;">OAuth login to link your profile</div>
+              <div style="margin-top: 8px; background: #6e56cf; color: white; font-size: 9px; padding: 4px 8px; border-radius: 4px; display: inline-block;">Login</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #1e1e36, #1a1a2e); border: 1px solid rgba(110, 86, 207, 0.2); border-radius: 6px; padding: 10px;">
+              <div style="font-size: 20px; font-weight: 700; color: #6e56cf; opacity: 0.4; margin-bottom: 4px;">02</div>
+              <div style="font-weight: 600; font-size: 11px; margin-bottom: 4px;">Connect LiveSplit</div>
+              <div style="color: #888; font-size: 9px; line-height: 1.4;">Auto-sync your splits</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #1e1e36, #1a1a2e); border: 1px solid rgba(110, 86, 207, 0.2); border-radius: 6px; padding: 10px;">
+              <div style="font-size: 20px; font-weight: 700; color: #6e56cf; opacity: 0.4; margin-bottom: 4px;">03</div>
+              <div style="font-weight: 600; font-size: 11px; margin-bottom: 4px;">Upload Manually</div>
+              <div style="color: #888; font-size: 9px; line-height: 1.4;">Drag and drop .lss files</div>
+            </div>
+          </div>
+        </div>
+        <!-- Phase 2 -->
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 8px; font-weight: 600;">Explore Your Stats</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+            <div style="background: linear-gradient(135deg, #1e1e36, #1a1a2e); border: 1px solid rgba(110, 86, 207, 0.2); border-radius: 6px; padding: 10px;">
+              <div style="font-size: 20px; font-weight: 700; color: #6e56cf; opacity: 0.4;">04</div>
+              <div style="font-weight: 600; font-size: 11px;">Your Profile</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #1e1e36, #1a1a2e); border: 1px solid rgba(110, 86, 207, 0.2); border-radius: 6px; padding: 10px;">
+              <div style="font-size: 20px; font-weight: 700; color: #6e56cf; opacity: 0.4;">05</div>
+              <div style="font-weight: 600; font-size: 11px;">Detailed Splits</div>
+            </div>
+            <div style="background: linear-gradient(135deg, #1e1e36, #1a1a2e); border: 1px solid rgba(110, 86, 207, 0.2); border-radius: 6px; padding: 10px;">
+              <div style="font-size: 20px; font-weight: 700; color: #6e56cf; opacity: 0.4;">06</div>
+              <div style="font-weight: 600; font-size: 11px;">Runs Explorer</div>
+            </div>
+          </div>
+        </div>
+        <div style="text-align: center; color: #666; font-size: 9px;">...more phases below...</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Grid Cards (like current)</h3>
+      <p>Steps as cards in a grid within each phase. Compact, matches the existing how-it-works and about page card pattern. Risk: gets cramped with longer descriptions.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <!-- Mockup B: Vertical sections -->
+      <div style="background: #1a1a2e; border-radius: 8px; padding: 20px; font-family: system-ui; color: #e0e0e0; font-size: 12px;">
+        <div style="text-align: center; margin-bottom: 16px;">
+          <div style="font-size: 18px; font-weight: 700; color: #fff;">Getting Started</div>
+          <div style="color: #888; font-size: 11px; margin-top: 4px;">Your guide to using The Run</div>
+        </div>
+        <!-- Phase 1 -->
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 10px; font-weight: 600;">Set Up Your Account</div>
+          <!-- Step 1 -->
+          <div style="display: flex; gap: 12px; margin-bottom: 10px; background: linear-gradient(135deg, #1e1e36, #1a1a2e); border: 1px solid rgba(110, 86, 207, 0.2); border-radius: 6px; padding: 12px;">
+            <div style="font-size: 24px; font-weight: 700; color: #6e56cf; opacity: 0.4; line-height: 1;">01</div>
+            <div style="flex: 1;">
+              <div style="font-weight: 600; font-size: 12px; margin-bottom: 4px;">Sign in with Twitch</div>
+              <div style="color: #888; font-size: 10px; line-height: 1.5;">Log in with your Twitch account to link your profile. Your page will be available at therun.gg/YourName.</div>
+              <div style="margin-top: 8px; background: #6e56cf; color: white; font-size: 9px; padding: 4px 10px; border-radius: 4px; display: inline-block;">Login with Twitch</div>
+            </div>
+          </div>
+          <!-- Step 2 -->
+          <div style="display: flex; gap: 12px; margin-bottom: 10px; background: linear-gradient(135deg, #1e1e36, #1a1a2e); border: 1px solid rgba(110, 86, 207, 0.2); border-radius: 6px; padding: 12px;">
+            <div style="font-size: 24px; font-weight: 700; color: #6e56cf; opacity: 0.4; line-height: 1;">02</div>
+            <div style="flex: 1;">
+              <div style="font-weight: 600; font-size: 12px; margin-bottom: 4px;">Connect LiveSplit</div>
+              <div style="color: #888; font-size: 10px; line-height: 1.5;">Install the LiveSplit component and enter your upload key. Your splits will sync automatically after every run.</div>
+              <div style="margin-top: 8px; background: #6e56cf; color: white; font-size: 9px; padding: 4px 10px; border-radius: 4px; display: inline-block;">Get your key</div>
+            </div>
+          </div>
+          <!-- Step 3 -->
+          <div style="display: flex; gap: 12px; background: linear-gradient(135deg, #1e1e36, #1a1a2e); border: 1px solid rgba(110, 86, 207, 0.2); border-radius: 6px; padding: 12px;">
+            <div style="font-size: 24px; font-weight: 700; color: #6e56cf; opacity: 0.4; line-height: 1;">03</div>
+            <div style="flex: 1;">
+              <div style="font-weight: 600; font-size: 12px; margin-bottom: 4px;">Or upload manually</div>
+              <div style="color: #888; font-size: 10px; line-height: 1.5;">Drag and drop your .lss files directly. Good for a quick start or one-off uploads.</div>
+            </div>
+          </div>
+        </div>
+        <!-- Phase 2 preview -->
+        <div>
+          <div style="font-size: 9px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 10px; font-weight: 600;">Explore Your Stats</div>
+          <div style="display: flex; gap: 12px; background: linear-gradient(135deg, #1e1e36, #1a1a2e); border: 1px solid rgba(110, 86, 207, 0.2); border-radius: 6px; padding: 12px;">
+            <div style="font-size: 24px; font-weight: 700; color: #6e56cf; opacity: 0.4; line-height: 1;">04</div>
+            <div style="flex: 1;">
+              <div style="font-weight: 600; font-size: 12px; margin-bottom: 4px;">Your Profile</div>
+              <div style="color: #888; font-size: 10px; line-height: 1.5;">PBs, run history, session stats, and consistency scores — all on your runner page.</div>
+            </div>
+          </div>
+        </div>
+        <div style="text-align: center; color: #666; font-size: 9px; margin-top: 10px;">...continues vertically...</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Vertical Steps (recommended)</h3>
+      <p>Full-width step rows within each phase. Room for descriptions and CTAs. Reads top-to-bottom like an actual guide. Scales well to 12 steps.</p>
+    </div>
+  </div>
+</div>

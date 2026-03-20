@@ -8,8 +8,9 @@ import Switch from 'react-switch';
 import { PatreonBunnySvg } from '~app/(new-layout)/patron/patreon-info';
 import PatreonName from '~src/components/patreon/patreon-name';
 import patreonStyles from '~src/components/patreon/patreon-styles';
-import { User } from '../../../types/session.types';
+import type { User } from '../../../types/session.types';
 import styles from './change-appearance.module.scss';
+import { LoginWithPatreon } from './login-with-patreon';
 
 interface PatreonPreferences {
     hide: boolean;
@@ -32,17 +33,14 @@ interface PatreonSectionProps {
 export default function PatreonSection({
     userPatreonData,
     session,
-}: PatreonSectionProps) {
+    baseUrl,
+}: PatreonSectionProps & { baseUrl: string }) {
+    if (!userPatreonData.tier) {
+        return <LoginWithPatreon session={session} baseUrl={baseUrl} />;
+    }
+
     return (
-        <div>
-            {userPatreonData.tier && (
-                <YouAreAPatreon
-                    session={session}
-                    userPatreonData={userPatreonData}
-                />
-            )}
-            {!userPatreonData.tier && 'You are not a patreon!'}
-        </div>
+        <YouAreAPatreon session={session} userPatreonData={userPatreonData} />
     );
 }
 

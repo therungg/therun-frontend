@@ -98,23 +98,37 @@ export function NavGroup({ label, items, children }: NavGroupProps) {
 
     // Check if any child item is active (startsWith for sub-routes, #9)
     const isGroupActive = items?.some((item) => pathname.startsWith(item.href));
+    const firstHref = items?.[0]?.href;
 
     return (
         <div
             className={styles.group}
             ref={groupRef}
+            onMouseEnter={() => setOpen(true)}
             onMouseLeave={() => setOpen(false)}
         >
-            <button
-                type="button"
-                className={`${styles.trigger} ${isGroupActive ? styles.active : ''}`}
-                aria-expanded={open}
-                aria-haspopup="true"
-                onClick={() => setOpen((prev) => !prev)}
-                onKeyDown={handleKeyDown}
-            >
-                {label}
-            </button>
+            {firstHref ? (
+                <Link
+                    href={firstHref}
+                    className={`${styles.trigger} ${isGroupActive ? styles.active : ''}`}
+                    aria-expanded={open}
+                    aria-haspopup="true"
+                    onKeyDown={handleKeyDown}
+                >
+                    {label}
+                </Link>
+            ) : (
+                <button
+                    type="button"
+                    className={`${styles.trigger} ${isGroupActive ? styles.active : ''}`}
+                    aria-expanded={open}
+                    aria-haspopup="true"
+                    onClick={() => setOpen((prev) => !prev)}
+                    onKeyDown={handleKeyDown}
+                >
+                    {label}
+                </button>
+            )}
             <div
                 className={styles.dropdown}
                 role="menu"

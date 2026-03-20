@@ -14,7 +14,6 @@ import {
     aboutItems,
     competeItems,
     exploreItems,
-    runItems,
     toolsItems,
 } from './topbar-nav-items';
 
@@ -30,11 +29,6 @@ export const Topbar = ({
     sessionError,
 }: Partial<TopbarProps>) => {
     const pathname = usePathname();
-
-    // Filter Run items: only show Upload if logged in
-    const filteredRunItems = username
-        ? runItems
-        : runItems.filter((item) => item.href !== '/upload');
 
     // Helper for admin items rendered via children
     const adminLink = (href: string, label: string) => (
@@ -53,9 +47,8 @@ export const Topbar = ({
             <TopbarLogo />
 
             <div className={topbarStyles.nav}>
-                <NavGroup label="Run" items={filteredRunItems} />
-                <NavGroup label="Compete" items={competeItems} />
                 <NavGroup label="Explore" items={exploreItems} />
+                <NavGroup label="Compete" items={competeItems} />
                 {username && <NavGroup label="Tools" items={toolsItems} />}
                 <AdminNavGroup adminLink={adminLink} />
                 <NavGroup label="About" items={aboutItems} />

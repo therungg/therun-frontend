@@ -12,7 +12,6 @@ import {
     aboutItems,
     competeItems,
     exploreItems,
-    runItems,
     toolsItems,
 } from './topbar-nav-items';
 
@@ -95,11 +94,6 @@ export function MobileMenu({ username }: MobileMenuProps) {
             ))}
         </div>
     );
-
-    // Filter Run items: only show Upload if logged in
-    const filteredRunItems = username
-        ? runItems
-        : runItems.filter((item) => item.href !== '/upload');
 
     // Collect admin items with RBAC — render a single Admin section
     const adminSection = (
@@ -194,9 +188,8 @@ export function MobileMenu({ username }: MobileMenuProps) {
                 </div>
 
                 <div className={styles.sections}>
-                    {renderSection('Run', filteredRunItems)}
-                    {renderSection('Compete', competeItems)}
                     {renderSection('Explore', exploreItems)}
+                    {renderSection('Compete', competeItems)}
                     {username && renderSection('Tools', toolsItems)}
                     <Can I="view-restricted" a="admins">
                         {adminSection}
