@@ -1,0 +1,106 @@
+<h2>Topbar Visual Direction</h2>
+<p class="subtitle">The biggest impact comes from how the bar itself is treated. Which direction feels right for therun.gg?</p>
+
+<div class="cards">
+  <!-- Option A: Dark Anchored Bar -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: #1a2318; padding: 0; border-radius: 8px; overflow: hidden;">
+        <!-- Dark bar mockup -->
+        <div style="background: #1e2b1c; height: 44px; display: flex; align-items: center; padding: 0 16px; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 28px; height: 28px; background: #608C59; border-radius: 6px;"></div>
+            <span style="color: #c8d4c6; font-weight: 600; font-size: 14px;">The Run</span>
+          </div>
+          <div style="display: flex; gap: 2px; margin-left: 16px;">
+            <div style="padding: 6px 12px; color: #a8b8a6; font-size: 13px; border-radius: 4px; cursor: pointer;">Run</div>
+            <div style="padding: 6px 12px; color: #d0dece; font-size: 13px; background: rgba(96,140,89,0.15); border-radius: 4px;">Compete</div>
+            <div style="padding: 6px 12px; color: #a8b8a6; font-size: 13px; border-radius: 4px;">Explore</div>
+            <div style="padding: 6px 12px; color: #a8b8a6; font-size: 13px; border-radius: 4px;">About</div>
+          </div>
+          <div style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
+            <div style="width: 140px; height: 26px; background: rgba(255,255,255,0.06); border-radius: 4px; border: 1px solid rgba(255,255,255,0.08);"></div>
+            <div style="width: 24px; height: 24px; background: #608C59; border-radius: 50%;"></div>
+          </div>
+        </div>
+        <!-- Page content hint -->
+        <div style="padding: 20px 16px; background: #121a11;">
+          <div style="height: 8px; width: 60%; background: rgba(255,255,255,0.06); border-radius: 4px; margin-bottom: 8px;"></div>
+          <div style="height: 8px; width: 40%; background: rgba(255,255,255,0.04); border-radius: 4px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. Dark Anchored Bar</h3>
+      <p>Always dark regardless of theme, like lichess. Creates a strong visual anchor. The bar IS the identity — confident, permanent, authoritative. Nav items glow subtly on hover with a green tint.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Glassmorphic Bar -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: #fbfbfb; padding: 0; border-radius: 8px; overflow: hidden;">
+        <!-- Glass bar mockup -->
+        <div style="height: 44px; display: flex; align-items: center; padding: 0 16px; gap: 8px; background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(0,0,0,0.06); box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 28px; height: 28px; background: #608C59; border-radius: 6px;"></div>
+            <span style="color: #333; font-weight: 600; font-size: 14px;">The Run</span>
+          </div>
+          <div style="display: flex; gap: 2px; margin-left: 16px;">
+            <div style="padding: 6px 12px; color: #555; font-size: 13px; border-radius: 4px;">Run</div>
+            <div style="padding: 6px 12px; color: #333; font-size: 13px; background: rgba(96,140,89,0.1); border-radius: 4px;">Compete</div>
+            <div style="padding: 6px 12px; color: #555; font-size: 13px; border-radius: 4px;">Explore</div>
+            <div style="padding: 6px 12px; color: #555; font-size: 13px; border-radius: 4px;">About</div>
+          </div>
+          <div style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
+            <div style="width: 140px; height: 26px; background: rgba(0,0,0,0.04); border-radius: 4px; border: 1px solid rgba(0,0,0,0.06);"></div>
+            <div style="width: 24px; height: 24px; background: #608C59; border-radius: 50%;"></div>
+          </div>
+        </div>
+        <!-- Page content -->
+        <div style="padding: 20px 16px;">
+          <div style="height: 8px; width: 60%; background: rgba(0,0,0,0.06); border-radius: 4px; margin-bottom: 8px;"></div>
+          <div style="height: 8px; width: 40%; background: rgba(0,0,0,0.04); border-radius: 4px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. Frosted Glass</h3>
+      <p>Translucent backdrop-blur, adapts to theme. Modern and airy. Feels premium but lighter — content breathes through. Subtle border-bottom separates it from the page.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Solid Theme-Matched -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div style="background: #fbfbfb; padding: 0; border-radius: 8px; overflow: hidden;">
+        <!-- Solid bar mockup -->
+        <div style="height: 44px; display: flex; align-items: center; padding: 0 16px; gap: 8px; background: #f0f0f0; border-bottom: 1px solid #ddd;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 28px; height: 28px; background: #608C59; border-radius: 6px;"></div>
+            <span style="color: #333; font-weight: 600; font-size: 14px;">The Run</span>
+          </div>
+          <div style="display: flex; gap: 2px; margin-left: 16px;">
+            <div style="padding: 6px 12px; color: #555; font-size: 13px; border-radius: 4px;">Run</div>
+            <div style="padding: 6px 12px; color: #333; font-size: 13px; background: rgba(96,140,89,0.12); border-radius: 4px; font-weight: 500;">Compete</div>
+            <div style="padding: 6px 12px; color: #555; font-size: 13px; border-radius: 4px;">Explore</div>
+            <div style="padding: 6px 12px; color: #555; font-size: 13px; border-radius: 4px;">About</div>
+          </div>
+          <div style="margin-left: auto; display: flex; align-items: center; gap: 12px;">
+            <div style="width: 140px; height: 26px; background: rgba(0,0,0,0.05); border-radius: 4px; border: 1px solid rgba(0,0,0,0.08);"></div>
+            <div style="width: 24px; height: 24px; background: #608C59; border-radius: 50%;"></div>
+          </div>
+        </div>
+        <!-- Page content -->
+        <div style="padding: 20px 16px;">
+          <div style="height: 8px; width: 60%; background: rgba(0,0,0,0.06); border-radius: 4px; margin-bottom: 8px;"></div>
+          <div style="height: 8px; width: 40%; background: rgba(0,0,0,0.04); border-radius: 4px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. Solid Theme-Aware</h3>
+      <p>Slightly darker than page background, flips with light/dark theme. Safe, conventional, clean. GitHub/GitLab approach — functional but not bold.</p>
+    </div>
+  </div>
+</div>

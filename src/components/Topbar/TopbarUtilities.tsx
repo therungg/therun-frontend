@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import styles from './TopbarUtilities.module.scss';
 import { UserMenu } from './UserMenu';
 
 const DarkModeSlider = dynamic(() => import('../dark-mode-slider'), {
@@ -27,20 +28,18 @@ export function TopbarUtilities({
     sessionError,
 }: TopbarUtilitiesProps) {
     return (
-        <div
-            style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-            }}
-        >
-            <GlobalSearch />
-            <DarkModeSlider />
+        <>
+            <div className={styles.desktopOnly}>
+                <GlobalSearch />
+            </div>
+            <div className={styles.desktopOnly}>
+                <DarkModeSlider />
+            </div>
             <UserMenu
                 username={username}
                 picture={picture}
                 sessionError={sessionError}
             />
-        </div>
+        </>
     );
 }

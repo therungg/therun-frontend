@@ -1,0 +1,299 @@
+@use '../../styles/design-tokens' as *;
+
+.page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: $spacing-xl $spacing-lg $spacing-3xl;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: $spacing-2xl;
+}
+
+.pageTitle {
+    font-size: $font-size-display;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: $spacing-xs;
+
+    @media (max-width: 768px) {
+        font-size: $font-size-2xl;
+    }
+}
+
+.subtitle {
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+// Requirements banner
+.requirements {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-2xl;
+    padding: $spacing-xl;
+    background: rgba(var(--bs-body-color-rgb), 0.03);
+    border: 1px solid rgba(var(--bs-body-color-rgb), 0.06);
+    border-radius: $radius-lg;
+}
+
+.requirementItem {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.requirementIcon {
+    flex-shrink: 0;
+    font-size: $font-size-base;
+}
+
+// Login required
+.loginRequired {
+    text-align: center;
+    padding: $spacing-3xl $spacing-lg;
+
+    h1 {
+        font-size: $font-size-2xl;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        margin-bottom: $spacing-md;
+    }
+
+    p {
+        font-size: $font-size-base;
+        color: var(--bs-secondary-color);
+        line-height: 1.7;
+    }
+}
+
+// Tabs
+.tabs {
+    margin-bottom: $spacing-xl;
+}
+
+.tabList {
+    display: flex;
+    gap: $spacing-xs;
+    border-bottom: 1px solid rgba(var(--bs-body-color-rgb), 0.08);
+    margin-bottom: $spacing-xl;
+    padding: 0;
+    list-style: none;
+}
+
+.tab {
+    padding: $spacing-sm $spacing-lg;
+    font-size: $font-size-sm;
+    font-weight: 500;
+    color: var(--bs-secondary-color);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+        color: var(--bs-body-color);
+    }
+}
+
+.tabActive {
+    color: var(--bs-primary);
+    border-bottom-color: var(--bs-primary);
+}
+
+// Form sections
+.formSection {
+    margin-bottom: $spacing-2xl;
+}
+
+.sectionTitle {
+    font-size: $font-size-base;
+    font-weight: 600;
+    margin-bottom: $spacing-lg;
+    padding-bottom: $spacing-sm;
+    border-bottom: 1px solid rgba(var(--bs-body-color-rgb), 0.06);
+}
+
+// Toggle rows
+.toggleGroup {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+}
+
+.toggleRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-lg;
+    padding: $spacing-md $spacing-lg;
+    background: rgba(var(--bs-body-color-rgb), 0.02);
+    border: 1px solid rgba(var(--bs-body-color-rgb), 0.05);
+    border-radius: $radius-md;
+    transition: background $transition-fast;
+
+    &:hover {
+        background: rgba(var(--bs-body-color-rgb), 0.04);
+    }
+}
+
+.toggleLabel {
+    font-size: $font-size-sm;
+    line-height: 1.5;
+    flex: 1;
+}
+
+// Input fields
+.fieldGroup {
+    margin-bottom: $spacing-xl;
+}
+
+.fieldLabel {
+    font-size: $font-size-sm;
+    font-weight: 500;
+    margin-bottom: $spacing-xs;
+    display: block;
+}
+
+.fieldHint {
+    font-size: $font-size-2xs;
+    color: var(--bs-secondary-color);
+    margin-top: $spacing-xs;
+}
+
+.inputSmall {
+    max-width: 200px;
+}
+
+.selectSmall {
+    max-width: 260px;
+}
+
+// Pronouns row
+.pronounsRow {
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-sm;
+    max-width: 480px;
+
+    @media (max-width: 480px) {
+        flex-direction: column;
+    }
+}
+
+.pronounField {
+    flex: 1;
+}
+
+.pronounSeparator {
+    font-size: $font-size-lg;
+    color: var(--bs-secondary-color);
+    padding-top: $spacing-sm;
+
+    @media (max-width: 480px) {
+        display: none;
+    }
+}
+
+.pronounHint {
+    font-size: $font-size-2xs;
+    color: var(--bs-secondary-color);
+    margin-top: 2px;
+}
+
+// Submit button
+.submitBtn {
+    background: var(--bs-primary);
+    border: none;
+    border-radius: $radius-md;
+    padding: $spacing-sm $spacing-2xl;
+    color: white;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover:not(:disabled) {
+        opacity: 0.9;
+        box-shadow: $shadow-sm;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+// Stories table
+.storyCategorySection {
+    margin-bottom: $spacing-2xl;
+}
+
+.storyCategoryTitle {
+    font-size: $font-size-base;
+    font-weight: 600;
+    margin-bottom: $spacing-md;
+}
+
+.storyCategoryDesc {
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+    margin-bottom: $spacing-lg;
+}
+
+.storyList {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-xs;
+}
+
+.storyRow {
+    display: flex;
+    align-items: center;
+    gap: $spacing-lg;
+    padding: $spacing-md $spacing-lg;
+    background: rgba(var(--bs-body-color-rgb), 0.02);
+    border: 1px solid rgba(var(--bs-body-color-rgb), 0.05);
+    border-radius: $radius-md;
+
+    @media (max-width: 640px) {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: $spacing-sm;
+    }
+}
+
+.storyToggle {
+    flex-shrink: 0;
+}
+
+.storyCooldown {
+    flex-shrink: 0;
+    width: 80px;
+
+    input {
+        width: 100%;
+        padding: $spacing-xs $spacing-sm;
+        font-size: $font-size-sm;
+        border: 1px solid rgba(var(--bs-body-color-rgb), 0.12);
+        border-radius: $radius-sm;
+        background: var(--bs-body-bg);
+        color: var(--bs-body-color);
+        text-align: center;
+    }
+}
+
+.storyText {
+    flex: 1;
+    font-size: $font-size-sm;
+    color: var(--bs-secondary-color);
+    line-height: 1.5;
+}

@@ -1,168 +1,201 @@
 import Link from '~src/components/link';
-import { Title } from '~src/components/title';
 import buildMetadata from '~src/utils/metadata';
-import styles from '../styles/shared/content-page.module.scss';
+import styles from './about.module.scss';
 
 export const metadata = buildMetadata({
     title: 'About',
     description:
-        'Learn more about The Run, including what it can do and its purpose.',
+        'Free speedrun analytics — live tracking, detailed splits, races, tournaments, and more.',
 });
+
+interface FeatureCard {
+    icon: string;
+    title: string;
+    description: string;
+    href: string;
+    linkText: string;
+    external?: boolean;
+}
+
+interface FeatureGroup {
+    label: string;
+    features: FeatureCard[];
+}
+
+const featureGroups: FeatureGroup[] = [
+    {
+        label: 'Explore',
+        features: [
+            {
+                icon: '⚡',
+                title: 'Live Tracking',
+                description:
+                    'Watch speedruns as they happen. See current pace, estimated finish time, and split-by-split progress in real time.',
+                href: '/live',
+                linkText: "See who's live",
+            },
+            {
+                icon: '⏱️',
+                title: 'Detailed Splits',
+                description:
+                    'Compare splits against your Sum of Best, best achieved, and averages. Consistency scores and graphs show where you gain and lose time.',
+                href: '/AverageTrey/Super%20Mario%20Sunshine/Any%25',
+                linkText: 'View an example',
+            },
+            {
+                icon: '👤',
+                title: 'Runner Profiles',
+                description:
+                    'Every runner gets a profile with their full stats, personal bests, run history, and a breakdown by game and category.',
+                href: '/KallyNui',
+                linkText: 'Browse a profile',
+            },
+            {
+                icon: '🎮',
+                title: 'Game Pages',
+                description:
+                    'Leaderboards, category stats, and activity metrics for every game. Filter by category and see who\u2019s on top.',
+                href: '/games',
+                linkText: 'Explore games',
+            },
+            {
+                icon: '🔍',
+                title: 'Runs Explorer',
+                description:
+                    'Browse and filter finished runs across all games, categories, and runners. Find any run, any time.',
+                href: '/runs',
+                linkText: 'Explore runs',
+            },
+        ],
+    },
+    {
+        label: 'Compete',
+        features: [
+            {
+                icon: '🏁',
+                title: 'Races',
+                description:
+                    'Create or join races against other runners. MMR-based rankings, race history, and stats per game.',
+                href: '/races',
+                linkText: 'Go to races',
+            },
+            {
+                icon: '🏆',
+                title: 'Tournaments',
+                description:
+                    'Organized competitive events with eligibility rules, live leaderboards, and multi-tier brackets.',
+                href: '/tournaments',
+                linkText: 'View tournaments',
+            },
+        ],
+    },
+    {
+        label: 'Tools',
+        features: [
+            {
+                icon: '🔌',
+                title: 'LiveSplit Integration',
+                description:
+                    'Automatic uploads via the LiveSplit component. Set it up once and your splits sync every time you finish a run.',
+                href: '/livesplit',
+                linkText: 'Set up LiveSplit',
+            },
+            {
+                icon: '📖',
+                title: 'Story Mode',
+                description:
+                    'AI-generated narrative commentary on your runs. Customize tone, pronouns, and language to make every PB a story worth telling.',
+                href: '/stories/manage',
+                linkText: 'Manage stories',
+            },
+            {
+                icon: '📅',
+                title: 'Annual Recap',
+                description:
+                    'Your year in speedrunning \u2014 total playtime, PBs, most-played games, and trends, compiled into a shareable recap.',
+                href: '/recap',
+                linkText: 'See your recap',
+            },
+            {
+                icon: '🎨',
+                title: 'Appearance Customization',
+                description:
+                    'Style your profile with custom colors, themes, and display options. Extended options available for Patreon supporters.',
+                href: '/change-appearance',
+                linkText: 'Customize',
+            },
+            {
+                icon: '📺',
+                title: 'Twitch Extension',
+                description:
+                    'Show your stats directly under your stream. Viewers see your splits, PBs, and live progress without leaving Twitch.',
+                href: 'https://dashboard.twitch.tv/extensions/gl1gra1r6ucnkchrswmdsefomfwxai-0.1.0',
+                linkText: 'Learn more',
+                external: true,
+            },
+        ],
+    },
+];
 
 export default function About() {
     return (
-        <div className={styles.content}>
-            <Title>About The Run</Title>
-            <p>The Run is a free, ad-less statistics tool for speedrunners.</p>
-            <h2></h2>
-            <h2>Features</h2>
-            <ul>
-                <li>
-                    Each user has their own{' '}
-                    <a href="/KallyNui" target="_blank" rel="noreferrer">
-                        {' '}
-                        profile
-                    </a>
-                    , detailing their full stats and an overview of
-                    games/categories they run.
-                </li>
-                <li>
-                    For each category a detailed{' '}
-                    <a
-                        href="AverageTrey/Super Mario Sunshine/Any%25"
-                        target="_blank"
-                        rel="noreferrer"
-                    >
-                        dive into their splits
-                    </a>
-                    :
-                    <ul>
-                        <li>
-                            Full view of splits, including comparisons to SOB,
-                            Best Achieved, Average, and alternative splits. Show
-                            as total time or split time.
-                        </li>
-                        <li>
-                            Graph to show finished runs over time, or Personal
-                            Bests over time.
-                        </li>
-                        <li>
-                            Overview of recent Runs and recent Run Sessions.
-                        </li>
-                        <li>
-                            A detailed Splits Stats page, giving all data needed
-                            to analyze splits, including graphs and a
-                            consistency score.
-                        </li>
-                        <li>
-                            Comparison tool to select the same splits to a
-                            different runner, and compare your splits to theirs.
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-            <ul>
-                <li>
-                    An overview of
-                    <a href="/games" target="_blank" rel="noreferrer">
-                        {' '}
-                        Games
-                    </a>
-                    , along with the best runners per category.
-                </li>
-                <li>
-                    A detailed{' '}
-                    <a
-                        href="/games/Super Mario 64"
-                        target="_blank"
-                        rel="noreferrer"
-                    >
-                        {' '}
-                        Game Page
-                    </a>{' '}
-                    with stats and leaderboards, which can all be filtered by
-                    category.
-                </li>
-                <li>
-                    Automatic uploads through a{' '}
-                    <Link href="/livesplit">LiveSplit Component </Link>
-                </li>
-                <li>
-                    Live Run tracking from the Component on the{' '}
-                    <Link href="/live">Runs page</Link>
-                </li>
-                <li>
-                    A{' '}
-                    <a
-                        href="https://dashboard.twitch.tv/extensions/gl1gra1r6ucnkchrswmdsefomfwxai-0.1.0"
-                        target="_blank"
-                        rel="noreferrer"
-                    >
-                        Twitch Extension{' '}
-                    </a>
-                    that shows your stats right under your stream.
-                </li>
-            </ul>
-            <ul>
-                <li>Handy search option which finds Users or Games.</li>
-                <li>Dark mode (use the topbar button, I worked hard on it)</li>
-                <li>
-                    <a href="/roadmap" target="_blank" rel="noreferrer">
-                        Many more features{' '}
-                    </a>{' '}
-                    to come in the future!
-                </li>
-            </ul>
-            <h2>How to use</h2>
-            <div>
-                I tried to make the tool as easy to use as possible. All you
-                have to do is:
-                <ol>
-                    <li>
-                        Login with Twitch using the button in the topbar. This
-                        way your viewers know how to find you on here as well!
-                    </li>
-                    <li>
-                        Upload your .lss file by going to the{' '}
-                        <Link href="/upload">Upload</Link> page.
-                    </li>
-                    <li>
-                        Wait for 10 to 30 seconds for your splits to be
-                        processed. After waiting, go to your profile
-                        (therun.gg/YOUR_TWITCH_NAME_HERE) to view your splits!
-                    </li>
-                    <li>
-                        Have fun checking out your data or send your viewers to
-                        the page to let them have fun!
-                    </li>
-                </ol>
-            </div>
-            <h2>Purpose</h2>
-            <ol>
-                <li>
-                    Making it easier to analyze, learn from, and improve through
-                    your splits. It helps speedrunners gain insight into many
-                    patterns regarding their runs, and gives them valuable data
-                    about their splits, giving them the tools needed to improve
-                    their practicing effiency.
-                </li>
-                <br />
-                <li>
-                    Improving the speedrunning viewer experience. Very often,
-                    viewers will ask about a streamers splits, timesaves,
-                    previous runs or gold times. All this data is readily
-                    available to them through The Run.
-                </li>
-                <br />
+        <div className={styles.page}>
+            <header className={styles.hero}>
+                <h1>About The Run</h1>
+                <p className={styles.tagline}>
+                    Free speedrun analytics. Live tracking, detailed splits,
+                    races, and more &mdash; built for runners and their
+                    communities.
+                </p>
+            </header>
 
-                <li>
-                    Allowing people to keep track of multiple runs at the time
-                    through the Live page.
-                </li>
-            </ol>
-            This is a Beta version of the tool, so I would love to have any and
-            all feedback. Please tell me what you like, hate, or would want to
-            see added!
+            {featureGroups.map((group) => (
+                <section
+                    key={group.label}
+                    aria-label={group.label}
+                    className={styles.group}
+                >
+                    <h2 className={styles.groupLabel}>{group.label}</h2>
+                    <div className={styles.grid}>
+                        {group.features.map((feature) => (
+                            <article
+                                key={feature.title}
+                                className={styles.card}
+                            >
+                                <span
+                                    className={styles.cardIcon}
+                                    aria-hidden="true"
+                                >
+                                    {feature.icon}
+                                </span>
+                                <h3 className={styles.cardTitle}>
+                                    {feature.title}
+                                </h3>
+                                <p className={styles.cardDescription}>
+                                    {feature.description}
+                                </p>
+                                {feature.external ? (
+                                    <a
+                                        className={styles.cardLink}
+                                        href={feature.href}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                    >
+                                        {feature.linkText} &rarr;
+                                    </a>
+                                ) : (
+                                    <Link
+                                        className={styles.cardLink}
+                                        href={feature.href}
+                                    >
+                                        {feature.linkText} &rarr;
+                                    </Link>
+                                )}
+                            </article>
+                        ))}
+                    </div>
+                </section>
+            ))}
         </div>
     );
 }

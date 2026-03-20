@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About Page Mockup</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1a1a2e;
+    color: #e0e0e0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding: 2rem;
+    min-height: 100vh;
+  }
+  .page {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  .hero {
+    text-align: center;
+    padding: 3rem 1rem 2.5rem;
+  }
+  .hero h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: #fff;
+    margin-bottom: 0.75rem;
+  }
+  .hero .tagline {
+    font-size: 1.1rem;
+    color: #a0a0b8;
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+    padding: 1rem 0;
+  }
+  .card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .card:hover {
+    border-color: rgba(96, 140, 89, 0.4);
+    background: rgba(255,255,255,0.06);
+  }
+  .card-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+  }
+  .card h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: -0.01em;
+  }
+  .card p {
+    font-size: 0.9rem;
+    color: #a0a0b8;
+    line-height: 1.6;
+    flex: 1;
+  }
+  .card-link {
+    font-size: 0.85rem;
+    color: #608c59;
+    text-decoration: none;
+    font-weight: 500;
+    margin-top: 0.25rem;
+  }
+  .card-link:hover {
+    color: #7ab06f;
+  }
+  .label {
+    text-align: center;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #666;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="hero">
+    <h1>About The Run</h1>
+    <p class="tagline">Free speedrun analytics. Live tracking, detailed splits, races, and more — built for runners and their communities.</p>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-icon">&#9889;</div>
+      <h3>Live Tracking</h3>
+      <p>Watch speedruns as they happen. See current pace, estimated finish time, and split-by-split progress in real time.</p>
+      <a class="card-link" href="#">See who's live &rarr;</a>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">&#9201;</div>
+      <h3>Detailed Splits</h3>
+      <p>Compare splits against your Sum of Best, best achieved, and averages. Consistency scores and graphs show where you gain and lose time.</p>
+      <a class="card-link" href="#">View an example &rarr;</a>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">&#128100;</div>
+      <h3>Runner Profiles</h3>
+      <p>Every runner gets a profile with their full stats, personal bests, run history, and a breakdown by game and category.</p>
+      <a class="card-link" href="#">Browse profiles &rarr;</a>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">&#127918;</div>
+      <h3>Game Pages</h3>
+      <p>Leaderboards, category stats, and activity metrics for every game. Filter by category and see who's on top.</p>
+      <a class="card-link" href="#">Explore games &rarr;</a>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">&#127937;</div>
+      <h3>Races</h3>
+      <p>Create or join races against other runners. MMR-based rankings, race history, and stats per game.</p>
+      <a class="card-link" href="#">Go to races &rarr;</a>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">&#127942;</div>
+      <h3>Tournaments</h3>
+      <p>Organized competitive events with eligibility rules, live leaderboards, and multi-tier brackets.</p>
+      <a class="card-link" href="#">View tournaments &rarr;</a>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">&#128214;</div>
+      <h3>Story Mode</h3>
+      <p>AI-generated narrative commentary on your runs. Customize tone, pronouns, and language to make every PB a story worth telling.</p>
+      <a class="card-link" href="#">Manage stories &rarr;</a>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">&#128197;</div>
+      <h3>Annual Recap</h3>
+      <p>Your year in speedrunning — total playtime, PBs, most-played games, and trends, compiled into a shareable recap.</p>
+      <a class="card-link" href="#">See your recap &rarr;</a>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">&#128268;</div>
+      <h3>LiveSplit Integration</h3>
+      <p>Automatic uploads via the LiveSplit component. Set it up once and your splits sync every time you finish a run.</p>
+      <a class="card-link" href="#">Set up LiveSplit &rarr;</a>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">&#127912;</div>
+      <h3>Appearance Customization</h3>
+      <p>Style your profile with custom colors, themes, and display options. Extended options available for Patreon supporters.</p>
+      <a class="card-link" href="#">Customize &rarr;</a>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">&#128250;</div>
+      <h3>Twitch Extension</h3>
+      <p>Show your stats directly under your stream. Viewers see your splits, PBs, and live progress without leaving Twitch.</p>
+      <a class="card-link" href="#">Learn more &rarr;</a>
+    </div>
+
+    <div class="card">
+      <div class="card-icon">&#128270;</div>
+      <h3>Runs Explorer</h3>
+      <p>Browse and filter finished runs across all games, categories, and runners. Find any run, any time.</p>
+      <a class="card-link" href="#">Explore runs &rarr;</a>
+    </div>
+  </div>
+
+  <div class="label">MOCKUP — visual direction for the about page</div>
+</div>
+</body>
+</html>

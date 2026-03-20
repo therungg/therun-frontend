@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useActionState, useEffect } from 'react';
-import { Button, Col, Form, Row, Tab, Table, Tabs } from 'react-bootstrap';
+import React, { useActionState, useEffect, useState } from 'react';
+import { Form } from 'react-bootstrap';
 import { useFormStatus } from 'react-dom';
 import { toast } from 'react-toastify';
 import {
@@ -13,6 +13,7 @@ import { setStoryPreferencesAction } from '~app/(new-layout)/stories/actions/set
 import { getPronounsFromString } from '~app/(new-layout)/stories/manage/get-pronouns-from-string';
 import { UnderlineTooltip } from '~src/components/tooltip';
 import { User } from '../../../../types/session.types';
+import styles from './manage-stories.module.scss';
 
 export const SetStoryPreferences = ({
     storyPreferences,
@@ -27,6 +28,9 @@ export const SetStoryPreferences = ({
         message: '',
         type: '',
     });
+    const [activeTab, setActiveTab] = useState<'general' | 'stories'>(
+        'general',
+    );
 
     useEffect(() => {
         if (state?.message) {
@@ -35,44 +39,49 @@ export const SetStoryPreferences = ({
     }, [state?.message]);
 
     return (
-        <>
-            <Form action={formAction} className="row">
-                <fieldset className="border py-3 px-4">
-                    <legend className="w-auto mb-0">
-                        Manage Story Preferences
-                    </legend>
-                    <Tabs
-                        className="pt-0 mb-2"
-                        defaultActiveKey="general"
-                        unmountOnExit={false}
+        <Form action={formAction}>
+            <div className={styles.tabs}>
+                <div className={styles.tabList} role="tablist">
+                    <button
+                        type="button"
+                        role="tab"
+                        className={`${styles.tab} ${activeTab === 'general' ? styles.tabActive : ''}`}
+                        onClick={() => setActiveTab('general')}
                     >
-                        <Tab
-                            title="General Preferences"
-                            eventKey="general"
-                            unmountOnExit={false}
-                        >
-                            <BasicFormFields
-                                storyPreferences={storyPreferences}
-                                user={user}
-                            />
-                        </Tab>
-                        <Tab
-                            title="Manage Individual Stories"
-                            eventKey="stories"
-                            unmountOnExit={false}
-                        >
-                            <ManageStories
-                                storyPreferences={storyPreferences}
-                                user={user}
-                                storyOptions={storyOptions}
-                            />
-                        </Tab>
-                    </Tabs>
+                        General Preferences
+                    </button>
+                    <button
+                        type="button"
+                        role="tab"
+                        className={`${styles.tab} ${activeTab === 'stories' ? styles.tabActive : ''}`}
+                        onClick={() => setActiveTab('stories')}
+                    >
+                        Manage Individual Stories
+                    </button>
+                </div>
 
-                    <SubmitButton />
-                </fieldset>
-            </Form>
-        </>
+                {activeTab === 'general' && (
+                    <BasicFormFields
+                        storyPreferences={storyPreferences}
+                        user={user}
+                    />
+                )}
+                {/* Always render stories tab to preserve form data, just hide it */}
+                <div
+                    style={{
+                        display: activeTab === 'stories' ? 'block' : 'none',
+                    }}
+                >
+                    <ManageIndividualStories
+                        storyPreferences={storyPreferences}
+                        user={user}
+                        storyOptions={storyOptions}
+                    />
+                </div>
+            </div>
+
+            <SubmitButton />
+        </Form>
     );
 };
 
@@ -85,59 +94,79 @@ const BasicFormFields = ({
 }) => {
     const defaultPronouns = getPronounsFromString(user.pronouns);
     return (
-        <div className="py-1 px-2">
-            <div className="row g-2 mb-4">
-                <Form.Group controlId="enabled">
-                    <Form.Check
-                        name="enabled"
-                        type="checkbox"
-                        defaultChecked={storyPreferences.enabled}
-                        label="Enable Twitch Bot for therun.gg Stories"
-                    />
-                </Form.Group>
-                <Form.Group controlId="disableNegativeStories">
-                    <Form.Check
-                        name="disableNegativeStories"
-                        type="checkbox"
-                        defaultChecked={storyPreferences.disableNegativeStories}
-                        label="Disable all negative stories like 'The user lost 10 seconds to their PB'"
-                    />
-                </Form.Group>
-                <Form.Group controlId="disableWelcomeStories">
-                    <Form.Check
-                        name="disableWelcomeStories"
-                        type="checkbox"
-                        defaultChecked={storyPreferences.disableWelcomeStories}
-                        label="Disable all 'welcome' stories that show up at the start of your run"
-                    />
-                </Form.Group>
-                <Form.Group controlId="changeGoldToRainbow">
-                    <Form.Check
-                        name="changeGoldToRainbow"
-                        type="checkbox"
-                        defaultChecked={storyPreferences.changeGoldToRainbow}
-                        label="Change the word Gold to Rainbow"
-                    />
-                </Form.Group>
-                {/*<Form.Group controlId="allowAIRephrase">*/}
-                {/*    <Form.Check*/}
-                {/*        name="allowAIRephrase"*/}
-                {/*        type="checkbox"*/}
-                {/*        defaultChecked={*/}
-                {/*            storyPreferences.allowAIRephrase*/}
-                {/*        }*/}
-                {/*        label="Allow AI to rephrase the text, to create some variety. AI will not generate new stories, only rephrase the current hand-written ones."*/}
-                {/*    />*/}
-                {/*</Form.Group>*/}
-                <Form.Group controlId="translateLanguage" className="w-25">
-                    <Form.Label column="sm">
+        <>
+            <div className={styles.formSection}>
+                <h3 className={styles.sectionTitle}>Bot Settings</h3>
+                <div className={styles.toggleGroup}>
+                    <div className={styles.toggleRow}>
+                        <span className={styles.toggleLabel}>
+                            Enable Twitch Bot for therun.gg Stories
+                        </span>
+                        <Form.Check
+                            name="enabled"
+                            type="switch"
+                            id="enabled"
+                            defaultChecked={storyPreferences.enabled}
+                        />
+                    </div>
+                    <div className={styles.toggleRow}>
+                        <span className={styles.toggleLabel}>
+                            Disable negative stories (e.g. &quot;Lost 10 seconds
+                            to PB&quot;)
+                        </span>
+                        <Form.Check
+                            name="disableNegativeStories"
+                            type="switch"
+                            id="disableNegativeStories"
+                            defaultChecked={
+                                storyPreferences.disableNegativeStories
+                            }
+                        />
+                    </div>
+                    <div className={styles.toggleRow}>
+                        <span className={styles.toggleLabel}>
+                            Disable welcome stories at the start of your run
+                        </span>
+                        <Form.Check
+                            name="disableWelcomeStories"
+                            type="switch"
+                            id="disableWelcomeStories"
+                            defaultChecked={
+                                storyPreferences.disableWelcomeStories
+                            }
+                        />
+                    </div>
+                    <div className={styles.toggleRow}>
+                        <span className={styles.toggleLabel}>
+                            Change the word &quot;Gold&quot; to
+                            &quot;Rainbow&quot;
+                        </span>
+                        <Form.Check
+                            name="changeGoldToRainbow"
+                            type="switch"
+                            id="changeGoldToRainbow"
+                            defaultChecked={
+                                storyPreferences.changeGoldToRainbow
+                            }
+                        />
+                    </div>
+                </div>
+            </div>
+
+            <div className={styles.formSection}>
+                <h3 className={styles.sectionTitle}>Translation</h3>
+                <div className={styles.fieldGroup}>
+                    <label className={styles.fieldLabel}>
                         <UnderlineTooltip
                             title="Translate story to different language"
                             content="This translation will be done by AI. Results may vary."
                             element="Translate story to different language"
                         />
-                    </Form.Label>
-                    <Form.Select name="translateLanguage">
+                    </label>
+                    <Form.Select
+                        name="translateLanguage"
+                        className={styles.selectSmall}
+                    >
                         <option value="">Keep it in English</option>
                         <option value="Dutch">Dutch (Nederlands)</option>
                         <option value="French">French (Français)</option>
@@ -149,19 +178,21 @@ const BasicFormFields = ({
                             Portuguese (Português)
                         </option>
                     </Form.Select>
-                </Form.Group>
+                </div>
             </div>
-            <div className="row g-2 mb-4">
-                <Form.Group>
-                    <Form.Label column="sm">
+
+            <div className={styles.formSection}>
+                <h3 className={styles.sectionTitle}>Cooldown</h3>
+                <div className={styles.fieldGroup}>
+                    <label className={styles.fieldLabel}>
                         <UnderlineTooltip
                             title="Story Cooldown in minutes"
                             content="By default, the bot will send a message every time you split. This can be a bit much. You can set a cooldown here, for example 10 minutes. Then it will at most send a message every 10 minutes."
                             element="Story Cooldown in minutes"
                         />
-                    </Form.Label>
+                    </label>
                     <Form.Control
-                        className="w-25"
+                        className={styles.inputSmall}
                         name="globalStoryCooldown"
                         type="number"
                         required={false}
@@ -171,47 +202,54 @@ const BasicFormFields = ({
                         defaultValue={storyPreferences.globalStoryCooldown ?? 0}
                         onKeyDown={numberInputKeyDown}
                     />
-                </Form.Group>
-                <Form.Group controlId="allowGlobalStoryCooldownOverride">
-                    <Form.Check
-                        name="allowGlobalStoryCooldownOverride"
-                        type="checkbox"
-                        defaultChecked={
-                            storyPreferences.allowGlobalStoryCooldownOverride
-                        }
-                        label="Allow exceptions on cooldown for very relevant stories, like for a gold split or a PB"
-                    />
-                </Form.Group>
+                </div>
+                <div className={styles.toggleGroup}>
+                    <div className={styles.toggleRow}>
+                        <span className={styles.toggleLabel}>
+                            Allow exceptions on cooldown for very relevant
+                            stories (gold split, PB)
+                        </span>
+                        <Form.Check
+                            name="allowGlobalStoryCooldownOverride"
+                            type="switch"
+                            id="allowGlobalStoryCooldownOverride"
+                            defaultChecked={
+                                storyPreferences.allowGlobalStoryCooldownOverride
+                            }
+                        />
+                    </div>
+                </div>
             </div>
 
-            <div className="row g-2 mb-4">
-                <Form.Group controlId="nameOverride">
-                    <Form.Label column="sm">
+            <div className={styles.formSection}>
+                <h3 className={styles.sectionTitle}>Identity</h3>
+                <div className={styles.fieldGroup}>
+                    <label className={styles.fieldLabel}>
                         <UnderlineTooltip
                             title="Username to be called"
                             content={`By default, the bot will call you ${user.username}. You can override this here. If you don't you will get tagged in every message.`}
                             element="Username to be called"
                         />
-                    </Form.Label>
+                    </label>
                     <Form.Control
-                        className="w-25"
+                        className={styles.inputSmall}
                         name="nameOverride"
                         required={true}
                         defaultValue={
                             storyPreferences.nameOverride ?? user.username
                         }
                     />
-                </Form.Group>
-                <Form.Group>
-                    <Form.Label column="sm">
+                </div>
+                <div className={styles.fieldGroup}>
+                    <label className={styles.fieldLabel}>
                         <UnderlineTooltip
                             title="Pronouns"
                             content="By default, the bot will call you They/Them/Their. You can override this here."
                             element="Pronouns"
                         />
-                    </Form.Label>
-                    <Row className="w-50">
-                        <Col>
+                    </label>
+                    <div className={styles.pronounsRow}>
+                        <div className={styles.pronounField}>
                             <Form.Control
                                 name="pronounOverrideThey"
                                 placeholder="They"
@@ -220,10 +258,12 @@ const BasicFormFields = ({
                                     defaultPronouns[0]
                                 }
                             />
-                            <Form.Text muted>Like They (Subjective)</Form.Text>
-                        </Col>
-                        /
-                        <Col>
+                            <div className={styles.pronounHint}>
+                                Subjective (They)
+                            </div>
+                        </div>
+                        <span className={styles.pronounSeparator}>/</span>
+                        <div className={styles.pronounField}>
                             <Form.Control
                                 name="pronounOverrideThem"
                                 placeholder="Them"
@@ -232,10 +272,12 @@ const BasicFormFields = ({
                                     defaultPronouns[1]
                                 }
                             />
-                            <Form.Text muted>Like Them (Objective)</Form.Text>
-                        </Col>
-                        /
-                        <Col>
+                            <div className={styles.pronounHint}>
+                                Objective (Them)
+                            </div>
+                        </div>
+                        <span className={styles.pronounSeparator}>/</span>
+                        <div className={styles.pronounField}>
                             <Form.Control
                                 name="pronounOverrideTheir"
                                 placeholder="Their"
@@ -244,16 +286,46 @@ const BasicFormFields = ({
                                     defaultPronouns[2]
                                 }
                             />
-                            <Form.Text muted>Like Their (Possessive)</Form.Text>
-                        </Col>
-                    </Row>
-                </Form.Group>
+                            <div className={styles.pronounHint}>
+                                Possessive (Their)
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 
-const ManageStories = ({
+const categoryInfo = new Map<
+    StoryElementCategory,
+    { title: string; description: string }
+>([
+    [
+        'generic',
+        {
+            title: 'Generic Stories',
+            description:
+                'Fun facts and stories not specific to the current run',
+        },
+    ],
+    [
+        'previous',
+        {
+            title: 'Previous Split Stories',
+            description: 'Commentary about the split you just completed',
+        },
+    ],
+    [
+        'next',
+        {
+            title: 'Upcoming Split Stories',
+            description: 'Previews and info about the next split',
+        },
+    ],
+]);
+
+const ManageIndividualStories = ({
     storyPreferences,
     user,
     storyOptions,
@@ -262,31 +334,27 @@ const ManageStories = ({
     user: User;
     storyOptions: StoryOption[];
 }) => {
-    const categoryMap = new Map<StoryElementCategory, string>([
-        ['generic', 'Stories not specific to the current run, fun facts'],
-        ['previous', 'Stories about the previous split'],
-        ['next', 'Stories about the upcoming split'],
-    ]);
     return (
-        <div className="mb-3">
-            {Array.from(categoryMap.entries()).map(([k, v]) => {
-                const specificOptions: StoryOption[] = storyOptions.filter(
-                    (option) => option.category === k,
-                );
+        <div>
+            {Array.from(categoryInfo.entries()).map(
+                ([category, { title, description }]) => {
+                    const options = storyOptions.filter(
+                        (option) => option.category === category,
+                    );
 
-                return (
-                    <div className="mb-3" key={k}>
-                        <h2>{v}</h2>
-                        <Table bordered striped hover responsive>
-                            <thead>
-                                <tr>
-                                    <th>Enabled</th>
-                                    <th>Cooldown (minutes)</th>
-                                    <th>Text</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {specificOptions.map((option, index) => {
+                    return (
+                        <div
+                            className={styles.storyCategorySection}
+                            key={category}
+                        >
+                            <h3 className={styles.storyCategoryTitle}>
+                                {title}
+                            </h3>
+                            <p className={styles.storyCategoryDesc}>
+                                {description}
+                            </p>
+                            <div className={styles.storyList}>
+                                {options.map((option, index) => {
                                     const id = `stories.${option.type}.enabled`;
                                     const idCooldown = `stories.${option.type}.cooldown`;
 
@@ -299,17 +367,18 @@ const ManageStories = ({
                                         storyPreferences.disableNegativeStories;
 
                                     return (
-                                        <tr key={id + index}>
-                                            <td>
+                                        <div
+                                            className={styles.storyRow}
+                                            key={id + index}
+                                        >
+                                            <div className={styles.storyToggle}>
                                                 <input
                                                     type="hidden"
-                                                    className="cursor-pointer"
                                                     value={0}
                                                     name={id}
                                                 />
                                                 <Form.Check
                                                     type="switch"
-                                                    className="cursor-pointer"
                                                     id={id}
                                                     name={id}
                                                     disabled={
@@ -321,14 +390,14 @@ const ManageStories = ({
                                                     }
                                                     value={1}
                                                 />
-                                            </td>
-                                            <td>
-                                                <Form.Control
-                                                    className="h-50"
+                                            </div>
+                                            <div
+                                                className={styles.storyCooldown}
+                                            >
+                                                <input
                                                     name={idCooldown}
                                                     id={idCooldown}
                                                     type="number"
-                                                    required={false}
                                                     min={0}
                                                     step={1}
                                                     max={60 * 24}
@@ -341,24 +410,24 @@ const ManageStories = ({
                                                         numberInputKeyDown
                                                     }
                                                 />
-                                            </td>
-                                            <td>
-                                                <Form.Label htmlFor={id}>
+                                            </div>
+                                            <div className={styles.storyText}>
+                                                <label htmlFor={id}>
                                                     {showExampleStory(
                                                         option.example,
                                                         user,
                                                         storyPreferences,
                                                     )}
-                                                </Form.Label>
-                                            </td>
-                                        </tr>
+                                                </label>
+                                            </div>
+                                        </div>
                                     );
                                 })}
-                            </tbody>
-                        </Table>
-                    </div>
-                );
-            })}
+                            </div>
+                        </div>
+                    );
+                },
+            )}
         </div>
     );
 };
@@ -377,11 +446,12 @@ const showExampleStory = (
 const SubmitButton = () => {
     const { pending } = useFormStatus();
     return (
-        <Button disabled={pending} variant="primary" type="submit">
-            {!pending ? 'Set Preferences' : 'Setting Preferences...'}
-        </Button>
+        <button type="submit" disabled={pending} className={styles.submitBtn}>
+            {!pending ? 'Save Preferences' : 'Saving...'}
+        </button>
     );
 };
+
 const numberInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     const eventCode = event.code.toLowerCase();
     if (

@@ -1,0 +1,29 @@
+.button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 14px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #fff;
+    background: #9147ff;
+    border-radius: 8px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.15s ease, transform 0.1s ease;
+
+    &:hover {
+        background: #7c3aed;
+        color: #fff;
+        text-decoration: none;
+    }
+
+    &:active {
+        transform: scale(0.97);
+    }
+
+    &:focus-visible {
+        outline: 2px solid #9147ff;
+        outline-offset: 2px;
+    }
+}

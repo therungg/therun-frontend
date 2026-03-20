@@ -1,69 +1,133 @@
 'use client';
 import React from 'react';
-import { Clipboard } from 'react-bootstrap-icons';
+import styles from './livesplit.module.scss';
+import { resetUploadKeyAction } from './reset-upload-key.action';
 
 interface CopyUploadKeyProps {
     uploadKey: string;
 }
 
 export const CopyUploadKey: React.FunctionComponent<CopyUploadKeyProps> = ({
-    uploadKey,
+    uploadKey: initialKey,
 }) => {
-    const [isUploadKeyVisible, setIsUploadKeyVisible] = React.useState(false);
+    const [uploadKey, setUploadKey] = React.useState(initialKey);
+    const [isRevealed, setIsRevealed] = React.useState(false);
     const [isCopied, setIsCopied] = React.useState(false);
+    const [isResetting, setIsResetting] = React.useState(false);
+    const [showConfirm, setShowConfirm] = React.useState(false);
+    const [resetError, setResetError] = React.useState<string | null>(null);
+    const [wasReset, setWasReset] = React.useState(false);
 
-    return isUploadKeyVisible ? (
-        <CopyUploadKeyButton
-            isCopied={isCopied}
-            setIsCopied={setIsCopied}
-            uploadKey={uploadKey}
-        />
-    ) : (
-        <DisplayUploadKeyButton setIsUploadKeyVisible={setIsUploadKeyVisible} />
-    );
-};
+    const handleCopy = async () => {
+        await navigator.clipboard.writeText(uploadKey);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+    };
 
-interface CopyUploadKeyButtonProps {
-    uploadKey: string;
-    isCopied: boolean;
-    setIsCopied: React.Dispatch<React.SetStateAction<boolean>>;
-}
+    const handleReset = async () => {
+        setIsResetting(true);
+        setResetError(null);
+        try {
+            const result = await resetUploadKeyAction();
+            if (result.error) {
+                setResetError(result.error);
+            } else if (result.uploadKey) {
+                setUploadKey(result.uploadKey);
+                setIsRevealed(true);
+                setShowConfirm(false);
+                setWasReset(true);
+            }
+        } catch {
+            setResetError('Something went wrong. Please try again.');
+        } finally {
+            setIsResetting(false);
+        }
+    };
 
-const CopyUploadKeyButton: React.FunctionComponent<
-    CopyUploadKeyButtonProps
-> = ({ uploadKey, isCopied, setIsCopied }) => {
     return (
-        <div className="d-flex align-items-center justify-content-center column-gap-3">
-            {uploadKey}
-            <div
-                onClick={async () => {
-                    await navigator.clipboard.writeText(uploadKey);
-                    setIsCopied(true);
-                    setTimeout(() => {
-                        setIsCopied(false);
-                    }, 1500);
-                }}
-            >
-                <Clipboard className="cursor-pointer" size={36} />
+        <>
+            {wasReset && (
+                <div className={styles.resetSuccess}>
+                    Key reset successfully. Your new key is shown below — make
+                    sure to update it in LiveSplit.
+                </div>
+            )}
+            <div className={styles.statusBadge}>
+                <span className={styles.statusDot} />
+                Key Active
             </div>
-            {isCopied && <div className="fs-large">Copied to Clipboard!</div>}
-        </div>
-    );
-};
+            <div className={styles.keyLabel}>Your LiveSplit Key</div>
+            <div className={styles.keyValue}>
+                {isRevealed ? uploadKey : '••••••••••••••••••••'}
+            </div>
+            <div className={styles.keyActions}>
+                <button
+                    type="button"
+                    className={styles.btnReveal}
+                    onClick={() => setIsRevealed((prev) => !prev)}
+                >
+                    {isRevealed ? 'Hide Key' : 'Reveal Key'}
+                </button>
+                <button
+                    type="button"
+                    className={styles.btnCopy}
+                    onClick={handleCopy}
+                >
+                    {isCopied ? 'Copied!' : 'Copy to Clipboard'}
+                </button>
+            </div>
+            {isCopied && (
+                <div className={styles.copiedFeedback}>Copied to clipboard</div>
+            )}
+            <div className={styles.keyWarning}>
+                Treat this key like a password — anyone with it can upload to
+                your profile
+            </div>
 
-interface DisplayUploadKeyButtonProps {
-    setIsUploadKeyVisible: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-const DisplayUploadKeyButton: React.FunctionComponent<
-    DisplayUploadKeyButtonProps
-> = ({ setIsUploadKeyVisible }) => {
-    return (
-        <div
-            className="cursor-pointer"
-            onClick={() => setIsUploadKeyVisible(true)}
-        >
-            Click to show LiveSplit Key
-        </div>
+            <div className={styles.resetSection}>
+                {!showConfirm ? (
+                    <button
+                        type="button"
+                        className={styles.btnReset}
+                        onClick={() => setShowConfirm(true)}
+                    >
+                        Reset Key
+                    </button>
+                ) : (
+                    <div className={styles.resetConfirm}>
+                        <div className={styles.resetConfirmText}>
+                            Are you sure? Your current key will stop working
+                            immediately. You will need to add the new key to
+                            LiveSplit again.
+                        </div>
+                        {resetError && (
+                            <div className={styles.resetError}>
+                                {resetError}
+                            </div>
+                        )}
+                        <div className={styles.resetConfirmActions}>
+                            <button
+                                type="button"
+                                className={styles.btnResetConfirm}
+                                onClick={handleReset}
+                                disabled={isResetting}
+                            >
+                                {isResetting
+                                    ? 'Resetting...'
+                                    : 'Yes, Reset Key'}
+                            </button>
+                            <button
+                                type="button"
+                                className={styles.btnReveal}
+                                onClick={() => setShowConfirm(false)}
+                                disabled={isResetting}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        </>
     );
 };
