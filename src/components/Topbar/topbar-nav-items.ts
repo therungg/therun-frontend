@@ -30,7 +30,5 @@ export const aboutItems: NavItem[] = [
     { href: '/about', label: 'About' },
     { href: '/getting-started', label: 'Getting Started' },
     { href: '/blog', label: 'Blog' },
-    { href: '/faq', label: 'FAQ' },
-    { href: '/roadmap', label: 'Roadmap' },
     { href: '/contact', label: 'Contact' },
 ];

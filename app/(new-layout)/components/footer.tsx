@@ -4,7 +4,6 @@ import styles from './styles/footer.module.scss';
 const links = [
     { href: '/about', label: 'About' },
     { href: '/blog', label: 'Blog' },
-    { href: '/faq', label: 'FAQ' },
     { href: '/contact', label: 'Contact' },
     { href: '/privacy-policy', label: 'Privacy Policy' },
     { href: '/terms', label: 'Terms' },
