@@ -45,11 +45,6 @@ const nextConfig = {
                 destination: '/games/:path*',
                 permanent: true,
             },
-            {
-                source: '/how-it-works',
-                destination: '/getting-started',
-                permanent: true,
-            },
         ];
     },
 };

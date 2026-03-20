@@ -28,7 +28,6 @@ export const toolsItems: NavItem[] = [
 
 export const aboutItems: NavItem[] = [
     { href: '/about', label: 'About' },
-    { href: '/getting-started', label: 'Getting Started' },
     { href: '/blog', label: 'Blog' },
     { href: '/contact', label: 'Contact' },
 ];
