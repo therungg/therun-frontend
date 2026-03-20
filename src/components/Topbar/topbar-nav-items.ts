@@ -6,34 +6,31 @@ export interface NavItem {
 }
 
 // Static groups (always visible, no auth/RBAC conditions)
-export const runItems: NavItem[] = [
-    { href: '/upload', label: 'Upload' },
+export const exploreItems: NavItem[] = [
     { href: '/live', label: 'Live', live: true },
     { href: '/runs', label: 'Runs' },
+    { href: '/games', label: 'Games' },
+    { href: '/recap', label: 'Recap' },
 ];
 
 export const competeItems: NavItem[] = [
     { href: '/races', label: 'Races' },
     { href: '/tournaments', label: 'Tournaments' },
-    { href: '/events', label: 'Events' },
 ];
 
-export const exploreItems: NavItem[] = [
-    { href: '/games', label: 'Games' },
-    { href: '/recap', label: 'Recap' },
-];
-
+// Tools group — only shown when logged in
 export const toolsItems: NavItem[] = [
+    { href: '/upload', label: 'Upload' },
     { href: '/livesplit', label: 'LiveSplit Key' },
     { href: '/change-appearance', label: 'Change Appearance' },
-    { href: '/stories/manage', label: 'Story Preferences' },
+    { href: '/stories/manage', label: 'Story Mode' },
 ];
 
 export const aboutItems: NavItem[] = [
-    { href: '/how-it-works', label: 'How It Works' },
+    { href: '/about', label: 'About' },
+    { href: '/getting-started', label: 'Getting Started' },
     { href: '/blog', label: 'Blog' },
     { href: '/faq', label: 'FAQ' },
     { href: '/roadmap', label: 'Roadmap' },
-    { href: '/about', label: 'About' },
     { href: '/contact', label: 'Contact' },
 ];
