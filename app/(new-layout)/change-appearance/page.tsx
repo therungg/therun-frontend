@@ -22,6 +22,7 @@ export default async function ChangeAppearance(props: {
                 <PatreonSection
                     session={session}
                     userPatreonData={userPatreonData}
+                    baseUrl={baseUrl}
                 />
             )}
         </div>

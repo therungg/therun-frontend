@@ -12,96 +12,130 @@ export default async function Livesplit() {
         `${baseUrl}/api/users/${session.id}-${session.username}/upload-key`,
     );
     const { result } = (await data.json()) as { result: string };
-    let content = (
-        <div className={styles.loginPrompt}>
-            Please log in first to access your LiveSplit Key.
-        </div>
-    );
 
-    if (session.username) {
-        content = (
-            <div className={styles.keyCard}>
-                <CopyUploadKey uploadKey={result} />
-            </div>
-        );
-    }
     return (
         <div className={styles.page}>
-            <h1 className={styles.pageTitle}>LiveSplit Key</h1>
-            {content}
-            <div className={styles.infoSection}>
-                <h2>What can I do with this?</h2>
-                <p>
-                    Your LiveSplit key connects your LiveSplit to therun. Your
-                    runs will be tracked live, and your stats will be
-                    automatically updated after every run.
-                </p>
-                <p>
-                    Check out the <Link href="/live">Live page</Link> to see
-                    runs in progress!
-                </p>
-                <p>
-                    Treat this key like a password. Anyone who has this key can
-                    upload runs to your profile.
+            <div className={styles.header}>
+                <h1 className={styles.pageTitle}>LiveSplit Key</h1>
+                <p className={styles.subtitle}>
+                    Connect LiveSplit to therun.gg for live tracking and
+                    automatic uploads
                 </p>
             </div>
-            <div className={styles.infoSection}>
-                <h2>How does it work?</h2>
-                <p>
-                    You can install the LiveSplit component in these 2 easy
-                    steps.
-                </p>
-                <ol>
-                    <li>
-                        Open the layout editor in LiveSplit. Add the component
-                        to your layout. It is under the Other dropdown.
-                    </li>
-                    <li>
-                        Open the Layout Settings. There, select the therun.gg
-                        tab. Insert your LiveSplit Key. You are done!
-                    </li>
-                </ol>
 
-                <p>
-                    Now, you will never have to upload your runs again! In
-                    addition, your live runs will show up in real time on your
-                    profile, and on the dedicated{' '}
-                    <Link href="/live">Live page</Link>! It also allows you to
-                    join Tournaments, or to participate in Races!
-                </p>
+            {session.username ? (
+                <div className={styles.keyCard}>
+                    <CopyUploadKey uploadKey={result} />
+                </div>
+            ) : (
+                <div className={styles.loginPrompt}>
+                    Please log in to access your LiveSplit Key.
+                </div>
+            )}
 
-                <p>
-                    The code for the component is freely available on{' '}
-                    <a
-                        target="_blank"
-                        rel="noreferrer"
-                        href="https://github.com/therungg/LiveSplit.TheRun"
-                    >
-                        GitHub
-                    </a>
-                    .
-                </p>
+            <div className={styles.infoCard}>
+                <div className={styles.infoIcon}>⚡</div>
+                <div>
+                    <div className={styles.infoTitle}>What does this do?</div>
+                    <div className={styles.infoBody}>
+                        Your LiveSplit key connects LiveSplit to therun.gg. Runs
+                        are tracked live, and stats update automatically after
+                        every run. Check out the{' '}
+                        <Link href="/live">Live page</Link> to see runs in
+                        progress.
+                    </div>
+                </div>
             </div>
-            <div className={styles.troubleshootSection}>
-                <h2>Troubleshooting</h2>
-                <p>
-                    If your splits do not get uploaded or your runs do not show
-                    on the live page, here is what you can try:
-                </p>
-                <ul>
-                    <li>
-                        Verify that the Game and Category fields have been set
-                        in LiveSplit
-                    </li>
-                    <li>
-                        Verify that you added the therun.gg layout from the
-                        Other tab to your layout in LiveSplit.
-                    </li>
-                </ul>
-                <p>
-                    If after all this, it still does not work, please contact
-                    me!
-                </p>
+
+            <div className={styles.stepsSection}>
+                <h2 className={styles.stepsTitle}>Setup in 2 steps</h2>
+                <div className={styles.steps}>
+                    <div className={styles.step}>
+                        <div className={styles.stepNumber}>1</div>
+                        <div>
+                            <div className={styles.stepTitle}>
+                                Add the component
+                            </div>
+                            <div className={styles.stepBody}>
+                                Open the layout editor in LiveSplit. Add the
+                                therun.gg component from the{' '}
+                                <strong>Other</strong> dropdown.
+                            </div>
+                        </div>
+                    </div>
+                    <div className={styles.step}>
+                        <div className={styles.stepNumber}>2</div>
+                        <div>
+                            <div className={styles.stepTitle}>
+                                Paste your key
+                            </div>
+                            <div className={styles.stepBody}>
+                                Open Layout Settings → therun.gg tab → paste
+                                your key. Done!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className={styles.benefits}>
+                <div className={styles.benefit}>
+                    <div className={styles.benefitIcon}>📡</div>
+                    <div className={styles.benefitTitle}>Live Tracking</div>
+                    <div className={styles.benefitDesc}>
+                        Real-time on your profile
+                    </div>
+                </div>
+                <div className={styles.benefit}>
+                    <div className={styles.benefitIcon}>🏆</div>
+                    <div className={styles.benefitTitle}>Tournaments</div>
+                    <div className={styles.benefitDesc}>
+                        Join events & compete
+                    </div>
+                </div>
+                <div className={styles.benefit}>
+                    <div className={styles.benefitIcon}>🏁</div>
+                    <div className={styles.benefitTitle}>Races</div>
+                    <div className={styles.benefitDesc}>
+                        Race other runners live
+                    </div>
+                </div>
+            </div>
+
+            <details className={styles.troubleshoot}>
+                <summary className={styles.troubleshootSummary}>
+                    <span className={styles.troubleshootArrow}>▸</span>
+                    Troubleshooting
+                </summary>
+                <div className={styles.troubleshootBody}>
+                    <p>
+                        If splits don&apos;t upload or runs don&apos;t appear
+                        live:
+                    </p>
+                    <ul>
+                        <li>
+                            Verify Game and Category fields are set in LiveSplit
+                        </li>
+                        <li>
+                            Verify you added the therun.gg layout from the Other
+                            tab
+                        </li>
+                    </ul>
+                    <p>
+                        Still not working?{' '}
+                        <Link href="/contact">Contact us</Link>
+                    </p>
+                </div>
+            </details>
+
+            <div className={styles.footerLink}>
+                <a
+                    target="_blank"
+                    rel="noreferrer"
+                    href="https://github.com/therungg/LiveSplit.TheRun"
+                >
+                    View component source on GitHub →
+                </a>
             </div>
         </div>
     );

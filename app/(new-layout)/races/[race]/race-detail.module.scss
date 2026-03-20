@@ -19,22 +19,37 @@
     }
 }
 
+.raceHeaderLayout {
+    display: flex;
+    min-height: 10rem;
+}
+
 .raceHeaderImg {
-    border-radius: 0;
     border-top-left-radius: $radius-lg;
     border-bottom-left-radius: $radius-lg;
     object-fit: cover;
-    height: 100%;
-    display: inline-block;
-    min-width: 5rem;
+    width: 7rem;
+    flex-shrink: 0;
     max-height: 18rem;
-    max-width: 10rem;
+
+    @media (max-width: 575.98px) {
+        width: 5rem;
+    }
 }
 
 .raceHeaderBody {
-    padding: $spacing-sm $spacing-md $spacing-sm $spacing-xs;
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
+    padding: $spacing-md $spacing-lg $spacing-md $spacing-lg;
+}
+
+.titleRow {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: $spacing-md;
 }
 
 .gameLink {
@@ -44,18 +59,21 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    margin: 0;
-    padding: 0;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
 }
 
 .categoryRow {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     gap: $spacing-md;
     padding-bottom: $spacing-sm;
     border-bottom: 1px solid rgba(var(--bs-primary-rgb), 0.12);
-    width: 100%;
-    margin-bottom: 0;
+    margin-bottom: $spacing-xs;
 }
 
 .categoryText {
@@ -84,6 +102,7 @@
     font-size: $font-size-sm;
     color: var(--bs-secondary-color);
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .customName {
@@ -107,6 +126,16 @@
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
+    gap: $spacing-md;
+    padding-top: $spacing-sm;
+}
+
+.headerFooterRight {
+    display: flex;
+    align-items: flex-end;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 // ── Standings Panel ──
