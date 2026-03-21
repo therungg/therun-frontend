@@ -30,7 +30,7 @@ const featureGroups: FeatureGroup[] = [
                 icon: '⚡',
                 title: 'Live Tracking',
                 description:
-                    'Watch speedruns as they happen. See current pace, estimated finish time, and split-by-split progress in real time.',
+                    'Watch speedruns as they happen. See current pace and split-by-split progress in real time. Follow multiple runners at once.',
                 href: '/live',
                 linkText: "See who's live",
             },
@@ -38,8 +38,8 @@ const featureGroups: FeatureGroup[] = [
                 icon: '⏱️',
                 title: 'Detailed Splits',
                 description:
-                    'Compare splits against your Sum of Best, best achieved, and averages. Consistency scores and graphs show where you gain and lose time.',
-                href: '/AverageTrey/Super%20Mario%20Sunshine/Any%25',
+                    'Advanced stats for every run. Compare splits against your Sum of Best, best achieved, and averages. Consistency scores and graphs show where you gain and lose time.',
+                href: '/greensuigi/Super%20Mario%2064/70%20Star$gameregion%3Ausantsc',
                 linkText: 'View an example',
             },
             {
@@ -47,7 +47,7 @@ const featureGroups: FeatureGroup[] = [
                 title: 'Runner Profiles',
                 description:
                     'Every runner gets a profile with their full stats, personal bests, run history, and a breakdown by game and category.',
-                href: '/KallyNui',
+                href: '/abney317',
                 linkText: 'Browse a profile',
             },
             {
@@ -83,7 +83,7 @@ const featureGroups: FeatureGroup[] = [
                 icon: '🏆',
                 title: 'Tournaments',
                 description:
-                    'Organized competitive events with eligibility rules, live leaderboards, and multi-tier brackets.',
+                    'Run fully automated LTA (Leaderboard Time Attack) tournaments with custom eligibility rules, live standings, and automatic result tracking. Set it up and let it run.',
                 href: '/tournaments',
                 linkText: 'View tournaments',
             },
@@ -96,7 +96,7 @@ const featureGroups: FeatureGroup[] = [
                 icon: '🔌',
                 title: 'LiveSplit Integration',
                 description:
-                    'Automatic uploads via the LiveSplit component. Set it up once and your splits sync every time you finish a run.',
+                    'Connect LiveSplit to stream your run data to the site in real time. Your live splits, current pace, and progress update automatically as you play.',
                 href: '/livesplit',
                 linkText: 'Set up LiveSplit',
             },
@@ -104,7 +104,7 @@ const featureGroups: FeatureGroup[] = [
                 icon: '📖',
                 title: 'Story Mode',
                 description:
-                    'AI-generated narrative commentary on your runs. Customize tone, pronouns, and language to make every PB a story worth telling.',
+                    'Automated narrative messages posted directly in your Twitch chat as you run. Your viewers get live commentary on splits, PBs, and milestones. Customize tone, pronouns, and language to match your stream.',
                 href: '/stories/manage',
                 linkText: 'Manage stories',
             },
@@ -120,7 +120,7 @@ const featureGroups: FeatureGroup[] = [
                 icon: '🎨',
                 title: 'Appearance Customization',
                 description:
-                    'Style your profile with custom colors, themes, and display options. Extended options available for Patreon supporters.',
+                    'Patreon supporters get a bunny badge and a custom name color on their profile. A small way to stand out and support the site.',
                 href: '/change-appearance',
                 linkText: 'Customize',
             },
