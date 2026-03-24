@@ -58,9 +58,7 @@ export async function createTeamAction(
     return result;
 }
 
-export async function requestJoinTeamAction(
-    formData: FormData,
-): Promise<TeamActionResult> {
+export async function requestJoinTeamAction(formData: FormData): Promise<void> {
     const raceId = formData.get('raceId') as string;
     const teamIndex = formData.get('teamIndex') as string;
     const password = formData.get('password') as string;
@@ -74,13 +72,9 @@ export async function requestJoinTeamAction(
     if (!result.error) {
         revalidatePath(`/races/${raceId}`);
     }
-
-    return result;
 }
 
-export async function approveJoinAction(
-    formData: FormData,
-): Promise<TeamActionResult> {
+export async function approveJoinAction(formData: FormData): Promise<void> {
     const raceId = formData.get('raceId') as string;
     const teamIndex = formData.get('teamIndex') as string;
     const username = formData.get('username') as string;
@@ -95,13 +89,9 @@ export async function approveJoinAction(
     if (!result.error) {
         revalidatePath(`/races/${raceId}`);
     }
-
-    return result;
 }
 
-export async function denyJoinAction(
-    formData: FormData,
-): Promise<TeamActionResult> {
+export async function denyJoinAction(formData: FormData): Promise<void> {
     const raceId = formData.get('raceId') as string;
     const teamIndex = formData.get('teamIndex') as string;
     const username = formData.get('username') as string;
@@ -114,13 +104,9 @@ export async function denyJoinAction(
     if (!result.error) {
         revalidatePath(`/races/${raceId}`);
     }
-
-    return result;
 }
 
-export async function leaveTeamAction(
-    formData: FormData,
-): Promise<TeamActionResult> {
+export async function leaveTeamAction(formData: FormData): Promise<void> {
     const raceId = formData.get('raceId') as string;
     const teamIndex = formData.get('teamIndex') as string;
 
@@ -132,13 +118,9 @@ export async function leaveTeamAction(
     if (!result.error) {
         revalidatePath(`/races/${raceId}`);
     }
-
-    return result;
 }
 
-export async function kickTeamMemberAction(
-    formData: FormData,
-): Promise<TeamActionResult> {
+export async function kickTeamMemberAction(formData: FormData): Promise<void> {
     const raceId = formData.get('raceId') as string;
     const teamIndex = formData.get('teamIndex') as string;
     const username = formData.get('username') as string;
@@ -151,13 +133,9 @@ export async function kickTeamMemberAction(
     if (!result.error) {
         revalidatePath(`/races/${raceId}`);
     }
-
-    return result;
 }
 
-export async function deleteTeamAction(
-    formData: FormData,
-): Promise<TeamActionResult> {
+export async function deleteTeamAction(formData: FormData): Promise<void> {
     const raceId = formData.get('raceId') as string;
     const teamIndex = formData.get('teamIndex') as string;
 
@@ -169,6 +147,4 @@ export async function deleteTeamAction(
     if (!result.error) {
         revalidatePath(`/races/${raceId}`);
     }
-
-    return result;
 }

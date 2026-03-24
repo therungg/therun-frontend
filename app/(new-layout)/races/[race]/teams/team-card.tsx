@@ -194,8 +194,8 @@ const JoinButton = ({
         <SubmitButton
             innerText="Request to Join"
             pendingText="Requesting..."
-            variant="outline-primary"
-            size="sm"
+            variant="primary"
+            className="btn-sm"
         />
     </Form>
 );
@@ -213,8 +213,8 @@ const LeaveButton = ({
         <SubmitButton
             innerText="Leave Team"
             pendingText="Leaving..."
-            variant="outline-danger"
-            size="sm"
+            variant="danger"
+            className="btn-sm"
         />
     </Form>
 );
@@ -235,8 +235,8 @@ const ApproveButton = ({
         <SubmitButton
             innerText="Approve"
             pendingText="..."
-            variant="outline-success"
-            size="sm"
+            variant="success"
+            className="btn-sm"
         />
     </Form>
 );
@@ -257,8 +257,8 @@ const DenyButton = ({
         <SubmitButton
             innerText="Deny"
             pendingText="..."
-            variant="outline-danger"
-            size="sm"
+            variant="danger"
+            className="btn-sm"
         />
     </Form>
 );
@@ -276,7 +276,7 @@ const KickButton = ({
         <input hidden name="raceId" value={raceId} readOnly />
         <input hidden name="teamIndex" value={teamIndex.toString()} readOnly />
         <input hidden name="username" value={username} readOnly />
-        <Button type="submit" variant="outline-danger" size="sm">
+        <Button type="submit" variant="danger" className="btn-sm">
             Kick
         </Button>
     </Form>
@@ -295,8 +295,8 @@ const DeleteTeamButton = ({
         <SubmitButton
             innerText="Delete Team"
             pendingText="Deleting..."
-            variant="outline-danger"
-            size="sm"
+            variant="danger"
+            className="btn-sm"
         />
     </Form>
 );
