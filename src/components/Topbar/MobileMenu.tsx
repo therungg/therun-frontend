@@ -1,9 +1,9 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from '~src/components/link';
 import { BunnyIcon } from '~src/icons/bunny-icon';
 import { Can } from '~src/rbac/Can.component';
 import styles from './MobileMenu.module.scss';
