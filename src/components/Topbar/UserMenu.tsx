@@ -75,10 +75,10 @@ export function UserMenu({ username, picture, sessionError }: UserMenuProps) {
             ref={containerRef}
             onMouseLeave={() => setOpen(false)}
         >
-            <button
-                type="button"
+            <Link
+                href={`/${username}`}
                 className={styles.trigger}
-                onClick={() => setOpen((prev) => !prev)}
+                onMouseEnter={() => setOpen(true)}
                 aria-expanded={open}
                 aria-haspopup="true"
             >
@@ -100,7 +100,7 @@ export function UserMenu({ username, picture, sessionError }: UserMenuProps) {
                     </span>
                 )}
                 <NameAsPatreon name={username} />
-            </button>
+            </Link>
             <div
                 className={`${styles.dropdown} ${open ? styles.dropdownOpen : ''}`}
                 role="menu"
