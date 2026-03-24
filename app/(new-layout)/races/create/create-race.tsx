@@ -34,6 +34,7 @@ export default function CreateRace() {
 
     const [state, formAction] = useActionState(createRace, { message: '' });
     const [showStartDate, setShowStartDate] = useState(false);
+    const [isTeamRace, setIsTeamRace] = useState(false);
     const [startDateInput, setStartDateInput] = useState(
         getInitialStartDateInput(),
     );
@@ -221,6 +222,72 @@ export default function CreateRace() {
                                         </>
                                     )}
                                 </div>
+                                <div className="g-3 mb-3">
+                                    <Form.Group controlId="isTeamRace">
+                                        <Form.Check
+                                            name="isTeamRace"
+                                            type="checkbox"
+                                            label="Team Race"
+                                            checked={isTeamRace}
+                                            onChange={(e) => {
+                                                setIsTeamRace(e.target.checked);
+                                            }}
+                                        />
+                                    </Form.Group>
+                                </div>
+                                {isTeamRace && (
+                                    <Row className="g-3 mb-3">
+                                        <Col md={4}>
+                                            <Form.Group controlId="teamMinSize">
+                                                <Form.Label>
+                                                    Min Team Size
+                                                </Form.Label>
+                                                <Form.Control
+                                                    name="teamMinSize"
+                                                    type="number"
+                                                    min={2}
+                                                    max={100}
+                                                    defaultValue={2}
+                                                    required
+                                                />
+                                            </Form.Group>
+                                        </Col>
+                                        <Col md={4}>
+                                            <Form.Group controlId="teamMaxSize">
+                                                <Form.Label>
+                                                    Max Team Size
+                                                </Form.Label>
+                                                <Form.Control
+                                                    name="teamMaxSize"
+                                                    type="number"
+                                                    min={2}
+                                                    max={100}
+                                                    defaultValue={4}
+                                                    required
+                                                />
+                                            </Form.Group>
+                                        </Col>
+                                        <Col md={4}>
+                                            <Form.Group controlId="teamResultMethod">
+                                                <Form.Label>
+                                                    Result Method
+                                                </Form.Label>
+                                                <Form.Select
+                                                    name="teamResultMethod"
+                                                    defaultValue="average"
+                                                    required
+                                                >
+                                                    <option value="average">
+                                                        Average
+                                                    </option>
+                                                    <option value="sum">
+                                                        Sum
+                                                    </option>
+                                                </Form.Select>
+                                            </Form.Group>
+                                        </Col>
+                                    </Row>
+                                )}
                                 <div className="row g-3 mb-3">
                                     <Form.Group controlId="ranked">
                                         <Form.Check
@@ -230,14 +297,16 @@ export default function CreateRace() {
                                             label="Ranked"
                                         />
                                     </Form.Group>
-                                    <Form.Group controlId="selfJoin">
-                                        <Form.Check
-                                            name="selfJoin"
-                                            type="checkbox"
-                                            defaultChecked={true}
-                                            label="Self-join"
-                                        />
-                                    </Form.Group>
+                                    {!isTeamRace && (
+                                        <Form.Group controlId="selfJoin">
+                                            <Form.Check
+                                                name="selfJoin"
+                                                type="checkbox"
+                                                defaultChecked={true}
+                                                label="Self-join"
+                                            />
+                                        </Form.Group>
+                                    )}
                                 </div>
                             </Accordion.Body>
                         </Accordion.Item>

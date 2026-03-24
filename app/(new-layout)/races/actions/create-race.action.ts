@@ -28,6 +28,16 @@ export async function createRace(_prevState: unknown, raceInput: FormData) {
             | RaceStartMethodType
             | undefined,
         startTime: raceInput.get('startTime') as string | undefined,
+        ...(raceInput.get('isTeamRace')
+            ? {
+                  isTeamRace: true,
+                  teamMinSize: Number(raceInput.get('teamMinSize')),
+                  teamMaxSize: Number(raceInput.get('teamMaxSize')),
+                  teamResultMethod: raceInput.get('teamResultMethod') as
+                      | 'average'
+                      | 'sum',
+              }
+            : {}),
     };
 
     const { error } = await validateInput(input);
@@ -94,6 +104,27 @@ export const validateInput = async (
             )
             .optional(),
         startTime: Joi.optional(),
+        isTeamRace: Joi.boolean().optional(),
+        teamMinSize: Joi.number().min(2).max(100).when('isTeamRace', {
+            is: true,
+            then: Joi.required(),
+            otherwise: Joi.forbidden(),
+        }),
+        teamMaxSize: Joi.number()
+            .min(Joi.ref('teamMinSize'))
+            .max(100)
+            .when('isTeamRace', {
+                is: true,
+                then: Joi.required(),
+                otherwise: Joi.forbidden(),
+            }),
+        teamResultMethod: Joi.string()
+            .valid('average', 'sum')
+            .when('isTeamRace', {
+                is: true,
+                then: Joi.required(),
+                otherwise: Joi.forbidden(),
+            }),
     });
 
     return raceSchema.validate(input);
