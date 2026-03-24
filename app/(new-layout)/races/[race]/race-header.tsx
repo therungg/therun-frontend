@@ -56,6 +56,20 @@ export const RaceHeader = ({ race }: { race: Race }) => {
                         {race.status !== 'aborted' && !race.ranked && (
                             <div className={styles.unrankedBadge}>Unranked</div>
                         )}
+                        {race.isTeamRace && (
+                            <div
+                                style={{
+                                    fontSize: '0.875rem',
+                                    fontWeight: 600,
+                                    color: 'var(--bs-info)',
+                                    whiteSpace: 'nowrap',
+                                }}
+                            >
+                                Team Race
+                                {race.teamResultMethod &&
+                                    ` (${race.teamResultMethod})`}
+                            </div>
+                        )}
                     </div>
 
                     {race.customName && (

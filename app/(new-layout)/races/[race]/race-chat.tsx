@@ -9,6 +9,7 @@ import {
     RaceMessageParticipantCommentData,
     RaceMessageParticipantSplitData,
     RaceMessageParticipantTimeData,
+    RaceMessageTeamData,
     RaceMessageUserData,
 } from '~app/(new-layout)/races/races.types';
 import { UserLink } from '~src/components/links/links';
@@ -21,6 +22,7 @@ interface FilterOptions {
     race: boolean;
     participants: boolean;
     splits: boolean;
+    teams: boolean;
 }
 
 const ChatMessageTime = dynamic(
@@ -66,6 +68,7 @@ export const RaceChat = ({
         race: true,
         participants: true,
         splits: true,
+        teams: true,
     });
 
     const filteredMessages = stateMessages.filter((message) => {
@@ -82,10 +85,16 @@ export const RaceChat = ({
         ) {
             return false;
         }
-        return !(
+        if (
             !filterOptions.splits &&
             message.type === MESSAGE_TYPE.PARTICIPANT_SPLIT
-        );
+        ) {
+            return false;
+        }
+        if (!filterOptions.teams && message.type.startsWith('team-')) {
+            return false;
+        }
+        return true;
     });
 
     return (
@@ -118,6 +127,7 @@ const ChatFilterOptions = ({
         'race',
         'participants',
         'splits',
+        'teams',
     ];
     return (
         <div className="d-flex">
@@ -385,6 +395,73 @@ const getRaceMessage = (message: RaceMessage) => {
                 </>
             );
 
+        case 'team-created': {
+            const data = message.data as RaceMessageTeamData;
+            return (
+                <>
+                    <UserLink icon={false} username={data.user} /> created team
+                    &quot;{data.teamName}&quot;
+                </>
+            );
+        }
+        case 'team-join-request': {
+            const data = message.data as RaceMessageTeamData;
+            return (
+                <>
+                    <UserLink icon={false} username={data.user} /> requested to
+                    join &quot;{data.teamName}&quot;
+                </>
+            );
+        }
+        case 'team-member-approved': {
+            const data = message.data as RaceMessageTeamData;
+            return (
+                <>
+                    <UserLink icon={false} username={data.user} /> was approved
+                    to join &quot;{data.teamName}&quot;
+                </>
+            );
+        }
+        case 'team-member-denied': {
+            const data = message.data as RaceMessageTeamData;
+            return (
+                <>
+                    <UserLink icon={false} username={data.user} /> was denied
+                    from &quot;{data.teamName}&quot;
+                </>
+            );
+        }
+        case 'team-member-kicked': {
+            const data = message.data as RaceMessageTeamData;
+            return (
+                <>
+                    <UserLink icon={false} username={data.user} /> was kicked
+                    from &quot;{data.teamName}&quot;
+                </>
+            );
+        }
+        case 'team-member-left': {
+            const data = message.data as RaceMessageTeamData;
+            return (
+                <>
+                    <UserLink icon={false} username={data.user} /> left &quot;
+                    {data.teamName}&quot;
+                </>
+            );
+        }
+        case 'team-deleted': {
+            const data = message.data as RaceMessageTeamData;
+            return <>Team &quot;{data.teamName}&quot; was deleted</>;
+        }
+        case 'team-captain-changed': {
+            const data = message.data as RaceMessageTeamData;
+            return (
+                <>
+                    <UserLink icon={false} username={data.user} /> is now
+                    captain of &quot;{data.teamName}&quot;
+                </>
+            );
+        }
         default:
             return message.type;
     }
