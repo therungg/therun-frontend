@@ -14,6 +14,23 @@ export const RaceStartConditionInformation = ({ race }: { race: Race }) => {
         );
     }
 
+    if (race.isTeamRace && race.teams) {
+        const teamsNotMeetingMin = race.teams.filter(
+            (t) => t.members.length < (race.teamMinSize ?? 0),
+        );
+        if (race.teams.length === 0) {
+            return <span>Waiting for teams to be created...</span>;
+        }
+        if (teamsNotMeetingMin.length > 0) {
+            return (
+                <span>
+                    Waiting for all teams to have at least {race.teamMinSize}{' '}
+                    members...
+                </span>
+            );
+        }
+    }
+
     const startMethod = race.startMethod || 'everyone-ready';
 
     if (startMethod === 'everyone-ready') {

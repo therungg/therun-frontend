@@ -13,6 +13,7 @@ import { RaceStartConditionInformation } from '~app/(new-layout)/races/[race]/ra
 import { RaceStats } from '~app/(new-layout)/races/[race]/race-stats';
 import { RaceStream } from '~app/(new-layout)/races/[race]/race-stream';
 import { RaceTimer } from '~app/(new-layout)/races/[race]/race-timer';
+import { TeamLobby } from '~app/(new-layout)/races/[race]/teams/team-lobby';
 import { useRace } from '~app/(new-layout)/races/hooks/use-race';
 import {
     Race,
@@ -86,6 +87,10 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
                         )}
                     </Col>
                     <div className="d-lg-none">
+                        {raceState.isTeamRace &&
+                            raceState.status === 'pending' && (
+                                <TeamLobby race={raceState} user={user} />
+                            )}
                         <RaceParticipantOverview race={raceState} />
                         <RaceActions race={raceState} user={user} />
                         <RaceChat
@@ -95,6 +100,9 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
                         />
                         <RaceStats race={race} />
                     </div>
+                    {raceState.isTeamRace && raceState.status === 'pending' && (
+                        <TeamLobby race={raceState} user={user} />
+                    )}
                     <div className="pb-4">
                         <RaceParticipantDetail
                             race={raceState}

@@ -95,7 +95,7 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
                 !loggedinUserParticipation.comment && (
                     <CommentOnRaceForm raceId={race.raceId} />
                 )}
-            {raceIsPending && !userParticipates && (
+            {raceIsPending && !userParticipates && !race.isTeamRace && (
                 <div className="d-flex">
                     <JoinRaceForm race={race} />
                 </div>
@@ -109,11 +109,13 @@ export const RaceActions = ({ race, user }: { race: Race; user?: User }) => {
                                 raceId={race.raceId}
                             />
 
-                            <LeaveRaceButton
-                                className="w-100 fs-5 mt-2"
-                                raceId={race.raceId}
-                                variant="danger"
-                            />
+                            {!race.isTeamRace && (
+                                <LeaveRaceButton
+                                    className="w-100 fs-5 mt-2"
+                                    raceId={race.raceId}
+                                    variant="danger"
+                                />
+                            )}
                         </>
                     )}
                     {userIsReady && (
