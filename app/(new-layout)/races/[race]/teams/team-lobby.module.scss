@@ -1,0 +1,115 @@
+@use '../../../../styles/design-tokens' as *;
+
+.teamLobby {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    margin-bottom: $spacing-lg;
+}
+
+.teamCard {
+    border: 2px solid var(--team-color, rgba(var(--bs-primary-rgb), 0.15));
+    border-radius: $radius-lg;
+    padding: $spacing-md $spacing-lg;
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 92%, var(--team-color, var(--bs-primary)) 8%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 96%, var(--team-color, var(--bs-primary)) 4%) 100%
+    );
+}
+
+.teamHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-sm;
+}
+
+.teamName {
+    font-size: $font-size-md;
+    font-weight: $heading-font-weight;
+}
+
+.teamColorDot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: $spacing-sm;
+}
+
+.teamCapacity {
+    font-size: $font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.memberList {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 $spacing-sm;
+}
+
+.memberItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-xs 0;
+    font-size: $font-size-sm;
+}
+
+.captainBadge {
+    font-size: $font-size-xs;
+    color: $accent-amber;
+    margin-left: $spacing-xs;
+}
+
+.pendingSection {
+    border-top: 1px solid rgba(var(--bs-primary-rgb), 0.1);
+    padding-top: $spacing-sm;
+    margin-top: $spacing-xs;
+}
+
+.pendingLabel {
+    font-size: $font-size-xs;
+    color: var(--bs-secondary-color);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: $spacing-xs;
+}
+
+.pendingItem {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $spacing-xs 0;
+    font-size: $font-size-sm;
+}
+
+.pendingActions {
+    display: flex;
+    gap: $spacing-xs;
+}
+
+.teamActions {
+    display: flex;
+    gap: $spacing-sm;
+    margin-top: $spacing-sm;
+}
+
+.startGateWarning {
+    font-size: $font-size-sm;
+    color: $accent-amber;
+    padding: $spacing-sm $spacing-md;
+    border: 1px solid rgba($accent-amber, 0.3);
+    border-radius: $radius-md;
+    background: rgba($accent-amber, 0.05);
+}
+
+.createTeamSection {
+    border: 2px dashed rgba(var(--bs-primary-rgb), 0.2);
+    border-radius: $radius-lg;
+    padding: $spacing-md $spacing-lg;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-sm;
+}
