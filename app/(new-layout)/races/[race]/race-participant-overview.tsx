@@ -6,6 +6,7 @@ import { RaceParticipantRatingDisplay } from '~app/(new-layout)/races/components
 import {
     Race,
     RaceParticipantWithLiveData,
+    RaceTeam,
 } from '~app/(new-layout)/races/races.types';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
@@ -50,12 +51,18 @@ export const RaceParticipantOverview = ({
                             participant.status === 'abandoned'
                                 ? firstAbandonedPlacing + 1
                                 : i + 1;
+                        const team = race.isTeamRace
+                            ? race.teams?.find((t) =>
+                                  t.members.includes(participant.user),
+                              )
+                            : undefined;
                         return (
                             <RaceParticipantItem
                                 placing={placing}
                                 race={race}
                                 key={participant.user}
                                 participant={participant}
+                                team={team}
                             />
                         );
                     })}
@@ -69,10 +76,12 @@ export const RaceParticipantItem = ({
     participant,
     race,
     placing,
+    team,
 }: {
     participant: RaceParticipantWithLiveData;
     race: Race;
     placing: number;
+    team?: RaceTeam;
 }) => {
     const percentage = getPercentageDoneFromLiverun(participant);
     return (
@@ -83,6 +92,19 @@ export const RaceParticipantItem = ({
                     {participant.status == 'abandoned' && `-`}
                 </td>
                 <td className={styles.userCell}>
+                    {team && (
+                        <span
+                            style={{
+                                display: 'inline-block',
+                                width: 8,
+                                height: 8,
+                                borderRadius: '50%',
+                                backgroundColor: team.color,
+                                marginRight: '0.25rem',
+                                flexShrink: 0,
+                            }}
+                        />
+                    )}
                     <UserLink
                         username={participant.user}
                         url={`/${participant.user}/races`}

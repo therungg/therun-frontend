@@ -46,6 +46,11 @@ const RaceParticipantDetailPagination = ({
         <>
             <Row xs={1} sm={2} xxl={3} className="g-4" ref={parent}>
                 {participants.map((participant, i) => {
+                    const team = race.isTeamRace
+                        ? race.teams?.find((t) =>
+                              t.members.includes(participant.user),
+                          )
+                        : undefined;
                     return (
                         <Col
                             key={participant.user}
@@ -62,6 +67,7 @@ const RaceParticipantDetailPagination = ({
                                 placing={i + 1}
                                 participant={participant}
                                 race={race}
+                                teamColor={team?.color}
                             />
                         </Col>
                     );
@@ -76,11 +82,13 @@ export const RaceParticipantDetailView = ({
     placing,
     race,
     isHighlighted = false,
+    teamColor,
 }: {
     participant: RaceParticipantWithLiveData;
     placing: number;
     race: Race;
     isHighlighted?: boolean;
+    teamColor?: string;
 }) => {
     return (
         <div
@@ -91,6 +99,9 @@ export const RaceParticipantDetailView = ({
                     ? styles.participantCardStreaming
                     : ''
             }`}
+            style={
+                teamColor ? { borderLeft: `3px solid ${teamColor}` } : undefined
+            }
         >
             <div className={styles.participantHeader}>
                 <span className={styles.participantName}>
