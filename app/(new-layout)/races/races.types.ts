@@ -58,6 +58,12 @@ export interface Race {
     countdownSeconds: number;
     startMethod: RaceStartMethodType;
     willStartAt?: string | null;
+    isTeamRace?: boolean;
+    teamMinSize?: number;
+    teamMaxSize?: number;
+    teamResultMethod?: TeamResultMethod;
+    teams?: RaceTeam[];
+    teamResults?: TeamResult[];
     timeLeaderboards: RaceTimeStat[];
     mmrLeaderboards: RaceMmrStat[];
 }
@@ -68,6 +74,25 @@ export interface RaceResult {
     status: RaceParticipantStatus;
     finalTime: number | null;
 }
+
+export interface RaceTeam {
+    name: string;
+    color: string;
+    captain: string;
+    members: string[];
+    pendingRequests: string[];
+}
+
+export interface TeamResult {
+    name: string;
+    color: string;
+    position: number | null;
+    time: number | null;
+    disqualified: boolean;
+    members: Array<{ user: string; finalTime: number | null }>;
+}
+
+export type TeamResultMethod = 'average' | 'sum';
 
 export type RaceParticipant = {
     raceId: string;
@@ -144,6 +169,10 @@ export interface CreateRaceInput {
     countdown?: number;
     startMethod?: RaceStartMethodType;
     startTime?: string;
+    isTeamRace?: boolean;
+    teamMinSize?: number;
+    teamMaxSize?: number;
+    teamResultMethod?: TeamResultMethod;
 }
 
 export interface EditRaceInput {
@@ -252,6 +281,11 @@ export interface RaceMessageModeratorData extends RaceMessageData {
     moderator: string;
 }
 
+export interface RaceMessageTeamData extends RaceMessageData {
+    user: string;
+    teamName: string;
+}
+
 export type RaceMessageType =
     | 'race-created'
     | 'race-edited'
@@ -280,7 +314,15 @@ export type RaceMessageType =
     | 'participant-confirm'
     | 'participant-undo-confirm'
     | 'participant-comment'
-    | 'chat';
+    | 'chat'
+    | 'team-created'
+    | 'team-join-request'
+    | 'team-member-approved'
+    | 'team-member-denied'
+    | 'team-member-kicked'
+    | 'team-member-left'
+    | 'team-deleted'
+    | 'team-captain-changed';
 
 /**
  * -------------- RESPONSES ------------------
