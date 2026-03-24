@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from '~src/components/link';
 import styles from './NavGroup.module.scss';
 import type { NavItem } from './topbar-nav-items';
 

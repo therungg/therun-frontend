@@ -1,7 +1,6 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
     type SyntheticEvent,
@@ -12,6 +11,7 @@ import {
 } from 'react';
 import { resetSession } from '~src/actions/reset-session.action';
 import { Button } from '~src/components/Button/Button';
+import Link from '~src/components/link';
 import { NameAsPatreon } from '~src/components/patreon/patreon-name';
 import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
 import styles from './UserMenu.module.scss';

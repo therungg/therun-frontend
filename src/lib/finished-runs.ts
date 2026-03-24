@@ -4,6 +4,7 @@ import { apiFetch } from './api-client';
 import type { FinishedRunPB } from './highlights';
 
 export interface FinishedRunsSearchParams {
+    game?: string;
     gameId?: number;
     categoryId?: number;
     category?: string;
@@ -43,6 +44,7 @@ export async function searchFinishedRuns(
     const offset = (page - 1) * limit;
 
     const qs = new URLSearchParams();
+    if (params.game) qs.set('game', params.game);
     if (params.gameId != null) qs.set('game_id', String(params.gameId));
     if (params.categoryId != null)
         qs.set('category_id', String(params.categoryId));

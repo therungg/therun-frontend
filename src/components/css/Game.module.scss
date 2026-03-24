@@ -6,10 +6,11 @@
 }
 
 .navigation {
-    margin-bottom: $spacing-lg;
     position: absolute;
-    width: 101.6%;
-    padding-top: $spacing-lg;
+    top: 0;
+    right: 0;
+    z-index: 2;
+    pointer-events: none;
 }
 
 .tabsContainer {
@@ -23,11 +24,18 @@
 }
 
 .form {
+    pointer-events: auto;
+
     select {
         border-radius: $radius-md;
         border: $section-border;
         font-size: $font-size-base;
+        cursor: pointer;
         transition: border-color $transition-fast;
+
+        &:hover {
+            border-color: var(--bs-primary);
+        }
 
         &:focus {
             border-color: var(--bs-primary);

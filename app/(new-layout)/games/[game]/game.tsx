@@ -36,8 +36,8 @@ export const Game: React.FunctionComponent<GameProps> = ({ data }) => {
     const stats = (useGameTime && statsGameTime) || gameStats;
 
     const sortedCategories = React.useMemo(() => {
-        return [...stats.categoryLeaderboards].sort((a, b) =>
-            a.stats.totalRunTime < b.stats.totalRunTime ? 1 : -1,
+        return [...stats.categoryLeaderboards].sort(
+            (a, b) => b.pbLeaderboard.length - a.pbLeaderboard.length,
         );
     }, [stats]);
 
@@ -122,10 +122,9 @@ export const Game: React.FunctionComponent<GameProps> = ({ data }) => {
                                 <h2>Recent Finished Runs</h2>
                                 <RecentFinishedRuns
                                     game={data.data.game.display}
-                                    leaderboards={
-                                        currentCategory == '*'
-                                            ? stats.gameLeaderboard
-                                            : currentCategoryLeaderboard
+                                    category={currentCategory}
+                                    categoryDisplay={
+                                        currentCategoryLeaderboard?.categoryNameDisplay
                                     }
                                     showCategory={true}
                                 />

@@ -1,9 +1,9 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
+import Link from '~src/components/link';
 import styles from './TopbarLogo.module.scss';
 
 export function TopbarLogo() {
