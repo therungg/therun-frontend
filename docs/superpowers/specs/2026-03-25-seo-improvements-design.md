@@ -31,22 +31,39 @@ speedrunners across thousands of games.
 
 This should be an `<h1>` or prominent heading + paragraph, rendered server-side (no Suspense).
 
-#### 1b. Server-render key Suspense sections
+#### 1b. Server-render all sections except the hero
 
-Move the following sections from full Suspense to server-rendered with streaming:
+Production benchmarks show all frontpage API calls complete in under 400ms, with most under 200ms. The only slow call is the hero's `/live?limit=5` at ~700ms. Since all sections fetch in parallel, the total wall time without the hero is ~350ms (bottleneck: recent PBs) — acceptable for server rendering.
 
-- **Trending Games** — The game names, runner counts, and activity data should be in the initial HTML. The section can still stream, but the content must be in the server response (not client-fetched).
-- **Recent PBs** — Runner names, game names, times. High-value unique content that changes frequently.
+**Benchmark results (production, averaged over 2 runs):**
 
-Other sections (races, community pulse, your stats) can remain Suspense-only since they're less important for SEO.
+| Section | Endpoint | Avg |
+|---|---|---|
+| Hero: top 5 live runs | `/live?limit=5` | ~700ms |
+| Hero: live count | `/live/count` | ~165ms |
+| Trending: game activity | `/games/activity` | ~170ms |
+| Trending: category activity (per game) | `/games/activity` | ~175ms |
+| PB Feed: notable PBs | `/v1/finished-runs` | ~205ms |
+| PB Feed: recent PBs | `/v1/finished-runs` | ~350ms |
+| PB Feed: game image map | `/v1/runs/games` | ~180ms |
+| Races: active races | `/active` | ~325ms |
+| Races: finished races | `?page=1&pageSize=6` | ~190ms |
+| Community: global stats | `/global-stats` | ~175ms |
+| Community: global stats 24h | `/global-stats?offset=24h` | ~165ms |
+| Patreon: all patrons | lambda | ~260ms |
 
-**Implementation:** These sections already fetch data server-side via async components. The issue is that `<Suspense fallback={<Skeleton />}>` hides them from crawlers that don't wait for streaming. The fix is to either:
-- Remove Suspense wrappers from SEO-critical sections (accept the render delay), or
-- Keep Suspense but ensure the server completes these fetches before sending the response (using Next.js partial prerendering or similar)
+**Decision:** Remove Suspense from all sections *except* the hero. The hero is both the slowest call (~700ms) and the most ephemeral content (live data changes every second — zero SEO value). Keep the hero in Suspense with a skeleton fallback.
 
-Recommendation: Remove Suspense from Trending Games and Recent PBs sections. They're fast fetches and the slight delay is worth the SEO benefit.
+Sections to server-render (remove Suspense wrappers):
+- **Trending Games** — Game names, runner counts, activity data (~170ms)
+- **PB Feed** — Runner names, game names, PB times (~350ms, the bottleneck)
+- **Races** — Active and finished races (~325ms)
+- **Community Pulse** — Global stats, 24h stats (~175ms)
+- **Patreon** — Patron list (~260ms)
 
-**Architectural note:** The frontpage uses a configurable layout system — sections are passed as a `Record<SectionId, ReactNode>` to the client-side `FrontpageLayout` component. To avoid blocking the entire page on these fetches, the SEO-critical sections (trending, PB feed) should be extracted and rendered directly in `page.tsx` or `frontpage.tsx` *outside* the `FrontpageLayout` sections map. They can still appear visually in the same position via CSS, but must be in the server response independently of the layout component.
+**Your Stats** remains Suspense-wrapped because it's user-specific (requires auth, not crawlable).
+
+**Architectural note:** The frontpage uses a configurable layout system — sections are passed as a `Record<SectionId, ReactNode>` to the client-side `FrontpageLayout` component. To avoid blocking the entire page on these fetches, the server-rendered sections should be extracted and rendered directly in `page.tsx` or `frontpage.tsx` *outside* the `FrontpageLayout` sections map. They can still appear visually in the same position via CSS, but must be in the server response independently of the layout component. The hero and Your Stats sections remain in the sections map with Suspense.
 
 #### 1c. Structured data for home page
 
