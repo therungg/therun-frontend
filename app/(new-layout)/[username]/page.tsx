@@ -14,6 +14,7 @@ import { getLiveRunForUser } from '~src/lib/live-runs';
 import { getUserRaceStats } from '~src/lib/races';
 import {
     buildPersonJsonLd,
+    buildBreadcrumbJsonLd,
     formatMillis,
     formatPlaytime,
 } from '~src/utils/json-ld';
@@ -137,6 +138,12 @@ export default async function Page(props: PageProps) {
                     socials: userData.socials,
                     games,
                 })}
+            />
+            <JsonLd
+                data={buildBreadcrumbJsonLd([
+                    { name: 'Home', url: '/' },
+                    { name: userData.user },
+                ])}
             />
             <UserProfile
                 runs={runs}

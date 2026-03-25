@@ -238,10 +238,6 @@ export default function RunDetail({
                 </div>
             )}
 
-            <div className="visually-hidden" aria-hidden="true">
-                <Stats run={run} gameTime={useGameTime} />
-            </div>
-
             {runsData ? (
                 <Tabs
                     defaultActiveKey={tab}

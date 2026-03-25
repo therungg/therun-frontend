@@ -1,11 +1,17 @@
 import { Metadata } from 'next';
 import RunDetail from '~app/(new-layout)/[username]/[game]/[run]/run';
+import { RunStatsSummary } from '~app/(new-layout)/[username]/[game]/[run]/run-stats-summary';
 import { getGameGlobal } from '~src/components/game/get-game';
 import { JsonLd } from '~src/components/json-ld';
 import { getGlobalUser } from '~src/lib/get-global-user';
 import { getRun } from '~src/lib/get-run';
 import { getLiveRunForUser } from '~src/lib/live-runs';
-import { buildRunProfileJsonLd, formatMillis } from '~src/utils/json-ld';
+import {
+    buildBreadcrumbJsonLd,
+    buildRunProfileJsonLd,
+    buildVideoObjectJsonLd,
+    formatMillis,
+} from '~src/utils/json-ld';
 import buildMetadata, { getUserProfilePhoto } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 
@@ -44,6 +50,9 @@ export default async function RunPage(props: PageProps) {
         ? new Date(lastSession.endedAt).toISOString()
         : dateCreated;
 
+    const decodedGame = safeDecodeURI(game);
+    const decodedRun = safeDecodeURI(runName);
+
     return (
         <>
             <JsonLd
@@ -62,6 +71,26 @@ export default async function RunPage(props: PageProps) {
                     dateModified,
                 })}
             />
+            <JsonLd
+                data={buildBreadcrumbJsonLd([
+                    { name: 'Home', url: '/' },
+                    { name: username, url: `/${username}` },
+                    { name: decodedGame, url: `/${username}/${game}` },
+                    { name: decodedRun },
+                ])}
+            />
+            {run.vod && userData?.picture && (
+                <JsonLd
+                    data={buildVideoObjectJsonLd({
+                        name: `${decodedGame} - ${decodedRun} speedrun by ${username}`,
+                        description: `${username}'s ${decodedGame} - ${decodedRun} speedrun`,
+                        contentUrl: run.vod,
+                        thumbnailUrl: userData.picture,
+                        uploadDate: dateCreated,
+                    })}
+                />
+            )}
+            <RunStatsSummary run={run} username={username} />
             <RunDetail
                 run={run}
                 username={username}
