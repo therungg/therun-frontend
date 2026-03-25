@@ -11,12 +11,10 @@ export function RunStatsSummary({ run, username }: RunStatsSummaryProps) {
     const sob = formatMillis(run.sumOfBests);
     const tts = formatMillis(run.timeToSave);
     const playtime = formatPlaytime(run.totalRunTime);
+    const finished = parseInt(run.finishedAttemptCount) || 0;
     const completionPct =
         run.attemptCount > 0
-            ? (
-                  (parseInt(run.finishedAttemptCount) / run.attemptCount) *
-                  100
-              ).toFixed(1)
+            ? ((finished / run.attemptCount) * 100).toFixed(1)
             : '0';
 
     return (
@@ -39,10 +37,10 @@ export function RunStatsSummary({ run, username }: RunStatsSummaryProps) {
                         .
                     </>
                 )}{' '}
-                {run.finishedAttemptCount && (
+                {finished > 0 && (
                     <>
-                        {run.finishedAttemptCount} of those attempts were
-                        finished ({completionPct}% completion rate).
+                        {finished} of those attempts were finished (
+                        {completionPct}% completion rate).
                     </>
                 )}{' '}
                 {playtime && <>Total time spent: {playtime}.</>}
