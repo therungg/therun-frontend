@@ -98,7 +98,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     if (sob) descParts.push(`Sum of best: ${sob}`);
 
     const metadata = buildMetadata({
-        title: `${username}: ${gameAndCategory}`,
+        title: `${username}'s ${gameAndCategory} Speedrun Stats${pb ? ` | PB: ${pb}` : ''}`,
         description: descParts.join(' | '),
         images,
     });

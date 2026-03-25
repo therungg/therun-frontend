@@ -4,7 +4,7 @@ import buildMetadata from '~src/utils/metadata';
 import FrontPage from './frontpage/frontpage';
 
 export const metadata = buildMetadata({
-    title: 'Speedrun Statistics, Live Runs & Leaderboards',
+    title: 'Free Speedrun Statistics & Live Run Tracker',
     description:
         'Free speedrun statistics for every runner. Track live runs, view leaderboards, analyze personal bests, and race other speedrunners — all on therun.gg.',
     keywords: [
