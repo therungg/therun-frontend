@@ -126,10 +126,13 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
     const sob = formatMillis(run?.sumOfBests);
     if (sob) descParts.push(`Sum of best: ${sob}`);
 
+    const shouldIndex = (run?.attemptCount ?? 0) >= 5;
+
     const metadata = buildMetadata({
         title: `${username}'s ${gameAndCategory} Speedrun Stats${pb ? ` | PB: ${pb}` : ''}`,
         description: descParts.join(' | '),
         images,
+        index: shouldIndex,
     });
 
     if (run?.customUrl) {
