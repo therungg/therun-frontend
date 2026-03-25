@@ -242,9 +242,7 @@ export function buildRunProfileJsonLd({
     };
 }
 
-export function buildBreadcrumbJsonLd(
-    items: { name: string; url?: string }[],
-) {
+export function buildBreadcrumbJsonLd(items: { name: string; url?: string }[]) {
     return {
         '@context': 'https://schema.org',
         '@type': 'BreadcrumbList',
@@ -283,9 +281,7 @@ export function buildVideoObjectJsonLd({
     };
 }
 
-export function buildItemListJsonLd(
-    items: { name: string; url: string }[],
-) {
+export function buildItemListJsonLd(items: { name: string; url: string }[]) {
     return {
         '@context': 'https://schema.org',
         '@type': 'ItemList',

@@ -13,8 +13,8 @@ import { getUserRuns } from '~src/lib/get-user-runs';
 import { getLiveRunForUser } from '~src/lib/live-runs';
 import { getUserRaceStats } from '~src/lib/races';
 import {
-    buildPersonJsonLd,
     buildBreadcrumbJsonLd,
+    buildPersonJsonLd,
     formatMillis,
     formatPlaytime,
 } from '~src/utils/json-ld';
