@@ -2,11 +2,12 @@
 
 import { usePathname } from 'next/navigation';
 import Link from '~src/components/link';
-import { BunnyIcon } from '~src/icons/bunny-icon';
 import { Can } from '~src/rbac/Can.component';
+import type { FeaturedPatronsResponse } from '../../../types/patreon.types';
 import { MobileMenu } from './MobileMenu';
 import { NavGroup } from './NavGroup';
 import navGroupStyles from './NavGroup.module.scss';
+import { PatronCta } from './PatronCta';
 import topbarStyles from './Topbar.module.scss';
 import { TopbarLogo } from './TopbarLogo';
 import { TopbarUtilities } from './TopbarUtilities';
@@ -21,12 +22,14 @@ interface TopbarProps {
     username: string;
     picture: string;
     sessionError: string | null;
+    featuredPatrons: FeaturedPatronsResponse;
 }
 
 export const Topbar = ({
     username,
     picture,
     sessionError,
+    featuredPatrons,
 }: Partial<TopbarProps>) => {
     const pathname = usePathname();
 
@@ -55,9 +58,14 @@ export const Topbar = ({
             </div>
 
             <div className={topbarStyles.utilities}>
-                <Link href="/patron" className={topbarStyles.supportLink}>
-                    Support us <BunnyIcon />
-                </Link>
+                <PatronCta
+                    featuredPatrons={
+                        featuredPatrons ?? {
+                            supporterOfTheDay: null,
+                            latestPatron: null,
+                        }
+                    }
+                />
                 <TopbarUtilities
                     username={username}
                     picture={picture}
