@@ -30,15 +30,21 @@ Slides rotate on a ~5-second interval with a crossfade transition. Animation pau
 
 ### Patron Name Display
 
-- If the patron has `preferences`, render using `PatreonName` component with their `colorPreference` and `showIcon` setting
+- If the patron has `preferences`, render `PatreonName` with `color={preferences.colorPreference}` and `icon={preferences.showIcon}`. Do not use the `OverlayTrigger` tooltip variant — use `icon={false}` and render a standalone `BunnyIcon` without tooltip to avoid clipping issues inside the constrained pill container.
 - If `preferences` is `null`, render `patreonName` as plain text
 - Display `username` if available, fall back to `patreonName`
 
 ### Layout
 
-- Same footprint as the existing `.supportLink` pill — fixed width container to prevent layout shift during rotation
+- Same footprint as the existing `.supportLink` pill — `max-width: 260px` to cap the container size, with `text-overflow: ellipsis` for long names
 - `overflow: hidden` on the container, slides transition vertically or via opacity
 - Height matches the current link height
+- Hidden on mobile (`< 992px`) — same as current `.supportLink`
+
+### Accessibility
+
+- Use `aria-live="polite"` on the rotating container so screen readers announce slide changes
+- Respect `prefers-reduced-motion`: disable crossfade animation and show only the CTA slide (static fallback)
 
 ## Data
 
@@ -82,7 +88,7 @@ export async function getFeaturedPatrons(): Promise<FeaturedPatronsResponse> {
 }
 ```
 
-Called from the server layout that renders the topbar, with the result passed as props to the client-side rotation widget.
+Called from `app/(new-layout)/header.tsx` (a server component), with the result passed as props through `Header` → `Topbar` → `PatronCta`. Both `HeaderProps` and `TopbarProps` interfaces need a new `featuredPatrons` prop. If the fetch throws, catch the error and fall back to `{ supporterOfTheDay: null, latestPatron: null }` so the topbar renders the static CTA.
 
 ## Component Structure
 
@@ -115,20 +121,23 @@ Export `PatronPreferences` (currently not exported).
 
 ### Modified Files
 
-- `Topbar.tsx` — replace the static `<Link>` with `<PatronCta>`, pass featured patron data as props
-- `Topbar.module.scss` — may remove `.supportLink` or repurpose for the new widget
-- The server component that renders `<Topbar>` (layout file) — call `getFeaturedPatrons()` and pass result down
+- `types/patreon.types.ts` — export `PatronPreferences`, add `FeaturedPatron` and `FeaturedPatronsResponse`
+- `app/(new-layout)/header.tsx` — call `getFeaturedPatrons()`, add `featuredPatrons` to `HeaderProps`, pass to `Topbar`
+- `Topbar.tsx` — add `featuredPatrons` to `TopbarProps`, replace the static `<Link>` with `<PatronCta>`
+- `Topbar.module.scss` — repurpose `.supportLink` for the new widget container
 
 ## Styling
 
 - Reuse the existing `.supportLink` pill styling (border, border-radius, padding, colors, dark mode)
-- Fixed width to prevent layout shift — set to accommodate the longest expected slide text
+- Container: `max-width: 260px`, `position: relative`, `overflow: hidden`
 - Crossfade: slides use `opacity` and `position: absolute` within the container, transitioning over ~300ms
 - `white-space: nowrap; overflow: hidden; text-overflow: ellipsis` as safety for long names
+- `@media (prefers-reduced-motion: reduce)` — disable transitions, show only static CTA
 
 ## Edge Cases
 
 - Both fields null → static "Support us" link, no rotation
 - Only one field present → alternate between that patron and the CTA (2 slides)
 - Very long patron names → truncated with ellipsis within fixed container width
-- Patron with `preferences.hide = true` → should not be returned by the API, but if received, skip
+- Patron with `preferences.hide = true` → should not be returned by the API, but if received, filter out in `getFeaturedPatrons()` server-side
+- API fetch failure → catch in `header.tsx`, fall back to `{ supporterOfTheDay: null, latestPatron: null }` (renders static CTA)
