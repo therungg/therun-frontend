@@ -1,0 +1,78 @@
+.container {
+    display: none;
+
+    @media (min-width: 992px) {
+        display: flex;
+    }
+
+    position: relative;
+    align-items: center;
+    justify-content: center;
+    max-width: 260px;
+    height: 32px;
+    padding: 5px 14px;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    white-space: nowrap;
+    border: 1px solid rgba(96, 140, 89, 0.25);
+    border-radius: 20px;
+    background: rgba(96, 140, 89, 0.04);
+    overflow: hidden;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    color: var(--bs-primary);
+    cursor: pointer;
+
+    &:hover {
+        background: rgba(96, 140, 89, 0.1);
+        border-color: rgba(96, 140, 89, 0.4);
+        color: var(--bs-primary);
+    }
+
+    :global([data-bs-theme='dark']) & {
+        color: #7DA876;
+        border-color: rgba(96, 140, 89, 0.2);
+        background: rgba(96, 140, 89, 0.06);
+
+        &:hover {
+            background: rgba(96, 140, 89, 0.12);
+            border-color: rgba(96, 140, 89, 0.35);
+        }
+    }
+}
+
+.slide {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    position: absolute;
+    inset: 0;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--bs-primary);
+
+    :global([data-bs-theme='dark']) & {
+        color: #7DA876;
+    }
+}
+
+.slideActive {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .slide {
+        transition: none;
+    }
+}
+
+.label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
