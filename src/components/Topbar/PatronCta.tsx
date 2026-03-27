@@ -13,39 +13,37 @@ interface PatronCtaProps {
 
 interface Slide {
     key: string;
-    content: React.ReactNode;
-}
-
-function PatronDisplayName({
-    patron,
-}: {
+    label: string;
     patron: {
         patreonName: string;
         username: string | null;
         preferences: { colorPreference: number; showIcon: boolean } | null;
     };
-}) {
+}
+
+function PatronDisplayName({ patron }: { patron: Slide['patron'] }) {
     const displayName = patron.username ?? patron.patreonName;
 
     if (patron.preferences) {
         return (
-            <>
+            <span className={styles.name}>
                 <PatreonName
                     name={displayName}
                     color={patron.preferences.colorPreference}
                     icon={false}
                 />
-                {patron.preferences.showIcon && <BunnyIcon size={20} />}
-            </>
+                {patron.preferences.showIcon && <BunnyIcon size={16} />}
+            </span>
         );
     }
 
-    return <span>{displayName}</span>;
+    return <span className={styles.name}>{displayName}</span>;
 }
 
 export function PatronCta({ featuredPatrons }: PatronCtaProps) {
     const { supporterOfTheDay, latestPatron } = featuredPatrons;
     const [activeIndex, setActiveIndex] = useState(0);
+    const [exitingIndex, setExitingIndex] = useState<number | null>(null);
     const [reducedMotion, setReducedMotion] = useState(false);
     const isPaused = useRef(false);
 
@@ -60,49 +58,48 @@ export function PatronCta({ featuredPatrons }: PatronCtaProps) {
     if (supporterOfTheDay) {
         slides.push({
             key: 'sotd',
-            content: (
-                <span className={styles.label}>
-                    Supporter of the Day:{' '}
-                    <PatronDisplayName patron={supporterOfTheDay} />
-                </span>
-            ),
+            label: 'Patron of the day',
+            patron: supporterOfTheDay,
         });
     }
 
     if (latestPatron) {
         slides.push({
             key: 'latest',
-            content: (
-                <span className={styles.label}>
-                    Welcome <PatronDisplayName patron={latestPatron} />!
-                </span>
-            ),
+            label: 'Latest patron',
+            patron: latestPatron,
         });
     }
-
-    slides.push({
-        key: 'cta',
-        content: (
-            <>
-                Support us <BunnyIcon size={20} />
-            </>
-        ),
-    });
 
     useEffect(() => {
         if (slides.length <= 1 || reducedMotion) return;
 
         const interval = setInterval(() => {
             if (!isPaused.current) {
-                setActiveIndex((prev) => (prev + 1) % slides.length);
+                setActiveIndex((prev) => {
+                    const next = (prev + 1) % slides.length;
+                    setExitingIndex(prev);
+                    setTimeout(() => setExitingIndex(null), 400);
+                    return next;
+                });
             }
         }, 5000);
 
         return () => clearInterval(interval);
     }, [slides.length, reducedMotion]);
 
-    const visibleSlides = reducedMotion ? [slides[slides.length - 1]] : slides;
-    const visibleIndex = reducedMotion ? 0 : activeIndex;
+    // Fallback: no featured patrons at all
+    if (slides.length === 0) {
+        return (
+            <Link href="/patron" className={styles.container}>
+                <span className={styles.icon}>
+                    <BunnyIcon size={22} />
+                </span>
+                <span className={styles.fallbackText}>Support therun.gg</span>
+                <span className={styles.ctaButton}>Become a Patron</span>
+            </Link>
+        );
+    }
 
     return (
         <Link
@@ -114,16 +111,24 @@ export function PatronCta({ featuredPatrons }: PatronCtaProps) {
             onMouseLeave={() => {
                 isPaused.current = false;
             }}
-            aria-live="polite"
         >
-            {visibleSlides.map((slide, i) => (
-                <span
-                    key={slide.key}
-                    className={`${styles.slide} ${i === visibleIndex ? styles.slideActive : ''}`}
-                >
-                    {slide.content}
-                </span>
-            ))}
+            <span className={styles.icon}>
+                <BunnyIcon size={22} />
+            </span>
+
+            <div className={styles.textArea} aria-live="polite">
+                {slides.map((slide, i) => (
+                    <div
+                        key={slide.key}
+                        className={`${styles.slide} ${i === activeIndex ? styles.slideActive : ''} ${i === exitingIndex ? styles.slideExiting : ''}`}
+                    >
+                        <span className={styles.label}>{slide.label}</span>
+                        <PatronDisplayName patron={slide.patron} />
+                    </div>
+                ))}
+            </div>
+
+            <span className={styles.ctaButton}>Become a Patron</span>
         </Link>
     );
 }
