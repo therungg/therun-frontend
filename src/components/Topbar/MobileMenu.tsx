@@ -4,9 +4,12 @@ import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from '~src/components/link';
+import PatreonName from '~src/components/patreon/patreon-name';
 import { BunnyIcon } from '~src/icons/bunny-icon';
 import { Can } from '~src/rbac/Can.component';
+import type { FeaturedPatronsResponse } from '../../../types/patreon.types';
 import styles from './MobileMenu.module.scss';
+import patronCtaStyles from './PatronCta.module.scss';
 import type { NavItem } from './topbar-nav-items';
 import {
     aboutItems,
@@ -27,11 +30,39 @@ const DarkModeSlider = dynamic(() => import('../dark-mode-slider'), {
     ssr: false,
 });
 
-interface MobileMenuProps {
-    username?: string;
+function MobilePatronName({
+    patron,
+}: {
+    patron: {
+        patreonName: string;
+        username: string | null;
+        preferences: { colorPreference: number; showIcon: boolean } | null;
+    };
+}) {
+    const displayName = patron.username ?? patron.patreonName;
+
+    if (patron.preferences) {
+        return (
+            <span className={patronCtaStyles.mobileName}>
+                <PatreonName
+                    name={displayName}
+                    color={patron.preferences.colorPreference}
+                    icon={false}
+                />
+                {patron.preferences.showIcon && <BunnyIcon size={16} />}
+            </span>
+        );
+    }
+
+    return <span className={patronCtaStyles.mobileName}>{displayName}</span>;
 }
 
-export function MobileMenu({ username }: MobileMenuProps) {
+interface MobileMenuProps {
+    username?: string;
+    featuredPatrons?: FeaturedPatronsResponse;
+}
+
+export function MobileMenu({ username, featuredPatrons }: MobileMenuProps) {
     const [open, setOpen] = useState(false);
     const overlayRef = useRef<HTMLDivElement>(null);
     const pathname = usePathname();
@@ -192,6 +223,36 @@ export function MobileMenu({ username }: MobileMenuProps) {
                     <GlobalSearch />
                 </div>
 
+                {featuredPatrons &&
+                    (featuredPatrons.supporterOfTheDay ||
+                        featuredPatrons.latestPatron) && (
+                        <Link
+                            href="/patron"
+                            className={patronCtaStyles.mobileCard}
+                            onClick={close}
+                        >
+                            <span className={patronCtaStyles.icon}>
+                                <BunnyIcon size={22} />
+                            </span>
+                            <div className={patronCtaStyles.mobileTextArea}>
+                                <span className={patronCtaStyles.label}>
+                                    {featuredPatrons.supporterOfTheDay
+                                        ? 'Patron of the day'
+                                        : 'Latest patron'}
+                                </span>
+                                <MobilePatronName
+                                    patron={
+                                        (featuredPatrons.supporterOfTheDay ??
+                                            featuredPatrons.latestPatron)!
+                                    }
+                                />
+                            </div>
+                            <span className={patronCtaStyles.mobileCtaButton}>
+                                Join
+                            </span>
+                        </Link>
+                    )}
+
                 <div className={styles.sections}>
                     {renderSection('Explore', exploreItems)}
                     {renderSection('Compete', competeItems)}
@@ -202,15 +263,7 @@ export function MobileMenu({ username }: MobileMenuProps) {
                     {renderSection('About', aboutItems)}
                 </div>
 
-                {/* Footer area with support + dark mode */}
                 <div className={styles.footer}>
-                    <Link
-                        href="/patron"
-                        className={styles.supportButton}
-                        onClick={close}
-                    >
-                        <BunnyIcon /> Support us
-                    </Link>
                     <div className={styles.footerToggle}>
                         <DarkModeSlider />
                     </div>

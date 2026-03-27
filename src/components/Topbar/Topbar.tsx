@@ -73,7 +73,7 @@ export const Topbar = ({
                 />
             </div>
 
-            <MobileMenu username={username} />
+            <MobileMenu username={username} featuredPatrons={featuredPatrons} />
         </nav>
     );
 };
