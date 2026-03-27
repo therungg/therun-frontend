@@ -250,7 +250,7 @@
 .footer {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    justify-content: center;
     padding: 1rem 1.25rem;
     border-top: 1px solid rgba(0, 0, 0, 0.06);
     flex-shrink: 0;
@@ -260,37 +260,6 @@
     }
 }
 
-.supportButton {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex: 1;
-    justify-content: center;
-    padding: 0.625rem 1rem;
-    color: var(--bs-primary);
-    text-decoration: none;
-    font-size: 0.9375rem;
-    font-weight: 500;
-    border: 1px solid rgba(96, 140, 89, 0.25);
-    border-radius: 10px;
-    background: rgba(96, 140, 89, 0.04);
-    transition: background 0.15s ease, border-color 0.15s ease;
-
-    &:hover {
-        background: rgba(96, 140, 89, 0.1);
-        border-color: rgba(96, 140, 89, 0.4);
-    }
-
-    &:active {
-        background: rgba(96, 140, 89, 0.14);
-    }
-
-    :global([data-bs-theme='dark']) & {
-        color: #7DA876;
-        border-color: rgba(96, 140, 89, 0.2);
-        background: rgba(96, 140, 89, 0.06);
-    }
-}
 
 .footerToggle {
     flex-shrink: 0;
@@ -301,8 +270,7 @@
     .scrim,
     .bar,
     .link,
-    .closeButton,
-    .supportButton {
+    .closeButton {
         transition: none;
     }
 
