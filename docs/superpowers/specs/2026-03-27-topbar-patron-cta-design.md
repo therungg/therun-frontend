@@ -1,143 +1,96 @@
-# Topbar Patron CTA — Design Spec
+# Topbar Patron CTA Redesign — Design Spec
 
 ## Goal
 
-Replace the static "Support us" link in the topbar with a rotating widget that cycles through featured patron names and a CTA. Primary purpose: **conversion** — use social proof to encourage new patrons.
+Replace the current rotating pill widget with a prominent Spotlight Strip that takes up meaningful topbar real estate. Make it eye-catching, readable, and emotionally compelling — hitting social proof, aspiration (colored names, bunny icon), gratitude, and community belonging.
 
 ## Current State
 
-- The topbar utilities section contains a `Link` to `/patron` styled as a pill button: `"Support us" + BunnyIcon`
-- Hidden on mobile (`< 992px`), visible on desktop
-- Styled in `Topbar.module.scss` via `.supportLink`
+- `PatronCta` is a small rotating pill that cycles through "Supporter of the Day: {name}", "Welcome {name}!", and "Support us"
+- Hidden on mobile, easy to miss on desktop, feels bolted on
+- All slides link to `/patron`
 
 ## Design
 
-### Rotating Widget
+### Desktop (>= 992px): Spotlight Strip
 
-Replace the static link with a client component that cycles through up to three slides, all linking to `/patron`:
+A contained card positioned between the nav links and utility icons (search, theme toggle, user menu). Takes up a significant portion of the topbar's horizontal space.
 
-1. **Supporter of the Day** — `"Supporter of the Day: {name}"` with patron color styling and optional bunny icon
-2. **Latest Patron** — `"Welcome {name}!"` with patron color styling and optional bunny icon
-3. **CTA** — `"Support us"` with bunny icon (the current static content)
+**Layout (left to right):**
 
-Slides rotate on a ~5-second interval with a crossfade transition. Animation pauses on hover so users can read and click.
+1. **Bunny icon** (~22px) — anchors the left side, provides visual identity
+2. **Two-line text area:**
+   - Top: small uppercase label — "Patron of the day" or "Latest patron"
+   - Bottom: patron's display name rendered with their tier color/gradient, bold
+3. **"Become a Patron" button** — solid green (#608C59), white text, always visible
+
+**Styling:**
+- Background: subtle green gradient (`rgba(96,140,89,0.14)` to `rgba(96,140,89,0.03)`)
+- Border: `1px solid rgba(96,140,89,0.25)`, `border-radius: 10px`
+- Generous padding for breathing room — the previous version was cramped
+- Dark mode: slightly adjusted opacity values, same color family
+- `max-width: ~460px`, flex: 1 to fill available space
+
+The entire strip is a link to `/patron`, not just the button.
+
+### Mobile (< 992px): Inside Hamburger Menu
+
+Not shown in the topbar. Instead, rendered as a prominent card at the top of the mobile navigation menu. Same content — bunny icon, label, patron name, CTA button — laid out to fit the menu width.
+
+### Rotation
+
+Two slides only (no "Support us" slide — the button handles that):
+
+1. **Supporter of the Day** — label: "Patron of the day", name with tier styling
+2. **Latest Patron** — label: "Latest patron", name with tier styling
+
+Cycles every 5 seconds. **Slide-up transition** — new content slides up from below, old content slides out the top. Only the two-line text area animates; the bunny icon and CTA button remain static.
+
+Pauses on hover and focus.
 
 ### Null Handling
 
-- If `supporterOfTheDay` is `null`, skip that slide
-- If `latestPatron` is `null`, skip that slide
-- If both are `null`, render the static "Support us" link (no rotation)
+- Both fields present → rotate between them (2 slides)
+- Only one field present → show it statically (no rotation)
+- Both null → show bunny icon + "Support therun.gg" as the label, "Become a Patron" button remains
 
 ### Patron Name Display
 
-- If the patron has `preferences`, render `PatreonName` with `color={preferences.colorPreference}` and `icon={preferences.showIcon}`. Do not use the `OverlayTrigger` tooltip variant — use `icon={false}` and render a standalone `BunnyIcon` without tooltip to avoid clipping issues inside the constrained pill container.
-- If `preferences` is `null`, render `patreonName` as plain text
 - Display `username` if available, fall back to `patreonName`
-
-### Layout
-
-- Same footprint as the existing `.supportLink` pill — `max-width: 260px` to cap the container size, with `text-overflow: ellipsis` for long names
-- `overflow: hidden` on the container, slides transition vertically or via opacity
-- Height matches the current link height
-- Hidden on mobile (`< 992px`) — same as current `.supportLink`
-
-### Accessibility
-
-- Use `aria-live="polite"` on the rotating container so screen readers announce slide changes
-- Respect `prefers-reduced-motion`: disable crossfade animation and show only the CTA slide (static fallback)
+- If patron has `preferences`: render with `PatreonName` component using `colorPreference`, use `icon={false}` and render standalone `BunnyIcon` if `showIcon` is true (avoid tooltip clipping)
+- If `preferences` is null: render name as plain text
 
 ## Data
 
-### API Endpoint
-
-```
-GET {NEXT_PUBLIC_PATREON_API_URL}/featured
-```
-
-No authentication required. Returns:
+No API changes. Uses existing `FeaturedPatronsResponse` from `GET {NEXT_PUBLIC_PATREON_API_URL}/featured`.
 
 ```typescript
-interface FeaturedPatron {
-    patronId: number;
-    patreonName: string;
-    tier: number;
-    username: string | null;
-    preferences: PatronPreferences | null;
-}
-
 interface FeaturedPatronsResponse {
     supporterOfTheDay: FeaturedPatron | null;
     latestPatron: FeaturedPatron | null;
 }
 ```
 
-`PatronPreferences` reuses the existing type from `types/patreon.types.ts` (needs to be exported).
+Fetched server-side in `header.tsx` via `getFeaturedPatrons()` (cached for hours), passed as props through `Topbar` → `PatronCta`.
 
-### Data Fetching
+## Files to Modify
 
-Server-side cached function:
+- `src/components/Topbar/PatronCta.tsx` — rewrite component with new layout, slide-up animation, two-line card design
+- `src/components/Topbar/PatronCta.module.scss` — rewrite styles for spotlight strip, slide-up transition, mobile menu placement
+- `src/components/Topbar/Topbar.tsx` — adjust PatronCta positioning, add mobile menu integration
 
-```typescript
-export async function getFeaturedPatrons(): Promise<FeaturedPatronsResponse> {
-    'use cache';
-    cacheLife('hours');
-    cacheTag('featured-patrons');
+No new files. No type changes. No API changes.
 
-    const url = `${process.env.NEXT_PUBLIC_PATREON_API_URL}/featured`;
-    return fetcher(url);
-}
-```
+## Accessibility
 
-Called from `app/(new-layout)/header.tsx` (a server component), with the result passed as props through `Header` → `Topbar` → `PatronCta`. Both `HeaderProps` and `TopbarProps` interfaces need a new `featuredPatrons` prop. If the fetch throws, catch the error and fall back to `{ supporterOfTheDay: null, latestPatron: null }` so the topbar renders the static CTA.
-
-## Component Structure
-
-### New Files
-
-- `src/components/Topbar/PatronCta.tsx` — client component, receives `FeaturedPatronsResponse` as props, handles rotation logic and rendering
-- `src/components/Topbar/PatronCta.module.scss` — animation styles (crossfade, fixed container)
-- `src/lib/featured-patrons.ts` — server-side `getFeaturedPatrons()` function
-
-### New Types
-
-Add to `types/patreon.types.ts`:
-
-```typescript
-export interface FeaturedPatron {
-    patronId: number;
-    patreonName: string;
-    tier: number;
-    username: string | null;
-    preferences: PatronPreferences | null;
-}
-
-export interface FeaturedPatronsResponse {
-    supporterOfTheDay: FeaturedPatron | null;
-    latestPatron: FeaturedPatron | null;
-}
-```
-
-Export `PatronPreferences` (currently not exported).
-
-### Modified Files
-
-- `types/patreon.types.ts` — export `PatronPreferences`, add `FeaturedPatron` and `FeaturedPatronsResponse`
-- `app/(new-layout)/header.tsx` — call `getFeaturedPatrons()`, add `featuredPatrons` to `HeaderProps`, pass to `Topbar`
-- `Topbar.tsx` — add `featuredPatrons` to `TopbarProps`, replace the static `<Link>` with `<PatronCta>`
-- `Topbar.module.scss` — repurpose `.supportLink` for the new widget container
-
-## Styling
-
-- Reuse the existing `.supportLink` pill styling (border, border-radius, padding, colors, dark mode)
-- Container: `max-width: 260px`, `position: relative`, `overflow: hidden`
-- Crossfade: slides use `opacity` and `position: absolute` within the container, transitioning over ~300ms
-- `white-space: nowrap; overflow: hidden; text-overflow: ellipsis` as safety for long names
-- `@media (prefers-reduced-motion: reduce)` — disable transitions, show only static CTA
+- `aria-live="polite"` on the rotating text area
+- `prefers-reduced-motion`: disable slide animation, show first available slide statically
+- Pause rotation on hover and focus
+- Keyboard-accessible: entire strip is a link, button is focusable
+- Sufficient color contrast in both light and dark modes
 
 ## Edge Cases
 
-- Both fields null → static "Support us" link, no rotation
-- Only one field present → alternate between that patron and the CTA (2 slides)
-- Very long patron names → truncated with ellipsis within fixed container width
-- Patron with `preferences.hide = true` → should not be returned by the API, but if received, filter out in `getFeaturedPatrons()` server-side
-- API fetch failure → catch in `header.tsx`, fall back to `{ supporterOfTheDay: null, latestPatron: null }` (renders static CTA)
+- Very long patron names → `text-overflow: ellipsis` within the text area
+- Patron with `preferences.hide = true` → filtered server-side in `getFeaturedPatrons()`
+- API fetch failure → caught in `header.tsx`, falls back to `{ supporterOfTheDay: null, latestPatron: null }` (shows generic CTA)
