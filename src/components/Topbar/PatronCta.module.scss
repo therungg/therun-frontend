@@ -1,3 +1,4 @@
+// Spotlight strip container — sits between nav and utilities
 .container {
     display: none;
 
@@ -5,74 +6,237 @@
         display: flex;
     }
 
-    position: relative;
     align-items: center;
-    justify-content: center;
-    max-width: 260px;
-    height: 32px;
-    padding: 5px 14px;
-    text-decoration: none;
-    font-size: 0.875rem;
-    font-weight: 500;
-    white-space: nowrap;
+    gap: 14px;
+    background: linear-gradient(
+        135deg,
+        rgba(96, 140, 89, 0.14) 0%,
+        rgba(96, 140, 89, 0.03) 100%
+    );
     border: 1px solid rgba(96, 140, 89, 0.25);
-    border-radius: 20px;
-    background: rgba(96, 140, 89, 0.04);
-    overflow: hidden;
-    transition: background 0.15s ease, border-color 0.15s ease;
-    color: var(--bs-primary);
+    border-radius: 10px;
+    padding: 6px 10px 6px 16px;
+    flex: 1;
+    max-width: 460px;
+    text-decoration: none;
     cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    color: inherit;
 
     &:hover {
-        background: rgba(96, 140, 89, 0.1);
+        background: linear-gradient(
+            135deg,
+            rgba(96, 140, 89, 0.22) 0%,
+            rgba(96, 140, 89, 0.08) 100%
+        );
         border-color: rgba(96, 140, 89, 0.4);
-        color: var(--bs-primary);
     }
 
     :global([data-bs-theme='dark']) & {
-        color: #7DA876;
+        background: linear-gradient(
+            135deg,
+            rgba(96, 140, 89, 0.12) 0%,
+            rgba(96, 140, 89, 0.02) 100%
+        );
         border-color: rgba(96, 140, 89, 0.2);
-        background: rgba(96, 140, 89, 0.06);
 
         &:hover {
-            background: rgba(96, 140, 89, 0.12);
+            background: linear-gradient(
+                135deg,
+                rgba(96, 140, 89, 0.2) 0%,
+                rgba(96, 140, 89, 0.06) 100%
+            );
             border-color: rgba(96, 140, 89, 0.35);
         }
     }
 }
 
-.slide {
+// Bunny icon anchor on the left
+.icon {
+    flex-shrink: 0;
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+}
+
+// Two-line rotating text area
+.textArea {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    overflow: hidden;
+    height: 34px; // Fits label (12px) + name (16px) + gap
+}
+
+// Each slide in the rotation
+.slide {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     position: absolute;
     inset: 0;
-    justify-content: center;
+    transform: translateY(100%);
     opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: var(--bs-primary);
-
-    :global([data-bs-theme='dark']) & {
-        color: #7DA876;
-    }
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .slideActive {
+    transform: translateY(0);
     opacity: 1;
-    pointer-events: auto;
 }
 
+.slideExiting {
+    transform: translateY(-100%);
+    opacity: 0;
+}
+
+// Small uppercase label ("Patron of the day", "Latest patron")
+.label {
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    color: rgba(96, 140, 89, 0.65);
+    line-height: 1;
+
+    :global([data-bs-theme='dark']) & {
+        color: rgba(125, 168, 118, 0.6);
+    }
+}
+
+// Patron display name
+.name {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 700;
+    font-size: 0.875rem;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--bs-body-color);
+}
+
+// CTA button on the right
+.ctaButton {
+    flex-shrink: 0;
+    background: #608c59;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    text-decoration: none;
+
+    &:hover {
+        background: #4e7348;
+        color: #fff;
+    }
+}
+
+// Fallback layout when no patrons (just CTA text + button)
+.fallbackText {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--bs-body-color);
+    white-space: nowrap;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+// === Mobile menu card ===
+.mobileCard {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0.75rem 1rem;
+    margin: 0 1.25rem 0.75rem;
+    background: linear-gradient(
+        135deg,
+        rgba(96, 140, 89, 0.1) 0%,
+        rgba(96, 140, 89, 0.02) 100%
+    );
+    border: 1px solid rgba(96, 140, 89, 0.2);
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.15s ease;
+
+    &:hover {
+        background: linear-gradient(
+            135deg,
+            rgba(96, 140, 89, 0.18) 0%,
+            rgba(96, 140, 89, 0.06) 100%
+        );
+    }
+
+    :global([data-bs-theme='dark']) & {
+        background: linear-gradient(
+            135deg,
+            rgba(96, 140, 89, 0.08) 0%,
+            rgba(96, 140, 89, 0.01) 100%
+        );
+        border-color: rgba(96, 140, 89, 0.15);
+    }
+}
+
+.mobileTextArea {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.mobileName {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 700;
+    font-size: 0.875rem;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--bs-body-color);
+}
+
+.mobileCtaButton {
+    flex-shrink: 0;
+    background: #608c59;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    text-decoration: none;
+
+    &:hover {
+        background: #4e7348;
+        color: #fff;
+    }
+}
+
+// Reduced motion
 @media (prefers-reduced-motion: reduce) {
     .slide {
         transition: none;
     }
-}
 
-.label {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    .container,
+    .ctaButton,
+    .mobileCard,
+    .mobileCtaButton {
+        transition: none;
+    }
 }
