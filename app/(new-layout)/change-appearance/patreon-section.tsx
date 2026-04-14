@@ -8,6 +8,7 @@ import type { PatronPreferences, PerMode } from '../../../types/patreon.types';
 import type { User } from '../../../types/session.types';
 import styles from './customization/customization.module.scss';
 import { DisplaySection } from './customization/display-section';
+import { FillSection } from './customization/fill-section';
 import { FontSection } from './customization/font-section';
 import { PreviewPane } from './customization/preview-pane';
 import { LoginWithPatreon } from './login-with-patreon';
@@ -104,6 +105,13 @@ function PatreonSettings({ userPatreonData, session }: PatreonSectionProps) {
             <p>Thank you for supporting! Customize how your name appears.</p>
             <div className={styles.layout}>
                 <div className={styles.left}>
+                    {userPatreonData.tier >= 2 && (
+                        <FillSection
+                            prefs={prefs}
+                            tier={userPatreonData.tier}
+                            onChange={update}
+                        />
+                    )}
                     {userPatreonData.tier >= 2 && (
                         <FontSection prefs={prefs} onChange={update} />
                     )}

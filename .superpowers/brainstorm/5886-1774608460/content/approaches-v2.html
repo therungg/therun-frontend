@@ -1,0 +1,192 @@
+<h2>PatronCta Redesign — 3 Approaches</h2>
+<p class="subtitle">Each shows a full-width topbar mockup. Click the one you like best.</p>
+
+<style>
+  * { box-sizing: border-box; }
+
+  .approach-block {
+    margin-bottom: 32px;
+  }
+  .approach-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #ccc;
+    margin-bottom: 8px;
+  }
+  .approach-desc {
+    font-size: 13px;
+    color: #888;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+
+  /* Shared topbar base */
+  .tb {
+    display: flex;
+    align-items: center;
+    height: 56px;
+    background: #14141f;
+    border-radius: 10px;
+    padding: 0 20px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+    color: #999;
+    overflow: hidden;
+    width: 100%;
+  }
+  .tb-logo { font-weight: 700; color: #7DA876; font-size: 16px; margin-right: 24px; flex-shrink: 0; }
+  .tb-nav { display: flex; gap: 18px; flex-shrink: 0; }
+  .tb-nav span { color: #888; }
+  .tb-space { flex: 1; }
+  .tb-utils { display: flex; gap: 14px; align-items: center; flex-shrink: 0; margin-left: 16px; color: #666; font-size: 16px; }
+
+  /* A: Spotlight Strip */
+  .cta-a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, rgba(96,140,89,0.18) 0%, rgba(96,140,89,0.04) 100%);
+    border: 1px solid rgba(96,140,89,0.3);
+    border-radius: 8px;
+    padding: 6px 8px 6px 14px;
+    max-width: 380px;
+    flex: 1;
+  }
+  .cta-a-info { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+  .cta-a-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.6px; color: rgba(125,168,118,0.7); flex-shrink: 0; }
+  .cta-a-name { font-weight: 600; font-size: 13px; background: linear-gradient(90deg, #FFD700, #FFA500); -webkit-background-clip: text; -webkit-text-fill-color: transparent; white-space: nowrap; }
+  .cta-a-bunny { flex-shrink: 0; font-size: 15px; }
+  .cta-a-btn { background: #608C59; color: #fff; border: none; border-radius: 6px; padding: 5px 14px; font-size: 11px; font-weight: 600; white-space: nowrap; flex-shrink: 0; letter-spacing: 0.3px; }
+
+  /* B: Community Ticker */
+  .cta-b {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    max-width: 420px;
+  }
+  .cta-b-track {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%);
+    padding: 0 4px;
+  }
+  .cta-b-patron { display: inline-flex; align-items: center; gap: 3px; white-space: nowrap; font-size: 12px; }
+  .cta-b-dot { color: #333; margin: 0 6px; }
+  .cta-b-n1 { color: #FFD700; font-weight: 600; }
+  .cta-b-n2 { color: #7eb8da; font-weight: 600; }
+  .cta-b-n3 { color: #e0a0d0; font-weight: 600; }
+  .cta-b-n4 { color: #7DA876; font-weight: 600; }
+  .cta-b-pill { font-size: 11px; color: #7DA876; border: 1px solid rgba(96,140,89,0.35); border-radius: 14px; padding: 4px 12px; white-space: nowrap; font-weight: 600; flex-shrink: 0; }
+
+  /* C: Integrated Showcase */
+  .cta-c {
+    display: flex;
+    align-items: stretch;
+    height: 56px;
+    flex-shrink: 0;
+  }
+  .cta-c-featured {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+    border-left: 1px solid rgba(125,168,118,0.15);
+    border-right: 1px solid rgba(125,168,118,0.15);
+  }
+  .cta-c-bunny { font-size: 20px; }
+  .cta-c-text { display: flex; flex-direction: column; gap: 1px; }
+  .cta-c-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.8px; color: #666; }
+  .cta-c-name { font-size: 14px; font-weight: 600; background: linear-gradient(90deg, #FF6B9D, #C084FC); -webkit-background-clip: text; -webkit-text-fill-color: transparent; white-space: nowrap; }
+  .cta-c-btn {
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    background: linear-gradient(135deg, rgba(96,140,89,0.14), rgba(96,140,89,0.06));
+    color: #7DA876;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    gap: 5px;
+    letter-spacing: 0.2px;
+  }
+</style>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Spotlight Strip</h3>
+      <div class="tb">
+        <span class="tb-logo">therun.gg</span>
+        <div class="tb-nav"><span>Explore</span><span>Compete</span><span>Tools</span></div>
+        <span class="tb-space"></span>
+        <div class="cta-a">
+          <div class="cta-a-info">
+            <span class="cta-a-label">Patron of the day</span>
+            <span class="cta-a-bunny">🐰</span>
+            <span class="cta-a-name">SpeedDemon42</span>
+          </div>
+          <button class="cta-a-btn">Become a Patron</button>
+        </div>
+        <div class="tb-utils"><span>🔍</span><span>🌙</span><span>👤</span></div>
+      </div>
+      <p class="approach-desc">Contained banner between nav and utilities. Featured patron with styled name + bunny icon, persistent CTA button. Rotates between supporter of the day, latest patron, and benefit highlights.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>Community Ticker</h3>
+      <div class="tb">
+        <span class="tb-logo">therun.gg</span>
+        <div class="tb-nav"><span>Explore</span><span>Compete</span><span>Tools</span></div>
+        <span class="tb-space"></span>
+        <div class="cta-b">
+          <div class="cta-b-track">
+            <span class="cta-b-patron"><span class="cta-b-n1">SpeedDemon42</span> 🐰</span>
+            <span class="cta-b-dot">·</span>
+            <span class="cta-b-patron"><span class="cta-b-n2">NightRunner</span> 🐰</span>
+            <span class="cta-b-dot">·</span>
+            <span class="cta-b-patron"><span class="cta-b-n3">RosaSpeed</span> 🐰</span>
+            <span class="cta-b-dot">·</span>
+            <span class="cta-b-patron"><span class="cta-b-n4">FastFinish</span></span>
+          </div>
+          <span class="cta-b-pill">Join them →</span>
+        </div>
+        <div class="tb-utils"><span>🔍</span><span>🌙</span><span>👤</span></div>
+      </div>
+      <p class="approach-desc">Flowing stream of patron names in their custom colors. Strong social proof — "look at all these people." Would need the API to return more patron names. The color variety naturally draws the eye.</p>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>Integrated Showcase</h3>
+      <div class="tb">
+        <span class="tb-logo">therun.gg</span>
+        <div class="tb-nav"><span>Explore</span><span>Compete</span><span>Tools</span></div>
+        <span class="tb-space"></span>
+        <div class="cta-c">
+          <div class="cta-c-featured">
+            <span class="cta-c-bunny">🐰</span>
+            <div class="cta-c-text">
+              <span class="cta-c-label">Supporter of the day</span>
+              <span class="cta-c-name">SpeedDemon42</span>
+            </div>
+          </div>
+          <div class="cta-c-btn">Become a Patron →</div>
+        </div>
+        <div class="tb-utils"><span>🔍</span><span>🌙</span><span>👤</span></div>
+      </div>
+      <p class="approach-desc">Native topbar section using full height with subtle dividers. Featured patron gets a two-line treatment (label + styled name). CTA beside it as its own zone with a background. Feels intentional, not bolted on.</p>
+    </div>
+  </div>
+</div>

@@ -255,6 +255,22 @@
     gap: $spacing-xs;
 }
 
+.storyHeader {
+    display: flex;
+    align-items: center;
+    gap: $spacing-lg;
+    padding: $spacing-xs $spacing-lg;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+
+    @media (max-width: 640px) {
+        display: none;
+    }
+}
+
 .storyRow {
     display: flex;
     align-items: center;

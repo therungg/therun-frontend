@@ -40,7 +40,7 @@ Role resolution walks up: category -> game -> series hierarchy -> global. A seri
 
 ## pageData: The Game Page Read Model
 
-**`GET /game-mgmt/:gameId`** returns the pre-computed `pageData` — a single JSON blob containing everything needed to render a game page. This is the primary read path; use it for game page loads.
+**`GET /v1/games/:gameId`** returns the pre-computed `pageData` — a single JSON blob containing everything needed to render a game page. This is the primary read path; use it for game page loads.
 
 ### pageData Shape
 
@@ -202,7 +202,18 @@ Set which games belong to this series. Replaces the current list entirely. Order
 
 ## 2. Game Management Endpoints
 
-### GET /game-mgmt/:id
+### GET /v1/games/by-slug/:slug
+
+Resolve a game slug (the searchable form — lowercased, spaces removed) to its numeric id. All other `/v1/games/:id/*` endpoints are id-based; use this when you only have a name/slug from a URL or search result.
+
+```typescript
+// Response
+{ result: { id: number; name: string; display: string } }
+```
+
+**Auth:** None (public). Returns 404 if no game matches.
+
+### GET /v1/games/:id
 
 Fetch the denormalized pageData for a game. This is the fast path — use this for page loads.
 
@@ -213,7 +224,7 @@ Fetch the denormalized pageData for a game. This is the fast path — use this f
 
 **Auth:** None (public). Returns `{}` if pageData hasn't been built yet.
 
-### GET /game-mgmt/:id/audit-log
+### GET /v1/games/:id/audit-log
 
 Fetch audit history for a game.
 
@@ -240,7 +251,7 @@ Fetch audit history for a game.
 
 **Auth:** None (public).
 
-### POST /game-mgmt
+### POST /v1/games
 
 Create a new game manually. Creator becomes game-admin. IGDB image lookup fires in background.
 
@@ -260,7 +271,7 @@ Create a new game manually. Creator becomes game-admin. IGDB image lookup fires 
 
 **Auth:** Required. Needs `create-game` permission.
 
-### PUT /game-mgmt/:id
+### PUT /v1/games/:id
 
 Edit game metadata.
 
@@ -280,7 +291,7 @@ Edit game metadata.
 
 **Auth:** Required. Needs `edit-game` on this game.
 
-### POST /game-mgmt/:id/archive
+### POST /v1/games/:id/archive
 
 Archive a game. Hidden from browse/search but still accepts runs via uploads.
 
@@ -297,7 +308,7 @@ Archive a game. Hidden from browse/search but still accepts runs via uploads.
 
 Category groups are custom containers for categories (e.g., "Full Game", "Individual Levels", "Meme Runs"). Categories without a group (`groupId = null`) appear in the default/ungrouped section.
 
-### POST /game-mgmt/:gameId/groups
+### POST /v1/games/:gameId/groups
 
 Create a category group.
 
@@ -315,7 +326,7 @@ Create a category group.
 
 **Auth:** Required. Needs `create-edit-group` on this game.
 
-### PUT /game-mgmt/:gameId/groups/:groupId
+### PUT /v1/games/:gameId/groups/:groupId
 
 Edit a category group.
 
@@ -333,7 +344,7 @@ Edit a category group.
 
 **Auth:** Required. Needs `create-edit-group` on this game.
 
-### DELETE /game-mgmt/:gameId/groups/:groupId
+### DELETE /v1/games/:gameId/groups/:groupId
 
 Delete a category group. All categories in the group become ungrouped (`groupId = null`).
 
@@ -344,7 +355,7 @@ Delete a category group. All categories in the group become ungrouped (`groupId 
 
 **Auth:** Required. Needs `create-edit-group` on this game.
 
-### PUT /game-mgmt/:gameId/groups/reorder
+### PUT /v1/games/:gameId/groups/reorder
 
 Reorder category groups. Pass group IDs in desired order.
 
@@ -364,7 +375,7 @@ Reorder category groups. Pass group IDs in desired order.
 
 ## 4. Category Endpoints
 
-### POST /game-mgmt/:gameId/categories
+### POST /v1/games/:gameId/categories
 
 Create a category.
 
@@ -387,7 +398,7 @@ Create a category.
 
 **Auth:** Required. Needs `create-edit-category` on this game.
 
-### PUT /game-mgmt/:gameId/categories/:catId
+### PUT /v1/games/:gameId/categories/:catId
 
 Edit a category. The category must belong to this game.
 
@@ -411,7 +422,7 @@ Edit a category. The category must belong to this game.
 
 **Auth:** Required. Needs `edit-category-settings` on this game + category.
 
-### POST /game-mgmt/:gameId/categories/:catId/archive
+### POST /v1/games/:gameId/categories/:catId/archive
 
 Archive a category. Hidden on game page unless "show archived" is toggled.
 
@@ -422,7 +433,7 @@ Archive a category. Hidden on game page unless "show archived" is toggled.
 
 **Auth:** Required. Needs `archive-category` on this game.
 
-### PUT /game-mgmt/:gameId/categories/reorder
+### PUT /v1/games/:gameId/categories/reorder
 
 Reorder categories within their groups.
 
@@ -795,7 +806,7 @@ List active restrictions for a user.
 
 ### Game Page
 
-**Data source:** `GET /game-mgmt/:gameId` -> pageData
+**Data source:** `GET /v1/games/:gameId` -> pageData
 
 **Sections:**
 1. **Header** — game image, display name, series breadcrumb (if `seriesId` set)
@@ -921,10 +932,10 @@ All endpoints return consistent error shapes:
 
 1. Mod views game page, clicks "Manage" tab
 2. Fetch current state from pageData
-3. "Create Group" -> `POST /game-mgmt/:id/groups` with `{ name: "Full Game" }`
-4. Drag to reorder -> `PUT /game-mgmt/:id/groups/reorder` with new order
-5. Toggle hidden -> `PUT /game-mgmt/:id/groups/:groupId` with `{ hiddenByDefault: true }`
-6. Delete group -> `DELETE /game-mgmt/:id/groups/:groupId` (categories become ungrouped)
+3. "Create Group" -> `POST /v1/games/:id/groups` with `{ name: "Full Game" }`
+4. Drag to reorder -> `PUT /v1/games/:id/groups/reorder` with new order
+5. Toggle hidden -> `PUT /v1/games/:id/groups/:groupId` with `{ hiddenByDefault: true }`
+6. Delete group -> `DELETE /v1/games/:id/groups/:groupId` (categories become ungrouped)
 7. After each mutation, optimistically update local state or re-fetch pageData after 500ms
 
 ### Flow: Player Requests Moderatorship
@@ -954,7 +965,7 @@ All endpoints return consistent error shapes:
 1. Mod clicks edit icon on a category
 2. Shows form with current values (from pageData)
 3. Changes rules text and enables video requirement
-4. `PUT /game-mgmt/:gameId/categories/:catId` with `{ rules: "...", requireVideo: true }`
+4. `PUT /v1/games/:gameId/categories/:catId` with `{ rules: "...", requireVideo: true }`
 5. Optimistically update local state
 6. pageData rebuilds in background
 
@@ -962,9 +973,9 @@ All endpoints return consistent error shapes:
 
 ## 7. Leaderboard Endpoints
 
-Leaderboard data lives under `/leaderboards/`. Game and category names are matched via `convertToSearchable()` (lowercased, spaces removed) — e.g., `/leaderboards/supermario64/120star`.
+Leaderboard data lives under `/v1/leaderboards/`. Game and category names are matched via `convertToSearchable()` (lowercased, spaces removed) — e.g., `/v1/leaderboards/supermario64/120star`.
 
-### GET /leaderboards/{game}/{category}
+### GET /v1/leaderboards/{game}/{category}
 
 Fetch the ranked leaderboard for a game+category. Unfiltered queries hit Redis (fast). Variable-filtered queries go to PostgreSQL.
 
@@ -1002,7 +1013,7 @@ Fetch the ranked leaderboard for a game+category. Unfiltered queries hit Redis (
 
 **Auth:** None (public).
 
-### GET /leaderboards/wr-history/{game}/{category}
+### GET /v1/leaderboards/wr-history/{game}/{category}
 
 World record progression timeline.
 
@@ -1024,7 +1035,7 @@ World record progression timeline.
 
 **Auth:** None (public).
 
-### GET /leaderboards/user/{userId}/rankings
+### GET /v1/leaderboards/user/{userId}/rankings
 
 All leaderboard entries for a user across all games/categories, with rank in each.
 
@@ -1043,7 +1054,7 @@ All leaderboard entries for a user across all games/categories, with rank in eac
 
 **Auth:** None (public).
 
-### POST /leaderboards/submit
+### POST /v1/leaderboards/submit
 
 Manually submit a run (for guest/inactive runners). Submitted as verified.
 
@@ -1065,7 +1076,7 @@ Manually submit a run (for guest/inactive runners). Submitted as verified.
 
 **Auth:** Required. Caller must be a moderator for the game.
 
-### POST /leaderboards/verify/{runId}
+### POST /v1/leaderboards/verify/{runId}
 
 Verify a pending run. Updates leaderboard entry flags and Redis cache.
 
@@ -1076,7 +1087,7 @@ Verify a pending run. Updates leaderboard entry flags and Redis cache.
 
 **Auth:** Required. Caller must be a moderator for the run's game.
 
-### POST /leaderboards/reject/{runId}
+### POST /v1/leaderboards/reject/{runId}
 
 Reject a pending run. Promotes next-best run if rejected run held the leaderboard entry flag.
 
@@ -1092,31 +1103,31 @@ Reject a pending run. Promotes next-best run if rejected run held the leaderboar
 
 **Auth:** Required. Caller must be a moderator for the run's game.
 
-### GET /leaderboards/mod-queue/{gameId}
+### GET /v1/leaderboards/mod-queue/{gameId}
 
 Fetch runs pending moderation for a game.
 
 **Auth:** Required. Caller must be a moderator for the game.
 
-### POST /leaderboards/bulk-verify
+### POST /v1/leaderboards/bulk-verify
 
 Bulk verify multiple runs.
 
 **Auth:** Required. Caller must be a moderator.
 
-### POST /leaderboards/bulk-reject
+### POST /v1/leaderboards/bulk-reject
 
 Bulk reject multiple runs.
 
 **Auth:** Required. Caller must be a moderator.
 
-### PUT /leaderboards/runs/{runId}
+### PUT /v1/leaderboards/runs/{runId}
 
 Edit a run's metadata.
 
 **Auth:** Required. Caller must be a moderator for the run's game.
 
-### POST /leaderboards/runs/{runId}/move
+### POST /v1/leaderboards/runs/{runId}/move
 
 Move a run to a different category.
 
