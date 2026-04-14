@@ -11,7 +11,7 @@ import { GameImage } from '~src/components/image/gameimage';
 import { getColorMode } from '~src/utils/colormode';
 import styles from '../css/LiveRun.module.scss';
 import { UserLink } from '../links/links';
-import patreonStyles from '../patreon/patreon-styles';
+import { resolveFill } from '../patreon/patron-style';
 import { usePatreons } from '../patreon/use-patreons';
 import { DurationToFormatted } from '../util/datetime';
 import {
@@ -97,23 +97,23 @@ export const LiveUserRun = ({
             let gradient = '';
 
             if (!patreonData.preferences || !patreonData.preferences.hide) {
-                const colors = patreonStyles();
-                const color = patreonData.preferences?.colorPreference ?? 0;
-
-                const style =
-                    colors.find((val) => val.id === color) ?? colors[0];
-                const [darkStyle, lightStyle] = style.style;
-                borderColor = dark ? darkStyle.color : lightStyle.color;
-                gradient = dark
-                    ? darkStyle.backgroundImage
-                    : lightStyle.backgroundImage;
+                const fill = resolveFill(
+                    patreonData.preferences,
+                    patreonData.tier,
+                    dark ? 'dark' : 'light',
+                );
+                if (fill.kind === 'gradient') {
+                    gradient = `-webkit-linear-gradient(left, ${fill.value.join(',')})`;
+                    borderColor = fill.value[0];
+                } else {
+                    borderColor = fill.value;
+                }
             } else {
-                // TODO: Get rid of this.
                 borderColor = 'var(--bs-link-color)';
             }
             setLiveUserStyles({ borderColor, gradient });
         }
-    }, [patreons, isLoading, liveRun.user]);
+    }, [patreons, isLoading, liveRun.user, dark]);
 
     let tournamentPb = null;
     let ranking = null;

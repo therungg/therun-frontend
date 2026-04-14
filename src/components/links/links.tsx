@@ -48,17 +48,15 @@ export const UserLink = ({
     if (url === '') url = username;
 
     if (!isLoading && patreons && patreons[withoutSlash]) {
-        let color = 0;
-        let showIcon = icon;
-        if (patreons[withoutSlash].preferences) {
-            color = patreons[withoutSlash].preferences.colorPreference;
-            if (showIcon) {
-                showIcon = patreons[withoutSlash].preferences.showIcon;
-            }
-        }
-
+        const patron = patreons[withoutSlash];
+        const showIcon = icon && (patron.preferences?.showIcon ?? true);
         withoutSlash = (
-            <PatreonName name={withoutSlash} icon={showIcon} color={color} />
+            <PatreonName
+                name={withoutSlash}
+                preferences={patron.preferences}
+                tier={patron.tier}
+                icon={showIcon}
+            />
         );
     }
 

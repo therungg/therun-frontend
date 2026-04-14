@@ -4,13 +4,13 @@ import { FaPatreon } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import { PatreonName } from '~src/components/patreon/patreon-name';
 import { BunnyIcon } from '~src/icons/bunny-icon';
+import type { PatronPreferences } from '../../../../../types/patreon.types';
 import styles from './patreon-panel.module.scss';
 
 interface FeaturedPatron {
     name: string;
     tier: number;
-    colorPreference: number;
-    showIcon: boolean;
+    preferences: PatronPreferences;
 }
 
 interface PatreonPanelViewProps {
@@ -64,8 +64,9 @@ export const PatreonPanelView: React.FC<PatreonPanelViewProps> = ({
                                 >
                                     <PatreonName
                                         name={patron.name}
-                                        color={patron.colorPreference}
-                                        icon={patron.showIcon}
+                                        preferences={patron.preferences}
+                                        tier={patron.tier}
+                                        icon={patron.preferences.showIcon}
                                         size={14}
                                     />
                                 </div>

@@ -8,7 +8,10 @@ import Link from '~src/components/link';
 import PatreonName from '~src/components/patreon/patreon-name';
 import { BunnyIcon } from '~src/icons/bunny-icon';
 import { Can } from '~src/rbac/Can.component';
-import type { FeaturedPatronsResponse } from '../../../types/patreon.types';
+import type {
+    FeaturedPatronsResponse,
+    PatronPreferences,
+} from '../../../types/patreon.types';
 import styles from './MobileMenu.module.scss';
 import patronCtaStyles from './PatronCta.module.scss';
 import type { NavItem } from './topbar-nav-items';
@@ -33,12 +36,14 @@ const DarkModeSlider = dynamic(() => import('../dark-mode-slider'), {
 
 function MobilePatronName({
     patron,
+    tier,
 }: {
     patron: {
         patreonName: string;
         username: string | null;
-        preferences: { colorPreference: number; showIcon: boolean } | null;
+        preferences: PatronPreferences | null;
     };
+    tier: number;
 }) {
     const displayName = patron.username ?? patron.patreonName;
 
@@ -47,7 +52,8 @@ function MobilePatronName({
             <span className={patronCtaStyles.mobileName}>
                 <PatreonName
                     name={displayName}
-                    color={patron.preferences.colorPreference}
+                    preferences={patron.preferences}
+                    tier={tier}
                     icon={false}
                 />
                 {patron.preferences.showIcon && <BunnyIcon size={16} />}
@@ -263,6 +269,10 @@ export function MobileMenu({ username, featuredPatrons }: MobileMenuProps) {
                                     patron={
                                         (featuredPatrons.supporterOfTheDay ??
                                             featuredPatrons.latestPatron)!
+                                    }
+                                    tier={
+                                        (featuredPatrons.supporterOfTheDay ??
+                                            featuredPatrons.latestPatron)!.tier
                                     }
                                 />
                             </div>
