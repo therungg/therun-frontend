@@ -14,6 +14,7 @@ import { FillSection } from './customization/fill-section';
 import { FontSection } from './customization/font-section';
 import { PresetShortcuts } from './customization/preset-shortcuts';
 import { PreviewPane } from './customization/preview-pane';
+import { validatePrefs } from './customization/validation';
 import { LoginWithPatreon } from './login-with-patreon';
 
 export interface UserPatreonData {
@@ -77,6 +78,7 @@ function PatreonSettings({ userPatreonData, session }: PatreonSectionProps) {
     const [prefs, setPrefs] = useState<PatronPreferences>(initial);
     const [saving, setSaving] = useState(false);
     const [legacyBannerDismissed, setLegacyBannerDismissed] = useState(false);
+    const validation = validatePrefs(prefs);
 
     const update = <K extends keyof PatronPreferences>(
         key: K,
@@ -169,6 +171,13 @@ function PatreonSettings({ userPatreonData, session }: PatreonSectionProps) {
                         preferences={prefs}
                         tier={userPatreonData.tier}
                     />
+                    {!validation.ok && (
+                        <div className={styles.errorText}>
+                            {validation.errors.map((e, i) => (
+                                <div key={i}>{e}</div>
+                            ))}
+                        </div>
+                    )}
                     <Button
                         variant="outline-secondary"
                         size="sm"
@@ -179,7 +188,7 @@ function PatreonSettings({ userPatreonData, session }: PatreonSectionProps) {
                     <Button
                         variant="primary"
                         onClick={onSave}
-                        disabled={saving}
+                        disabled={saving || !validation.ok}
                     >
                         {saving ? 'Saving…' : 'Save settings'}
                     </Button>
