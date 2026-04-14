@@ -2,33 +2,38 @@
 
 import axios from 'axios';
 import Router from 'next/router';
-import React, { useState } from 'react';
-import { Button, Col, Row } from 'react-bootstrap';
-import Switch from 'react-switch';
-import { PatreonBunnySvg } from '~app/(new-layout)/patron/patreon-info';
-import PatreonName from '~src/components/patreon/patreon-name';
-import patreonStyles from '~src/components/patreon/patreon-styles';
+import { useState } from 'react';
+import { Button } from 'react-bootstrap';
+import type { PatronPreferences, PerMode } from '../../../types/patreon.types';
 import type { User } from '../../../types/session.types';
-import styles from './change-appearance.module.scss';
+import styles from './customization/customization.module.scss';
+import { PreviewPane } from './customization/preview-pane';
 import { LoginWithPatreon } from './login-with-patreon';
-
-interface PatreonPreferences {
-    hide: boolean;
-    featureInScrollbar: boolean;
-    featureOnOverview: boolean;
-    showIcon: boolean;
-    colorPreference: number;
-}
 
 export interface UserPatreonData {
     tier: 1 | 2 | 3;
-    preferences: PatreonPreferences;
+    preferences: PatronPreferences;
 }
 
 interface PatreonSectionProps {
     userPatreonData: UserPatreonData;
     session: User;
 }
+
+const EMPTY_PREFERENCES: PatronPreferences = {
+    hide: false,
+    featureInScrollbar: true,
+    featureOnOverview: true,
+    showIcon: true,
+    customColor: null,
+    customGradient: null,
+    bold: false,
+    italic: false,
+    textShadow: null,
+    outline: null,
+    gradientAngle: null,
+    gradientAnimated: false,
+};
 
 export default function PatreonSection({
     userPatreonData,
@@ -38,211 +43,89 @@ export default function PatreonSection({
     if (!userPatreonData.tier) {
         return <LoginWithPatreon session={session} baseUrl={baseUrl} />;
     }
-
     return (
-        <YouAreAPatreon session={session} userPatreonData={userPatreonData} />
+        <PatreonSettings session={session} userPatreonData={userPatreonData} />
     );
 }
 
-const YouAreAPatreon = ({ userPatreonData, session }: PatreonSectionProps) => {
+function PatreonSettings({ userPatreonData, session }: PatreonSectionProps) {
+    const initial: PatronPreferences = {
+        ...EMPTY_PREFERENCES,
+        ...userPatreonData.preferences,
+    };
+    const [prefs, setPrefs] = useState<PatronPreferences>(initial);
+    const [saving, setSaving] = useState(false);
+
+    const _update = <K extends keyof PatronPreferences>(
+        key: K,
+        value: PatronPreferences[K],
+    ) => {
+        setPrefs((p) => ({ ...p, [key]: value }));
+    };
+
+    const resetAll = () => {
+        setPrefs({
+            ...EMPTY_PREFERENCES,
+            // keep display preferences as-is
+            hide: prefs.hide,
+            featureInScrollbar: prefs.featureInScrollbar,
+            featureOnOverview: prefs.featureOnOverview,
+            showIcon: prefs.showIcon,
+            colorPreference: 0,
+        });
+    };
+
+    const onSave = async () => {
+        setSaving(true);
+        try {
+            const payload: PatronPreferences = {
+                ...prefs,
+                // Clear legacy after any save from the new UI.
+                colorPreference: 0,
+            };
+            await axios.post(
+                `/api/users/${session.id}-${session.username}/patreon-settings`,
+                payload,
+            );
+            Router.reload();
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    // PerMode helper used by later tasks' subcomponents.
+    void ({} as PerMode<string>);
+
     return (
         <div>
-            <PatreonSettings
-                userPatreonData={userPatreonData}
-                session={session}
-            />
-        </div>
-    );
-};
-
-const PatreonSettings = ({ userPatreonData, session }: PatreonSectionProps) => {
-    const preferences: PatreonPreferences = userPatreonData.preferences
-        ? userPatreonData.preferences
-        : {
-              hide: false,
-              showIcon: true,
-              featureInScrollbar: true,
-              featureOnOverview: true,
-              colorPreference: 0,
-          };
-
-    const [hide, setHide] = useState(preferences.hide);
-    const [showIcon, setShowIcon] = useState(preferences.showIcon);
-    const [featureOnOverview, setFeatureOnOverview] = useState(
-        preferences.featureOnOverview,
-    );
-    const [featureInScrollbar, setFeatureInScrollbar] = useState(
-        preferences.featureInScrollbar,
-    );
-    const [colorPreference, setColorPreference] = useState(
-        preferences.colorPreference,
-    );
-
-    return (
-        <Row>
-            <h1 className={styles.settingsTitle}>Patreon Customization</h1>
-            <div className={styles.settingsSubtitle}>
-                Thank you for supporting! You can now choose your preferences.
-            </div>
-            <div className={styles.previewCard}>
-                <div>
-                    <PatreonName
-                        name={session.username}
-                        color={colorPreference}
-                        icon={showIcon}
-                        size={40}
-                    />
+            <h1>Patreon Customization</h1>
+            <p>Thank you for supporting! Customize how your name appears.</p>
+            <div className={styles.layout}>
+                <div className={styles.left}>
+                    {/* Filled in by later tasks: preset-shortcuts, fill, font, effects, display */}
                 </div>
-            </div>
-            <Col lg={6} className="pe-lg-4">
-                <h3 className={styles.sectionTitle}>Color customization</h3>
-                {[1, 2, 3].map((n) => {
-                    return (
-                        <Row key={n} className="w-100 text-center g-3">
-                            {patreonStyles()
-                                .filter((style) => style.tier == n)
-                                .map((style, key) => {
-                                    const isUnlocked =
-                                        userPatreonData.tier >= n ||
-                                        session.username == 'joeys64';
-                                    const isSelected =
-                                        colorPreference == style.id;
-
-                                    return (
-                                        <Col
-                                            xs={6}
-                                            sm={4}
-                                            key={key}
-                                            onClick={() => {
-                                                if (isUnlocked) {
-                                                    setColorPreference(
-                                                        style.id,
-                                                    );
-                                                } else {
-                                                    alert(
-                                                        `This color is only available for tier ${n} Patreons or higher.`,
-                                                    );
-                                                }
-                                            }}
-                                        >
-                                            <div
-                                                className={`${
-                                                    isUnlocked
-                                                        ? styles.colorOption
-                                                        : styles.colorOptionLocked
-                                                } ${
-                                                    isSelected
-                                                        ? styles.colorOptionSelected
-                                                        : ''
-                                                }`}
-                                            >
-                                                <div className="bg-dark">
-                                                    <span
-                                                        style={{
-                                                            ...style.style[0],
-                                                        }}
-                                                    >
-                                                        {session.username}
-                                                    </span>
-                                                </div>
-                                                <div className="bg-light">
-                                                    <span
-                                                        style={{
-                                                            ...style.style[1],
-                                                        }}
-                                                    >
-                                                        {session.username}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </Col>
-                                    );
-                                })}
-                            <div className="mt-0">
-                                <hr />
-                            </div>
-                        </Row>
-                    );
-                })}
-            </Col>
-            <Col lg={6} className="ps-lg-4">
-                <h3 className={styles.sectionTitle}>Display preferences</h3>
-                <div className={styles.switchRow}>
-                    <Switch
-                        name="switch"
-                        onChange={(checked) => {
-                            setHide(!checked);
-                        }}
-                        checked={!hide}
+                <div className={styles.right}>
+                    <PreviewPane
+                        username={session.username}
+                        preferences={prefs}
+                        tier={userPatreonData.tier}
                     />
-                    <label htmlFor="switch">
-                        Display me as Patreon{' '}
-                        <span className="d-none d-lg-inline">
-                            (overrides all other settings when switched off)
-                        </span>
-                    </label>
-                </div>
-                <div className={styles.switchRow}>
-                    <Switch
-                        name="switch"
-                        onChange={(checked) => {
-                            setShowIcon(checked);
-                        }}
-                        checked={showIcon}
-                    />
-                    <label htmlFor="switch">
-                        Show the <PatreonBunnySvg /> next to my name
-                    </label>
-                </div>
-                <div className={styles.switchRow}>
-                    <Switch
-                        name="switch"
-                        onChange={(checked) => {
-                            setFeatureOnOverview(checked);
-                        }}
-                        checked={featureOnOverview}
-                    />
-                    <label htmlFor="switch">
-                        Display my name on the Support page
-                    </label>
-                </div>
-                {(userPatreonData.tier > 2 ||
-                    session.username == 'joeys64') && (
-                    <div className={styles.switchRow}>
-                        <Switch
-                            name="switch"
-                            onChange={(checked) => {
-                                setFeatureInScrollbar(checked);
-                            }}
-                            checked={featureInScrollbar}
-                        />
-                        <label htmlFor="switch">
-                            Display my name in the scrolling bar
-                        </label>
-                    </div>
-                )}
-                <div className="d-flex justify-content-end">
                     <Button
-                        className={`btn-lg btn btn-primary ${styles.saveButton}`}
-                        onClick={async () => {
-                            await axios.post(
-                                `/api/users/${session.id}-${session.username}/patreon-settings`,
-                                {
-                                    hide,
-                                    showIcon,
-                                    featureOnOverview,
-                                    featureInScrollbar,
-                                    colorPreference,
-                                },
-                            );
-
-                            Router.reload();
-                        }}
+                        variant="outline-secondary"
+                        size="sm"
+                        onClick={resetAll}
                     >
-                        Save settings
+                        Reset to default
+                    </Button>
+                    <Button
+                        variant="primary"
+                        onClick={onSave}
+                        disabled={saving}
+                    >
+                        {saving ? 'Saving…' : 'Save settings'}
                     </Button>
                 </div>
-            </Col>
-        </Row>
+            </div>
+        </div>
     );
-};
+}

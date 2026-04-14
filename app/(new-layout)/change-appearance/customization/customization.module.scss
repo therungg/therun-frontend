@@ -1,0 +1,136 @@
+.layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    gap: 2rem;
+    align-items: start;
+
+    @media (max-width: 991px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.left {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.right {
+    position: sticky;
+    top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+
+    @media (max-width: 991px) {
+        position: static;
+    }
+}
+
+.card {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.5rem;
+    padding: 1rem 1.25rem;
+    background: var(--bs-body-bg);
+}
+
+.cardHeader {
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+}
+
+.previewBox {
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+.previewDark {
+    background: #0d0e12;
+}
+
+.previewLight {
+    background: #ffffff;
+    color: #0d0e12;
+}
+
+.migrationBanner {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    background: var(--bs-info-bg-subtle);
+    color: var(--bs-info-text-emphasis);
+    font-size: 0.875rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stopRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.375rem;
+}
+
+.angleChips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.chip {
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.25rem;
+    background: transparent;
+    cursor: pointer;
+
+    &[data-active='true'] {
+        background: var(--bs-primary);
+        color: var(--bs-primary-text);
+        border-color: var(--bs-primary);
+    }
+}
+
+.presetGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.5rem;
+}
+
+.presetTile {
+    padding: 0.5rem;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.375rem;
+    cursor: pointer;
+    text-align: center;
+    font-size: 1rem;
+
+    &:hover {
+        border-color: var(--bs-primary);
+    }
+}
+
+.contrastWarning {
+    font-size: 0.8125rem;
+    padding: 0.375rem 0.5rem;
+    border-radius: 0.25rem;
+    background: var(--bs-warning-bg-subtle);
+    color: var(--bs-warning-text-emphasis);
+}
+
+.fieldRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.errorText {
+    color: var(--bs-danger);
+    font-size: 0.8125rem;
+    margin-top: 0.25rem;
+}
