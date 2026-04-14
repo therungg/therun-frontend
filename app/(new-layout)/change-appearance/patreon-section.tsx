@@ -7,6 +7,7 @@ import { Button } from 'react-bootstrap';
 import { legacyPresetMap } from '~src/components/patreon/legacy-preset-map';
 import type { PatronPreferences, PerMode } from '../../../types/patreon.types';
 import type { User } from '../../../types/session.types';
+import { ContrastWarning } from './customization/contrast-warning';
 import styles from './customization/customization.module.scss';
 import { DisplaySection } from './customization/display-section';
 import { EffectsSection } from './customization/effects-section';
@@ -169,6 +170,10 @@ function PatreonSettings({ userPatreonData, session }: PatreonSectionProps) {
                     <PreviewPane
                         username={session.username}
                         preferences={prefs}
+                        tier={userPatreonData.tier}
+                    />
+                    <ContrastWarning
+                        prefs={prefs}
                         tier={userPatreonData.tier}
                     />
                     {!validation.ok && (
