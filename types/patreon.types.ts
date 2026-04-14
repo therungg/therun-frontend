@@ -21,6 +21,7 @@ export interface FeaturedPatron {
     tier: number;
     username: string | null;
     preferences: PatronPreferences | null;
+    picture: string | null;
 }
 
 export interface FeaturedPatronsResponse {

@@ -16,8 +16,9 @@
     border: 1px solid rgba(96, 140, 89, 0.25);
     border-radius: 10px;
     padding: 6px 10px 6px 16px;
-    flex: 1;
+    flex: 0 1 auto;
     max-width: 460px;
+    margin-left: auto;
     text-decoration: none;
     cursor: pointer;
     transition: background 0.15s ease, border-color 0.15s ease;
@@ -58,10 +59,19 @@
     align-items: center;
 }
 
+// Patron profile picture
+.avatar {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
 // Two-line rotating text area
 .textArea {
     flex: 1;
-    min-width: 0;
+    min-width: 120px;
     position: relative;
     overflow: hidden;
     height: 34px; // Fits label (12px) + name (16px) + gap
@@ -92,9 +102,10 @@
 
 // Small uppercase label ("Patron of the day", "Latest patron")
 .label {
-    font-size: 0.625rem;
+    font-size: 0.5625rem;
     text-transform: uppercase;
-    letter-spacing: 0.7px;
+    letter-spacing: 0.4px;
+    white-space: nowrap;
     color: rgba(96, 140, 89, 0.65);
     line-height: 1;
 

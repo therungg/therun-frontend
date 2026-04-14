@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from '~src/components/link';
@@ -231,14 +232,32 @@ export function MobileMenu({ username, featuredPatrons }: MobileMenuProps) {
                             className={patronCtaStyles.mobileCard}
                             onClick={close}
                         >
-                            <span className={patronCtaStyles.icon}>
-                                <BunnyIcon size={22} />
-                            </span>
+                            {(
+                                featuredPatrons.supporterOfTheDay ??
+                                featuredPatrons.latestPatron
+                            )?.picture ? (
+                                <Image
+                                    src={
+                                        (featuredPatrons.supporterOfTheDay ??
+                                            featuredPatrons.latestPatron)!
+                                            .picture!
+                                    }
+                                    alt=""
+                                    width={28}
+                                    height={28}
+                                    className={patronCtaStyles.avatar}
+                                    unoptimized
+                                />
+                            ) : (
+                                <span className={patronCtaStyles.icon}>
+                                    <BunnyIcon size={22} />
+                                </span>
+                            )}
                             <div className={patronCtaStyles.mobileTextArea}>
                                 <span className={patronCtaStyles.label}>
                                     {featuredPatrons.supporterOfTheDay
-                                        ? 'Patron of the day'
-                                        : 'Latest patron'}
+                                        ? 'Supporter of the day'
+                                        : 'Latest supporter'}
                                 </span>
                                 <MobilePatronName
                                     patron={

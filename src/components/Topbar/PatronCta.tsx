@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import Link from '~src/components/link';
 import PatreonName from '~src/components/patreon/patreon-name';
@@ -17,6 +18,7 @@ interface Slide {
     patron: {
         patreonName: string;
         username: string | null;
+        picture: string | null;
         preferences: { colorPreference: number; showIcon: boolean } | null;
     };
 }
@@ -58,7 +60,7 @@ export function PatronCta({ featuredPatrons }: PatronCtaProps) {
     if (supporterOfTheDay) {
         slides.push({
             key: 'sotd',
-            label: 'Patron of the day',
+            label: 'Supporter of the day',
             patron: supporterOfTheDay,
         });
     }
@@ -66,7 +68,7 @@ export function PatronCta({ featuredPatrons }: PatronCtaProps) {
     if (latestPatron) {
         slides.push({
             key: 'latest',
-            label: 'Latest patron',
+            label: 'Latest supporter',
             patron: latestPatron,
         });
     }
@@ -96,7 +98,7 @@ export function PatronCta({ featuredPatrons }: PatronCtaProps) {
                     <BunnyIcon size={22} />
                 </span>
                 <span className={styles.fallbackText}>Support therun.gg</span>
-                <span className={styles.ctaButton}>Become a Patron</span>
+                <span className={styles.ctaButton}>Become a Supporter</span>
             </Link>
         );
     }
@@ -112,9 +114,20 @@ export function PatronCta({ featuredPatrons }: PatronCtaProps) {
                 isPaused.current = false;
             }}
         >
-            <span className={styles.icon}>
-                <BunnyIcon size={22} />
-            </span>
+            {slides[activeIndex]?.patron.picture ? (
+                <Image
+                    src={slides[activeIndex].patron.picture!}
+                    alt=""
+                    width={28}
+                    height={28}
+                    className={styles.avatar}
+                    unoptimized
+                />
+            ) : (
+                <span className={styles.icon}>
+                    <BunnyIcon size={22} />
+                </span>
+            )}
 
             <div className={styles.textArea} aria-live="polite">
                 {slides.map((slide, i) => (
@@ -128,7 +141,7 @@ export function PatronCta({ featuredPatrons }: PatronCtaProps) {
                 ))}
             </div>
 
-            <span className={styles.ctaButton}>Become a Patron</span>
+            <span className={styles.ctaButton}>Become a Supporter</span>
         </Link>
     );
 }

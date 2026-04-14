@@ -57,15 +57,16 @@ export const Topbar = ({
                 <NavGroup label="About" items={aboutItems} />
             </div>
 
-            <div className={topbarStyles.utilities}>
-                <PatronCta
-                    featuredPatrons={
-                        featuredPatrons ?? {
-                            supporterOfTheDay: null,
-                            latestPatron: null,
-                        }
+            <PatronCta
+                featuredPatrons={
+                    featuredPatrons ?? {
+                        supporterOfTheDay: null,
+                        latestPatron: null,
                     }
-                />
+                }
+            />
+
+            <div className={topbarStyles.utilities}>
                 <TopbarUtilities
                     username={username}
                     picture={picture}
