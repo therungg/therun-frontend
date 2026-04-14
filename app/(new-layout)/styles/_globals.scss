@@ -437,3 +437,14 @@ html {
         line-height: inherit;
     }
 }
+
+@keyframes patron-gradient {
+    0%   { background-position: 0%   50%; }
+    100% { background-position: 200% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    @keyframes patron-gradient {
+        0%, 100% { background-position: 0 50%; }
+    }
+}
