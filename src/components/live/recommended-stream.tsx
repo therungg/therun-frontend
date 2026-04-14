@@ -11,7 +11,7 @@ import { SplitStatus, Status } from '~src/types/splits.types';
 import { getColorMode } from '~src/utils/colormode';
 import styles from '../css/LiveRun.module.scss';
 import { UserLink } from '../links/links';
-import patreonStyles from '../patreon/patreon-styles';
+import { resolveFill } from '../patreon/patron-style';
 import { usePatreons } from '../patreon/use-patreons';
 import { DurationToFormatted } from '../util/datetime';
 import {
@@ -139,22 +139,20 @@ export const RecommendedStream = ({
 
     useEffect(() => {
         if (!isLoading && patreons && patreons[liveRun.user]) {
-            const { preferences } = patreons[liveRun.user];
+            const { preferences, tier } = patreons[liveRun.user];
             let borderColor = '';
             let gradient = '';
 
             if (preferences && !preferences.hide) {
-                const colors = patreonStyles();
-                const { colorPreference = 0 } = preferences;
-                let style =
-                    colors.find((val) => val.id == colorPreference) ||
-                    colors[0];
-                style = dark ? style.style[0] : style.style[1];
-
-                if (style.color != 'transparent') {
-                    borderColor = style.color;
+                const fill = resolveFill(
+                    preferences,
+                    tier,
+                    dark ? 'dark' : 'light',
+                );
+                if (fill.kind === 'gradient') {
+                    gradient = `-webkit-linear-gradient(left, ${fill.value.join(',')})`;
                 } else {
-                    gradient = style.background;
+                    borderColor = fill.value;
                 }
             } else if (!preferences) {
                 borderColor = 'var(--bs-link-color)';
@@ -164,7 +162,7 @@ export const RecommendedStream = ({
                 gradient,
             });
         }
-    }, [patreons, isLoading, liveRun.user]);
+    }, [patreons, isLoading, liveRun.user, dark]);
 
     if (
         !activeLiveRun ||

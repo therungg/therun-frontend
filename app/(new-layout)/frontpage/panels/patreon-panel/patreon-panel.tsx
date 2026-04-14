@@ -1,11 +1,11 @@
 import { getAllPatrons } from '~app/api/patreons/get-all-patrons.action';
+import type { PatronPreferences } from '../../../../../types/patreon.types';
 import { PatreonPanelView } from './patreon-panel-view';
 
 interface FeaturedPatron {
     name: string;
     tier: number;
-    colorPreference: number;
-    showIcon: boolean;
+    preferences: PatronPreferences;
 }
 
 function weightedRandomSelection<T extends { tier: number }>(
@@ -65,8 +65,7 @@ export default async function PatreonPanel() {
             .map(([name, patron]) => ({
                 name,
                 tier: patron.tier,
-                colorPreference: patron.preferences.colorPreference,
-                showIcon: patron.preferences.showIcon,
+                preferences: patron.preferences,
             }));
 
         // Select 2-3 patrons using weighted random selection

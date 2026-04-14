@@ -5,7 +5,10 @@ import { useEffect, useRef, useState } from 'react';
 import Link from '~src/components/link';
 import PatreonName from '~src/components/patreon/patreon-name';
 import { BunnyIcon } from '~src/icons/bunny-icon';
-import type { FeaturedPatronsResponse } from '../../../types/patreon.types';
+import type {
+    FeaturedPatronsResponse,
+    PatronPreferences,
+} from '../../../types/patreon.types';
 import styles from './PatronCta.module.scss';
 
 interface PatronCtaProps {
@@ -19,26 +22,32 @@ interface Slide {
         patreonName: string;
         username: string | null;
         picture: string | null;
-        preferences: { colorPreference: number; showIcon: boolean } | null;
+        tier: number;
+        preferences: PatronPreferences | null;
     };
 }
 
-function PatronDisplayName({ patron }: { patron: Slide['patron'] }) {
+function PatronDisplayName({
+    patron,
+    tier,
+}: {
+    patron: Slide['patron'];
+    tier: number;
+}) {
     const displayName = patron.username ?? patron.patreonName;
-
     if (patron.preferences) {
         return (
             <span className={styles.name}>
                 <PatreonName
                     name={displayName}
-                    color={patron.preferences.colorPreference}
+                    preferences={patron.preferences}
+                    tier={tier}
                     icon={false}
                 />
                 {patron.preferences.showIcon && <BunnyIcon size={16} />}
             </span>
         );
     }
-
     return <span className={styles.name}>{displayName}</span>;
 }
 
@@ -57,19 +66,31 @@ export function PatronCta({ featuredPatrons }: PatronCtaProps) {
 
     const slides: Slide[] = [];
 
-    if (supporterOfTheDay) {
-        slides.push({
-            key: 'sotd',
-            label: 'Supporter of the day',
-            patron: supporterOfTheDay,
-        });
-    }
-
     if (latestPatron) {
         slides.push({
             key: 'latest',
             label: 'Latest supporter',
-            patron: latestPatron,
+            patron: {
+                patreonName: latestPatron.patreonName,
+                username: latestPatron.username,
+                picture: latestPatron.picture,
+                tier: latestPatron.tier,
+                preferences: latestPatron.preferences,
+            },
+        });
+    }
+
+    if (supporterOfTheDay) {
+        slides.push({
+            key: 'sotd',
+            label: 'Supporter of the day',
+            patron: {
+                patreonName: supporterOfTheDay.patreonName,
+                username: supporterOfTheDay.username,
+                picture: supporterOfTheDay.picture,
+                tier: supporterOfTheDay.tier,
+                preferences: supporterOfTheDay.preferences,
+            },
         });
     }
 
@@ -136,7 +157,10 @@ export function PatronCta({ featuredPatrons }: PatronCtaProps) {
                         className={`${styles.slide} ${i === activeIndex ? styles.slideActive : ''} ${i === exitingIndex ? styles.slideExiting : ''}`}
                     >
                         <span className={styles.label}>{slide.label}</span>
-                        <PatronDisplayName patron={slide.patron} />
+                        <PatronDisplayName
+                            patron={slide.patron}
+                            tier={slide.patron.tier}
+                        />
                     </div>
                 ))}
             </div>
