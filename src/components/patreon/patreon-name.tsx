@@ -4,7 +4,8 @@ import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { BunnyIcon } from '~src/icons/bunny-icon';
 import { getColorMode } from '~src/utils/colormode';
 import { safeDecodeURI } from '~src/utils/uri';
-import patreonStyles from './patreon-styles';
+import type { PatronPreferences } from '../../../types/patreon.types';
+import { buildPatronStyle, type Theme } from './patron-style';
 import { usePatreons } from './use-patreons';
 
 interface NameAsPatreonProps {
@@ -15,51 +16,45 @@ export const NameAsPatreon: React.FunctionComponent<NameAsPatreonProps> = ({
     name,
 }) => {
     const { data: patreons, isLoading } = usePatreons();
-    const patronExists = patreons?.[name];
-    !isLoading;
-    const isMissingPreferences =
-        !patreons?.[name]?.preferences || !patreons?.[name]?.preferences?.hide;
-    if (patronExists && !isLoading && isMissingPreferences) {
-        let color = 0;
-        let showIcon = true;
-
-        if (patreons[name].preferences) {
-            color = patreons[name].preferences.colorPreference;
-            showIcon = patreons[name].preferences.showIcon;
-        }
-
-        return <PatreonName name={name} icon={showIcon} color={color} />;
+    const patron = patreons?.[name];
+    if (isLoading || !patron || patron.preferences?.hide) {
+        return <>{safeDecodeURI(name)}</>;
     }
-
-    return <>{safeDecodeURI(name)}</>;
+    return (
+        <PatreonName
+            name={name}
+            preferences={patron.preferences}
+            tier={patron.tier}
+            icon={patron.preferences?.showIcon ?? true}
+        />
+    );
 };
 
-interface PatreonNameProps {
+export interface PatreonNameProps {
     name: string;
-    color: number;
+    preferences: PatronPreferences | null | undefined;
+    tier: number;
     icon?: boolean;
     size?: number;
 }
 
 export const PatreonName: React.FunctionComponent<PatreonNameProps> = ({
     name,
-    color = 0,
+    preferences,
+    tier,
     icon = true,
     size = 20,
 }) => {
-    const [dark, setDark] = useState(true);
-    useEffect(function () {
-        setDark(getColorMode() !== 'light');
+    const [theme, setTheme] = useState<Theme>('dark');
+    useEffect(() => {
+        setTheme(getColorMode() === 'light' ? 'light' : 'dark');
     }, []);
 
-    const colors = patreonStyles();
-
-    const matchingStyle = colors.find((val) => val.id == color) ?? colors[0];
-    const style = dark ? matchingStyle.style[0] : matchingStyle.style[1];
+    const style = buildPatronStyle(preferences, tier, theme);
 
     return (
         <>
-            <span style={style}>{name}</span>
+            <span style={style}>{safeDecodeURI(name)}</span>
             {icon && (
                 <OverlayTrigger
                     placement="top"
