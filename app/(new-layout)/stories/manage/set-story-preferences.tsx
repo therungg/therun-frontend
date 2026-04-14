@@ -354,6 +354,21 @@ const ManageIndividualStories = ({
                                 {description}
                             </p>
                             <div className={styles.storyList}>
+                                <div className={styles.storyHeader}>
+                                    <div className={styles.storyToggle}>
+                                        Enabled
+                                    </div>
+                                    <div className={styles.storyCooldown}>
+                                        <UnderlineTooltip
+                                            title="Per-story cooldown in minutes"
+                                            content="Minimum minutes between sending this specific story. Set to 0 to send it every time it's relevant."
+                                            element="Cooldown (min)"
+                                        />
+                                    </div>
+                                    <div className={styles.storyText}>
+                                        Example
+                                    </div>
+                                </div>
                                 {options.map((option, index) => {
                                     const id = `stories.${option.type}.enabled`;
                                     const idCooldown = `stories.${option.type}.cooldown`;
@@ -398,6 +413,8 @@ const ManageIndividualStories = ({
                                                     name={idCooldown}
                                                     id={idCooldown}
                                                     type="number"
+                                                    title="Cooldown in minutes"
+                                                    aria-label="Cooldown in minutes"
                                                     min={0}
                                                     step={1}
                                                     max={60 * 24}

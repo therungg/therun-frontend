@@ -1,0 +1,287 @@
+<h2>PatronCta Redesign — 3 Approaches</h2>
+<p class="subtitle">Click the one that feels closest to what you want. All are desktop previews — each would adapt for mobile.</p>
+
+<style>
+  .topbar-mock {
+    display: flex;
+    align-items: center;
+    height: 56px;
+    background: #1a1a2e;
+    border-radius: 10px;
+    padding: 0 16px;
+    gap: 12px;
+    font-family: system-ui, sans-serif;
+    font-size: 13px;
+    color: #b0b0b0;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+  .topbar-mock .logo {
+    font-weight: 700;
+    color: #7DA876;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+  .topbar-mock .nav-items {
+    display: flex;
+    gap: 16px;
+    white-space: nowrap;
+  }
+  .topbar-mock .spacer { flex: 1; }
+  .topbar-mock .utils {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    white-space: nowrap;
+    color: #888;
+    font-size: 12px;
+  }
+
+  /* Approach A: Spotlight Strip */
+  .spotlight-strip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, rgba(96,140,89,0.15), rgba(96,140,89,0.05));
+    border: 1px solid rgba(96,140,89,0.25);
+    border-radius: 8px;
+    padding: 4px 6px 4px 12px;
+    flex: 1;
+    max-width: 420px;
+    min-width: 0;
+  }
+  .spotlight-strip .patron-showcase {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .spotlight-strip .patron-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #7DA876;
+    opacity: 0.7;
+    white-space: nowrap;
+  }
+  .spotlight-strip .patron-name {
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .spotlight-strip .bunny {
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .spotlight-strip .join-btn {
+    background: #7DA876;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* Approach B: Flowing Ticker */
+  .ticker-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    max-width: 400px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .ticker-track {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+  }
+  .ticker-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    font-size: 12px;
+  }
+  .ticker-item .t-name { color: #e0a0d0; font-weight: 500; }
+  .ticker-item .t-name.gold { color: #FFD700; }
+  .ticker-item .t-name.blue { color: #7eb8da; }
+  .ticker-item .t-name.green { color: #7DA876; }
+  .ticker-item .t-sep { color: #444; margin: 0 4px; }
+  .ticker-cta {
+    font-size: 11px;
+    color: #7DA876;
+    border: 1px solid rgba(96,140,89,0.3);
+    border-radius: 14px;
+    padding: 3px 10px;
+    white-space: nowrap;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  /* Approach C: Integrated Showcase */
+  .showcase-section {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    max-width: 440px;
+    min-width: 0;
+    gap: 0;
+  }
+  .showcase-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    height: 56px;
+    border-left: 1px solid rgba(96,140,89,0.15);
+    border-right: 1px solid rgba(96,140,89,0.15);
+    flex: 1;
+    min-width: 0;
+  }
+  .showcase-left .featured-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #666;
+    line-height: 1.2;
+  }
+  .showcase-left .featured-name {
+    font-size: 13px;
+    font-weight: 600;
+    background: linear-gradient(90deg, #FF6B9D, #C084FC);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .showcase-left .featured-info {
+    min-width: 0;
+    flex: 1;
+  }
+  .showcase-left .featured-bunny {
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .showcase-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 56px;
+    padding: 0 16px;
+    background: linear-gradient(135deg, rgba(96,140,89,0.12), rgba(96,140,89,0.06));
+    color: #7DA876;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+    gap: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .showcase-cta:hover { background: rgba(96,140,89,0.2); }
+  .showcase-cta .arrow { font-size: 14px; }
+
+  .approach-description {
+    font-size: 13px;
+    color: #999;
+    margin: 4px 0 0 0;
+    line-height: 1.4;
+  }
+</style>
+
+<div class="cards">
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #111;">
+      <div class="topbar-mock">
+        <span class="logo">therun.gg</span>
+        <span class="nav-items">Explore Compete Tools</span>
+        <span class="spacer"></span>
+        <div class="spotlight-strip">
+          <div class="patron-showcase">
+            <span class="patron-label">Patron of the day</span>
+            <span class="bunny">🐰</span>
+            <span class="patron-name">SpeedDemon42</span>
+          </div>
+          <button class="join-btn">Become a Patron</button>
+        </div>
+        <span class="utils">🔍 🌙 👤</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A: Spotlight Strip</h3>
+      <p>A contained banner between nav and utilities. Shows the featured patron with their styled name + bunny, and a persistent "Become a Patron" button. Rotates between supporter of the day, latest patron, and benefit highlights. Background has a subtle green gradient to draw the eye without clashing.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #111;">
+      <div class="topbar-mock">
+        <span class="logo">therun.gg</span>
+        <span class="nav-items">Explore Compete Tools</span>
+        <span class="spacer"></span>
+        <div class="ticker-section">
+          <div class="ticker-track">
+            <span class="ticker-item"><span class="t-name gold">SpeedDemon42</span> 🐰</span>
+            <span class="ticker-item t-sep">·</span>
+            <span class="ticker-item"><span class="t-name blue">NightRunner</span> 🐰</span>
+            <span class="ticker-item t-sep">·</span>
+            <span class="ticker-item"><span class="t-name">RosaSpeed</span> 🐰</span>
+            <span class="ticker-item t-sep">·</span>
+            <span class="ticker-item"><span class="t-name green">FastFinish</span></span>
+          </div>
+          <span class="ticker-cta">Join them →</span>
+        </div>
+        <span class="utils">🔍 🌙 👤</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B: Community Ticker</h3>
+      <p>A flowing stream of patron names in their custom colors with bunny icons, like a stock ticker of supporters. Creates strong social proof — "look at all these people." Anchored by a "Join them" pill on the right. The variety of colors naturally draws the eye. Would need the API to return more patrons than just two.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding: 16px; background: #111;">
+      <div class="topbar-mock">
+        <span class="logo">therun.gg</span>
+        <span class="nav-items">Explore Compete Tools</span>
+        <span class="spacer"></span>
+        <div class="showcase-section">
+          <div class="showcase-left">
+            <span class="featured-bunny">🐰</span>
+            <div class="featured-info">
+              <div class="featured-label">Supporter of the day</div>
+              <div class="featured-name">SpeedDemon42</div>
+            </div>
+          </div>
+          <div class="showcase-cta">
+            Become a Patron <span class="arrow">→</span>
+          </div>
+        </div>
+        <span class="utils">🔍 🌙 👤</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C: Integrated Showcase</h3>
+      <p>Feels like a native part of the topbar — uses the full height with vertical dividers to create a distinct "zone." The featured patron gets a two-line treatment (label + styled name), and the CTA sits beside it as its own section with a subtle background. Structured, clean, feels intentional rather than bolted on.</p>
+    </div>
+  </div>
+</div>

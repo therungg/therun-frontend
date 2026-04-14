@@ -10,7 +10,7 @@ All responses follow `{ result: <data> }`. Errors return `{ error: "<message>" }
 
 ## Updated pageData Shape
 
-`GET /game-mgmt/:gameId` now returns an expanded `pageData` with two new top-level keys: `metadata` and `customizations`.
+`GET /v1/games/:gameId` now returns an expanded `pageData` with two new top-level keys: `metadata` and `customizations`.
 
 ```typescript
 interface PageData {
@@ -215,9 +215,9 @@ interface FlairCustomization {
 
 ## New Endpoints
 
-### GET /game-mgmt/:id/igdb-preview
+### GET /v1/games/:id/igdb-preview
 
-Fetch fresh IGDB metadata for a game without saving. Use this for a "Sync from IGDB" UI where the user can preview what IGDB has and selectively apply fields via `PUT /game-mgmt/:id`.
+Fetch fresh IGDB metadata for a game without saving. Use this for a "Sync from IGDB" UI where the user can preview what IGDB has and selectively apply fields via `PUT /v1/games/:id`.
 
 Returns the raw IGDB response structure (different from `pageData.metadata` — this is the source data before normalization).
 
@@ -272,7 +272,7 @@ Returns the raw IGDB response structure (different from `pageData.metadata` — 
 
 **Note:** `first_release_date` and `release_dates[].date` are unix timestamps (seconds), not ISO strings. Convert with `new Date(value * 1000)` on the frontend.
 
-### GET /game-mgmt/:id/customizations
+### GET /v1/games/:id/customizations
 
 Fetch current customization settings for a game. Returns `{}` if no customizations have been set.
 
@@ -285,7 +285,7 @@ Fetch current customization settings for a game. Returns `{}` if no customizatio
 
 **Auth:** None (public). Customizations are also embedded in `pageData`, so this endpoint is mainly useful for the edit form to get the current state without the full pageData payload.
 
-### PUT /game-mgmt/:id/customizations
+### PUT /v1/games/:id/customizations
 
 Update game customizations. Each top-level key (`visual`, `leaderboard`, `community`, `flair`) is independent — you can send just the one you're changing.
 
@@ -306,7 +306,7 @@ Update game customizations. Each top-level key (`visual`, `leaderboard`, `commun
 
 **Important:** Each key replaces the entire JSONB value for that domain. If you send `{ community: { announcements: [...] } }`, the entire `community` column is replaced — not merged. To add an announcement, read the current state first, append to the array, and send the full object back.
 
-### PUT /game-mgmt/:id (expanded)
+### PUT /v1/games/:id (expanded)
 
 The existing game edit endpoint now accepts additional IGDB scalar fields.
 
@@ -349,9 +349,9 @@ Once a game has been synced (`igdbSyncedAt` is set), the cron will not overwrite
 
 For games that need a metadata refresh or were manually corrected:
 
-1. **Fetch preview:** `GET /game-mgmt/:id/igdb-preview` to see current IGDB data
+1. **Fetch preview:** `GET /v1/games/:id/igdb-preview` to see current IGDB data
 2. **Show diff UI:** Compare `pageData` values with the IGDB preview
-3. **Apply selectively:** User picks which fields to update, frontend sends `PUT /game-mgmt/:id` with only the chosen fields
+3. **Apply selectively:** User picks which fields to update, frontend sends `PUT /v1/games/:id` with only the chosen fields
 
 The IGDB preview endpoint does not write anything — it's read-only. The user controls what gets saved through the edit endpoint.
 
@@ -361,11 +361,11 @@ The IGDB preview endpoint does not write anything — it's read-only. The user c
 
 | Endpoint | Permission |
 |----------|-----------|
-| `GET /game-mgmt/:id` | Public |
-| `GET /game-mgmt/:id/customizations` | Public |
-| `GET /game-mgmt/:id/igdb-preview` | `edit-game` |
-| `PUT /game-mgmt/:id` (including new fields) | `edit-game` |
-| `PUT /game-mgmt/:id/customizations` | `edit-customizations` |
+| `GET /v1/games/:id` | Public |
+| `GET /v1/games/:id/customizations` | Public |
+| `GET /v1/games/:id/igdb-preview` | `edit-game` |
+| `PUT /v1/games/:id` (including new fields) | `edit-game` |
+| `PUT /v1/games/:id/customizations` | `edit-customizations` |
 
 `edit-customizations` is granted to: `global-admin`, `series-admin`, `series-mod`, `game-admin`, `game-mod`.
 
@@ -449,25 +449,25 @@ Using data from `pageData`:
 
 1. Mod opens game settings panel
 2. Clicks "Sync from IGDB"
-3. `GET /game-mgmt/:id/igdb-preview`
+3. `GET /v1/games/:id/igdb-preview`
 4. If error "Game has no IGDB match" — show message, offer manual search (future feature)
 5. Show preview alongside current values, highlighting differences
 6. Mod selects fields to update (checkboxes next to each field)
 7. Build request body with only selected fields
-8. `PUT /game-mgmt/:id` with selected scalar fields (summary, storyline, etc.)
+8. `PUT /v1/games/:id` with selected scalar fields (summary, storyline, etc.)
 9. Show success, re-fetch pageData after 500ms for updated values
 
 ### Flow: Mod Edits Game Summary
 
 1. Mod opens game settings
 2. Edits summary text in a textarea
-3. `PUT /game-mgmt/:id` with `{ summary: "New description" }`
+3. `PUT /v1/games/:id` with `{ summary: "New description" }`
 4. Optimistically update local state
 
 ### Flow: Mod Adds an Announcement
 
 1. Mod opens customizations panel
-2. `GET /game-mgmt/:id/customizations` to get current state
+2. `GET /v1/games/:id/customizations` to get current state
 3. Mod types announcement text, toggles "pinned"
 4. Append to existing `community.announcements` array:
    ```typescript
@@ -479,7 +479,7 @@ Using data from `pageData`:
      ]
    };
    ```
-5. `PUT /game-mgmt/:id/customizations` with `{ community: updated }`
+5. `PUT /v1/games/:id/customizations` with `{ community: updated }`
 6. Optimistically update local state
 
 ### Flow: Supporter Customizes Leaderboard
@@ -490,7 +490,7 @@ Using data from `pageData`:
 4. Adds highlight rule: top 3 with gold/silver/bronze
 5. Adds threshold rule: sub-hour runs in green
 6. ```typescript
-   PUT /game-mgmt/:id/customizations
+   PUT /v1/games/:id/customizations
    {
      leaderboard: {
        style: "card",
@@ -512,7 +512,7 @@ Using data from `pageData`:
 3. Uploads banner image (to your image hosting, gets URL back)
 4. Selects "retro" theme preset
 5. ```typescript
-   PUT /game-mgmt/:id/customizations
+   PUT /v1/games/:id/customizations
    {
      visual: {
        accentColor: "#ff5500",
@@ -565,6 +565,6 @@ function getRowStyle(rank: number, time: number) {
 
 - **pageData is the primary read path.** Metadata and customizations are embedded in pageData so you don't need separate fetches for page renders. Use the individual endpoints (`GET /customizations`, `GET /igdb-preview`) only for edit UIs.
 - **Customization writes replace entire domains.** When updating `community`, send the complete `community` object — not a partial merge. Read current state first.
-- **IGDB metadata is populated automatically** on first match. Manual edits via `PUT /game-mgmt/:id` are never overwritten by the background sync.
+- **IGDB metadata is populated automatically** on first match. Manual edits via `PUT /v1/games/:id` are never overwritten by the background sync.
 - **IGDB preview returns raw IGDB data** with snake_case keys and unix timestamps. The `pageData.metadata` uses camelCase and ISO strings. The frontend needs to transform when applying preview data to edit fields.
 - **Screenshots/artworks are IGDB-hosted URLs.** They use IGDB's CDN (`images.igdb.com`). Consider proxying or caching if you need reliability guarantees.

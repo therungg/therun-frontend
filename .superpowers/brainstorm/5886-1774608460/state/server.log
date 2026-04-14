@@ -1,0 +1,6 @@
+{"type":"server-started","port":51580,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:51580","screen_dir":"/home/joey/therun/therun-fr/.superpowers/brainstorm/5886-1774608460/content","state_dir":"/home/joey/therun/therun-fr/.superpowers/brainstorm/5886-1774608460/state"}
+{"type":"screen-added","file":"/home/joey/therun/therun-fr/.superpowers/brainstorm/5886-1774608460/content/approaches.html"}
+{"type":"screen-added","file":"/home/joey/therun/therun-fr/.superpowers/brainstorm/5886-1774608460/content/approaches-v2.html"}
+{"type":"screen-added","file":"/home/joey/therun/therun-fr/.superpowers/brainstorm/5886-1774608460/content/spotlight-v2.html"}
+{"type":"screen-added","file":"/home/joey/therun/therun-fr/.superpowers/brainstorm/5886-1774608460/content/waiting.html"}
+{"type":"server-stopped","reason":"owner process exited"}
