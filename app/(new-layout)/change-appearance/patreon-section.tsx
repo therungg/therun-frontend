@@ -20,7 +20,7 @@ import { LoginWithPatreon } from './login-with-patreon';
 
 export interface UserPatreonData {
     tier: 1 | 2 | 3;
-    preferences: PatronPreferences;
+    preferences: PatronPreferences | null;
 }
 
 interface PatreonSectionProps {
@@ -60,24 +60,25 @@ export default function PatreonSection({
 function PatreonSettings({ userPatreonData, session }: PatreonSectionProps) {
     const isAdmin = session.roles?.includes('admin') ?? false;
     const effectiveTier: 1 | 2 | 3 = isAdmin ? 3 : (userPatreonData.tier ?? 1);
+    const savedPrefs = userPatreonData.preferences ?? EMPTY_PREFERENCES;
     const hadLegacy =
-        !!userPatreonData.preferences.colorPreference &&
-        !userPatreonData.preferences.customColor &&
-        !userPatreonData.preferences.customGradient;
+        !!savedPrefs.colorPreference &&
+        !savedPrefs.customColor &&
+        !savedPrefs.customGradient;
     const legacy = hadLegacy
-        ? legacyPresetMap(userPatreonData.preferences.colorPreference)
+        ? legacyPresetMap(savedPrefs.colorPreference)
         : null;
     const initial: PatronPreferences = {
         ...EMPTY_PREFERENCES,
-        ...userPatreonData.preferences,
+        ...savedPrefs,
         customColor:
             legacy?.kind === 'solid'
                 ? legacy.value
-                : (userPatreonData.preferences.customColor ?? null),
+                : (savedPrefs.customColor ?? null),
         customGradient:
             legacy?.kind === 'gradient'
                 ? legacy.value
-                : (userPatreonData.preferences.customGradient ?? null),
+                : (savedPrefs.customGradient ?? null),
     };
     const [prefs, setPrefs] = useState<PatronPreferences>(initial);
     const [saving, setSaving] = useState(false);
