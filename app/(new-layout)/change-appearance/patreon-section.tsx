@@ -7,6 +7,7 @@ import { Button } from 'react-bootstrap';
 import type { PatronPreferences, PerMode } from '../../../types/patreon.types';
 import type { User } from '../../../types/session.types';
 import styles from './customization/customization.module.scss';
+import { DisplaySection } from './customization/display-section';
 import { PreviewPane } from './customization/preview-pane';
 import { LoginWithPatreon } from './login-with-patreon';
 
@@ -56,7 +57,7 @@ function PatreonSettings({ userPatreonData, session }: PatreonSectionProps) {
     const [prefs, setPrefs] = useState<PatronPreferences>(initial);
     const [saving, setSaving] = useState(false);
 
-    const _update = <K extends keyof PatronPreferences>(
+    const update = <K extends keyof PatronPreferences>(
         key: K,
         value: PatronPreferences[K],
     ) => {
@@ -102,7 +103,11 @@ function PatreonSettings({ userPatreonData, session }: PatreonSectionProps) {
             <p>Thank you for supporting! Customize how your name appears.</p>
             <div className={styles.layout}>
                 <div className={styles.left}>
-                    {/* Filled in by later tasks: preset-shortcuts, fill, font, effects, display */}
+                    <DisplaySection
+                        prefs={prefs}
+                        tier={userPatreonData.tier}
+                        onChange={update}
+                    />
                 </div>
                 <div className={styles.right}>
                     <PreviewPane
