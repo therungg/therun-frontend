@@ -48,7 +48,8 @@ export default function PatreonSection({
     session,
     baseUrl,
 }: PatreonSectionProps & { baseUrl: string }) {
-    if (!userPatreonData.tier) {
+    const isAdmin = session.roles?.includes('admin') ?? false;
+    if (!userPatreonData.tier && !isAdmin) {
         return <LoginWithPatreon session={session} baseUrl={baseUrl} />;
     }
     return (
@@ -57,6 +58,8 @@ export default function PatreonSection({
 }
 
 function PatreonSettings({ userPatreonData, session }: PatreonSectionProps) {
+    const isAdmin = session.roles?.includes('admin') ?? false;
+    const effectiveTier: 1 | 2 | 3 = isAdmin ? 3 : (userPatreonData.tier ?? 1);
     const hadLegacy =
         !!userPatreonData.preferences.colorPreference &&
         !userPatreonData.preferences.customColor &&
@@ -143,26 +146,26 @@ function PatreonSettings({ userPatreonData, session }: PatreonSectionProps) {
             <div className={styles.layout}>
                 <div className={styles.left}>
                     <PresetShortcuts
-                        tier={userPatreonData.tier}
+                        tier={effectiveTier}
                         username={session.username}
                         onChange={update}
                     />
-                    {userPatreonData.tier >= 2 && (
+                    {effectiveTier >= 2 && (
                         <FillSection
                             prefs={prefs}
-                            tier={userPatreonData.tier}
+                            tier={effectiveTier}
                             onChange={update}
                         />
                     )}
-                    {userPatreonData.tier >= 2 && (
+                    {effectiveTier >= 2 && (
                         <FontSection prefs={prefs} onChange={update} />
                     )}
-                    {userPatreonData.tier >= 3 && (
+                    {effectiveTier >= 3 && (
                         <EffectsSection prefs={prefs} onChange={update} />
                     )}
                     <DisplaySection
                         prefs={prefs}
-                        tier={userPatreonData.tier}
+                        tier={effectiveTier}
                         onChange={update}
                     />
                 </div>
@@ -170,12 +173,9 @@ function PatreonSettings({ userPatreonData, session }: PatreonSectionProps) {
                     <PreviewPane
                         username={session.username}
                         preferences={prefs}
-                        tier={userPatreonData.tier}
+                        tier={effectiveTier}
                     />
-                    <ContrastWarning
-                        prefs={prefs}
-                        tier={userPatreonData.tier}
-                    />
+                    <ContrastWarning prefs={prefs} tier={effectiveTier} />
                     {!validation.ok && (
                         <div className={styles.errorText}>
                             {validation.errors.map((e, i) => (
