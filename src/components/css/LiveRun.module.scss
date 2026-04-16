@@ -116,19 +116,30 @@
     }
 }
 
+// Gradient border with rounded corners
+// border-image doesn't respect border-radius, so we use a background
+// double-layer: solid inner bg on padding-box, gradient on border-box.
+.patronGradient {
+    --_card-bg: var(--bs-body-bg);
+    border: 2px solid transparent;
+    background:
+        linear-gradient(var(--_card-bg), var(--_card-bg)) padding-box,
+        var(--patron-gradient) border-box;
+
+    &:hover {
+        border-color: transparent;
+    }
+
+    &.liveRunActive {
+        --_card-bg: var(--bs-secondary-bg);
+    }
+}
+
 // Avatar ring glow (tier 2+)
 .patronTier2 .liveRunAvatar,
 .patronTier3 .liveRunAvatar {
     border-color: var(--patron-primary);
     box-shadow: 0 0 6px color-mix(in srgb, var(--patron-primary) 40%, transparent);
-}
-
-// Split timeline current segment in patron color (tier 2+)
-.patronTier2 .splitSegmentCurrent,
-.patronTier3 .splitSegmentCurrent {
-    background: var(--patron-primary);
-    box-shadow: 0 0 4px color-mix(in srgb, var(--patron-primary) 50%, transparent);
-    animation: none;
 }
 
 // Flash animations
