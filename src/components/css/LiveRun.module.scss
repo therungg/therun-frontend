@@ -32,6 +32,105 @@
     background: var(--bs-secondary-bg);
 }
 
+// ============================================
+// Patron Tier Styles
+// ============================================
+
+// Shared base — ::before overlay for background tint/gradient
+.patronTier1,
+.patronTier2,
+.patronTier3 {
+    position: relative;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        border-radius: inherit;
+        background: var(--patron-primary);
+        opacity: 0.08;
+    }
+
+    > * {
+        position: relative;
+        z-index: 1;
+    }
+}
+
+// Tier 2 — Washed
+.patronTier2 {
+    &::before {
+        opacity: 0.12;
+    }
+
+    &.patronGradient::before {
+        background: none;
+        background-image: var(--patron-gradient);
+        opacity: 0.10;
+    }
+}
+
+// Tier 3 — Full Canvas
+.patronTier3 {
+    &::before {
+        opacity: 0.15;
+    }
+
+    &.patronGradient::before {
+        background: none;
+        background-image: var(--patron-gradient);
+        opacity: 0.18;
+    }
+
+    &.patronAnimated::before {
+        background-size: 200% 100%;
+        animation: patronSweep 8s linear infinite;
+    }
+}
+
+@keyframes patronSweep {
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 100% 50%;
+    }
+}
+
+// Game image vignette (tier 3)
+.patronTier3 .liveRunArt {
+    position: relative;
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 40%;
+        background: linear-gradient(to right, transparent, var(--patron-primary));
+        opacity: 0.2;
+        pointer-events: none;
+    }
+}
+
+// Avatar ring glow (tier 2+)
+.patronTier2 .liveRunAvatar,
+.patronTier3 .liveRunAvatar {
+    border-color: var(--patron-primary);
+    box-shadow: 0 0 6px color-mix(in srgb, var(--patron-primary) 40%, transparent);
+}
+
+// Split timeline current segment in patron color (tier 2+)
+.patronTier2 .splitSegmentCurrent,
+.patronTier3 .splitSegmentCurrent {
+    background: var(--patron-primary);
+    box-shadow: 0 0 4px color-mix(in srgb, var(--patron-primary) 50%, transparent);
+    animation: none;
+}
+
 // Flash animations
 .liveRunGold {
     animation: cardGoldFlash 5s ease-out forwards;
@@ -859,5 +958,9 @@ a > .liveRunContainer {
 
     .liveRunContainer {
         transition: none;
+    }
+
+    .patronAnimated::before {
+        animation: none;
     }
 }
