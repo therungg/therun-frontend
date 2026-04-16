@@ -81,7 +81,20 @@ export const LiveUserRun = ({
     const [liveUserStyles, setLiveUserStyles] = useState<{
         borderColor: string;
         gradient: string;
-    }>({ borderColor: '', gradient: '' });
+        patronPrimary: string;
+        patronGradient: string;
+        patronTier: number;
+        isGradient: boolean;
+        isAnimated: boolean;
+    }>({
+        borderColor: '',
+        gradient: '',
+        patronPrimary: '',
+        patronGradient: '',
+        patronTier: 0,
+        isGradient: false,
+        isAnimated: false,
+    });
     const { data: patreons, isLoading } = usePatreons();
     const segments = getSplitSegments(liveRun);
     const flash = useSplitFlash(liveRun);
@@ -95,6 +108,11 @@ export const LiveUserRun = ({
             const patreonData = patreons[liveRun.user];
             let borderColor = '';
             let gradient = '';
+            let patronPrimary = '';
+            let patronGradient = '';
+            let patronTier = 0;
+            let isGradient = false;
+            let isAnimated = false;
 
             if (!patreonData.preferences || !patreonData.preferences.hide) {
                 const fill = resolveFill(
@@ -102,16 +120,35 @@ export const LiveUserRun = ({
                     patreonData.tier,
                     dark ? 'dark' : 'light',
                 );
+                patronTier = Math.min(patreonData.tier, 3);
+
                 if (fill.kind === 'gradient') {
                     gradient = `-webkit-linear-gradient(left, ${fill.value.join(',')})`;
                     borderColor = fill.value[0];
+                    patronPrimary = fill.value[0];
+                    const angle =
+                        patreonData.preferences?.gradientAngle?.[
+                            dark ? 'dark' : 'light'
+                        ] ?? 90;
+                    patronGradient = `linear-gradient(${angle}deg, ${fill.value.join(', ')})`;
+                    isGradient = true;
+                    isAnimated = !!patreonData.preferences?.gradientAnimated;
                 } else {
                     borderColor = fill.value;
+                    patronPrimary = fill.value;
                 }
             } else {
                 borderColor = 'var(--bs-link-color)';
             }
-            setLiveUserStyles({ borderColor, gradient });
+            setLiveUserStyles({
+                borderColor,
+                gradient,
+                patronPrimary,
+                patronGradient,
+                patronTier,
+                isGradient,
+                isAnimated,
+            });
         }
     }, [patreons, isLoading, liveRun.user, dark]);
 
@@ -154,22 +191,36 @@ export const LiveUserRun = ({
                 flash === 'gold' && styles.liveRunGold,
                 flash === 'ahead' && styles.liveRunGreen,
                 flash === 'behind' && styles.liveRunRed,
+                liveUserStyles.patronTier === 1 && styles.patronTier1,
+                liveUserStyles.patronTier === 2 && styles.patronTier2,
+                liveUserStyles.patronTier >= 3 && styles.patronTier3,
+                liveUserStyles.isGradient && styles.patronGradient,
+                liveUserStyles.isAnimated && styles.patronAnimated,
             )}
             style={
-                liveUserStyles.gradient
-                    ? {
-                          borderImageSource: liveUserStyles.gradient,
-                          borderImageSlice: 1,
-                          borderWidth: '2px',
-                      }
-                    : {
-                          borderColor: liveUserStyles.borderColor || undefined,
-                          borderWidth:
-                              liveUserStyles.gradient ||
-                              liveUserStyles.borderColor
-                                  ? '2px'
-                                  : undefined,
-                      }
+                {
+                    ...(liveUserStyles.gradient
+                        ? {
+                              borderImageSource: liveUserStyles.gradient,
+                              borderImageSlice: 1,
+                              borderWidth: '2px',
+                          }
+                        : {
+                              borderColor:
+                                  liveUserStyles.borderColor || undefined,
+                              borderWidth:
+                                  liveUserStyles.gradient ||
+                                  liveUserStyles.borderColor
+                                      ? '2px'
+                                      : undefined,
+                          }),
+                    ...(liveUserStyles.patronPrimary && {
+                        '--patron-primary': liveUserStyles.patronPrimary,
+                    }),
+                    ...(liveUserStyles.patronGradient && {
+                        '--patron-gradient': liveUserStyles.patronGradient,
+                    }),
+                } as React.CSSProperties
             }
         >
             <div className="d-flex flex-fill">
