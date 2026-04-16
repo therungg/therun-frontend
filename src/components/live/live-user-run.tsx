@@ -199,21 +199,11 @@ export const LiveUserRun = ({
             )}
             style={
                 {
-                    ...(liveUserStyles.gradient
-                        ? {
-                              borderImageSource: liveUserStyles.gradient,
-                              borderImageSlice: 1,
-                              borderWidth: '2px',
-                          }
-                        : {
-                              borderColor:
-                                  liveUserStyles.borderColor || undefined,
-                              borderWidth:
-                                  liveUserStyles.gradient ||
-                                  liveUserStyles.borderColor
-                                      ? '2px'
-                                      : undefined,
-                          }),
+                    ...(!liveUserStyles.gradient &&
+                        liveUserStyles.borderColor && {
+                            borderColor: liveUserStyles.borderColor,
+                            borderWidth: '2px',
+                        }),
                     ...(liveUserStyles.patronPrimary && {
                         '--patron-primary': liveUserStyles.patronPrimary,
                     }),
