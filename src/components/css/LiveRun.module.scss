@@ -45,10 +45,13 @@
     &::before {
         content: '';
         position: absolute;
-        inset: 0;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 81px;
         z-index: 0;
         pointer-events: none;
-        border-radius: inherit;
+        border-radius: 0 $radius-xl $radius-xl 0;
         background: var(--patron-primary);
         opacity: 0.08;
     }
