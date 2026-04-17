@@ -43,16 +43,22 @@ export const UserLink = ({
     if (!username.startsWith('/')) username = `/${username}`;
 
     username = decodeURIComponent(username);
-    let withoutSlash = username.replace('/', '');
+    const nameStr = username.replace('/', '');
 
     if (url === '') url = username;
 
-    if (!isLoading && patreons && patreons[withoutSlash]) {
-        const patron = patreons[withoutSlash];
+    let displayNode: React.ReactNode = nameStr;
+    if (
+        !isLoading &&
+        patreons &&
+        patreons[nameStr] &&
+        !patreons[nameStr].preferences?.hide
+    ) {
+        const patron = patreons[nameStr];
         const showIcon = icon && (patron.preferences?.showIcon ?? true);
-        withoutSlash = (
+        displayNode = (
             <PatreonName
-                name={withoutSlash}
+                name={nameStr}
                 preferences={patron.preferences}
                 tier={patron.tier}
                 icon={showIcon}
@@ -60,7 +66,7 @@ export const UserLink = ({
         );
     }
 
-    const element = children ? children : withoutSlash;
+    const element = children ? children : displayNode;
 
     return (
         <>

@@ -1,5 +1,6 @@
 'use server';
 
+import { revalidateTag } from 'next/cache';
 import { type UserPatreonData } from '~app/(new-layout)/change-appearance/patreon-section';
 
 export const savePatreonSettings = async (
@@ -12,6 +13,8 @@ export const savePatreonSettings = async (
         method: 'POST',
         body: JSON.stringify(preferences),
     });
+
+    revalidateTag('patrons', 'hours');
 
     return res.json();
 };

@@ -132,6 +132,21 @@
     }
 }
 
+.itemWithIcon {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.itemBunny {
+    display: inline-flex;
+    align-items: center;
+    opacity: 0.9;
+    flex-shrink: 0;
+}
+
 @media (hover: hover) {
     .container:hover .dropdown {
         opacity: 1;

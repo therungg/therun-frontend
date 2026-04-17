@@ -6,14 +6,13 @@ import styles from './customization.module.scss';
 
 interface DisplaySectionProps {
     prefs: PatronPreferences;
-    tier: number;
     onChange: <K extends keyof PatronPreferences>(
         key: K,
         value: PatronPreferences[K],
     ) => void;
 }
 
-export function DisplaySection({ prefs, tier, onChange }: DisplaySectionProps) {
+export function DisplaySection({ prefs, onChange }: DisplaySectionProps) {
     return (
         <section className={styles.card}>
             <div className={styles.cardHeader}>Display preferences</div>
@@ -46,16 +45,6 @@ export function DisplaySection({ prefs, tier, onChange }: DisplaySectionProps) {
                 />
                 <span>Display my name on the Support page</span>
             </label>
-
-            {tier >= 3 && (
-                <label className={styles.fieldRow}>
-                    <Switch
-                        onChange={(v) => onChange('featureInScrollbar', v)}
-                        checked={prefs.featureInScrollbar}
-                    />
-                    <span>Display my name in the scrolling bar</span>
-                </label>
-            )}
         </section>
     );
 }

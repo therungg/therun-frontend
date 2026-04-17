@@ -28,28 +28,6 @@ export function validatePrefs(p: PatronPreferences): ValidationResult {
         }
     }
 
-    if (p.textShadow) {
-        for (const mode of ['dark', 'light'] as const) {
-            const s = p.textShadow[mode];
-            if (!HEX.test(s.color))
-                errors.push(`${mode} shadow color is not a valid hex.`);
-            if (!Number.isFinite(s.blur) || s.blur < 0 || s.blur > 20) {
-                errors.push(`${mode} shadow blur must be 0–20.`);
-            }
-        }
-    }
-
-    if (p.outline) {
-        for (const mode of ['dark', 'light'] as const) {
-            const o = p.outline[mode];
-            if (!HEX.test(o.color))
-                errors.push(`${mode} outline color is not a valid hex.`);
-            if (!Number.isFinite(o.width) || o.width < 0 || o.width > 3) {
-                errors.push(`${mode} outline width must be 0–3.`);
-            }
-        }
-    }
-
     if (p.gradientAngle) {
         for (const mode of ['dark', 'light'] as const) {
             const a = p.gradientAngle[mode];

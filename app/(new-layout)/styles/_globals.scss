@@ -438,13 +438,19 @@ html {
     }
 }
 
+@property --patron-grad-angle {
+    syntax: '<angle>';
+    inherits: false;
+    initial-value: 0deg;
+}
+
 @keyframes patron-gradient {
-    0%   { background-position: 0%   50%; }
-    100% { background-position: 200% 50%; }
+    from { --patron-grad-angle: 0deg; }
+    to   { --patron-grad-angle: 360deg; }
 }
 
 @media (prefers-reduced-motion: reduce) {
     @keyframes patron-gradient {
-        0%, 100% { background-position: 0 50%; }
+        from, to { --patron-grad-angle: 0deg; }
     }
 }

@@ -1,4 +1,5 @@
 'use client';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { BunnyIcon } from '~src/icons/bunny-icon';
@@ -10,22 +11,28 @@ import { usePatreons } from './use-patreons';
 
 interface NameAsPatreonProps {
     name: string;
+    icon?: boolean;
+    size?: number;
 }
 
 export const NameAsPatreon: React.FunctionComponent<NameAsPatreonProps> = ({
     name,
+    icon,
+    size,
 }) => {
     const { data: patreons, isLoading } = usePatreons();
     const patron = patreons?.[name];
     if (isLoading || !patron || patron.preferences?.hide) {
         return <>{safeDecodeURI(name)}</>;
     }
+    const showIcon = icon ?? patron.preferences?.showIcon ?? true;
     return (
         <PatreonName
             name={name}
             preferences={patron.preferences}
             tier={patron.tier}
-            icon={patron.preferences?.showIcon ?? true}
+            icon={showIcon}
+            size={size}
         />
     );
 };
@@ -45,12 +52,19 @@ export const PatreonName: React.FunctionComponent<PatreonNameProps> = ({
     icon = true,
     size = 20,
 }) => {
+    const router = useRouter();
     const [theme, setTheme] = useState<Theme>('dark');
     useEffect(() => {
         setTheme(getColorMode() === 'light' ? 'light' : 'dark');
     }, []);
 
     const style = buildPatronStyle(preferences, tier, theme);
+
+    const handleBunnyClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        router.push('/support');
+    };
 
     return (
         <>
@@ -60,11 +74,23 @@ export const PatreonName: React.FunctionComponent<PatreonNameProps> = ({
                     placement="top"
                     overlay={
                         <Tooltip id={`patron-${name}`}>
-                            therun.gg Patron
+                            therun.gg Supporter
                         </Tooltip>
                     }
                 >
-                    <span>
+                    <span
+                        onClick={handleBunnyClick}
+                        role="link"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                e.preventDefault();
+                                router.push('/support');
+                            }
+                        }}
+                        style={{ cursor: 'pointer' }}
+                        aria-label="Learn about supporting therun.gg"
+                    >
                         {' '}
                         <BunnyIcon size={size} />
                     </span>

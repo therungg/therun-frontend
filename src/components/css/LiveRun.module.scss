@@ -750,6 +750,117 @@ a > .liveRunContainer {
     border: 1px solid var(--bs-border-color);
     border-radius: $radius-xl;
     transition: all $transition-base;
+    overflow: hidden;
+}
+
+// Hero patron tier styles — subtle tint overlay + colored border
+.heroPatronTier1,
+.heroPatronTier2,
+.heroPatronTier3 {
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        border-radius: $radius-xl;
+        background: var(--patron-primary);
+        opacity: 0.06;
+    }
+
+    > * {
+        position: relative;
+        z-index: 1;
+    }
+}
+
+.heroPatronTier1 {
+    border-color: var(--patron-primary);
+}
+
+.heroPatronTier2 {
+    border-color: var(--patron-primary);
+
+    &::before {
+        opacity: 0.09;
+    }
+
+    &.heroPatronGradient::before {
+        background: none;
+        background-image: var(--patron-gradient);
+        opacity: 0.08;
+    }
+}
+
+.heroPatronTier3 {
+    border-color: var(--patron-primary);
+
+    &::before {
+        opacity: 0.12;
+    }
+
+    &.heroPatronGradient::before {
+        background: none;
+        background-image: var(--patron-gradient);
+        opacity: 0.14;
+    }
+
+    &.heroPatronAnimated::before {
+        background-size: 200% 100%;
+        animation: patronSweep 8s linear infinite;
+    }
+}
+
+.heroPatronGradient {
+    --_hero-bg: var(--bs-body-bg);
+    border: 2px solid transparent;
+    background:
+        linear-gradient(var(--_hero-bg), var(--_hero-bg)) padding-box,
+        var(--patron-gradient) border-box;
+}
+
+.heroPatronTier2 .heroAvatar,
+.heroPatronTier3 .heroAvatar {
+    border-color: var(--patron-primary);
+    box-shadow: 0 0 6px color-mix(in srgb, var(--patron-primary) 40%, transparent);
+}
+
+// Supporter attribution chip
+.heroSupporterChip {
+    position: absolute;
+    top: $spacing-sm;
+    right: $spacing-sm;
+    z-index: 20;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    font-size: $font-size-2xs;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--bs-body-color);
+    background: color-mix(in srgb, var(--patron-primary, var(--bs-body-color)) 10%, var(--bs-body-bg));
+    border: 1px solid color-mix(in srgb, var(--patron-primary, var(--bs-border-color)) 40%, transparent);
+    text-decoration: none;
+    transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+
+    &:hover {
+        background: color-mix(in srgb, var(--patron-primary, var(--bs-body-color)) 18%, var(--bs-body-bg));
+        border-color: color-mix(in srgb, var(--patron-primary, var(--bs-border-color)) 65%, transparent);
+        color: var(--bs-body-color);
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+}
+
+.heroSupporterDot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--patron-gradient, var(--patron-primary, var(--bs-primary)));
+    box-shadow: 0 0 6px color-mix(in srgb, var(--patron-primary, var(--bs-primary)) 60%, transparent);
 }
 
 .heroIdentityStale {

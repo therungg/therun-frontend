@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import useSWR from 'swr';
+import { NameAsPatreon } from '~src/components/patreon/patreon-name';
 import type { SearchResults } from '~src/components/search/find-user-or-run';
 import { fetcher } from '~src/utils/fetcher';
 import styles from './user-autocomplete.module.scss';
@@ -123,7 +124,9 @@ export function UserAutocomplete({
                                     className={styles.avatar}
                                 />
                             )}
-                            <span className={styles.username}>{user.user}</span>
+                            <span className={styles.username}>
+                                <NameAsPatreon name={user.user} />
+                            </span>
                         </li>
                     ))}
                 </ul>

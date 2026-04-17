@@ -14,6 +14,22 @@ export default async function ChangeAppearance(props: {
     const userPatreonData = await getUserPatreonData(searchParams);
     const baseUrl = await getBaseUrl();
 
+    const isAdmin = session.roles?.includes('admin') ?? false;
+    const rawTier = isAdmin ? Number(searchParams.tier) : NaN;
+    const tierOverride =
+        isAdmin && [0, 1, 2, 3].includes(rawTier)
+            ? (rawTier as 0 | 1 | 2 | 3)
+            : undefined;
+
+    // Admin previewing non-patron view
+    if (tierOverride === 0) {
+        return (
+            <div>
+                <LoginWithPatreon session={session} baseUrl={baseUrl} />
+            </div>
+        );
+    }
+
     return (
         <div>
             {!userPatreonData ? (
@@ -23,6 +39,7 @@ export default async function ChangeAppearance(props: {
                     session={session}
                     userPatreonData={userPatreonData}
                     baseUrl={baseUrl}
+                    tierOverride={tierOverride as 1 | 2 | 3 | undefined}
                 />
             )}
         </div>
