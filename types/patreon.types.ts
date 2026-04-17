@@ -3,16 +3,6 @@ export interface PerMode<T> {
     light: T;
 }
 
-export interface TextShadowSpec {
-    color: string;
-    blur: number;
-}
-
-export interface OutlineSpec {
-    color: string;
-    width: number;
-}
-
 export interface PatronPreferences {
     hide: boolean;
     featureInScrollbar: boolean;
@@ -27,9 +17,6 @@ export interface PatronPreferences {
 
     bold?: boolean;
     italic?: boolean;
-
-    textShadow?: PerMode<TextShadowSpec> | null;
-    outline?: PerMode<OutlineSpec> | null;
 
     gradientAngle?: PerMode<number> | null;
     gradientAnimated?: boolean;

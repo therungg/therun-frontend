@@ -3,64 +3,32 @@ import type { PerMode } from '../../../../types/patreon.types';
 import styles from './customization.module.scss';
 
 interface SolidPickerProps {
+    mode: 'dark' | 'light';
     value: PerMode<string>;
     onChange: (next: PerMode<string>) => void;
 }
 
-function normalizeHex(v: string): string {
-    // <input type="color"> already returns #rrggbb lowercase.
-    return v;
-}
-
-export function SolidPicker({ value, onChange }: SolidPickerProps) {
+export function SolidPicker({ mode, value, onChange }: SolidPickerProps) {
+    const other = mode === 'dark' ? 'light' : 'dark';
     return (
         <div>
             <div className={styles.fieldRow}>
-                <label>Dark mode</label>
+                <label>Color</label>
                 <input
                     type="color"
-                    value={value.dark}
+                    value={value[mode]}
                     onChange={(e) =>
-                        onChange({
-                            ...value,
-                            dark: normalizeHex(e.target.value),
-                        })
+                        onChange({ ...value, [mode]: e.target.value })
                     }
                 />
-                <span>{value.dark}</span>
+                <span>{value[mode]}</span>
                 <button
                     type="button"
                     className={styles.chip}
-                    onClick={() =>
-                        onChange({ dark: value.dark, light: value.dark })
-                    }
-                    title="Copy dark → light"
+                    onClick={() => onChange({ ...value, [other]: value[mode] })}
+                    title={`Copy to ${other} mode`}
                 >
-                    ↓
-                </button>
-            </div>
-            <div className={styles.fieldRow}>
-                <label>Light mode</label>
-                <input
-                    type="color"
-                    value={value.light}
-                    onChange={(e) =>
-                        onChange({
-                            ...value,
-                            light: normalizeHex(e.target.value),
-                        })
-                    }
-                />
-                <span>{value.light}</span>
-                <button
-                    type="button"
-                    className={styles.chip}
-                    onClick={() =>
-                        onChange({ dark: value.light, light: value.light })
-                    }
-                    title="Copy light → dark"
-                >
-                    ↑
+                    Copy to {other}
                 </button>
             </div>
         </div>

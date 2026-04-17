@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FaBolt, FaStar, FaTrophy } from 'react-icons/fa6';
 import { Panel } from '~app/(new-layout)/components/panel.component';
 import Link from '~src/components/link';
+import { NameAsPatreon } from '~src/components/patreon/patreon-name';
 import {
     DurationToFormatted,
     FromNow,
@@ -443,7 +444,9 @@ const FeaturedCarousel = ({
                                                     styles.featuredRunnerName
                                                 }
                                             >
-                                                {pb.username}
+                                                <NameAsPatreon
+                                                    name={pb.username}
+                                                />
                                             </span>
                                             <span
                                                 className={
@@ -611,7 +614,9 @@ const CompactItem = ({
                 )}
             </div>
             <div className={styles.listInfo}>
-                <span className={styles.listRunnerName}>{pb.username}</span>
+                <span className={styles.listRunnerName}>
+                    <NameAsPatreon name={pb.username} />
+                </span>
                 <span className={styles.listGameCategory}>
                     {pb.game} &middot; {pb.category}
                 </span>

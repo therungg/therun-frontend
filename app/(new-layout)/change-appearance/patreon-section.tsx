@@ -1,20 +1,20 @@
 'use client';
 
 import axios from 'axios';
-import Router from 'next/router';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Button } from 'react-bootstrap';
+import { mutate } from 'swr';
 import { legacyPresetMap } from '~src/components/patreon/legacy-preset-map';
 import type { PatronPreferences, PerMode } from '../../../types/patreon.types';
 import type { User } from '../../../types/session.types';
 import { ContrastWarning } from './customization/contrast-warning';
 import styles from './customization/customization.module.scss';
 import { DisplaySection } from './customization/display-section';
-import { EffectsSection } from './customization/effects-section';
 import { FillSection } from './customization/fill-section';
 import { FontSection } from './customization/font-section';
-import { PresetShortcuts } from './customization/preset-shortcuts';
 import { PreviewPane } from './customization/preview-pane';
+import { TierOverview } from './customization/tier-overview';
 import { validatePrefs } from './customization/validation';
 import { LoginWithPatreon } from './login-with-patreon';
 
@@ -26,6 +26,7 @@ export interface UserPatreonData {
 interface PatreonSectionProps {
     userPatreonData: UserPatreonData;
     session: User;
+    tierOverride?: 1 | 2 | 3;
 }
 
 const EMPTY_PREFERENCES: PatronPreferences = {
@@ -37,8 +38,6 @@ const EMPTY_PREFERENCES: PatronPreferences = {
     customGradient: null,
     bold: false,
     italic: false,
-    textShadow: null,
-    outline: null,
     gradientAngle: null,
     gradientAnimated: false,
 };
@@ -47,19 +46,33 @@ export default function PatreonSection({
     userPatreonData,
     session,
     baseUrl,
+    tierOverride,
 }: PatreonSectionProps & { baseUrl: string }) {
     const isAdmin = session.roles?.includes('admin') ?? false;
     if (!userPatreonData.tier && !isAdmin) {
         return <LoginWithPatreon session={session} baseUrl={baseUrl} />;
     }
     return (
-        <PatreonSettings session={session} userPatreonData={userPatreonData} />
+        <PatreonSettings
+            session={session}
+            userPatreonData={userPatreonData}
+            tierOverride={tierOverride}
+        />
     );
 }
 
-function PatreonSettings({ userPatreonData, session }: PatreonSectionProps) {
+function PatreonSettings({
+    userPatreonData,
+    session,
+    tierOverride,
+}: PatreonSectionProps) {
     const isAdmin = session.roles?.includes('admin') ?? false;
-    const effectiveTier: 1 | 2 | 3 = isAdmin ? 3 : (userPatreonData.tier ?? 1);
+    const effectiveTier: 1 | 2 | 3 =
+        tierOverride != null
+            ? tierOverride
+            : isAdmin
+              ? 3
+              : (userPatreonData.tier ?? 1);
     const savedPrefs = userPatreonData.preferences ?? EMPTY_PREFERENCES;
     const hadLegacy =
         !!savedPrefs.colorPreference &&
@@ -82,7 +95,10 @@ function PatreonSettings({ userPatreonData, session }: PatreonSectionProps) {
     };
     const [prefs, setPrefs] = useState<PatronPreferences>(initial);
     const [saving, setSaving] = useState(false);
+    const [saved, setSaved] = useState(false);
     const [legacyBannerDismissed, setLegacyBannerDismissed] = useState(false);
+    const router = useRouter();
+    const [mode, setMode] = useState<'dark' | 'light'>('dark');
     const validation = validatePrefs(prefs);
 
     const update = <K extends keyof PatronPreferences>(
@@ -116,7 +132,10 @@ function PatreonSettings({ userPatreonData, session }: PatreonSectionProps) {
                 `/api/users/${session.id}-${session.username}/patreon-settings`,
                 payload,
             );
-            Router.reload();
+            await mutate('/api/patreons');
+            router.refresh();
+            setSaved(true);
+            setTimeout(() => setSaved(false), 3000);
         } finally {
             setSaving(false);
         }
@@ -126,9 +145,42 @@ function PatreonSettings({ userPatreonData, session }: PatreonSectionProps) {
     void ({} as PerMode<string>);
 
     return (
-        <div>
-            <h1>Patreon Customization</h1>
-            <p>Thank you for supporting! Customize how your name appears.</p>
+        <div className={styles.page}>
+            {isAdmin && (
+                <div className={styles.adminPreviewBanner}>
+                    <span>Admin preview:</span>
+                    <div className={styles.adminPreviewTierLinks}>
+                        {(
+                            [
+                                'Non-patron',
+                                'Tier 1',
+                                'Tier 2',
+                                'Tier 3',
+                            ] as const
+                        ).map((label, t) => (
+                            <Link
+                                key={t}
+                                href={`?tier=${t}`}
+                                className={styles.adminPreviewTierLink}
+                                data-active={
+                                    tierOverride === t ||
+                                    (tierOverride == null &&
+                                        t === effectiveTier)
+                                }
+                            >
+                                {label}
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
+            <div className={styles.header}>
+                <h1 className={styles.title}>Nameplate</h1>
+                <p className={styles.subtitle}>
+                    Customize how your username appears across the site.
+                </p>
+            </div>
+            <TierOverview currentTier={effectiveTier} />
             {hadLegacy && !legacyBannerDismissed && (
                 <div className={styles.migrationBanner}>
                     <span>
@@ -144,61 +196,79 @@ function PatreonSettings({ userPatreonData, session }: PatreonSectionProps) {
                     </button>
                 </div>
             )}
-            <div className={styles.layout}>
-                <div className={styles.left}>
-                    <PresetShortcuts
+            {/* Preview — full width */}
+            <div className={styles.previewWrap}>
+                <div className={styles.modeTabs} role="tablist">
+                    <button
+                        type="button"
+                        role="tab"
+                        aria-selected={mode === 'dark'}
+                        className={styles.modeTab}
+                        data-active={mode === 'dark'}
+                        onClick={() => setMode('dark')}
+                    >
+                        Dark
+                    </button>
+                    <button
+                        type="button"
+                        role="tab"
+                        aria-selected={mode === 'light'}
+                        className={styles.modeTab}
+                        data-active={mode === 'light'}
+                        onClick={() => setMode('light')}
+                    >
+                        Light
+                    </button>
+                </div>
+                <PreviewPane
+                    username={session.username}
+                    preferences={prefs}
+                    tier={effectiveTier}
+                    mode={mode}
+                />
+                <ContrastWarning prefs={prefs} tier={effectiveTier} />
+                {!validation.ok && (
+                    <div className={styles.errorText}>
+                        {validation.errors.map((e, i) => (
+                            <div key={i}>{e}</div>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Settings — two columns */}
+            <div className={styles.settingsRow}>
+                <div className={styles.settingsCol}>
+                    <FillSection
+                        prefs={prefs}
                         tier={effectiveTier}
+                        mode={mode}
                         username={session.username}
                         onChange={update}
                     />
-                    {effectiveTier >= 2 && (
-                        <FillSection
-                            prefs={prefs}
-                            tier={effectiveTier}
-                            onChange={update}
-                        />
-                    )}
-                    {effectiveTier >= 2 && (
-                        <FontSection prefs={prefs} onChange={update} />
-                    )}
-                    {effectiveTier >= 3 && (
-                        <EffectsSection prefs={prefs} onChange={update} />
-                    )}
-                    <DisplaySection
+                    <FontSection
                         prefs={prefs}
                         tier={effectiveTier}
                         onChange={update}
                     />
                 </div>
-                <div className={styles.right}>
-                    <PreviewPane
-                        username={session.username}
-                        preferences={prefs}
-                        tier={effectiveTier}
-                    />
-                    <ContrastWarning prefs={prefs} tier={effectiveTier} />
-                    {!validation.ok && (
-                        <div className={styles.errorText}>
-                            {validation.errors.map((e, i) => (
-                                <div key={i}>{e}</div>
-                            ))}
-                        </div>
-                    )}
-                    <Button
-                        variant="outline-secondary"
-                        size="sm"
-                        onClick={resetAll}
-                    >
-                        Reset to default
-                    </Button>
-                    <Button
-                        variant="primary"
-                        onClick={onSave}
-                        disabled={saving || !validation.ok}
-                    >
-                        {saving ? 'Saving…' : 'Save settings'}
-                    </Button>
+                <div className={styles.settingsCol}>
+                    <DisplaySection prefs={prefs} onChange={update} />
                 </div>
+            </div>
+
+            <div className={styles.actions}>
+                <button type="button" className={styles.btn} onClick={resetAll}>
+                    Reset
+                </button>
+                <button
+                    type="button"
+                    className={`${styles.btn} ${saved ? styles.btnSaved : styles.btnPrimary}`}
+                    onClick={onSave}
+                    disabled={saving || !validation.ok}
+                >
+                    {saving ? 'Saving…' : saved ? 'Saved' : 'Save'}
+                </button>
             </div>
         </div>
     );

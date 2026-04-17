@@ -14,6 +14,7 @@ import { Button } from '~src/components/Button/Button';
 import Link from '~src/components/link';
 import { NameAsPatreon } from '~src/components/patreon/patreon-name';
 import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
+import { BunnyIcon } from '~src/icons/bunny-icon';
 import styles from './UserMenu.module.scss';
 
 interface UserMenuProps {
@@ -112,6 +113,19 @@ export function UserMenu({ username, picture, sessionError }: UserMenuProps) {
                     onClick={() => setOpen(false)}
                 >
                     Profile
+                </Link>
+                <Link
+                    href="/change-appearance"
+                    className={styles.item}
+                    role="menuitem"
+                    onClick={() => setOpen(false)}
+                >
+                    <span className={styles.itemWithIcon}>
+                        Change appearance
+                        <span className={styles.itemBunny}>
+                            <BunnyIcon size={16} />
+                        </span>
+                    </span>
                 </Link>
                 <button
                     type="button"

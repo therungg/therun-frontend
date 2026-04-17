@@ -16,6 +16,8 @@ import {
     type SplitStatus,
     useSplitFlash,
 } from '~src/components/live/split-utils';
+import { NameAsPatreon } from '~src/components/patreon/patreon-name';
+import { usePatronCardStyles } from '~src/components/patreon/use-patron-styles';
 import {
     DifferenceFromOne,
     DurationToFormatted,
@@ -257,6 +259,7 @@ const FeaturedRunPanel = ({
     const onPbPace = run.delta < 0;
     const splitSegments = getSplitSegments(run);
     const flash = useSplitFlash(run);
+    const patron = usePatronCardStyles(run.user);
 
     return (
         <Link
@@ -272,8 +275,24 @@ const FeaturedRunPanel = ({
                             flash === 'ahead' && styles.featuredPanelGreen,
                             flash === 'behind' && styles.featuredPanelRed,
                         ],
+                patron.patronTier === 1 && styles.patronTier1,
+                patron.patronTier === 2 && styles.patronTier2,
+                patron.patronTier >= 3 && styles.patronTier3,
+                patron.isGradient && styles.patronGradient,
+                patron.isAnimated && styles.patronAnimated,
             )}
-            style={{ textDecoration: 'none', color: 'inherit' }}
+            style={
+                {
+                    textDecoration: 'none',
+                    color: 'inherit',
+                    ...(patron.patronPrimary && {
+                        '--patron-primary': patron.patronPrimary,
+                    }),
+                    ...(patron.patronGradient && {
+                        '--patron-gradient': patron.patronGradient,
+                    }),
+                } as React.CSSProperties
+            }
         >
             {staleReason && (
                 <div
@@ -323,7 +342,9 @@ const FeaturedRunPanel = ({
                         </div>
                     )}
                     <div className={styles.runnerDetails}>
-                        <h3 className={styles.runnerName}>{run.user}</h3>
+                        <h3 className={styles.runnerName}>
+                            <NameAsPatreon name={run.user} />
+                        </h3>
                         <span className={styles.gameLabelText}>
                             {run.game}
                             {' · '}
@@ -478,6 +499,7 @@ const SidebarCard = ({
     const hasAvatar = run.picture && run.picture !== 'noimage';
     const segments = getSplitSegments(run);
     const flash = useSplitFlash(run);
+    const patron = usePatronCardStyles(run.user);
 
     const isStale = !!staleReason;
 
@@ -497,11 +519,26 @@ const SidebarCard = ({
                             flash === 'behind' && styles.sidebarCardRed,
                         ],
                 isEntering && styles.sidebarCardEnter,
+                patron.patronTier === 1 && styles.patronTier1,
+                patron.patronTier === 2 && styles.patronTier2,
+                patron.patronTier >= 3 && styles.patronTier3,
+                patron.isGradient && styles.patronGradient,
+                patron.isAnimated && styles.patronAnimated,
             )}
             onClick={onSelect}
             aria-disabled={isStale || undefined}
             tabIndex={isStale ? -1 : undefined}
             aria-label={`${run.user} playing ${run.game}${staleReason ? ` (${STALE_LABELS[staleReason]})` : ''}`}
+            style={
+                {
+                    ...(patron.patronPrimary && {
+                        '--patron-primary': patron.patronPrimary,
+                    }),
+                    ...(patron.patronGradient && {
+                        '--patron-gradient': patron.patronGradient,
+                    }),
+                } as React.CSSProperties
+            }
         >
             {staleReason && (
                 <div
@@ -551,7 +588,9 @@ const SidebarCard = ({
                         </div>
                     )}
                     <div className={styles.sidebarCardInfo}>
-                        <span className={styles.sidebarRunner}>{run.user}</span>
+                        <span className={styles.sidebarRunner}>
+                            <NameAsPatreon name={run.user} />
+                        </span>
                         <span className={styles.sidebarGame}>
                             {run.game} · {run.category}
                         </span>

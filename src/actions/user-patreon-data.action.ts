@@ -32,7 +32,9 @@ export const getUserPatreonData = async (query: {
         return patreonLinkData.json();
     } else if (session.username) {
         const patreonDataUrl = `${patreonApiBaseUrl}/patreon/${session.username}`;
-        const patreonLinkData = await fetch(patreonDataUrl);
+        const patreonLinkData = await fetch(patreonDataUrl, {
+            cache: 'no-store',
+        });
 
         return patreonLinkData.json();
     }

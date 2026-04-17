@@ -1,11 +1,12 @@
 import clsx from 'clsx';
 import NextImage from 'next/image';
 import { useEffect, useRef, useState } from 'react';
-import { Col, Row } from 'react-bootstrap';
+import { Col, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
 import { TwitchEmbed } from 'react-twitch-embed';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { LiveSplitTimerComponent } from '~app/(new-layout)/live/live-split-timer.component';
 import { Split } from '~src/common/types';
+import Link from '~src/components/link';
 import { LiverunStatsPanel } from '~src/components/live/liverun-stats-panel';
 import { SplitStatus, Status } from '~src/types/splits.types';
 import { getColorMode } from '~src/utils/colormode';
@@ -87,7 +88,16 @@ export const RecommendedStream = ({
     const [selectedSplit, setSelectedSplit] = useState(
         liveRun.currentSplitIndex,
     );
-    const [recommendedStyles, setRecommendedStyles] = useState({});
+    const [recommendedStyles, setRecommendedStyles] = useState<{
+        borderColor?: string;
+        gradient?: string;
+        patronPrimary?: string;
+        patronGradient?: string;
+        patronTier?: number;
+        isGradient?: boolean;
+        isAnimated?: boolean;
+        hasPatronStyle?: boolean;
+    }>({});
     const [manuallyChangedSplit, setManuallyChangedSplit] = useState(false);
 
     const pixelsForSplit = 27.9;
@@ -142,24 +152,45 @@ export const RecommendedStream = ({
             const { preferences, tier } = patreons[liveRun.user];
             let borderColor = '';
             let gradient = '';
+            let patronPrimary = '';
+            let patronGradient = '';
+            let patronTier = 0;
+            let isGradient = false;
+            let isAnimated = false;
+            let hasPatronStyle = false;
 
-            if (preferences && !preferences.hide) {
+            if (!preferences || !preferences.hide) {
                 const fill = resolveFill(
                     preferences,
                     tier,
                     dark ? 'dark' : 'light',
                 );
+                patronTier = Math.min(tier, 3);
+                hasPatronStyle = true;
                 if (fill.kind === 'gradient') {
                     gradient = `-webkit-linear-gradient(left, ${fill.value.join(',')})`;
+                    borderColor = fill.value[0];
+                    patronPrimary = fill.value[0];
+                    const angle =
+                        preferences?.gradientAngle?.[dark ? 'dark' : 'light'] ??
+                        90;
+                    patronGradient = `linear-gradient(${angle}deg, ${fill.value.join(', ')})`;
+                    isGradient = true;
+                    isAnimated = !!preferences?.gradientAnimated;
                 } else {
                     borderColor = fill.value;
+                    patronPrimary = fill.value;
                 }
-            } else if (!preferences) {
-                borderColor = 'var(--bs-link-color)';
             }
             setRecommendedStyles({
                 borderColor,
                 gradient,
+                patronPrimary,
+                patronGradient,
+                patronTier,
+                isGradient,
+                isAnimated,
+                hasPatronStyle,
             });
         }
     }, [patreons, isLoading, liveRun.user, dark]);
@@ -196,7 +227,33 @@ export const RecommendedStream = ({
                 )}
             >
                 {/* Runner identity bar */}
-                <div className={styles.heroIdentityBar}>
+                <div
+                    className={clsx(
+                        styles.heroIdentityBar,
+                        recommendedStyles.patronTier === 1 &&
+                            styles.heroPatronTier1,
+                        recommendedStyles.patronTier === 2 &&
+                            styles.heroPatronTier2,
+                        (recommendedStyles.patronTier ?? 0) >= 3 &&
+                            styles.heroPatronTier3,
+                        recommendedStyles.isGradient &&
+                            styles.heroPatronGradient,
+                        recommendedStyles.isAnimated &&
+                            styles.heroPatronAnimated,
+                    )}
+                    style={
+                        {
+                            ...(recommendedStyles.patronPrimary && {
+                                '--patron-primary':
+                                    recommendedStyles.patronPrimary,
+                            }),
+                            ...(recommendedStyles.patronGradient && {
+                                '--patron-gradient':
+                                    recommendedStyles.patronGradient,
+                            }),
+                        } as React.CSSProperties
+                    }
+                >
                     {staleReason && (
                         <div
                             className={clsx(
@@ -208,6 +265,26 @@ export const RecommendedStream = ({
                             {STALE_LABELS[staleReason]}
                             {countdown != null && ` · ${countdown}`}
                         </div>
+                    )}
+                    {recommendedStyles.hasPatronStyle && !staleReason && (
+                        <OverlayTrigger
+                            placement="bottom"
+                            overlay={
+                                <Tooltip id={`supporter-${liveRun.user}`}>
+                                    {liveRun.user} is a therun.gg supporter and
+                                    picked these colors. Click to support too.
+                                </Tooltip>
+                            }
+                        >
+                            <Link
+                                href="/support"
+                                className={styles.heroSupporterChip}
+                                onClick={(e) => e.stopPropagation()}
+                            >
+                                <span className={styles.heroSupporterDot} />
+                                Supporter colors
+                            </Link>
+                        </OverlayTrigger>
                     )}
                     <div className={styles.heroIdentityLeft}>
                         {hasAvatar && (

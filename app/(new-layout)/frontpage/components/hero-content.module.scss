@@ -48,6 +48,77 @@
     transition: box-shadow 0.3s ease;
 }
 
+/* ── Patron tiers — Featured run panel ── */
+
+.featuredPanel.patronTier1,
+.featuredPanel.patronTier2,
+.featuredPanel.patronTier3 {
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        pointer-events: none;
+        border-radius: $radius-xl;
+        background: var(--patron-primary);
+        opacity: 0.08;
+    }
+}
+
+.featuredPanel.patronTier2 {
+    &::before {
+        opacity: 0.12;
+    }
+
+    &.patronGradient::before {
+        background: none;
+        background-image: var(--patron-gradient);
+        opacity: 0.10;
+    }
+}
+
+.featuredPanel.patronTier3 {
+    &::before {
+        opacity: 0.16;
+    }
+
+    &.patronGradient::before {
+        background: none;
+        background-image: var(--patron-gradient);
+        opacity: 0.2;
+    }
+
+    &.patronAnimated::before {
+        background-size: 200% 100%;
+        animation: patronSweep 8s linear infinite;
+    }
+}
+
+/* Gradient border — double-background trick preserves border-radius */
+.featuredPanel.patronGradient {
+    --_card-bg: var(--bs-body-bg);
+    border: 2px solid transparent;
+    background:
+        linear-gradient(var(--_card-bg), var(--_card-bg)) padding-box,
+        var(--patron-gradient) border-box;
+}
+
+/* Avatar ring glow for tier 2+ */
+.featuredPanel.patronTier2 .avatarWrapper,
+.featuredPanel.patronTier3 .avatarWrapper {
+    border-color: var(--patron-primary);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--patron-primary) 45%, transparent);
+}
+
+@keyframes patronSweep {
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 100% 50%;
+    }
+}
+
 /* Split flash — gold (best ever segment) */
 .featuredPanelGold {
     animation: cardGoldFlash 5s ease-out forwards;
@@ -418,6 +489,70 @@
 .sidebarCardActive {
     border-color: var(--bs-primary);
     background: var(--bs-secondary-bg);
+}
+
+/* ── Patron tiers — Sidebar card ── */
+
+.sidebarCard.patronTier1,
+.sidebarCard.patronTier2,
+.sidebarCard.patronTier3 {
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        border-radius: $radius-lg;
+        background: var(--patron-primary);
+        opacity: 0.09;
+    }
+}
+
+.sidebarCard.patronTier2 {
+    &::before {
+        opacity: 0.13;
+    }
+
+    &.patronGradient::before {
+        background: none;
+        background-image: var(--patron-gradient);
+        opacity: 0.11;
+    }
+}
+
+.sidebarCard.patronTier3 {
+    &::before {
+        opacity: 0.18;
+    }
+
+    &.patronGradient::before {
+        background: none;
+        background-image: var(--patron-gradient);
+        opacity: 0.22;
+    }
+
+    &.patronAnimated::before {
+        background-size: 200% 100%;
+        animation: patronSweep 8s linear infinite;
+    }
+}
+
+.sidebarCard.patronGradient {
+    --_card-bg: var(--bs-body-bg);
+    border: 2px solid transparent;
+    background:
+        linear-gradient(var(--_card-bg), var(--_card-bg)) padding-box,
+        var(--patron-gradient) border-box;
+
+    &.sidebarCardActive {
+        --_card-bg: var(--bs-secondary-bg);
+    }
+}
+
+.sidebarCard.patronTier2 .sidebarAvatar,
+.sidebarCard.patronTier3 .sidebarAvatar {
+    border-color: var(--patron-primary);
+    box-shadow: 0 0 5px color-mix(in srgb, var(--patron-primary) 40%, transparent);
 }
 
 /* Split flash — gold */

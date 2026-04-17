@@ -1,77 +1,464 @@
-.layout {
+.page {
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.header {
+    margin-bottom: 1.25rem;
+}
+
+.presetGrid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 340px;
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.5rem;
+}
+
+.presetTile {
+    padding: 0;
+    border: 1px solid
+        color-mix(in srgb, var(--bs-body-color) 10%, transparent);
+    border-radius: 0.625rem;
+    background: transparent;
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    transition:
+        border-color 120ms ease,
+        transform 120ms ease;
+
+    &:hover {
+        border-color: color-mix(
+            in srgb,
+            var(--bs-body-color) 25%,
+            transparent
+        );
+    }
+
+    &[data-active='true'] {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 2px
+            color-mix(in srgb, var(--bs-primary) 30%, transparent);
+    }
+}
+
+.presetSplit {
+    padding: 1rem 0.5rem;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+}
+
+.presetDark {
+    background: #0d0e12;
+    color: #fff;
+}
+
+.presetLight {
+    background: #fff;
+    color: #0d0e12;
+}
+
+.title {
+    font-size: 1.375rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0;
+}
+
+.subtitle {
+    color: var(--bs-secondary-color);
+    font-size: 0.9375rem;
+    margin: 0.25rem 0 0;
+}
+
+// Full-width preview block
+.previewWrap {
+    border: 1px solid color-mix(in srgb, var(--bs-body-color) 10%, transparent);
+    border-radius: 0.75rem;
+    background: var(--bs-body-bg);
+    margin-bottom: 1rem;
+    padding: 1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+// Two-column settings row
+.settingsRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
     align-items: start;
 
-    @media (max-width: 991px) {
+    @media (max-width: 767px) {
         grid-template-columns: 1fr;
     }
 }
 
-.left {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
+.settingsCol {
+    border: 1px solid color-mix(in srgb, var(--bs-body-color) 10%, transparent);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    background: var(--bs-body-bg);
+    margin-bottom: 1rem;
 }
 
-.right {
-    position: sticky;
-    top: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+// Each section inside the sheet becomes a "group" — no own card surface.
+.card {
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid
+        color-mix(in srgb, var(--bs-body-color) 8%, transparent);
+    background: transparent;
 
-    @media (max-width: 991px) {
-        position: static;
+    &:last-child {
+        border-bottom: none;
     }
 }
 
-.card {
-    border: 1px solid var(--bs-border-color);
-    border-radius: 0.5rem;
-    padding: 1rem 1.25rem;
-    background: var(--bs-body-bg);
-}
-
 .cardHeader {
+    font-size: 0.6875rem;
     font-weight: 600;
-    margin-bottom: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+    margin-bottom: 0.5rem;
 }
 
+// Row layout: label left, control right, min height, subtle separation.
+.fieldRow {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-height: 32px;
+    padding: 0.25rem 0;
+    font-size: 0.875rem;
+
+    label {
+        margin: 0;
+    }
+
+    // Native inputs inside rows
+    input[type='color'] {
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        border: 1px solid
+            color-mix(in srgb, var(--bs-body-color) 15%, transparent);
+        border-radius: 50%;
+        background: transparent;
+        cursor: pointer;
+        overflow: hidden;
+
+        &::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        &::-webkit-color-swatch {
+            border: none;
+            border-radius: 50%;
+        }
+        &::-moz-color-swatch {
+            border: none;
+            border-radius: 50%;
+        }
+    }
+
+    input[type='range'] {
+        flex: 1;
+        max-width: 140px;
+        accent-color: var(--bs-primary);
+    }
+
+    input[type='number'] {
+        width: 4.5rem;
+        height: 28px;
+        padding: 0 0.5rem;
+        font-size: 0.8125rem;
+        border: 1px solid
+            color-mix(in srgb, var(--bs-body-color) 12%, transparent);
+        border-radius: 0.375rem;
+        background: color-mix(in srgb, var(--bs-body-color) 4%, transparent);
+        color: inherit;
+        font-variant-numeric: tabular-nums;
+    }
+
+    span {
+        font-size: 0.75rem;
+        color: var(--bs-secondary-color);
+        font-variant-numeric: tabular-nums;
+    }
+}
+
+// Mode tabs: iOS segmented control, placed above preview.
+.modeTabs {
+    display: inline-flex;
+    padding: 2px;
+    background: color-mix(in srgb, var(--bs-body-color) 8%, transparent);
+    border-radius: 0.5rem;
+    gap: 2px;
+    width: 100%;
+}
+
+.modeTab {
+    flex: 1;
+    padding: 0.3125rem 0.75rem;
+    border: none;
+    background: transparent;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--bs-body-color);
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition:
+        background 120ms ease,
+        color 120ms ease;
+
+    &[data-active='true'] {
+        background: var(--bs-body-bg);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+    }
+}
+
+// Preview: large, centered nameplate in its habitat.
 .previewBox {
     border-radius: 0.5rem;
-    padding: 1rem;
+    padding: 2rem 3rem;
     text-align: center;
-    font-size: 1.5rem;
+    font-size: 2.75rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+.previewBunny {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 0.25em;
+    opacity: 0.9;
 }
 
 .previewDark {
     background: #0d0e12;
+    color: #fff;
 }
 
 .previewLight {
-    background: #ffffff;
+    background: #fff;
     color: #0d0e12;
 }
 
-.migrationBanner {
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.375rem;
-    background: var(--bs-info-bg-subtle);
-    color: var(--bs-info-text-emphasis);
-    font-size: 0.875rem;
+// Live-card mock preview — shows what the user's card looks like on the live page.
+.livePreviewLabel {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+    margin-top: 0.5rem;
     display: flex;
-    justify-content: space-between;
     align-items: center;
     gap: 0.5rem;
+}
+
+.livePreviewLabelHint {
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--bs-secondary-color);
+    opacity: 0.8;
+}
+
+.liveCard {
+    position: relative;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid;
+    overflow: hidden;
+
+    &[data-mode='dark'] {
+        background: #0d0e12;
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+
+    &[data-mode='light'] {
+        background: #fff;
+        color: #0d0e12;
+        border-color: rgba(0, 0, 0, 0.1);
+    }
+
+    &[data-has-patron='true'] {
+        border-color: var(--patron-primary);
+
+        &::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--patron-primary);
+            opacity: 0.08;
+            pointer-events: none;
+            border-radius: inherit;
+        }
+
+        &[data-tier='2']::before {
+            opacity: 0.1;
+        }
+
+        &[data-tier='3']::before {
+            opacity: 0.14;
+        }
+    }
+
+    &[data-gradient='true'] {
+        border: 2px solid transparent;
+        background:
+            linear-gradient(var(--_card-bg), var(--_card-bg)) padding-box,
+            var(--patron-gradient) border-box;
+
+        &::before {
+            background: none;
+            background-image: var(--patron-gradient);
+        }
+    }
+
+    &[data-gradient='true'][data-mode='dark'] {
+        --_card-bg: #0d0e12;
+    }
+
+    &[data-gradient='true'][data-mode='light'] {
+        --_card-bg: #fff;
+    }
+
+    &[data-animated='true']::before {
+        background-size: 200% 100%;
+        animation: patronSweepPreview 8s linear infinite;
+    }
+
+    > * {
+        position: relative;
+        z-index: 1;
+    }
+}
+
+@keyframes patronSweepPreview {
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 100% 50%;
+    }
+}
+
+.liveCardAvatar {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: color-mix(in srgb, currentColor 12%, transparent);
+    border: 2px solid transparent;
+
+    .liveCard[data-tier='2'] & {
+        border-color: var(--patron-primary);
+    }
+
+    .liveCard[data-tier='3'] & {
+        border-color: var(--patron-primary);
+        box-shadow: 0 0 6px
+            color-mix(in srgb, var(--patron-primary) 40%, transparent);
+    }
+}
+
+.liveCardBody {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.liveCardName {
+    font-size: 1rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    line-height: 1.2;
+}
+
+.liveCardGame {
+    font-size: 0.8125rem;
+    opacity: 0.7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.liveCardTimer {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 1.125rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.9;
+}
+
+.liveCardBunny {
+    display: inline-flex;
+    align-items: center;
+    opacity: 0.9;
+}
+
+.livePreviewCaption {
+    font-size: 0.75rem;
+    color: var(--bs-secondary-color);
+    text-align: center;
+    margin-top: 0.375rem;
+    line-height: 1.4;
+}
+
+// Compact chip for inline toggles and small actions.
+.chip {
+    padding: 0.1875rem 0.5rem;
+    border: 1px solid
+        color-mix(in srgb, var(--bs-body-color) 12%, transparent);
+    border-radius: 0.375rem;
+    background: transparent;
+    color: inherit;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition:
+        background 120ms ease,
+        border-color 120ms ease;
+
+    &:hover:not(:disabled) {
+        background: color-mix(
+            in srgb,
+            var(--bs-body-color) 4%,
+            transparent
+        );
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    &[data-active='true'] {
+        background: var(--bs-primary);
+        color: #fff;
+        border-color: var(--bs-primary);
+    }
 }
 
 .stopRow {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-bottom: 0.375rem;
+    padding: 0.25rem 0;
+    font-size: 0.8125rem;
 }
 
 .angleChips {
@@ -81,56 +468,239 @@
     margin-bottom: 0.5rem;
 }
 
-.chip {
-    padding: 0.25rem 0.5rem;
-    border: 1px solid var(--bs-border-color);
-    border-radius: 0.25rem;
-    background: transparent;
-    cursor: pointer;
-
-    &[data-active='true'] {
-        background: var(--bs-primary);
-        color: var(--bs-primary-text);
-        border-color: var(--bs-primary);
-    }
-}
-
-.presetGrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+.migrationBanner {
+    padding: 0.625rem 0.875rem;
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--bs-info) 12%, transparent);
+    color: var(--bs-info-text-emphasis);
+    font-size: 0.8125rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     gap: 0.5rem;
-}
-
-.presetTile {
-    padding: 0.5rem;
-    border: 1px solid var(--bs-border-color);
-    border-radius: 0.375rem;
-    cursor: pointer;
-    text-align: center;
-    font-size: 1rem;
-
-    &:hover {
-        border-color: var(--bs-primary);
-    }
+    margin-bottom: 1rem;
 }
 
 .contrastWarning {
-    font-size: 0.8125rem;
-    padding: 0.375rem 0.5rem;
-    border-radius: 0.25rem;
-    background: var(--bs-warning-bg-subtle);
+    font-size: 0.75rem;
+    padding: 0.5rem 0.625rem;
+    border-radius: 0.375rem;
+    background: color-mix(in srgb, var(--bs-warning) 14%, transparent);
     color: var(--bs-warning-text-emphasis);
-}
-
-.fieldRow {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
 }
 
 .errorText {
     color: var(--bs-danger);
+    font-size: 0.75rem;
+}
+
+// Tier lock: grayed overlay + upgrade nudge
+.tierLockOverlay {
+    opacity: 0.35;
+    pointer-events: none;
+    user-select: none;
+}
+
+.tierNudge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0 0.4rem;
+    font-size: 0.75rem;
+    color: var(--bs-secondary-color);
+}
+
+.tierBadge {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--bs-warning-text-emphasis);
+    background: color-mix(in srgb, var(--bs-warning) 15%, transparent);
+    border: 1px solid color-mix(in srgb, var(--bs-warning) 30%, transparent);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    white-space: nowrap;
+}
+
+// Inline pill inside a locked tab button
+.tierPill {
+    font-size: 0.5625rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    padding: 0.0625rem 0.3125rem;
+    background: color-mix(in srgb, var(--bs-warning) 20%, transparent);
+    color: var(--bs-warning-text-emphasis);
+    border-radius: 0.1875rem;
+    margin-left: 0.25rem;
+    line-height: 1.5;
+    vertical-align: middle;
+}
+
+.modeTabLocked {
+    opacity: 0.5;
+    cursor: not-allowed;
+    display: inline-flex;
+    align-items: center;
+}
+
+// Tier overview card
+.tierOverview {
+    border: 1px solid color-mix(in srgb, var(--bs-body-color) 10%, transparent);
+    border-radius: 0.75rem;
+    overflow: hidden;
+    margin-bottom: 1rem;
     font-size: 0.8125rem;
-    margin-top: 0.25rem;
+}
+
+.tierOverviewRow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.875rem;
+    border-bottom: 1px solid
+        color-mix(in srgb, var(--bs-body-color) 6%, transparent);
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    &[data-state='current'] {
+        background: color-mix(in srgb, var(--bs-primary) 8%, transparent);
+    }
+
+    &[data-state='locked'] {
+        opacity: 0.5;
+    }
+}
+
+.tierOverviewBadge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    min-width: 3.5rem;
+    flex-shrink: 0;
+}
+
+.tierOverviewFeatures {
+    flex: 1;
+    color: var(--bs-secondary-color);
+    font-size: 0.75rem;
+}
+
+.tierYoursBadge {
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--bs-primary);
+    background: color-mix(in srgb, var(--bs-primary) 10%, transparent);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+// Admin tier preview banner
+.adminPreviewBanner {
+    padding: 0.5rem 0.875rem;
+    background: color-mix(in srgb, var(--bs-info) 10%, transparent);
+    border: 1px solid color-mix(in srgb, var(--bs-info) 25%, transparent);
+    border-radius: 0.5rem;
+    font-size: 0.8125rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    color: var(--bs-info-text-emphasis);
+}
+
+.adminPreviewTierLinks {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.adminPreviewTierLink {
+    padding: 0.1875rem 0.5rem;
+    border: 1px solid color-mix(in srgb, var(--bs-body-color) 15%, transparent);
+    border-radius: 0.3125rem;
+    font-size: 0.75rem;
+    text-decoration: none;
+    color: var(--bs-body-color);
+    background: transparent;
+    transition: background 100ms ease;
+
+    &[data-active='true'] {
+        background: var(--bs-primary);
+        color: #fff;
+        border-color: var(--bs-primary);
+    }
+
+    &:hover:not([data-active='true']) {
+        background: color-mix(in srgb, var(--bs-body-color) 6%, transparent);
+        text-decoration: none;
+        color: var(--bs-body-color);
+    }
+}
+
+// Actions at the bottom of the preview column.
+.actions {
+    display: flex;
+    gap: 0.625rem;
+    justify-content: flex-end;
+    padding-top: 0.25rem;
+}
+
+.btn {
+    padding: 0.5625rem 1.25rem;
+    border-radius: 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    border: 1px solid
+        color-mix(in srgb, var(--bs-body-color) 14%, transparent);
+    background: color-mix(in srgb, var(--bs-body-color) 4%, transparent);
+    color: var(--bs-body-color);
+    cursor: pointer;
+    transition:
+        background 120ms ease,
+        filter 120ms ease,
+        box-shadow 120ms ease;
+
+    &:hover:not(:disabled) {
+        background: color-mix(in srgb, var(--bs-body-color) 9%, transparent);
+    }
+
+    &:active:not(:disabled) {
+        background: color-mix(in srgb, var(--bs-body-color) 13%, transparent);
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+}
+
+.btnSaved {
+    background: var(--bs-success);
+    color: #fff;
+    border-color: var(--bs-success);
+    box-shadow: 0 1px 6px color-mix(in srgb, var(--bs-success) 35%, transparent);
+}
+
+.btnPrimary {
+    background: var(--bs-primary);
+    color: #fff;
+    border-color: var(--bs-primary);
+    box-shadow: 0 1px 6px color-mix(in srgb, var(--bs-primary) 35%, transparent);
+
+    &:hover:not(:disabled) {
+        filter: brightness(1.1);
+        box-shadow: 0 2px 10px color-mix(in srgb, var(--bs-primary) 45%, transparent);
+    }
+
+    &:active:not(:disabled) {
+        filter: brightness(0.97);
+    }
 }

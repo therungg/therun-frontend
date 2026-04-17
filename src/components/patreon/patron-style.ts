@@ -41,12 +41,17 @@ export function buildPatronStyle(
     const fill = resolveFill(prefs, tier, theme);
     const isGradient = fill.kind === 'gradient';
 
-    const backgroundValue = isGradient
-        ? `linear-gradient(${prefs?.gradientAngle?.[theme] ?? 90}deg, ${fill.value.join(',')})`
+    const animated = isGradient && !!prefs?.gradientAnimated;
+
+    const angle = prefs?.gradientAngle?.[theme] ?? 90;
+    const backgroundImage = isGradient
+        ? animated
+            ? `linear-gradient(var(--patron-grad-angle, ${angle}deg), ${(fill.value as string[]).join(',')})`
+            : `linear-gradient(${angle}deg, ${(fill.value as string[]).join(',')})`
         : undefined;
 
     const style: CSSProperties = {
-        background: backgroundValue,
+        backgroundImage,
         WebkitBackgroundClip: isGradient ? 'text' : undefined,
         backgroundClip: isGradient ? 'text' : undefined,
         color: isGradient ? 'transparent' : (fill.value as string),
@@ -55,19 +60,8 @@ export function buildPatronStyle(
         fontStyle: prefs?.italic ? 'italic' : 'normal',
     };
 
-    if (prefs?.textShadow) {
-        const s = prefs.textShadow[theme];
-        style.textShadow = `0 0 ${s.blur}px ${s.color}`;
-    }
-
-    if (prefs?.outline) {
-        const o = prefs.outline[theme];
-        style.WebkitTextStroke = `${o.width}px ${o.color}`;
-    }
-
-    if (isGradient && prefs?.gradientAnimated) {
+    if (animated) {
         style.animation = 'patron-gradient 6s linear infinite';
-        style.backgroundSize = '200% 100%';
     }
 
     return style;
