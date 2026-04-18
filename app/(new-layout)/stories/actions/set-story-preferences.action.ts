@@ -45,7 +45,7 @@ export async function setStoryPreferencesAction(
         disableWelcomeStories: !!raceInput.get('disableWelcomeStories'),
         allowAIRephrase: false,
         translateLanguage: raceInput.get('translateLanguage') || '',
-        globalStoryCooldown: raceInput.get('globalStoryCooldown'),
+        globalStoryCooldown: Number(raceInput.get('globalStoryCooldown')),
         allowGlobalStoryCooldownOverride: !!raceInput.get(
             'allowGlobalStoryCooldownOverride',
         ),
