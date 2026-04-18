@@ -60,13 +60,17 @@ export const SetStoryPreferences = ({
                     </button>
                 </div>
 
-                {activeTab === 'general' && (
+                {/* Always render both tabs so form data is preserved when switching */}
+                <div
+                    style={{
+                        display: activeTab === 'general' ? 'block' : 'none',
+                    }}
+                >
                     <BasicFormFields
                         storyPreferences={storyPreferences}
                         user={user}
                     />
-                )}
-                {/* Always render stories tab to preserve form data, just hide it */}
+                </div>
                 <div
                     style={{
                         display: activeTab === 'stories' ? 'block' : 'none',

@@ -39,21 +39,31 @@ export async function setStoryPreferencesAction(
             cooldowns[key.split('.')[1] as StoryElementType] = Number(value);
         });
 
+    const getString = (key: string) => {
+        const value = raceInput.get(key);
+        return typeof value === 'string' ? value : '';
+    };
+    const getNumber = (key: string) => {
+        const value = raceInput.get(key);
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : 0;
+    };
+
     const input: StoryPreferences = {
         enabled: !!raceInput.get('enabled'),
         disableNegativeStories: !!raceInput.get('disableNegativeStories'),
         disableWelcomeStories: !!raceInput.get('disableWelcomeStories'),
         allowAIRephrase: false,
-        translateLanguage: raceInput.get('translateLanguage') || '',
-        globalStoryCooldown: Number(raceInput.get('globalStoryCooldown')),
+        translateLanguage: getString('translateLanguage'),
+        globalStoryCooldown: getNumber('globalStoryCooldown'),
         allowGlobalStoryCooldownOverride: !!raceInput.get(
             'allowGlobalStoryCooldownOverride',
         ),
         changeGoldToRainbow: !!raceInput.get('changeGoldToRainbow'),
-        nameOverride: raceInput.get('nameOverride'),
-        pronounOverrideThey: raceInput.get('pronounOverrideThey'),
-        pronounOverrideThem: raceInput.get('pronounOverrideThem'),
-        pronounOverrideTheir: raceInput.get('pronounOverrideTheir'),
+        nameOverride: getString('nameOverride'),
+        pronounOverrideThey: getString('pronounOverrideThey'),
+        pronounOverrideThem: getString('pronounOverrideThem'),
+        pronounOverrideTheir: getString('pronounOverrideTheir'),
         disabledStories,
         customCooldowns: cooldowns,
     };
