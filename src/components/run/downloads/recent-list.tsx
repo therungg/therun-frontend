@@ -20,7 +20,7 @@ export function RecentList({ entries, filenameBase }: RecentListProps) {
                 <div className={styles.list}>
                     {entries.map((entry) => {
                         const ts = moment(entry.uploadedAt);
-                        const filename = `${filenameBase}_${ts.format('YYYY-MM-DD-HHmm')}.lss`;
+                        const filename = `${filenameBase} (${ts.format('YYYY-MM-DD HH-mm')}).lss`;
                         return (
                             <div key={entry.uploadedAt} className={styles.row}>
                                 <div className={styles.rowPrimaryCol}>
