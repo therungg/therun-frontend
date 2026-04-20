@@ -1,0 +1,308 @@
+@use '../../../../app/(new-layout)/styles/design-tokens' as *;
+@use '../../../../app/(new-layout)/styles/mixins' as *;
+
+.container {
+    max-width: 760px;
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-3xl;
+    padding-block: $spacing-lg;
+}
+
+.sectionLabel {
+    font-size: $font-size-2xs;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.55;
+    margin: 0 0 $spacing-sm 0;
+}
+
+.subsectionLabel {
+    font-size: $font-size-2xs;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.55;
+    margin: $spacing-xl 0 $spacing-sm 0;
+}
+
+// ---- Current splits card ----
+
+.currentCard {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-lg;
+    padding: $spacing-xl $spacing-2xl;
+    border-radius: $radius-lg;
+    background: color-mix(
+        in srgb,
+        var(--bs-body-bg) 40%,
+        var(--bs-tertiary-bg) 60%
+    );
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.25);
+}
+
+.currentBody {
+    min-width: 0;
+    flex: 1;
+}
+
+.currentPrimary {
+    font-size: $font-size-md;
+    font-weight: 600;
+    margin: 0;
+}
+
+.currentSecondary {
+    font-size: $font-size-sm;
+    opacity: 0.65;
+    margin: 0.15rem 0 0 0;
+}
+
+.currentFilename {
+    @include monospace-value;
+    font-size: $font-size-xs;
+    opacity: 0.5;
+    margin: 0.4rem 0 0 0;
+    font-weight: 500;
+    word-break: break-all;
+}
+
+// ---- List of backup rows ----
+
+.list {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: $spacing-lg;
+    padding: $spacing-md $spacing-sm;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+    transition: background $transition-fast;
+
+    &:hover {
+        background: color-mix(
+            in srgb,
+            var(--bs-tertiary-bg) 70%,
+            transparent
+        );
+    }
+}
+
+.rowPrimaryCol {
+    flex: 1;
+    min-width: 0;
+}
+
+.rowPrimary {
+    font-size: $font-size-base;
+    font-weight: 500;
+    line-height: 1.3;
+}
+
+.rowSecondary {
+    font-size: $font-size-xs;
+    opacity: 0.55;
+    margin-top: 0.15rem;
+}
+
+.rowMetaCol {
+    flex: 0 0 auto;
+    min-width: 110px;
+    text-align: right;
+}
+
+.rowMetaPrimary {
+    font-size: $font-size-sm;
+    opacity: 0.75;
+}
+
+.rowMetaSecondary {
+    font-size: $font-size-xs;
+    opacity: 0.5;
+    margin-top: 0.15rem;
+}
+
+.rowAction {
+    flex: 0 0 auto;
+}
+
+.inlineEmpty {
+    padding: $spacing-lg $spacing-sm;
+    font-size: $font-size-sm;
+    opacity: 0.55;
+}
+
+// ---- Paywall banner ----
+
+.paywallBanner {
+    display: flex;
+    align-items: center;
+    gap: $spacing-lg;
+    padding: $spacing-lg $spacing-xl;
+    border-radius: $radius-lg;
+    background: linear-gradient(
+        135deg,
+        rgba(var(--bs-primary-rgb), 0.1) 0%,
+        rgba(var(--bs-primary-rgb), 0.03) 100%
+    );
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
+    margin-bottom: $spacing-lg;
+}
+
+.paywallIcon {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(var(--bs-primary-rgb), 0.15);
+    color: var(--bs-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.paywallBody {
+    flex: 1;
+    min-width: 0;
+}
+
+.paywallTitle {
+    font-size: $font-size-base;
+    font-weight: 600;
+    margin: 0 0 0.1rem 0;
+}
+
+.paywallCopy {
+    font-size: $font-size-sm;
+    opacity: 0.75;
+    line-height: 1.45;
+    margin: 0;
+}
+
+.paywallCta {
+    flex: 0 0 auto;
+    white-space: nowrap;
+}
+
+// ---- Empty / loading / error ----
+
+.emptyCard {
+    padding: $spacing-3xl $spacing-lg;
+    text-align: center;
+    border-radius: $radius-lg;
+    background: color-mix(
+        in srgb,
+        var(--bs-body-bg) 50%,
+        var(--bs-tertiary-bg) 50%
+    );
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.22);
+}
+
+.emptyCardIcon {
+    font-size: 28px;
+    opacity: 0.3;
+    margin-bottom: $spacing-md;
+    display: inline-block;
+}
+
+.emptyCardTitle {
+    font-weight: 600;
+    font-size: $font-size-base;
+    margin-bottom: $spacing-sm;
+}
+
+.emptyCardCopy {
+    font-size: $font-size-sm;
+    opacity: 0.65;
+    max-width: 420px;
+    margin: 0 auto $spacing-lg;
+    line-height: 1.5;
+}
+
+.loadingState {
+    padding: $spacing-xl 0;
+    font-size: $font-size-sm;
+    opacity: 0.55;
+}
+
+.errorState {
+    padding: $spacing-xl 0;
+    font-size: $font-size-sm;
+}
+
+.errorMessage {
+    margin: 0 0 $spacing-sm 0;
+    opacity: 0.75;
+}
+
+// ---- Buttons ----
+
+.btnDownload {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: $radius-md;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--bs-primary);
+    background: transparent;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.35);
+    transition: all $transition-fast;
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.1);
+        border-color: var(--bs-primary);
+        color: var(--bs-primary);
+    }
+}
+
+.btnLocked {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: $radius-md;
+    font-size: $font-size-xs;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--bs-secondary-color);
+    background: transparent;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    cursor: not-allowed;
+    white-space: nowrap;
+    opacity: 0.7;
+}
+
+.btnPrimaryLg {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.15rem;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #fff;
+    background: var(--bs-primary);
+    border: 1px solid var(--bs-primary);
+    transition: all $transition-fast;
+    text-decoration: none;
+    white-space: nowrap;
+
+    &:hover {
+        filter: brightness(1.08);
+        color: #fff;
+    }
+}

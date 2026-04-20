@@ -1,9 +1,9 @@
 'use client';
 
 import moment from 'moment';
-import { Table } from 'react-bootstrap';
 import type { BackupDailyEntry } from 'types/backups.types';
 import { DownloadButton } from './download-button';
+import styles from './downloads.module.scss';
 
 interface DailyListProps {
     entries: BackupDailyEntry[];
@@ -11,63 +11,66 @@ interface DailyListProps {
 }
 
 export function DailyList({ entries, filenameBase }: DailyListProps) {
-    if (entries.length === 0) {
-        return (
-            <div className="mb-3">
-                <h4 className="fs-6 mb-2">Daily snapshots</h4>
-                <p className="text-muted small mb-0">No daily snapshots yet.</p>
-            </div>
-        );
-    }
-
     return (
-        <div className="mb-3">
-            <h4 className="fs-6 mb-2">Daily snapshots</h4>
-            <Table striped bordered hover responsive size="sm">
-                <thead>
-                    <tr>
-                        <th style={{ width: '40%' }}>Date</th>
-                        <th style={{ width: '30%' }}>Expires</th>
-                        <th style={{ width: '30%' }}>Download</th>
-                    </tr>
-                </thead>
-                <tbody>
+        <section>
+            <h4 className={styles.subsectionLabel}>Daily · one per day</h4>
+            {entries.length === 0 ? (
+                <div className={styles.inlineEmpty}>No daily snapshots.</div>
+            ) : (
+                <div className={styles.list}>
                     {entries.map((entry) => {
                         const filename = `${filenameBase}_${entry.date}.lss`;
+                        const date = moment(entry.date);
                         return (
-                            <tr key={entry.date}>
-                                <td>{entry.date}</td>
-                                <td>
+                            <div key={entry.date} className={styles.row}>
+                                <div className={styles.rowPrimaryCol}>
+                                    <div className={styles.rowPrimary}>
+                                        {date.format('MMM D, YYYY')}
+                                    </div>
+                                    <div className={styles.rowSecondary}>
+                                        {date.fromNow()}
+                                    </div>
+                                </div>
+                                <div className={styles.rowMetaCol}>
                                     {entry.expiresAt === null ? (
-                                        <span className="text-muted">
-                                            never
-                                        </span>
+                                        <div className={styles.rowMetaPrimary}>
+                                            Never expires
+                                        </div>
                                     ) : (
                                         <>
-                                            <div>
-                                                {moment(entry.expiresAt).format(
-                                                    'L',
-                                                )}
-                                            </div>
-                                            <small className="text-muted">
+                                            <div
+                                                className={
+                                                    styles.rowMetaPrimary
+                                                }
+                                            >
+                                                Expires{' '}
                                                 {moment(
                                                     entry.expiresAt,
                                                 ).fromNow()}
-                                            </small>
+                                            </div>
+                                            <div
+                                                className={
+                                                    styles.rowMetaSecondary
+                                                }
+                                            >
+                                                {moment(entry.expiresAt).format(
+                                                    'MMM D, YYYY',
+                                                )}
+                                            </div>
                                         </>
                                     )}
-                                </td>
-                                <td>
+                                </div>
+                                <div className={styles.rowAction}>
                                     <DownloadButton
                                         downloadUrl={entry.downloadUrl}
                                         filename={filename}
                                     />
-                                </td>
-                            </tr>
+                                </div>
+                            </div>
                         );
                     })}
-                </tbody>
-            </Table>
-        </div>
+                </div>
+            )}
+        </section>
     );
 }

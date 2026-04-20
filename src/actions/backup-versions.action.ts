@@ -1,4 +1,3 @@
-// src/actions/backup-versions.action.ts
 'use server';
 
 import type { BackupVersionsResult } from 'types/backups.types';
@@ -21,9 +20,18 @@ export async function getBackupVersions(
         headers['Authorization'] = `Bearer ${session.id}`;
     }
 
+    // run.splitsFile arrives URL-encoded; decode before re-encoding for the
+    // query param so we don't double-encode (backend wouldn't match the key).
+    let decodedKey: string;
+    try {
+        decodedKey = decodeURIComponent(originalKey);
+    } catch {
+        decodedKey = originalKey;
+    }
+
     const url = `${BASE_URL}/backups/user/${encodeURIComponent(
         username,
-    )}/versions?key=${encodeURIComponent(originalKey)}`;
+    )}/versions?key=${encodeURIComponent(decodedKey)}`;
 
     let res: Response;
     try {

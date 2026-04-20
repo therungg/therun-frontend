@@ -2,6 +2,7 @@
 
 import { OverlayTrigger, Tooltip } from 'react-bootstrap';
 import { Download, Lock } from 'react-bootstrap-icons';
+import styles from './downloads.module.scss';
 
 interface DownloadButtonProps {
     downloadUrl: string | null;
@@ -20,10 +21,10 @@ export function DownloadButton({
                 href={downloadUrl}
                 download={filename}
                 onClick={onClick}
-                className="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1"
+                className={styles.btnDownload}
                 aria-label={`Download ${filename}`}
             >
-                <Download aria-hidden="true" />
+                <Download size={13} aria-hidden="true" />
                 <span>Download</span>
             </a>
         );
@@ -38,15 +39,16 @@ export function DownloadButton({
                 </Tooltip>
             }
         >
-            <button
-                type="button"
-                disabled
-                className="btn btn-sm btn-outline-secondary d-inline-flex align-items-center gap-1"
+            <span
+                className={styles.btnLocked}
                 aria-label="Locked download — supporter-only"
+                role="button"
+                aria-disabled="true"
+                tabIndex={0}
             >
-                <Lock aria-hidden="true" />
+                <Lock size={13} aria-hidden="true" />
                 <span>Locked</span>
-            </button>
+            </span>
         </OverlayTrigger>
     );
 }
