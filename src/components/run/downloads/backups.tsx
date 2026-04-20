@@ -1,14 +1,16 @@
 'use client';
 
+import { Lock } from 'react-bootstrap-icons';
 import type { BackupVersionsResponse } from 'types/backups.types';
 import Link from '~src/components/link';
 import { DailyList } from './daily-list';
+import styles from './downloads.module.scss';
 import { RecentList } from './recent-list';
 
 type BackupsState =
     | { status: 'loading' }
     | { status: 'loaded'; data: BackupVersionsResponse }
-    | { status: 'empty' } // 404 — no metadata for this key
+    | { status: 'empty' }
     | { status: 'error' };
 
 interface BackupsProps {
@@ -17,16 +19,25 @@ interface BackupsProps {
     onRetry: () => void;
 }
 
-function PaywallCard() {
+function PaywallBanner() {
     return (
-        <div className="border rounded p-3 mb-3 bg-body-tertiary">
-            <h4 className="fs-6 mb-2">Downloads are a supporter feature</h4>
-            <p className="mb-2 small">
-                Cloud backups cost therun.gg money to keep around. Becoming a
-                supporter on Patreon unlocks downloads — yours and everyone
-                else's.
-            </p>
-            <Link href="/support" className="btn btn-sm btn-primary">
+        <div className={styles.paywallBanner}>
+            <div className={styles.paywallIcon} aria-hidden="true">
+                <Lock size={18} />
+            </div>
+            <div className={styles.paywallBody}>
+                <div className={styles.paywallTitle}>
+                    Downloads are a supporter feature
+                </div>
+                <p className={styles.paywallCopy}>
+                    Cloud backups cost therun.gg money to keep around. Become a
+                    supporter to unlock downloads.
+                </p>
+            </div>
+            <Link
+                href="/support"
+                className={`btn btn-primary ${styles.paywallCta}`}
+            >
                 Support therun.gg
             </Link>
         </div>
@@ -35,16 +46,18 @@ function PaywallCard() {
 
 export function Backups({ state, filenameBase, onRetry }: BackupsProps) {
     return (
-        <div className="mt-4">
-            <h3 className="fs-5 mb-2">Backups</h3>
+        <section>
+            <h3 className={styles.sectionLabel}>Backups</h3>
 
             {state.status === 'loading' && (
-                <p className="text-muted mb-0">Loading backups…</p>
+                <div className={styles.loadingState}>Loading backups…</div>
             )}
 
             {state.status === 'error' && (
-                <div>
-                    <p className="text-danger mb-2">Couldn't load backups.</p>
+                <div className={styles.errorState}>
+                    <p className={styles.errorMessage}>
+                        Couldn't load backups.
+                    </p>
                     <button
                         type="button"
                         className="btn btn-sm btn-outline-secondary"
@@ -56,12 +69,15 @@ export function Backups({ state, filenameBase, onRetry }: BackupsProps) {
             )}
 
             {state.status === 'empty' && (
-                <div className="border rounded p-3 bg-body-tertiary">
-                    <p className="mb-2">
-                        No backups for this run yet. Supporters get automatic
-                        cloud backups on every upload.
+                <div className={styles.emptyCard}>
+                    <div className={styles.emptyCardTitle}>
+                        No backups for this run yet
+                    </div>
+                    <p className={styles.emptyCardCopy}>
+                        Supporters get automatic cloud backups on every upload —
+                        one per upload for the past 5, plus a daily snapshot.
                     </p>
-                    <Link href="/support" className="btn btn-sm btn-primary">
+                    <Link href="/support" className="btn btn-primary">
                         Support therun.gg
                     </Link>
                 </div>
@@ -69,7 +85,7 @@ export function Backups({ state, filenameBase, onRetry }: BackupsProps) {
 
             {state.status === 'loaded' && (
                 <>
-                    {!state.data.canDownload && <PaywallCard />}
+                    {!state.data.canDownload && <PaywallBanner />}
                     <RecentList
                         entries={state.data.recent}
                         filenameBase={filenameBase}
@@ -80,6 +96,6 @@ export function Backups({ state, filenameBase, onRetry }: BackupsProps) {
                     />
                 </>
             )}
-        </div>
+        </section>
     );
 }

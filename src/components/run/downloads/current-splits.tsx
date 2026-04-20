@@ -1,25 +1,34 @@
 'use client';
 
+import { Download } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import type { Run } from '~src/common/types';
+import styles from './downloads.module.scss';
 
 interface CurrentSplitsProps {
     run: Run;
 }
 
 export function CurrentSplits({ run }: CurrentSplitsProps) {
-    if (!run.splitsFile) {
-        return (
-            <div>
-                <h3 className="fs-5 mb-2">Current splits</h3>
-                <p className="text-muted mb-0">
-                    No splits file uploaded for this run.
-                </p>
-            </div>
-        );
-    }
+    return (
+        <section>
+            <h3 className={styles.sectionLabel}>Current</h3>
+            {run.splitsFile ? (
+                <CurrentCard run={run} />
+            ) : (
+                <div className={styles.emptyCard}>
+                    <div className={styles.emptyCardTitle}>No splits file</div>
+                    <p className={styles.emptyCardCopy}>
+                        Nothing has been uploaded to this run yet.
+                    </p>
+                </div>
+            )}
+        </section>
+    );
+}
 
-    const splitsFile = decodeURIComponent(run.splitsFile)
+function CurrentCard({ run }: { run: Run }) {
+    const splitsFile = decodeURIComponent(run.splitsFile as string)
         .replaceAll('%', '%25')
         .replaceAll('+++', '+%2B+')
         .replaceAll('++', '%2B+')
@@ -56,24 +65,23 @@ export function CurrentSplits({ run }: CurrentSplitsProps) {
     };
 
     return (
-        <div>
-            <h3 className="fs-5 mb-2">Current splits</h3>
-            <div className="d-flex align-items-center justify-content-between border rounded p-3">
-                <div>
-                    <div className="fw-semibold">{downloadFilename}</div>
-                    <small className="text-muted">
-                        The live splits file currently on this run.
-                    </small>
+        <div className={styles.currentCard}>
+            <div className={styles.currentBody}>
+                <div className={styles.currentPrimary}>Live splits</div>
+                <div className={styles.currentSecondary}>
+                    The .lss file currently attached to this run.
                 </div>
-                <a
-                    href={url}
-                    download={downloadFilename}
-                    onClick={handleDownload}
-                    className="btn btn-sm btn-outline-primary"
-                >
-                    Download
-                </a>
+                <div className={styles.currentFilename}>{downloadFilename}</div>
             </div>
+            <a
+                href={url}
+                download={downloadFilename}
+                onClick={handleDownload}
+                className={styles.btnPrimaryLg}
+            >
+                <Download size={14} aria-hidden="true" />
+                <span>Download</span>
+            </a>
         </div>
     );
 }

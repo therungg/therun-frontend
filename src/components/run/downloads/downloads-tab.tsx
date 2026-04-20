@@ -6,6 +6,7 @@ import { getBackupVersions } from '~src/actions/backup-versions.action';
 import type { Run } from '~src/common/types';
 import { Backups } from './backups';
 import { CurrentSplits } from './current-splits';
+import styles from './downloads.module.scss';
 
 interface DownloadsTabProps {
     run: Run;
@@ -64,7 +65,7 @@ export function DownloadsTab({ run, username, isActive }: DownloadsTabProps) {
     const filenameBase = `${run.game}_${run.run}`;
 
     return (
-        <div>
+        <div className={styles.container}>
             <CurrentSplits run={run} />
             <Backups
                 state={
