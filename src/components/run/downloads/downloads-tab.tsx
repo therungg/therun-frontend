@@ -62,7 +62,7 @@ export function DownloadsTab({ run, username, isActive }: DownloadsTabProps) {
         void load();
     }, [isActive, state, load]);
 
-    const filenameBase = `${run.game}_${run.run}`;
+    const filenameBase = `${run.user}_${run.game}_${run.run}`;
 
     return (
         <div className={styles.container}>

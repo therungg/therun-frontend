@@ -19,7 +19,7 @@ export function DailyList({ entries, filenameBase }: DailyListProps) {
             ) : (
                 <div className={styles.list}>
                     {entries.map((entry) => {
-                        const filename = `${filenameBase}_${entry.date}.lss`;
+                        const filename = `${filenameBase} (${entry.date}).lss`;
                         const date = moment(entry.date);
                         return (
                             <div key={entry.date} className={styles.row}>
