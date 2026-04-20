@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import RunDetail from '~app/(new-layout)/[username]/[game]/[run]/run';
+import { getSession } from '~src/actions/session.action';
 import { getGameGlobal } from '~src/components/game/get-game';
 import { JsonLd } from '~src/components/json-ld';
 import { getGlobalUser } from '~src/lib/get-global-user';
@@ -33,6 +34,7 @@ export default async function RunPage(props: PageProps) {
     if (!run) throw new Error('Could not find run');
 
     const liveData = await getLiveRunForUser(username);
+    const viewerSession = await getSession();
 
     const runUrl = run.customUrl ? `${username}/${run.customUrl}` : run.url;
 
@@ -70,6 +72,7 @@ export default async function RunPage(props: PageProps) {
                 globalGameData={globalGameData}
                 liveData={liveData}
                 tab={searchParams.tab}
+                viewerUsername={viewerSession.username}
             />
         </>
     );

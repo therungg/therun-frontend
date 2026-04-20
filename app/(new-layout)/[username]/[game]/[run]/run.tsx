@@ -17,6 +17,7 @@ import { Splits } from '~src/components/run/dashboard/splits';
 import { Stats } from '~src/components/run/dashboard/stats';
 import TimeSaves from '~src/components/run/dashboard/timesaves';
 import { Vod } from '~src/components/run/dashboard/vod';
+import { DownloadsTab } from '~src/components/run/downloads/downloads-tab';
 import { getSplitsHistoryUrl } from '~src/components/run/get-splits-history';
 import { History } from '~src/components/run/history/history';
 import { GameSessions } from '~src/components/run/run-sessions/game-sessions';
@@ -33,6 +34,7 @@ interface RunPageProps {
     globalGameData: GlobalGameData;
     liveData: LiveRun;
     tab?: string;
+    viewerUsername?: string;
 }
 
 export interface Runs {
@@ -55,9 +57,11 @@ export default function RunDetail({
     globalGameData,
     liveData,
     tab = 'dashboard',
+    viewerUsername,
 }: RunPageProps) {
     const { baseUrl } = React.useContext(AppContext);
     const forceRealTime = !!globalGameData.forceRealTime;
+    const [activeTab, setActiveTab] = useState<string>(tab);
 
     const [useGameTime, setUseGameTime] = useState(
         !!(
@@ -244,12 +248,14 @@ export default function RunDetail({
 
             {runsData ? (
                 <Tabs
-                    defaultActiveKey={tab}
+                    activeKey={activeTab}
                     className="mb-3"
                     onSelect={async (e) => {
-                        if (e !== 'compare' || !!gameData) return;
-
-                        await loadCompare();
+                        if (!e) return;
+                        setActiveTab(e);
+                        if (e === 'compare' && !gameData) {
+                            await loadCompare();
+                        }
                     }}
                 >
                     <Tab eventKey="dashboard" title="Dashboard">
@@ -335,6 +341,13 @@ export default function RunDetail({
                         ) : (
                             'Loading Game Data...'
                         )}
+                    </Tab>
+                    <Tab eventKey="downloads" title="Downloads">
+                        <DownloadsTab
+                            run={run}
+                            username={username}
+                            isActive={activeTab === 'downloads'}
+                        />
                     </Tab>
                     {run.vod && (
                         <Tab
