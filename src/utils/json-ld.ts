@@ -222,8 +222,8 @@ export function buildRunProfileJsonLd({
 
     return {
         '@context': 'https://schema.org',
-        '@type': 'ProfilePage',
-        name: `${username}'s ${game} - ${category} Speedruns`,
+        '@type': 'WebPage',
+        name: `${game} - ${category} speedrun stats by ${username}`,
         url: `${BASE_URL}/${runUrl}`,
         description,
         ...(dateCreated ? { dateCreated } : {}),
@@ -232,8 +232,64 @@ export function buildRunProfileJsonLd({
             '@type': 'Person',
             name: username,
             url: `${BASE_URL}/${username}`,
-            knowsAbout: [`Speedrunning`, game, `${game} - ${category}`],
+            knowsAbout: ['Speedrunning', game, `${game} - ${category}`],
             ...(image ? { image } : {}),
         },
+        about: {
+            '@type': 'VideoGame',
+            name: game,
+        },
+    };
+}
+
+export function buildBreadcrumbJsonLd(items: { name: string; url?: string }[]) {
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: items.map((item, index) => ({
+            '@type': 'ListItem',
+            position: index + 1,
+            name: item.name,
+            ...(item.url ? { item: `${BASE_URL}${item.url}` } : {}),
+        })),
+    };
+}
+
+interface VideoObjectInput {
+    name: string;
+    description: string;
+    contentUrl: string;
+    thumbnailUrl: string;
+    uploadDate?: string;
+}
+
+export function buildVideoObjectJsonLd({
+    name,
+    description,
+    contentUrl,
+    thumbnailUrl,
+    uploadDate,
+}: VideoObjectInput) {
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'VideoObject',
+        name,
+        description,
+        contentUrl,
+        thumbnailUrl,
+        ...(uploadDate ? { uploadDate } : {}),
+    };
+}
+
+export function buildItemListJsonLd(items: { name: string; url: string }[]) {
+    return {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        itemListElement: items.map((item, index) => ({
+            '@type': 'ListItem',
+            position: index + 1,
+            name: item.name,
+            url: `${BASE_URL}${item.url}`,
+        })),
     };
 }

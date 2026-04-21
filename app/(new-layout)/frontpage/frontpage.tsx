@@ -23,41 +23,17 @@ export default async function FrontPage({ statsUser }: { statsUser?: string }) {
         : DEFAULT_FRONTPAGE_CONFIG;
 
     const sections: Record<SectionId, React.ReactNode> = {
-        trending: (
-            <Suspense fallback={<SectionSkeleton height={400} />}>
-                <TrendingSection />
-            </Suspense>
-        ),
-        'pb-feed': (
-            <Suspense fallback={<SectionSkeleton height={400} />}>
-                <PbFeedSection />
-            </Suspense>
-        ),
-        races: (
-            <Suspense fallback={<SectionSkeleton height={400} />}>
-                <RacesSection />
-            </Suspense>
-        ),
-        'quick-links': (
-            <Suspense fallback={<SectionSkeleton height={150} />}>
-                <QuickLinks />
-            </Suspense>
-        ),
+        trending: <TrendingSection />,
+        'pb-feed': <PbFeedSection />,
+        races: <RacesSection />,
+        'quick-links': <QuickLinks />,
         'your-stats': (
             <Suspense fallback={<SectionSkeleton height={300} />}>
                 <YourStatsSection statsUser={statsUser} />
             </Suspense>
         ),
-        'community-pulse': (
-            <Suspense fallback={<SectionSkeleton height={300} />}>
-                <CommunityPulse />
-            </Suspense>
-        ),
-        patreon: (
-            <Suspense fallback={<SectionSkeleton height={150} />}>
-                <PatreonSection />
-            </Suspense>
-        ),
+        'community-pulse': <CommunityPulse />,
+        patreon: <PatreonSection />,
     };
 
     return (

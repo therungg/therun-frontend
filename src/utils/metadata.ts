@@ -111,11 +111,11 @@ export default function buildMetadata(props?: MetadataProps): Metadata {
             images: twitterImages,
         },
         robots: {
-            index: props?.index || true,
-            follow: props?.index || true,
+            index: props?.index ?? true,
+            follow: props?.follow ?? true,
             googleBot: {
-                index: props?.index || true,
-                follow: props?.index || true,
+                index: props?.index ?? true,
+                follow: props?.follow ?? true,
             },
         },
     };
