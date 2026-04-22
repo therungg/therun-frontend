@@ -149,11 +149,7 @@ export const getBlogs = (): BlogInterface[] => {
                             Twitter
                         </a>
                         , joining the{' '}
-                        <a
-                            href={process.env.NEXT_PUBLIC_DISCORD_URL}
-                            target="_blank"
-                            rel="noreferrer"
-                        >
+                        <a href="/discord" target="_blank" rel="noreferrer">
                             Discord
                         </a>{' '}
                         or, if you want to take it a step further, tell your
@@ -511,11 +507,7 @@ export const getBlogs = (): BlogInterface[] => {
                         something added, changed, or want to let me know that
                         you like (or do not like) something, do not hesitate to
                         contact me on{' '}
-                        <a
-                            rel="noreferrer"
-                            target="_blank"
-                            href={process.env.NEXT_PUBLIC_DISCORD_URL}
-                        >
+                        <a rel="noreferrer" target="_blank" href="/discord">
                             our Discord!
                         </a>
                     </p>

@@ -50,7 +50,7 @@ const RaceFaqBody = () => {
             <p>
                 If you have any further questions, feedback, remarks, insults or
                 compliments, feel free to contact us on{' '}
-                <a href="therun.gg/discord" target="_blank" rel="noreferrer">
+                <a href="/discord" target="_blank" rel="noreferrer">
                     Discord
                 </a>
                 !

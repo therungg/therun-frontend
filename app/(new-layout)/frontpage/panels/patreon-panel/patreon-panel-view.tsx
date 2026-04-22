@@ -53,15 +53,16 @@ export const PatreonPanelView: React.FC<PatreonPanelViewProps> = ({
 
             <p className={styles.heading}>Keep therun.gg free for everyone</p>
             <p className={styles.description}>
-                No ads, no paywalls, we never sell your data. therun.gg stays
-                free because the community chooses to support it.
+                Supporters unlock cloud backups of every upload, unlimited
+                LiveSplit layouts, custom name styling, and more — all while
+                keeping the site free for the community.
             </p>
 
             <a
-                href="https://patreon.com/therungg"
+                href="/support"
                 className={`btn btn-primary ${styles.ctaButton}`}
             >
-                Become a Patron
+                See what you unlock
             </a>
 
             {totalPatronCount > 0 && (

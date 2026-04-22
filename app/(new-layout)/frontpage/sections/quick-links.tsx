@@ -71,7 +71,7 @@ function getLinks(session: { user?: string; roles?: string[] }): QuickLink[] {
             iconColor: '#a78bfa',
         },
         {
-            href: process.env.NEXT_PUBLIC_DISCORD_URL ?? '/discord',
+            href: '/discord',
             label: 'Join our Discord',
             icon: FaDiscord,
             iconColor: '#5865f2',
@@ -82,7 +82,7 @@ function getLinks(session: { user?: string; roles?: string[] }): QuickLink[] {
 
 const SOCIAL_LINKS: QuickLink[] = [
     {
-        href: process.env.NEXT_PUBLIC_DISCORD_URL ?? '/discord',
+        href: '/discord',
         label: 'Discord',
         icon: FaDiscord,
         iconColor: '#5865f2',

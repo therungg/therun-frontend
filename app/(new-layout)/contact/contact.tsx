@@ -14,11 +14,7 @@ export const Contact = () => {
             </p>
             <p>
                 If you want to, I made a&nbsp;
-                <a
-                    rel="noreferrer"
-                    target="_blank"
-                    href={process.env.NEXT_PUBLIC_DISCORD_URL}
-                >
+                <a rel="noreferrer" target="_blank" href="/discord">
                     Discord
                 </a>
                 , you can message me on&nbsp;
