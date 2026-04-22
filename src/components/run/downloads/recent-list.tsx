@@ -12,15 +12,16 @@ interface RecentListProps {
 
 export function RecentList({ entries, filenameBase }: RecentListProps) {
     return (
-        <section>
-            <h4 className={styles.subsectionLabel}>Recent · last 5 uploads</h4>
+        <>
             {entries.length === 0 ? (
                 <div className={styles.inlineEmpty}>No recent snapshots.</div>
             ) : (
                 <div className={styles.list}>
                     {entries.map((entry) => {
                         const ts = moment(entry.uploadedAt);
-                        const filename = `${filenameBase} (${ts.format('YYYY-MM-DD HH-mm')}).lss`;
+                        const filename = `${filenameBase}_upload_${ts.format(
+                            'YYYY-MM-DD_HH-mm',
+                        )}.lss`;
                         return (
                             <div key={entry.uploadedAt} className={styles.row}>
                                 <div className={styles.rowPrimaryCol}>
@@ -42,6 +43,6 @@ export function RecentList({ entries, filenameBase }: RecentListProps) {
                     })}
                 </div>
             )}
-        </section>
+        </>
     );
 }

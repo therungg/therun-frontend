@@ -1,17 +1,14 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { AppProgressBar as ProgressBar } from 'next-nprogress-bar';
 import { useTheme } from 'next-themes';
 import React, { useEffect } from 'react';
 import { Bounce, ToastContainer, toast } from 'react-toastify';
-import { useProgressBar } from '~src/components/n-progress.component';
 
 export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
     children,
 }) => {
     const { systemTheme, resolvedTheme } = useTheme();
-    useProgressBar();
     const query = useSearchParams();
 
     const prefix = systemTheme === 'light' ? '/lightmode' : '';
@@ -51,13 +48,6 @@ export const Content: React.FunctionComponent<React.PropsWithChildren> = ({
                 href="/safari-pinned-tab.svg"
                 color="#5bbad5"
             />
-            <ProgressBar
-                height="4px"
-                color="#fffd00"
-                options={{ showSpinner: false }}
-                shallowRouting
-            />
-
             <ToastContainer
                 position="top-center"
                 autoClose={5000}

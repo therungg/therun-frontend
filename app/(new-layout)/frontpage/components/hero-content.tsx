@@ -502,6 +502,8 @@ const SidebarCard = ({
     const patron = usePatronCardStyles(run.user);
 
     const isStale = !!staleReason;
+    const isFinished = staleReason === 'finished';
+    const isUnclickable = isStale && !isFinished;
 
     return (
         <button
@@ -526,8 +528,8 @@ const SidebarCard = ({
                 patron.isAnimated && styles.patronAnimated,
             )}
             onClick={onSelect}
-            aria-disabled={isStale || undefined}
-            tabIndex={isStale ? -1 : undefined}
+            aria-disabled={isUnclickable || undefined}
+            tabIndex={isUnclickable ? -1 : undefined}
             aria-label={`${run.user} playing ${run.game}${staleReason ? ` (${STALE_LABELS[staleReason]})` : ''}`}
             style={
                 {

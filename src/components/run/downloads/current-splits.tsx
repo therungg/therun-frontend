@@ -1,9 +1,10 @@
 'use client';
 
-import { Download } from 'react-bootstrap-icons';
+import { Download, FileEarmarkCode } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import type { Run } from '~src/common/types';
 import styles from './downloads.module.scss';
+import { SectionHeader } from './section-header';
 
 interface CurrentSplitsProps {
     run: Run;
@@ -11,8 +12,14 @@ interface CurrentSplitsProps {
 
 export function CurrentSplits({ run }: CurrentSplitsProps) {
     return (
-        <section>
-            <h3 className={styles.sectionLabel}>Current</h3>
+        <section className={styles.section}>
+            <SectionHeader
+                icon={<FileEarmarkCode size={28} />}
+                kicker="Live file"
+                title="Current splits file"
+                subtitle="The .lss file currently attached to this run — always fresh."
+                tone="primary"
+            />
             {run.splitsFile ? (
                 <CurrentCard run={run} />
             ) : (
@@ -66,8 +73,11 @@ function CurrentCard({ run }: { run: Run }) {
 
     return (
         <div className={styles.currentCard}>
+            <div className={styles.currentCardGlow} aria-hidden="true" />
             <div className={styles.currentBody}>
-                <div className={styles.currentPrimary}>Live splits</div>
+                <div className={styles.currentPrimary}>
+                    Latest uploaded file
+                </div>
                 <div className={styles.currentSecondary}>
                     The .lss file currently attached to this run.
                 </div>
