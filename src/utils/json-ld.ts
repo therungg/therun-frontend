@@ -28,7 +28,7 @@ export function buildWebSiteJsonLd() {
             description:
                 'Free speedrun statistics platform providing live run tracking, leaderboards, personal bests, race data, and advanced analytics for speedrunners.',
             sameAs: [
-                'https://discord.gg/therun',
+                `${BASE_URL}/discord`,
                 'https://twitter.com/theaboringname',
                 'https://bsky.app/profile/therun.gg',
                 'https://github.com/therungg',

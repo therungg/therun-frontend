@@ -7,7 +7,7 @@ export default async function SupportPage() {
 }
 
 export const metadata = buildMetadata({
-    title: 'Support',
+    title: 'Support therun.gg',
     description:
-        'Like The Run and find it useful? Consider supporting it today and get some visual perks for doing so!',
+        'Support therun.gg to unlock cloud backups of every splits upload, unlimited LiveSplit layouts, custom name styling, Discord access, and more — while keeping the site free, ad-free, and independent for everyone.',
 });
