@@ -15,6 +15,7 @@ import { GametimeForm } from '~src/components/gametime/gametime-form';
 import Link from '~src/components/link';
 import { LiveIcon, LiveUserRun } from '~src/components/live/live-user-run';
 import { HighlightedRun } from '~src/components/run/dashboard/highlighted-run';
+import { ProfileDownloadsTab } from '~src/components/run/downloads/profile-downloads-tab';
 import { SessionOverview } from '~src/components/run/user-detail/session-overview';
 import { UserOverview } from '~src/components/run/user-detail/user-overview';
 import { UserRaceStatsTable } from '~src/components/run/user-detail/user-race-stats';
@@ -51,6 +52,7 @@ export const UserProfile = ({
         hasGameTime && defaultGameTime,
     );
     const [currentGame, setCurrentGame] = useState('all-games');
+    const [activeTab, setActiveTab] = useState<string>('overview');
     const [, forceUpdate] = useReducer((x) => x + 1, 0);
     const [liveRun, setLiveRun] = useState(liveData);
 
@@ -168,7 +170,8 @@ export const UserProfile = ({
                 </Row>
             )}
             <Tabs
-                defaultActiveKey="overview"
+                activeKey={activeTab}
+                onSelect={(key) => setActiveTab(key ?? 'overview')}
                 className={`position-relative z-1 mb-3 pt-0 w-100 mw-md-66${
                     allRunsRunMap.size > 1 ? ' with-filter' : ''
                 }`}
@@ -270,6 +273,13 @@ export const UserProfile = ({
                             />
                         </Col>
                     </Row>
+                </Tab>
+                <Tab title="Downloads" eventKey="downloads">
+                    <ProfileDownloadsTab
+                        username={username}
+                        runs={runs}
+                        isActive={activeTab === 'downloads'}
+                    />
                 </Tab>
                 <Tab title="Twitch stream" eventKey="stream">
                     <h2 className={styles.sectionHeading}>Twitch stream</h2>
