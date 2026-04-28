@@ -15,6 +15,27 @@ interface ApiFetchOptions extends Omit<RequestInit, 'body'> {
     body?: unknown;
 }
 
+function isBodyInit(value: unknown): value is BodyInit {
+    if (typeof value === 'string') return true;
+    if (typeof Blob !== 'undefined' && value instanceof Blob) return true;
+    if (typeof FormData !== 'undefined' && value instanceof FormData)
+        return true;
+    if (typeof ArrayBuffer !== 'undefined' && value instanceof ArrayBuffer)
+        return true;
+    if (
+        typeof URLSearchParams !== 'undefined' &&
+        value instanceof URLSearchParams
+    )
+        return true;
+    if (
+        typeof ReadableStream !== 'undefined' &&
+        value instanceof ReadableStream
+    ) {
+        return true;
+    }
+    return false;
+}
+
 export async function apiFetch<T>(
     path: string,
     options?: ApiFetchOptions,
@@ -23,13 +44,25 @@ export async function apiFetch<T>(
     const headers: Record<string, string> = {
         ...(extraHeaders as Record<string, string>),
     };
-    if (body !== undefined) headers['Content-Type'] = 'application/json';
+
+    let fetchBody: BodyInit | undefined;
+    if (body === undefined) {
+        fetchBody = undefined;
+    } else if (isBodyInit(body)) {
+        fetchBody = body;
+    } else {
+        fetchBody = JSON.stringify(body);
+        if (!headers['Content-Type']) {
+            headers['Content-Type'] = 'application/json';
+        }
+    }
+
     if (sessionId) headers['Authorization'] = `Bearer ${sessionId}`;
 
     const res = await fetch(`${BASE_URL}${path}`, {
         ...rest,
         headers,
-        body: body !== undefined ? JSON.stringify(body) : undefined,
+        body: fetchBody,
     });
 
     if (!res.ok) {
