@@ -9,6 +9,7 @@ import {
 import type { User } from '../../../../../types/session.types';
 import type { Tournament } from '../../../../../types/tournament.types';
 import { AdminsPanel } from './admins-panel';
+import { LifecyclePanel } from './lifecycle-panel';
 import { ParticipantsPanel } from './participants-panel';
 import { SettingsPanel } from './settings-panel';
 import { StaffPanel } from './staff-panel';
@@ -77,7 +78,7 @@ export function ManagePanel({
                     <ParticipantsPanel tournament={tournament} />
                 </Tab.Pane>
                 <Tab.Pane eventKey="lifecycle">
-                    Lifecycle (TODO Task 14)
+                    <LifecyclePanel tournament={tournament} />
                 </Tab.Pane>
             </Tab.Content>
         </Tab.Container>
