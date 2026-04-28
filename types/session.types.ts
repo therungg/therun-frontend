@@ -33,6 +33,7 @@ export type Role =
     | 'race-admin'
     | 'event-admin'
     | 'event-creator'
+    | 'tournament-creator'
     | 'patreon1'
     | 'patreon2';
 
