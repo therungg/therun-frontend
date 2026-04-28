@@ -104,10 +104,20 @@ const rolePermissions: Record<Role, DefinePermissions> = {
     'event-creator': function (_user, { can }) {
         can('create', 'event');
     },
+    'tournament-creator': function (_user, _builder) {
+        // Tournament creation permission is enforced server-side; no CASL ability mapped.
+    },
     // role-admins can remove and add roles for other users, but only specific ones.
     'role-admin': function (_user, { can }) {
         can('moderate', 'roles', {
-            role: { $in: ['event-admin', 'race-admin', 'event-creator'] },
+            role: {
+                $in: [
+                    'event-admin',
+                    'race-admin',
+                    'event-creator',
+                    'tournament-creator',
+                ],
+            },
         });
     },
 };
