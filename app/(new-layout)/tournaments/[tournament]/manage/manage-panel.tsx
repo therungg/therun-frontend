@@ -8,6 +8,7 @@ import {
 } from '~src/lib/tournament-permissions';
 import type { User } from '../../../../../types/session.types';
 import type { Tournament } from '../../../../../types/tournament.types';
+import { SettingsPanel } from './settings-panel';
 
 type ManageTab = 'settings' | 'staff' | 'admins' | 'participants' | 'lifecycle';
 
@@ -60,7 +61,9 @@ export function ManagePanel({
                 ))}
             </Nav>
             <Tab.Content>
-                <Tab.Pane eventKey="settings">Settings (TODO Task 10)</Tab.Pane>
+                <Tab.Pane eventKey="settings">
+                    <SettingsPanel tournament={tournament} user={user} />
+                </Tab.Pane>
                 <Tab.Pane eventKey="staff">Staff (TODO Task 11)</Tab.Pane>
                 <Tab.Pane eventKey="admins">Admins (TODO Task 12)</Tab.Pane>
                 <Tab.Pane eventKey="participants">
