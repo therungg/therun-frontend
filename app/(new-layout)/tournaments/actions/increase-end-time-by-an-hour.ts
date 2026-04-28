@@ -2,28 +2,17 @@
 
 import { revalidateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
+import { setRunsEndTime } from '~src/lib/api/tournaments';
 
-export async function increaseEndTimeByAnHour(addTimeInput: FormData) {
-    const tournamentName = addTimeInput.get('tournament') as string;
-    const date = addTimeInput.get('date') as string;
-    const heat = addTimeInput.get('heat') as string;
+export async function increaseEndTimeByAnHour(form: FormData) {
+    const tournamentName = form.get('tournament') as string;
+    const date = form.get('date') as string;
+    const heatRaw = form.get('heat') as string | null;
+    const heat =
+        heatRaw === null || heatRaw === '' ? undefined : Number(heatRaw);
     const session = await getSession();
+    if (!session.id) return;
 
-    if (!session.id) {
-        return;
-    }
-
-    const url = `${
-        process.env.NEXT_PUBLIC_DATA_URL
-    }/tournaments/${encodeURIComponent(tournamentName)}/setEndtime`;
-
-    await fetch(url, {
-        method: 'POST',
-        headers: {
-            Authorization: `Bearer ${session.id}`,
-        },
-        body: JSON.stringify({ date, heat }),
-    });
-
-    revalidateTag(`tournaments`);
+    await setRunsEndTime(tournamentName, date, heat, session.id);
+    revalidateTag('tournaments', 'minutes');
 }
