@@ -22,17 +22,22 @@ async function withSession<T>(fn: (sessionId: string) => Promise<T>) {
     }
 }
 
-export const addStaffAction = (
+export async function addStaffAction(
     name: string,
     user: string,
     capabilities: Capability[],
-) => withSession((s) => addStaff(name, user, capabilities, s));
+) {
+    return withSession((s) => addStaff(name, user, capabilities, s));
+}
 
-export const updateStaffAction = (
+export async function updateStaffAction(
     name: string,
     user: string,
     capabilities: Capability[],
-) => withSession((s) => updateStaff(name, user, capabilities, s));
+) {
+    return withSession((s) => updateStaff(name, user, capabilities, s));
+}
 
-export const removeStaffAction = (name: string, user: string) =>
-    withSession((s) => removeStaff(name, user, s));
+export async function removeStaffAction(name: string, user: string) {
+    return withSession((s) => removeStaff(name, user, s));
+}
