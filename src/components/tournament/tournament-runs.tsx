@@ -7,6 +7,7 @@ import { excludeRun } from '~app/(new-layout)/tournaments/actions/exclude-run.ac
 import { SubmitButton } from '~src/components/Button/SubmitButton';
 import { UserLink } from '~src/components/links/links';
 import { Tournament } from '~src/components/tournament/tournament-info';
+import { hasCapability } from '~src/lib/tournament-permissions';
 import { User } from '../../../types/session.types';
 import { buildItems } from '../run/run-sessions/game-sessions';
 import {
@@ -52,8 +53,7 @@ export const TournamentRuns: React.FunctionComponent<TournamentRunsProps> = ({
     // eslint-disable-next-line prefer-const
     let [useRuns, setUseRuns] = useState([]);
 
-    const isAdmin =
-        user && user.username && tournament.moderators?.includes(user.username);
+    const isAdmin = hasCapability(user, tournament, 'manage_runs');
 
     useEffect(() => {
         if (data && data.runList && data.runList.length > 0) {

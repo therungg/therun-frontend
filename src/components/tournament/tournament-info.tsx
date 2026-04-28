@@ -1,81 +1,15 @@
 import moment from 'moment';
 import React from 'react';
 import { Col, Form, Row, Table } from 'react-bootstrap';
-import { CategoryLeaderboard } from '~app/(new-layout)/games/[game]/game.types';
 import { PatreonBunnySvg } from '~app/(new-layout)/patron/patreon-info';
 import { increaseEndTimeByAnHour } from '~app/(new-layout)/tournaments/actions/increase-end-time-by-an-hour';
 import { SubmitButton } from '~src/components/Button/SubmitButton';
+import { hasCapability } from '~src/lib/tournament-permissions';
 import { User } from '../../../types/session.types';
+import type { Tournament } from '../../../types/tournament.types';
 import styles from '../css/Game.module.scss';
 
-export interface Tournament {
-    name: string;
-    description?: string;
-    rules?: string[];
-    socials?: {
-        twitch?: Social;
-        twitter?: Social;
-        youtube?: Social;
-    };
-    startDate: string;
-    endDate: string;
-    admin: string;
-    eligiblePeriods: DateRange[];
-    eligibleUsers: string[] | null;
-    eligibleRuns: GameCategory[];
-    ineligibleUsersForPoints: string[] | null;
-    ineligibleUsers: string[] | null;
-    moderators: string[] | null;
-    url: string;
-    pointDistribution?: number[] | null;
-    leaderboards?: CategoryLeaderboard;
-    gameTime?: boolean;
-    shortName?: string;
-
-    logoUrl?: string;
-    minimumTimeSeconds?: number;
-    forceStream?: string;
-
-    qualifier?: string;
-    parentTournamentName?: string;
-    parentTournamentSequence?: number;
-
-    game?: string;
-    category?: string;
-    excludedRuns: ExcludedRun[];
-    customRuns: CustomRun[];
-
-    raceId?: string;
-    gameImage: string;
-    organizer: string;
-}
-
-export interface CustomRun {
-    user: string;
-    date: string;
-    time: string;
-}
-
-interface Social {
-    display: string;
-    urlDisplay: string;
-    url: string;
-}
-
-export interface DateRange {
-    startDate: string;
-    endDate: string;
-}
-
-interface GameCategory {
-    game: string;
-    category: string;
-}
-
-interface ExcludedRun {
-    user: string;
-    startedAt: string;
-}
+export type { Tournament } from '../../../types/tournament.types';
 
 //TODO:: This page is ugly and terrible design. There's a lot of cool data on tournaments, so use it properly.
 export const TournamentInfo = ({
@@ -85,10 +19,19 @@ export const TournamentInfo = ({
     tournament: Tournament;
     user?: User;
 }) => {
-    const isAdmin =
-        user?.username && tournament.moderators?.includes(user.username);
+    const canManageRuns = hasCapability(user, tournament, 'manage_runs');
+    const canEditSettings = hasCapability(user, tournament, 'edit_settings');
     return (
         <div>
+            {canEditSettings && (
+                <div className="text-end mb-2">
+                    <a
+                        href={`/tournaments/${encodeURIComponent(tournament.name)}/manage`}
+                    >
+                        Manage tournament →
+                    </a>
+                </div>
+            )}
             {tournament.description && (
                 <div className="w-75 mx-auto text-center">
                     <div
@@ -120,7 +63,7 @@ export const TournamentInfo = ({
                                 <th>Ending at</th>
                                 <td>
                                     {moment(tournament.endDate).format('LLL')}
-                                    {isAdmin && (
+                                    {canManageRuns && (
                                         <Form
                                             suppressHydrationWarning
                                             action={increaseEndTimeByAnHour}
@@ -189,7 +132,7 @@ export const TournamentInfo = ({
                                                 {moment(period.endDate).format(
                                                     'LLL',
                                                 )}
-                                                {isAdmin && (
+                                                {canManageRuns && (
                                                     <div>
                                                         <Form
                                                             suppressHydrationWarning
@@ -357,23 +300,21 @@ export const TournamentInfo = ({
                         </ul>
                     </Col>
                 )}
-                {tournament.moderators && tournament.moderators.length > 0 && (
+                {tournament.admins && tournament.admins.length > 0 && (
                     <Col xl={3}>
-                        <h3>Moderators</h3>
+                        <h3>Admins</h3>
                         <ul>
-                            {tournament.moderators.map((moderator) => {
-                                return (
-                                    <li key={moderator}>
-                                        <a
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            href={`/${moderator}`}
-                                        >
-                                            {moderator}
-                                        </a>
-                                    </li>
-                                );
-                            })}
+                            {tournament.admins.map((admin) => (
+                                <li key={admin}>
+                                    <a
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        href={`/${admin}`}
+                                    >
+                                        {admin}
+                                    </a>
+                                </li>
+                            ))}
                         </ul>
                     </Col>
                 )}
