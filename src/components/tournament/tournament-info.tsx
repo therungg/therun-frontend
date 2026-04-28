@@ -23,6 +23,16 @@ export const TournamentInfo = ({
     const canEditSettings = hasCapability(user, tournament, 'edit_settings');
     return (
         <div>
+            {tournament.lockedAt && !tournament.finalizedAt && (
+                <div className="alert alert-warning">
+                    This tournament is locked — new runs will not be matched.
+                </div>
+            )}
+            {tournament.finalizedAt && (
+                <div className="alert alert-secondary">
+                    This tournament is finalized.
+                </div>
+            )}
             {canEditSettings && (
                 <div className="text-end mb-2">
                     <a
