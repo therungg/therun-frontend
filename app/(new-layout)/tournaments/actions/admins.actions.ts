@@ -19,8 +19,10 @@ async function run<T>(fn: (s: string) => Promise<T>) {
     }
 }
 
-export const addAdminAction = (name: string, user: string) =>
-    run((s) => addAdmin(name, user, s));
+export async function addAdminAction(name: string, user: string) {
+    return run((s) => addAdmin(name, user, s));
+}
 
-export const removeAdminAction = (name: string, user: string) =>
-    run((s) => removeAdmin(name, user, s));
+export async function removeAdminAction(name: string, user: string) {
+    return run((s) => removeAdmin(name, user, s));
+}

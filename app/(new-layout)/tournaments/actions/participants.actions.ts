@@ -22,11 +22,14 @@ async function run<T>(fn: (s: string) => Promise<T>) {
     }
 }
 
-export const setParticipantStatusAction = (
+export async function setParticipantStatusAction(
     name: string,
     user: string,
     status: ParticipantStatus,
-) => run((s) => setParticipantStatus(name, user, status, s));
+) {
+    return run((s) => setParticipantStatus(name, user, status, s));
+}
 
-export const removeParticipantAction = (name: string, user: string) =>
-    run((s) => removeParticipant(name, user, s));
+export async function removeParticipantAction(name: string, user: string) {
+    return run((s) => removeParticipant(name, user, s));
+}
