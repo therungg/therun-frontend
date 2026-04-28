@@ -31,14 +31,17 @@ export const TournamentStandings = () => {
     allTournaments.forEach((data) => {
         let i = 0;
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const leaderboards = data.leaderboards as any;
         if (
-            !data.leaderboards ||
-            !data.leaderboards.pbLeaderboard ||
+            !leaderboards ||
+            !leaderboards.pbLeaderboard ||
             !data.pointDistribution
         )
             return;
 
-        data.leaderboards.pbLeaderboard.forEach((standing) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        leaderboards.pbLeaderboard.forEach((standing: any) => {
             const pointDistribution = data.pointDistribution as number[];
 
             if (i > (pointDistribution as number[]).length) return;
@@ -46,10 +49,7 @@ export const TournamentStandings = () => {
             const user = standing.username;
             const point = pointDistribution[i];
 
-            if (
-                data.ineligibleUsersForPoints &&
-                data.ineligibleUsersForPoints.includes(user)
-            ) {
+            if (data.ineligibleUsers && data.ineligibleUsers.includes(user)) {
                 return;
             }
 
@@ -96,13 +96,16 @@ export const TournamentStandings = () => {
                     )}
                 </Col>
                 {allTournaments.map((data, tournamentIndex) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const lb = data.leaderboards as any;
                     const leaderboard =
-                        data.leaderboards && data.leaderboards.pbLeaderboard
-                            ? data.leaderboards.pbLeaderboard.filter(
-                                  (standing) =>
+                        lb && lb.pbLeaderboard
+                            ? lb.pbLeaderboard.filter(
+                                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                  (standing: any) =>
                                       !(
-                                          data.ineligibleUsersForPoints &&
-                                          data.ineligibleUsersForPoints.includes(
+                                          data.ineligibleUsers &&
+                                          data.ineligibleUsers.includes(
                                               standing.username,
                                           )
                                       ),
