@@ -9,6 +9,7 @@ import {
 import type { User } from '../../../../../types/session.types';
 import type { Tournament } from '../../../../../types/tournament.types';
 import { SettingsPanel } from './settings-panel';
+import { StaffPanel } from './staff-panel';
 
 type ManageTab = 'settings' | 'staff' | 'admins' | 'participants' | 'lifecycle';
 
@@ -64,7 +65,9 @@ export function ManagePanel({
                 <Tab.Pane eventKey="settings">
                     <SettingsPanel tournament={tournament} user={user} />
                 </Tab.Pane>
-                <Tab.Pane eventKey="staff">Staff (TODO Task 11)</Tab.Pane>
+                <Tab.Pane eventKey="staff">
+                    <StaffPanel tournament={tournament} />
+                </Tab.Pane>
                 <Tab.Pane eventKey="admins">Admins (TODO Task 12)</Tab.Pane>
                 <Tab.Pane eventKey="participants">
                     Participants (TODO Task 13)
