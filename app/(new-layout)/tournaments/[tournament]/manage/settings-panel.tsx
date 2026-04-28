@@ -4,9 +4,15 @@ import { useState, useTransition } from 'react';
 import { Button, Form } from 'react-bootstrap';
 import { canDeleteTournament } from '~src/lib/tournament-permissions';
 import type { User } from '../../../../../types/session.types';
-import type { Tournament } from '../../../../../types/tournament.types';
+import type {
+    DateRange,
+    GameCategory,
+    Tournament,
+} from '../../../../../types/tournament.types';
 import { deleteTournamentAction } from '../../actions/delete-tournament.action';
 import { updateTournamentAction } from '../../actions/update-tournament.action';
+import { EligibleRunsEditor } from '../../components/eligible-runs-editor';
+import { HeatsEditor } from '../../components/heats-editor';
 
 export function SettingsPanel({
     tournament,
@@ -19,23 +25,42 @@ export function SettingsPanel({
     const [okMsg, setOkMsg] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
 
-    async function onSubmit(form: FormData) {
+    const [shortName, setShortName] = useState(tournament.shortName ?? '');
+    const [description, setDescription] = useState(
+        tournament.description ?? '',
+    );
+    const [url, setUrl] = useState(tournament.url ?? '');
+    const [logoUrl, setLogoUrl] = useState(tournament.logoUrl ?? '');
+    const [organizer, setOrganizer] = useState(tournament.organizer ?? '');
+    const [gameTime, setGameTime] = useState(!!tournament.gameTime);
+    const [heats, setHeats] = useState<DateRange[]>(
+        tournament.eligiblePeriods?.length
+            ? tournament.eligiblePeriods
+            : [{ startDate: '', endDate: '' }],
+    );
+    const [eligibleRuns, setEligibleRuns] = useState<GameCategory[]>(
+        tournament.eligibleRuns?.length
+            ? tournament.eligibleRuns
+            : [{ game: '', category: '' }],
+    );
+
+    function onSubmit(e: React.FormEvent) {
+        e.preventDefault();
         setError(null);
         setOkMsg(null);
-        const patch: Partial<Tournament> = {
-            description: (form.get('description') as string) || undefined,
-            shortName: (form.get('shortName') as string) || undefined,
-            startDate: form.get('startDate') as string,
-            endDate: form.get('endDate') as string,
-            url: (form.get('url') as string) || undefined,
-            logoUrl: (form.get('logoUrl') as string) || undefined,
-            organizer: (form.get('organizer') as string) || undefined,
-            gameTime: form.get('gameTime') === 'on',
-        };
         startTransition(async () => {
-            const res = await updateTournamentAction(tournament.name, patch);
+            const res = await updateTournamentAction(tournament.name, {
+                shortName: shortName.trim() || undefined,
+                description: description.trim() || undefined,
+                url: url.trim() || undefined,
+                logoUrl: logoUrl.trim() || undefined,
+                organizer: organizer.trim() || undefined,
+                gameTime,
+                heats,
+                eligibleRuns,
+            });
             if (res && 'error' in res) {
-                setError(res.errors?.join(', ') || res.error || null);
+                setError(res.errors?.join(', ') || res.error || 'Error');
             } else {
                 setOkMsg('Saved.');
             }
@@ -60,12 +85,12 @@ export function SettingsPanel({
         <div>
             {error && <div className="alert alert-danger">{error}</div>}
             {okMsg && <div className="alert alert-success">{okMsg}</div>}
-            <Form action={onSubmit}>
+            <Form onSubmit={onSubmit}>
                 <Form.Group className="mb-3">
                     <Form.Label>Short name</Form.Label>
                     <Form.Control
-                        name="shortName"
-                        defaultValue={tournament.shortName ?? ''}
+                        value={shortName}
+                        onChange={(e) => setShortName(e.target.value)}
                     />
                 </Form.Group>
                 <Form.Group className="mb-3">
@@ -73,50 +98,45 @@ export function SettingsPanel({
                     <Form.Control
                         as="textarea"
                         rows={4}
-                        name="description"
-                        defaultValue={tournament.description ?? ''}
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
                     />
                 </Form.Group>
-                <Form.Group className="mb-3">
-                    <Form.Label>Start date</Form.Label>
-                    <Form.Control
-                        name="startDate"
-                        defaultValue={tournament.startDate}
+                <div className="mb-3">
+                    <HeatsEditor value={heats} onChange={setHeats} />
+                </div>
+                <div className="mb-3">
+                    <EligibleRunsEditor
+                        value={eligibleRuns}
+                        onChange={setEligibleRuns}
                     />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                    <Form.Label>End date</Form.Label>
-                    <Form.Control
-                        name="endDate"
-                        defaultValue={tournament.endDate}
-                    />
-                </Form.Group>
+                </div>
                 <Form.Group className="mb-3">
                     <Form.Label>URL</Form.Label>
                     <Form.Control
-                        name="url"
-                        defaultValue={tournament.url ?? ''}
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
                     />
                 </Form.Group>
                 <Form.Group className="mb-3">
                     <Form.Label>Logo URL</Form.Label>
                     <Form.Control
-                        name="logoUrl"
-                        defaultValue={tournament.logoUrl ?? ''}
+                        value={logoUrl}
+                        onChange={(e) => setLogoUrl(e.target.value)}
                     />
                 </Form.Group>
                 <Form.Group className="mb-3">
                     <Form.Label>Organizer</Form.Label>
                     <Form.Control
-                        name="organizer"
-                        defaultValue={tournament.organizer ?? ''}
+                        value={organizer}
+                        onChange={(e) => setOrganizer(e.target.value)}
                     />
                 </Form.Group>
                 <Form.Check
                     type="checkbox"
-                    name="gameTime"
                     label="Use game time"
-                    defaultChecked={!!tournament.gameTime}
+                    checked={gameTime}
+                    onChange={(e) => setGameTime(e.target.checked)}
                     className="mb-3"
                 />
                 <Button type="submit" disabled={isPending}>

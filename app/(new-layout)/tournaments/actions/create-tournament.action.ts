@@ -5,31 +5,53 @@ import { redirect } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { createTournament } from '~src/lib/api/tournaments';
 import { ApiError } from '~src/lib/api-client';
+import {
+    TournamentValidationError,
+    validateAndDeriveSchedule,
+    validateEligibleRuns,
+} from '~src/lib/tournament-validation';
+import type {
+    DateRange,
+    GameCategory,
+} from '../../../../types/tournament.types';
 
-export async function createTournamentAction(form: FormData) {
+export interface CreateTournamentInput {
+    name: string;
+    shortName?: string;
+    description?: string;
+    heats: DateRange[];
+    eligibleRuns: GameCategory[];
+}
+
+export async function createTournamentAction(input: CreateTournamentInput) {
     const session = await getSession();
     if (!session.id) return { error: 'Not signed in' };
 
-    const name = (form.get('name') as string).trim();
-    const startDate = form.get('startDate') as string;
-    const endDate = form.get('endDate') as string;
-    const description = (form.get('description') as string) || undefined;
-    const shortName = (form.get('shortName') as string) || undefined;
-    const game = (form.get('game') as string) || undefined;
-    const category = (form.get('category') as string) || undefined;
+    const name = input.name.trim();
+    if (!name) return { error: 'Name is required' };
 
-    const eligibleRuns = game && category ? [{ game, category }] : [];
+    let schedule;
+    let runs;
+    try {
+        schedule = validateAndDeriveSchedule(input.heats);
+        runs = validateEligibleRuns(input.eligibleRuns);
+    } catch (e) {
+        if (e instanceof TournamentValidationError) {
+            return { error: 'Validation failed', errors: e.errors };
+        }
+        throw e;
+    }
 
     try {
         await createTournament(
             {
                 name,
-                startDate,
-                endDate,
-                description,
-                shortName,
-                eligibleRuns,
-                eligiblePeriods: [{ startDate, endDate }],
+                shortName: input.shortName,
+                description: input.description,
+                startDate: schedule.startDate,
+                endDate: schedule.endDate,
+                eligiblePeriods: schedule.eligiblePeriods,
+                eligibleRuns: runs,
                 hide: false,
             },
             session.id,
