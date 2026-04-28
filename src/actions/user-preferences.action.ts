@@ -13,7 +13,7 @@ export async function toggleStreakVisibility(hideStreaks: boolean) {
     await apiFetch(`/users/${encodeURIComponent(session.user)}/preferences`, {
         method: 'PUT',
         sessionId: session.id,
-        body: JSON.stringify({ hideStreaks }),
+        body: { hideStreaks },
     });
 
     revalidateTag(`user-preferences-${session.user}`, 'minutes');

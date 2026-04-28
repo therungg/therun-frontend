@@ -82,7 +82,7 @@ export async function updateFrontpageConfig(
     try {
         await apiFetch(`/users/${session.username}/frontpage-config`, {
             method: 'PUT',
-            body: JSON.stringify(enforced),
+            body: enforced,
             sessionId: session.id,
         });
 
@@ -103,7 +103,7 @@ export async function resetFrontpageConfig(): Promise<void> {
 
     await apiFetch(`/users/${session.username}/frontpage-config`, {
         method: 'PUT',
-        body: JSON.stringify(null),
+        body: null,
         sessionId: session.id,
     });
 
