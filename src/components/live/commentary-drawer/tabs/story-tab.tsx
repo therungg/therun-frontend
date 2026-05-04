@@ -1,6 +1,5 @@
 'use client';
 
-import clsx from 'clsx';
 import { Twitch as TwitchIcon } from 'react-bootstrap-icons';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { StoryElementWithSelected } from '~app/(new-layout)/live/story.types';
@@ -17,42 +16,23 @@ const byScoreDesc = (
     b: StoryElementWithSelected,
 ) => scoreOf(b) - scoreOf(a);
 
-const StoryItem = ({
-    el,
-    featured,
-}: {
-    el: StoryElementWithSelected;
-    featured: boolean;
-}) => (
-    <div
-        className={clsx(
-            styles.storyItem,
-            featured && styles.storyItemFeatured,
-            !featured && styles.storyItemMuted,
-        )}
-    >
-        {(el.wasSentToTwitch || (!featured && el.declinedReason)) && (
+const StoryItem = ({ el }: { el: StoryElementWithSelected }) => (
+    <div className={styles.storyItem}>
+        {(el.wasSentToTwitch || el.declinedReason) && (
             <div className={styles.storyItemHeader}>
                 {el.wasSentToTwitch && (
                     <span className={styles.storyTwitchTag}>
                         <TwitchIcon height={12} color="#6441a5" /> Sent to chat
                     </span>
                 )}
-                {!featured && el.declinedReason && (
+                {el.declinedReason && (
                     <span className={styles.storyDeclinedTag}>
                         {el.declinedReason}
                     </span>
                 )}
             </div>
         )}
-        <div
-            className={clsx(
-                styles.storyItemText,
-                !featured && styles.storyItemTextMuted,
-            )}
-        >
-            {el.text}
-        </div>
+        <div className={styles.storyItemText}>{el.text}</div>
     </div>
 );
 
@@ -155,11 +135,7 @@ export const StoryTab = ({
                             </div>
                             <div className={styles.storyFeaturedWrap}>
                                 {previousTop.map((el) => (
-                                    <StoryItem
-                                        key={el.id}
-                                        el={el}
-                                        featured={el.selected}
-                                    />
+                                    <StoryItem key={el.id} el={el} />
                                 ))}
                             </div>
                         </>
@@ -173,11 +149,7 @@ export const StoryTab = ({
                             </div>
                             <div className={styles.storyFeaturedWrap}>
                                 {nextTop.map((el) => (
-                                    <StoryItem
-                                        key={el.id}
-                                        el={el}
-                                        featured={el.selected}
-                                    />
+                                    <StoryItem key={el.id} el={el} />
                                 ))}
                             </div>
                         </>
@@ -196,11 +168,7 @@ export const StoryTab = ({
                     <div className={styles.sectionTitle}>Run-wide notes</div>
                     <div className={styles.storyFeaturedWrap}>
                         {generics.map((el) => (
-                            <StoryItem
-                                key={el.id}
-                                el={el}
-                                featured={el.selected}
-                            />
+                            <StoryItem key={el.id} el={el} />
                         ))}
                     </div>
                 </>
