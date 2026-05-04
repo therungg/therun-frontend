@@ -2,7 +2,6 @@ import clsx from 'clsx';
 import NextImage from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { Col, OverlayTrigger, Row, Tooltip } from 'react-bootstrap';
-import { ChatLeftQuote } from 'react-bootstrap-icons';
 import { TwitchEmbed } from 'react-twitch-embed';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { LiveSplitTimerComponent } from '~app/(new-layout)/live/live-split-timer.component';
@@ -16,7 +15,6 @@ import { UserLink } from '../links/links';
 import { resolveFill } from '../patreon/patron-style';
 import { usePatreons } from '../patreon/use-patreons';
 import { DurationToFormatted } from '../util/datetime';
-import { useCommentaryDrawerContext } from './commentary-drawer/commentary-drawer-context';
 import {
     getSplitSegments,
     type SplitStatus as TimelineSplitStatus,
@@ -148,7 +146,6 @@ export const RecommendedStream = ({
     }, [liveRun]);
 
     const { data: patreons, isLoading } = usePatreons();
-    const commentaryCtx = useCommentaryDrawerContext();
 
     useEffect(() => {
         if (!isLoading && patreons && patreons[liveRun.user]) {
@@ -289,18 +286,6 @@ export const RecommendedStream = ({
                             </Link>
                         </OverlayTrigger>
                     )}
-                    <button
-                        type="button"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            commentaryCtx.toggle();
-                        }}
-                        className={styles.heroSupporterChip}
-                        aria-label="Open commentary view"
-                        title="Commentary view"
-                    >
-                        <ChatLeftQuote /> Commentary
-                    </button>
                     <div className={styles.heroIdentityLeft}>
                         {hasAvatar && (
                             <div className={styles.heroAvatar}>
