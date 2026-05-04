@@ -850,6 +850,28 @@
     background: var(--bs-secondary-bg);
 }
 
+/* Banner: runner has too little data for full commentary */
+
+.runnerThinNotice {
+    margin: 0.4rem 1rem 0.6rem;
+    padding: 0.5rem 0.7rem;
+    border-radius: 0.4rem;
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.35);
+    color: #c79100;
+    font-size: 0.78rem;
+    line-height: 1.35;
+}
+
+.runnerThinNoticeTitle {
+    display: block;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.62rem;
+    margin-bottom: 0.15rem;
+}
+
 /* Story tab v3 — flat stat-sheet style */
 
 .storyContext {

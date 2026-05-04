@@ -18,6 +18,7 @@ import {
     CommentaryTab,
     useCommentaryDrawerState,
 } from './use-commentary-drawer-state';
+import { useStoryCandidates } from './use-story-candidates';
 
 const TABS: { key: CommentaryTab; label: string }[] = [
     { key: 'split', label: 'Split' },
@@ -55,6 +56,12 @@ export const CommentaryDrawer = ({
     const displayedUser =
         state.pinned && state.pinnedUser ? state.pinnedUser : followingUser;
     const liveRun: LiveRun | undefined = liveDataMap[displayedUser];
+
+    // Stories fetch lives at the shell so the no-data banner can show
+    // outside the Story tab. The Story tab consumes the same state via prop.
+    const storyState = useStoryCandidates(displayedUser);
+    const hasInsufficientData =
+        !storyState.isLoading && !storyState.error && !storyState.story;
 
     // Reset selected split when displayed user changes (only when not pinned;
     // pinned drawer keeps its own navigation since the user isn't switching).
@@ -181,6 +188,17 @@ export const CommentaryDrawer = ({
                             liveRun={liveRun}
                             selectedIndex={state.selectedSplitIndex}
                         />
+                        {hasInsufficientData && (
+                            <div className={styles.runnerThinNotice}>
+                                <span className={styles.runnerThinNoticeTitle}>
+                                    Limited data
+                                </span>
+                                Not enough run history yet for full commentary.
+                                This runner needs at least 20 started runs and 3
+                                finished runs of this category before stories
+                                and trend data appear.
+                            </div>
+                        )}
                         <div className={styles.tabs} role="tablist">
                             {TABS.map((t) => (
                                 <button
@@ -216,6 +234,7 @@ export const CommentaryDrawer = ({
                                 <StoryTab
                                     liveRun={liveRun}
                                     selectedIndex={state.selectedSplitIndex}
+                                    storyState={storyState}
                                 />
                             )}
                             {state.activeTab === 'career' && (
