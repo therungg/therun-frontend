@@ -7,15 +7,6 @@ import { useStory } from '~app/(new-layout)/live/stories/use-story';
 import { StoryElementWithSelected } from '~app/(new-layout)/live/story.types';
 import styles from '../commentary-drawer.module.scss';
 
-const rarityClass: Record<string, string> = {
-    common: styles.rarityCommon,
-    rare: styles.rarityRare,
-    super: styles.raritySuper,
-    ultra: styles.rarityUltra,
-    ultimate: styles.rarityUltimate,
-    secret: styles.raritySecret,
-};
-
 const StoryItem = ({
     el,
     featured,
@@ -31,14 +22,6 @@ const StoryItem = ({
         )}
     >
         <div className={styles.storyItemHeader}>
-            <span
-                className={clsx(
-                    styles.rarityBadge,
-                    rarityClass[el.rarity] ?? styles.rarityCommon,
-                )}
-            >
-                {el.rarity}
-            </span>
             {el.category && (
                 <span className={styles.storyTypeBadge}>{el.category}</span>
             )}
@@ -50,14 +33,6 @@ const StoryItem = ({
             {!featured && el.declinedReason && (
                 <span className={styles.storyDeclinedTag}>
                     {el.declinedReason}
-                </span>
-            )}
-            <span className={styles.storyItemHeaderSpacer} />
-            {(el.finalScore != null || el.engagementScore != null) && (
-                <span className={styles.storyScore} title="Story rank score">
-                    {el.finalScore != null
-                        ? Math.round(el.finalScore)
-                        : el.engagementScore}
                 </span>
             )}
         </div>
