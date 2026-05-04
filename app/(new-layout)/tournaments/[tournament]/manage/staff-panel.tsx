@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { Button, Form, Table } from 'react-bootstrap';
+import { type FormEvent, useState, useTransition } from 'react';
 import {
     CAPABILITIES,
     type Capability,
@@ -13,6 +12,10 @@ import {
     removeStaffAction,
     updateStaffAction,
 } from '../../actions/staff.actions';
+import {
+    FormSection,
+    formStyles as styles,
+} from '../../components/form-primitives';
 
 const LABELS: Record<Capability, string> = {
     manage_runs: 'Runs',
@@ -25,11 +28,10 @@ const LABELS: Record<Capability, string> = {
 export function StaffPanel({ tournament }: { tournament: Tournament }) {
     const [staff, setStaff] = useState<StaffEntry[]>(tournament.staff ?? []);
     const [error, setError] = useState<string | null>(null);
+    const [draft, setDraft] = useState('');
     const [isPending, startTransition] = useTransition();
 
-    function applyTournamentResult(
-        res: Awaited<ReturnType<typeof addStaffAction>>,
-    ) {
+    function applyResult(res: Awaited<ReturnType<typeof addStaffAction>>) {
         if ('error' in res) {
             setError(res.errors?.join(', ') || res.error || 'Error');
             return;
@@ -38,13 +40,15 @@ export function StaffPanel({ tournament }: { tournament: Tournament }) {
         if (t && Array.isArray(t.staff)) setStaff(t.staff);
     }
 
-    async function onAdd(form: FormData) {
+    function onAdd(e: FormEvent) {
+        e.preventDefault();
         setError(null);
-        const user = ((form.get('user') as string) ?? '').trim();
+        const user = draft.trim();
         if (!user) return;
         startTransition(async () => {
             const res = await addStaffAction(tournament.name, user, []);
-            applyTournamentResult(res);
+            applyResult(res);
+            setDraft('');
         });
     }
 
@@ -59,7 +63,7 @@ export function StaffPanel({ tournament }: { tournament: Tournament }) {
                 entry.user,
                 next,
             );
-            applyTournamentResult(res);
+            applyResult(res);
         });
     }
 
@@ -67,67 +71,98 @@ export function StaffPanel({ tournament }: { tournament: Tournament }) {
         if (!confirm(`Remove ${entry.user} from staff?`)) return;
         startTransition(async () => {
             const res = await removeStaffAction(tournament.name, entry.user);
-            applyTournamentResult(res);
+            applyResult(res);
         });
     }
 
     return (
-        <div>
-            {error && <div className="alert alert-danger">{error}</div>}
-            <Form action={onAdd} className="mb-3 d-flex gap-2">
-                <Form.Control name="user" placeholder="twitch username" />
-                <Button type="submit" disabled={isPending}>
+        <FormSection
+            icon="★"
+            title="Staff"
+            description="Grant scoped capabilities to trusted users. Each capability gates a different management surface — toggle to add or revoke."
+        >
+            {error && <div className={styles.errorAlert}>{error}</div>}
+
+            <form onSubmit={onAdd} className={styles.inlineAdd}>
+                <input
+                    className={styles.inlineAddInput}
+                    placeholder="twitch username"
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                />
+                <button
+                    type="submit"
+                    className={styles.primaryButton}
+                    disabled={isPending || !draft.trim()}
+                >
                     Add staff
-                </Button>
-            </Form>
-            <Table responsive striped bordered hover>
-                <thead>
-                    <tr>
-                        <th>User</th>
-                        {CAPABILITIES.map((c) => (
-                            <th key={c}>{LABELS[c]}</th>
-                        ))}
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
+                </button>
+            </form>
+
+            {staff.length === 0 ? (
+                <div className={styles.emptyState}>
+                    No staff yet. Add a Twitch username to start delegating.
+                </div>
+            ) : (
+                <div className={styles.capabilityMatrix}>
                     {staff.map((s) => (
-                        <tr key={s.user}>
-                            <td>{s.user}</td>
-                            {CAPABILITIES.map((c) => (
-                                <td key={c}>
-                                    <Form.Check
-                                        type="checkbox"
-                                        checked={s.capabilities.includes(c)}
-                                        disabled={isPending}
-                                        onChange={() => toggle(s, c)}
-                                    />
-                                </td>
-                            ))}
-                            <td>
-                                <Button
-                                    size="sm"
-                                    variant="outline-danger"
-                                    onClick={() => onRemove(s)}
+                        <div key={s.user} className={styles.capabilityRow}>
+                            <div>
+                                <div
+                                    style={{
+                                        fontSize: '1rem',
+                                        fontWeight: 600,
+                                        marginBottom: '0.15rem',
+                                    }}
+                                >
+                                    {s.user}
+                                </div>
+                                <div
+                                    style={{
+                                        fontSize: '0.75rem',
+                                        color: 'var(--bs-secondary-color)',
+                                        textTransform: 'uppercase',
+                                        letterSpacing: '0.06em',
+                                        fontWeight: 600,
+                                    }}
+                                >
+                                    {s.capabilities.length} capabilit
+                                    {s.capabilities.length === 1 ? 'y' : 'ies'}
+                                </div>
+                            </div>
+                            <div className={styles.capabilityChips}>
+                                {CAPABILITIES.map((c) => {
+                                    const active = s.capabilities.includes(c);
+                                    return (
+                                        <button
+                                            key={c}
+                                            type="button"
+                                            className={`${styles.capabilityChip} ${
+                                                active
+                                                    ? styles.capabilityChipActive
+                                                    : ''
+                                            }`}
+                                            disabled={isPending}
+                                            onClick={() => toggle(s, c)}
+                                            aria-pressed={active}
+                                        >
+                                            {LABELS[c]}
+                                        </button>
+                                    );
+                                })}
+                                <button
+                                    type="button"
+                                    className={`${styles.miniButton} ${styles.miniButtonDanger}`}
                                     disabled={isPending}
+                                    onClick={() => onRemove(s)}
                                 >
                                     Remove
-                                </Button>
-                            </td>
-                        </tr>
+                                </button>
+                            </div>
+                        </div>
                     ))}
-                    {staff.length === 0 && (
-                        <tr>
-                            <td
-                                colSpan={CAPABILITIES.length + 2}
-                                className="text-center text-muted"
-                            >
-                                No staff yet.
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-            </Table>
-        </div>
+                </div>
+            )}
+        </FormSection>
     );
 }

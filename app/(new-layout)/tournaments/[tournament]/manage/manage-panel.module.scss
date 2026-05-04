@@ -1,0 +1,53 @@
+@import '../../../styles/design-tokens';
+
+.editRow {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.tabBar {
+    display: flex;
+    gap: $spacing-xs;
+    padding: $spacing-xs;
+    border-radius: $radius-lg;
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--bs-body-bg) 70%, var(--bs-secondary-bg) 30%) 0%,
+        color-mix(in srgb, var(--bs-body-bg) 55%, var(--bs-secondary-bg) 45%) 100%
+    );
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.15);
+    overflow-x: auto;
+    flex-wrap: wrap;
+}
+
+.tab {
+    flex: 1 1 auto;
+    min-width: max-content;
+    padding: 0.55rem 1.1rem;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    border: 1px solid transparent;
+    border-radius: $radius-md;
+    font-size: $font-size-sm;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition: all $transition-fast;
+
+    &:hover {
+        color: var(--bs-body-color);
+        background: rgba(var(--bs-primary-rgb), 0.06);
+    }
+}
+
+.tabActive {
+    background: var(--bs-primary);
+    color: white;
+    box-shadow: $shadow-sm;
+
+    &:hover {
+        background: var(--bs-primary);
+        color: white;
+        filter: brightness(1.05);
+    }
+}

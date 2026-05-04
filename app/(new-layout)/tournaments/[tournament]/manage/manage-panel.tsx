@@ -1,20 +1,22 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
-import { Nav, Tab } from 'react-bootstrap';
 import {
     canManageAdmins,
     hasCapability,
 } from '~src/lib/tournament-permissions';
+import { safeEncodeURI } from '~src/utils/uri';
 import type { User } from '../../../../../types/session.types';
 import type { Tournament } from '../../../../../types/tournament.types';
+import { formStyles as styles } from '../../components/form-primitives';
 import { AdminsPanel } from './admins-panel';
 import { LifecyclePanel } from './lifecycle-panel';
+import managerStyles from './manage-panel.module.scss';
 import { ParticipantsPanel } from './participants-panel';
-import { SettingsPanel } from './settings-panel';
 import { StaffPanel } from './staff-panel';
 
-type ManageTab = 'settings' | 'staff' | 'admins' | 'participants' | 'lifecycle';
+type ManageTab = 'lifecycle' | 'staff' | 'admins' | 'participants';
 
 export function ManagePanel({
     tournament,
@@ -23,11 +25,17 @@ export function ManagePanel({
     tournament: Tournament;
     user: User;
 }) {
+    const tournamentHref = `/tournaments/${safeEncodeURI(tournament.name)}`;
     const tabs: { key: ManageTab; label: string; visible: boolean }[] = [
         {
-            key: 'settings',
-            label: 'Settings',
-            visible: hasCapability(user, tournament, 'edit_settings'),
+            key: 'lifecycle',
+            label: 'Lifecycle',
+            visible: hasCapability(user, tournament, 'lifecycle'),
+        },
+        {
+            key: 'participants',
+            label: 'Participants',
+            visible: hasCapability(user, tournament, 'manage_participants'),
         },
         {
             key: 'staff',
@@ -35,52 +43,85 @@ export function ManagePanel({
             visible: hasCapability(user, tournament, 'manage_staff'),
         },
         { key: 'admins', label: 'Admins', visible: canManageAdmins(user) },
-        {
-            key: 'participants',
-            label: 'Participants',
-            visible: hasCapability(user, tournament, 'manage_participants'),
-        },
-        {
-            key: 'lifecycle',
-            label: 'Lifecycle',
-            visible: hasCapability(user, tournament, 'lifecycle'),
-        },
     ];
     const visibleTabs = tabs.filter((t) => t.visible);
 
     const [active, setActive] = useState<ManageTab>(
-        visibleTabs[0]?.key ?? 'settings',
+        visibleTabs[0]?.key ?? 'lifecycle',
     );
+    const canEdit = hasCapability(user, tournament, 'edit_settings');
+
+    const displayName = tournament.shortName || tournament.name;
 
     return (
-        <Tab.Container
-            activeKey={active}
-            onSelect={(k) => k && setActive(k as ManageTab)}
-        >
-            <Nav variant="tabs" className="mb-3">
+        <div className={styles.formRoot}>
+            <Link href={tournamentHref} className={styles.breadcrumb}>
+                <span className={styles.breadcrumbArrow}>←</span>
+                Back to {displayName}
+            </Link>
+
+            <div className={styles.hero}>
+                <span className={styles.heroEyebrow}>● Managing</span>
+                <h1 className={styles.heroTitle}>{displayName}</h1>
+                <p className={styles.heroSubtitle}>
+                    Run lifecycle, staff, and participants here. To edit info
+                    such as schedule, eligible runs, description, and branding,
+                    use the{' '}
+                    {canEdit ? (
+                        <Link
+                            href={`${tournamentHref}/edit`}
+                            style={{
+                                color: 'inherit',
+                                textDecoration: 'underline',
+                            }}
+                        >
+                            Edit page
+                        </Link>
+                    ) : (
+                        'Edit page'
+                    )}
+                    .
+                </p>
+            </div>
+
+            {canEdit && (
+                <div className={managerStyles.editRow}>
+                    <Link
+                        href={`${tournamentHref}/edit`}
+                        className={styles.primaryButton}
+                    >
+                        Edit tournament info →
+                    </Link>
+                </div>
+            )}
+
+            <nav className={managerStyles.tabBar}>
                 {visibleTabs.map((t) => (
-                    <Nav.Item key={t.key}>
-                        <Nav.Link eventKey={t.key}>{t.label}</Nav.Link>
-                    </Nav.Item>
+                    <button
+                        key={t.key}
+                        type="button"
+                        className={
+                            active === t.key
+                                ? `${managerStyles.tab} ${managerStyles.tabActive}`
+                                : managerStyles.tab
+                        }
+                        onClick={() => setActive(t.key)}
+                    >
+                        {t.label}
+                    </button>
                 ))}
-            </Nav>
-            <Tab.Content>
-                <Tab.Pane eventKey="settings">
-                    <SettingsPanel tournament={tournament} user={user} />
-                </Tab.Pane>
-                <Tab.Pane eventKey="staff">
-                    <StaffPanel tournament={tournament} />
-                </Tab.Pane>
-                <Tab.Pane eventKey="admins">
-                    <AdminsPanel tournament={tournament} />
-                </Tab.Pane>
-                <Tab.Pane eventKey="participants">
-                    <ParticipantsPanel tournament={tournament} />
-                </Tab.Pane>
-                <Tab.Pane eventKey="lifecycle">
+            </nav>
+
+            <div>
+                {active === 'lifecycle' && (
                     <LifecyclePanel tournament={tournament} />
-                </Tab.Pane>
-            </Tab.Content>
-        </Tab.Container>
+                )}
+                {active === 'staff' && <StaffPanel tournament={tournament} />}
+                {active === 'admins' && <AdminsPanel tournament={tournament} />}
+                {active === 'participants' && (
+                    <ParticipantsPanel tournament={tournament} />
+                )}
+            </div>
+        </div>
     );
 }

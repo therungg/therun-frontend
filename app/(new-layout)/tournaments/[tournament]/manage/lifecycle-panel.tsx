@@ -1,13 +1,86 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { Button } from 'react-bootstrap';
 import { lifecycleStatus } from '~src/lib/tournament-permissions';
 import type { Tournament } from '../../../../../types/tournament.types';
 import { lifecycleActionServer } from '../../actions/lifecycle.action';
+import {
+    FormSection,
+    formStyles as styles,
+} from '../../components/form-primitives';
 import { LifecycleStatusBadge } from './lifecycle-status-badge';
 
 type Action = 'lock' | 'unlock' | 'finalize' | 'archive' | 'recalculate';
+
+interface ActionDef {
+    key: Action;
+    title: string;
+    body: string;
+    button: string;
+    variant: 'primary' | 'success' | 'warning' | 'danger' | 'ghost';
+    confirm?: string;
+    visible: (t: Tournament) => boolean;
+}
+
+const ACTIONS: ActionDef[] = [
+    {
+        key: 'lock',
+        title: 'Lock',
+        body: 'Stop accepting new runs. Existing runs and leaderboards stay visible.',
+        button: 'Lock tournament',
+        variant: 'warning',
+        visible: (t) => !t.lockedAt,
+    },
+    {
+        key: 'unlock',
+        title: 'Unlock',
+        body: 'Resume run ingestion. New attempts will be matched again.',
+        button: 'Unlock tournament',
+        variant: 'success',
+        visible: (t) => !!t.lockedAt && !t.finalizedAt,
+    },
+    {
+        key: 'finalize',
+        title: 'Finalize',
+        body: 'Close the tournament permanently. Locks runs and stops ingestion. This is final.',
+        button: 'Finalize tournament',
+        variant: 'danger',
+        confirm: 'Finalize this tournament? This locks runs and closes it.',
+        visible: (t) => !t.finalizedAt,
+    },
+    {
+        key: 'archive',
+        title: 'Archive',
+        body: 'Hide the tournament from the public list without deleting any data. Direct links still work.',
+        button: 'Archive',
+        variant: 'ghost',
+        visible: (t) => !t.hide,
+    },
+    {
+        key: 'archive',
+        title: 'Unarchive',
+        body: 'Show the tournament in the public list again.',
+        button: 'Unarchive',
+        variant: 'ghost',
+        visible: (t) => !!t.hide,
+    },
+    {
+        key: 'recalculate',
+        title: 'Recalculate',
+        body: 'Trigger a leaderboard recompute. Mostly a no-op since leaderboards are computed on read, but kept for forward compatibility.',
+        button: 'Recalculate',
+        variant: 'ghost',
+        visible: () => true,
+    },
+];
+
+const VARIANT_CLASS: Record<ActionDef['variant'], string> = {
+    primary: styles.primaryButton,
+    success: `${styles.miniButton} ${styles.miniButtonSuccess}`,
+    warning: `${styles.miniButton} ${styles.miniButtonWarning}`,
+    danger: styles.dangerButton,
+    ghost: styles.ghostButton,
+};
 
 export function LifecyclePanel({ tournament }: { tournament: Tournament }) {
     const [t, setT] = useState<Tournament>(tournament);
@@ -37,59 +110,37 @@ export function LifecyclePanel({ tournament }: { tournament: Tournament }) {
     }
 
     return (
-        <div>
-            {error && <div className="alert alert-danger">{error}</div>}
-            <p>
-                Status: <LifecycleStatusBadge status={status} />
-            </p>
-            <div className="d-flex gap-2 flex-wrap">
-                {!t.lockedAt && (
-                    <Button
-                        variant="warning"
-                        onClick={() => dispatch('lock')}
-                        disabled={isPending}
-                    >
-                        Lock
-                    </Button>
-                )}
-                {t.lockedAt && !t.finalizedAt && (
-                    <Button
-                        variant="success"
-                        onClick={() => dispatch('unlock')}
-                        disabled={isPending}
-                    >
-                        Unlock
-                    </Button>
-                )}
-                {!t.finalizedAt && (
-                    <Button
-                        variant="secondary"
-                        onClick={() =>
-                            dispatch(
-                                'finalize',
-                                'Finalize this tournament? This locks runs and closes it.',
-                            )
-                        }
-                        disabled={isPending}
-                    >
-                        Finalize
-                    </Button>
-                )}
-                <Button
-                    variant="dark"
-                    onClick={() => dispatch('archive')}
-                    disabled={isPending}
-                >
-                    {t.hide ? 'Unarchive' : 'Archive'}
-                </Button>
-                <Button
-                    variant="outline-primary"
-                    onClick={() => dispatch('recalculate')}
-                    disabled={isPending}
-                >
-                    Recalculate
-                </Button>
+        <FormSection
+            icon="◐"
+            title="Lifecycle"
+            description="Control the tournament's run-acceptance state and visibility. Some of these actions are irreversible."
+        >
+            {error && <div className={styles.errorAlert}>{error}</div>}
+
+            <div className={styles.lifecycleStatus}>
+                <span className={styles.lifecycleStatusLabel}>Status</span>
+                <LifecycleStatusBadge status={status} />
             </div>
-        </div>
+
+            <div className={styles.actionCardGrid}>
+                {ACTIONS.filter((a) => a.visible(t)).map((a, idx) => (
+                    <div
+                        key={`${a.key}-${a.title}-${idx}`}
+                        className={styles.actionCard}
+                    >
+                        <h4 className={styles.actionCardTitle}>{a.title}</h4>
+                        <p className={styles.actionCardBody}>{a.body}</p>
+                        <button
+                            type="button"
+                            className={VARIANT_CLASS[a.variant]}
+                            onClick={() => dispatch(a.key, a.confirm)}
+                            disabled={isPending}
+                        >
+                            {a.button}
+                        </button>
+                    </div>
+                ))}
+            </div>
+        </FormSection>
     );
 }

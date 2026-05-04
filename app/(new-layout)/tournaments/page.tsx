@@ -5,12 +5,16 @@ import {
 import { getSession } from '~src/actions/session.action';
 import { getTournaments } from '~src/components/tournament/getTournaments';
 import { Tournament } from '~src/components/tournament/tournament-info';
-import { canCreateTournament } from '~src/lib/tournament-permissions';
+import {
+    canCreateTournament,
+    isGlobalAdmin,
+} from '~src/lib/tournament-permissions';
 import buildMetadata from '~src/utils/metadata';
 
 export default async function TournamentsPage() {
     const tournaments: Tournament[] = await getTournaments();
     const session = await getSession();
+    const isAdmin = isGlobalAdmin(session);
 
     return (
         <>
@@ -21,7 +25,7 @@ export default async function TournamentsPage() {
                     </a>
                 </div>
             )}
-            <Tournaments tournaments={tournaments} />
+            <Tournaments tournaments={tournaments} isAdmin={isAdmin} />
         </>
     );
 }

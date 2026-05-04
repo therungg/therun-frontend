@@ -9,6 +9,7 @@ import { Header } from './header';
 
 import './styles/_imports.scss';
 import { Footer } from './components/footer';
+import { NavigationProgress } from './components/navigation-progress';
 import { Content } from './content';
 import styles from './layout.module.scss';
 
@@ -29,6 +30,9 @@ export default async function RootLayout({
     return (
         <Providers user={session}>
             <Scripts />
+            <Suspense fallback={null}>
+                <NavigationProgress />
+            </Suspense>
             <div className={styles.background}>
                 <header className={styles.header}>
                     <Header

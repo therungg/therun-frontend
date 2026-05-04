@@ -1,32 +1,24 @@
 import React from 'react';
 import { Col, Row } from 'react-bootstrap';
-import useSWR from 'swr';
-import { fetcher } from '~src/utils/fetcher';
 import { getLeaderboard } from '../game/game-leaderboards';
 import { DurationToFormatted, LocalizedTime } from '../util/datetime';
 import { Tournament } from './tournament-info';
 
-export const TournamentStandings = () => {
-    const { data: tournament1Data }: { data: Tournament } = useSWR(
-        '/api/tournaments/PACE Fall 2024 Qualifiers 1',
-        fetcher,
-    );
-    const { data: tournament2Data }: { data: Tournament } = useSWR(
-        '/api/tournaments/PACE Fall 2024 Qualifiers 2',
-        fetcher,
-    );
-    const { data: tournament3Data }: { data: Tournament } = useSWR(
-        '/api/tournaments/PACE Fall 2024 Qualifiers 3',
-        fetcher,
-    );
-
-    if (!tournament1Data || !tournament2Data || !tournament3Data) {
-        return <div>Loading data...</div>;
+export const TournamentStandings = ({
+    tournaments,
+}: {
+    tournaments: Tournament[];
+}) => {
+    if (!tournaments || tournaments.length === 0) {
+        return <div>No standings data available.</div>;
     }
 
-    const points = {};
+    const points: Record<
+        string,
+        { stat: number; username: string; url?: string }
+    > = {};
 
-    const allTournaments = [tournament1Data, tournament2Data, tournament3Data];
+    const allTournaments = tournaments;
 
     allTournaments.forEach((data) => {
         let i = 0;

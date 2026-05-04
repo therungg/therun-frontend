@@ -2,7 +2,10 @@ import { cacheLife } from 'next/cache';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { CombinedTournament } from '~app/(new-layout)/tournaments/[tournament]/combined-tournament';
 import { liveRunArrayToMap } from '~app/(new-layout)/tournaments/[tournament]/live-run-array-to-map.component';
-import { getTournamentByName } from '~src/components/tournament/getTournaments';
+import {
+    getTournamentByName,
+    getTournamentStatsByName,
+} from '~src/components/tournament/getTournaments';
 import { Tournament } from '~src/components/tournament/tournament-info';
 import { getLiveRunsForTournament } from '~src/lib/live-runs';
 import buildMetadata from '~src/utils/metadata';
@@ -45,11 +48,30 @@ export const CombinedTournamentPage = async ({
         .map((tournamentData) => tournamentData.liveData)
         .flat();
 
+    const stats = (await Promise.all(
+        allTournaments.map(async (t) => {
+            try {
+                return await getTournamentStatsByName(t.name);
+            } catch {
+                return null;
+            }
+        }),
+    )) as Array<{
+        runList?: Array<{
+            user: string;
+            time: string;
+            endedAt: string;
+            [k: string]: unknown;
+        }>;
+        [k: string]: unknown;
+    } | null>;
+
     return (
         <CombinedTournament
             liveDataMap={liveRunArrayToMap(allLiveRuns, 'pb', null)}
             guidingTournament={guidingTournament}
             tournaments={allTournaments}
+            stats={stats}
             tab={tab}
         />
     );

@@ -1,359 +1,359 @@
 import moment from 'moment';
 import React from 'react';
-import { Col, Form, Row, Table } from 'react-bootstrap';
 import { PatreonBunnySvg } from '~app/(new-layout)/patron/patreon-info';
-import { increaseEndTimeByAnHour } from '~app/(new-layout)/tournaments/actions/increase-end-time-by-an-hour';
-import { SubmitButton } from '~src/components/Button/SubmitButton';
-import { hasCapability } from '~src/lib/tournament-permissions';
-import { User } from '../../../types/session.types';
+import { GameLink } from '~src/components/links/links';
+import {
+    getPeriodLabel,
+    getPeriodNoun,
+    periodStatus,
+} from '~src/lib/tournament-periods';
+import detailStyles from '../../../app/(new-layout)/tournaments/[tournament]/tournament-detail.module.scss';
 import type { Tournament } from '../../../types/tournament.types';
-import styles from '../css/Game.module.scss';
 
 export type { Tournament } from '../../../types/tournament.types';
 
-//TODO:: This page is ugly and terrible design. There's a lot of cool data on tournaments, so use it properly.
-export const TournamentInfo = ({
-    tournament,
-    user,
-}: {
-    tournament: Tournament;
-    user?: User;
-}) => {
-    const canManageRuns = hasCapability(user, tournament, 'manage_runs');
-    const canEditSettings = hasCapability(user, tournament, 'edit_settings');
-    return (
-        <div>
-            {tournament.lockedAt && !tournament.finalizedAt && (
-                <div className="alert alert-warning">
-                    This tournament is locked — new runs will not be matched.
-                </div>
-            )}
-            {tournament.finalizedAt && (
-                <div className="alert alert-secondary">
-                    This tournament is finalized.
-                </div>
-            )}
-            {canEditSettings && (
-                <div className="text-end mb-2">
-                    <a
-                        href={`/tournaments/${encodeURIComponent(tournament.name)}/manage`}
-                    >
-                        Manage tournament →
-                    </a>
-                </div>
-            )}
-            {tournament.description && (
-                <div className="w-75 mx-auto text-center">
-                    <div
-                        dangerouslySetInnerHTML={{
-                            __html: tournament.description,
-                        }}
-                    />
-                </div>
-            )}
-            <Table
-                responsive
-                borderless
-                className={styles.tableVertical}
-                style={{ marginBottom: '2rem' }}
-            >
-                <tbody>
-                    {tournament.eligiblePeriods.length === 1 && (
-                        <>
-                            <tr className={styles.tableVerticalHeader}>
-                                <th colSpan={2}>Tournament Dates</th>
-                            </tr>
-                            <tr>
-                                <th>Starting at</th>
-                                <td>
-                                    {moment(tournament.startDate).format('LLL')}
-                                </td>
-                            </tr>
-                            <tr>
-                                <th>Ending at</th>
-                                <td>
-                                    {moment(tournament.endDate).format('LLL')}
-                                    {canManageRuns && (
-                                        <Form
-                                            suppressHydrationWarning
-                                            action={increaseEndTimeByAnHour}
-                                            className="ms-2"
-                                        >
-                                            <input
-                                                hidden
-                                                name="tournament"
-                                                value={tournament.name}
-                                                readOnly
-                                            />
+export const TournamentInfo = ({ tournament }: { tournament: Tournament }) => {
+    const periods = tournament.eligiblePeriods ?? [];
+    const now = Date.now();
+    const noun = getPeriodNoun(tournament);
 
-                                            <input
-                                                hidden
-                                                name="date"
-                                                value={new Date(
-                                                    new Date(
-                                                        tournament.endDate,
-                                                    ).getTime() +
-                                                        60 * 60 * 1000,
-                                                ).toISOString()}
-                                                readOnly
-                                            />
+    const sections: React.ReactNode[] = [];
 
-                                            <input
-                                                hidden
-                                                name="heat"
-                                                value={0}
-                                                readOnly
-                                            />
-                                            <SubmitButton
-                                                innerText="Increase End Time By An Hour"
-                                                pendingText="Increasing End Time By An Hour"
-                                            />
-                                        </Form>
-                                    )}
-                                </td>
-                            </tr>
-                        </>
-                    )}
-                    {tournament.eligiblePeriods.length > 1 && (
-                        <>
-                            <tr className={styles.tableVerticalHeader}>
-                                <th colSpan={2}>Tournament</th>
-                            </tr>
-                            {tournament.eligiblePeriods.map((period, i) => {
-                                const hourAfterEndDate = new Date(
-                                    new Date(period.endDate).getTime() +
-                                        60 * 60 * 1000,
-                                ).toISOString();
-                                const hourBeforeEndDate = new Date(
-                                    new Date(period.endDate).getTime() -
-                                        60 * 60 * 1000,
-                                ).toISOString();
-                                return (
-                                    <React.Fragment
-                                        key={JSON.stringify(period)}
-                                    >
-                                        <tr>
-                                            <th>Day {i + 1}</th>
-                                            <td className="d-flex">
-                                                {moment(
-                                                    period.startDate,
-                                                ).format('LLL')}{' '}
-                                                -{' '}
-                                                {moment(period.endDate).format(
-                                                    'LLL',
-                                                )}
-                                                {canManageRuns && (
-                                                    <div>
-                                                        <Form
-                                                            suppressHydrationWarning
-                                                            action={
-                                                                increaseEndTimeByAnHour
-                                                            }
-                                                            className="ms-2"
-                                                        >
-                                                            <input
-                                                                hidden
-                                                                name="tournament"
-                                                                value={
-                                                                    tournament.name
-                                                                }
-                                                                readOnly
-                                                            />
+    if (tournament.description) {
+        sections.push(
+            <section key="desc" className={detailStyles.section}>
+                <header className={detailStyles.sectionHeader}>
+                    <h2 className={detailStyles.sectionTitle}>About</h2>
+                </header>
+                <div
+                    className={detailStyles.descriptionBody}
+                    dangerouslySetInnerHTML={{ __html: tournament.description }}
+                />
+            </section>,
+        );
+    }
 
-                                                            <input
-                                                                hidden
-                                                                name="date"
-                                                                value={
-                                                                    hourBeforeEndDate
-                                                                }
-                                                                readOnly
-                                                            />
-
-                                                            <input
-                                                                hidden
-                                                                name="heat"
-                                                                value={i}
-                                                                readOnly
-                                                            />
-                                                            <SubmitButton
-                                                                variant="danger"
-                                                                innerText={`Decrease End Time Of Day ${
-                                                                    i + 1
-                                                                } By An Hour`}
-                                                                pendingText="Decrease End Time By An Hour"
-                                                            />
-                                                        </Form>
-                                                        <Form
-                                                            suppressHydrationWarning
-                                                            action={
-                                                                increaseEndTimeByAnHour
-                                                            }
-                                                            className="ms-2"
-                                                        >
-                                                            <input
-                                                                hidden
-                                                                name="tournament"
-                                                                value={
-                                                                    tournament.name
-                                                                }
-                                                                readOnly
-                                                            />
-
-                                                            <input
-                                                                hidden
-                                                                name="date"
-                                                                value={
-                                                                    hourAfterEndDate
-                                                                }
-                                                                readOnly
-                                                            />
-
-                                                            <input
-                                                                hidden
-                                                                name="heat"
-                                                                value={i}
-                                                                readOnly
-                                                            />
-                                                            <SubmitButton
-                                                                innerText={`Increase End Time Of Day ${
-                                                                    i + 1
-                                                                } By An Hour`}
-                                                                pendingText="Increasing End Time By An Hour"
-                                                            />
-                                                        </Form>
-                                                    </div>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    </React.Fragment>
-                                );
-                            })}
-                        </>
-                    )}
-                    {tournament.socials &&
-                        Object.keys(tournament.socials).length > 0 && (
-                            <tr className={styles.tableVerticalHeader}>
-                                <th colSpan={2}>Tournament socials</th>
-                            </tr>
-                        )}
-                    {tournament.socials &&
-                        Object.values(tournament.socials).map((social) => {
-                            return (
-                                <React.Fragment key={JSON.stringify(social)}>
-                                    <tr key={social.display}>
-                                        <th>{social.display}</th>
-                                        <td>
-                                            <a
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                href={social.url}
-                                            >
-                                                {social.urlDisplay}
-                                            </a>
-                                        </td>
-                                    </tr>
-                                </React.Fragment>
-                            );
-                        })}
-                </tbody>
-            </Table>
-            <Row>
-                {tournament.pointDistribution &&
-                    tournament.pointDistribution.length > 0 && (
-                        <Col xl={3}>
-                            <h3>Points</h3>
-                            <ul>
-                                {tournament.pointDistribution.map(
-                                    (points, key) => {
-                                        let extension = 'th';
-                                        if (key === 0) extension = 'st';
-                                        if (key === 1) extension = 'nd';
-                                        if (key === 2) extension = 'rd';
-                                        const displayKey = key + 1 + extension;
-
-                                        return (
-                                            <li key={key}>
-                                                {displayKey}:{' '}
-                                                <span>
-                                                    <strong>{points}</strong>{' '}
-                                                    points
-                                                </span>
-                                            </li>
-                                        );
-                                    },
+    sections.push(
+        <section key="sched" className={detailStyles.section}>
+            <header className={detailStyles.sectionHeader}>
+                <h2 className={detailStyles.sectionTitle}>
+                    Schedule
+                    <span className={detailStyles.sectionEyebrow}>
+                        {periods.length > 1
+                            ? `${periods.length} ${noun.plural}`
+                            : 'Single window'}
+                    </span>
+                </h2>
+            </header>
+            <div className={detailStyles.timeline}>
+                {periods.map((period, i) => {
+                    const status = periodStatus(period, now);
+                    const dotClass =
+                        status === 'active'
+                            ? `${detailStyles.timelineDot} ${detailStyles.timelineDotActive}`
+                            : status === 'past'
+                              ? `${detailStyles.timelineDot} ${detailStyles.timelineDotPast}`
+                              : detailStyles.timelineDot;
+                    const cardClass =
+                        status === 'active'
+                            ? `${detailStyles.timelineCard} ${detailStyles.timelineCardActive}`
+                            : detailStyles.timelineCard;
+                    return (
+                        <div
+                            key={`${period.startDate}-${period.endDate}-${i}`}
+                            className={detailStyles.timelineItem}
+                        >
+                            <div className={detailStyles.timelineMarker}>
+                                <span className={dotClass} />
+                                {i < periods.length - 1 && (
+                                    <span
+                                        className={detailStyles.timelineLine}
+                                    />
                                 )}
-                            </ul>
-                        </Col>
-                    )}
-
-                {tournament.rules && tournament.rules.length > 0 && (
-                    <Col xl={3}>
-                        <h3>Rules</h3>
-                        <ul>
-                            {tournament.rules.map((rule) => {
-                                try {
-                                    const urlRule = new URL(rule);
-
-                                    return (
-                                        <a
-                                            href={urlRule.toString()}
-                                            target="_blank"
-                                            rel="nofollow"
-                                        >
-                                            Link to full ruleset
-                                        </a>
-                                    );
-                                } catch (_) {
-                                    return <li key={rule}>{rule}</li>;
-                                }
-                            })}
-                        </ul>
-                    </Col>
-                )}
-                {tournament.admins && tournament.admins.length > 0 && (
-                    <Col xl={3}>
-                        <h3>Admins</h3>
-                        <ul>
-                            {tournament.admins.map((admin) => (
-                                <li key={admin}>
-                                    <a
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        href={`/${admin}`}
+                            </div>
+                            <div className={cardClass}>
+                                <div className={detailStyles.timelineHeading}>
+                                    <span
+                                        className={detailStyles.timelineTitle}
                                     >
-                                        {admin}
+                                        {getPeriodLabel(tournament, i)}
+                                    </span>
+                                    <span
+                                        className={detailStyles.timelineLabel}
+                                    >
+                                        {status === 'active'
+                                            ? 'Now'
+                                            : status === 'past'
+                                              ? 'Ended'
+                                              : 'Upcoming'}
+                                    </span>
+                                </div>
+                                <div className={detailStyles.timelineRange}>
+                                    {moment(period.startDate).format('LLL')} —{' '}
+                                    {moment(period.endDate).format('LLL')}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </section>,
+    );
+
+    sections.push(
+        <section key="runs" className={detailStyles.section}>
+            <header className={detailStyles.sectionHeader}>
+                <h2 className={detailStyles.sectionTitle}>
+                    Eligible runs
+                    <span className={detailStyles.sectionEyebrow}>
+                        {tournament.eligibleRuns?.length ?? 0} combo
+                        {(tournament.eligibleRuns?.length ?? 0) === 1
+                            ? ''
+                            : 's'}
+                    </span>
+                </h2>
+            </header>
+            <div className={detailStyles.eligibleGrid}>
+                {(tournament.eligibleRuns ?? []).map((r, i) => (
+                    <div
+                        key={`${r.game}|${r.category}`}
+                        className={`${detailStyles.eligibleTile} ${
+                            i === 0 ? detailStyles.eligibleTilePrimary : ''
+                        }`}
+                    >
+                        <div className={detailStyles.eligibleGameRow}>
+                            <span className={detailStyles.eligibleIndex}>
+                                {i === 0 ? 'Main' : `#${i + 1}`}
+                            </span>
+                        </div>
+                        <div className={detailStyles.eligibleGame}>
+                            <GameLink game={r.game} />
+                        </div>
+                        <div className={detailStyles.eligibleCategory}>
+                            {r.category}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </section>,
+    );
+
+    if (tournament.rules && tournament.rules.length > 0) {
+        sections.push(
+            <section key="rules" className={detailStyles.section}>
+                <header className={detailStyles.sectionHeader}>
+                    <h2 className={detailStyles.sectionTitle}>Rules</h2>
+                </header>
+                <ul className={detailStyles.rulesList}>
+                    {tournament.rules.map((rule, i) => {
+                        try {
+                            const urlRule = new URL(rule);
+                            return (
+                                <li key={`${rule}-${i}`}>
+                                    <a
+                                        href={urlRule.toString()}
+                                        target="_blank"
+                                        rel="nofollow noreferrer"
+                                    >
+                                        {urlRule.hostname}
+                                        {urlRule.pathname}
                                     </a>
                                 </li>
-                            ))}
-                        </ul>
-                    </Col>
-                )}
-                {tournament.eligibleUsers &&
-                    tournament.eligibleUsers.length > 0 && (
-                        <Col xl={3}>
-                            <h3>Runners</h3>
-                            <ul>
-                                {tournament.eligibleUsers.map((moderator) => {
-                                    return (
-                                        <li key={moderator}>
-                                            <a
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                href={`/${moderator}`}
-                                            >
-                                                {moderator}
-                                            </a>
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-                        </Col>
+                            );
+                        } catch (_) {
+                            return <li key={`${rule}-${i}`}>{rule}</li>;
+                        }
+                    })}
+                </ul>
+            </section>,
+        );
+    }
+
+    if (
+        tournament.pointDistribution &&
+        tournament.pointDistribution.length > 0
+    ) {
+        sections.push(
+            <section key="points" className={detailStyles.section}>
+                <header className={detailStyles.sectionHeader}>
+                    <h2 className={detailStyles.sectionTitle}>
+                        Points distribution
+                    </h2>
+                </header>
+                <div className={detailStyles.eligibleGrid}>
+                    {tournament.pointDistribution.map((points, key) => {
+                        const place = key + 1;
+                        const suffix =
+                            place === 1
+                                ? 'st'
+                                : place === 2
+                                  ? 'nd'
+                                  : place === 3
+                                    ? 'rd'
+                                    : 'th';
+                        return (
+                            <div
+                                key={key}
+                                className={`${detailStyles.eligibleTile} ${
+                                    key === 0
+                                        ? detailStyles.eligibleTilePrimary
+                                        : ''
+                                }`}
+                            >
+                                <div className={detailStyles.eligibleIndex}>
+                                    {place}
+                                    {suffix}
+                                </div>
+                                <div className={detailStyles.eligibleGame}>
+                                    {points} pts
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </section>,
+        );
+    }
+
+    const moderators = tournament.moderators ?? [];
+    const admins = tournament.admins ?? [];
+    const eligibleUsers = tournament.eligibleUsers ?? [];
+
+    if (moderators.length > 0 || admins.length > 0) {
+        sections.push(
+            <section key="people" className={detailStyles.section}>
+                <header className={detailStyles.sectionHeader}>
+                    <h2 className={detailStyles.sectionTitle}>People</h2>
+                </header>
+                <div className={detailStyles.eligibleGrid}>
+                    {admins.length > 0 && (
+                        <div className={detailStyles.eligibleTile}>
+                            <span className={detailStyles.eligibleIndex}>
+                                Admins
+                            </span>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: '0.4rem',
+                                }}
+                            >
+                                {admins.map((a) => (
+                                    <a
+                                        key={a}
+                                        href={`/${a}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className={detailStyles.gameChip}
+                                    >
+                                        {a}
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
                     )}
-                <Col xl={3}>
-                    <h3>Support therun.gg</h3>
-                    <PatreonBunnySvg size={100} />
-                </Col>
-            </Row>
+                    {moderators.length > 0 && (
+                        <div className={detailStyles.eligibleTile}>
+                            <span className={detailStyles.eligibleIndex}>
+                                Moderators
+                            </span>
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    flexWrap: 'wrap',
+                                    gap: '0.4rem',
+                                }}
+                            >
+                                {moderators.map((m) => (
+                                    <a
+                                        key={m}
+                                        href={`/${m}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className={detailStyles.gameChip}
+                                    >
+                                        {m}
+                                    </a>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </section>,
+        );
+    }
+
+    if (eligibleUsers.length > 0) {
+        sections.push(
+            <section key="runners" className={detailStyles.section}>
+                <header className={detailStyles.sectionHeader}>
+                    <h2 className={detailStyles.sectionTitle}>
+                        Runners
+                        <span className={detailStyles.sectionEyebrow}>
+                            {eligibleUsers.length} signed up
+                        </span>
+                    </h2>
+                </header>
+                <div
+                    style={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        gap: '0.4rem',
+                    }}
+                >
+                    {eligibleUsers.map((u) => (
+                        <a
+                            key={u}
+                            href={`/${u}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={detailStyles.gameChip}
+                        >
+                            {u}
+                        </a>
+                    ))}
+                </div>
+            </section>,
+        );
+    }
+
+    sections.push(
+        <section key="patreon" className={detailStyles.section}>
+            <header className={detailStyles.sectionHeader}>
+                <h2 className={detailStyles.sectionTitle}>Support therun.gg</h2>
+            </header>
+            <div
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                }}
+            >
+                <PatreonBunnySvg size={80} />
+                <div
+                    style={{
+                        fontSize: '0.9rem',
+                        color: 'var(--bs-secondary-color)',
+                        lineHeight: 1.5,
+                    }}
+                >
+                    therun.gg is free and ad-free. If you want to keep
+                    tournament tooling like this alive, consider supporting on
+                    Patreon.
+                </div>
+            </div>
+        </section>,
+    );
+
+    return (
+        <div
+            style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1.5rem',
+            }}
+        >
+            {sections}
         </div>
     );
 };

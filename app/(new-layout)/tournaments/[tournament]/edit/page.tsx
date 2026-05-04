@@ -1,15 +1,12 @@
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { getTournamentByName } from '~src/components/tournament/getTournaments';
-import {
-    hasCapability,
-    isTournamentAdmin,
-} from '~src/lib/tournament-permissions';
+import { hasCapability } from '~src/lib/tournament-permissions';
 import { safeDecodeURI, safeEncodeURI } from '~src/utils/uri';
 import { PermissionDenied } from '../../components/permission-denied';
-import { ManagePanel } from './manage-panel';
+import { EditTournamentForm } from './edit-tournament-form';
 
-export default async function ManageTournamentPage({
+export default async function EditTournamentPage({
     params,
 }: {
     params: Promise<{ tournament: string }>;
@@ -26,24 +23,17 @@ export default async function ManageTournamentPage({
         return (
             <PermissionDenied
                 needsLogin
-                reason={`Sign in with Twitch to manage "${tournament.shortName ?? tournament.name}".`}
+                reason={`Sign in with Twitch to edit "${tournament.shortName ?? tournament.name}".`}
                 tournamentName={tournament.shortName ?? tournament.name}
                 tournamentHref={tournamentHref}
             />
         );
     }
 
-    const anyCapability =
-        isTournamentAdmin(session, tournament) ||
-        hasCapability(session, tournament, 'manage_staff') ||
-        hasCapability(session, tournament, 'manage_participants') ||
-        hasCapability(session, tournament, 'manage_runs') ||
-        hasCapability(session, tournament, 'lifecycle');
-
-    if (!anyCapability) {
+    if (!hasCapability(session, tournament, 'edit_settings')) {
         return (
             <PermissionDenied
-                reason="You aren't a staff member or admin on this tournament."
+                reason={`You don't have the "edit_settings" capability on this tournament.`}
                 tournamentName={tournament.shortName ?? tournament.name}
                 tournamentHref={tournamentHref}
             />
@@ -51,8 +41,8 @@ export default async function ManageTournamentPage({
     }
 
     return (
-        <div className="container py-4">
-            <ManagePanel tournament={tournament} user={session} />
+        <div className="container py-4" style={{ maxWidth: '960px' }}>
+            <EditTournamentForm tournament={tournament} user={session} />
         </div>
     );
 }
