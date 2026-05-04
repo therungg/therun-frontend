@@ -5,7 +5,7 @@ import { Twitch as TwitchIcon } from 'react-bootstrap-icons';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { StoryElementWithSelected } from '~app/(new-layout)/live/story.types';
 import styles from '../commentary-drawer.module.scss';
-import { useStoryCandidates } from '../use-story-candidates';
+import type { StoryCandidatesState } from '../use-story-candidates';
 
 const TOP_PER_CATEGORY = 3;
 
@@ -54,11 +54,13 @@ const StoryLine = ({ el }: { el: StoryElementWithSelected }) => (
 export const StoryTab = ({
     liveRun,
     selectedIndex,
+    storyState,
 }: {
     liveRun: LiveRun;
     selectedIndex: number;
+    storyState: StoryCandidatesState;
 }) => {
-    const { story, isLoading, error } = useStoryCandidates(liveRun.user);
+    const { story, isLoading, error } = storyState;
 
     if (isLoading) return <div className={styles.empty}>Loading story…</div>;
     if (error) return <div className={styles.empty}>Could not load story.</div>;
