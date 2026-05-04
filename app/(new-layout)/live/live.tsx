@@ -21,6 +21,8 @@ import {
     serializeFilterParams,
     sortLiveRuns,
 } from '~app/(new-layout)/live/utilities';
+import { CommentaryDrawer } from '~src/components/live/commentary-drawer/commentary-drawer';
+import { CommentaryDrawerProvider } from '~src/components/live/commentary-drawer/commentary-drawer-context';
 import { LiveIcon, LiveUserRun } from '~src/components/live/live-user-run';
 import { RecommendedStream } from '~src/components/live/recommended-stream';
 import { SkeletonLiveRun } from '~src/components/skeleton/live/skeleton-live-run';
@@ -300,7 +302,7 @@ export const Live = ({
     }, [sortOption]);
 
     return (
-        <>
+        <CommentaryDrawerProvider>
             {showTitle && (
                 <Row className="g-3 mb-3">
                     <Col xs="auto" className="flex-grow-1">
@@ -453,6 +455,10 @@ export const Live = ({
                     );
                 })}
             </Row>
-        </>
+            <CommentaryDrawer
+                liveDataMap={updatedLiveDataMap}
+                currentlyViewing={currentlyViewing}
+            />
+        </CommentaryDrawerProvider>
     );
 };
