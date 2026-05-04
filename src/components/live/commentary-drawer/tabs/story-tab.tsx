@@ -128,8 +128,6 @@ export const StoryTab = ({
     }
 
     const elements = entry.storyElements ?? [];
-    const featured = elements.filter((e) => e.selected);
-    const candidates = elements.filter((e) => !e.selected);
 
     const splitName =
         liveRun.splits?.[selectedIndex]?.name ?? `Split ${selectedIndex + 1}`;
@@ -140,29 +138,16 @@ export const StoryTab = ({
                 After split {selectedIndex + 1} — {splitName}
             </div>
 
-            {featured.length > 0 ? (
+            {elements.length > 0 ? (
                 <div className={styles.storyFeaturedWrap}>
-                    {featured.map((el) => (
+                    {elements.map((el) => (
                         <StoryItem key={el.id} el={el} featured />
                     ))}
                 </div>
             ) : (
                 <div className={styles.empty}>
-                    No element was picked for this split.
+                    No story element generated for this split.
                 </div>
-            )}
-
-            {candidates.length > 0 && (
-                <>
-                    <div className={styles.sectionTitle}>
-                        Other candidates ({candidates.length})
-                    </div>
-                    <div className={styles.storyFeaturedWrap}>
-                        {candidates.map((el) => (
-                            <StoryItem key={el.id} el={el} featured={false} />
-                        ))}
-                    </div>
-                </>
             )}
         </>
     );
