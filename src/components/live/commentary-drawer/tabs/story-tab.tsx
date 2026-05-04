@@ -1,5 +1,6 @@
 'use client';
 
+import clsx from 'clsx';
 import { Twitch as TwitchIcon } from 'react-bootstrap-icons';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { StoryElementWithSelected } from '~app/(new-layout)/live/story.types';
@@ -16,23 +17,37 @@ const byScoreDesc = (
     b: StoryElementWithSelected,
 ) => scoreOf(b) - scoreOf(a);
 
-const StoryItem = ({ el }: { el: StoryElementWithSelected }) => (
-    <div className={styles.storyItem}>
-        {(el.wasSentToTwitch || el.declinedReason) && (
-            <div className={styles.storyItemHeader}>
-                {el.wasSentToTwitch && (
-                    <span className={styles.storyTwitchTag}>
-                        <TwitchIcon height={12} color="#6441a5" /> Sent to chat
-                    </span>
-                )}
-                {el.declinedReason && (
-                    <span className={styles.storyDeclinedTag}>
-                        {el.declinedReason}
-                    </span>
-                )}
-            </div>
+const ContextHeader = ({
+    label,
+    splitName,
+    tone,
+}: {
+    label: string;
+    splitName: string;
+    tone: 'after' | 'next';
+}) => (
+    <div className={styles.storyContext}>
+        <span
+            className={clsx(
+                styles.storyContextLabel,
+                tone === 'after' && styles.storyContextLabelAfter,
+                tone === 'next' && styles.storyContextLabelNext,
+            )}
+        >
+            {label}
+        </span>
+        <span className={styles.storyContextSplit}>{splitName}</span>
+    </div>
+);
+
+const StoryLine = ({ el }: { el: StoryElementWithSelected }) => (
+    <div className={styles.storyLine}>
+        <span className={styles.storyLineText}>{el.text}</span>
+        {el.wasSentToTwitch && (
+            <span className={styles.storyLineChat}>
+                <TwitchIcon height={11} color="#6441a5" /> chat
+            </span>
         )}
-        <div className={styles.storyItemText}>{el.text}</div>
     </div>
 );
 
@@ -46,7 +61,6 @@ export const StoryTab = ({
     const { story, isLoading, error } = useStoryCandidates(liveRun.user);
 
     if (isLoading) return <div className={styles.empty}>Loading story…</div>;
-
     if (error) return <div className={styles.empty}>Could not load story.</div>;
 
     if (!story) {
@@ -61,9 +75,8 @@ export const StoryTab = ({
     const total = liveRun.splits?.length ?? 0;
     const current = liveRun.currentSplitIndex;
 
-    // Aggregate generics across the entire story; dedupe by id keeping the
-    // highest-scoring instance. These describe the run/runner overall and
-    // don't depend on which split is selected, so we compute them upfront.
+    // Aggregate generics across all entries; dedupe by id keeping the
+    // highest-scoring instance.
     const stories = story.stories ?? [];
     const genericById = new Map<string, StoryElementWithSelected>();
     for (const entry of stories) {
@@ -77,17 +90,15 @@ export const StoryTab = ({
     }
     const generics = Array.from(genericById.values()).sort(byScoreDesc);
 
-    // Selected-split-specific entries.
     const splitName =
         liveRun.splits?.[selectedIndex]?.name ?? `Split ${selectedIndex + 1}`;
-    const nextSplitName = liveRun.splits?.[selectedIndex + 1]?.name;
+    const nextSplitName =
+        liveRun.splits?.[selectedIndex + 1]?.name ??
+        `Split ${selectedIndex + 2}`;
 
     const beyondLive = selectedIndex >= current;
     const finished = selectedIndex >= total;
 
-    // The entry stamped with splitIndex = N+1 describes what happened on N
-    // (its "previous" elements) and what's coming on N+1 (its "next"
-    // elements). We look one ahead, falling back to the entry for N itself.
     const entryForSplit =
         !beyondLive && !finished
             ? (stories.find((s) => s.splitIndex === selectedIndex + 1) ??
@@ -107,8 +118,7 @@ export const StoryTab = ({
               .slice(0, TOP_PER_CATEGORY)
         : [];
 
-    const splitHasContent =
-        entryForSplit != null && (previousTop.length > 0 || nextTop.length > 0);
+    const splitHasContent = previousTop.length > 0 || nextTop.length > 0;
 
     return (
         <>
@@ -126,35 +136,30 @@ export const StoryTab = ({
                 </div>
             )}
 
-            {!beyondLive && !finished && splitHasContent && (
-                <>
-                    {previousTop.length > 0 && (
-                        <>
-                            <div className={styles.sectionTitle}>
-                                After split {selectedIndex + 1} — {splitName}
-                            </div>
-                            <div className={styles.storyFeaturedWrap}>
-                                {previousTop.map((el) => (
-                                    <StoryItem key={el.id} el={el} />
-                                ))}
-                            </div>
-                        </>
-                    )}
+            {!beyondLive && !finished && previousTop.length > 0 && (
+                <div className={styles.storyLines}>
+                    <ContextHeader
+                        label="After"
+                        splitName={splitName}
+                        tone="after"
+                    />
+                    {previousTop.map((el) => (
+                        <StoryLine key={el.id} el={el} />
+                    ))}
+                </div>
+            )}
 
-                    {nextTop.length > 0 && (
-                        <>
-                            <div className={styles.sectionTitle}>
-                                Heading into split {selectedIndex + 2}
-                                {nextSplitName ? ` — ${nextSplitName}` : ''}
-                            </div>
-                            <div className={styles.storyFeaturedWrap}>
-                                {nextTop.map((el) => (
-                                    <StoryItem key={el.id} el={el} />
-                                ))}
-                            </div>
-                        </>
-                    )}
-                </>
+            {!beyondLive && !finished && nextTop.length > 0 && (
+                <div className={styles.storyLines}>
+                    <ContextHeader
+                        label="Next"
+                        splitName={nextSplitName}
+                        tone="next"
+                    />
+                    {nextTop.map((el) => (
+                        <StoryLine key={el.id} el={el} />
+                    ))}
+                </div>
             )}
 
             {!beyondLive && !finished && !splitHasContent && (
@@ -164,14 +169,19 @@ export const StoryTab = ({
             )}
 
             {generics.length > 0 && (
-                <>
-                    <div className={styles.sectionTitle}>Run-wide notes</div>
-                    <div className={styles.storyFeaturedWrap}>
+                <div className={styles.runWideSection}>
+                    <div className={styles.runWideTitle}>Run-wide notes</div>
+                    <ul className={styles.runWideList}>
                         {generics.map((el) => (
-                            <StoryItem key={el.id} el={el} />
+                            <li key={el.id} className={styles.runWideItem}>
+                                <span className={styles.runWideBullet}>·</span>
+                                <span className={styles.runWideItemText}>
+                                    {el.text}
+                                </span>
+                            </li>
                         ))}
-                    </div>
-                </>
+                    </ul>
+                </div>
             )}
         </>
     );
