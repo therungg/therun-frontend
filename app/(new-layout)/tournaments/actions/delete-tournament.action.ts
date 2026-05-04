@@ -15,6 +15,6 @@ export async function deleteTournamentAction(name: string) {
         if (e instanceof ApiError) return { error: e.message };
         throw e;
     }
-    revalidateTag('tournaments', 'minutes');
+    revalidateTag('tournaments', 'seconds');
     redirect('/tournaments');
 }

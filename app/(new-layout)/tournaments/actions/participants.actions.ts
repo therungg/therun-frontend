@@ -18,7 +18,7 @@ async function run<T>(fn: (s: string) => Promise<T>) {
         if (e instanceof ApiError) return { error: e.message };
         throw e;
     } finally {
-        revalidateTag('tournaments', 'minutes');
+        revalidateTag('tournaments', 'seconds');
     }
 }
 

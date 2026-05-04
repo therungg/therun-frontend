@@ -7,7 +7,7 @@ import {
 
 export const getTournaments = async () => {
     'use cache';
-    cacheLife('minutes');
+    cacheLife('seconds');
     cacheTag('tournaments');
     return listTournaments();
 };
@@ -21,7 +21,7 @@ export const getTournamentByName = async (name: string) => {
 
 export const getTournamentStatsByName = async (name: string) => {
     'use cache';
-    cacheLife('minutes');
+    cacheLife('seconds');
     cacheTag('tournaments');
     return getTournamentStats(name);
 };

@@ -1,10 +1,24 @@
-import React, { useState } from 'react';
-import { Row } from 'react-bootstrap';
+import React, { useMemo, useState } from 'react';
 import { CategoryLeaderboard } from '~app/(new-layout)/games/[game]/game.types';
-import { getLeaderboard } from '~src/components/game/game-leaderboards';
-import { PaginatedGameLeaderboard } from '~src/components/game/paginated-game-leaderboard';
 import { Tournament } from '~src/components/tournament/tournament-info';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { LeaderboardRow, PrettyLeaderboard } from './pretty-leaderboard';
+import styles from './tournament-detail.module.scss';
+
+type ViewKey =
+    | 'pbIGT'
+    | 'pb'
+    | 'qualifier'
+    | 'points'
+    | 'attempts'
+    | 'finishedAttempts'
+    | 'playtime';
+
+const formatDuration = (stat: string | number) => (
+    <DurationToFormatted duration={stat.toString()} />
+);
+const formatNumber = (stat: string | number) =>
+    typeof stat === 'number' ? stat.toLocaleString() : stat;
 
 export const EventLeaderboards = ({
     tournament,
@@ -14,208 +28,106 @@ export const EventLeaderboards = ({
 }: {
     tournament: Tournament;
     gameTime: boolean;
-    // TODO: get the type
-    qualifierData: unknown;
+    qualifierData?: Tournament | null;
     tournamentLeaderboards: CategoryLeaderboard;
 }) => {
-    const [leaderboard, setLeaderboard] = useState(gameTime ? 'pbIGT' : 'pb');
+    const [view, setView] = useState<ViewKey>(gameTime ? 'pbIGT' : 'pb');
+
+    const views = useMemo(() => {
+        const out: { key: ViewKey; label: string }[] = [];
+        if (gameTime)
+            out.push({ key: 'pbIGT', label: 'Tournament PB (loadless)' });
+        out.push({ key: 'pb', label: 'Tournament PB' });
+        if (qualifierData) out.push({ key: 'qualifier', label: 'Qualifier' });
+        if (tournament.pointDistribution?.length)
+            out.push({ key: 'points', label: 'Points' });
+        out.push({ key: 'attempts', label: 'Attempts' });
+        out.push({ key: 'finishedAttempts', label: 'Finished attempts' });
+        out.push({ key: 'playtime', label: 'Playtime' });
+        return out;
+    }, [gameTime, qualifierData, tournament.pointDistribution]);
+
+    if (!tournamentLeaderboards) {
+        return (
+            <div className={styles.lbWrap}>
+                <div className={styles.lbEmpty}>No leaderboard data yet.</div>
+            </div>
+        );
+    }
+
+    let rows: LeaderboardRow[] | undefined;
+    let formatStat: (stat: string | number, key: number) => React.ReactNode =
+        formatDuration;
+    let statLabel = '';
+
+    switch (view) {
+        case 'pbIGT':
+            rows = tournamentLeaderboards.pbLeaderboard;
+            statLabel = 'Tournament PB (IGT)';
+            break;
+        case 'pb':
+            rows = tournament.leaderboards?.pbLeaderboard;
+            statLabel = 'Tournament PB';
+            break;
+        case 'qualifier': {
+            const lb = qualifierData?.leaderboards;
+            rows = (
+                tournament.gameTime
+                    ? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      (lb as any)?.gameTime?.pbLeaderboard
+                    : lb?.pbLeaderboard
+            ) as LeaderboardRow[] | undefined;
+            statLabel = 'Qualifier';
+            break;
+        }
+        case 'points':
+            rows = tournamentLeaderboards.pbLeaderboard;
+            formatStat = (_stat, key) => {
+                const points = tournament.pointDistribution?.[key];
+                return points ?? 0;
+            };
+            statLabel = 'Points';
+            break;
+        case 'attempts':
+            rows = tournamentLeaderboards.attemptCountLeaderboard;
+            formatStat = formatNumber;
+            statLabel = 'Attempts';
+            break;
+        case 'finishedAttempts':
+            rows = tournamentLeaderboards.finishedAttemptCountLeaderboard;
+            formatStat = formatNumber;
+            statLabel = 'Finished';
+            break;
+        case 'playtime':
+            rows = tournamentLeaderboards.totalRunTimeLeaderboard;
+            statLabel = 'Playtime';
+            break;
+    }
 
     return (
-        <Row className="g-4">
-            <h3>Event Leaderboards</h3>
-            <div className="mt-2">
-                <select
-                    className="form-select"
-                    onChange={(e) => {
-                        setLeaderboard(e.target.value);
-                    }}
-                >
-                    {gameTime && (
-                        <option
-                            key="pbIGT"
-                            title="Tournament PB (IGT)"
-                            value="pbIGT"
-                        >
-                            Tournament PB (loadless)
-                        </option>
-                    )}
-
-                    <option key="pb" title="Tournament PB" value="pb">
-                        Tournament PB
-                    </option>
-                    {qualifierData && (
-                        <option
-                            key="qualifier"
-                            title="Qualifier Leaderboard"
-                            value="qualifier"
-                        >
-                            Qualifier Leaderboard
-                        </option>
-                    )}
-                    {tournament.pointDistribution?.length && (
-                        <option
-                            key="points"
-                            title="Qualification Points"
-                            value="points"
-                        >
-                            Qualification Points
-                        </option>
-                    )}
-                    <option
-                        key="attempts"
-                        title="Total Attempts"
-                        value="attempts"
+        <div className={styles.eventLeaderboards}>
+            <div className={styles.lbTabs} role="tablist">
+                {views.map((v) => (
+                    <button
+                        key={v.key}
+                        type="button"
+                        role="tab"
+                        aria-selected={view === v.key}
+                        className={`${styles.lbTab} ${
+                            view === v.key ? styles.lbTabActive : ''
+                        }`}
+                        onClick={() => setView(v.key)}
                     >
-                        Total Attempts
-                    </option>
-                    <option
-                        key="finishedAttempts"
-                        title="Total Finished Attempts"
-                        value="finishedAttempts"
-                    >
-                        Total Finished Attempts
-                    </option>
-
-                    <option
-                        key="playtime"
-                        title="Total Playtime"
-                        value="playtime"
-                    >
-                        Total Playtime
-                    </option>
-                </select>
+                        {v.label}
+                    </button>
+                ))}
             </div>
-            {tournamentLeaderboards && (
-                <>
-                    {' '}
-                    {leaderboard == 'pbIGT' && (
-                        <PaginatedGameLeaderboard
-                            name="Tournament PB (IGT)"
-                            leaderboard={tournamentLeaderboards.pbLeaderboard}
-                            transform={(stat) => {
-                                return (
-                                    <DurationToFormatted
-                                        duration={stat.toString()}
-                                    />
-                                );
-                            }}
-                        />
-                    )}
-                    {leaderboard == 'pb' &&
-                        tournament.leaderboards?.pbLeaderboard && (
-                            <PaginatedGameLeaderboard
-                                name="Personal Best"
-                                leaderboard={
-                                    tournament.leaderboards.pbLeaderboard
-                                }
-                                transform={(stat) => {
-                                    return (
-                                        <DurationToFormatted
-                                            duration={stat.toString()}
-                                        />
-                                    );
-                                }}
-                            />
-                        )}
-                    {tournament.pointDistribution?.length &&
-                        leaderboard == 'points' && (
-                            <div>
-                                {getLeaderboard(
-                                    'Qualification Points',
-                                    tournamentLeaderboards.pbLeaderboard,
-                                    '',
-                                    (_stat, key) => {
-                                        if (
-                                            tournament?.pointDistribution
-                                                ?.length -
-                                                1 <
-                                            key
-                                        )
-                                            return null;
 
-                                        return tournament?.pointDistribution?.[
-                                            key
-                                        ];
-                                    },
-                                )}
-                            </div>
-                        )}
-                    {qualifierData &&
-                        qualifierData.leaderboards &&
-                        leaderboard == 'qualifier' && (
-                            <div>
-                                {getLeaderboard(
-                                    'Qualifier PB',
-                                    tournament.gameTime
-                                        ? qualifierData.leaderboards.gameTime
-                                              .pbLeaderboard
-                                        : qualifierData.leaderboards
-                                              .pbLeaderboard,
-                                    '',
-                                    (stat) => {
-                                        return (
-                                            <DurationToFormatted
-                                                duration={stat.toString()}
-                                            />
-                                        );
-                                    },
-                                )}
-                            </div>
-                        )}
-                    {leaderboard == 'sob' && (
-                        <PaginatedGameLeaderboard
-                            name="Sum of Bests"
-                            leaderboard={
-                                tournamentLeaderboards.sumOfBestsLeaderboard
-                            }
-                            transform={(stat) => {
-                                return (
-                                    <DurationToFormatted
-                                        duration={stat.toString()}
-                                    />
-                                );
-                            }}
-                        />
-                    )}
-                    {leaderboard == 'attempts' && (
-                        <PaginatedGameLeaderboard
-                            name="Total Attempts"
-                            leaderboard={
-                                tournamentLeaderboards.attemptCountLeaderboard
-                            }
-                            transform={(stat) => {
-                                return stat;
-                            }}
-                        />
-                    )}
-                    {leaderboard == 'finishedAttempts' && (
-                        <PaginatedGameLeaderboard
-                            name="Finished Attempts"
-                            leaderboard={
-                                tournamentLeaderboards.finishedAttemptCountLeaderboard
-                            }
-                            transform={(stat) => {
-                                return stat;
-                            }}
-                        />
-                    )}
-                    {leaderboard == 'playtime' && (
-                        <PaginatedGameLeaderboard
-                            name="Total Playtime"
-                            leaderboard={
-                                tournamentLeaderboards.totalRunTimeLeaderboard
-                            }
-                            transform={(stat) => {
-                                return (
-                                    <DurationToFormatted
-                                        duration={stat.toString()}
-                                    />
-                                );
-                            }}
-                        />
-                    )}
-                </>
-            )}
-        </Row>
+            <PrettyLeaderboard
+                rows={rows}
+                formatStat={formatStat}
+                statLabel={statLabel}
+            />
+        </div>
     );
 };

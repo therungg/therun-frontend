@@ -24,6 +24,10 @@ export interface UpdateTournamentInput {
     gameTime?: boolean;
     heats?: DateRange[];
     eligibleRuns?: GameCategory[];
+    eligibleUsers?: string[] | null;
+    moderators?: string[];
+    forceStream?: string;
+    minimumTimeSeconds?: number;
 }
 
 export async function updateTournamentAction(
@@ -40,6 +44,10 @@ export async function updateTournamentAction(
         logoUrl: input.logoUrl,
         organizer: input.organizer,
         gameTime: input.gameTime,
+        eligibleUsers: input.eligibleUsers,
+        moderators: input.moderators,
+        forceStream: input.forceStream,
+        minimumTimeSeconds: input.minimumTimeSeconds,
     };
 
     try {
@@ -67,6 +75,6 @@ export async function updateTournamentAction(
         }
         throw e;
     }
-    revalidateTag('tournaments', 'minutes');
+    revalidateTag('tournaments', 'seconds');
     return { ok: true as const };
 }

@@ -1,16 +1,20 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { Button, Form, Table } from 'react-bootstrap';
+import { type FormEvent, useState, useTransition } from 'react';
 import type { Tournament } from '../../../../../types/tournament.types';
 import {
     addAdminAction,
     removeAdminAction,
 } from '../../actions/admins.actions';
+import {
+    FormSection,
+    formStyles as styles,
+} from '../../components/form-primitives';
 
 export function AdminsPanel({ tournament }: { tournament: Tournament }) {
     const [admins, setAdmins] = useState<string[]>(tournament.admins ?? []);
     const [error, setError] = useState<string | null>(null);
+    const [draft, setDraft] = useState('');
     const [isPending, startTransition] = useTransition();
 
     function applyResult(res: Awaited<ReturnType<typeof addAdminAction>>) {
@@ -22,13 +26,15 @@ export function AdminsPanel({ tournament }: { tournament: Tournament }) {
         if (t && Array.isArray(t.admins)) setAdmins(t.admins);
     }
 
-    async function onAdd(form: FormData) {
+    function onAdd(e: FormEvent) {
+        e.preventDefault();
         setError(null);
-        const user = ((form.get('user') as string) ?? '').trim();
+        const user = draft.trim();
         if (!user) return;
         startTransition(async () => {
             const res = await addAdminAction(tournament.name, user);
             applyResult(res);
+            setDraft('');
         });
     }
 
@@ -41,39 +47,52 @@ export function AdminsPanel({ tournament }: { tournament: Tournament }) {
     }
 
     return (
-        <div>
-            {error && <div className="alert alert-danger">{error}</div>}
-            <Form action={onAdd} className="mb-3 d-flex gap-2">
-                <Form.Control name="user" placeholder="twitch username" />
-                <Button type="submit" disabled={isPending}>
+        <FormSection
+            icon="✦"
+            title="Admins"
+            description="Per-tournament admins have implicit access to every capability except managing other admins. Only global admins can edit this list."
+        >
+            {error && <div className={styles.errorAlert}>{error}</div>}
+
+            <form onSubmit={onAdd} className={styles.inlineAdd}>
+                <input
+                    className={styles.inlineAddInput}
+                    placeholder="twitch username"
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value)}
+                />
+                <button
+                    type="submit"
+                    className={styles.primaryButton}
+                    disabled={isPending || !draft.trim()}
+                >
                     Add admin
-                </Button>
-            </Form>
-            <Table responsive striped bordered hover>
-                <thead>
-                    <tr>
-                        <th>User</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
+                </button>
+            </form>
+
+            {admins.length === 0 ? (
+                <div className={styles.emptyState}>
+                    No admins on this tournament yet.
+                </div>
+            ) : (
+                <div className={styles.peopleList}>
                     {admins.map((a) => (
-                        <tr key={a}>
-                            <td>{a}</td>
-                            <td>
-                                <Button
-                                    size="sm"
-                                    variant="outline-danger"
-                                    onClick={() => onRemove(a)}
+                        <div key={a} className={styles.personRow}>
+                            <span className={styles.personName}>{a}</span>
+                            <div className={styles.personActions}>
+                                <button
+                                    type="button"
+                                    className={`${styles.miniButton} ${styles.miniButtonDanger}`}
                                     disabled={isPending}
+                                    onClick={() => onRemove(a)}
                                 >
                                     Remove
-                                </Button>
-                            </td>
-                        </tr>
+                                </button>
+                            </div>
+                        </div>
                     ))}
-                </tbody>
-            </Table>
-        </div>
+                </div>
+            )}
+        </FormSection>
     );
 }

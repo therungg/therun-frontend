@@ -1,6 +1,7 @@
 import React from 'react';
 import Countdown from 'react-countdown';
 import { Tournament } from '~src/components/tournament/tournament-info';
+import { getPeriodLabel } from '~src/lib/tournament-periods';
 
 export const TournamentTimer = ({ tournament }: { tournament: Tournament }) => {
     const now = new Date();
@@ -68,7 +69,7 @@ export const TournamentTimer = ({ tournament }: { tournament: Tournament }) => {
         if (currentHeatIndex !== -1) {
             return (
                 <>
-                    Day {currentHeatIndex + 1}/
+                    {getPeriodLabel(tournament, currentHeatIndex)}/
                     {tournament.eligiblePeriods.length} ends{' '}
                     <Countdown
                         date={
@@ -84,8 +85,8 @@ export const TournamentTimer = ({ tournament }: { tournament: Tournament }) => {
         } else {
             return (
                 <>
-                    Day {nextHeat + 1}/{tournament.eligiblePeriods.length}{' '}
-                    starts{' '}
+                    {getPeriodLabel(tournament, nextHeat)}/
+                    {tournament.eligiblePeriods.length} starts{' '}
                     <Countdown
                         date={
                             new Date(

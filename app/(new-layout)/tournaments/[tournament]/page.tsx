@@ -2,21 +2,28 @@ import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { liveRunArrayToMap } from '~app/(new-layout)/tournaments/[tournament]/live-run-array-to-map.component';
 import { GenericTournament } from '~app/(new-layout)/tournaments/[tournament]/tournament';
 import { getSession } from '~src/actions/session.action';
-import { getTournamentByName } from '~src/components/tournament/getTournaments';
+import {
+    getTournamentByName,
+    getTournamentStatsByName,
+} from '~src/components/tournament/getTournaments';
 import { Tournament } from '~src/components/tournament/tournament-info';
 import { getAllLiveRuns } from '~src/lib/live-runs';
-import { getRaceByRaceId } from '~src/lib/races';
 import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import { isLiveDataEligibleForTournament } from './is-live-data-eligible-for-tournament.component';
 
-// Increase Tournament Page timeout to 60 seconds since some endpoints are a touch slow at the moment
 export const maxDuration = 60;
 
 interface PageProps {
     params: Promise<{ tournament: string }>;
     searchParams: Promise<{ [_: string]: string }>;
 }
+
+const STANDINGS_TOURNAMENT_NAMES = [
+    'PACE Fall 2024 Qualifiers 1',
+    'PACE Fall 2024 Qualifiers 2',
+    'PACE Fall 2024 Qualifiers 3',
+];
 
 export default async function Page(props: PageProps) {
     const searchParams = await props.searchParams;
@@ -59,26 +66,52 @@ export const TournamentPage = async ({
 
     const session = await getSession();
 
-    let race = undefined;
-
-    if (tournament.raceId) {
-        race = await getRaceByRaceId(tournament.raceId);
-    }
+    const [stats, qualifierData, standingsTournaments] = await Promise.all([
+        safeFetchStats(tournament.name),
+        tournament.qualifier
+            ? safeFetchTournament(tournament.qualifier)
+            : Promise.resolve(null),
+        tournament.pointDistribution
+            ? Promise.all(STANDINGS_TOURNAMENT_NAMES.map(safeFetchTournament))
+            : Promise.resolve(null),
+    ]);
 
     return (
         <GenericTournament
             liveDataMap={liveRunArrayToMap(
                 liveData,
                 'pb',
-                tournamentLeaderboards,
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                tournamentLeaderboards as any,
             )}
             session={session}
             tournament={tournament}
             tab={tab}
-            race={race}
+            stats={stats}
+            qualifierData={qualifierData}
+            standingsTournaments={
+                standingsTournaments?.filter((t): t is Tournament => !!t) ??
+                null
+            }
         />
     );
 };
+
+async function safeFetchStats(name: string) {
+    try {
+        return await getTournamentStatsByName(name);
+    } catch {
+        return null;
+    }
+}
+
+async function safeFetchTournament(name: string) {
+    try {
+        return await getTournamentByName(name);
+    } catch {
+        return null;
+    }
+}
 
 export async function generateMetadata(props: PageProps) {
     const params = await props.params;

@@ -7,8 +7,7 @@ export default async function CreateTournamentPage() {
     const session = await getSession();
     if (!canCreateTournament(session)) redirect('/tournaments');
     return (
-        <div className="container py-4">
-            <h1>Create Tournament</h1>
+        <div className="container py-4" style={{ maxWidth: '960px' }}>
             <CreateTournamentForm />
         </div>
     );

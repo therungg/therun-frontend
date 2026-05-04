@@ -18,9 +18,17 @@ import type {
 export interface CreateTournamentInput {
     name: string;
     shortName?: string;
-    description?: string;
+    description: string;
     heats: DateRange[];
     eligibleRuns: GameCategory[];
+    eligibleUsers?: string[];
+    moderators?: string[];
+    forceStream?: string;
+    minimumTimeSeconds?: number;
+    gameTime?: boolean;
+    url?: string;
+    logoUrl?: string;
+    organizer?: string;
 }
 
 export async function createTournamentAction(input: CreateTournamentInput) {
@@ -29,6 +37,8 @@ export async function createTournamentAction(input: CreateTournamentInput) {
 
     const name = input.name.trim();
     if (!name) return { error: 'Name is required' };
+    const description = input.description.trim();
+    if (!description) return { error: 'Description is required' };
 
     let schedule;
     let runs;
@@ -47,11 +57,22 @@ export async function createTournamentAction(input: CreateTournamentInput) {
             {
                 name,
                 shortName: input.shortName,
-                description: input.description,
+                description,
                 startDate: schedule.startDate,
                 endDate: schedule.endDate,
                 eligiblePeriods: schedule.eligiblePeriods,
                 eligibleRuns: runs,
+                eligibleUsers:
+                    input.eligibleUsers && input.eligibleUsers.length > 0
+                        ? input.eligibleUsers
+                        : null,
+                moderators: input.moderators,
+                forceStream: input.forceStream,
+                minimumTimeSeconds: input.minimumTimeSeconds,
+                gameTime: input.gameTime,
+                url: input.url,
+                logoUrl: input.logoUrl,
+                organizer: input.organizer,
                 hide: false,
             },
             session.id,
@@ -63,6 +84,6 @@ export async function createTournamentAction(input: CreateTournamentInput) {
         throw e;
     }
 
-    revalidateTag('tournaments', 'minutes');
+    revalidateTag('tournaments', 'seconds');
     redirect(`/tournaments/${encodeURIComponent(name)}`);
 }

@@ -1,7 +1,7 @@
 'use client';
 
-import { Button, Form } from 'react-bootstrap';
 import type { GameCategory } from '../../../../types/tournament.types';
+import styles from './tournament-form.module.scss';
 
 export function EligibleRunsEditor({
     value,
@@ -21,45 +21,54 @@ export function EligibleRunsEditor({
     }
 
     return (
-        <div>
-            <Form.Label>Eligible games / categories</Form.Label>
+        <div className={styles.repeaterList}>
             {value.length === 0 && (
-                <div className="text-muted small mb-2">
-                    Add at least one game/category pair.
+                <div className={styles.repeaterEmpty}>
+                    Add at least one game/category combo that runs must match to
+                    count.
                 </div>
             )}
             {value.map((r, i) => (
-                <div key={i} className="d-flex gap-2 mb-2 align-items-end">
-                    <Form.Group className="flex-grow-1">
-                        <Form.Label className="small mb-0">Game</Form.Label>
-                        <Form.Control
-                            value={r.game}
-                            onChange={(e) =>
-                                update(i, { game: e.target.value })
-                            }
-                        />
-                    </Form.Group>
-                    <Form.Group className="flex-grow-1">
-                        <Form.Label className="small mb-0">Category</Form.Label>
-                        <Form.Control
-                            value={r.category}
-                            onChange={(e) =>
-                                update(i, { category: e.target.value })
-                            }
-                        />
-                    </Form.Group>
-                    <Button
-                        variant="outline-danger"
-                        size="sm"
+                <div key={i} className={styles.repeaterRow}>
+                    <div className={styles.repeaterIndex}>#{i + 1}</div>
+                    <div className={styles.repeaterFields}>
+                        <div className={styles.field}>
+                            <label className={styles.fieldLabel}>Game</label>
+                            <input
+                                className={styles.input}
+                                placeholder="e.g. Super Mario 64"
+                                value={r.game}
+                                onChange={(e) =>
+                                    update(i, { game: e.target.value })
+                                }
+                            />
+                        </div>
+                        <div className={styles.field}>
+                            <label className={styles.fieldLabel}>
+                                Category
+                            </label>
+                            <input
+                                className={styles.input}
+                                placeholder="e.g. 16 Star"
+                                value={r.category}
+                                onChange={(e) =>
+                                    update(i, { category: e.target.value })
+                                }
+                            />
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        className={styles.repeaterRemove}
                         onClick={() => remove(i)}
                     >
                         Remove
-                    </Button>
+                    </button>
                 </div>
             ))}
-            <Button variant="outline-primary" size="sm" onClick={add}>
-                Add game/category
-            </Button>
+            <button type="button" className={styles.repeaterAdd} onClick={add}>
+                + Add another game/category
+            </button>
         </div>
     );
 }

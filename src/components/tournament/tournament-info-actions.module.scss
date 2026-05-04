@@ -1,0 +1,54 @@
+@import '../../../app/(new-layout)/styles/design-tokens';
+
+.actionCluster {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: $spacing-xs;
+    justify-content: flex-end;
+    margin-bottom: $spacing-md;
+}
+
+.actionLabel {
+    font-size: $font-size-2xs;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--bs-secondary-color);
+    margin-right: $spacing-xs;
+}
+
+.actionPill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.4rem 0.85rem;
+    font-size: $font-size-xs;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--bs-body-color);
+    background: rgba(var(--bs-primary-rgb), 0.06);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.2);
+    border-radius: 999px;
+    text-decoration: none;
+    transition: all $transition-fast;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.14);
+        border-color: var(--bs-primary);
+        color: var(--bs-primary);
+        text-decoration: none;
+    }
+}
+
+.actionPillAccent {
+    color: var(--bs-primary);
+    background: rgba(var(--bs-primary-rgb), 0.12);
+    border-color: rgba(var(--bs-primary-rgb), 0.35);
+
+    &:hover {
+        background: var(--bs-primary);
+        color: white;
+        border-color: var(--bs-primary);
+    }
+}

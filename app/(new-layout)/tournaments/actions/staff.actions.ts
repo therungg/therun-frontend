@@ -18,7 +18,7 @@ async function withSession<T>(fn: (sessionId: string) => Promise<T>) {
         }
         throw e;
     } finally {
-        revalidateTag('tournaments', 'minutes');
+        revalidateTag('tournaments', 'seconds');
     }
 }
 

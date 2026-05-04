@@ -16,7 +16,7 @@ export async function lifecycleActionServer(
     if (!session.id) return { error: 'Not signed in' as const };
     try {
         const ok = await lifecycleAction(name, action, session.id);
-        revalidateTag('tournaments', 'minutes');
+        revalidateTag('tournaments', 'seconds');
         return { ok };
     } catch (e) {
         if (e instanceof ApiError) return { error: e.message };

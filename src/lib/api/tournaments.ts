@@ -1,4 +1,5 @@
 import { apiFetch } from '~src/lib/api-client';
+import { safeEncodeURI } from '~src/utils/uri';
 import type {
     Capability,
     ParticipantStatus,
@@ -7,7 +8,7 @@ import type {
     Tournament,
 } from '../../../types/tournament.types';
 
-const enc = encodeURIComponent;
+const enc = safeEncodeURI;
 const base = (name?: string) =>
     name ? `/v1/tournaments/${enc(name)}` : `/v1/tournaments`;
 

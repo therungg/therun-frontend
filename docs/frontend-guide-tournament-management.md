@@ -16,6 +16,25 @@ Authorization: Bearer {sessionId}
 
 GET endpoints for listing/reading are public unless otherwise noted. The session is the same one used everywhere else (Twitch OAuth → DynamoDB-backed session).
 
+## Heats
+
+A tournament has two heat dimensions:
+
+- **`eligibleRuns`** — one or more `{ game, category }` combos. At least one is required.
+- **`eligiblePeriods`** — one or more `{ startDate, endDate }` ranges. At least one is required, and **periods must not overlap globally** (no parallel/overlapping heats).
+
+The tournament's overall window is **derived** from the periods:
+
+- `startDate = min(eligiblePeriods.startDate)`
+- `endDate = max(eligiblePeriods.endDate)`
+
+These are computed by the server on create and on every update that includes `eligiblePeriods`. Clients should treat `startDate` / `endDate` on the `Tournament` shape as **read-only**; sending them in a request body has no effect.
+
+In the UI, a "heats" editor should let admins manage `eligibleRuns` and `eligiblePeriods` as two distinct lists:
+
+- Add/remove `(game, category)` rows.
+- Add/remove `(startDate, endDate)` rows, with client-side overlap and ordering checks before submit (the server enforces this too — see error UX).
+
 ## Data shapes
 
 ### `Tournament`
@@ -24,7 +43,7 @@ GET endpoints for listing/reading are public unless otherwise noted. The session
 interface Tournament {
   id: number;                       // present once stored in postgres
   name: string;                     // primary identifier (URL-encoded in paths)
-  description?: string;
+  description: string;              // required
   rules?: string[];
   socials?: {
     twitch?: Social;
@@ -34,15 +53,18 @@ interface Tournament {
     facebook?: Social;
     matcherino?: Social;
   };
-  startDate: string;                // ISO 8601
-  endDate: string;                  // ISO 8601
+  startDate: string;                // ISO 8601 — derived (server-computed; read-only)
+  endDate: string;                  // ISO 8601 — derived (server-computed; read-only)
 
   admins: string[];                 // per-tournament admins (twitch usernames)
   staff: StaffEntry[];              // capability-scoped staff
 
-  eligiblePeriods: { startDate: string; endDate: string }[];
+  // Heats: a tournament has one or more (game, category) combos and one or more
+  // date ranges. Together these form the heats. Both arrays are required and
+  // editable.
+  eligibleRuns: { game: string; category: string }[];   // ≥1; game/category combos
+  eligiblePeriods: { startDate: string; endDate: string }[]; // ≥1; non-overlapping
   eligibleUsers: string[] | null;   // null = open to everyone (subject to ban list)
-  eligibleRuns: { game: string; category: string }[];
   ineligibleUsers: string[] | null; // banned users
   url?: string;
   pointDistribution?: number[] | null;
@@ -53,6 +75,7 @@ interface Tournament {
   minimumTimeSeconds?: number;
   shortName?: string;
   forceStream?: string;
+  moderators?: string[];            // twitch usernames
   hide: boolean;                    // archived/hidden tournaments
   qualifier?: string;
   parentTournamentName?: string;
@@ -176,12 +199,36 @@ GET /v1/tournaments/{name}
 ```
 POST /v1/tournaments
 Authorization: Bearer ...
-Body: Partial<Tournament>        // name, startDate, endDate, eligibleRuns, etc.
+Body: Partial<Tournament>        // name, eligibleRuns, eligiblePeriods, etc.
 ```
 
 - Caller must have global `admin` role OR `tournament-creator` role.
 - Caller's username is automatically added to `admins[]` if `admins` is omitted/empty in the body.
-- Returns the created tournament with `id` populated.
+- **Tournament `startDate` / `endDate` are derived** — `startDate = min(periods.startDate)`, `endDate = max(periods.endDate)`. Anything sent in the body for these fields is ignored.
+- Returns the created tournament with `id`, `startDate`, and `endDate` populated.
+
+#### Create form fields
+
+The create tournament form should expose the following fields:
+
+**Mandatory**
+
+| Field | Type | Notes |
+|---|---|---|
+| `name` | string | Primary identifier; URL-encoded in paths. Must be unique. |
+| `description` | string | Free-form description of the tournament. |
+| `eligiblePeriods` | `{ startDate, endDate }[]` | At least 1. Each period needs `startDate < endDate`. All periods must be globally non-overlapping. The tournament's overall window is derived from these. |
+| `eligibleRuns` | `{ game, category }[]` | At least 1. Each combo must have a non-empty `game` and `category`. |
+
+**Optional**
+
+| Field | Type | Notes |
+|---|---|---|
+| `eligibleUsers` | `string[]` \| `null` | List of twitch usernames allowed to participate. **If omitted/empty/null, the tournament is open — anyone can join** (subject to the ban list in `ineligibleUsers`). Make this clear in the UI (e.g. "Leave empty for an open tournament — anyone can join"). |
+| `forceStream` | string | Twitch username of the stream to show on the tournament page. |
+| `gameTime` | boolean | If true, leaderboards use in-game time instead of real time. |
+| `minimumTimeSeconds` | number | Runs faster than this are excluded from the leaderboard. |
+| `moderators` | `string[]` | Twitch usernames of moderators. |
 
 ```
 → 200 { result: Tournament }
@@ -199,6 +246,9 @@ Body: Partial<Tournament>        // any subset of editable fields
 
 - Requires `edit_settings` capability.
 - The route silently strips `admins`, `staff`, `id`, and `name` from the body. Use the dedicated staff/admins endpoints to change those.
+- **`startDate` and `endDate` are not editable.** They are recomputed automatically whenever `eligiblePeriods` is included in the patch.
+- Editable heat fields: `eligibleRuns` (must be ≥1 if present) and `eligiblePeriods` (must be ≥1, non-overlapping if present). When `eligiblePeriods` is included, the new tournament `startDate`/`endDate` are derived from it as on create.
+- Other editable fields: `description`, `rules`, `socials`, `logoUrl`, `gameImage`, `organizer`, `shortName`, `forceStream`, `hide`, `url`, `eligibleUsers`, `ineligibleUsers`, `moderators`, `gameTime`, `minimumTimeSeconds`.
 
 ```
 → 200 { result: Tournament }
@@ -280,7 +330,7 @@ POST   /v1/tournaments/{name}/runs/end-time        // body: { date, heat? }
 - Requires `manage_runs` capability.
 - `POST /runs` adds a manually-entered custom run.
 - `DELETE /runs` excludes a recorded run from the tournament's leaderboard.
-- `POST /runs/end-time` is the legacy "set end time" action; pass `heat` (number) when needed.
+- `POST /runs/end-time` is the legacy "set end time" action; `heat` is a 0-based index into `eligiblePeriods`. Pass it when the tournament has more than one period and you want to update a specific heat's end. Note: this endpoint mutates the period directly and does not currently re-derive the tournament-level `endDate` — prefer `PATCH /v1/tournaments/{name}` with a new `eligiblePeriods` array, which correctly recomputes derived dates.
 
 ### Lifecycle
 
@@ -414,7 +464,7 @@ Most mutating endpoints return the updated tournament (or staff list). Replace l
 
 | Status | Likely cause | Suggested toast |
 |---|---|---|
-| 400 with `{ errors: [...] }` | Validation failed | List the errors |
+| 400 with `{ errors: [...] }` | Validation failed (incl. heat overlap, missing `eligibleRuns`/`eligiblePeriods`) | List the errors |
 | 400 with `{ error: "already exists" }` | Duplicate name on create | "A tournament with this name already exists" |
 | 400 with `{ error: "cannot remove last admin" }` | Admins list | "You can't remove the last admin" |
 | 401 / 400 with `User not authenticated` | Stale session | Prompt re-login |
@@ -434,6 +484,7 @@ While the backend is being rolled out:
 ## Things to be aware of
 
 - **`name` is the public identifier** in URLs. URL-encode it. The new internal `id` (integer) is exposed in responses but is not used in any path; treat it as informational for now.
+- **`startDate` / `endDate` are derived from `eligiblePeriods`** and not directly editable. To shift a tournament's window, edit the periods (and therefore the heats); the dates will update on save. See the Heats section.
 - **`leaderboards` field** appears only on `GET /v1/tournaments/{name}` — it is computed on read, not stored. Don't expect it on the list endpoint.
 - **`lockedAt` blocks ingestion.** While set, new run uploads from clients will not be matched into the tournament. Frontend should show a banner on a locked tournament.
 - **`hide` is a soft-delete.** Hidden tournaments are excluded from the public list endpoint but still return on direct `GET /v1/tournaments/{name}` (the route does not filter them). If you need a public-facing "browse" page that excludes them, use the list endpoint; if you need a moderation surface that includes them, query the URL directly.

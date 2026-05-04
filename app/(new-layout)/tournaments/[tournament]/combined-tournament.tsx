@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Button, Col, Row, Tab, Tabs } from 'react-bootstrap';
 import { Search as SearchIcon } from 'react-bootstrap-icons';
 import Countdown from 'react-countdown';
-import useSWR from 'swr';
 import { LiveDataMap } from '~app/(new-layout)/live/live.types';
 import {
     getRecommendedStream,
@@ -25,21 +24,31 @@ import {
 import { TournamentRuns } from '~src/components/tournament/tournament-runs';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import { useReconnectWebsocket } from '~src/components/websocket/use-reconnect-websocket';
-import { multiFetcher } from '~src/utils/fetcher';
 import { equalsCaseInsensitive } from '~src/utils/string';
-import { safeEncodeURI } from '~src/utils/uri';
+
+interface CombinedStats {
+    runList?: Array<{
+        user: string;
+        time: string;
+        endedAt: string;
+        [k: string]: unknown;
+    }>;
+    [k: string]: unknown;
+}
 
 export const CombinedTournament = ({
     liveDataMap,
     username,
     guidingTournament,
     tournaments,
+    stats,
     tab,
 }: {
     liveDataMap: LiveDataMap;
     username?: string;
     guidingTournament: Tournament;
     tournaments: Tournament[];
+    stats: Array<CombinedStats | null>;
     tab: string;
 }) => {
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
@@ -49,8 +58,6 @@ export const CombinedTournament = ({
     const recommendedStream = getRecommendedStream(liveDataMap, username);
     const [currentlyViewing, setCurrentlyViewing] = useState(recommendedStream);
 
-    const [runList, setRunList] = useState([]);
-
     const tournamentLeaderboards = null;
 
     const eventStarted = new Date() > new Date(guidingTournament.startDate);
@@ -58,31 +65,21 @@ export const CombinedTournament = ({
 
     const standingsMap = getCombinedTournamentLeaderboardComponent(tournaments);
 
-    const { data } = useSWR(
-        tournaments.map(
-            (tournament) =>
-                `/api/tournaments/${safeEncodeURI(tournament.name)}/stats`,
-        ),
-        multiFetcher,
-    );
-
-    useEffect(() => {
-        if (data) {
-            const fullRunList = [];
-            data.forEach((runs, key) => {
-                if (!runs) return;
-                const game = tournaments[key].game;
-
-                runs.runList.forEach((run) => {
-                    fullRunList.push({
-                        ...run,
-                        game,
-                    });
-                });
-            });
-            setRunList(fullRunList);
-        }
-    }, [data]);
+    const runList = useMemo(() => {
+        const acc: Array<{
+            user: string;
+            time: string;
+            endedAt: string;
+            game?: string;
+            [k: string]: unknown;
+        }> = [];
+        stats.forEach((s, idx) => {
+            if (!s?.runList) return;
+            const game = tournaments[idx]?.game;
+            s.runList.forEach((run) => acc.push({ ...run, game }));
+        });
+        return acc;
+    }, [stats, tournaments]);
 
     useEffect(() => {
         if (lastMessage !== null && lastMessage.data) {

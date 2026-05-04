@@ -54,10 +54,23 @@ export interface TournamentSocials {
     matcherino?: Social;
 }
 
+export interface TournamentLeaderboards {
+    pbLeaderboard?: Array<{
+        username: string;
+        stat: number | string;
+        placing?: number;
+    }>;
+    totalRunTimeLeaderboard?: Array<{ username: string; stat: string }>;
+    attemptCountLeaderboard?: Array<{ username: string; stat: string }>;
+    finishedAttemptCountLeaderboard?: Array<{ username: string; stat: string }>;
+    gameTime?: TournamentLeaderboards;
+    [key: string]: unknown;
+}
+
 export interface Tournament {
     id?: number;
     name: string;
-    description?: string;
+    description: string;
     rules?: string[];
     socials?: TournamentSocials;
     startDate: string;
@@ -77,6 +90,7 @@ export interface Tournament {
     minimumTimeSeconds?: number;
     shortName?: string;
     forceStream?: string;
+    moderators?: string[];
     hide: boolean;
     qualifier?: string;
     parentTournamentName?: string;
@@ -86,7 +100,9 @@ export interface Tournament {
     organizer?: string;
     lockedAt?: string | null;
     finalizedAt?: string | null;
-    leaderboards?: unknown;
+    leaderboards?: TournamentLeaderboards;
+    game?: string;
+    category?: string;
 }
 
 export type ParticipantStatus = 'eligible' | 'banned';
