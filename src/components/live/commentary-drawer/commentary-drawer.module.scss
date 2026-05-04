@@ -743,3 +743,109 @@
 .metaRowDot {
     color: var(--bs-border-color);
 }
+
+/* --- Story tab v2 --- */
+
+.storyFeaturedWrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.storyItem {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 0.6rem 0.7rem;
+    border-radius: 0.45rem;
+    border: 1px solid var(--bs-border-color);
+    background: var(--bs-body-bg);
+}
+
+.storyItemFeatured {
+    border: 1px solid rgba(255, 193, 7, 0.5);
+    background: linear-gradient(
+        180deg,
+        rgba(255, 193, 7, 0.08),
+        rgba(255, 193, 7, 0.02)
+    );
+    box-shadow: 0 0 0 1px rgba(255, 193, 7, 0.15);
+}
+
+.storyItemMuted {
+    opacity: 0.78;
+    background: var(--bs-tertiary-bg);
+    border-color: var(--bs-border-color);
+}
+
+.storyItemHeader {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+}
+
+.storyItemHeaderSpacer {
+    flex: 1 1 auto;
+}
+
+.storyItemText {
+    font-size: 0.92rem;
+    line-height: 1.35;
+    color: var(--bs-body-color);
+}
+
+.storyItemTextMuted {
+    font-size: 0.85rem;
+    color: var(--bs-secondary-color);
+}
+
+.storyTwitchTag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #6441a5;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.05rem 0.4rem;
+    border-radius: 0.6rem;
+    background: rgba(100, 65, 165, 0.12);
+}
+
+.storyDeclinedTag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.65rem;
+    color: var(--bs-secondary-color);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.05rem 0.4rem;
+    border-radius: 0.6rem;
+    background: var(--bs-secondary-bg);
+}
+
+.storyScore {
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    padding: 0.05rem 0.4rem;
+    border-radius: 0.4rem;
+    background: var(--bs-secondary-bg);
+}
+
+.storyTypeBadge {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--bs-secondary-color);
+    padding: 0.05rem 0.4rem;
+    border-radius: 0.4rem;
+    background: var(--bs-secondary-bg);
+}
