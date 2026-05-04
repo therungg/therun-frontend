@@ -170,3 +170,7 @@ The drawer keeps two pieces of state: `pinnedUser: string | null` and `pinned: b
 - Drag-to-reorder tabs.
 - Shareable deep link to a specific split (`?commentary=1&split=N`).
 - Commentator role-gated features (e.g. private notes).
+
+---
+
+**Status:** Implemented 2026-05-05.
