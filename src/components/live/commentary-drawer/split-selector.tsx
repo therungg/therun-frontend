@@ -7,10 +7,7 @@ import styles from './commentary-drawer.module.scss';
 export const SplitSelector = ({
     liveRun,
     selectedIndex,
-    currentSplitIndex,
-    followLive,
     onChange,
-    onJumpToLive,
 }: {
     liveRun: LiveRun;
     selectedIndex: number;
@@ -53,17 +50,6 @@ export const SplitSelector = ({
             >
                 <ChevronRight />
             </button>
-            {!followLive && selectedIndex !== currentSplitIndex && (
-                <button
-                    type="button"
-                    className={styles.livePip}
-                    onClick={onJumpToLive}
-                    aria-label="Jump to live split"
-                >
-                    <span className={styles.livePipDot} />
-                    Live
-                </button>
-            )}
         </div>
     );
 };
