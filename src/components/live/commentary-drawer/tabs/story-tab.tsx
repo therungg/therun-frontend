@@ -24,7 +24,7 @@ export const StoryTab = ({
     liveRun: LiveRun;
     selectedIndex: number;
 }) => {
-    const { story, isLoaded } = useStory(liveRun.user);
+    const { story } = useStory(liveRun.user);
     const containerRef = useRef<HTMLDivElement>(null);
     const activeRef = useRef<HTMLDivElement>(null);
 
@@ -37,7 +37,6 @@ export const StoryTab = ({
         }
     }, [selectedIndex, story?.stories?.length]);
 
-    if (!isLoaded) return <div className={styles.empty}>Loading story…</div>;
     if (!story)
         return (
             <div className={styles.empty}>
@@ -46,9 +45,18 @@ export const StoryTab = ({
             </div>
         );
 
+    const stories = story.stories ?? [];
+    if (stories.length === 0) {
+        return (
+            <div className={styles.empty}>
+                Story is loaded — waiting for the next split to add an entry.
+            </div>
+        );
+    }
+
     return (
         <div ref={containerRef}>
-            {story.stories.map((entry: SplitStory) => {
+            {stories.map((entry: SplitStory) => {
                 const isActive = entry.splitIndex === selectedIndex;
                 const selected = entry.storyElements.filter((e) => e.selected);
                 if (selected.length === 0) return null;
