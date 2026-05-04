@@ -286,3 +286,460 @@
     padding: 1rem 0;
     text-align: center;
 }
+
+/* --- Hero numbers --- */
+
+.heroDuo {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.heroSolo {
+    margin-bottom: 0.75rem;
+}
+
+.heroCard {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 0.5rem;
+    background: var(--bs-tertiary-bg);
+    border: 1px solid var(--bs-border-color);
+}
+
+.heroCardWide {
+    align-items: center;
+    text-align: center;
+}
+
+.heroNumberLabel {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--bs-secondary-color);
+}
+
+.heroNumber {
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+}
+
+.heroNumberLg {
+    font-size: 2.1rem;
+}
+
+/* --- Delta pills --- */
+
+.deltaPill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.1rem 0.45rem;
+    border-radius: 0.75rem;
+    margin-top: 0.15rem;
+}
+
+.deltaPillLabel {
+    font-family: inherit;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.6rem;
+    opacity: 0.75;
+}
+
+.deltaPillAhead {
+    background: rgba(25, 135, 84, 0.18);
+    color: var(--bs-success);
+}
+
+.deltaPillBehind {
+    background: rgba(220, 53, 69, 0.18);
+    color: var(--bs-danger);
+}
+
+.deltaPillNeutral {
+    background: var(--bs-secondary-bg);
+    color: var(--bs-secondary-color);
+}
+
+.deltaPillGold {
+    background: rgba(255, 193, 7, 0.22);
+    color: #c79100;
+}
+
+/* --- Stat card grid --- */
+
+.statCardRow {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+}
+
+.statCardRow2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.statCard {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.45rem 0.55rem;
+    border-radius: 0.4rem;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+}
+
+.statCardLabel {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--bs-secondary-color);
+}
+
+.statCardValue {
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+/* --- Callout (e.g. time-save potential) --- */
+
+.callout {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.45rem 0.65rem;
+    border-radius: 0.4rem;
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.35);
+    margin-bottom: 0.5rem;
+}
+
+.calloutLabel {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #c79100;
+    font-weight: 600;
+}
+
+.calloutValue {
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #c79100;
+}
+
+/* --- Risk row --- */
+
+.riskRow {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+}
+
+.riskItem {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.4rem 0.5rem;
+    border-radius: 0.4rem;
+    border: 1px solid var(--bs-border-color);
+    background: var(--bs-body-bg);
+}
+
+.riskItemLabel {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--bs-secondary-color);
+}
+
+.riskItemValue {
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.riskItemSub {
+    font-weight: 400;
+    color: var(--bs-secondary-color);
+    font-size: 0.8rem;
+}
+
+.riskItemLow {
+    color: var(--bs-success);
+}
+
+.riskItemMid {
+    color: #c79100;
+}
+
+.riskItemHigh {
+    color: var(--bs-danger);
+}
+
+/* --- Recent completion chips --- */
+
+.recentChipRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.recentChip {
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.78rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.25rem;
+    background: var(--bs-secondary-bg);
+    color: var(--bs-secondary-color);
+    border: 1px solid transparent;
+}
+
+.recentChipAhead {
+    background: rgba(25, 135, 84, 0.18);
+    color: var(--bs-success);
+    border-color: rgba(25, 135, 84, 0.4);
+}
+
+.recentChipAheadMuted {
+    background: rgba(25, 135, 84, 0.08);
+    color: var(--bs-success);
+}
+
+.recentChipBehindMuted {
+    background: rgba(220, 53, 69, 0.08);
+    color: var(--bs-danger);
+}
+
+.recentChipBehind {
+    background: rgba(220, 53, 69, 0.18);
+    color: var(--bs-danger);
+    border-color: rgba(220, 53, 69, 0.4);
+}
+
+.recentChipGold {
+    background: rgba(255, 193, 7, 0.22);
+    color: #c79100;
+    border-color: rgba(255, 193, 7, 0.5);
+}
+
+/* --- Range bar (Monte Carlo distribution) --- */
+
+.rangeBarWrap {
+    margin-bottom: 0.75rem;
+}
+
+.rangeBar {
+    position: relative;
+    height: 0.6rem;
+    border-radius: 0.3rem;
+    background: var(--bs-secondary-bg);
+    overflow: visible;
+    margin: 0.6rem 0 1rem;
+}
+
+.rangeBarFill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        rgba(25, 135, 84, 0.3),
+        rgba(25, 135, 84, 0.55),
+        rgba(255, 193, 7, 0.55),
+        rgba(220, 53, 69, 0.55)
+    );
+    border-radius: 0.3rem;
+}
+
+.rangeBarMarker {
+    position: absolute;
+    top: -0.2rem;
+    bottom: -0.2rem;
+    width: 2px;
+    border-radius: 1px;
+}
+
+.rangeBarMarkerLabel {
+    position: absolute;
+    top: -1.05rem;
+    transform: translateX(-50%);
+    font-size: 0.55rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+    padding: 0.05rem 0.3rem;
+    border-radius: 0.2rem;
+    font-weight: 600;
+}
+
+.rangeBarMarkerLabelBottom {
+    top: auto;
+    bottom: -1.05rem;
+}
+
+.rangeBarMarkerProjected {
+    background: var(--bs-primary);
+}
+.rangeBarMarkerLabelProjected {
+    background: var(--bs-primary);
+    color: #fff;
+}
+
+.rangeBarMarkerPb {
+    background: var(--bs-body-color);
+}
+.rangeBarMarkerLabelPb {
+    background: var(--bs-body-color);
+    color: var(--bs-body-bg);
+}
+
+.rangeBarBoundLabels {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.7rem;
+    color: var(--bs-secondary-color);
+}
+
+/* --- Per-split delta bars (Run tab) --- */
+
+.deltaBarRow {
+    display: grid;
+    grid-template-columns: 1fr 1.5rem;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    font-size: 0.78rem;
+}
+
+.deltaBarRowActive {
+    background: var(--bs-tertiary-bg);
+    border-radius: 0.25rem;
+    margin: 0 -0.4rem;
+    padding: 0.25rem 0.4rem;
+}
+
+.deltaBarLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.deltaBarLabelText {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.deltaBarTrack {
+    position: relative;
+    height: 0.45rem;
+    background: var(--bs-secondary-bg);
+    border-radius: 0.25rem;
+    flex: 1 1 auto;
+    min-width: 3rem;
+    overflow: hidden;
+}
+
+.deltaBarCenter {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: var(--bs-border-color);
+}
+
+.deltaBarFill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+}
+
+.deltaBarFillAhead {
+    background: var(--bs-success);
+    right: 50%;
+}
+
+.deltaBarFillBehind {
+    background: var(--bs-danger);
+    left: 50%;
+}
+
+.deltaBarFillGold {
+    background: linear-gradient(90deg, #c79100, #ffd44a, #c79100);
+    right: 50%;
+}
+
+.deltaBarValue {
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    text-align: right;
+    font-size: 0.78rem;
+}
+
+/* --- Career meta row --- */
+
+.metaRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    color: var(--bs-secondary-color);
+    padding: 0.5rem 0.65rem;
+    border-radius: 0.4rem;
+    background: var(--bs-tertiary-bg);
+    margin-bottom: 0.5rem;
+}
+
+.metaRowItem {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.metaRowItemLabel {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--bs-secondary-color);
+}
+
+.metaRowItemValue {
+    font-weight: 600;
+    color: var(--bs-body-color);
+}
+
+.metaRowDot {
+    color: var(--bs-border-color);
+}
