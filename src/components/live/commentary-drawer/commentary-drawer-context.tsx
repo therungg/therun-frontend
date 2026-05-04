@@ -38,7 +38,15 @@ export const useCommentaryDrawerContext = (): CommentaryDrawerContextValue => {
     const ctx = useContext(CommentaryDrawerContext);
     if (!ctx) {
         // Provider missing — return inert no-op so renders don't crash.
-        return { open: false, setOpen: () => {}, toggle: () => {} };
+        return {
+            open: false,
+            setOpen: () => {
+                /* no-op */
+            },
+            toggle: () => {
+                /* no-op */
+            },
+        };
     }
     return ctx;
 };
