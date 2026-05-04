@@ -212,11 +212,6 @@ export const RunTab = ({
     // Per-split delta computation for completed splits.
     const completed = liveRun.splits.slice(0, liveRun.currentSplitIndex);
     const splitDeltas = completed.map((s, i) => {
-        const cumulativeDelta =
-            s.splitTime != null && s.pbSplitTime != null
-                ? s.splitTime - s.pbSplitTime
-                : null;
-
         // Single-time delta (this split's standalone gain/loss).
         const prevSplit =
             s.splitTime != null && i > 0 ? completed[i - 1].splitTime : null;
@@ -250,7 +245,7 @@ export const RunTab = ({
             s.bestPossible != null &&
             singleNow < s.bestPossible;
 
-        return { s, i, cumulativeDelta, singleDelta, isGold };
+        return { s, i, singleDelta, isGold };
     });
 
     const maxAbsSingle = Math.max(
