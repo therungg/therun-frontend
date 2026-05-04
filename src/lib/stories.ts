@@ -8,10 +8,18 @@ import {
 import { getPronounsFromString } from '~app/(new-layout)/stories/manage/get-pronouns-from-string';
 import { User } from '../../types/session.types';
 
-export const getStoryByUser = async (username: string) => {
+export const getStoryByUser = async (
+    username: string,
+    includeCandidates = false,
+) => {
     const storyApiUrl = process.env.NEXT_PUBLIC_STORIES_API_URL as string;
 
-    const url = storyApiUrl + '/user/' + encodeURIComponent(username) + '/live';
+    const url =
+        storyApiUrl +
+        '/user/' +
+        encodeURIComponent(username) +
+        '/live' +
+        (includeCandidates ? '?includeCandidates=true' : '');
 
     const story = await fetch(url, {
         method: 'GET',
