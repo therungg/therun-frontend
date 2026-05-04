@@ -2,7 +2,11 @@
 'use client';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, Col, Row } from 'react-bootstrap';
-import { Funnel, Search as SearchIcon } from 'react-bootstrap-icons';
+import {
+    ChatLeftQuote,
+    Funnel,
+    Search as SearchIcon,
+} from 'react-bootstrap-icons';
 import { FilterControl } from '~app/(new-layout)/live/filter-control';
 import {
     FilterState,
@@ -22,7 +26,10 @@ import {
     sortLiveRuns,
 } from '~app/(new-layout)/live/utilities';
 import { CommentaryDrawer } from '~src/components/live/commentary-drawer/commentary-drawer';
-import { CommentaryDrawerProvider } from '~src/components/live/commentary-drawer/commentary-drawer-context';
+import {
+    CommentaryDrawerProvider,
+    useCommentaryDrawerContext,
+} from '~src/components/live/commentary-drawer/commentary-drawer-context';
 import { LiveIcon, LiveUserRun } from '~src/components/live/live-user-run';
 import { RecommendedStream } from '~src/components/live/recommended-stream';
 import { SkeletonLiveRun } from '~src/components/skeleton/live/skeleton-live-run';
@@ -304,13 +311,17 @@ export const Live = ({
     return (
         <CommentaryDrawerProvider>
             {showTitle && (
-                <Row className="g-3 mb-3">
+                <Row className="g-3 mb-3 align-items-center">
                     <Col xs="auto" className="flex-grow-1">
                         <h1>
                             Live Runs <LiveIcon height={18} />
                         </h1>
                     </Col>
-                    <Col xs="auto" className="flex-grow-1 text-end">
+                    <Col
+                        xs="auto"
+                        className="d-flex flex-grow-1 justify-content-end gap-2"
+                    >
+                        <CommentaryTriggerButton />
                         <a href={'/livesplit'}>
                             <Button
                                 variant={'primary'}
@@ -460,5 +471,19 @@ export const Live = ({
                 currentlyViewing={currentlyViewing}
             />
         </CommentaryDrawerProvider>
+    );
+};
+
+const CommentaryTriggerButton = () => {
+    const ctx = useCommentaryDrawerContext();
+    return (
+        <Button
+            variant="outline-secondary"
+            className="btn-lg px-3 h-3r fw-medium d-inline-flex align-items-center gap-2"
+            onClick={ctx.toggle}
+            aria-label="Open commentary view"
+        >
+            <ChatLeftQuote /> Commentary
+        </Button>
     );
 };
