@@ -3,11 +3,13 @@
 import { useEffect, useState } from 'react';
 import { Run } from '~src/common/types';
 import { getAdvancedUserStats } from '~src/lib/get-advanced-user-stats';
+import { getGlobalUser } from '~src/lib/get-global-user';
 import { getRun } from '~src/lib/get-run';
 
 export interface CommentatorData {
     advanced: unknown | null;
     run: Run | null;
+    profile: unknown | null;
 }
 
 export interface CommentatorDataState {
@@ -16,24 +18,22 @@ export interface CommentatorDataState {
     error: string | null;
 }
 
+const EMPTY: CommentatorData = { advanced: null, run: null, profile: null };
+
 export const useCommentatorData = (
     user: string | null,
     game: string | null,
     category: string | null,
 ): CommentatorDataState => {
     const [state, setState] = useState<CommentatorDataState>({
-        data: { advanced: null, run: null },
+        data: EMPTY,
         isLoading: false,
         error: null,
     });
 
     useEffect(() => {
         if (!user || !game || !category) {
-            setState({
-                data: { advanced: null, run: null },
-                isLoading: false,
-                error: null,
-            });
+            setState({ data: EMPTY, isLoading: false, error: null });
             return;
         }
         let cancelled = false;
@@ -42,8 +42,9 @@ export const useCommentatorData = (
         Promise.allSettled([
             getAdvancedUserStats(user, '0'),
             getRun(user, game, category),
+            getGlobalUser(user),
         ])
-            .then(([advancedResult, runResult]) => {
+            .then(([advancedResult, runResult, profileResult]) => {
                 if (cancelled) return;
                 const advanced =
                     advancedResult.status === 'fulfilled'
@@ -51,19 +52,24 @@ export const useCommentatorData = (
                         : null;
                 const run =
                     runResult.status === 'fulfilled' ? runResult.value : null;
-                const failed =
+                const profile =
+                    profileResult.status === 'fulfilled'
+                        ? profileResult.value
+                        : null;
+                const allFailed =
                     advancedResult.status === 'rejected' &&
-                    runResult.status === 'rejected';
+                    runResult.status === 'rejected' &&
+                    profileResult.status === 'rejected';
                 setState({
-                    data: { advanced, run },
+                    data: { advanced, run, profile },
                     isLoading: false,
-                    error: failed ? 'Career data unavailable.' : null,
+                    error: allFailed ? 'Career data unavailable.' : null,
                 });
             })
             .catch((e: unknown) => {
                 if (cancelled) return;
                 setState({
-                    data: { advanced: null, run: null },
+                    data: EMPTY,
                     isLoading: false,
                     error:
                         e instanceof Error
