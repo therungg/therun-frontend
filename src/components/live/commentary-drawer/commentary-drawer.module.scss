@@ -1560,6 +1560,72 @@
     background: var(--bs-primary);
 }
 
+.tspBar {
+    fill: rgba(255, 193, 7, 0.28);
+    stroke: rgba(255, 193, 7, 0.7);
+    stroke-width: 0.5;
+}
+
+.tspBarTop {
+    fill: rgba(255, 193, 7, 0.42);
+    stroke: rgba(180, 130, 0, 0.9);
+    stroke-width: 0.8;
+}
+
+.tspSavedBar {
+    fill: var(--bs-success);
+    stroke: none;
+}
+
+.tspSavedBarGold {
+    fill: #ffc107;
+    stroke: #c79100;
+    stroke-width: 0.8;
+    filter: drop-shadow(0 0 2px rgba(255, 193, 7, 0.7));
+}
+
+.tspGoldStar {
+    fill: #c79100;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.tspLegendSwatchPotential,
+.tspLegendSwatchSaved,
+.tspLegendSwatchGold {
+    width: 0.65rem;
+    height: 0.4rem;
+    border-radius: 0.1rem;
+    display: inline-block;
+}
+
+.tspLegendSwatchPotential {
+    background: rgba(255, 193, 7, 0.28);
+    border: 1px solid rgba(255, 193, 7, 0.7);
+}
+
+.tspLegendSwatchSaved {
+    background: var(--bs-success);
+}
+
+.tspLegendSwatchGold {
+    background: #ffc107;
+    border: 1px solid #c79100;
+}
+
+.tspTooltipGoldChip {
+    display: inline-block;
+    margin-left: 0.4rem;
+    padding: 0 0.4rem;
+    border-radius: 0.6rem;
+    font-size: 0.6rem;
+    font-weight: 700;
+    background: rgba(255, 193, 7, 0.25);
+    color: #c79100;
+    border: 1px solid rgba(255, 193, 7, 0.55);
+    letter-spacing: 0.06em;
+}
+
 .paceChartFillAhead {
     fill: rgba(25, 135, 84, 0.22);
     stroke: none;
