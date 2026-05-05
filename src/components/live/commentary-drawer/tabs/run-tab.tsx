@@ -197,6 +197,320 @@ interface PacePoint {
     splitTime: number;
 }
 
+interface TspPoint {
+    i: number;
+    name: string;
+    tsp: number;
+    saved: number | null; // actual saved on this segment (past splits only)
+    isPast: boolean;
+    isGold: boolean;
+}
+
+const TimeSavePotentialChart = ({ liveRun }: { liveRun: LiveRun }) => {
+    const svgRef = useRef<SVGSVGElement | null>(null);
+    const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+
+    const points: TspPoint[] = liveRun.splits.map((s, i) => {
+        const prevPb = i > 0 ? (liveRun.splits[i - 1]?.pbSplitTime ?? null) : 0;
+        const pbSeg =
+            s.pbSplitTime != null && prevPb != null
+                ? s.pbSplitTime - prevPb
+                : null;
+        const tsp =
+            pbSeg != null && s.bestPossible != null
+                ? pbSeg - s.bestPossible
+                : 0;
+
+        const isPast = i < liveRun.currentSplitIndex;
+        let saved: number | null = null;
+        let isGold = false;
+        if (isPast && s.splitTime != null) {
+            const prevSplit =
+                i > 0 ? (liveRun.splits[i - 1]?.splitTime ?? null) : 0;
+            const seg = prevSplit != null ? s.splitTime - prevSplit : null;
+            if (seg != null && pbSeg != null) {
+                saved = pbSeg - seg;
+            }
+            if (seg != null && s.bestPossible != null && seg < s.bestPossible) {
+                isGold = true;
+            }
+        }
+        return {
+            i,
+            name: s.name,
+            tsp: tsp > 0 ? tsp : 0,
+            saved,
+            isPast,
+            isGold,
+        };
+    });
+
+    const total = points.length;
+    const totalTsp = points.reduce((sum, p) => sum + p.tsp, 0);
+    if (total === 0 || totalTsp <= 0) return null;
+
+    const totalSaved = points.reduce(
+        (sum, p) => sum + Math.max(0, p.saved ?? 0),
+        0,
+    );
+    const goldCount = points.filter((p) => p.isGold).length;
+
+    const w = 360;
+    const h = 110;
+    const padL = 44;
+    const padR = 12;
+    const padT = 14; // extra room so gold stars don't clip
+    const padB = 22;
+    const innerW = w - padL - padR;
+    const innerH = h - padT - padB;
+
+    const maxTsp = Math.max(...points.map((p) => p.tsp), 1);
+    const maxSaved = Math.max(
+        ...points.map((p) => Math.max(0, p.saved ?? 0)),
+        0,
+    );
+    // Y-axis ceiling has to fit the higher of TSP or actual saved (golds can
+    // exceed TSP), with a little headroom.
+    const yMax = Math.max(maxTsp, maxSaved) * 1.1 || 1;
+    const barWidth = innerW / total;
+    const xFor = (idx: number) => padL + idx * barWidth + barWidth / 2;
+    const xLeft = (idx: number) => padL + idx * barWidth;
+    const yFor = (v: number) => padT + ((yMax - v) / yMax) * innerH;
+
+    let topIdx = 0;
+    for (let i = 1; i < points.length; i++) {
+        if (points[i].tsp > points[topIdx].tsp) topIdx = i;
+    }
+
+    const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+        const svg = svgRef.current;
+        if (!svg) return;
+        const rect = svg.getBoundingClientRect();
+        if (rect.width === 0) return;
+        const xPx = ((e.clientX - rect.left) / rect.width) * w;
+        let bestIdx = 0;
+        let bestDist = Infinity;
+        for (let i = 0; i < points.length; i++) {
+            const dx = Math.abs(xPx - xFor(i));
+            if (dx < bestDist) {
+                bestDist = dx;
+                bestIdx = i;
+            }
+        }
+        setHoverIdx(bestIdx);
+    };
+
+    const hovered = hoverIdx != null ? points[hoverIdx] : null;
+    const hoveredX = hoverIdx != null ? xFor(hoverIdx) : null;
+    const tooltipLeftPct = hoverIdx != null ? (xFor(hoverIdx) / w) * 100 : null;
+    const tooltipOnRight = tooltipLeftPct != null && tooltipLeftPct < 50;
+
+    return (
+        <div className={styles.paceChartWrap}>
+            <div className={styles.predictionChartInner}>
+                <svg
+                    ref={svgRef}
+                    viewBox={`0 0 ${w} ${h}`}
+                    preserveAspectRatio="none"
+                    className={styles.paceChart}
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={() => setHoverIdx(null)}
+                >
+                    <text
+                        x={padL - 6}
+                        y={yFor(yMax) + 8}
+                        textAnchor="end"
+                        className={styles.paceChartAxisLabel}
+                    >
+                        {formatTimeMs(yMax)}
+                    </text>
+                    <text
+                        x={padL - 6}
+                        y={yFor(0)}
+                        textAnchor="end"
+                        className={styles.paceChartAxisLabel}
+                    >
+                        0
+                    </text>
+
+                    <line
+                        x1={padL}
+                        x2={w - padR}
+                        y1={yFor(0)}
+                        y2={yFor(0)}
+                        className={styles.paceChartZero}
+                    />
+
+                    {points.map((p, idx) => {
+                        if (p.tsp <= 0 && (p.saved == null || p.saved <= 0))
+                            return null;
+                        const x = xLeft(idx) + Math.max(0.5, barWidth * 0.1);
+                        const fullWidth = Math.max(
+                            1,
+                            barWidth - Math.max(1, barWidth * 0.2),
+                        );
+                        const innerWidth = Math.max(1, fullWidth * 0.55);
+                        const innerX = x + (fullWidth - innerWidth) / 2;
+                        const tspH =
+                            p.tsp > 0
+                                ? Math.max(1, (p.tsp / yMax) * innerH)
+                                : 0;
+                        const savedClamped =
+                            p.saved != null ? Math.max(0, p.saved) : 0;
+                        const savedH =
+                            savedClamped > 0
+                                ? Math.max(1, (savedClamped / yMax) * innerH)
+                                : 0;
+                        return (
+                            <g key={p.i}>
+                                {p.tsp > 0 && (
+                                    <rect
+                                        x={x}
+                                        y={yFor(p.tsp)}
+                                        width={fullWidth}
+                                        height={tspH}
+                                        className={clsx(
+                                            styles.tspBar,
+                                            idx === topIdx && styles.tspBarTop,
+                                        )}
+                                    />
+                                )}
+                                {savedH > 0 && (
+                                    <rect
+                                        x={innerX}
+                                        y={yFor(savedClamped)}
+                                        width={innerWidth}
+                                        height={savedH}
+                                        className={clsx(
+                                            styles.tspSavedBar,
+                                            p.isGold && styles.tspSavedBarGold,
+                                        )}
+                                    />
+                                )}
+                                {p.isGold && (
+                                    <text
+                                        x={xFor(idx)}
+                                        y={
+                                            yFor(savedClamped) -
+                                            (savedH > 0 ? 2 : 4)
+                                        }
+                                        textAnchor="middle"
+                                        className={styles.tspGoldStar}
+                                    >
+                                        ★
+                                    </text>
+                                )}
+                            </g>
+                        );
+                    })}
+
+                    {hovered && hoveredX != null && (
+                        <line
+                            x1={hoveredX}
+                            x2={hoveredX}
+                            y1={padT}
+                            y2={h - padB}
+                            className={styles.predictionHoverLine}
+                        />
+                    )}
+
+                    <text
+                        x={padL}
+                        y={h - 6}
+                        className={styles.paceChartAxisLabel}
+                    >
+                        Split 1
+                    </text>
+                    <text
+                        x={w - padR}
+                        y={h - 6}
+                        textAnchor="end"
+                        className={styles.paceChartAxisLabel}
+                    >
+                        Split {total}
+                    </text>
+                </svg>
+
+                {hovered && tooltipLeftPct != null && (
+                    <div
+                        className={styles.predictionTooltip}
+                        style={{
+                            left: tooltipOnRight
+                                ? `calc(${tooltipLeftPct}% + 0.5rem)`
+                                : 'auto',
+                            right: tooltipOnRight
+                                ? 'auto'
+                                : `calc(${100 - tooltipLeftPct}% + 0.5rem)`,
+                        }}
+                    >
+                        <div className={styles.predictionTooltipTitle}>
+                            Split {hovered.i + 1} — {hovered.name}
+                            {hovered.isGold && (
+                                <span className={styles.tspTooltipGoldChip}>
+                                    ★ GOLD
+                                </span>
+                            )}
+                        </div>
+                        <div className={styles.predictionTooltipRow}>
+                            <span className={styles.predictionTooltipLabel}>
+                                Save up to
+                            </span>
+                            <span className={styles.predictionTooltipValue}>
+                                {hovered.tsp > 0
+                                    ? formatTimeMs(hovered.tsp)
+                                    : '—'}
+                            </span>
+                        </div>
+                        {hovered.isPast && (
+                            <div className={styles.predictionTooltipRow}>
+                                <span className={styles.predictionTooltipLabel}>
+                                    Saved
+                                </span>
+                                <span
+                                    className={clsx(
+                                        styles.predictionTooltipValue,
+                                        hovered.saved != null &&
+                                            hovered.saved > 0 &&
+                                            styles.toneAhead,
+                                        hovered.saved != null &&
+                                            hovered.saved < 0 &&
+                                            styles.toneBehind,
+                                    )}
+                                >
+                                    {hovered.saved == null
+                                        ? '—'
+                                        : formatDelta(-hovered.saved).text}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+            <div className={styles.paceChartLegend}>
+                <span>
+                    <span className={styles.tspLegendSwatchPotential} />
+                    Potential
+                </span>
+                <span>
+                    <span className={styles.tspLegendSwatchSaved} />
+                    Saved
+                </span>
+                <span>
+                    <span className={styles.tspLegendSwatchGold} />★ Gold
+                </span>
+            </div>
+            <div className={styles.paceChartFooter}>
+                <span>
+                    Saved {formatTimeMs(totalSaved)}
+                    {goldCount > 0 &&
+                        ` · ${goldCount} gold${goldCount === 1 ? '' : 's'}`}
+                </span>
+                <span>Possible {formatTimeMs(totalTsp)}</span>
+            </div>
+        </div>
+    );
+};
+
 const PaceVsPbChart = ({ liveRun }: { liveRun: LiveRun }) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
     const [hoverIdx, setHoverIdx] = useState<number | null>(null);
@@ -692,6 +1006,14 @@ export const RunTab = ({
                     </div>
                 </>
             )}
+
+            <div className={styles.sectionTitle}>
+                Time save potential
+                <span className={styles.sectionTitleSub}>
+                    Possible savings per split if every segment hit its gold
+                </span>
+            </div>
+            <TimeSavePotentialChart liveRun={liveRun} />
 
             {splitDeltas.length > 0 && (
                 <>
