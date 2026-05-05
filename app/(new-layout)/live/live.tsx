@@ -52,6 +52,7 @@ export const Live = ({
     showTitle = true,
     forceGame = null,
     forceCategory = null,
+    canViewCommentary = false,
 }: LiveProps) => {
     const [updatedLiveDataMap, setUpdatedLiveDataMap] = useState(liveDataMap);
     const [search, setSearch] = useState('');
@@ -321,7 +322,7 @@ export const Live = ({
                         xs="auto"
                         className="d-flex flex-grow-1 justify-content-end gap-2"
                     >
-                        <CommentaryTriggerButton />
+                        {canViewCommentary && <CommentaryTriggerButton />}
                         <a href={'/livesplit'}>
                             <Button
                                 variant={'primary'}
@@ -466,10 +467,12 @@ export const Live = ({
                     );
                 })}
             </Row>
-            <CommentaryDrawer
-                liveDataMap={updatedLiveDataMap}
-                currentlyViewing={currentlyViewing}
-            />
+            {canViewCommentary && (
+                <CommentaryDrawer
+                    liveDataMap={updatedLiveDataMap}
+                    currentlyViewing={currentlyViewing}
+                />
+            )}
         </CommentaryDrawerProvider>
     );
 };

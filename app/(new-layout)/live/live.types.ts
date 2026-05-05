@@ -91,6 +91,7 @@ export interface LiveProps {
     showTitle?: boolean;
     forceGame?: string;
     forceCategory?: string;
+    canViewCommentary?: boolean;
 }
 
 export interface WebsocketLiveRunMessage {
