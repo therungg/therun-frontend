@@ -8,9 +8,9 @@ import { createPortal } from 'react-dom';
 import { LiveDataMap, LiveRun } from '~app/(new-layout)/live/live.types';
 import styles from './commentary-drawer.module.scss';
 import { useCommentaryDrawerContext } from './commentary-drawer-context';
-import { SnapshotStrip } from './snapshot-strip';
 import { SplitSelector } from './split-selector';
 import { CareerTab } from './tabs/career-tab';
+import { PredictionsTab } from './tabs/predictions-tab';
 import { RunTab } from './tabs/run-tab';
 import { SplitTab } from './tabs/split-tab';
 import { StoryTab } from './tabs/story-tab';
@@ -23,6 +23,7 @@ import { useStoryCandidates } from './use-story-candidates';
 const TABS: { key: CommentaryTab; label: string }[] = [
     { key: 'split', label: 'Split' },
     { key: 'run', label: 'Run' },
+    { key: 'predictions', label: 'Predictions' },
     { key: 'story', label: 'Story' },
     { key: 'career', label: 'Career' },
 ];
@@ -52,10 +53,55 @@ export const CommentaryDrawer = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ctx.open]);
 
-    // Resolve which run the drawer displays.
+    // While the drawer is open, lock to whoever we were following when it
+    // opened — commentators don't want their panel to swap runners just
+    // because the host clicks around on the live page. An explicit pin still
+    // wins (so cross-reload pinning works as before).
+    const [lockedUser, setLockedUser] = useState<string | null>(null);
+    useEffect(() => {
+        if (state.open) {
+            setLockedUser((prev) => prev ?? followingUser);
+        } else {
+            setLockedUser(null);
+        }
+    }, [state.open, followingUser]);
+
     const displayedUser =
-        state.pinned && state.pinnedUser ? state.pinnedUser : followingUser;
-    const liveRun: LiveRun | undefined = liveDataMap[displayedUser];
+        state.pinned && state.pinnedUser
+            ? state.pinnedUser
+            : (lockedUser ?? followingUser);
+    const rawRun: LiveRun | undefined = liveDataMap[displayedUser];
+
+    // The drawer freezes the run snapshot when the runner starts a *new* run
+    // (different `startedAt`). Commentators opt-in to load the new data via a
+    // banner button. In-run updates (same startedAt) flow through unchanged.
+    const [snapshotRun, setSnapshotRun] = useState<LiveRun | undefined>(rawRun);
+    const [pendingNewRun, setPendingNewRun] = useState<LiveRun | null>(null);
+
+    useEffect(() => {
+        if (!rawRun) {
+            setSnapshotRun(undefined);
+            setPendingNewRun(null);
+            return;
+        }
+        if (!snapshotRun) {
+            setSnapshotRun(rawRun);
+            setPendingNewRun(null);
+            return;
+        }
+        if (snapshotRun.user !== rawRun.user) {
+            setSnapshotRun(rawRun);
+            setPendingNewRun(null);
+            return;
+        }
+        if (snapshotRun.startedAt !== rawRun.startedAt) {
+            setPendingNewRun(rawRun);
+            return;
+        }
+        setSnapshotRun(rawRun);
+    }, [rawRun, snapshotRun]);
+
+    const liveRun: LiveRun | undefined = snapshotRun;
 
     // Stories fetch lives at the shell so the no-data banner can show
     // outside the Story tab. The Story tab consumes the same state via prop.
@@ -74,6 +120,14 @@ export const CommentaryDrawer = ({
     }, [displayedUser, lastDisplayedUser, liveRun?.currentSplitIndex, state]);
 
     const close = useCallback(() => ctx.setOpen(false), [ctx]);
+
+    const acceptNewRun = useCallback(() => {
+        if (!pendingNewRun) return;
+        const idx = pendingNewRun.currentSplitIndex ?? 0;
+        setSnapshotRun(pendingNewRun);
+        setPendingNewRun(null);
+        state.resetForNewUser(idx);
+    }, [pendingNewRun, state]);
 
     // Esc and arrow-key handlers — only when drawer is open.
     useEffect(() => {
@@ -176,6 +230,25 @@ export const CommentaryDrawer = ({
 
                 {liveRun ? (
                     <>
+                        {pendingNewRun && (
+                            <div className={styles.newRunBanner}>
+                                <div className={styles.newRunBannerText}>
+                                    <span className={styles.newRunBannerTitle}>
+                                        New run started
+                                    </span>
+                                    <span className={styles.newRunBannerSub}>
+                                        Showing previous run — click to load
+                                    </span>
+                                </div>
+                                <button
+                                    type="button"
+                                    className={styles.newRunBannerButton}
+                                    onClick={acceptNewRun}
+                                >
+                                    Load new run
+                                </button>
+                            </div>
+                        )}
                         <SplitSelector
                             liveRun={liveRun}
                             selectedIndex={state.selectedSplitIndex}
@@ -183,10 +256,6 @@ export const CommentaryDrawer = ({
                             followLive={state.followLive}
                             onChange={state.setSelectedSplitIndex}
                             onJumpToLive={state.jumpToLive}
-                        />
-                        <SnapshotStrip
-                            liveRun={liveRun}
-                            selectedIndex={state.selectedSplitIndex}
                         />
                         {hasInsufficientData && (
                             <div className={styles.runnerThinNotice}>
@@ -229,6 +298,9 @@ export const CommentaryDrawer = ({
                                     liveRun={liveRun}
                                     selectedIndex={state.selectedSplitIndex}
                                 />
+                            )}
+                            {state.activeTab === 'predictions' && (
+                                <PredictionsTab liveRun={liveRun} />
                             )}
                             {state.activeTab === 'story' && (
                                 <StoryTab

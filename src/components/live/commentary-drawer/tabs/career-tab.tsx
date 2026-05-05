@@ -73,6 +73,27 @@ const formatDate = (raw: string | Date | undefined): string | undefined => {
     });
 };
 
+const formatRelativeAge = (
+    raw: string | Date | undefined,
+): string | undefined => {
+    if (!raw) return undefined;
+    const d = raw instanceof Date ? raw : new Date(raw);
+    if (Number.isNaN(d.getTime())) return undefined;
+    const diffMs = Date.now() - d.getTime();
+    if (diffMs < 0) return undefined;
+    const day = 86400000;
+    const days = Math.floor(diffMs / day);
+    if (days < 1) return 'today';
+    if (days === 1) return '1 day ago';
+    if (days < 30) return `${days} days ago`;
+    const months = Math.floor(days / 30);
+    if (months === 1) return '1 month ago';
+    if (months < 12) return `${months} months ago`;
+    const years = Math.floor(days / 365);
+    if (years === 1) return '1 year ago';
+    return `${years} years ago`;
+};
+
 const earliestDayKey = (
     map: Record<string, unknown> | undefined,
 ): string | undefined => {
@@ -134,6 +155,10 @@ export const CareerTab = ({ liveRun }: { liveRun: LiveRun }) => {
             : null;
     const allTimePlaytimeMs = advanced.total ?? null;
     const firstRunDay = earliestDayKey(advanced.playtimePerDayMap);
+    const daysPlayed = advanced.playtimePerDayMap
+        ? Object.keys(advanced.playtimePerDayMap).length
+        : null;
+    const firstRunAge = formatRelativeAge(firstRunDay);
     const profileSince = formatDate(profile.createdAt);
 
     const session = todaySession(run.sessions);
@@ -198,6 +223,8 @@ export const CareerTab = ({ liveRun }: { liveRun: LiveRun }) => {
                     {run.personalBestTime && (
                         <span className={styles.heroNumberLabel}>
                             set {formatDate(run.personalBestTime)}
+                            {formatRelativeAge(run.personalBestTime) &&
+                                ` · ${formatRelativeAge(run.personalBestTime)}`}
                         </span>
                     )}
                 </div>
@@ -224,7 +251,7 @@ export const CareerTab = ({ liveRun }: { liveRun: LiveRun }) => {
             </div>
 
             <div className={styles.sectionTitle}>Volume</div>
-            <div className={clsx(styles.statCardRow, styles.statCardRow2)}>
+            <div className={styles.statCardRow}>
                 <StatCard
                     label={`Time on ${liveRun.category}`}
                     value={formatTimeMs(totalRunTimeMs)}
@@ -232,6 +259,10 @@ export const CareerTab = ({ liveRun }: { liveRun: LiveRun }) => {
                 <StatCard
                     label="All-time playtime"
                     value={formatTimeMs(allTimePlaytimeMs)}
+                />
+                <StatCard
+                    label="Active days"
+                    value={daysPlayed != null ? String(daysPlayed) : null}
                 />
             </div>
             {firstRunDay && (
@@ -245,6 +276,12 @@ export const CareerTab = ({ liveRun }: { liveRun: LiveRun }) => {
                         </span>
                         <span className={styles.statCardValue}>
                             {formatDate(firstRunDay) ?? firstRunDay}
+                            {firstRunAge && (
+                                <span className={styles.statCardSub}>
+                                    {' · '}
+                                    {firstRunAge}
+                                </span>
+                            )}
                         </span>
                     </div>
                 </div>

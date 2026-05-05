@@ -72,12 +72,154 @@
     background: var(--bs-tertiary-bg);
 }
 
+.selectorWrap {
+    border-bottom: 1px solid var(--bs-border-color);
+}
+
 .selector {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    border-bottom: 1px solid var(--bs-border-color);
+}
+
+.selectorTimers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    padding: 0.25rem 1rem 0.6rem;
+}
+
+.paceHeadline {
+    margin: 0.4rem 1rem 0;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.4rem;
+    background: var(--bs-tertiary-bg);
+    border: 1px solid var(--bs-border-color);
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    font-size: 1rem;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 0.02em;
+}
+
+.paceHeadlineAhead {
+    background: rgba(25, 135, 84, 0.14);
+    border-color: rgba(25, 135, 84, 0.45);
+    color: var(--bs-success);
+}
+
+.paceHeadlineBehind {
+    background: rgba(220, 53, 69, 0.10);
+    border-color: rgba(220, 53, 69, 0.35);
+    color: var(--bs-danger);
+}
+
+.newRunBanner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.5rem 0.75rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 0.4rem;
+    background: rgba(13, 110, 253, 0.12);
+    border: 1px solid rgba(13, 110, 253, 0.45);
+    color: var(--bs-body-color);
+}
+
+.newRunBannerText {
+    display: flex;
+    flex-direction: column;
+    gap: 0.05rem;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.newRunBannerTitle {
+    font-weight: 700;
+    font-size: 0.85rem;
+    line-height: 1.1;
+}
+
+.newRunBannerSub {
+    font-size: 0.7rem;
+    color: var(--bs-secondary-color);
+}
+
+.newRunBannerButton {
+    flex-shrink: 0;
+    padding: 0.35rem 0.75rem;
+    border-radius: 0.3rem;
+    border: 1px solid var(--bs-primary);
+    background: var(--bs-primary);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.newRunBannerButton:hover {
+    filter: brightness(1.1);
+}
+
+.finishedBanner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin: 0.4rem 1rem 0;
+    padding: 0.4rem 0.75rem;
+    border-radius: 0.4rem;
+    background: rgba(25, 135, 84, 0.18);
+    color: var(--bs-success);
+    border: 1px solid rgba(25, 135, 84, 0.45);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.finishedBannerDot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--bs-success);
+    box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.25);
+}
+
+.finishedBannerTime {
+    margin-left: auto;
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.selectorTimer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.05rem;
+    padding: 0.35rem 0.5rem;
+    background: var(--bs-tertiary-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.4rem;
+}
+
+.selectorTimerLabel {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--bs-secondary-color);
+}
+
+.selectorTimerValue {
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.1;
 }
 
 .selectorTitle {
@@ -107,6 +249,11 @@
 
 .selectorButton:not(:disabled):hover {
     background: var(--bs-tertiary-bg);
+}
+
+.selectorJumps {
+    display: inline-flex;
+    gap: 0.3rem;
 }
 
 .livePip {
@@ -141,7 +288,7 @@
 
 .snapshot {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 0;
     padding: 0.5rem 0.75rem;
     border-bottom: 1px solid var(--bs-border-color);
@@ -238,11 +385,64 @@
 }
 
 .sectionTitle {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
     margin: 0.25rem 0 0.5rem;
     font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: var(--bs-secondary-color);
+}
+
+.sectionTitleSub {
+    font-size: 0.65rem;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--bs-secondary-color);
+    opacity: 0.75;
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+}
+
+.sectionTitleActions {
+    margin-left: auto;
+    display: inline-flex;
+    gap: 0.3rem;
+}
+
+.jumpButton {
+    background: transparent;
+    border: 1px solid var(--bs-border-color);
+    color: inherit;
+    padding: 0.15rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.65rem;
+    text-transform: none;
+    letter-spacing: 0;
+    cursor: pointer;
+    line-height: 1.2;
+}
+
+.jumpButton:hover {
+    background: var(--bs-tertiary-bg);
+}
+
+.jumpButtonPrimary {
+    background: var(--bs-primary);
+    border: 1px solid var(--bs-primary);
+    color: #fff;
+    padding: 0.3rem 0.65rem;
+    border-radius: 0.3rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.jumpButtonPrimary:hover {
+    filter: brightness(1.1);
 }
 
 .storyEntry {
@@ -336,6 +536,14 @@
     font-size: 2.1rem;
 }
 
+.heroSecondary {
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.72rem;
+    color: var(--bs-secondary-color);
+    margin-top: 0.05rem;
+}
+
 /* --- Delta pills --- */
 
 .deltaPill {
@@ -417,6 +625,13 @@
     font-weight: 600;
 }
 
+.statCardSub {
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: var(--bs-secondary-color);
+    margin-left: 0.25rem;
+}
+
 /* --- Callout (e.g. time-save potential) --- */
 
 .callout {
@@ -447,11 +662,231 @@
     color: #c79100;
 }
 
+.calloutDelta {
+    margin-left: auto;
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.1rem 0.45rem;
+    border-radius: 0.75rem;
+}
+
+.paceCallout {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.4rem;
+    background: var(--bs-tertiary-bg);
+    border: 1px solid var(--bs-border-color);
+    margin-bottom: 0.5rem;
+}
+
+.paceEta {
+    margin-left: auto;
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.75rem;
+    color: var(--bs-secondary-color);
+    opacity: 0.85;
+}
+
+.watchFlags {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.watchFlag {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.6rem;
+    border-radius: 0.35rem;
+    font-size: 0.75rem;
+    border: 1px solid transparent;
+}
+
+.watchFlagIcon {
+    flex-shrink: 0;
+    font-size: 0.85rem;
+}
+
+.watchFlagRisk {
+    background: rgba(220, 53, 69, 0.10);
+    border-color: rgba(220, 53, 69, 0.35);
+    color: var(--bs-danger);
+}
+
+.watchFlagOpportunity {
+    background: rgba(255, 193, 7, 0.12);
+    border-color: rgba(255, 193, 7, 0.4);
+    color: #c79100;
+}
+
+.goldBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 0.7rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    background: rgba(255, 193, 7, 0.22);
+    color: #c79100;
+    border: 1px solid rgba(255, 193, 7, 0.5);
+}
+
+.segmentResultGold {
+    background: rgba(255, 193, 7, 0.10);
+    border-color: rgba(255, 193, 7, 0.35);
+}
+
+.paceLabel {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--bs-secondary-color);
+    font-weight: 600;
+}
+
+.paceValue {
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.paceAhead {
+    background: rgba(25, 135, 84, 0.12);
+    border-color: rgba(25, 135, 84, 0.45);
+}
+
+.paceAhead .paceValue {
+    color: var(--bs-success);
+}
+
+.paceBehind {
+    background: rgba(220, 53, 69, 0.12);
+    border-color: rgba(220, 53, 69, 0.45);
+}
+
+.paceBehind .paceValue {
+    color: var(--bs-danger);
+}
+
+.recentChart {
+    margin: -0.1rem 0 0.6rem;
+    padding: 0.25rem 0.4rem 0.3rem;
+    border-radius: 0.3rem;
+    background: var(--bs-tertiary-bg);
+    border: 1px solid var(--bs-border-color);
+}
+
+.recentChartSvg {
+    width: 100%;
+    height: 36px;
+    display: block;
+    overflow: visible;
+}
+
+.recentChartLine {
+    fill: none;
+    stroke: var(--bs-secondary-color);
+    stroke-width: 1.2;
+    opacity: 0.7;
+}
+
+.recentChartPbLine {
+    stroke: var(--bs-secondary-color);
+    stroke-width: 1;
+    stroke-dasharray: 2 3;
+    opacity: 0.5;
+}
+
+.recentChartDot {
+    fill: var(--bs-secondary-color);
+    opacity: 0.55;
+}
+
+.recentChartDotThis {
+    fill: var(--bs-primary);
+    stroke: var(--bs-body-bg);
+    stroke-width: 1;
+}
+
+.recentChartMeta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.62rem;
+    color: var(--bs-secondary-color);
+    margin-top: 0.15rem;
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+}
+
+.trendFaster {
+    color: var(--bs-success);
+    font-weight: 600;
+}
+
+.trendSlower {
+    color: var(--bs-danger);
+    font-weight: 600;
+}
+
+.trendStable {
+    color: var(--bs-secondary-color);
+}
+
+.segmentResult {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.65rem;
+    border-radius: 0.4rem;
+    background: var(--bs-tertiary-bg);
+    border: 1px solid var(--bs-border-color);
+    margin-bottom: 0.5rem;
+}
+
+.segmentResultLabel {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--bs-secondary-color);
+    font-weight: 600;
+}
+
+.segmentResultValue {
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: inherit;
+    line-height: 1.1;
+}
+
+.calloutDeltaAhead {
+    background: rgba(25, 135, 84, 0.18);
+    color: var(--bs-success);
+}
+
+.calloutDeltaBehind {
+    background: rgba(220, 53, 69, 0.18);
+    color: var(--bs-danger);
+}
+
 /* --- Risk row --- */
 
 .riskRow {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.4rem;
     margin-bottom: 0.5rem;
 }
@@ -503,19 +938,60 @@
 .recentChipRow {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.3rem;
-    margin-bottom: 0.5rem;
+    gap: 0.4rem;
+    margin: 0.4rem 0 0.5rem;
 }
 
 .recentChip {
-    font-family: var(--bs-font-monospace);
-    font-variant-numeric: tabular-nums;
-    font-size: 0.78rem;
-    padding: 0.2rem 0.5rem;
-    border-radius: 0.25rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.05rem;
+    min-width: 4.5rem;
+    padding: 0.3rem 0.5rem;
+    border-radius: 0.3rem;
     background: var(--bs-secondary-bg);
     color: var(--bs-secondary-color);
     border: 1px solid transparent;
+}
+
+.recentChipTime {
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.1;
+}
+
+.recentChipDelta {
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.65rem;
+    line-height: 1.1;
+    opacity: 0.85;
+}
+
+.recentChipTag {
+    position: absolute;
+    top: -0.4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.55rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0.05rem 0.3rem;
+    border-radius: 0.2rem;
+    background: var(--bs-body-bg);
+    border: 1px solid currentColor;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.recentChipThisAttempt {
+    border-color: currentColor;
+    box-shadow: 0 0 0 1px currentColor;
 }
 
 .recentChipAhead {
@@ -1001,4 +1477,302 @@
 
 .runWideItemText {
     flex: 1 1 auto;
+}
+
+/* --- Run tab pace chart --- */
+
+.paceChartWrap {
+    margin: 0.25rem 0 0.75rem;
+    padding: 0.5rem;
+    background: var(--bs-tertiary-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.4rem;
+}
+
+.paceChart {
+    width: 100%;
+    height: auto;
+    display: block;
+    overflow: visible;
+}
+
+.paceChartZero {
+    stroke: var(--bs-secondary-color);
+    stroke-width: 1;
+    stroke-dasharray: 3 3;
+    opacity: 0.7;
+}
+
+.paceChartLine {
+    fill: none;
+    stroke: var(--bs-body-color);
+    stroke-width: 1.6;
+    opacity: 0.85;
+}
+
+.paceChartLineLive {
+    fill: none;
+    stroke: var(--bs-primary);
+    stroke-width: 1.6;
+    stroke-dasharray: 3 3;
+    opacity: 0.9;
+}
+
+.paceChartDotLive {
+    fill: var(--bs-primary);
+    stroke: var(--bs-body-bg);
+    stroke-width: 1.5;
+}
+
+.paceChartLegend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    font-size: 0.62rem;
+    color: var(--bs-secondary-color);
+    margin-top: 0.3rem;
+}
+
+.paceChartLegend > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.paceChartLegendSwatchAhead,
+.paceChartLegendSwatchBehind,
+.paceChartLegendSwatchLive {
+    width: 0.65rem;
+    height: 0.4rem;
+    border-radius: 0.1rem;
+    display: inline-block;
+}
+
+.paceChartLegendSwatchAhead {
+    background: rgba(25, 135, 84, 0.5);
+}
+
+.paceChartLegendSwatchBehind {
+    background: rgba(220, 53, 69, 0.5);
+}
+
+.paceChartLegendSwatchLive {
+    background: var(--bs-primary);
+}
+
+.paceChartFillAhead {
+    fill: rgba(25, 135, 84, 0.22);
+    stroke: none;
+}
+
+.paceChartFillBehind {
+    fill: rgba(220, 53, 69, 0.22);
+    stroke: none;
+}
+
+.paceChartAxisLabel {
+    fill: var(--bs-secondary-color);
+    font-size: 9px;
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    opacity: 0.85;
+}
+
+.paceChartDotAhead {
+    fill: var(--bs-success);
+}
+
+.paceChartDotBehind {
+    fill: var(--bs-danger);
+}
+
+.paceChartDotNeutral {
+    fill: var(--bs-secondary-color);
+}
+
+.paceChartDotLast {
+    stroke: var(--bs-body-bg);
+    stroke-width: 1;
+}
+
+.paceChartFooter {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: var(--bs-secondary-color);
+    margin-top: 0.3rem;
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+}
+
+/* --- Predictions tab --- */
+
+.predictionChartWrap {
+    margin: 0.25rem 0 0.75rem;
+    background: var(--bs-tertiary-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.4rem;
+    padding: 0.5rem;
+}
+
+.predictionChartInner {
+    position: relative;
+}
+
+.predictionHoverLine {
+    stroke: var(--bs-secondary-color);
+    stroke-width: 1;
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.predictionHoverDotOptimistic {
+    fill: var(--bs-success);
+    stroke: var(--bs-body-bg);
+    stroke-width: 1;
+    pointer-events: none;
+}
+
+.predictionHoverDotMedian {
+    fill: var(--bs-info, #0dcaf0);
+    stroke: var(--bs-body-bg);
+    stroke-width: 1;
+    pointer-events: none;
+}
+
+.predictionHoverDotPessimistic {
+    fill: var(--bs-danger);
+    stroke: var(--bs-body-bg);
+    stroke-width: 1;
+    pointer-events: none;
+}
+
+.predictionTooltip {
+    position: absolute;
+    top: 0.25rem;
+    z-index: 2;
+    pointer-events: none;
+    background: var(--bs-body-bg);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.3rem;
+    padding: 0.4rem 0.5rem;
+    font-size: 0.7rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    min-width: 8rem;
+}
+
+.predictionTooltipTitle {
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+    font-size: 0.7rem;
+    line-height: 1.2;
+}
+
+.predictionTooltipRow {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    line-height: 1.4;
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+}
+
+.predictionTooltipLabel {
+    color: var(--bs-secondary-color);
+    font-size: 0.65rem;
+    min-width: 1.8rem;
+}
+
+.predictionTooltipValue {
+    margin-left: auto;
+}
+
+.predictionChart {
+    width: 100%;
+    height: auto;
+    display: block;
+    overflow: visible;
+}
+
+.predictionAxisLabel {
+    fill: var(--bs-secondary-color);
+    font-size: 9px;
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    opacity: 0.85;
+}
+
+.predictionRange {
+    fill: rgba(13, 110, 253, 0.12);
+    stroke: none;
+}
+
+.predictionOptimistic {
+    fill: none;
+    stroke: var(--bs-success);
+    stroke-width: 1.6;
+}
+
+.predictionPessimistic {
+    fill: none;
+    stroke: var(--bs-danger);
+    stroke-width: 1.2;
+    stroke-dasharray: 3 3;
+    opacity: 0.7;
+}
+
+.predictionMedian {
+    fill: none;
+    stroke: var(--bs-info, #0dcaf0);
+    stroke-width: 1.2;
+    stroke-dasharray: 4 2;
+    opacity: 0.85;
+}
+
+.predictionPbLine {
+    stroke: var(--bs-secondary-color);
+    stroke-width: 1;
+    stroke-dasharray: 2 3;
+    opacity: 0.6;
+}
+
+.predictionLegend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    font-size: 0.65rem;
+    color: var(--bs-secondary-color);
+    margin-top: 0.4rem;
+}
+
+.predictionLegend > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.predictionLegendSwatchOptimistic,
+.predictionLegendSwatchPessimistic,
+.predictionLegendSwatchMedian,
+.predictionLegendSwatchPb {
+    width: 0.8rem;
+    height: 0.15rem;
+    border-radius: 0.1rem;
+    display: inline-block;
+}
+
+.predictionLegendSwatchOptimistic {
+    background: var(--bs-success);
+}
+
+.predictionLegendSwatchPessimistic {
+    background: var(--bs-danger);
+}
+
+.predictionLegendSwatchMedian {
+    background: var(--bs-info, #0dcaf0);
+}
+
+.predictionLegendSwatchPb {
+    background: var(--bs-secondary-color);
 }

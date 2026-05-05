@@ -1,7 +1,6 @@
 'use client';
 
 import clsx from 'clsx';
-import { Twitch as TwitchIcon } from 'react-bootstrap-icons';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { StoryElementWithSelected } from '~app/(new-layout)/live/story.types';
 import styles from '../commentary-drawer.module.scss';
@@ -43,11 +42,6 @@ const ContextHeader = ({
 const StoryLine = ({ el }: { el: StoryElementWithSelected }) => (
     <div className={styles.storyLine}>
         <span className={styles.storyLineText}>{el.text}</span>
-        {el.wasSentToTwitch && (
-            <span className={styles.storyLineChat}>
-                <TwitchIcon height={11} color="#6441a5" /> chat
-            </span>
-        )}
     </div>
 );
 
