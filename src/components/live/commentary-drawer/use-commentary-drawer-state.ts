@@ -2,14 +2,23 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
-export type CommentaryTab = 'split' | 'run' | 'story' | 'career';
+export type CommentaryTab =
+    | 'split'
+    | 'run'
+    | 'story'
+    | 'career'
+    | 'predictions';
 
 const TAB_KEY = 'commentary-drawer:tab';
 const OPEN_KEY = 'commentary-drawer:open';
 const PINNED_KEY = 'commentary-drawer:pinned';
 
 const isTab = (v: unknown): v is CommentaryTab =>
-    v === 'split' || v === 'run' || v === 'story' || v === 'career';
+    v === 'split' ||
+    v === 'run' ||
+    v === 'story' ||
+    v === 'career' ||
+    v === 'predictions';
 
 const readBool = (key: string, fallback: boolean): boolean => {
     if (typeof window === 'undefined') return fallback;

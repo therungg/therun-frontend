@@ -38,7 +38,6 @@ export const SnapshotStrip = ({
                       ? styles.toneBehind
                       : styles.toneNeutral,
             )}
-            {tile('p50', formatTimeMs(snap.p50Ms))}
             {tile('Reset %', formatPercent(snap.resetRate))}
         </div>
     );

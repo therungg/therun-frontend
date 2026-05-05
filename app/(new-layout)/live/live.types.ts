@@ -78,6 +78,9 @@ interface SplitDefault {
     bestPossible?: number;
     splitTime?: number;
     comparisons: Comparisons;
+    // Snapshot of the run-finish projection at the moment this split ended.
+    // Only present on completed splits.
+    monteCarlo?: MonteCarloPrediction;
 }
 
 export type Split = Comparisons & SplitDefault;

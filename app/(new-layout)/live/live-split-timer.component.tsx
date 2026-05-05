@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import runStyles from '~src/components/css/LiveRun.module.scss';
 import { Flag } from '~src/components/live/live-user-run';
 import { getSplitStatus } from '~src/components/live/recommended-stream';
@@ -8,8 +8,8 @@ import {
     DifferenceFromOne,
     DurationAsTimer,
 } from '~src/components/util/datetime';
-import Timer from '~src/vendor/timer/src';
 import { LiveRun } from './live.types';
+import { useLiveElapsedMs } from './use-live-elapsed-ms';
 
 interface LiveSplitTimerComponentProps {
     liveRun: LiveRun;
@@ -30,17 +30,7 @@ export const LiveSplitTimerComponent: React.FunctionComponent<
     timerClassName = null,
     splitTime = false,
 }) => {
-    const [timerStart, setTimerStart] = useState(0);
-    React.useEffect(() => {
-        const time =
-            new Date().getTime() - new Date(liveRun.insertedAt).getTime() + 400;
-        setTimerStart(time + (!splitTime ? liveRun.currentTime : 0));
-    }, [liveRun.insertedAt, splitTime]);
-
-    const [id, setId] = useState(0);
-    useEffect(() => {
-        setId(id + 1);
-    }, [liveRun.currentSplitIndex]);
+    const liveElapsedMs = useLiveElapsedMs(liveRun);
 
     const formatHours = (value: number): string => {
         if (value < 0) return '-00';
@@ -117,24 +107,36 @@ export const LiveSplitTimerComponent: React.FunctionComponent<
                     </>
                 )}
             {liveRun.currentSplitIndex < liveRun.splits.length &&
-                !liveRun.hasReset && (
-                    <div key={liveRun.user + id}>
-                        <div className={timerClassName}>
-                            <Timer initialTime={timerStart}>
-                                <Timer.Hours formatValue={formatHours} />:
-                                <Timer.Minutes formatValue={formatMinutes} />
-                                :
-                                <Timer.Seconds formatValue={formatSeconds} />
-                            </Timer>
+                !liveRun.hasReset &&
+                (() => {
+                    const cumulative = liveElapsedMs ?? 0;
+                    const prev =
+                        liveRun.currentSplitIndex === 0
+                            ? 0
+                            : (liveRun.splits[liveRun.currentSplitIndex - 1]
+                                  ?.splitTime ?? 0);
+                    const displayMs = splitTime
+                        ? Math.max(0, cumulative - prev)
+                        : cumulative;
+                    const totalSec = Math.floor(displayMs / 1000);
+                    const h = Math.floor(totalSec / 3600);
+                    const m = Math.floor((totalSec % 3600) / 60);
+                    const s = totalSec % 60;
+                    return (
+                        <div>
+                            <div className={timerClassName}>
+                                {formatHours(h)}:{formatMinutes(m)}:
+                                {formatSeconds(s)}
+                            </div>
+                            {withDiff && !splitTime && (
+                                <DifferenceFromOne
+                                    diff={liveRun.delta}
+                                    withMillis={true}
+                                />
+                            )}
                         </div>
-                        {withDiff && (
-                            <DifferenceFromOne
-                                diff={liveRun.delta}
-                                withMillis={true}
-                            />
-                        )}
-                    </div>
-                )}
+                    );
+                })()}
 
             {liveRun.hasReset && (
                 <div
