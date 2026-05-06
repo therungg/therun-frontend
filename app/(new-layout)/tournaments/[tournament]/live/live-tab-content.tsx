@@ -32,6 +32,7 @@ export interface LiveTabContentProps {
     username?: string;
     tournamentLeaderboards: CategoryLeaderboard | null;
     qualifierData?: Tournament | null;
+    userPictures?: Record<string, string>;
 }
 
 export const LiveTabContent: React.FC<LiveTabContentProps> = ({
@@ -40,6 +41,7 @@ export const LiveTabContent: React.FC<LiveTabContentProps> = ({
     username,
     tournamentLeaderboards,
     qualifierData,
+    userPictures,
 }) => {
     const [updatedLiveDataMap, setUpdatedLiveDataMap] =
         useState(initialLiveDataMap);
@@ -209,6 +211,7 @@ export const LiveTabContent: React.FC<LiveTabContentProps> = ({
                             tournamentLeaderboards={
                                 tournamentLeaderboards as CategoryLeaderboard
                             }
+                            userPictures={userPictures}
                         />
                     </div>
                 </aside>

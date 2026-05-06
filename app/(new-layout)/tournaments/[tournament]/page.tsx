@@ -7,6 +7,7 @@ import {
     getTournamentStatsByName,
 } from '~src/components/tournament/getTournaments';
 import { Tournament } from '~src/components/tournament/tournament-info';
+import { getGlobalUser } from '~src/lib/get-global-user';
 import { getAllLiveRuns } from '~src/lib/live-runs';
 import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
@@ -76,6 +77,18 @@ export const TournamentPage = async ({
             : Promise.resolve(null),
     ]);
 
+    const validStandingsTournaments =
+        standingsTournaments?.filter((t): t is Tournament => !!t) ?? null;
+
+    const userPictures = await fetchUserPictures(
+        collectTournamentUsernames(
+            tournament,
+            qualifierData,
+            validStandingsTournaments,
+            stats,
+        ),
+    );
+
     return (
         <GenericTournament
             liveDataMap={liveRunArrayToMap(
@@ -89,10 +102,8 @@ export const TournamentPage = async ({
             tab={tab}
             stats={stats}
             qualifierData={qualifierData}
-            standingsTournaments={
-                standingsTournaments?.filter((t): t is Tournament => !!t) ??
-                null
-            }
+            standingsTournaments={validStandingsTournaments}
+            userPictures={userPictures}
         />
     );
 };
@@ -112,6 +123,83 @@ async function safeFetchTournament(name: string) {
         return null;
     }
 }
+
+const collectTournamentUsernames = (
+    tournament: Tournament,
+    qualifierData: Tournament | null,
+    standingsTournaments: Tournament[] | null,
+    stats: unknown,
+): string[] => {
+    const usernames = new Set<string>();
+    const addLeaderboards = (
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        lb: any,
+    ) => {
+        if (!lb) return;
+        const arrays = [
+            lb.pbLeaderboard,
+            lb.attemptCountLeaderboard,
+            lb.finishedAttemptCountLeaderboard,
+            lb.totalRunTimeLeaderboard,
+            lb.uploadLeaderboard,
+            lb.completePercentageLeaderboard,
+            lb.sumOfBestsLeaderboard,
+            lb.consistencyScoreLeaderboard,
+        ];
+        for (const arr of arrays) {
+            if (!Array.isArray(arr)) continue;
+            for (const row of arr) {
+                if (row?.username) usernames.add(row.username);
+            }
+        }
+    };
+    addLeaderboards(tournament.leaderboards);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    addLeaderboards((tournament.leaderboards as any)?.gameTime);
+    addLeaderboards(qualifierData?.leaderboards);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    addLeaderboards((qualifierData?.leaderboards as any)?.gameTime);
+    if (standingsTournaments) {
+        for (const t of standingsTournaments) {
+            addLeaderboards(t.leaderboards);
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            addLeaderboards((t.leaderboards as any)?.gameTime);
+        }
+    }
+    const wrHistoryStats = (stats as { wrHistoryStats?: { user: string }[] })
+        ?.wrHistoryStats;
+    if (Array.isArray(wrHistoryStats)) {
+        for (const s of wrHistoryStats) {
+            if (s?.user) usernames.add(s.user);
+        }
+    }
+    return [...usernames];
+};
+
+const fetchUserPictures = async (
+    usernames: string[],
+): Promise<Record<string, string>> => {
+    if (usernames.length === 0) return {};
+    const results = await Promise.all(
+        usernames.map(async (username) => {
+            try {
+                const user = await getGlobalUser(username);
+                const picture = user?.picture;
+                return [
+                    username,
+                    picture && picture !== 'noimage' ? picture : '',
+                ] as const;
+            } catch {
+                return [username, ''] as const;
+            }
+        }),
+    );
+    const pictures: Record<string, string> = {};
+    for (const [username, picture] of results) {
+        if (picture) pictures[username] = picture;
+    }
+    return pictures;
+};
 
 export async function generateMetadata(props: PageProps) {
     const params = await props.params;

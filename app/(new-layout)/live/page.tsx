@@ -1,28 +1,28 @@
 import { Live } from '~app/(new-layout)/live/live';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { liveRunArrayToMap } from '~app/(new-layout)/live/utilities';
+import { getAllPatrons } from '~app/api/patreons/get-all-patrons.action';
 import { getSession } from '~src/actions/session.action';
 import { getAllLiveRuns } from '~src/lib/live-runs';
 import buildMetadata from '~src/utils/metadata';
-
-const PATRON_ROLES = ['patreon1', 'patreon2', 'patreon3', 'admin'] as const;
 
 export default async function LivePage({
     searchParams,
 }: {
     searchParams: Promise<{ commentary?: string }>;
 }) {
-    const [liveData, session, params] = await Promise.all([
+    const [liveData, session, params, patrons] = await Promise.all([
         getAllLiveRuns() as Promise<LiveRun[]>,
         getSession(),
         searchParams,
+        getAllPatrons(),
     ]);
     const liveDataMap = liveRunArrayToMap(liveData);
 
-    const isPatron = session.roles?.some((r) =>
-        (PATRON_ROLES as readonly string[]).includes(r),
-    );
-    const canViewCommentary = isPatron || params.commentary === 'true';
+    const isPatron = Boolean(session.username && patrons[session.username]);
+    const isAdmin = session.roles?.includes('admin');
+    const canViewCommentary =
+        isPatron || isAdmin || params.commentary === 'true';
 
     return (
         <Live liveDataMap={liveDataMap} canViewCommentary={canViewCommentary} />

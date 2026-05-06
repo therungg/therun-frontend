@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import React from 'react';
 import tournamentStyles from '~src/components/css/Tournament.module.scss';
 import { GameImage } from '~src/components/image/gameimage';
@@ -42,20 +43,41 @@ export const UpcomingTournaments = ({
 };
 
 const UpcomingTournament = ({ tournament }: { tournament: Tournament }) => {
+    const isLogo = !!tournament.logoUrl;
     return (
         <div
             key={`${tournament.name}-game-image`}
             className={`d-flex w-100 ${tournamentStyles.upcomingCard} rounded-3`}
             style={{ color: 'var(--bs-body-color)' }}
         >
-            <GameImage
-                alt={`Image for ${tournament.name}`}
-                src={tournament.gameImage || ''}
-                quality="large"
-                height={64 * 1.3}
-                width={48 * 1.3}
-                className="rounded-2"
-            />
+            <div
+                className={tournamentStyles.upcomingCardThumb}
+                style={{ padding: isLogo ? '0.35rem' : 0 }}
+            >
+                {isLogo ? (
+                    <Image
+                        alt={`Logo for ${tournament.name}`}
+                        src={`/${tournament.logoUrl}`}
+                        width={62}
+                        height={83}
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'contain',
+                        }}
+                        unoptimized
+                    />
+                ) : (
+                    <GameImage
+                        alt={`Image for ${tournament.name}`}
+                        src={tournament.gameImage || ''}
+                        quality="large"
+                        height={83}
+                        width={62}
+                        style={{ objectFit: 'cover' }}
+                    />
+                )}
+            </div>
             <div className="px-3 flex-grow-1 d-flex flex-column justify-content-center">
                 <div
                     className={`${tournamentStyles.upcomingCardTitle} mb-1 p-0`}

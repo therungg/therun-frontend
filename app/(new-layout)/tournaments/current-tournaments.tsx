@@ -4,6 +4,8 @@ import { Tournament } from '~src/components/tournament/tournament-info';
 import { FromNow } from '~src/components/util/datetime';
 import { safeEncodeURI } from '~src/utils/uri';
 
+const FALLBACK_IMAGE = '/logo_dark_theme_no_text_transparent.png';
+
 export const CurrentTournaments = ({
     tournaments,
 }: {
@@ -13,6 +15,13 @@ export const CurrentTournaments = ({
         <div>
             <Row className="gy-3 gx-3">
                 {tournaments.map((tournament) => {
+                    const isLogo = !!tournament.logoUrl;
+                    const cardImage = tournament.logoUrl
+                        ? `/${tournament.logoUrl}`
+                        : tournament.gameImage &&
+                            tournament.gameImage !== 'noimage'
+                          ? tournament.gameImage
+                          : FALLBACK_IMAGE;
                     return (
                         <Col key={tournament.name} xl={6} lg={12} xs={12}>
                             <a
@@ -24,20 +33,30 @@ export const CurrentTournaments = ({
                                 <Card
                                     className={`${tournamentStyles.currentTournamentCard} h-100`}
                                 >
-                                    <Row className="flex-grow-1">
+                                    <Row className="flex-grow-1 g-0">
                                         <Col xs={4}>
-                                            <Card.Img
-                                                className="rounded-0 rounded-start me-0 pe-0 h-100 d-inline-block"
-                                                src={
-                                                    tournament.gameImage &&
-                                                    tournament.gameImage !==
-                                                        'noimage'
-                                                        ? tournament.gameImage
-                                                        : `/logo_dark_theme_no_text_transparent.png`
+                                            <div
+                                                className={
+                                                    tournamentStyles.currentTournamentThumb
                                                 }
-                                                height={100}
-                                                width={20}
-                                            />
+                                                style={{
+                                                    padding: isLogo
+                                                        ? '0.5rem'
+                                                        : 0,
+                                                }}
+                                            >
+                                                <img
+                                                    src={cardImage}
+                                                    alt=""
+                                                    style={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        objectFit: isLogo
+                                                            ? 'contain'
+                                                            : 'cover',
+                                                    }}
+                                                />
+                                            </div>
                                         </Col>
                                         <Col
                                             xs={8}

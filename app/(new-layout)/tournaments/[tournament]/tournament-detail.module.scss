@@ -773,7 +773,7 @@
 
 .lbRow {
     display: grid;
-    grid-template-columns: 2.1rem minmax(0, 1fr) auto;
+    grid-template-columns: 2.1rem 1.85rem minmax(0, 1fr) auto;
     align-items: center;
     gap: $spacing-sm;
     padding: 0.45rem 0.55rem;
@@ -786,6 +786,33 @@
         background: rgba(var(--bs-primary-rgb), 0.05);
         border-color: rgba(var(--bs-primary-rgb), 0.12);
     }
+}
+
+.lbAvatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.85rem;
+    height: 1.85rem;
+    border-radius: 50%;
+    overflow: hidden;
+    background: rgba(var(--bs-secondary-rgb), 0.1);
+    flex-shrink: 0;
+}
+
+.lbAvatarImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.lbAvatarFallback {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--bs-secondary-color);
+    text-transform: uppercase;
+    line-height: 1;
 }
 
 .lbRank {
@@ -1383,7 +1410,7 @@
 
 .wrRow {
     display: grid;
-    grid-template-columns: 2.1rem minmax(0, 1.2fr) auto auto;
+    grid-template-columns: 1.85rem minmax(0, 1.2fr) auto auto;
     align-items: center;
     gap: $spacing-sm;
     padding: 0.55rem 0.7rem;
@@ -1396,6 +1423,21 @@
         background: rgba(var(--bs-primary-rgb), 0.05);
         border-color: rgba(var(--bs-primary-rgb), 0.18);
     }
+}
+
+.wrCurrentBadge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.05rem 0.4rem;
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $accent-gold;
+    background: rgba($accent-gold, 0.15);
+    border: 1px solid rgba($accent-gold, 0.35);
+    border-radius: $radius-sm;
+    vertical-align: middle;
 }
 
 .wrCol {

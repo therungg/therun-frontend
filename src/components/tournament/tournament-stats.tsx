@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import React from 'react';
 import { CategoryLeaderboard } from '~app/(new-layout)/games/[game]/game.types';
 import detailStyles from '~app/(new-layout)/tournaments/[tournament]/tournament-detail.module.scss';
@@ -31,6 +32,7 @@ interface Props {
     data?: StatsData | null;
     tournament: Tournament;
     gameTime?: boolean;
+    userPictures?: Record<string, string>;
 }
 
 const StatCard = ({
@@ -53,6 +55,7 @@ export const TournamentStats: React.FC<Props> = ({
     data,
     tournament,
     gameTime = false,
+    userPictures,
 }) => {
     if (!data) {
         return <div className={detailStyles.lbEmpty}>Loading stats…</div>;
@@ -87,6 +90,15 @@ export const TournamentStats: React.FC<Props> = ({
         ? Math.min(tournamentEndMs, Date.now())
         : Date.now();
 
+    const userLastSetAtMs = new Map<string, number>();
+    for (const entry of wrHistory) {
+        if (!entry?.user || !entry.endedAt) continue;
+        const ms = Date.parse(entry.endedAt);
+        if (!Number.isFinite(ms)) continue;
+        const prev = userLastSetAtMs.get(entry.user) ?? -Infinity;
+        if (ms > prev) userLastSetAtMs.set(entry.user, ms);
+    }
+
     const wrStats = (data.wrHistoryStats ?? [])
         .slice()
         .map((stat) => {
@@ -105,7 +117,11 @@ export const TournamentStats: React.FC<Props> = ({
             }
             return stat;
         })
-        .sort((a, b) => (b.timeHeldWr ?? 0) - (a.timeHeldWr ?? 0));
+        .sort(
+            (a, b) =>
+                (userLastSetAtMs.get(b.user) ?? -Infinity) -
+                (userLastSetAtMs.get(a.user) ?? -Infinity),
+        );
 
     return (
         <div className={detailStyles.statsWrap}>
@@ -163,25 +179,54 @@ export const TournamentStats: React.FC<Props> = ({
                     ) : (
                         <ol className={detailStyles.lbList}>
                             {wrStats.map((stat, idx) => {
-                                const placing = idx + 1;
-                                const rankClass =
-                                    placing === 1
-                                        ? detailStyles.rankGold
-                                        : placing === 2
-                                          ? detailStyles.rankSilver
-                                          : placing === 3
-                                            ? detailStyles.rankBronze
-                                            : '';
+                                const isCurrent = idx === 0;
+                                const picture = userPictures?.[stat.user];
                                 return (
                                     <li
                                         key={`${stat.user}-${stat.timeHeldWr}-${stat.improvedWr}`}
-                                        className={`${detailStyles.wrRow} ${rankClass}`}
+                                        className={`${detailStyles.wrRow} ${
+                                            isCurrent
+                                                ? detailStyles.rankGold
+                                                : ''
+                                        }`}
                                     >
-                                        <span className={detailStyles.lbRank}>
-                                            {placing}
+                                        <span className={detailStyles.lbAvatar}>
+                                            {picture ? (
+                                                <Image
+                                                    src={picture}
+                                                    alt=""
+                                                    width={28}
+                                                    height={28}
+                                                    className={
+                                                        detailStyles.lbAvatarImg
+                                                    }
+                                                    unoptimized
+                                                    loading="lazy"
+                                                />
+                                            ) : (
+                                                <span
+                                                    className={
+                                                        detailStyles.lbAvatarFallback
+                                                    }
+                                                    aria-hidden="true"
+                                                >
+                                                    {stat.user
+                                                        ?.charAt(0)
+                                                        .toUpperCase() || '?'}
+                                                </span>
+                                            )}
                                         </span>
                                         <span className={detailStyles.lbUser}>
                                             <UserLink username={stat.user} />
+                                            {isCurrent && (
+                                                <span
+                                                    className={
+                                                        detailStyles.wrCurrentBadge
+                                                    }
+                                                >
+                                                    Current
+                                                </span>
+                                            )}
                                         </span>
                                         <span className={detailStyles.wrCol}>
                                             <span

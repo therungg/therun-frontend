@@ -246,43 +246,39 @@ export const ListTournaments = ({
                         (1000 * 60 * 60 * 24),
                 );
 
+                const cardImage = tournament.logoUrl
+                    ? `/${tournament.logoUrl}`
+                    : tournament.gameImage && tournament.gameImage !== 'noimage'
+                      ? tournament.gameImage
+                      : null;
+                const isLogo = !!tournament.logoUrl;
                 return (
                     <Col sm={12} lg={6} xxl={4} key={tournament.name}>
-                        {tournament.logoUrl && (
-                            <div
-                                className="float-start d-none d-sm-flex align-items-center me-2"
+                        {cardImage && (
+                            <a
+                                href={`/tournaments/${safeEncodeURI(
+                                    tournament.name,
+                                )}`}
+                                className={`${styles.listCardThumb} float-start d-none d-sm-flex me-3`}
+                                aria-label={tournament.name}
                                 style={{
-                                    width: '135px',
-                                    height: '135px',
-                                    flexShrink: 0,
-                                    overflow: 'hidden',
+                                    padding: isLogo ? '0.5rem' : 0,
                                 }}
                             >
-                                <a
-                                    href={`/tournaments/${safeEncodeURI(
-                                        tournament.name,
-                                    )}`}
+                                <Image
+                                    alt={
+                                        isLogo
+                                            ? 'Tournament Logo'
+                                            : `${tournament.name} game art`
+                                    }
+                                    src={cardImage}
                                     style={{
-                                        display: 'flex',
                                         width: '100%',
                                         height: '100%',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
+                                        objectFit: isLogo ? 'contain' : 'cover',
                                     }}
-                                >
-                                    <Image
-                                        alt="Tournament Logo"
-                                        src={`/${tournament.logoUrl}`}
-                                        style={{
-                                            maxWidth: '100%',
-                                            maxHeight: '100%',
-                                            width: 'auto',
-                                            height: 'auto',
-                                            objectFit: 'contain',
-                                        }}
-                                    />
-                                </a>
-                            </div>
+                                />
+                            </a>
                         )}
                         <Card className={`${styles.listCard} card-columns`}>
                             <Card.Header className={styles.listCardHeader}>
