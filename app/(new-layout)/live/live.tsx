@@ -484,12 +484,13 @@ const CommentaryTriggerButton = () => {
     const ctx = useCommentaryDrawerContext();
     return (
         <Button
-            variant="outline-secondary"
+            variant="outline-success"
             className="btn-lg px-3 h-3r fw-medium d-inline-flex align-items-center gap-2"
             onClick={ctx.toggle}
             aria-label="Open commentary view"
+            title="Open the commentary view to follow runs side-by-side"
         >
-            <ChatLeftQuote /> Commentary
+            <ChatLeftQuote size={16} /> Commentary
         </Button>
     );
 };

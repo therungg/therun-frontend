@@ -1,0 +1,154 @@
+<h2>Three directions for the tournament detail page</h2>
+<p class="subtitle">All three show the LIVE state (streams running, leaderboard active). Each adapts differently for Upcoming and Ended. Click whichever resonates — multi-select OK.</p>
+
+<style>
+  .wf { background:#0f0f12; color:#eaeaea; border-radius:6px; padding:0.55rem; font-size:0.62rem; line-height:1.25; display:flex; flex-direction:column; gap:0.35rem; height:280px; font-family: ui-sans-serif, system-ui; }
+  .wf .row { display:flex; gap:0.35rem; }
+  .wf .col { flex:1; background:#1a1a1f; border:1px solid #26262d; border-radius:4px; padding:0.4rem; display:flex; flex-direction:column; gap:0.25rem; }
+  .wf .pill { background:rgba(220,53,69,0.18); color:#ff5567; padding:1px 6px; border-radius:3px; font-size:0.55rem; font-weight:600; letter-spacing:0.04em; }
+  .wf .pill.up { background:rgba(13,110,253,0.18); color:#5ea0ff; }
+  .wf .pill.end { background:rgba(108,117,125,0.18); color:#a4a8ad; }
+  .wf .label { font-size:0.5rem; opacity:0.55; text-transform:uppercase; letter-spacing:0.06em; font-weight:600; }
+  .wf .lb-row { display:flex; justify-content:space-between; align-items:center; padding:0.2rem 0; border-bottom:1px solid #1f1f25; font-size:0.58rem; }
+  .wf .lb-row:last-child { border-bottom:none; }
+  .wf .lb-row .nm { display:flex; gap:0.3rem; align-items:center; }
+  .wf .lb-row .num { width:14px; opacity:0.5; }
+  .wf .lb-row .live-dot { width:5px; height:5px; background:#ff5567; border-radius:50%; display:inline-block; }
+  .wf .stream { background:#222; border-radius:3px; aspect-ratio:16/9; display:flex; align-items:end; padding:3px 4px; font-size:0.5rem; }
+  .wf .art { width:32px; height:42px; background:linear-gradient(135deg,#3a3a45,#22222a); border-radius:3px; flex-shrink:0; }
+  .wf .art-big { width:100%; aspect-ratio:16/6; background:linear-gradient(135deg,#3a3a45,#22222a); border-radius:4px; }
+  .wf .tabs { display:flex; gap:0.6rem; font-size:0.55rem; opacity:0.55; border-top:1px solid #1f1f25; padding-top:0.3rem; }
+  .wf .tile { background:#1a1a1f; border:1px solid #26262d; border-radius:3px; padding:0.3rem 0.4rem; flex:1; }
+  .wf .tile .v { font-size:0.78rem; font-weight:700; color:#fff; }
+  .wf h6 { margin:0; font-size:0.7rem; color:#fff; font-weight:700; }
+</style>
+
+<div class="cards" data-multiselect>
+
+  <div class="card" data-choice="A" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="wf">
+        <!-- compact identity strip -->
+        <div style="display:flex;align-items:center;gap:0.4rem;">
+          <div class="art" style="width:28px;height:28px;"></div>
+          <div style="flex:1;min-width:0;">
+            <h6 style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">PACE Fall Qualifier 2</h6>
+            <div style="opacity:0.55;font-size:0.55rem;">Minecraft · Any% Glitchless · by PaceMC</div>
+          </div>
+          <span class="pill">LIVE · 2h 14m</span>
+        </div>
+        <!-- 2-col main: leaderboard | live streams -->
+        <div class="row" style="flex:1;min-height:0;">
+          <div class="col" style="flex:1.1;">
+            <div class="label">Leaderboard</div>
+            <div class="lb-row"><div class="nm"><span class="num">1</span>Couriway</div><span>9:42</span></div>
+            <div class="lb-row"><div class="nm"><span class="num">2</span>Doogile</div><span>10:08</span></div>
+            <div class="lb-row"><div class="nm"><span class="num">3</span><span class="live-dot"></span>FeintGB</div><span style="color:#ff5567;">-:--</span></div>
+            <div class="lb-row"><div class="nm"><span class="num">4</span>k4yfour</div><span>10:55</span></div>
+            <div class="lb-row"><div class="nm"><span class="num">5</span><span class="live-dot"></span>Silverr</div><span style="color:#ff5567;">-:--</span></div>
+            <div class="lb-row"><div class="nm"><span class="num">6</span>Cube1337x</div><span>11:24</span></div>
+          </div>
+          <div class="col" style="flex:0.9;">
+            <div class="label">Live now · 2 streams</div>
+            <div class="stream">FeintGB</div>
+            <div class="stream">Silverr</div>
+          </div>
+        </div>
+        <div class="tabs"><span>Info</span><span>All runs</span><span>Stats</span></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Live Stage</h3>
+      <p>Compact identity strip stays out of the way. Main canvas splits: <b>leaderboard left, live streams right</b>. The most-wanted info is co-located so you can watch a stream and check the standings in one glance. Stats/info move to tabs.</p>
+      <p style="opacity:0.7;"><b>Adapts to:</b> Upcoming → swap "Live now" for countdown + signups. Ended → swap for "Top moments" or replays.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="B" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="wf">
+        <!-- bigger hero -->
+        <div class="art-big" style="aspect-ratio:16/4; position:relative;">
+          <div style="position:absolute;left:6px;bottom:5px;display:flex;align-items:center;gap:0.4rem;">
+            <h6>PACE Fall Qualifier 2</h6>
+            <span class="pill">LIVE · 2h 14m</span>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:0.55rem;opacity:0.7;">
+          <span>Minecraft · Any% Glitchless</span>
+          <span>by PaceMC · 12 runners</span>
+        </div>
+        <!-- stat tiles -->
+        <div class="row">
+          <div class="tile"><div class="label">Record</div><div class="v">9:42</div></div>
+          <div class="tile"><div class="label">Runners</div><div class="v">12</div></div>
+          <div class="tile"><div class="label">Runs</div><div class="v">37</div></div>
+          <div class="tile"><div class="label">Ends</div><div class="v">2h</div></div>
+        </div>
+        <!-- live now strip -->
+        <div class="col" style="flex:0;">
+          <div class="label">Live now · 2 streams</div>
+          <div class="row">
+            <div class="stream">FeintGB</div>
+            <div class="stream">Silverr</div>
+            <div class="stream" style="opacity:0.4;">+ idle</div>
+          </div>
+        </div>
+        <!-- mini leaderboard -->
+        <div class="col" style="flex:1;min-height:0;">
+          <div class="label">Leaderboard</div>
+          <div class="lb-row"><div class="nm"><span class="num">1</span>Couriway</div><span>9:42</span></div>
+          <div class="lb-row"><div class="nm"><span class="num">2</span>Doogile</div><span>10:08</span></div>
+          <div class="lb-row"><div class="nm"><span class="num">3</span><span class="live-dot"></span>FeintGB</div><span style="color:#ff5567;">running</span></div>
+        </div>
+        <div class="tabs"><span>Info</span><span>All runs</span><span>Stats</span></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Magazine Flow</h3>
+      <p>Tall hero banner sets the mood. Below it the page <b>scrolls naturally</b>: stat tiles, then live streams strip, then leaderboard. Looks more "branded event," less dashboard. Easier to skim on mobile. More vertical scrolling.</p>
+      <p style="opacity:0.7;"><b>Adapts to:</b> Upcoming → "Streams" strip becomes "Signed up runners". Ended → becomes "Top runs" highlight reel.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="C" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="wf">
+        <!-- identity strip -->
+        <div style="display:flex;align-items:center;gap:0.4rem;">
+          <div class="art" style="width:24px;height:24px;"></div>
+          <div style="flex:1;min-width:0;">
+            <h6 style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">PACE Fall Qualifier 2</h6>
+          </div>
+          <span class="pill">LIVE · 2h 14m</span>
+          <span style="opacity:0.55;font-size:0.55rem;">12 runners · #1 9:42</span>
+        </div>
+        <!-- BIG primary stage that swaps by lifecycle -->
+        <div class="col" style="flex:1.4;background:linear-gradient(180deg,#1a1a22,#15151c);border:1px solid #2a2a35;">
+          <div class="label">Live stage</div>
+          <div class="row" style="flex:1;min-height:0;gap:0.3rem;">
+            <div style="flex:1.4;display:flex;flex-direction:column;gap:0.25rem;">
+              <div class="stream" style="aspect-ratio:16/8;">FeintGB · 8m elapsed</div>
+              <div class="row">
+                <div class="stream" style="flex:1;font-size:0.45rem;">Silverr</div>
+              </div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:0.15rem;">
+              <div class="lb-row"><div class="nm"><span class="num">1</span>Couriway</div><span>9:42</span></div>
+              <div class="lb-row"><div class="nm"><span class="num">2</span>Doogile</div><span>10:08</span></div>
+              <div class="lb-row"><div class="nm"><span class="num">3</span><span class="live-dot"></span>FeintGB</div><span style="color:#ff5567;">go</span></div>
+              <div class="lb-row"><div class="nm"><span class="num">4</span>k4yfour</div><span>10:55</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="tabs"><span>Info</span><span>All runs</span><span>Stats</span><span style="margin-left:auto;opacity:0.5;">Minecraft · Any% Glitchless · by PaceMC</span></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Lifecycle-Adaptive Stage</h3>
+      <p>Identity squeezed into a one-line strip. The page is <b>dominated by ONE big "Stage" panel</b> whose contents change by lifecycle: live streams + leaderboard during, countdown + signups before, final leaderboard + record after. Most opinionated.</p>
+      <p style="opacity:0.7;"><b>Adapts to:</b> Upcoming → countdown + rules + signed-up runners list. Ended → champion celebration + final standings + replay links.</p>
+    </div>
+  </div>
+
+</div>

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import React, { ReactNode, useMemo, useState } from 'react';
 import { Search as SearchIcon } from 'react-bootstrap-icons';
 import { UserLink } from '~src/components/links/links';
@@ -18,6 +19,7 @@ export interface PrettyLeaderboardProps {
     rows: LeaderboardRow[] | undefined;
     formatStat: (stat: string | number, key: number) => ReactNode;
     statLabel?: string;
+    userPictures?: Record<string, string>;
 }
 
 const rankClass = (placing: number) => {
@@ -31,6 +33,7 @@ export const PrettyLeaderboard: React.FC<PrettyLeaderboardProps> = ({
     rows,
     formatStat,
     statLabel,
+    userPictures,
 }) => {
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(0);
@@ -78,12 +81,35 @@ export const PrettyLeaderboard: React.FC<PrettyLeaderboardProps> = ({
                     {visible.map((row, idx) => {
                         const placing =
                             row.placing ?? safePage * PAGE_SIZE + idx + 1;
+                        const picture = userPictures?.[row.username];
                         return (
                             <li
                                 key={`${row.username}-${row.stat}-${placing}`}
                                 className={`${styles.lbRow} ${rankClass(placing)}`}
                             >
                                 <span className={styles.lbRank}>{placing}</span>
+                                <span className={styles.lbAvatar}>
+                                    {picture ? (
+                                        <Image
+                                            src={picture}
+                                            alt=""
+                                            width={28}
+                                            height={28}
+                                            className={styles.lbAvatarImg}
+                                            unoptimized
+                                            loading="lazy"
+                                        />
+                                    ) : (
+                                        <span
+                                            className={styles.lbAvatarFallback}
+                                            aria-hidden="true"
+                                        >
+                                            {row.username
+                                                ?.charAt(0)
+                                                .toUpperCase() || '?'}
+                                        </span>
+                                    )}
+                                </span>
                                 <span className={styles.lbUser}>
                                     <UserLink
                                         url={row.url}

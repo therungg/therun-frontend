@@ -25,11 +25,13 @@ export const EventLeaderboards = ({
     gameTime,
     qualifierData,
     tournamentLeaderboards,
+    userPictures,
 }: {
     tournament: Tournament;
     gameTime: boolean;
     qualifierData?: Tournament | null;
     tournamentLeaderboards: CategoryLeaderboard;
+    userPictures?: Record<string, string>;
 }) => {
     const [view, setView] = useState<ViewKey>(gameTime ? 'pbIGT' : 'pb');
 
@@ -127,6 +129,7 @@ export const EventLeaderboards = ({
                 rows={rows}
                 formatStat={formatStat}
                 statLabel={statLabel}
+                userPictures={userPictures}
             />
         </div>
     );

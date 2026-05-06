@@ -73,6 +73,28 @@
     }
 }
 
+.currentTournamentThumb {
+    width: 100%;
+    height: 100%;
+    min-height: 110px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--bs-tertiary-bg) 92%, var(--bs-primary) 8%);
+    border-right: 1px solid rgba(var(--bs-primary-rgb), 0.08);
+    transition: background $transition-base;
+
+    img {
+        display: block;
+        transition: transform $transition-base;
+    }
+}
+
+.currentTournamentCard:hover .currentTournamentThumb img {
+    transform: scale(1.04);
+}
+
 .currentTournamentTitle {
     font-size: $font-size-md;
     font-weight: $heading-font-weight;
@@ -129,6 +151,23 @@
     }
 }
 
+.upcomingCardThumb {
+    width: 62px;
+    height: 83px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border-radius: $radius-sm;
+    background: color-mix(in srgb, var(--bs-tertiary-bg) 88%, var(--bs-primary) 12%);
+
+    img {
+        display: block;
+        border-radius: inherit;
+    }
+}
+
 .upcomingCardTitle {
     font-weight: $heading-font-weight;
     font-size: $font-size-md;
@@ -175,6 +214,33 @@
 // ============================================
 // List Tournament Cards (finished cards with logos)
 // ============================================
+
+.listCardThumb {
+    width: 105px;
+    height: 140px;
+    flex-shrink: 0;
+    overflow: hidden;
+    border-radius: $radius-md;
+    background: color-mix(in srgb, var(--bs-tertiary-bg) 92%, var(--bs-primary) 8%);
+    box-shadow: $shadow-sm;
+    align-items: center;
+    justify-content: center;
+    transition: box-shadow $transition-base, transform $transition-base;
+
+    &:hover {
+        box-shadow: $shadow-md;
+        transform: translateY(-1px);
+    }
+
+    img {
+        display: block;
+        transition: transform $transition-base;
+    }
+
+    &:hover img {
+        transform: scale(1.03);
+    }
+}
 
 .listCard {
     background: color-mix(in srgb, var(--bs-secondary-bg) 97%, var(--bs-primary) 3%);

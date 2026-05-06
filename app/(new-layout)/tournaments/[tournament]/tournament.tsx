@@ -94,6 +94,7 @@ export const GenericTournament = ({
     stats,
     qualifierData,
     standingsTournaments,
+    userPictures,
 }: {
     liveDataMap: LiveDataMap;
     session: User;
@@ -103,7 +104,9 @@ export const GenericTournament = ({
     stats?: unknown;
     qualifierData?: Tournament | null;
     standingsTournaments?: Tournament[] | null;
+    userPictures?: Record<string, string>;
 }) => {
+    const pictures = userPictures ?? {};
     const gameTime = !!tournament.gameTime;
 
     let tournamentLeaderboards: CategoryLeaderboard | null = null;
@@ -396,6 +399,7 @@ export const GenericTournament = ({
                     username={username}
                     tournamentLeaderboards={tournamentLeaderboards}
                     qualifierData={qualifierData}
+                    userPictures={pictures}
                 />
             </div>
 
@@ -432,6 +436,7 @@ export const GenericTournament = ({
                     data={data as Parameters<typeof TournamentStats>[0]['data']}
                     tournament={tournament}
                     gameTime={!!tournament.gameTime}
+                    userPictures={pictures}
                 />
             )}
         </div>

@@ -2,12 +2,11 @@ import { Metadata } from 'next';
 import { Live } from '~app/(new-layout)/live/live';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { liveRunArrayToMap } from '~app/(new-layout)/live/utilities';
+import { getAllPatrons } from '~app/api/patreons/get-all-patrons.action';
 import { getBaseUrl } from '~src/actions/base-url.action';
 import { getSession } from '~src/actions/session.action';
 import { getAllLiveRuns } from '~src/lib/live-runs';
 import buildMetadata from '~src/utils/metadata';
-
-const PATRON_ROLES = ['patreon1', 'patreon2', 'patreon3', 'admin'] as const;
 
 interface PageProps {
     params: Promise<{ username: string }>;
@@ -15,18 +14,20 @@ interface PageProps {
 }
 
 export default async function LiveUser(props: PageProps) {
-    const [params, searchParams, liveData, session] = await Promise.all([
-        props.params,
-        props.searchParams,
-        getAllLiveRuns() as Promise<LiveRun[]>,
-        getSession(),
-    ]);
+    const [params, searchParams, liveData, session, patrons] =
+        await Promise.all([
+            props.params,
+            props.searchParams,
+            getAllLiveRuns() as Promise<LiveRun[]>,
+            getSession(),
+            getAllPatrons(),
+        ]);
     const liveDataMap = liveRunArrayToMap(liveData);
 
-    const isPatron = session.roles?.some((r) =>
-        (PATRON_ROLES as readonly string[]).includes(r),
-    );
-    const canViewCommentary = isPatron || searchParams.commentary === 'true';
+    const isPatron = Boolean(session.username && patrons[session.username]);
+    const isAdmin = session.roles?.includes('admin');
+    const canViewCommentary =
+        isPatron || isAdmin || searchParams.commentary === 'true';
 
     return (
         <Live
