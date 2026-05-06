@@ -83,8 +83,11 @@ export const CommentaryDrawer = ({
     const rawRun: LiveRun | undefined = liveDataMap[displayedUser];
 
     // The drawer freezes the run snapshot when the runner starts a *new* run
-    // (different `startedAt`). Commentators opt-in to load the new data via a
-    // banner button. In-run updates (same startedAt) flow through unchanged.
+    // (different `startedAt`) or resets the current attempt (`hasReset`
+    // transitions to true, which also typically zeroes `currentSplitIndex` and
+    // would otherwise yank the panel back to split 0). Commentators opt-in to
+    // load the new state via a banner button. In-run updates (same startedAt,
+    // not reset) flow through unchanged.
     const [snapshotRun, setSnapshotRun] = useState<LiveRun | undefined>(rawRun);
     const [pendingNewRun, setPendingNewRun] = useState<LiveRun | null>(null);
 
@@ -108,26 +111,54 @@ export const CommentaryDrawer = ({
             setPendingNewRun(rawRun);
             return;
         }
+        // Reset on the current attempt — keep the previous snapshot so the
+        // panel doesn't snap to split 0, and surface a banner offering to load
+        // the new attempt once the runner has started one.
+        if (rawRun.hasReset && !snapshotRun.hasReset) {
+            setPendingNewRun(rawRun);
+            return;
+        }
+        // Already showing a banner: keep refreshing pendingNewRun so the
+        // "Load" action picks up the latest state when the runner has begun
+        // (or continued) the next attempt.
+        if (pendingNewRun) {
+            setPendingNewRun(rawRun);
+            return;
+        }
         setSnapshotRun(rawRun);
-    }, [rawRun, snapshotRun]);
+    }, [rawRun, snapshotRun, pendingNewRun]);
 
     const liveRun: LiveRun | undefined = snapshotRun;
 
-    // Stories fetch lives at the shell so the no-data banner can show
-    // outside the Story tab. The Story tab consumes the same state via prop.
+    // Stories fetch lives at the shell so the Story tab can consume the same
+    // state via prop.
     const storyState = useStoryCandidates(displayedUser);
-    const hasInsufficientData =
-        !storyState.isLoading && !storyState.error && !storyState.story;
+
+    // Show the "limited data" banner based on the runner's own attempt counts
+    // for this category, not the story fetch result. Threshold: 20 attempts
+    // started, 3 finished. Started ≈ first split's attemptsStarted; finished
+    // ≈ last split's attemptsFinished.
+    const hasInsufficientData = (() => {
+        if (!liveRun) return false;
+        const splits = liveRun.splits ?? [];
+        const totalStarted = splits[0]?.attemptsStarted ?? 0;
+        const totalFinished = splits[splits.length - 1]?.attemptsFinished ?? 0;
+        return totalStarted < 20 || totalFinished < 3;
+    })();
 
     // Reset selected split when displayed user changes (only when not pinned;
     // pinned drawer keeps its own navigation since the user isn't switching).
+    // Use the *raw* run for the new user, not the snapshot — the snapshot is
+    // updated by a separate effect and can lag a render, causing the drawer
+    // to land on the previous runner's split index.
     const [lastDisplayedUser, setLastDisplayedUser] = useState(displayedUser);
     useEffect(() => {
         if (displayedUser !== lastDisplayedUser) {
             setLastDisplayedUser(displayedUser);
-            state.resetForNewUser(liveRun?.currentSplitIndex ?? 0);
+            const freshRun = liveDataMap[displayedUser];
+            state.resetForNewUser(freshRun?.currentSplitIndex ?? 0);
         }
-    }, [displayedUser, lastDisplayedUser, liveRun?.currentSplitIndex, state]);
+    }, [displayedUser, lastDisplayedUser, liveDataMap, state]);
 
     const close = useCallback(() => ctx.setOpen(false), [ctx]);
 
@@ -240,25 +271,61 @@ export const CommentaryDrawer = ({
 
                 {liveRun ? (
                     <>
-                        {pendingNewRun && (
-                            <div className={styles.newRunBanner}>
-                                <div className={styles.newRunBannerText}>
-                                    <span className={styles.newRunBannerTitle}>
-                                        New run started
-                                    </span>
-                                    <span className={styles.newRunBannerSub}>
-                                        Showing previous run — click to load
-                                    </span>
-                                </div>
-                                <button
-                                    type="button"
-                                    className={styles.newRunBannerButton}
-                                    onClick={acceptNewRun}
-                                >
-                                    Load new run
-                                </button>
-                            </div>
-                        )}
+                        {pendingNewRun &&
+                            (() => {
+                                // Only treat it as a fresh run once the runner
+                                // is actually on split 0 (or beyond). While
+                                // currentSplitIndex is still -1 they're sitting
+                                // in the post-reset idle state — there's no
+                                // new run to load yet.
+                                const isNewAttempt =
+                                    pendingNewRun.startedAt !==
+                                        liveRun.startedAt &&
+                                    pendingNewRun.currentSplitIndex >= 0;
+                                return (
+                                    <div className={styles.newRunBanner}>
+                                        <div
+                                            className={styles.newRunBannerText}
+                                        >
+                                            <span
+                                                className={
+                                                    styles.newRunBannerTitle
+                                                }
+                                            >
+                                                {isNewAttempt
+                                                    ? 'New run started'
+                                                    : 'Runner reset'}
+                                            </span>
+                                            <span
+                                                className={
+                                                    styles.newRunBannerSub
+                                                }
+                                            >
+                                                {isNewAttempt
+                                                    ? 'Showing previous run — click to load'
+                                                    : 'Showing the run before reset'}
+                                            </span>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            className={
+                                                styles.newRunBannerButton
+                                            }
+                                            onClick={acceptNewRun}
+                                            disabled={!isNewAttempt}
+                                            title={
+                                                isNewAttempt
+                                                    ? 'Load the new run'
+                                                    : 'Available once a new run has started'
+                                            }
+                                        >
+                                            {isNewAttempt
+                                                ? 'Load new run'
+                                                : 'Waiting for new run'}
+                                        </button>
+                                    </div>
+                                );
+                            })()}
                         <SplitSelector
                             liveRun={liveRun}
                             selectedIndex={state.selectedSplitIndex}

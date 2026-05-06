@@ -6,23 +6,6 @@ import { LiveRun } from '~app/(new-layout)/live/live.types';
 import styles from '../commentary-drawer.module.scss';
 import { formatDelta, formatTimeMs } from '../format';
 
-const DeltaPill = ({ ms, label }: { ms: number | null; label?: string }) => {
-    const d = formatDelta(ms);
-    return (
-        <span
-            className={clsx(
-                styles.deltaPill,
-                d.tone === 'ahead' && styles.deltaPillAhead,
-                d.tone === 'behind' && styles.deltaPillBehind,
-                d.tone === 'neutral' && styles.deltaPillNeutral,
-            )}
-        >
-            {label && <span className={styles.deltaPillLabel}>{label}</span>}
-            {ms == null ? '—' : d.text}
-        </span>
-    );
-};
-
 interface RangeBarProps {
     p10: number;
     p90: number;
@@ -847,10 +830,6 @@ export const RunTab = ({
     selectedIndex: number;
 }) => {
     const mc = liveRun.monteCarloPrediction;
-    const projectedDelta =
-        mc?.bestEstimate != null && liveRun.pb != null
-            ? mc.bestEstimate - liveRun.pb
-            : null;
 
     // Per-split delta computation for completed splits.
     const completed = liveRun.splits.slice(0, liveRun.currentSplitIndex);
@@ -907,23 +886,6 @@ export const RunTab = ({
                 </span>
             </div>
             <PaceVsPbChart liveRun={liveRun} />
-
-            <div className={styles.sectionTitle}>Projected finish</div>
-            <div className={styles.heroSolo}>
-                <div className={clsx(styles.heroCard, styles.heroCardWide)}>
-                    <span className={styles.heroNumberLabel}>
-                        {mc ? 'Best estimate' : 'Awaiting projection'}
-                    </span>
-                    <span
-                        className={clsx(styles.heroNumber, styles.heroNumberLg)}
-                    >
-                        {formatTimeMs(mc?.bestEstimate ?? null)}
-                    </span>
-                    {mc != null && (
-                        <DeltaPill ms={projectedDelta} label="vs PB" />
-                    )}
-                </div>
-            </div>
 
             {mc != null && (
                 <RangeBar

@@ -163,6 +163,15 @@
     filter: brightness(1.1);
 }
 
+.newRunBannerButton:disabled,
+.newRunBannerButton[disabled] {
+    background: var(--bs-secondary-bg);
+    border-color: var(--bs-border-color);
+    color: var(--bs-secondary-color);
+    cursor: not-allowed;
+    filter: none;
+}
+
 .finishedBanner {
     display: flex;
     align-items: center;
@@ -388,17 +397,17 @@
     display: flex;
     align-items: baseline;
     gap: 0.5rem;
-    margin: 0.25rem 0 0.65rem;
-    font-size: 0.7rem;
+    margin: 0.25rem 0 0.75rem;
+    font-size: 0.72rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--bs-secondary-color);
+    letter-spacing: 0.1em;
+    color: var(--bs-body-color);
+    opacity: 0.85;
 }
 
 .sectionTitle:not(:first-child) {
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--bs-border-color);
+    margin-top: 2rem;
 }
 
 .sectionTitleSub {
@@ -616,6 +625,39 @@
     background: var(--bs-body-bg);
     border: 1px solid var(--bs-border-color);
 }
+
+.statCardDelta {
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+    margin-top: 0.1rem;
+}
+
+.statCardDeltaAhead {
+    color: var(--bs-success);
+}
+
+.statCardDeltaBehind {
+    color: var(--bs-danger);
+}
+
+.splitName {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    margin: -0.25rem 0 0.6rem;
+}
+
+.splitNameLabel {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--bs-secondary-color);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
 
 .statCardLabel {
     font-size: 0.6rem;
@@ -897,6 +939,10 @@
     margin-bottom: 0.75rem;
 }
 
+.riskRow3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
 .riskItem {
     display: flex;
     flex-direction: column;
@@ -1000,26 +1046,18 @@
     box-shadow: 0 0 0 1px currentColor;
 }
 
-.recentChipAhead {
-    background: rgba(25, 135, 84, 0.18);
+.recentChipAhead .recentChipDelta,
+.recentChipAheadMuted .recentChipDelta {
     color: var(--bs-success);
-    border-color: rgba(25, 135, 84, 0.4);
+    opacity: 1;
+    font-weight: 600;
 }
 
-.recentChipAheadMuted {
-    background: rgba(25, 135, 84, 0.08);
-    color: var(--bs-success);
-}
-
-.recentChipBehindMuted {
-    background: rgba(220, 53, 69, 0.08);
+.recentChipBehind .recentChipDelta,
+.recentChipBehindMuted .recentChipDelta {
     color: var(--bs-danger);
-}
-
-.recentChipBehind {
-    background: rgba(220, 53, 69, 0.18);
-    color: var(--bs-danger);
-    border-color: rgba(220, 53, 69, 0.4);
+    opacity: 1;
+    font-weight: 600;
 }
 
 .recentChipGold {
