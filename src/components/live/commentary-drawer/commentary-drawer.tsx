@@ -2,7 +2,7 @@
 
 import clsx from 'clsx';
 import NextImage from 'next/image';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { PinAngle, PinAngleFill, X as XIcon } from 'react-bootstrap-icons';
 import { createPortal } from 'react-dom';
 import { LiveDataMap, LiveRun } from '~app/(new-layout)/live/live.types';
@@ -31,9 +31,11 @@ const TABS: { key: CommentaryTab; label: string }[] = [
 export const CommentaryDrawer = ({
     liveDataMap,
     currentlyViewing,
+    manualSelectionTick = 0,
 }: {
     liveDataMap: LiveDataMap;
     currentlyViewing: string;
+    manualSelectionTick?: number;
 }) => {
     const ctx = useCommentaryDrawerContext();
 
@@ -55,8 +57,9 @@ export const CommentaryDrawer = ({
 
     // While the drawer is open, lock to whoever we were following when it
     // opened — commentators don't want their panel to swap runners just
-    // because the host clicks around on the live page. An explicit pin still
-    // wins (so cross-reload pinning works as before).
+    // because the live page auto-swaps off a stale run. Manual clicks on a
+    // different run still update the lock (tick bump from the parent), and an
+    // explicit pin still wins (so cross-reload pinning works as before).
     const [lockedUser, setLockedUser] = useState<string | null>(null);
     useEffect(() => {
         if (state.open) {
@@ -65,6 +68,13 @@ export const CommentaryDrawer = ({
             setLockedUser(null);
         }
     }, [state.open, followingUser]);
+
+    const lastManualTickRef = useRef(manualSelectionTick);
+    useEffect(() => {
+        if (manualSelectionTick === lastManualTickRef.current) return;
+        lastManualTickRef.current = manualSelectionTick;
+        if (state.open) setLockedUser(followingUser);
+    }, [manualSelectionTick, state.open, followingUser]);
 
     const displayedUser =
         state.pinned && state.pinnedUser
