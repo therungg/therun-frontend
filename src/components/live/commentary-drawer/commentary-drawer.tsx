@@ -160,6 +160,23 @@ export const CommentaryDrawer = ({
         }
     }, [displayedUser, lastDisplayedUser, liveDataMap, state]);
 
+    // Auto-follow live split for the *displayed* runner (which may be the
+    // pinned/locked user, not the one selected on the live page). Without
+    // this, clicking a different runner while pinned would yank the panel's
+    // split index to the new runner's split even though the drawer is still
+    // showing the pinned runner.
+    const displayedCurrentSplitIndex =
+        liveDataMap[displayedUser]?.currentSplitIndex ?? 0;
+    useEffect(() => {
+        if (state.followLive) {
+            state.syncToCurrentSplit(displayedCurrentSplitIndex);
+        }
+    }, [
+        state.followLive,
+        displayedCurrentSplitIndex,
+        state.syncToCurrentSplit,
+    ]);
+
     const close = useCallback(() => ctx.setOpen(false), [ctx]);
 
     const acceptNewRun = useCallback(() => {
@@ -332,7 +349,9 @@ export const CommentaryDrawer = ({
                             currentSplitIndex={liveRun.currentSplitIndex}
                             followLive={state.followLive}
                             onChange={state.setSelectedSplitIndex}
-                            onJumpToLive={state.jumpToLive}
+                            onJumpToLive={() =>
+                                state.jumpToLive(displayedCurrentSplitIndex)
+                            }
                         />
                         {hasInsufficientData && (
                             <div className={styles.runnerThinNotice}>
