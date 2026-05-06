@@ -30,7 +30,7 @@ const segmentAt = (
 ): number | null => {
     const split = liveRun.splits[selectedIndex];
     if (role === 'past') {
-        if (split.splitTime == null) return null;
+        if (!split || split.splitTime == null) return null;
         if (selectedIndex === 0) return split.splitTime;
         const prev = liveRun.splits[selectedIndex - 1]?.splitTime;
         if (prev == null) return null;
@@ -43,7 +43,7 @@ const segmentAt = (
         if (prev == null) return null;
         return liveNowMs - prev;
     }
-    return split.predictedSingleTime ?? null;
+    return split?.predictedSingleTime ?? null;
 };
 
 const splitAt = (
@@ -53,9 +53,9 @@ const splitAt = (
     liveNowMs: number | null,
 ): number | null => {
     const split = liveRun.splits[selectedIndex];
-    if (role === 'past') return split.splitTime ?? null;
+    if (role === 'past') return split?.splitTime ?? null;
     if (role === 'live') return liveNowMs;
-    return split.predictedTotalTime ?? null;
+    return split?.predictedTotalTime ?? null;
 };
 
 const pbSegmentAt = (
@@ -63,7 +63,7 @@ const pbSegmentAt = (
     selectedIndex: number,
 ): number | null => {
     const split = liveRun.splits[selectedIndex];
-    if (split.pbSplitTime == null) return null;
+    if (!split || split.pbSplitTime == null) return null;
     if (selectedIndex === 0) return split.pbSplitTime;
     const prev = liveRun.splits[selectedIndex - 1]?.pbSplitTime;
     if (prev == null) return null;
@@ -277,10 +277,15 @@ export const SplitTab = ({
     if (total === 0) return <div className={styles.empty}>No split data.</div>;
 
     // Run finished and follow-live pushed selectedIndex past the end → fall
-    // back to the last split so commentators see its data by default.
-    const effectiveIndex = selectedIndex >= total ? total - 1 : selectedIndex;
+    // back to the last split so commentators see its data by default. Also
+    // guard against negative/missing indices so we never deref undefined.
+    const effectiveIndex = Math.max(
+        0,
+        Math.min(total - 1, selectedIndex >= total ? total - 1 : selectedIndex),
+    );
 
     const split = liveRun.splits[effectiveIndex];
+    if (!split) return <div className={styles.empty}>No split data.</div>;
     const current = liveRun.currentSplitIndex;
     const role: 'past' | 'live' | 'upcoming' =
         effectiveIndex < current
@@ -298,6 +303,23 @@ export const SplitTab = ({
     const reset = resetRate(split);
     const tsp = timeSavePotential(pbSegment, split.bestPossible);
 
+    // Surface the TSP callout only when this split is among the top 10% of
+    // gold-saver opportunities in the run — otherwise it's just noise.
+    const tspIsTop10 = (() => {
+        if (tsp == null || tsp <= 0) return false;
+        const allTsp = liveRun.splits
+            .map((s, i) => {
+                const pbSeg = pbSegmentAt(liveRun, i);
+                return timeSavePotential(pbSeg, s.bestPossible);
+            })
+            .filter((v): v is number => v != null && v > 0);
+        if (allTsp.length === 0) return false;
+        const sorted = [...allTsp].sort((a, b) => b - a);
+        const cutoffIdx = Math.max(0, Math.ceil(sorted.length * 0.1) - 1);
+        const threshold = sorted[cutoffIdx];
+        return threshold != null && tsp >= threshold;
+    })();
+
     const remainingLive = Math.max(0, total - liveRun.currentSplitIndex);
     const remainingLabel =
         remainingLive === 0
@@ -314,13 +336,33 @@ export const SplitTab = ({
               ? 'Live split'
               : 'What to watch for';
 
+    // Live deltas appear only once the runner has elapsed past their best-ever
+    // segment time — before that, gold is still possible and a delta would
+    // misrepresent the run.
+    const showTopDeltas =
+        role === 'past' ||
+        (role === 'live' &&
+            segment != null &&
+            split.bestPossible != null &&
+            segment > split.bestPossible);
+
     const segmentDeltaToPb =
-        role === 'past' && segment != null && pbSegment != null
+        showTopDeltas && segment != null && pbSegment != null
             ? segment - pbSegment
             : null;
 
+    const segmentDeltaToPredicted =
+        showTopDeltas && segment != null && split.predictedSingleTime != null
+            ? segment - split.predictedSingleTime
+            : null;
+
+    const segmentDeltaToBest =
+        showTopDeltas && segment != null && split.bestPossible != null
+            ? segment - split.bestPossible
+            : null;
+
     const splitDeltaToPb =
-        role === 'past' && splitTime != null && split.pbSplitTime != null
+        showTopDeltas && splitTime != null && split.pbSplitTime != null
             ? splitTime - split.pbSplitTime
             : null;
 
@@ -339,6 +381,8 @@ export const SplitTab = ({
         segment < split.bestPossible;
 
     // "What to watch for" flags — only meaningful on upcoming or live splits.
+    // Gold-saver opportunity is intentionally omitted; the dedicated
+    // "Time save potential" callout already surfaces that.
     const watchFlags: { kind: 'risk' | 'opportunity'; text: string }[] = [];
     if (role !== 'past') {
         if (reset != null && reset >= 0.5) {
@@ -352,12 +396,6 @@ export const SplitTab = ({
                 text: `Reset risk — ${Math.round(reset * 100)}%`,
             });
         }
-        if (tsp != null && tsp >= 5000) {
-            watchFlags.push({
-                kind: 'opportunity',
-                text: `Big gold-saver — up to ${formatTimeMs(tsp)} possible`,
-            });
-        }
     }
 
     return (
@@ -368,6 +406,83 @@ export const SplitTab = ({
                     {positionLabel}
                     {remainingLabel ? ` · ${remainingLabel}` : ''}
                 </span>
+            </div>
+            {split.name && (
+                <div className={styles.splitName}>
+                    <span className={styles.splitNameLabel}>Split name:</span>{' '}
+                    {split.name}
+                </div>
+            )}
+
+            <div className={styles.statCardRow}>
+                <div
+                    className={styles.statCard}
+                    title="The segment time during the runner's PB run."
+                >
+                    <span className={styles.statCardLabel}>PB segment</span>
+                    <span className={styles.statCardValue}>
+                        {formatTimeMs(pbSegment)}
+                    </span>
+                    {segmentDeltaToPb != null && (
+                        <span
+                            className={clsx(
+                                styles.statCardDelta,
+                                segmentDeltaToPb < 0 &&
+                                    styles.statCardDeltaAhead,
+                                segmentDeltaToPb > 0 &&
+                                    styles.statCardDeltaBehind,
+                            )}
+                        >
+                            {formatDelta(segmentDeltaToPb).text}
+                        </span>
+                    )}
+                </div>
+                <div
+                    className={styles.statCard}
+                    title="The runner's all-time fastest time on this segment (a 'gold')."
+                >
+                    <span className={styles.statCardLabel}>Best ever</span>
+                    <span className={styles.statCardValue}>
+                        {formatTimeMs(split.bestPossible)}
+                    </span>
+                    {segmentDeltaToBest != null && (
+                        <span
+                            className={clsx(
+                                styles.statCardDelta,
+                                segmentDeltaToBest < 0 &&
+                                    styles.statCardDeltaAhead,
+                                segmentDeltaToBest > 0 &&
+                                    styles.statCardDeltaBehind,
+                            )}
+                        >
+                            {formatDelta(segmentDeltaToBest).text}
+                        </span>
+                    )}
+                </div>
+                <div
+                    className={styles.statCard}
+                    title="The model's expected duration for this segment, based on the runner's history."
+                >
+                    <span className={styles.statCardLabel}>
+                        Predicted segment
+                    </span>
+                    <span className={styles.statCardValue}>
+                        {formatTimeMs(split.predictedSingleTime)}
+                    </span>
+                    {segmentDeltaToPredicted != null && (
+                        <span
+                            className={clsx(
+                                styles.statCardDelta,
+                                segmentDeltaToPredicted < 0 &&
+                                    styles.statCardDeltaAhead,
+                                segmentDeltaToPredicted > 0 &&
+                                    styles.statCardDeltaBehind,
+                            )}
+                        >
+                            {formatDelta(segmentDeltaToPredicted).text}
+                        </span>
+                    )}
+                </div>
             </div>
 
             {role === 'live' && liveRun.delta != null && (
@@ -383,8 +498,11 @@ export const SplitTab = ({
                         {formatDelta(liveRun.delta).text}
                     </span>
                     {crossingInMs != null && (
-                        <span className={styles.paceEta}>
-                            Crossing in ~{formatTimeMs(crossingInMs)}
+                        <span
+                            className={styles.paceEta}
+                            title="Predicted time until the runner finishes this segment (predicted segment time minus elapsed)."
+                        >
+                            Segment ends in ~{formatTimeMs(crossingInMs)}
                         </span>
                     )}
                 </div>
@@ -411,39 +529,7 @@ export const SplitTab = ({
                 </div>
             )}
 
-            <div className={styles.statCardRow}>
-                <div
-                    className={styles.statCard}
-                    title="The segment time during the runner's PB run."
-                >
-                    <span className={styles.statCardLabel}>PB segment</span>
-                    <span className={styles.statCardValue}>
-                        {formatTimeMs(pbSegment)}
-                    </span>
-                </div>
-                <div
-                    className={styles.statCard}
-                    title="The model's expected duration for this segment, based on the runner's history."
-                >
-                    <span className={styles.statCardLabel}>
-                        Predicted segment
-                    </span>
-                    <span className={styles.statCardValue}>
-                        {formatTimeMs(split.predictedSingleTime)}
-                    </span>
-                </div>
-                <div
-                    className={styles.statCard}
-                    title="The runner's all-time fastest time on this segment (a 'gold')."
-                >
-                    <span className={styles.statCardLabel}>Best ever</span>
-                    <span className={styles.statCardValue}>
-                        {formatTimeMs(split.bestPossible)}
-                    </span>
-                </div>
-            </div>
-
-            {role !== 'past' && tsp != null && tsp > 0 && (
+            {role !== 'past' && tspIsTop10 && tsp != null && tsp > 0 && (
                 <div
                     className={styles.callout}
                     title="How much faster the runner could go on this segment if they hit their best-ever time, compared to their PB segment."
@@ -516,8 +602,8 @@ export const SplitTab = ({
                 </div>
             )}
 
-            <div className={styles.sectionTitle}>Risk</div>
-            <div className={styles.riskRow}>
+            <div className={styles.sectionTitle}>Risk of resetting</div>
+            <div className={clsx(styles.riskRow, styles.riskRow3)}>
                 <div
                     className={styles.riskItem}
                     title="Share of attempts that don't make it past this split (resets ÷ attempts started)."
@@ -539,14 +625,26 @@ export const SplitTab = ({
                         {formatPercent(reset)}
                     </span>
                 </div>
-                <div className={styles.riskItem}>
-                    <span className={styles.riskItemLabel}>Attempts</span>
+                <div
+                    className={styles.riskItem}
+                    title="How many of the runner's attempts have reached this segment."
+                >
+                    <span className={styles.riskItemLabel}>
+                        Reached segment
+                    </span>
+                    <span className={styles.riskItemValue}>
+                        {split.attemptsStarted ?? 0}
+                    </span>
+                </div>
+                <div
+                    className={styles.riskItem}
+                    title="How many of the runner's attempts have completed this segment without resetting."
+                >
+                    <span className={styles.riskItemLabel}>
+                        Completed segment
+                    </span>
                     <span className={styles.riskItemValue}>
                         {split.attemptsFinished ?? 0}
-                        <span className={styles.riskItemSub}>
-                            {' / '}
-                            {split.attemptsStarted ?? 0}
-                        </span>
                     </span>
                 </div>
             </div>
