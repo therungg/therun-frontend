@@ -1,6 +1,5 @@
 'use client';
 
-import clsx from 'clsx';
 import { useRef, useState } from 'react';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
 import styles from '../commentary-drawer.module.scss';
@@ -12,23 +11,6 @@ const StatCard = ({ label, value }: { label: string; value: string }) => (
         <span className={styles.statCardValue}>{value}</span>
     </div>
 );
-
-const DeltaPill = ({ ms, label }: { ms: number | null; label?: string }) => {
-    const d = formatDelta(ms);
-    return (
-        <span
-            className={clsx(
-                styles.deltaPill,
-                d.tone === 'ahead' && styles.deltaPillAhead,
-                d.tone === 'behind' && styles.deltaPillBehind,
-                d.tone === 'neutral' && styles.deltaPillNeutral,
-            )}
-        >
-            {label && <span className={styles.deltaPillLabel}>{label}</span>}
-            {ms == null ? '—' : d.text}
-        </span>
-    );
-};
 
 interface HistoryPoint {
     splitIndex: number;
@@ -406,11 +388,10 @@ export const PredictionsTab = ({ liveRun }: { liveRun: LiveRun }) => {
 
     const mc = liveRun.monteCarloPrediction;
     const currentP10 = mc?.percentiles?.p10 ?? null;
-    const projectedDelta =
-        mc?.bestEstimate != null && liveRun.pb != null
-            ? mc.bestEstimate - liveRun.pb
-            : null;
 
+    // Latest persisted snapshot — taken when the most recent split ended. This
+    // is what the prediction history chart's rightmost point reflects, so we
+    // drive the Likely finish range off the same source for consistency.
     const history: HistoryPoint[] = splits
         .map((s, i) => {
             const p10 = s.monteCarlo?.percentiles?.p10;
@@ -427,23 +408,6 @@ export const PredictionsTab = ({ liveRun }: { liveRun: LiveRun }) => {
 
     return (
         <>
-            <div className={styles.sectionTitle}>Projected finish</div>
-            <div className={styles.heroSolo}>
-                <div className={clsx(styles.heroCard, styles.heroCardWide)}>
-                    <span className={styles.heroNumberLabel}>
-                        {mc ? 'Best estimate' : 'Awaiting projection'}
-                    </span>
-                    <span
-                        className={clsx(styles.heroNumber, styles.heroNumberLg)}
-                    >
-                        {formatTimeMs(mc?.bestEstimate ?? null)}
-                    </span>
-                    {mc != null && (
-                        <DeltaPill ms={projectedDelta} label="vs PB" />
-                    )}
-                </div>
-            </div>
-
             <div className={styles.sectionTitle}>
                 Current predictions
                 {liveSplit && (

@@ -43,7 +43,10 @@ export interface CommentaryDrawerState {
     toggleOpen: () => void;
     setActiveTab: (tab: CommentaryTab) => void;
     setSelectedSplitIndex: (index: number) => void;
-    jumpToLive: () => void;
+    /** Update selectedSplitIndex without toggling followLive — used by the
+     * parent to sync against the *displayed* runner's currentSplitIndex. */
+    syncToCurrentSplit: (index: number) => void;
+    jumpToLive: (currentSplitIndex: number) => void;
     pinTo: (user: string) => void;
     unpin: () => void;
     resetForNewUser: (currentSplitIndex: number) => void;
@@ -92,10 +95,14 @@ export const useCommentaryDrawerState = (
         setFollowLive(false);
     }, []);
 
-    const jumpToLive = useCallback(() => {
-        setSelectedSplitIndexState(currentSplitIndex);
+    const syncToCurrentSplit = useCallback((index: number) => {
+        setSelectedSplitIndexState(index);
+    }, []);
+
+    const jumpToLive = useCallback((nextCurrentSplitIndex: number) => {
+        setSelectedSplitIndexState(nextCurrentSplitIndex);
         setFollowLive(true);
-    }, [currentSplitIndex]);
+    }, []);
 
     const pinTo = useCallback((user: string) => {
         setPinned(true);
@@ -114,12 +121,9 @@ export const useCommentaryDrawerState = (
         setFollowLive(true);
     }, []);
 
-    // Auto-follow live split unless user navigated away.
-    useEffect(() => {
-        if (followLive) {
-            setSelectedSplitIndexState(currentSplitIndex);
-        }
-    }, [currentSplitIndex, followLive]);
+    // Auto-follow lives in the parent so it can use the *displayed* runner's
+    // currentSplitIndex (which may differ from `currentSplitIndex` here when
+    // the drawer is pinned to a different runner).
 
     return {
         open,
@@ -132,6 +136,7 @@ export const useCommentaryDrawerState = (
         toggleOpen,
         setActiveTab,
         setSelectedSplitIndex,
+        syncToCurrentSplit,
         jumpToLive,
         pinTo,
         unpin,

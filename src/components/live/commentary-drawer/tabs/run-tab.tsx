@@ -6,101 +6,7 @@ import { LiveRun } from '~app/(new-layout)/live/live.types';
 import styles from '../commentary-drawer.module.scss';
 import { formatDelta, formatTimeMs } from '../format';
 
-interface RangeBarProps {
-    p10: number;
-    p90: number;
-    pb: number | null;
-    projected: number | null;
-}
-
 const clampPct = (n: number) => Math.max(0, Math.min(100, n));
-
-const RangeBar = ({ p10, p90, pb, projected }: RangeBarProps) => {
-    const span = Math.max(1, p90 - p10);
-
-    // Pad bounds slightly so PB/projected near edges still fit visually.
-    const padding = span * 0.1;
-    const min = p10 - padding;
-    const max = p90 + padding;
-
-    const pos = (v: number | null) =>
-        v == null ? null : clampPct(((v - min) / (max - min)) * 100);
-
-    const fillLeft = pos(p10) ?? 0;
-    const fillRight = pos(p90) ?? 100;
-
-    const projectedPos = pos(projected);
-    const pbPos = pos(pb);
-
-    // Decide which marker label goes on top vs bottom to avoid collision.
-    const projectedOnTop =
-        projectedPos == null ||
-        pbPos == null ||
-        Math.abs(projectedPos - pbPos) > 12 ||
-        projectedPos <= pbPos;
-
-    return (
-        <div className={styles.rangeBarWrap}>
-            <div className={styles.rangeBar}>
-                <div
-                    className={styles.rangeBarFill}
-                    style={{
-                        left: `${fillLeft}%`,
-                        right: `${100 - fillRight}%`,
-                    }}
-                />
-                {projectedPos != null && (
-                    <>
-                        <span
-                            className={clsx(
-                                styles.rangeBarMarker,
-                                styles.rangeBarMarkerProjected,
-                            )}
-                            style={{ left: `${projectedPos}%` }}
-                        />
-                        <span
-                            className={clsx(
-                                styles.rangeBarMarkerLabel,
-                                styles.rangeBarMarkerLabelProjected,
-                                !projectedOnTop &&
-                                    styles.rangeBarMarkerLabelBottom,
-                            )}
-                            style={{ left: `${projectedPos}%` }}
-                        >
-                            Proj
-                        </span>
-                    </>
-                )}
-                {pbPos != null && (
-                    <>
-                        <span
-                            className={clsx(
-                                styles.rangeBarMarker,
-                                styles.rangeBarMarkerPb,
-                            )}
-                            style={{ left: `${pbPos}%` }}
-                        />
-                        <span
-                            className={clsx(
-                                styles.rangeBarMarkerLabel,
-                                styles.rangeBarMarkerLabelPb,
-                                projectedOnTop &&
-                                    styles.rangeBarMarkerLabelBottom,
-                            )}
-                            style={{ left: `${pbPos}%` }}
-                        >
-                            PB
-                        </span>
-                    </>
-                )}
-            </div>
-            <div className={styles.rangeBarBoundLabels}>
-                <span>{formatTimeMs(p10)}</span>
-                <span>{formatTimeMs(p90)}</span>
-            </div>
-        </div>
-    );
-};
 
 interface DeltaBarProps {
     label: string;
@@ -140,24 +46,22 @@ const DeltaBar = ({
                 isActive && styles.deltaBarRowActive,
             )}
         >
-            <div className={styles.deltaBarLabel}>
-                <span className={styles.deltaBarLabelText}>{label}</span>
-                <div className={styles.deltaBarTrack}>
-                    <div className={styles.deltaBarCenter} />
-                    {pct > 0 && (
-                        <div
-                            className={clsx(
-                                styles.deltaBarFill,
-                                fillKind === 'ahead' &&
-                                    styles.deltaBarFillAhead,
-                                fillKind === 'behind' &&
-                                    styles.deltaBarFillBehind,
-                                fillKind === 'gold' && styles.deltaBarFillGold,
-                            )}
-                            style={{ width: `${pct}%` }}
-                        />
-                    )}
-                </div>
+            <span className={styles.deltaBarLabelText} title={label}>
+                {label}
+            </span>
+            <div className={styles.deltaBarTrack}>
+                <div className={styles.deltaBarCenter} />
+                {pct > 0 && (
+                    <div
+                        className={clsx(
+                            styles.deltaBarFill,
+                            fillKind === 'ahead' && styles.deltaBarFillAhead,
+                            fillKind === 'behind' && styles.deltaBarFillBehind,
+                            fillKind === 'gold' && styles.deltaBarFillGold,
+                        )}
+                        style={{ width: `${pct}%` }}
+                    />
+                )}
             </div>
             <span
                 className={clsx(
@@ -829,8 +733,6 @@ export const RunTab = ({
     liveRun: LiveRun;
     selectedIndex: number;
 }) => {
-    const mc = liveRun.monteCarloPrediction;
-
     // Per-split delta computation for completed splits.
     const completed = liveRun.splits.slice(0, liveRun.currentSplitIndex);
     const splitDeltas = completed.map((s, i) => {
@@ -887,15 +789,6 @@ export const RunTab = ({
             </div>
             <PaceVsPbChart liveRun={liveRun} />
 
-            {mc != null && (
-                <RangeBar
-                    p10={mc.percentiles.p10}
-                    p90={mc.percentiles.p90}
-                    pb={liveRun.pb ?? null}
-                    projected={mc.bestEstimate ?? null}
-                />
-            )}
-
             <div className={styles.sectionTitle}>Pace anchors</div>
             <div className={styles.statCardRow}>
                 <div
@@ -928,46 +821,6 @@ export const RunTab = ({
                     </span>
                 </div>
             </div>
-
-            {mc != null && (
-                <>
-                    <div className={styles.sectionTitle}>
-                        Likely finish range
-                        <span className={styles.sectionTitleSub}>
-                            Half of simulated runs land between these two
-                        </span>
-                    </div>
-                    <div
-                        className={clsx(
-                            styles.statCardRow,
-                            styles.statCardRow2,
-                        )}
-                    >
-                        <div
-                            className={styles.statCard}
-                            title="25th percentile — only ¼ of simulated runs from here finish faster than this."
-                        >
-                            <span className={styles.statCardLabel}>
-                                Optimistic (p25)
-                            </span>
-                            <span className={styles.statCardValue}>
-                                {formatTimeMs(mc.percentiles.p25)}
-                            </span>
-                        </div>
-                        <div
-                            className={styles.statCard}
-                            title="75th percentile — ¾ of simulated runs from here finish faster than this; only ¼ are slower."
-                        >
-                            <span className={styles.statCardLabel}>
-                                Pessimistic (p75)
-                            </span>
-                            <span className={styles.statCardValue}>
-                                {formatTimeMs(mc.percentiles.p75)}
-                            </span>
-                        </div>
-                    </div>
-                </>
-            )}
 
             <div className={styles.sectionTitle}>
                 Time save potential
