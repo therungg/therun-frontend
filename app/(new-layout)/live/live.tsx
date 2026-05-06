@@ -65,6 +65,7 @@ export const Live = ({
     const [currentlyViewing, setCurrentlyViewing] = useState(
         getRecommendedStream(liveDataMap, username),
     );
+    const [manualSelectionTick, setManualSelectionTick] = useState(0);
 
     const [loadingUserData, setLoadingUserData] = useState(true);
     const lastMessage = useLiveRunsWebsocket();
@@ -159,6 +160,7 @@ export const Live = ({
         (user: string) => {
             clearStaleState();
             setCurrentlyViewing(user);
+            setManualSelectionTick((n) => n + 1);
             window.scrollTo(0, 0);
         },
         [clearStaleState],
@@ -471,6 +473,7 @@ export const Live = ({
                 <CommentaryDrawer
                     liveDataMap={updatedLiveDataMap}
                     currentlyViewing={currentlyViewing}
+                    manualSelectionTick={manualSelectionTick}
                 />
             )}
         </CommentaryDrawerProvider>
