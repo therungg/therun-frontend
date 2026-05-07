@@ -132,7 +132,10 @@ export const CommentaryDrawer = ({
 
     // Stories fetch lives at the shell so the Story tab can consume the same
     // state via prop.
-    const storyState = useStoryCandidates(displayedUser);
+    const storyState = useStoryCandidates(
+        displayedUser,
+        rawRun?.currentSplitIndex ?? 0,
+    );
 
     // Show the "limited data" banner based on the runner's own attempt counts
     // for this category, not the story fetch result. Threshold: 20 attempts

@@ -12,6 +12,7 @@ export interface StoryCandidatesState {
 
 export const useStoryCandidates = (
     user: string | null,
+    refetchKey: string | number = 0,
 ): StoryCandidatesState => {
     const [state, setState] = useState<StoryCandidatesState>({
         story: null,
@@ -27,31 +28,36 @@ export const useStoryCandidates = (
         let cancelled = false;
         setState((s) => ({ ...s, isLoading: true, error: null }));
 
-        getStoryByUser(user, true)
-            .then((story) => {
-                if (cancelled) return;
-                setState({
-                    story: story ?? null,
-                    isLoading: false,
-                    error: null,
+        const fetchStory = (silent: boolean) =>
+            getStoryByUser(user, true)
+                .then((story) => {
+                    if (cancelled) return;
+                    setState({
+                        story: story ?? null,
+                        isLoading: false,
+                        error: null,
+                    });
+                })
+                .catch((e: unknown) => {
+                    if (cancelled || silent) return;
+                    setState({
+                        story: null,
+                        isLoading: false,
+                        error:
+                            e instanceof Error
+                                ? e.message
+                                : 'Story candidates unavailable.',
+                    });
                 });
-            })
-            .catch((e: unknown) => {
-                if (cancelled) return;
-                setState({
-                    story: null,
-                    isLoading: false,
-                    error:
-                        e instanceof Error
-                            ? e.message
-                            : 'Story candidates unavailable.',
-                });
-            });
+
+        fetchStory(false);
+        const retryTimer = setTimeout(() => fetchStory(true), 10_000);
 
         return () => {
             cancelled = true;
+            clearTimeout(retryTimer);
         };
-    }, [user]);
+    }, [user, refetchKey]);
 
     return state;
 };
