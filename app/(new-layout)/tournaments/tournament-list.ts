@@ -29,12 +29,6 @@ const tournamentEntries: Array<[string, TournamentEntryValue]> = [
         },
     ],
     [
-        'ludwig',
-        {
-            tournament: 'MoistCr1tikal Tournament 5',
-        },
-    ],
-    [
         'fast50',
         {
             tournament: 'MoistCr1tikal Tournament 5',
