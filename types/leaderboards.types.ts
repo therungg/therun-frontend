@@ -61,14 +61,13 @@ export interface VariablesResponse {
 }
 
 export interface LeaderboardEntry {
-    runId: number;
+    runId?: number | null;
     rank: number;
     runnerName: string;
     userId?: number | null;
     isGuest: boolean;
-    time: number;
-    gameTime?: number | null;
-    setAt: string;
+    time: number | null;
+    runDate: string;
     vodUrl?: string | null;
     verificationStatus: 'pending' | 'verified' | 'rejected';
     variables?: Record<string, string> | null;
@@ -78,7 +77,7 @@ export interface LeaderboardResponse {
     entries: LeaderboardEntry[];
     page: number;
     pageSize: number;
-    totalEntries: number;
+    totalItems: number;
     totalPages: number;
 }
 

@@ -49,8 +49,21 @@ export async function getLeaderboard(
 
     const game = encodeURIComponent(q.gameSlug);
     const category = encodeURIComponent(q.categorySlug);
-    const path = `/leaderboards/${game}/${category}?${buildLeaderboardQS(q)}`;
-    return v1Fetch<LeaderboardResponse>(path);
+    const path = `/v1/leaderboards/${game}/${category}?${buildLeaderboardQS(q)}`;
+    const raw = await v1Fetch<{
+        items: LeaderboardResponse['entries'];
+        totalItems: number;
+        page: number;
+        pageSize: number;
+        totalPages: number;
+    }>(path);
+    return {
+        entries: raw.items ?? [],
+        page: raw.page,
+        pageSize: raw.pageSize,
+        totalItems: raw.totalItems,
+        totalPages: raw.totalPages,
+    };
 }
 
 export async function getVariables(
