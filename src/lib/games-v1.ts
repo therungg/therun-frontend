@@ -52,7 +52,7 @@ export async function resolveGame(slug: string): Promise<ResolvedGame | null> {
 
     return {
         id: row.gameId,
-        name: row.gameDisplay.toLowerCase().replace(/\s+/g, ''),
+        name: normalizeSlug(row.gameDisplay),
         display: row.gameDisplay,
         image: row.gameImage ?? null,
     };
@@ -101,7 +101,7 @@ export async function resolveCategory(
     const rows = body.result ?? [];
     const categories: ResolvedCategory[] = rows.map((r) => ({
         id: r.categoryId,
-        name: r.categoryDisplay.toLowerCase().replace(/\s+/g, ''),
+        name: normalizeSlug(r.categoryDisplay),
         display: r.categoryDisplay,
         primaryTiming: r.primaryTiming ?? 'rt',
         defaultSubcategoryHash: r.defaultSubcategoryHash ?? null,

@@ -88,7 +88,7 @@ export async function getWrHistory(
     cacheLife('minutes');
     cacheTag(`wr-history:${gameSlug}:${categorySlug}:${subcategoryHash}`);
 
-    const path = `/leaderboards/wr-history/${encodeURIComponent(gameSlug)}/${encodeURIComponent(categorySlug)}?subcategory=${encodeURIComponent(subcategoryHash)}`;
+    const path = `/v1/leaderboards/wr-history/${encodeURIComponent(gameSlug)}/${encodeURIComponent(categorySlug)}?subcategory=${encodeURIComponent(subcategoryHash)}`;
     const body = await v1Fetch<{ result: WrHistoryEntry[] }>(path);
     return body.result ?? [];
 }
@@ -98,7 +98,7 @@ export async function getUserRankings(userId: number): Promise<UserRanking[]> {
     cacheLife('minutes');
     cacheTag(`user-rankings:${userId}`);
 
-    const path = `/leaderboards/user/${userId}/rankings`;
+    const path = `/v1/leaderboards/user/${userId}/rankings`;
     const body = await v1Fetch<{ result: UserRanking[] }>(path);
     return body.result ?? [];
 }

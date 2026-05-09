@@ -67,7 +67,7 @@ export interface LeaderboardEntry {
     userId?: number | null;
     isGuest: boolean;
     time: number | null;
-    runDate: string;
+    runDate: string | null;
     vodUrl?: string | null;
     verificationStatus: 'pending' | 'verified' | 'rejected';
     variables?: Record<string, string> | null;
