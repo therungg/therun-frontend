@@ -1,4 +1,3 @@
-import type { LiveRun } from '~app/(new-layout)/live/live.types';
 import {
     getQuickStats,
     getRecentPbs,
@@ -74,12 +73,17 @@ export async function loadGamePageData(
         recentPbs,
         liveRunners,
     ] = await Promise.all([
-        getVariables(game.name, selected.name),
+        getVariables(game.name, selected.name).catch(() => []),
         getLeaderboard({ ...baseQuery, timing: 'rt' }),
         getLeaderboard({ ...baseQuery, timing: 'gt' }),
-        getQuickStats(game.id),
-        getRecentPbs(game.id),
-        getAllLiveRuns(game.display) as Promise<LiveRun[]>,
+        getQuickStats(game.id).catch(() => ({
+            totalRunTime: 0,
+            totalAttemptCount: 0,
+            totalFinishedAttemptCount: 0,
+            uniqueRunners: 0,
+        })),
+        getRecentPbs(game.id).catch(() => []),
+        getAllLiveRuns(game.display).catch(() => []),
     ]);
 
     return {
