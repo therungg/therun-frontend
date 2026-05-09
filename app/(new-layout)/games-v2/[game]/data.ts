@@ -1,4 +1,3 @@
-import { getSession } from '~src/actions/session.action';
 import {
     getQuickStats,
     getRecentPbs,
@@ -13,13 +12,8 @@ const DEFAULT_PAGE_SIZE = 25;
 export async function loadGamePageData(
     slug: string,
     sp: GamePageSearchParams,
+    sessionUsername: string | null,
 ): Promise<GamePageData | null> {
-    const session = await getSession();
-    const sessionUsername =
-        session?.username && session.username.length > 0
-            ? session.username
-            : null;
-
     const game = await resolveGame(slug);
     if (!game) return null;
 

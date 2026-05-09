@@ -19,6 +19,8 @@ export function GameHeader({ game, stats }: Props) {
                     width={48}
                     height={64}
                     className="rounded"
+                    style={{ aspectRatio: '3 / 4' }}
+                    loading="eager"
                 />
             )}
             <div>
