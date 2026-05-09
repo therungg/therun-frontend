@@ -322,26 +322,6 @@ const PredictionHistoryChart = ({
                                 </span>
                             </div>
                         )}
-                        {pb != null && (
-                            <div className={styles.predictionTooltipRow}>
-                                <span className={styles.predictionTooltipLabel}>
-                                    vs PB
-                                </span>
-                                <span className={styles.predictionTooltipValue}>
-                                    {formatDelta(hovered.p10 - pb).text}
-                                </span>
-                            </div>
-                        )}
-                        {currentP10 != null && (
-                            <div className={styles.predictionTooltipRow}>
-                                <span className={styles.predictionTooltipLabel}>
-                                    vs now
-                                </span>
-                                <span className={styles.predictionTooltipValue}>
-                                    {formatDelta(hovered.p10 - currentP10).text}
-                                </span>
-                            </div>
-                        )}
                     </div>
                 )}
             </div>
