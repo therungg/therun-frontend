@@ -398,12 +398,12 @@
     align-items: baseline;
     gap: 0.5rem;
     margin: 0.25rem 0 0.75rem;
-    font-size: 0.72rem;
+    font-size: 0.82rem;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.08em;
     color: var(--bs-body-color);
-    opacity: 0.85;
+    opacity: 0.9;
 }
 
 .sectionTitle:not(:first-child) {
@@ -411,11 +411,11 @@
 }
 
 .sectionTitleSub {
-    font-size: 0.65rem;
+    font-size: 0.78rem;
     text-transform: none;
     letter-spacing: 0;
     color: var(--bs-secondary-color);
-    opacity: 0.75;
+    opacity: 0.85;
     font-family: var(--bs-font-monospace);
     font-variant-numeric: tabular-nums;
 }
@@ -1705,6 +1705,90 @@
     margin-top: 0.3rem;
     font-family: var(--bs-font-monospace);
     font-variant-numeric: tabular-nums;
+}
+
+.paceLinePb {
+    fill: none;
+    stroke: var(--bs-secondary-color);
+    stroke-width: 1.4;
+    stroke-dasharray: 4 3;
+    opacity: 0.85;
+}
+
+.paceLineRun {
+    fill: none;
+    stroke: var(--bs-primary);
+    stroke-width: 1.8;
+    opacity: 0.95;
+}
+
+.paceLineRunGold {
+    stroke: #ffc107;
+    filter: drop-shadow(0 0 2px rgba(255, 193, 7, 0.6));
+    opacity: 1;
+}
+
+.paceDotRunGold {
+    fill: #ffc107;
+    stroke: #c79100;
+    stroke-width: 0.8;
+}
+
+.paceLineRunLive {
+    fill: none;
+    stroke: var(--bs-primary);
+    stroke-width: 1.8;
+    stroke-dasharray: 3 3;
+    opacity: 0.9;
+}
+
+.paceDotPb {
+    fill: var(--bs-secondary-color);
+}
+
+.paceDotRun {
+    fill: var(--bs-primary);
+}
+
+.paceDotRunLive {
+    fill: var(--bs-primary);
+    stroke: var(--bs-body-bg);
+    stroke-width: 1.5;
+}
+
+.paceLegendSwatchPb,
+.paceLegendSwatchRun,
+.paceLegendSwatchSob {
+    width: 0.75rem;
+    height: 0.15rem;
+    border-radius: 0.05rem;
+    display: inline-block;
+}
+
+.paceLegendSwatchPb {
+    background: repeating-linear-gradient(
+        to right,
+        var(--bs-secondary-color) 0,
+        var(--bs-secondary-color) 3px,
+        transparent 3px,
+        transparent 6px
+    );
+    height: 0.15rem;
+}
+
+.paceLegendSwatchRun {
+    background: var(--bs-primary);
+}
+
+.paceLegendSwatchSob {
+    background: repeating-linear-gradient(
+        to right,
+        var(--bs-secondary-color) 0,
+        var(--bs-secondary-color) 3px,
+        transparent 3px,
+        transparent 6px
+    );
+    opacity: 0.7;
 }
 
 /* --- Predictions tab --- */
