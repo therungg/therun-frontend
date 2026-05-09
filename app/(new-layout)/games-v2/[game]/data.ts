@@ -109,7 +109,7 @@ function emptyBoard() {
         entries: [],
         page: 1,
         pageSize: DEFAULT_PAGE_SIZE,
-        totalEntries: 0,
+        totalItems: 0,
         totalPages: 0,
     };
 }

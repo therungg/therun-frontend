@@ -1,5 +1,8 @@
+import { VerifiedToggle } from './filters/verified-toggle';
 import { CategoryPills } from './header/category-pills';
 import { GameHeader } from './header/game-header';
+import { LeaderboardTable } from './leaderboard/leaderboard-table';
+import { PaginationBar } from './leaderboard/pagination-bar';
 import type { GamePageData } from './types';
 
 interface Props {
@@ -18,6 +21,11 @@ export function GamePage({ data }: Props) {
         );
     }
 
+    const primary =
+        data.selectedCategory.primaryTiming === 'gt'
+            ? data.leaderboardGt
+            : data.leaderboardRt;
+
     return (
         <div>
             <GameHeader game={data.game} stats={data.quickStats} />
@@ -27,13 +35,17 @@ export function GamePage({ data }: Props) {
             />
             <div className="row">
                 <div className="col-lg-8">
-                    {/* Filter bar slot — Task 5 */}
-                    {/* Leaderboard slot — Task 3 */}
-                    <div className="border rounded p-4 text-center text-muted">
-                        Leaderboard for{' '}
-                        <strong>{data.selectedCategory.display}</strong> goes
-                        here.
-                    </div>
+                    <VerifiedToggle verified={data.activeFilters.verified} />
+                    <LeaderboardTable
+                        rt={data.leaderboardRt}
+                        gt={data.leaderboardGt}
+                        category={data.selectedCategory}
+                        sessionUsername={data.sessionUsername}
+                    />
+                    <PaginationBar
+                        page={primary.page}
+                        totalPages={primary.totalPages}
+                    />
                 </div>
                 <div className="col-lg-4">
                     {/* Sidebar slot — Task 4 */}
