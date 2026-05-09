@@ -3,6 +3,7 @@ import type {
     LeaderboardResponse,
     ResolvedCategory,
 } from '../../../../../types/leaderboards.types';
+import { ClearFiltersButton } from '../filters/clear-filters-button';
 import { LeaderboardRow } from './leaderboard-row';
 
 interface Props {
@@ -16,9 +17,10 @@ export function LeaderboardTable({ rt, gt, category, sessionUsername }: Props) {
     const primary = category.primaryTiming === 'gt' ? gt : rt;
     if (primary.entries.length === 0) {
         return (
-            <p className="text-center text-muted my-4">
-                No runs match these filters.
-            </p>
+            <div className="text-center my-4">
+                <p className="text-muted">No runs match these filters.</p>
+                <ClearFiltersButton />
+            </div>
         );
     }
 
