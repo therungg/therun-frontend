@@ -1,20 +1,43 @@
 'use client';
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useEffect, useRef, useTransition } from 'react';
 import type { VariableDef } from '../../../../../types/leaderboards.types';
 
 interface Props {
     def: VariableDef;
     selectedValues: string[];
+    isOpen: boolean;
+    onOpen: () => void;
+    onClose: () => void;
 }
 
-export function VariablePill({ def, selectedValues }: Props) {
+export function VariablePill({
+    def,
+    selectedValues,
+    isOpen,
+    onOpen,
+    onClose,
+}: Props) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const [isPending, startTransition] = useTransition();
-    const [open, setOpen] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!isOpen) return;
+        const handler = (e: MouseEvent) => {
+            if (
+                containerRef.current &&
+                !containerRef.current.contains(e.target as Node)
+            ) {
+                onClose();
+            }
+        };
+        document.addEventListener('mousedown', handler);
+        return () => document.removeEventListener('mousedown', handler);
+    }, [isOpen, onClose]);
 
     const setValues = (next: string[]) => {
         const sp = new URLSearchParams(searchParams.toString());
@@ -41,18 +64,17 @@ export function VariablePill({ def, selectedValues }: Props) {
             : `${def.display}: ${selectedValues.join(', ')}`;
 
     return (
-        <div className="position-relative">
+        <div className="position-relative" ref={containerRef}>
             <button
                 type="button"
-                onClick={() => setOpen((o) => !o)}
+                onClick={() => (isOpen ? onClose() : onOpen())}
                 disabled={isPending}
                 className={`btn btn-sm ${selectedValues.length > 0 ? 'btn-primary' : 'btn-outline-secondary'}`}
             >
                 {label}
             </button>
-            {open && (
+            {isOpen && (
                 <div
-                    role="dialog"
                     className="position-absolute mt-1 p-2 border rounded bg-body shadow-sm"
                     style={{ zIndex: 10, minWidth: '12rem' }}
                 >

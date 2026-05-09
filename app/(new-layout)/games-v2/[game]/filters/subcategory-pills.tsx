@@ -21,7 +21,12 @@ export function SubcategoryPills({ defs, selected }: Props) {
 
     const onPick = (def: VariableDef, value: string) => {
         const next = { ...selected, [def.name]: value };
-        const hash = computeSubcategoryHash(defs, next);
+        let hash: string;
+        try {
+            hash = computeSubcategoryHash(defs, next);
+        } catch {
+            return; // required variable not yet selected; defensive refuse
+        }
         const sp = new URLSearchParams(searchParams.toString());
         if (hash) sp.set('subcategory', hash);
         else sp.delete('subcategory');
