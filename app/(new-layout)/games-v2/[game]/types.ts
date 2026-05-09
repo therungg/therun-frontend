@@ -34,5 +34,6 @@ export interface GamePageData {
         page: number;
         pageSize: number;
         varFilters: Record<string, string>;
+        selectedSubcategoryValues: Record<string, string>;
     };
 }

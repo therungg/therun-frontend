@@ -1,4 +1,4 @@
-import { VerifiedToggle } from './filters/verified-toggle';
+import { FilterBar } from './filters/filter-bar';
 import { CategoryPills } from './header/category-pills';
 import { GameHeader } from './header/game-header';
 import { LeaderboardTable } from './leaderboard/leaderboard-table';
@@ -36,7 +36,14 @@ export function GamePage({ data }: Props) {
             />
             <div className="row">
                 <div className="col-lg-8">
-                    <VerifiedToggle verified={data.activeFilters.verified} />
+                    <FilterBar
+                        defs={data.variables}
+                        selectedSubcategoryValues={
+                            data.activeFilters.selectedSubcategoryValues
+                        }
+                        selectedVarFilters={data.activeFilters.varFilters}
+                        verified={data.activeFilters.verified}
+                    />
                     <LeaderboardTable
                         rt={data.leaderboardRt}
                         gt={data.leaderboardGt}

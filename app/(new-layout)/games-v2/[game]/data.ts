@@ -103,6 +103,7 @@ export async function loadGamePageData(
             page,
             pageSize,
             varFilters,
+            selectedSubcategoryValues: extractSubcategoryValues(sp),
         },
     };
 }
@@ -134,5 +135,18 @@ function emptyFilters() {
         page: 1,
         pageSize: DEFAULT_PAGE_SIZE,
         varFilters: {} as Record<string, string>,
+        selectedSubcategoryValues: {} as Record<string, string>,
     };
+}
+
+function extractSubcategoryValues(
+    sp: GamePageSearchParams,
+): Record<string, string> {
+    const out: Record<string, string> = {};
+    for (const [k, v] of Object.entries(sp)) {
+        if (k.startsWith('subvar_') && typeof v === 'string' && v.length > 0) {
+            out[k.slice(7)] = v;
+        }
+    }
+    return out;
 }
