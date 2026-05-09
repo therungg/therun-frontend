@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { getSession } from '~src/actions/session.action';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import { loadGamePageData } from './data';
@@ -18,7 +19,13 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
     const sp = await searchParams;
     if (!game) notFound();
 
-    const data = await loadGamePageData(game, sp);
+    const session = await getSession();
+    const sessionUsername =
+        session?.username && session.username.length > 0
+            ? session.username
+            : null;
+
+    const data = await loadGamePageData(game, sp, sessionUsername);
     if (!data) notFound();
 
     return <GamePage data={data} />;
