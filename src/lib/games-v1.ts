@@ -42,9 +42,9 @@ function normalizeSlug(slug: string): string {
 export async function resolveGame(slug: string): Promise<ResolvedGame | null> {
     'use cache';
     cacheLife('hours');
-    cacheTag(`game-resolve:${slug}`);
-
     const normalized = normalizeSlug(slug);
+    cacheTag(`game-resolve:${normalized}`);
+
     const path = `/v1/runs/games?game=${encodeURIComponent(normalized)}&limit=1`;
     const body = await v1Fetch<{ result: GamesEndpointRow[] }>(path);
     const row = body.result?.[0];
@@ -91,6 +91,9 @@ export async function resolveCategory(
 }> {
     'use cache';
     cacheLife('minutes');
+    // Cache is keyed by gameId only; categorySlug is used post-fetch to pick
+    // one entry from the cached list, so it intentionally shares cache across
+    // category selections for the same game.
     cacheTag(`game-cats:${gameId}`);
 
     const path = `/v1/runs/categories?game_id=${gameId}&sort=-total_run_time&limit=200`;
