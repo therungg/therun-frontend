@@ -6,12 +6,14 @@ export const manageableRoles: Role[] = [
     'race-admin',
     'event-admin',
     'event-creator',
+    'tournament-creator',
 ];
 
 export const assignableRoles: ManageableRole[] = [
     'race-admin',
     'event-admin',
     'event-creator',
+    'tournament-creator',
 ];
 
 export type ManageableRole = (typeof manageableRoles)[number];
