@@ -3,6 +3,7 @@ import { CategoryPills } from './header/category-pills';
 import { GameHeader } from './header/game-header';
 import { LeaderboardTable } from './leaderboard/leaderboard-table';
 import { PaginationBar } from './leaderboard/pagination-bar';
+import { Sidebar } from './sidebar/sidebar';
 import type { GamePageData } from './types';
 
 interface Props {
@@ -48,10 +49,7 @@ export function GamePage({ data }: Props) {
                     />
                 </div>
                 <div className="col-lg-4">
-                    {/* Sidebar slot — Task 4 */}
-                    <div className="border rounded p-4 text-center text-muted">
-                        Sidebar
-                    </div>
+                    <Sidebar data={data} />
                 </div>
             </div>
         </div>

@@ -1,3 +1,4 @@
+import type { LiveRun } from '~app/(new-layout)/live/live.types';
 import {
     getQuickStats,
     getRecentPbs,
@@ -5,6 +6,7 @@ import {
     resolveGame,
 } from '~src/lib/games-v1';
 import { getLeaderboard, getVariables } from '~src/lib/leaderboards-v1';
+import { getAllLiveRuns } from '~src/lib/live-runs';
 import type { GamePageData, GamePageSearchParams } from './types';
 
 const DEFAULT_PAGE_SIZE = 25;
@@ -64,14 +66,21 @@ export async function loadGamePageData(
         varFilters,
     };
 
-    const [variables, leaderboardRt, leaderboardGt, quickStats, recentPbs] =
-        await Promise.all([
-            getVariables(game.name, selected.name),
-            getLeaderboard({ ...baseQuery, timing: 'rt' }),
-            getLeaderboard({ ...baseQuery, timing: 'gt' }),
-            getQuickStats(game.id),
-            getRecentPbs(game.id),
-        ]);
+    const [
+        variables,
+        leaderboardRt,
+        leaderboardGt,
+        quickStats,
+        recentPbs,
+        liveRunners,
+    ] = await Promise.all([
+        getVariables(game.name, selected.name),
+        getLeaderboard({ ...baseQuery, timing: 'rt' }),
+        getLeaderboard({ ...baseQuery, timing: 'gt' }),
+        getQuickStats(game.id),
+        getRecentPbs(game.id),
+        getAllLiveRuns(game.display) as Promise<LiveRun[]>,
+    ]);
 
     return {
         game,
@@ -82,7 +91,7 @@ export async function loadGamePageData(
         leaderboardGt,
         quickStats,
         recentPbs,
-        liveRunners: [], // wired in Task 4
+        liveRunners: liveRunners ?? [],
         sessionUsername,
         activeFilters: {
             subcategoryHash,
