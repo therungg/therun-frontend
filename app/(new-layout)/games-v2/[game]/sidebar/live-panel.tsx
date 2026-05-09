@@ -29,7 +29,7 @@ export function LivePanel({ runners }: Props) {
             <ul className="list-unstyled mb-0">
                 {top.map((r) => (
                     <li
-                        key={r.user}
+                        key={r.login}
                         className="d-flex justify-content-between align-items-baseline"
                     >
                         <a

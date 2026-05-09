@@ -10,7 +10,7 @@ const LIVE_RUN_URL = `${process.env.NEXT_PUBLIC_DATA_URL}/live`;
 export const getAllLiveRuns = async (
     game: string | null = null,
     category: string | null = null,
-) => {
+): Promise<LiveRun[]> => {
     'use cache';
     cacheLife('seconds');
     let url = `${LIVE_RUN_URL}?minify=true`;
