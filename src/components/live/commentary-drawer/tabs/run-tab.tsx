@@ -3,6 +3,7 @@
 import clsx from 'clsx';
 import { useRef, useState } from 'react';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
+import { useLiveElapsedMs } from '~app/(new-layout)/live/use-live-elapsed-ms';
 import styles from '../commentary-drawer.module.scss';
 import { formatDelta, formatTimeMs } from '../format';
 
@@ -79,9 +80,18 @@ const DeltaBar = ({
 
 interface PacePoint {
     i: number;
-    delta: number;
+    pbDelta: number | null; // pbSplitTime - cumulative SoB at split i
+    runDelta: number | null; // splitTime - cumulative SoB (completed/live)
+    isLive: boolean;
     name: string;
-    splitTime: number;
+    pbSplitTime: number | null;
+    runSplitTime: number | null;
+    cumBest: number;
+    pbSegment: number | null;
+    runSegment: number | null;
+    bestSegment: number | null;
+    predictedSegment: number | null;
+    isGold: boolean;
 }
 
 interface TspPoint {
@@ -401,9 +411,495 @@ const TimeSavePotentialChart = ({ liveRun }: { liveRun: LiveRun }) => {
 const PaceVsPbChart = ({ liveRun }: { liveRun: LiveRun }) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
     const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+    const liveElapsedMs = useLiveElapsedMs(liveRun);
+
+    const splits = liveRun.splits;
+    const total = splits.length;
+    if (total === 0) return null;
+
+    // Cumulative Sum-of-Best at each split. If a segment's bestPossible is
+    // missing, fall back to the PB segment so the baseline stays defined.
+    const cumBest: number[] = [];
+    let runningBest = 0;
+    for (let i = 0; i < total; i++) {
+        const s = splits[i];
+        const prevPb = i > 0 ? (splits[i - 1].pbSplitTime ?? null) : 0;
+        const pbSeg =
+            s.pbSplitTime != null && prevPb != null
+                ? s.pbSplitTime - prevPb
+                : null;
+        const seg = s.bestPossible ?? pbSeg ?? 0;
+        runningBest += seg;
+        cumBest.push(runningBest);
+    }
+
+    const liveActive =
+        !liveRun.hasReset &&
+        liveRun.currentTime != null &&
+        liveRun.currentSplitIndex >= 0 &&
+        liveRun.currentSplitIndex < total;
+
+    const points: PacePoint[] = splits.map((s, i) => {
+        const pbDelta =
+            s.pbSplitTime != null ? s.pbSplitTime - cumBest[i] : null;
+
+        const isCompleted = i < liveRun.currentSplitIndex;
+        const isLive = liveActive && i === liveRun.currentSplitIndex;
+        const runTime = isCompleted
+            ? (s.splitTime ?? null)
+            : isLive
+              ? (liveElapsedMs ?? liveRun.currentTime ?? null)
+              : null;
+        const runDelta = runTime != null ? runTime - cumBest[i] : null;
+
+        const prevPb = i > 0 ? (splits[i - 1].pbSplitTime ?? null) : 0;
+        const pbSegment =
+            s.pbSplitTime != null && prevPb != null
+                ? s.pbSplitTime - prevPb
+                : null;
+
+        const prevRun = i > 0 ? (splits[i - 1].splitTime ?? null) : 0;
+        const runSegment =
+            runTime != null && prevRun != null ? runTime - prevRun : null;
+
+        return {
+            i,
+            pbDelta,
+            runDelta,
+            isLive: !!isLive,
+            name: s.name,
+            pbSplitTime: s.pbSplitTime ?? null,
+            runSplitTime: runTime,
+            cumBest: cumBest[i],
+            pbSegment,
+            runSegment,
+            bestSegment: s.bestPossible ?? null,
+            predictedSegment: s.predictedSingleTime ?? null,
+            isGold:
+                isCompleted &&
+                runSegment != null &&
+                s.bestPossible != null &&
+                runSegment < s.bestPossible,
+        };
+    });
+
+    const hasAnyRun = points.some((p) => p.runDelta != null);
+    const hasAnyPb = points.some((p) => p.pbDelta != null);
+    if (!hasAnyRun && !hasAnyPb) return null;
+
+    const w = 360;
+    const h = 110;
+    const padL = 44;
+    const padR = 12;
+    const padT = 10;
+    const padB = 22;
+    const innerW = w - padL - padR;
+    const innerH = h - padT - padB;
+
+    const liveSplitPoint = liveActive
+        ? points[liveRun.currentSplitIndex]
+        : null;
+    const lastCompletedIdx = liveRun.currentSplitIndex - 1;
+
+    const allDeltas: number[] = [];
+    for (const p of points) {
+        if (p.pbDelta != null) allDeltas.push(p.pbDelta);
+        if (p.runDelta != null && !p.isLive) allDeltas.push(p.runDelta);
+    }
+    if (liveSplitPoint && liveSplitPoint.cumBest != null) {
+        const overGoldNow =
+            liveSplitPoint.runSegment != null &&
+            liveSplitPoint.bestSegment != null &&
+            liveSplitPoint.runSegment > liveSplitPoint.bestSegment;
+        if (overGoldNow && liveSplitPoint.runDelta != null) {
+            allDeltas.push(liveSplitPoint.runDelta);
+        } else if (liveSplitPoint.predictedSegment != null) {
+            const prevRun =
+                liveRun.currentSplitIndex > 0
+                    ? (splits[liveRun.currentSplitIndex - 1].splitTime ?? null)
+                    : 0;
+            if (prevRun != null) {
+                allDeltas.push(
+                    prevRun +
+                        liveSplitPoint.predictedSegment -
+                        liveSplitPoint.cumBest,
+                );
+            }
+        }
+    }
+
+    const dataMax = allDeltas.length > 0 ? Math.max(...allDeltas) : 0;
+    const dataMin = allDeltas.length > 0 ? Math.min(...allDeltas) : 0;
+    const yMax = Math.max(dataMax * 1.1, 1);
+    // Allow a sliver below zero only if the run beats SoB (ahead of gold pace).
+    const yMin = Math.min(0, dataMin * 1.1);
+
+    const xFor = (idx: number) =>
+        total === 1 ? padL + innerW / 2 : padL + (idx / (total - 1)) * innerW;
+    const yFor = (v: number) => padT + ((yMax - v) / (yMax - yMin)) * innerH;
+
+    const buildLine = (selector: (p: PacePoint) => number | null) => {
+        let d = '';
+        let started = false;
+        points.forEach((p, idx) => {
+            const v = selector(p);
+            if (v == null) {
+                started = false;
+                return;
+            }
+            d += `${started ? 'L' : 'M'}${xFor(idx).toFixed(1)},${yFor(v).toFixed(1)} `;
+            started = true;
+        });
+        return d.trim();
+    };
+
+    const pbLinePath = buildLine((p) => p.pbDelta);
+
+    // Run line: solid through completed splits, drawn one segment at a time so
+    // gold segments can be colored individually.
+    const runSegments: { d: string; isGold: boolean; key: number }[] = [];
+    for (let i = 1; i <= lastCompletedIdx; i++) {
+        const a = points[i - 1];
+        const b = points[i];
+        if (a?.runDelta == null || b?.runDelta == null) continue;
+        runSegments.push({
+            key: i,
+            isGold: b.isGold,
+            d: `M${xFor(i - 1).toFixed(1)},${yFor(a.runDelta).toFixed(1)} L${xFor(i).toFixed(1)},${yFor(b.runDelta).toFixed(1)}`,
+        });
+    }
+    // Live projection: while the runner is still under that split's gold pace,
+    // project to the predicted segment time (P10-style). Once the runner burns
+    // past the gold, switch to tracking actual currentTime — gold is now
+    // unreachable so the live time is the meaningful endpoint.
+    let liveProjectionDelta: number | null = null;
+    let liveProjectionMode: 'live' | 'predicted' | null = null;
+    if (liveSplitPoint) {
+        const baseline = liveSplitPoint.cumBest; // SoB through this split (incl. its gold)
+        const overGold =
+            liveSplitPoint.runSegment != null &&
+            liveSplitPoint.bestSegment != null &&
+            liveSplitPoint.runSegment > liveSplitPoint.bestSegment;
+
+        if (overGold && liveSplitPoint.runDelta != null) {
+            liveProjectionDelta = liveSplitPoint.runDelta;
+            liveProjectionMode = 'live';
+        } else if (liveSplitPoint.predictedSegment != null) {
+            const prevRun =
+                liveRun.currentSplitIndex > 0
+                    ? (splits[liveRun.currentSplitIndex - 1].splitTime ?? null)
+                    : 0;
+            if (prevRun != null) {
+                liveProjectionDelta =
+                    prevRun + liveSplitPoint.predictedSegment - baseline;
+                liveProjectionMode = 'predicted';
+            }
+        }
+    }
+
+    const liveSegmentPath =
+        liveProjectionDelta != null &&
+        lastCompletedIdx >= 0 &&
+        liveSplitPoint != null
+            ? (() => {
+                  const a = points[lastCompletedIdx];
+                  if (a?.runDelta == null) return '';
+                  return `M${xFor(a.i).toFixed(1)},${yFor(a.runDelta).toFixed(1)} L${xFor(liveSplitPoint.i).toFixed(1)},${yFor(liveProjectionDelta).toFixed(1)}`;
+              })()
+            : '';
+
+    const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+        const svg = svgRef.current;
+        if (!svg) return;
+        const rect = svg.getBoundingClientRect();
+        if (rect.width === 0) return;
+        const xPx = ((e.clientX - rect.left) / rect.width) * w;
+        let bestIdx = 0;
+        let bestDist = Infinity;
+        for (let i = 0; i < total; i++) {
+            const dx = Math.abs(xPx - xFor(i));
+            if (dx < bestDist) {
+                bestDist = dx;
+                bestIdx = i;
+            }
+        }
+        setHoverIdx(bestIdx);
+    };
+
+    const hovered = hoverIdx != null ? points[hoverIdx] : null;
+    const hoveredX = hoverIdx != null ? xFor(hoverIdx) : null;
+    const tooltipLeftPct = hoverIdx != null ? (xFor(hoverIdx) / w) * 100 : null;
+    const tooltipOnRight = tooltipLeftPct != null && tooltipLeftPct < 50;
+
+    const lastRunPoint =
+        lastCompletedIdx >= 0 && points[lastCompletedIdx]?.runDelta != null
+            ? points[lastCompletedIdx]
+            : null;
+
+    return (
+        <div className={styles.paceChartWrap}>
+            <div className={styles.predictionChartInner}>
+                <svg
+                    ref={svgRef}
+                    viewBox={`0 0 ${w} ${h}`}
+                    preserveAspectRatio="none"
+                    className={styles.paceChart}
+                    onMouseMove={handleMouseMove}
+                    onMouseLeave={() => setHoverIdx(null)}
+                >
+                    <line
+                        x1={padL}
+                        x2={w - padR}
+                        y1={yFor(0)}
+                        y2={yFor(0)}
+                        className={styles.paceChartZero}
+                    />
+
+                    <text
+                        x={padL - 6}
+                        y={yFor(0) + 3}
+                        textAnchor="end"
+                        className={styles.paceChartAxisLabel}
+                    >
+                        SoB
+                    </text>
+                    <text
+                        x={padL - 6}
+                        y={yFor(yMax) + 8}
+                        textAnchor="end"
+                        className={styles.paceChartAxisLabel}
+                    >
+                        +{formatTimeMs(yMax)}
+                    </text>
+
+                    {pbLinePath && (
+                        <path d={pbLinePath} className={styles.paceLinePb} />
+                    )}
+                    {runSegments.map((seg) => (
+                        <path
+                            key={seg.key}
+                            d={seg.d}
+                            className={clsx(
+                                styles.paceLineRun,
+                                seg.isGold && styles.paceLineRunGold,
+                            )}
+                        />
+                    ))}
+                    {liveSegmentPath && (
+                        <path
+                            d={liveSegmentPath}
+                            className={styles.paceLineRunLive}
+                        />
+                    )}
+
+                    {points.map((p) => {
+                        if (p.pbDelta == null) return null;
+                        return (
+                            <circle
+                                key={`pb-${p.i}`}
+                                cx={xFor(p.i)}
+                                cy={yFor(p.pbDelta)}
+                                r={1.8}
+                                className={styles.paceDotPb}
+                            />
+                        );
+                    })}
+                    {points.map((p) => {
+                        if (p.i > liveRun.currentSplitIndex) return null;
+                        if (p.isLive) {
+                            if (liveProjectionDelta == null) return null;
+                            return (
+                                <circle
+                                    key={`run-${p.i}`}
+                                    cx={xFor(p.i)}
+                                    cy={yFor(liveProjectionDelta)}
+                                    r={3}
+                                    className={clsx(
+                                        styles.paceDotRunLive,
+                                        styles.paceChartDotLast,
+                                    )}
+                                />
+                            );
+                        }
+                        if (p.runDelta == null) return null;
+                        const isLastRun =
+                            lastRunPoint != null && p.i === lastRunPoint.i;
+                        return (
+                            <circle
+                                key={`run-${p.i}`}
+                                cx={xFor(p.i)}
+                                cy={yFor(p.runDelta)}
+                                r={isLastRun ? 3 : 1.8}
+                                className={clsx(
+                                    p.isGold
+                                        ? styles.paceDotRunGold
+                                        : styles.paceDotRun,
+                                    isLastRun && styles.paceChartDotLast,
+                                )}
+                            />
+                        );
+                    })}
+
+                    {hovered && hoveredX != null && (
+                        <line
+                            x1={hoveredX}
+                            x2={hoveredX}
+                            y1={padT}
+                            y2={h - padB}
+                            className={styles.predictionHoverLine}
+                        />
+                    )}
+
+                    <text
+                        x={padL}
+                        y={h - 6}
+                        className={styles.paceChartAxisLabel}
+                    >
+                        Split 1
+                    </text>
+                    <text
+                        x={w - padR}
+                        y={h - 6}
+                        textAnchor="end"
+                        className={styles.paceChartAxisLabel}
+                    >
+                        Split {total}
+                    </text>
+                </svg>
+
+                {hovered && tooltipLeftPct != null && (
+                    <div
+                        className={styles.predictionTooltip}
+                        style={{
+                            left: tooltipOnRight
+                                ? `calc(${tooltipLeftPct}% + 0.5rem)`
+                                : 'auto',
+                            right: tooltipOnRight
+                                ? 'auto'
+                                : `calc(${100 - tooltipLeftPct}% + 0.5rem)`,
+                        }}
+                    >
+                        <div className={styles.predictionTooltipTitle}>
+                            Split {hovered.i + 1} — {hovered.name}
+                            {hovered.isLive && ' (live)'}
+                        </div>
+                        {hovered.bestSegment != null && (
+                            <div className={styles.predictionTooltipRow}>
+                                <span className={styles.predictionTooltipLabel}>
+                                    Gold seg
+                                </span>
+                                <span className={styles.predictionTooltipValue}>
+                                    {formatTimeMs(hovered.bestSegment)}
+                                </span>
+                            </div>
+                        )}
+                        {hovered.pbSegment != null && (
+                            <div className={styles.predictionTooltipRow}>
+                                <span className={styles.predictionTooltipLabel}>
+                                    PB seg
+                                </span>
+                                <span className={styles.predictionTooltipValue}>
+                                    {formatTimeMs(hovered.pbSegment)}
+                                </span>
+                            </div>
+                        )}
+                        {hovered.runSegment != null && (
+                            <div className={styles.predictionTooltipRow}>
+                                <span className={styles.predictionTooltipLabel}>
+                                    {hovered.isLive ? 'Live seg' : 'Run seg'}
+                                </span>
+                                <span
+                                    className={clsx(
+                                        styles.predictionTooltipValue,
+                                        hovered.bestSegment != null &&
+                                            hovered.runSegment <
+                                                hovered.bestSegment &&
+                                            styles.toneAhead,
+                                        hovered.pbSegment != null &&
+                                            hovered.runSegment >
+                                                hovered.pbSegment &&
+                                            styles.toneBehind,
+                                    )}
+                                >
+                                    {formatTimeMs(hovered.runSegment)}
+                                </span>
+                            </div>
+                        )}
+                        {hovered.isLive &&
+                            hovered.predictedSegment != null &&
+                            liveProjectionMode === 'predicted' && (
+                                <div className={styles.predictionTooltipRow}>
+                                    <span
+                                        className={
+                                            styles.predictionTooltipLabel
+                                        }
+                                    >
+                                        Predicted seg
+                                    </span>
+                                    <span
+                                        className={
+                                            styles.predictionTooltipValue
+                                        }
+                                    >
+                                        {formatTimeMs(hovered.predictedSegment)}
+                                    </span>
+                                </div>
+                            )}
+                        {hovered.pbSplitTime != null && (
+                            <div className={styles.predictionTooltipRow}>
+                                <span className={styles.predictionTooltipLabel}>
+                                    PB split
+                                </span>
+                                <span className={styles.predictionTooltipValue}>
+                                    {formatTimeMs(hovered.pbSplitTime)}
+                                </span>
+                            </div>
+                        )}
+                        {hovered.runSplitTime != null && (
+                            <div className={styles.predictionTooltipRow}>
+                                <span className={styles.predictionTooltipLabel}>
+                                    {hovered.isLive ? 'Live time' : 'Run split'}
+                                </span>
+                                <span className={styles.predictionTooltipValue}>
+                                    {formatTimeMs(hovered.runSplitTime)}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+            <div className={styles.paceChartLegend}>
+                <span>
+                    <span className={styles.paceLegendSwatchPb} />
+                    PB
+                </span>
+                <span>
+                    <span className={styles.paceLegendSwatchRun} />
+                    Run
+                </span>
+                <span>
+                    <span className={styles.paceLegendSwatchSob} />
+                    SoB (baseline)
+                </span>
+            </div>
+        </div>
+    );
+};
+
+interface DeltaPoint {
+    i: number;
+    delta: number;
+    name: string;
+    splitTime: number;
+}
+
+const DeltaVsPbChart = ({ liveRun }: { liveRun: LiveRun }) => {
+    const svgRef = useRef<SVGSVGElement | null>(null);
+    const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+    const liveElapsedMs = useLiveElapsedMs(liveRun);
 
     const completed = liveRun.splits.slice(0, liveRun.currentSplitIndex);
-    const points: PacePoint[] = completed
+    const points: DeltaPoint[] = completed
         .map((s, i) => {
             if (s.splitTime == null || s.pbSplitTime == null) return null;
             return {
@@ -413,22 +909,46 @@ const PaceVsPbChart = ({ liveRun }: { liveRun: LiveRun }) => {
                 splitTime: s.splitTime,
             };
         })
-        .filter((p): p is PacePoint => p != null);
+        .filter((p): p is DeltaPoint => p != null);
 
-    // Live overlay point — runner mid-run, projected at the currentSplit's PB
-    // cumulative reference. Use liveRun.delta for cumulative delta-vs-PB.
     const liveSplit = liveRun.splits[liveRun.currentSplitIndex];
-    const livePoint: PacePoint | null =
-        liveRun.delta != null && liveSplit && !liveRun.hasReset
-            ? {
-                  i: liveRun.currentSplitIndex,
-                  delta: liveRun.delta,
-                  name: `${liveSplit.name} (live)`,
-                  splitTime: liveRun.currentTime ?? 0,
-              }
+    const prevCompletedSplitTime =
+        liveRun.currentSplitIndex > 0
+            ? (liveRun.splits[liveRun.currentSplitIndex - 1].splitTime ?? null)
+            : 0;
+    const livePoint: DeltaPoint | null =
+        liveSplit && !liveRun.hasReset && liveSplit.pbSplitTime != null
+            ? (() => {
+                  const liveT = liveElapsedMs ?? liveRun.currentTime ?? null;
+                  if (liveT == null || prevCompletedSplitTime == null)
+                      return null;
+
+                  const runSegment = liveT - prevCompletedSplitTime;
+                  const overGold =
+                      liveSplit.bestPossible != null &&
+                      runSegment > liveSplit.bestPossible;
+
+                  let endpoint: number;
+                  if (overGold) {
+                      endpoint = liveT;
+                  } else if (liveSplit.predictedSingleTime != null) {
+                      endpoint =
+                          prevCompletedSplitTime +
+                          liveSplit.predictedSingleTime;
+                  } else {
+                      return null;
+                  }
+
+                  return {
+                      i: liveRun.currentSplitIndex,
+                      delta: endpoint - liveSplit.pbSplitTime,
+                      name: `${liveSplit.name} (live)`,
+                      splitTime: endpoint,
+                  };
+              })()
             : null;
 
-    const allPoints: PacePoint[] = livePoint ? [...points, livePoint] : points;
+    const allPoints: DeltaPoint[] = livePoint ? [...points, livePoint] : points;
 
     if (allPoints.length < 1) return null;
 
@@ -451,7 +971,6 @@ const PaceVsPbChart = ({ liveRun }: { liveRun: LiveRun }) => {
             : padL + (idx / (allPoints.length - 1)) * innerW;
     const yFor = (v: number) => padT + ((yMax - v) / (yMax - yMin)) * innerH;
 
-    // Solid line for completed splits only (drawn separately).
     const completedLinePath = points
         .map(
             (p, idx) =>
@@ -459,13 +978,11 @@ const PaceVsPbChart = ({ liveRun }: { liveRun: LiveRun }) => {
         )
         .join(' ');
 
-    // Dashed segment from last completed split to live point.
     const liveLinePath =
         livePoint && points.length > 0
             ? `M${xFor(points.length - 1).toFixed(1)},${yFor(points[points.length - 1].delta).toFixed(1)} L${xFor(allPoints.length - 1).toFixed(1)},${yFor(livePoint.delta).toFixed(1)}`
             : '';
 
-    // Filled area between line and zero (completed only).
     const completedAreaPath =
         points.length > 0
             ? `M${xFor(0).toFixed(1)},${yFor(0).toFixed(1)} ` +
@@ -477,10 +994,6 @@ const PaceVsPbChart = ({ liveRun }: { liveRun: LiveRun }) => {
                   .join(' ') +
               ` L${xFor(points.length - 1).toFixed(1)},${yFor(0).toFixed(1)} Z`
             : '';
-
-    const lastCompletedDelta =
-        points.length > 0 ? points[points.length - 1].delta : null;
-    const headlineDelta = livePoint?.delta ?? lastCompletedDelta ?? 0;
 
     const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
         const svg = svgRef.current;
@@ -517,7 +1030,7 @@ const PaceVsPbChart = ({ liveRun }: { liveRun: LiveRun }) => {
                     onMouseLeave={() => setHoverIdx(null)}
                 >
                     <defs>
-                        <clipPath id="pace-above-zero">
+                        <clipPath id="pace-pb-above-zero">
                             <rect
                                 x={padL}
                                 y={padT}
@@ -525,7 +1038,7 @@ const PaceVsPbChart = ({ liveRun }: { liveRun: LiveRun }) => {
                                 height={Math.max(0, yFor(0) - padT)}
                             />
                         </clipPath>
-                        <clipPath id="pace-below-zero">
+                        <clipPath id="pace-pb-below-zero">
                             <rect
                                 x={padL}
                                 y={yFor(0)}
@@ -540,12 +1053,12 @@ const PaceVsPbChart = ({ liveRun }: { liveRun: LiveRun }) => {
                             <path
                                 d={completedAreaPath}
                                 className={styles.paceChartFillBehind}
-                                clipPath="url(#pace-above-zero)"
+                                clipPath="url(#pace-pb-above-zero)"
                             />
                             <path
                                 d={completedAreaPath}
                                 className={styles.paceChartFillAhead}
-                                clipPath="url(#pace-below-zero)"
+                                clipPath="url(#pace-pb-below-zero)"
                             />
                         </>
                     )}
@@ -700,27 +1213,6 @@ const PaceVsPbChart = ({ liveRun }: { liveRun: LiveRun }) => {
                     <span className={styles.paceChartLegendSwatchBehind} />
                     Behind PB
                 </span>
-                {livePoint && (
-                    <span>
-                        <span className={styles.paceChartLegendSwatchLive} />
-                        Live
-                    </span>
-                )}
-            </div>
-            <div className={styles.paceChartFooter}>
-                <span>
-                    {livePoint
-                        ? `Live · after ${points.length} splits`
-                        : `After ${points.length} completed splits`}
-                </span>
-                <span
-                    className={clsx(
-                        headlineDelta < 0 && styles.toneAhead,
-                        headlineDelta > 0 && styles.toneBehind,
-                    )}
-                >
-                    {formatDelta(headlineDelta).text} vs PB
-                </span>
             </div>
         </div>
     );
@@ -781,15 +1273,6 @@ export const RunTab = ({
 
     return (
         <>
-            <div className={styles.sectionTitle}>
-                Pace vs PB
-                <span className={styles.sectionTitleSub}>
-                    Above the line = behind PB · below = ahead
-                </span>
-            </div>
-            <PaceVsPbChart liveRun={liveRun} />
-
-            <div className={styles.sectionTitle}>Pace anchors</div>
             <div className={styles.statCardRow}>
                 <div
                     className={styles.statCard}
@@ -798,6 +1281,15 @@ export const RunTab = ({
                     <span className={styles.statCardLabel}>PB</span>
                     <span className={styles.statCardValue}>
                         {formatTimeMs(liveRun.pb)}
+                    </span>
+                </div>
+                <div
+                    className={styles.statCard}
+                    title="The fastest finish still achievable from where the runner is now — current time plus the gold time on every remaining split."
+                >
+                    <span className={styles.statCardLabel}>Best possible</span>
+                    <span className={styles.statCardValue}>
+                        {formatTimeMs(liveRun.bestPossible)}
                     </span>
                 </div>
                 <div
@@ -811,23 +1303,25 @@ export const RunTab = ({
                         {formatTimeMs(liveRun.sob)}
                     </span>
                 </div>
-                <div
-                    className={styles.statCard}
-                    title="The fastest finish still achievable from where the runner is now — current time plus the gold time on every remaining split."
-                >
-                    <span className={styles.statCardLabel}>Best possible</span>
-                    <span className={styles.statCardValue}>
-                        {formatTimeMs(liveRun.bestPossible)}
-                    </span>
-                </div>
             </div>
 
             <div className={styles.sectionTitle}>
-                Time save potential
+                Pace vs Sum of Best
                 <span className={styles.sectionTitleSub}>
-                    Possible savings per split if every segment hit its gold
+                    Solid line under dashed line = PB pace
                 </span>
             </div>
+            <PaceVsPbChart liveRun={liveRun} />
+
+            <div className={styles.sectionTitle}>
+                Pace vs PB
+                <span className={styles.sectionTitleSub}>
+                    Above the line = behind PB · below = ahead
+                </span>
+            </div>
+            <DeltaVsPbChart liveRun={liveRun} />
+
+            <div className={styles.sectionTitle}>Time save potential</div>
             <TimeSavePotentialChart liveRun={liveRun} />
 
             {splitDeltas.length > 0 && (
