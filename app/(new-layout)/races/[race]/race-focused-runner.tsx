@@ -43,19 +43,10 @@ export const RaceFocusedRunner = () => {
                 />
             </Col>
             <Col xl={7} lg={7} md={12}>
-                <div className="d-flex justify-content-end mb-2">
-                    <Button
-                        variant="outline-secondary"
-                        size="sm"
-                        onClick={unfocus}
-                        aria-label="Dismiss focused runner"
-                        className="d-inline-flex align-items-center gap-1"
-                    >
-                        <XIcon size={18} />
-                        Dismiss
-                    </Button>
-                </div>
-                <div style={{ aspectRatio: '16 / 9', minHeight: '300px' }}>
+                <div
+                    className="position-relative"
+                    style={{ aspectRatio: '16 / 9', minHeight: '300px' }}
+                >
                     <TwitchEmbed
                         channel={channel}
                         width="100%"
@@ -63,6 +54,22 @@ export const RaceFocusedRunner = () => {
                         muted
                         withChat={false}
                     />
+                    <Button
+                        variant="dark"
+                        size="sm"
+                        onClick={unfocus}
+                        aria-label="Dismiss focused runner"
+                        className="position-absolute d-inline-flex align-items-center gap-1 shadow"
+                        style={{
+                            top: '0.5rem',
+                            right: '0.5rem',
+                            zIndex: 10,
+                            opacity: 0.9,
+                        }}
+                    >
+                        <XIcon size={18} />
+                        Dismiss
+                    </Button>
                 </div>
             </Col>
         </Row>
