@@ -1150,7 +1150,7 @@
 
 .deltaBarRow {
     display: grid;
-    grid-template-columns: minmax(0, 9rem) 1fr 4rem;
+    grid-template-columns: minmax(0, 9rem) 4.5rem 4.5rem 1fr 4rem;
     align-items: center;
     gap: 0.6rem;
     padding: 0.25rem 0;
@@ -1170,6 +1170,15 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     color: var(--bs-secondary-color);
+}
+
+.deltaBarTime {
+    font-family: var(--bs-font-monospace);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    color: var(--bs-secondary-color);
+    font-size: 0.74rem;
+    white-space: nowrap;
 }
 
 .deltaBarTrack {
