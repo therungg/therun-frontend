@@ -8,6 +8,7 @@ import type {
     VariableDef,
 } from '../../../../../../types/leaderboards.types';
 import type { ManagePageData } from '../types';
+import { deleteMinimumAction } from './actions/delete-minimum.action';
 import { upsertMinimumAction } from './actions/upsert-minimum.action';
 import { loadCategoryDataAction } from './load-category-data.action';
 import { type FormSubmitValues, MinimumForm } from './minimum-form';
@@ -97,6 +98,36 @@ export function MinimumsSection({ data }: Props) {
                 `Saved${flagSummary(res.result.flagged, res.result.unflagged)}`,
             );
             setFormState({ open: false });
+            await refresh(selectedCategory.id, selectedCategory.name);
+        });
+    };
+
+    const handleDelete = (row: MinimumTime) => {
+        if (!selectedCategory) return;
+        if (
+            !confirm(
+                'Delete this minimum time? Below-threshold runs will be restored to the leaderboard.',
+            )
+        ) {
+            return;
+        }
+
+        startSaveTransition(async () => {
+            const res = await deleteMinimumAction({
+                gameSlug: data.game.name,
+                gameId: data.game.id,
+                categoryId: selectedCategory.id,
+                subcategoryHash: row.subcategoryHash,
+            });
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            const note =
+                res.result.unflagged > 0
+                    ? ` — ${res.result.unflagged} run(s) restored.`
+                    : '';
+            toast.success(`Removed${note}`);
             await refresh(selectedCategory.id, selectedCategory.name);
         });
     };
@@ -192,9 +223,7 @@ export function MinimumsSection({ data }: Props) {
                                                 editing: r,
                                             })
                                         }
-                                        onDelete={() => {
-                                            /* wired up in Task 7 */
-                                        }}
+                                        onDelete={handleDelete}
                                         isBusy={busy}
                                     />
                                 ))
