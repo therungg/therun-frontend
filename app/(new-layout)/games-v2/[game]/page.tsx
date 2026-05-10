@@ -1,6 +1,8 @@
+import { subject as caslSubject } from '@casl/ability';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
+import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import { loadGamePageData } from './data';
@@ -27,6 +29,12 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
 
     const data = await loadGamePageData(game, sp, sessionUsername);
     if (!data) notFound();
+
+    const canManage = defineAbilityFor(session).can(
+        'edit',
+        caslSubject('category-settings', { game: data.game.name }),
+    );
+    data.canManage = canManage;
 
     return <GamePage data={data} />;
 }
