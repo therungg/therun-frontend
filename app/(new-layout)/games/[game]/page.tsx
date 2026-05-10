@@ -1,65 +1,42 @@
-import { Metadata } from 'next';
-import { cacheLife } from 'next/cache';
-import { getGame } from '~src/components/game/get-game';
-import Link from '~src/components/link';
+import type { Metadata } from 'next';
+import { RedirectType, redirect } from 'next/navigation';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
-import { Game } from './game';
 
-// Increase Games Page timeout to 60 seconds since the payloads are gigantic for some games like SM64
 export const maxDuration = 60;
 
 interface PageProps {
     params: Promise<{ game: string }>;
+    searchParams: Promise<Record<string, string | string[] | undefined>>;
 }
 
-export default async function GamePage(props: PageProps) {
-    'use cache';
-    cacheLife('minutes');
-
-    const params = await props.params;
-    const { game: gameName } = params;
-
-    if (!gameName) {
-        throw new Error('Params not found');
+export default async function GamePage({ params, searchParams }: PageProps) {
+    const { game } = await params;
+    const sp = await searchParams;
+    const qs = new URLSearchParams();
+    for (const [k, v] of Object.entries(sp)) {
+        if (typeof v === 'string') qs.set(k, v);
+        else if (Array.isArray(v)) {
+            for (const item of v) {
+                if (typeof item === 'string') qs.append(k, item);
+            }
+        }
     }
-    const data = await getGame(gameName);
-
-    if (!data?.global || !data?.data?.game) {
-        return (
-            <>
-                <h1>Game</h1>
-                Unfortunately, Nobody has uploaded runs for this game yet, or
-                the upload is not processed yet. If you have uploaded runs for
-                the game, but this page still shows, please{' '}
-                <Link href="/contact">contact me!</Link>
-                {JSON.stringify(data)}
-            </>
-        );
-    }
-
-    if (!data.stats) {
-        return (
-            <div>
-                This game has no categories... Something weird happened. If you
-                found this game through the search function, It is likely that
-                this game had only one runner and they deleted their runs.
-                Sorry!
-            </div>
-        );
-    }
-    return <Game data={data} />;
+    const target = qs.toString()
+        ? `/games-v2/${game}?${qs.toString()}`
+        : `/games-v2/${game}`;
+    redirect(target, RedirectType.replace);
 }
 
-export async function generateMetadata(props: PageProps): Promise<Metadata> {
-    const params = await props.params;
-    if (!params.game) return buildMetadata();
-
-    const game = safeDecodeURI(params.game);
-
+export async function generateMetadata({
+    params,
+}: PageProps): Promise<Metadata> {
+    const { game } = await params;
+    if (!game) return buildMetadata();
+    const display = safeDecodeURI(game);
     return buildMetadata({
-        title: `Statistics for ${game}`,
-        description: `View statistics for ${game}, including categories, top runners, total run time, and more!`,
-        images: await getGameImage(game),
+        title: `Statistics for ${display}`,
+        description: `View statistics for ${display}, including categories, top runners, total run time, and more!`,
+        images: await getGameImage(display),
     });
 }
