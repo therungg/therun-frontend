@@ -150,3 +150,8 @@ function extractSubcategoryValues(
     }
     return out;
 }
+
+// Note: jump-to-my-rank ('jump to user's leaderboard page when off-page')
+// is blocked pending a backend path from username → numeric user_id. The
+// /leaderboards/user/{userId}/rankings endpoint needs a numeric ID; the
+// session only exposes `username`. See plan's "Deferred work" section.
