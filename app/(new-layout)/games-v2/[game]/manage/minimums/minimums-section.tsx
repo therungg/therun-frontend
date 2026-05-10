@@ -1,17 +1,32 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { toast } from 'react-toastify';
 import type { MinimumTime } from '../../../../../../types/leaderboard-minimums.types';
 import type {
     ResolvedCategory,
     VariableDef,
 } from '../../../../../../types/leaderboards.types';
 import type { ManagePageData } from '../types';
+import { upsertMinimumAction } from './actions/upsert-minimum.action';
 import { loadCategoryDataAction } from './load-category-data.action';
+import { type FormSubmitValues, MinimumForm } from './minimum-form';
 import { MinimumRow } from './minimum-row';
+
+type FormState =
+    | { open: false }
+    | { open: true; mode: 'create' }
+    | { open: true; mode: 'edit'; editing: MinimumTime };
 
 interface Props {
     data: ManagePageData;
+}
+
+function flagSummary(flagged: number, unflagged: number): string {
+    const parts: string[] = [];
+    if (flagged > 0) parts.push(`${flagged} run(s) newly hidden`);
+    if (unflagged > 0) parts.push(`${unflagged} run(s) restored`);
+    return parts.length === 0 ? '' : ` — ${parts.join(', ')}.`;
 }
 
 export function MinimumsSection({ data }: Props) {
@@ -25,37 +40,84 @@ export function MinimumsSection({ data }: Props) {
         data.initialMinimums,
     );
     const [loadError, setLoadError] = useState<string | null>(null);
+    const [formState, setFormState] = useState<FormState>({ open: false });
+    const [formError, setFormError] = useState<string | null>(null);
     const [isLoading, startLoadTransition] = useTransition();
+    const [isSaving, startSaveTransition] = useTransition();
 
     const selectedCategory: ResolvedCategory | undefined = data.categories.find(
         (c) => c.id === selectedCategoryId,
     );
+    const busy = isLoading || isSaving;
+
+    const refresh = async (categoryId: number, categorySlug: string) => {
+        const res = await loadCategoryDataAction({
+            gameSlug: data.game.name,
+            gameId: data.game.id,
+            categorySlug,
+            categoryId,
+        });
+        if ('error' in res) {
+            setLoadError(res.error);
+            setVariables([]);
+            setMinimums([]);
+        } else {
+            setLoadError(null);
+            setVariables(res.result.variables);
+            setMinimums(res.result.minimums);
+        }
+    };
 
     const switchCategory = (cat: ResolvedCategory) => {
         if (cat.id === selectedCategoryId) return;
         setSelectedCategoryId(cat.id);
-        setLoadError(null);
-        startLoadTransition(async () => {
-            const res = await loadCategoryDataAction({
+        setFormState({ open: false });
+        setFormError(null);
+        startLoadTransition(() => refresh(cat.id, cat.name));
+    };
+
+    const handleSubmit = (values: FormSubmitValues) => {
+        if (!selectedCategory) return;
+        setFormError(null);
+
+        startSaveTransition(async () => {
+            const res = await upsertMinimumAction({
                 gameSlug: data.game.name,
                 gameId: data.game.id,
-                categorySlug: cat.name,
-                categoryId: cat.id,
+                categoryId: selectedCategory.id,
+                subcategoryHash: values.subcategoryHash,
+                minTimeMs: values.minTimeMs,
+                minGameTimeMs: values.minGameTimeMs,
             });
             if ('error' in res) {
-                setLoadError(res.error);
-                setVariables([]);
-                setMinimums([]);
-            } else {
-                setVariables(res.result.variables);
-                setMinimums(res.result.minimums);
+                setFormError(res.error);
+                return;
             }
+            toast.success(
+                `Saved${flagSummary(res.result.flagged, res.result.unflagged)}`,
+            );
+            setFormState({ open: false });
+            await refresh(selectedCategory.id, selectedCategory.name);
         });
     };
 
     return (
         <section>
-            <h2 className="h5 mb-3">Minimum Times</h2>
+            <div className="d-flex align-items-center justify-content-between mb-3">
+                <h2 className="h5 mb-0">Minimum Times</h2>
+                {selectedCategory && !formState.open && (
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-primary"
+                        onClick={() =>
+                            setFormState({ open: true, mode: 'create' })
+                        }
+                        disabled={busy}
+                    >
+                        + Add minimum
+                    </button>
+                )}
+            </div>
 
             <div className="d-flex flex-wrap gap-2 mb-3">
                 {data.categories.map((cat) => (
@@ -68,7 +130,7 @@ export function MinimumsSection({ data }: Props) {
                                 : 'btn-outline-secondary'
                         }`}
                         onClick={() => switchCategory(cat)}
-                        disabled={isLoading}
+                        disabled={busy}
                     >
                         {cat.display}
                     </button>
@@ -79,6 +141,22 @@ export function MinimumsSection({ data }: Props) {
                 <div className="alert alert-danger" role="alert">
                     {loadError}
                 </div>
+            )}
+
+            {formState.open && (
+                <MinimumForm
+                    mode={formState.mode}
+                    editing={
+                        formState.mode === 'edit' ? formState.editing : null
+                    }
+                    onSubmit={handleSubmit}
+                    onCancel={() => {
+                        setFormState({ open: false });
+                        setFormError(null);
+                    }}
+                    isBusy={isSaving}
+                    error={formError}
+                />
             )}
 
             {selectedCategory && (
@@ -107,13 +185,17 @@ export function MinimumsSection({ data }: Props) {
                                         key={row.subcategoryHash}
                                         row={row}
                                         variables={variables}
-                                        onEdit={() => {
-                                            /* wired up in Task 6 */
-                                        }}
+                                        onEdit={(r) =>
+                                            setFormState({
+                                                open: true,
+                                                mode: 'edit',
+                                                editing: r,
+                                            })
+                                        }
                                         onDelete={() => {
                                             /* wired up in Task 7 */
                                         }}
-                                        isBusy={isLoading}
+                                        isBusy={busy}
                                     />
                                 ))
                             )}
