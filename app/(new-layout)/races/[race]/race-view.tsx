@@ -5,6 +5,7 @@ import { Col, Row } from 'react-bootstrap';
 import { RaceActions } from '~app/(new-layout)/races/[race]/race-actions';
 import { RaceAdminActions } from '~app/(new-layout)/races/[race]/race-admin-actions';
 import { RaceChat } from '~app/(new-layout)/races/[race]/race-chat';
+import { RaceCommentaryDrawerHost } from '~app/(new-layout)/races/[race]/race-commentary-drawer-host';
 import { RaceHeader } from '~app/(new-layout)/races/[race]/race-header';
 import { RaceParticipantDetail } from '~app/(new-layout)/races/[race]/race-participant-detail';
 import { RaceParticipantOverview } from '~app/(new-layout)/races/[race]/race-participant-overview';
@@ -68,7 +69,7 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
     }, []);
 
     return (
-        <>
+        <RaceCommentaryDrawerHost race={raceState}>
             <Breadcrumb breadcrumbs={breadcrumbs} />
             <Row>
                 <Col xxl={8} lg={7} xs={12}>
@@ -140,7 +141,7 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
                     <RaceStream stream={stream} />
                 </Col>
             </Row>
-        </>
+        </RaceCommentaryDrawerHost>
     );
 };
 
