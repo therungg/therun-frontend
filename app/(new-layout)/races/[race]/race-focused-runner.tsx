@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Col, Row } from 'react-bootstrap';
+import { Button, Col, Row } from 'react-bootstrap';
+import { X as XIcon } from 'react-bootstrap-icons';
 import { TwitchEmbed } from 'react-twitch-embed';
 import { useRaceLiveContext } from '~app/(new-layout)/races/[race]/race-commentary-drawer-host';
 import { getSplitStatus } from '~src/components/live/recommended-stream';
@@ -9,7 +10,7 @@ import { SplitsViewer } from '~src/components/live/splits-viewer';
 import { getColorMode } from '~src/utils/colormode';
 
 export const RaceFocusedRunner = () => {
-    const { focusedRun } = useRaceLiveContext();
+    const { focusedRun, unfocus } = useRaceLiveContext();
     const [dark, setDark] = useState(true);
 
     useEffect(() => {
@@ -30,7 +31,23 @@ export const RaceFocusedRunner = () => {
             : focusedRun.user;
 
     return (
-        <Row className="g-3 mb-3">
+        <Row className="g-3 mb-3 position-relative">
+            <Button
+                variant="outline-secondary"
+                size="sm"
+                onClick={unfocus}
+                aria-label="Dismiss focused runner"
+                title="Dismiss focused runner"
+                className="position-absolute top-0 end-0 d-flex align-items-center justify-content-center p-1 border-0 bg-transparent"
+                style={{
+                    width: '1.75rem',
+                    height: '1.75rem',
+                    zIndex: 5,
+                    transform: 'translate(0.25rem, -0.25rem)',
+                }}
+            >
+                <XIcon size={18} />
+            </Button>
             <Col xl={5} lg={5} md={12} className="overflow-hidden">
                 <SplitsViewer
                     activeLiveRun={focusedRun}
