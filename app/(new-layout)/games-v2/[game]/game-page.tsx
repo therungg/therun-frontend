@@ -14,7 +14,11 @@ export function GamePage({ data }: Props) {
     if (data.categories.length === 0) {
         return (
             <div>
-                <GameHeader game={data.game} stats={data.quickStats} />
+                <GameHeader
+                    game={data.game}
+                    stats={data.quickStats}
+                    canManage={data.canManage}
+                />
                 <p className="text-center text-muted my-5">
                     No runs uploaded for this game yet.
                 </p>
@@ -29,7 +33,11 @@ export function GamePage({ data }: Props) {
 
     return (
         <div>
-            <GameHeader game={data.game} stats={data.quickStats} />
+            <GameHeader
+                game={data.game}
+                stats={data.quickStats}
+                canManage={data.canManage}
+            />
             <CategoryPills
                 categories={data.categories}
                 selectedCategoryName={data.selectedCategory.name}

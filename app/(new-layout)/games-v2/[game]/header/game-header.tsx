@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
     QuickStats,
@@ -7,9 +8,10 @@ import type {
 interface Props {
     game: ResolvedGame;
     stats: QuickStats;
+    canManage?: boolean;
 }
 
-export function GameHeader({ game, stats }: Props) {
+export function GameHeader({ game, stats, canManage }: Props) {
     return (
         <header className="d-flex align-items-center gap-3 mb-3">
             {game.image && (
@@ -30,6 +32,16 @@ export function GameHeader({ game, stats }: Props) {
                     <DurationToFormatted duration={stats.totalRunTime} /> total
                 </small>
             </div>
+            {canManage && (
+                <div className="ms-auto">
+                    <Link
+                        href={`/games-v2/${game.name}/manage`}
+                        className="btn btn-sm btn-outline-secondary"
+                    >
+                        Manage
+                    </Link>
+                </div>
+            )}
         </header>
     );
 }

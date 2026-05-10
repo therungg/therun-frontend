@@ -39,6 +39,7 @@ export async function loadGamePageData(
             recentPbs: [],
             liveRunners: [],
             sessionUsername,
+            canManage: false,
             activeFilters: emptyFilters(),
         };
     }
@@ -97,6 +98,7 @@ export async function loadGamePageData(
         recentPbs,
         liveRunners: liveRunners ?? [],
         sessionUsername,
+        canManage: false,
         activeFilters: {
             subcategoryHash,
             verified,
