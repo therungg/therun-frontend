@@ -11,6 +11,8 @@ const clampPct = (n: number) => Math.max(0, Math.min(100, n));
 
 interface DeltaBarProps {
     label: string;
+    totalMs: number | null;
+    segmentMs: number | null;
     deltaMs: number | null;
     maxAbs: number;
     isGold: boolean;
@@ -19,6 +21,8 @@ interface DeltaBarProps {
 
 const DeltaBar = ({
     label,
+    totalMs,
+    segmentMs,
     deltaMs,
     maxAbs,
     isGold,
@@ -49,6 +53,10 @@ const DeltaBar = ({
         >
             <span className={styles.deltaBarLabelText} title={label}>
                 {label}
+            </span>
+            <span className={styles.deltaBarTime}>{formatTimeMs(totalMs)}</span>
+            <span className={styles.deltaBarTime}>
+                {formatTimeMs(segmentMs)}
             </span>
             <div className={styles.deltaBarTrack}>
                 <div className={styles.deltaBarCenter} />
@@ -1261,7 +1269,14 @@ export const RunTab = ({
             s.bestPossible != null &&
             singleNow < s.bestPossible;
 
-        return { s, i, singleDelta, isGold };
+        return {
+            s,
+            i,
+            singleDelta,
+            singleNow,
+            totalNow: s.splitTime ?? null,
+            isGold,
+        };
     });
 
     const maxAbsSingle = Math.max(
@@ -1333,6 +1348,8 @@ export const RunTab = ({
                         <DeltaBar
                             key={d.i}
                             label={d.s.name || `Split ${d.i + 1}`}
+                            totalMs={d.totalNow}
+                            segmentMs={d.singleNow}
                             deltaMs={d.singleDelta}
                             maxAbs={maxAbsSingle}
                             isGold={d.isGold}
