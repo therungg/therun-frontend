@@ -31,7 +31,7 @@ export const RaceFocusedRunner = () => {
 
     return (
         <Row className="g-3 mb-3">
-            <Col xl={6} lg={6} md={12} className="overflow-hidden">
+            <Col xl={5} lg={5} md={12} className="overflow-hidden">
                 <SplitsViewer
                     activeLiveRun={focusedRun}
                     currentSplitSplitStatus={currentSplitSplitStatus}
@@ -41,7 +41,7 @@ export const RaceFocusedRunner = () => {
                     }}
                 />
             </Col>
-            <Col xl={6} lg={6} md={12}>
+            <Col xl={7} lg={7} md={12}>
                 <div style={{ aspectRatio: '16 / 9', minHeight: '300px' }}>
                     <TwitchEmbed
                         channel={channel}
