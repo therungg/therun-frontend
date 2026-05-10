@@ -1,31 +1,34 @@
 import type { Metadata } from 'next';
-import { RedirectType, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
+import { getSession } from '~src/actions/session.action';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
+import { loadGamePageData } from './data';
+import { GamePage } from './game-page';
+import type { GamePageSearchParams } from './types';
 
 export const maxDuration = 60;
 
 interface PageProps {
     params: Promise<{ game: string }>;
-    searchParams: Promise<Record<string, string | string[] | undefined>>;
+    searchParams: Promise<GamePageSearchParams>;
 }
 
-export default async function GamePage({ params, searchParams }: PageProps) {
+export default async function GameV2Page({ params, searchParams }: PageProps) {
     const { game } = await params;
     const sp = await searchParams;
-    const qs = new URLSearchParams();
-    for (const [k, v] of Object.entries(sp)) {
-        if (typeof v === 'string') qs.set(k, v);
-        else if (Array.isArray(v)) {
-            for (const item of v) {
-                if (typeof item === 'string') qs.append(k, item);
-            }
-        }
-    }
-    const target = qs.toString()
-        ? `/games-v2/${game}?${qs.toString()}`
-        : `/games-v2/${game}`;
-    redirect(target, RedirectType.replace);
+    if (!game) notFound();
+
+    const session = await getSession();
+    const sessionUsername =
+        session?.username && session.username.length > 0
+            ? session.username
+            : null;
+
+    const data = await loadGamePageData(game, sp, sessionUsername);
+    if (!data) notFound();
+
+    return <GamePage data={data} />;
 }
 
 export async function generateMetadata({
