@@ -31,23 +31,7 @@ export const RaceFocusedRunner = () => {
             : focusedRun.user;
 
     return (
-        <Row className="g-3 mb-3 position-relative">
-            <Button
-                variant="outline-secondary"
-                size="sm"
-                onClick={unfocus}
-                aria-label="Dismiss focused runner"
-                title="Dismiss focused runner"
-                className="position-absolute top-0 end-0 d-flex align-items-center justify-content-center p-1 border-0 bg-transparent"
-                style={{
-                    width: '1.75rem',
-                    height: '1.75rem',
-                    zIndex: 5,
-                    transform: 'translate(0.25rem, -0.25rem)',
-                }}
-            >
-                <XIcon size={18} />
-            </Button>
+        <Row className="g-3 mb-3">
             <Col xl={5} lg={5} md={12} className="overflow-hidden">
                 <SplitsViewer
                     activeLiveRun={focusedRun}
@@ -59,6 +43,18 @@ export const RaceFocusedRunner = () => {
                 />
             </Col>
             <Col xl={7} lg={7} md={12}>
+                <div className="d-flex justify-content-end mb-2">
+                    <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        onClick={unfocus}
+                        aria-label="Dismiss focused runner"
+                        className="d-inline-flex align-items-center gap-1"
+                    >
+                        <XIcon size={18} />
+                        Dismiss
+                    </Button>
+                </div>
                 <div style={{ aspectRatio: '16 / 9', minHeight: '300px' }}>
                     <TwitchEmbed
                         channel={channel}
