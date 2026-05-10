@@ -3,6 +3,7 @@ import React from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { Twitch as TwitchIcon } from 'react-bootstrap-icons';
 import { getPercentageDoneFromLiverun } from '~app/(new-layout)/races/[race]/get-percentage-done-from-liverun';
+import { useRaceLiveContext } from '~app/(new-layout)/races/[race]/race-commentary-drawer-host';
 import { RaceParticipantTimer } from '~app/(new-layout)/races/[race]/race-timer';
 import { readableRaceParticipantStatus } from '~app/(new-layout)/races/[race]/readable-race-status';
 import { RaceParticipantRatingDisplay } from '~app/(new-layout)/races/components/race-participant-rating-display';
@@ -36,6 +37,7 @@ const RaceParticipantDetailPagination = ({
     setStream,
 }: RaceParticipantDetailProps) => {
     const participants = race.participants as RaceParticipantWithLiveData[];
+    const raceLiveCtx = useRaceLiveContext();
 
     const [parent] = useAutoAnimate({
         duration: 300,
@@ -55,11 +57,11 @@ const RaceParticipantDetailPagination = ({
                         <Col
                             key={participant.user}
                             onClick={() => {
-                                if (
-                                    participant.liveData &&
-                                    participant.liveData.streaming
-                                ) {
+                                if (participant.liveData?.streaming) {
                                     setStream(participant.user);
+                                }
+                                if (participant.liveData) {
+                                    raceLiveCtx.focusUser(participant.user);
                                 }
                             }}
                         >
@@ -94,11 +96,7 @@ export const RaceParticipantDetailView = ({
         <div
             className={`${styles.participantCard} ${
                 isHighlighted ? styles.participantCardHighlighted : ''
-            } ${
-                participant.liveData && participant.liveData.streaming
-                    ? styles.participantCardStreaming
-                    : ''
-            }`}
+            } ${participant.liveData ? styles.participantCardStreaming : ''}`}
             style={
                 teamColor ? { borderLeft: `3px solid ${teamColor}` } : undefined
             }
