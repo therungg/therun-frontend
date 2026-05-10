@@ -6,6 +6,7 @@ import {
     useCallback,
     useContext,
     useEffect,
+    useRef,
     useState,
 } from 'react';
 import {
@@ -46,6 +47,10 @@ const InnerHost = ({ race, children }: { race: Race; children: ReactNode }) => {
     const lastMessage = useLiveRunsWebsocket();
     const drawerCtx = useCommentaryDrawerContext();
 
+    const liveDataMapRef = useRef(liveDataMap);
+    liveDataMapRef.current = liveDataMap;
+    const fetchingRef = useRef(new Set<string>());
+
     useEffect(() => {
         if (!lastMessage) return;
         const participantUsers = new Set(
@@ -70,19 +75,25 @@ const InnerHost = ({ race, children }: { race: Race; children: ReactNode }) => {
 
     const focusUser = useCallback(
         async (user: string) => {
-            const existing = liveDataMap[user];
+            const existing = liveDataMapRef.current[user];
             let run: LiveRun | undefined = existing;
             if (!run || run.isMinified) {
-                const fetched = await getLiveRunForUser(user);
-                run = resolveLiveRun(fetched);
-                if (!run) return;
-                setLiveDataMap((prev) => ({ ...prev, [user]: run! }));
+                if (fetchingRef.current.has(user)) return;
+                fetchingRef.current.add(user);
+                try {
+                    const fetched = await getLiveRunForUser(user);
+                    run = resolveLiveRun(fetched);
+                    if (!run) return;
+                    setLiveDataMap((prev) => ({ ...prev, [user]: run! }));
+                } finally {
+                    fetchingRef.current.delete(user);
+                }
             }
             setCurrentlyViewing(user);
             setManualSelectionTick((n) => n + 1);
             drawerCtx.setOpen(true);
         },
-        [liveDataMap, drawerCtx],
+        [drawerCtx],
     );
 
     return (
