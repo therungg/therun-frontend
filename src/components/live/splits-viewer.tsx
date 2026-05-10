@@ -270,7 +270,14 @@ export const SplitsViewer = ({
                             }}
                         >
                             <td className="ps-2 pe-1">
-                                <div className={styles.splitName}>
+                                <div
+                                    className={`text-truncate ${styles.splitName}`}
+                                    title={
+                                        activeLiveRun.splits[
+                                            activeLiveRun.splits.length - 1
+                                        ].name
+                                    }
+                                >
                                     {
                                         activeLiveRun.splits[
                                             activeLiveRun.splits.length - 1
