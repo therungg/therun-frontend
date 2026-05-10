@@ -2655,4 +2655,15 @@ Plan complete and saved to `docs/superpowers/plans/2026-05-09-games-page-v1-api-
 
 **2. Inline Execution** — Execute tasks in this session using executing-plans, batch execution with checkpoints.
 
+## Deferred work: Jump-to-my-rank
+
+Task 7's "Jump to my rank" affordance is blocked on a backend dependency: the `/leaderboards/user/{userId}/rankings` endpoint requires a numeric Postgres `user_id`, but the FE session payload (`User`) only carries `username` (string). The `/v1/runs/user-stats?username=X` endpoint returns aggregate stats with no `user_id`. There is no current FE-accessible path from username → numeric user_id.
+
+To unblock, the backend needs one of:
+1. Add `user_id` to the session payload (preferred — surfaces the canonical ID once at login).
+2. Expose a `/leaderboards/user/by-username/{username}/rankings` route or accept `?username=` on the existing rankings route.
+3. Expose `user_id` on the `/v1/runs/user-stats` response.
+
+The current-user row highlight (already implemented via `entry.runnerName === sessionUsername` in `leaderboard-table.tsx`) covers the on-page case. Off-page jump-to-rank waits on the backend.
+
 Which approach?
