@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { MinimumsSection } from './minimums/minimums-section';
 import type { ManagePageData } from './types';
 
 interface Props {
@@ -36,10 +37,13 @@ export function ManagePage({ data }: Props) {
                 </div>
             </header>
 
-            <section>
-                <h2 className="h5 mb-3">Minimum Times</h2>
-                <p className="text-muted">Section coming online…</p>
-            </section>
+            {data.categories.length === 0 ? (
+                <p className="text-center text-muted my-5">
+                    This game has no categories yet.
+                </p>
+            ) : (
+                <MinimumsSection data={data} />
+            )}
         </div>
     );
 }
