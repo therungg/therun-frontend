@@ -73,39 +73,39 @@ const InnerHost = ({ race, children }: { race: Race; children: ReactNode }) => {
         }
     }, [lastMessage, race.participants]);
 
-    const focusUser = useCallback(
-        async (user: string) => {
-            const existing = liveDataMapRef.current[user];
-            let run: LiveRun | undefined = existing;
-            if (!run || run.isMinified) {
-                if (fetchingRef.current.has(user)) return;
-                fetchingRef.current.add(user);
-                try {
-                    const fetched = await getLiveRunForUser(user);
-                    run = resolveLiveRun(fetched);
-                    if (!run) return;
-                    setLiveDataMap((prev) => ({ ...prev, [user]: run! }));
-                } finally {
-                    fetchingRef.current.delete(user);
-                }
+    const focusUser = useCallback(async (user: string) => {
+        const existing = liveDataMapRef.current[user];
+        let run: LiveRun | undefined = existing;
+        if (!run || run.isMinified) {
+            if (fetchingRef.current.has(user)) return;
+            fetchingRef.current.add(user);
+            try {
+                const fetched = await getLiveRunForUser(user);
+                run = resolveLiveRun(fetched);
+                if (!run) return;
+                setLiveDataMap((prev) => ({ ...prev, [user]: run! }));
+            } finally {
+                fetchingRef.current.delete(user);
             }
-            setCurrentlyViewing(user);
-            setManualSelectionTick((n) => n + 1);
-            drawerCtx.setOpen(true);
-        },
-        [drawerCtx],
-    );
+        }
+        setCurrentlyViewing(user);
+        setManualSelectionTick((n) => n + 1);
+    }, []);
+
+    const drawerSetOpen = drawerCtx.setOpen;
+    useEffect(() => {
+        if (!currentlyViewing) return;
+        drawerSetOpen(true);
+    }, [currentlyViewing, manualSelectionTick, drawerSetOpen]);
 
     return (
         <RaceLiveContext.Provider value={{ focusUser }}>
             {children}
-            {currentlyViewing && (
-                <CommentaryDrawer
-                    liveDataMap={liveDataMap}
-                    currentlyViewing={currentlyViewing}
-                    manualSelectionTick={manualSelectionTick}
-                />
-            )}
+            <CommentaryDrawer
+                liveDataMap={liveDataMap}
+                currentlyViewing={currentlyViewing}
+                manualSelectionTick={manualSelectionTick}
+            />
         </RaceLiveContext.Provider>
     );
 };
