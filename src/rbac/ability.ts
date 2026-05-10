@@ -29,6 +29,7 @@ export const subjects = [
     'admins',
     'stories',
     'roles',
+    'category-settings',
 ] as const;
 type AllowedActions = (typeof actions)[number];
 type AllowedSubjects = (typeof subjects)[number];
@@ -86,9 +87,11 @@ const rolePermissions: Record<Role, DefinePermissions> = {
     'board-admin': function (_user, { can }) {
         can('edit', 'leaderboard');
         can('edit', 'moderators');
+        can('edit', 'category-settings');
     },
     'board-moderator': function (_user, { can }) {
         can('edit', 'leaderboard');
+        can('edit', 'category-settings');
     },
     'race-admin': function (_user, { can }) {
         can('edit', 'race');
@@ -149,6 +152,11 @@ const defaultPermissions: DefinePermissions = (user, { can }) => {
 
         // Anyone can join a race
         can('join', 'race');
+    });
+
+    // Per-game moderators can edit category settings (minimum times etc.)
+    moderatedGames.forEach((game) => {
+        can('edit', 'category-settings', { game });
     });
 };
 
