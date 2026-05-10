@@ -1150,9 +1150,9 @@
 
 .deltaBarRow {
     display: grid;
-    grid-template-columns: minmax(0, 9rem) 4.5rem 4.5rem 1fr 4rem;
+    grid-template-columns: minmax(0, 6rem) 3rem 3rem 1fr 3rem;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.4rem;
     padding: 0.25rem 0;
     font-size: 0.78rem;
 }
