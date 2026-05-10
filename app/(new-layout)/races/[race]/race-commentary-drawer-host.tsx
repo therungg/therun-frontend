@@ -24,12 +24,14 @@ import { getLiveRunForUser } from '~src/lib/live-runs';
 
 interface RaceLiveContextValue {
     focusUser: (user: string) => Promise<void>;
+    focusedRun: LiveRun | undefined;
 }
 
 const RaceLiveContext = createContext<RaceLiveContextValue>({
     focusUser: async () => {
         /* no-op when used outside the provider */
     },
+    focusedRun: undefined,
 });
 
 export const useRaceLiveContext = () => useContext(RaceLiveContext);
@@ -98,8 +100,12 @@ const InnerHost = ({ race, children }: { race: Race; children: ReactNode }) => {
         drawerSetOpen(true);
     }, [currentlyViewing, manualSelectionTick, drawerSetOpen]);
 
+    const focusedRun = currentlyViewing
+        ? liveDataMap[currentlyViewing]
+        : undefined;
+
     return (
-        <RaceLiveContext.Provider value={{ focusUser }}>
+        <RaceLiveContext.Provider value={{ focusUser, focusedRun }}>
             {children}
             <CommentaryDrawer
                 liveDataMap={liveDataMap}

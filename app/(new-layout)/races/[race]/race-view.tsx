@@ -1,27 +1,23 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import { RaceActions } from '~app/(new-layout)/races/[race]/race-actions';
 import { RaceAdminActions } from '~app/(new-layout)/races/[race]/race-admin-actions';
 import { RaceChat } from '~app/(new-layout)/races/[race]/race-chat';
 import { RaceCommentaryDrawerHost } from '~app/(new-layout)/races/[race]/race-commentary-drawer-host';
+import { RaceFocusedRunner } from '~app/(new-layout)/races/[race]/race-focused-runner';
 import { RaceHeader } from '~app/(new-layout)/races/[race]/race-header';
 import { RaceParticipantDetail } from '~app/(new-layout)/races/[race]/race-participant-detail';
 import { RaceParticipantOverview } from '~app/(new-layout)/races/[race]/race-participant-overview';
 import { RaceProgressGraph } from '~app/(new-layout)/races/[race]/race-progress-graph';
 import { RaceStartConditionInformation } from '~app/(new-layout)/races/[race]/race-start-condition-information';
 import { RaceStats } from '~app/(new-layout)/races/[race]/race-stats';
-import { RaceStream } from '~app/(new-layout)/races/[race]/race-stream';
 import { RaceTimer } from '~app/(new-layout)/races/[race]/race-timer';
 import { TeamLobby } from '~app/(new-layout)/races/[race]/teams/team-lobby';
 import { TeamResults } from '~app/(new-layout)/races/[race]/teams/team-results';
 import { useRace } from '~app/(new-layout)/races/hooks/use-race';
-import {
-    Race,
-    RaceMessage,
-    RaceParticipantWithLiveData,
-} from '~app/(new-layout)/races/races.types';
+import { Race, RaceMessage } from '~app/(new-layout)/races/races.types';
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -40,7 +36,6 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
         race,
         messages,
     );
-    const [stream, setStream] = useState(getInitialRaceStream(raceState));
 
     const breadcrumbs: BreadcrumbItem[] = [
         { content: 'Races', href: '/races' },
@@ -88,6 +83,7 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
                             </div>
                         )}
                     </Col>
+                    <RaceFocusedRunner />
                     <div className="d-lg-none">
                         {raceState.isTeamRace &&
                             raceState.status === 'pending' && (
@@ -116,10 +112,7 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
                             <TeamResults race={raceState} />
                         )}
                     <div className="pb-4">
-                        <RaceParticipantDetail
-                            race={raceState}
-                            setStream={setStream}
-                        />
+                        <RaceParticipantDetail race={raceState} />
                     </div>
                     <div className="pb-4 d-none d-sm-block">
                         <RaceProgressGraph
@@ -138,26 +131,8 @@ export const RaceDetail = ({ race, user, messages }: RaceDetailProps) => {
                         user={user}
                     />
                     <RaceStats race={race} />
-                    <RaceStream stream={stream} />
                 </Col>
             </Row>
         </RaceCommentaryDrawerHost>
     );
-};
-
-const getInitialRaceStream = (race: Race) => {
-    const participants = race.participants as RaceParticipantWithLiveData[];
-
-    if (race.forceStream) return race.forceStream;
-
-    const firstTwitchStreamingParticipant = participants.find(
-        (participant) => participant.liveData?.streaming,
-    );
-
-    if (firstTwitchStreamingParticipant)
-        return firstTwitchStreamingParticipant.user;
-
-    if (participants.length > 0) return participants[0].user;
-
-    return '';
 };

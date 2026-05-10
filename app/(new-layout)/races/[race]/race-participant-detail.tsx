@@ -20,21 +20,14 @@ import styles from './race-detail.module.scss';
 
 interface RaceParticipantDetailProps {
     race: Race;
-    setStream: (user: string) => void;
 }
 
-export const RaceParticipantDetail = ({
-    race,
-    setStream,
-}: RaceParticipantDetailProps) => {
-    return (
-        <RaceParticipantDetailPagination race={race} setStream={setStream} />
-    );
+export const RaceParticipantDetail = ({ race }: RaceParticipantDetailProps) => {
+    return <RaceParticipantDetailPagination race={race} />;
 };
 
 const RaceParticipantDetailPagination = ({
     race,
-    setStream,
 }: RaceParticipantDetailProps) => {
     const participants = race.participants as RaceParticipantWithLiveData[];
     const raceLiveCtx = useRaceLiveContext();
@@ -57,9 +50,6 @@ const RaceParticipantDetailPagination = ({
                         <Col
                             key={participant.user}
                             onClick={() => {
-                                if (participant.liveData?.streaming) {
-                                    setStream(participant.user);
-                                }
                                 if (participant.liveData) {
                                     raceLiveCtx.focusUser(participant.user);
                                 }
