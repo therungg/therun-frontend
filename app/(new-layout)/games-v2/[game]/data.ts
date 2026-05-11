@@ -14,7 +14,6 @@ export async function loadGamePageData(
     slug: string,
     sp: GamePageSearchParams,
     sessionUsername: string | null,
-    canManage: boolean,
 ): Promise<GamePageData | null> {
     const game = await resolveGame(slug);
     if (!game) return null;
@@ -40,7 +39,6 @@ export async function loadGamePageData(
             recentPbs: [],
             liveRunners: [],
             sessionUsername,
-            canManage,
             activeFilters: emptyFilters(),
         };
     }
@@ -99,7 +97,6 @@ export async function loadGamePageData(
         recentPbs,
         liveRunners: liveRunners ?? [],
         sessionUsername,
-        canManage,
         activeFilters: {
             subcategoryHash,
             verified,

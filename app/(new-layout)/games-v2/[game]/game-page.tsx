@@ -8,16 +8,17 @@ import type { GamePageData } from './types';
 
 interface Props {
     data: GamePageData;
+    canManage: boolean;
 }
 
-export function GamePage({ data }: Props) {
+export function GamePage({ data, canManage }: Props) {
     if (data.categories.length === 0) {
         return (
             <div>
                 <GameHeader
                     game={data.game}
                     stats={data.quickStats}
-                    canManage={data.canManage}
+                    canManage={canManage}
                 />
                 <p className="text-center text-muted my-5">
                     No runs uploaded for this game yet.
@@ -36,7 +37,7 @@ export function GamePage({ data }: Props) {
             <GameHeader
                 game={data.game}
                 stats={data.quickStats}
-                canManage={data.canManage}
+                canManage={canManage}
             />
             <CategoryPills
                 categories={data.categories}

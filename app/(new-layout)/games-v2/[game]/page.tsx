@@ -27,15 +27,15 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
             ? session.username
             : null;
 
-    const canManage = defineAbilityFor(session).can(
-        'edit',
-        caslSubject('category-settings', { game }),
-    );
-
-    const data = await loadGamePageData(game, sp, sessionUsername, canManage);
+    const data = await loadGamePageData(game, sp, sessionUsername);
     if (!data) notFound();
 
-    return <GamePage data={data} />;
+    const canManage = defineAbilityFor(session).can(
+        'edit',
+        caslSubject('category-settings', { game: data.game.name }),
+    );
+
+    return <GamePage data={data} canManage={canManage} />;
 }
 
 export async function generateMetadata({
