@@ -169,6 +169,13 @@ export function MobileMenu({ username, featuredPatrons }: MobileMenuProps) {
                 >
                     Exclusions
                 </Link>
+                <Link
+                    href="/admin/role-assignments"
+                    className={styles.link}
+                    onClick={close}
+                >
+                    Role Assignments
+                </Link>
             </Can>
         </div>
     );

@@ -27,10 +27,7 @@ export function MinimumRow({
                 {row.minTimeMs === null ? (
                     <span className="text-muted">—</span>
                 ) : (
-                    <DurationToFormatted
-                        duration={row.minTimeMs / 1000}
-                        withMillis
-                    />
+                    <DurationToFormatted duration={row.minTimeMs} withMillis />
                 )}
             </td>
             <td>
@@ -38,7 +35,7 @@ export function MinimumRow({
                     <span className="text-muted">—</span>
                 ) : (
                     <DurationToFormatted
-                        duration={row.minGameTimeMs / 1000}
+                        duration={row.minGameTimeMs}
                         withMillis
                     />
                 )}
