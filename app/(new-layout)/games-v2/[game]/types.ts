@@ -28,7 +28,6 @@ export interface GamePageData {
     recentPbs: RecentPb[];
     liveRunners: LiveRun[];
     sessionUsername: string | null;
-    canManage: boolean;
     activeFilters: {
         subcategoryHash: string;
         verified: boolean;
