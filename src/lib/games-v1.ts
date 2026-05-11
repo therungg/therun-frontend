@@ -7,7 +7,7 @@ import type {
     ResolvedCategory,
     ResolvedGame,
 } from '../../types/leaderboards.types';
-import { v1Fetch } from './v1-fetch';
+import { V1FetchError, v1Fetch } from './v1-fetch';
 
 interface GamesEndpointRow {
     gameId: number;
@@ -45,17 +45,28 @@ export async function resolveGame(slug: string): Promise<ResolvedGame | null> {
     const normalized = normalizeSlug(slug);
     cacheTag(`game-resolve:${normalized}`);
 
-    const path = `/v1/runs/games?game_slug=${encodeURIComponent(normalized)}&limit=1`;
-    const body = await v1Fetch<{ result: GamesEndpointRow[] }>(path);
-    const row = body.result?.[0];
-    if (!row) return null;
+    let lookup: { result: { id: number; name: string; display: string } };
+    try {
+        lookup = await v1Fetch(
+            `/v1/games/by-slug/${encodeURIComponent(normalized)}`,
+        );
+    } catch (e) {
+        if (e instanceof V1FetchError && e.status === 404) return null;
+        throw e;
+    }
+    const { id, name, display } = lookup.result;
 
-    return {
-        id: row.gameId,
-        name: normalizeSlug(row.gameDisplay),
-        display: row.gameDisplay,
-        image: row.gameImage ?? null,
-    };
+    let image: string | null = null;
+    try {
+        const body = await v1Fetch<{ result: GamesEndpointRow[] }>(
+            `/v1/runs/games?game_id=${id}&limit=1`,
+        );
+        image = body.result?.[0]?.gameImage ?? null;
+    } catch {
+        // Image is non-essential; degrade gracefully.
+    }
+
+    return { id, name, display, image };
 }
 
 export async function getQuickStats(gameId: number): Promise<QuickStats> {

@@ -22,6 +22,7 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
     if (!game) notFound();
 
     const session = await getSession();
+    if (!session?.roles?.includes('admin')) notFound();
     const sessionUsername =
         session?.username && session.username.length > 0
             ? session.username
