@@ -1,4 +1,3 @@
-import type { LiveRun } from '~app/(new-layout)/live/live.types';
 import type {
     LeaderboardResponse,
     QuickStats,
@@ -26,7 +25,6 @@ export interface GamePageData {
     leaderboardGt: LeaderboardResponse;
     quickStats: QuickStats;
     recentPbs: RecentPb[];
-    liveRunners: LiveRun[];
     sessionUsername: string | null;
     activeFilters: {
         subcategoryHash: string;

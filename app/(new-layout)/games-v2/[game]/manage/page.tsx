@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
+import { getGameIdentifiers } from '~src/lib/game-mgmt';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listMinimumTimes } from '~src/lib/leaderboard-minimums';
 import { getVariables } from '~src/lib/leaderboards-v1';
@@ -22,33 +23,32 @@ export default async function GameManagePage({ params }: Props) {
     const { categories } = await resolveCategory(game.id);
     const initialCategory = categories[0] ?? null;
 
-    if (!initialCategory) {
-        return (
-            <ManagePage
-                data={{
-                    game,
-                    categories: [],
-                    initialCategoryId: -1,
-                    initialVariables: [],
-                    initialMinimums: [],
-                }}
-            />
-        );
-    }
-
-    const [initialVariables, initialMinimums] = await Promise.all([
-        getVariables(game.name, initialCategory.name).catch(() => []),
-        listMinimumTimes(user.id, game.id, initialCategory.id).catch(() => []),
-    ]);
+    const [initialIdentifiers, initialVariables, initialMinimums] =
+        await Promise.all([
+            getGameIdentifiers(game.id).catch(() => ({
+                slug: null,
+                abbreviation: null,
+            })),
+            initialCategory
+                ? getVariables(game.name, initialCategory.name).catch(() => [])
+                : Promise.resolve([]),
+            initialCategory
+                ? listMinimumTimes(user.id, game.id, initialCategory.id).catch(
+                      () => [],
+                  )
+                : Promise.resolve([]),
+        ]);
 
     return (
         <ManagePage
             data={{
                 game,
                 categories,
-                initialCategoryId: initialCategory.id,
+                initialCategoryId: initialCategory?.id ?? -1,
                 initialVariables,
                 initialMinimums,
+                initialSlug: initialIdentifiers.slug,
+                initialAbbreviation: initialIdentifiers.abbreviation,
             }}
         />
     );

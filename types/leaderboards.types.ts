@@ -17,6 +17,8 @@ export interface ResolvedCategory {
     primaryTiming: 'rt' | 'gt';
     defaultSubcategoryHash?: string | null;
     sortAscending?: boolean;
+    isMain?: boolean;
+    active?: boolean;
 }
 
 export interface QuickStats {

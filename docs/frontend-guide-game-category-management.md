@@ -53,7 +53,11 @@ interface PageData {
     seriesId: number | null;
     seriesDisplay: string | null;
     forceRealTime: boolean;
+    hideRealTime: boolean;    // hide RT view game-wide (mutually excl. with hideGameTime)
+    hideGameTime: boolean;
     autoCreated: boolean;
+    slug: string | null;          // admin-editable URL slug; preferred lookup key for /by-slug
+    abbreviation: string | null;  // admin-editable short form (e.g. "sm64"); fallback lookup key
   };
   ungroupedCategories: Category[];
   groups: {
@@ -77,11 +81,14 @@ interface Category {
   display: string;
   sortOrder: number;
   primaryTiming: string;    // "realtime" | "gametime"
+  hideRealTime: boolean;    // hide RT view on this category (mutually excl. with hideGameTime)
+  hideGameTime: boolean;
   rules: string | null;
   requireVideo: boolean;
   showMilliseconds: boolean;
   variables: any[];         // leaderboard variable definitions (future spec)
   defaultSubcategoryHash: string;
+  isMain: boolean;          // flagged as a "main" category for this game. Frontend decides how to use it (e.g. featured tabs).
 }
 ```
 
@@ -204,14 +211,22 @@ Set which games belong to this series. Replaces the current list entirely. Order
 
 ### GET /v1/games/by-slug/:slug
 
-Resolve a game slug (the searchable form — lowercased, spaces removed) to its numeric id. All other `/v1/games/:id/*` endpoints are id-based; use this when you only have a name/slug from a URL or search result.
+Resolve a URL slug to a game id. All other `/v1/games/:id/*` endpoints are id-based; use this when you only have a slug from a URL or search result.
+
+The path param is normalized (lowercase, non-alphanumerics → `-`, dashes collapsed, leading/trailing dashes stripped) before lookup. Resolution priority:
+
+1. `games.slug` — admin-set, editable, URL-friendly
+2. `games.abbreviation` — admin-set short form (e.g. `sm64`, `oot`)
+3. `games.name` — auto-derived from the display name (`convertToSearchable`: lowercased, spaces removed). Preserves all legacy `/by-slug/<name>` URLs.
+
+Cached in Redis (1 h hit / 5 min negative). Slug edits propagate within the TTL.
 
 ```typescript
 // Response
 { result: { id: number; name: string; display: string } }
 ```
 
-**Auth:** None (public). Returns 404 if no game matches.
+**Auth:** None (public). Returns 404 if no game matches by any of the three keys.
 
 ### GET /v1/games/:id
 
@@ -281,15 +296,31 @@ Edit game metadata.
   display?: string;
   image?: string;
   forceRealTime?: boolean;
+  hideRealTime?: boolean;     // mutually exclusive with hideGameTime
+  hideGameTime?: boolean;
   seriesId?: number | null;
   sortOrderInSeries?: number;
+  slug?: string | null;           // admin-set URL slug. Pass null or "" to clear.
+  abbreviation?: string | null;   // admin-set short form. Pass null or "" to clear.
+  active?: boolean;               // unarchive (true) / archive (false). Requires `archive-game` permission.
 }
 
 // Response
 { result: { updated: true } }
 ```
 
-**Auth:** Required. Needs `edit-game` on this game.
+**Slug & abbreviation rules:**
+
+- Both are normalized server-side (lowercase + non-alphanumerics → `-` + collapsed + trimmed). Whatever the admin types, the canonical stored value is the normalized form.
+- Slug max **64 chars** after normalization. Abbreviation max **16 chars**.
+- Both UNIQUE across all games. A duplicate returns `400` with `{ error: "Slug already in use" }` or `{ error: "Abbreviation already in use" }`.
+- A field that normalizes to an empty string (e.g. `"!!!"`) returns `400` with `{ error: "Slug must contain at least one alphanumeric character" }`.
+- To clear an existing value, send `null` or `""`.
+- The normalized values appear in `pageData.game.slug` / `pageData.game.abbreviation` after the next pageData rebuild (≤ 1 s).
+
+**Active toggle:** `active: false` archives, `active: true` unarchives (the existing `POST /v1/games/:id/archive` still works for archiving). Archived games are hidden from browse/search but still accept run uploads.
+
+**Auth:** Required. Needs `edit-game` on this game. Toggling `active` additionally requires `archive-game`.
 
 ### POST /v1/games/:id/archive
 
@@ -385,11 +416,14 @@ Create a category.
   display: string;              // required, 1-200 chars
   groupId?: number;             // null = ungrouped
   primaryTiming?: string;       // "realtime" (default) | "gametime"
+  hideRealTime?: boolean;       // default false; mutually exclusive with hideGameTime
+  hideGameTime?: boolean;       // default false
   rules?: string;
   requireVideo?: boolean;       // default false
   requireVideoTopN?: number;    // require video only for top N
   sortAscending?: boolean;      // default true (lower time = better)
   showMilliseconds?: boolean;   // default true
+  isMain?: boolean;             // default false. Marks the category as a "main" one for the game.
 }
 
 // Response
@@ -408,19 +442,23 @@ Edit a category. The category must belong to this game.
   display?: string;
   groupId?: number | null;      // move between groups, null = ungrouped
   primaryTiming?: string;
+  hideRealTime?: boolean;       // mutually exclusive with hideGameTime
+  hideGameTime?: boolean;
   rules?: string | null;
   requireVideo?: boolean;
   requireVideoTopN?: number | null;
   sortAscending?: boolean;
   showMilliseconds?: boolean;
   sortOrder?: number;
+  isMain?: boolean;
+  active?: boolean;             // unarchive (true) / archive (false). Requires `archive-category` permission.
 }
 
 // Response
 { result: { updated: true } }
 ```
 
-**Auth:** Required. Needs `edit-category-settings` on this game + category.
+**Auth:** Required. Needs `edit-category-settings` on this game + category. Toggling `active` additionally requires `archive-category`.
 
 ### POST /v1/games/:gameId/categories/:catId/archive
 
@@ -984,7 +1022,7 @@ Fetch the ranked leaderboard for a game+category. Unfiltered queries hit Redis (
 
 // Query params
 ?subcategory=       // subcategory hash (empty = default)
-&timing=rt          // "rt" (realtime, default) | "gt" (gametime)
+&timing=rt          // "rt" | "gt". If omitted, server picks the default based on game/category settings — see "Timing defaults" below.
 &verified=false     // true = only verified runs
 &page=1
 &pageSize=25        // max 100
@@ -1007,11 +1045,39 @@ Fetch the ranked leaderboard for a game+category. Unfiltered queries hit Redis (
     page: number;
     pageSize: number;
     totalPages: number;
+    timing: "rt" | "gt";          // timing actually used for this response
+    defaultTiming: "rt" | "gt";   // category's preferred timing
+    forceRealTime: boolean;       // true = game forces realtime
+    hideRealTime: boolean;        // effective (category > game). Realtime view hidden.
+    hideGameTime: boolean;        // effective (category > game). Gametime view hidden.
   }
 }
 ```
 
 **Auth:** None (public).
+
+#### Timing defaults
+
+Server-side precedence (don't replicate this on the client — just read the response fields):
+
+1. `forceRealTime: true` → `"rt"`. `?timing=gt` ignored.
+2. Effective `hideRealTime` (category overrides game) → `"gt"`.
+3. Effective `hideGameTime` → `"rt"`.
+4. Explicit `?timing=rt` or `?timing=gt`.
+5. `category.primaryTiming === "gametime"` → `"gt"`, else `"rt"`.
+
+Render the realtime/gametime toggle based on the response:
+
+| Response | Toggle |
+|----------|--------|
+| `forceRealTime: true` | Hide. Realtime only. |
+| `hideRealTime: true` | Hide. Gametime only. |
+| `hideGameTime: true` | Hide. Realtime only. |
+| Otherwise | Show, initialized to `timing`. |
+
+On first load, call without `?timing=` and the server picks the right default. Only add `?timing=` when the user manually flips the toggle.
+
+`hideRealTime` and `hideGameTime` are mutually exclusive — the backend rejects requests that set both.
 
 ### GET /v1/leaderboards/wr-history/{game}/{category}
 

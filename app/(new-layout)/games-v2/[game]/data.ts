@@ -5,7 +5,6 @@ import {
     resolveGame,
 } from '~src/lib/games-v1';
 import { getLeaderboard, getVariables } from '~src/lib/leaderboards-v1';
-import { getAllLiveRuns } from '~src/lib/live-runs';
 import type { GamePageData, GamePageSearchParams } from './types';
 
 const DEFAULT_PAGE_SIZE = 25;
@@ -18,10 +17,12 @@ export async function loadGamePageData(
     const game = await resolveGame(slug);
     if (!game) return null;
 
-    const { categories, selected } = await resolveCategory(
-        game.id,
-        sp.category,
-    );
+    const resolved = await resolveCategory(game.id, sp.category);
+    const categories = resolved.categories.filter((c) => c.active !== false);
+    const selected =
+        resolved.selected && resolved.selected.active !== false
+            ? resolved.selected
+            : (categories[0] ?? null);
     if (!selected) {
         return {
             game,
@@ -37,7 +38,6 @@ export async function loadGamePageData(
             leaderboardGt: emptyBoard(),
             quickStats: await getQuickStats(game.id),
             recentPbs: [],
-            liveRunners: [],
             sessionUsername,
             activeFilters: emptyFilters(),
         };
@@ -65,26 +65,19 @@ export async function loadGamePageData(
         varFilters,
     };
 
-    const [
-        variables,
-        leaderboardRt,
-        leaderboardGt,
-        quickStats,
-        recentPbs,
-        liveRunners,
-    ] = await Promise.all([
-        getVariables(game.name, selected.name).catch(() => []),
-        getLeaderboard({ ...baseQuery, timing: 'rt' }),
-        getLeaderboard({ ...baseQuery, timing: 'gt' }),
-        getQuickStats(game.id).catch(() => ({
-            totalRunTime: 0,
-            totalAttemptCount: 0,
-            totalFinishedAttemptCount: 0,
-            uniqueRunners: 0,
-        })),
-        getRecentPbs(game.id).catch(() => []),
-        getAllLiveRuns(game.display).catch(() => []),
-    ]);
+    const [variables, leaderboardRt, leaderboardGt, quickStats, recentPbs] =
+        await Promise.all([
+            getVariables(game.name, selected.name).catch(() => []),
+            getLeaderboard({ ...baseQuery, timing: 'rt' }),
+            getLeaderboard({ ...baseQuery, timing: 'gt' }),
+            getQuickStats(game.id).catch(() => ({
+                totalRunTime: 0,
+                totalAttemptCount: 0,
+                totalFinishedAttemptCount: 0,
+                uniqueRunners: 0,
+            })),
+            getRecentPbs(game.id).catch(() => []),
+        ]);
 
     return {
         game,
@@ -95,7 +88,6 @@ export async function loadGamePageData(
         leaderboardGt,
         quickStats,
         recentPbs,
-        liveRunners: liveRunners ?? [],
         sessionUsername,
         activeFilters: {
             subcategoryHash,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import type { MinimumTime } from '../../../../../../types/leaderboard-minimums.types';
 import type {
@@ -21,6 +21,7 @@ type FormState =
 
 interface Props {
     data: ManagePageData;
+    selectedCategory: ResolvedCategory | null;
 }
 
 function flagSummary(flagged: number, unflagged: number): string {
@@ -30,10 +31,7 @@ function flagSummary(flagged: number, unflagged: number): string {
     return parts.length === 0 ? '' : ` — ${parts.join(', ')}.`;
 }
 
-export function MinimumsSection({ data }: Props) {
-    const [selectedCategoryId, setSelectedCategoryId] = useState(
-        data.initialCategoryId,
-    );
+export function MinimumsSection({ data, selectedCategory }: Props) {
     const [variables, setVariables] = useState<VariableDef[]>(
         data.initialVariables,
     );
@@ -46,9 +44,7 @@ export function MinimumsSection({ data }: Props) {
     const [isLoading, startLoadTransition] = useTransition();
     const [isSaving, startSaveTransition] = useTransition();
 
-    const selectedCategory: ResolvedCategory | undefined = data.categories.find(
-        (c) => c.id === selectedCategoryId,
-    );
+    const initialCategoryIdRef = useRef(data.initialCategoryId);
     const busy = isLoading || isSaving;
 
     const refresh = async (categoryId: number, categorySlug: string) => {
@@ -69,13 +65,16 @@ export function MinimumsSection({ data }: Props) {
         }
     };
 
-    const switchCategory = (cat: ResolvedCategory) => {
-        if (cat.id === selectedCategoryId) return;
-        setSelectedCategoryId(cat.id);
+    useEffect(() => {
+        if (!selectedCategory) return;
+        if (selectedCategory.id === initialCategoryIdRef.current) return;
         setFormState({ open: false });
         setFormError(null);
-        startLoadTransition(() => refresh(cat.id, cat.name));
-    };
+        startLoadTransition(() =>
+            refresh(selectedCategory.id, selectedCategory.name),
+        );
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedCategory?.id]);
 
     const handleSubmit = (values: FormSubmitValues) => {
         if (!selectedCategory) return;
@@ -148,24 +147,6 @@ export function MinimumsSection({ data }: Props) {
                         + Add minimum
                     </button>
                 )}
-            </div>
-
-            <div className="d-flex flex-wrap gap-2 mb-3">
-                {data.categories.map((cat) => (
-                    <button
-                        key={cat.id}
-                        type="button"
-                        className={`btn btn-sm ${
-                            cat.id === selectedCategoryId
-                                ? 'btn-primary'
-                                : 'btn-outline-secondary'
-                        }`}
-                        onClick={() => switchCategory(cat)}
-                        disabled={busy}
-                    >
-                        {cat.display}
-                    </button>
-                ))}
             </div>
 
             {loadError && (

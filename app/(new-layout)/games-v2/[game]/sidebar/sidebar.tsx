@@ -18,10 +18,7 @@ export function Sidebar({ data }: Props) {
                 gameSlug={data.game.name}
                 subcategoryHash={data.activeFilters.subcategoryHash}
             />
-            <LivePanel
-                runners={data.liveRunners}
-                gameDisplay={data.game.display}
-            />
+            <LivePanel gameDisplay={data.game.display} />
             <RecentPbsPanel pbs={data.recentPbs} />
             <QuickStatsPanel stats={data.quickStats} />
         </>
