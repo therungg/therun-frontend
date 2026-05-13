@@ -19,20 +19,23 @@ interface GamesEndpointRow {
     uniqueRunners: number;
 }
 
+// /v1/runs/categories returns snake_case (unlike /v1/runs/games, which is camelCase).
 interface CategoriesEndpointRow {
-    gameId: number;
-    categoryId: number;
-    gameDisplay: string;
-    categoryDisplay: string;
-    gameImage?: string | null;
-    totalRunTime: number;
-    totalAttemptCount: number;
-    totalFinishedAttemptCount: number;
-    uniqueRunners: number;
-    primaryTiming?: 'rt' | 'gt';
-    defaultSubcategoryHash?: string | null;
-    sortAscending?: boolean;
-    defaultVerified?: boolean;
+    game_id: number;
+    category_id: number;
+    game_display: string;
+    category_display: string;
+    game_image?: string | null;
+    total_run_time: number;
+    total_attempt_count: number;
+    total_finished_attempt_count: number;
+    unique_runners: number;
+    primary_timing?: string; // "realtime" | "gametime" | "rt" | "gt"
+    hide_real_time?: boolean;
+    hide_game_time?: boolean;
+    default_subcategory_hash?: string | null;
+    sort_ascending?: boolean;
+    default_verified?: boolean;
 }
 
 function normalizeSlug(slug: string): string {
@@ -93,6 +96,17 @@ export async function getQuickStats(gameId: number): Promise<QuickStats> {
     };
 }
 
+interface PageDataCategoryFlags {
+    id: number;
+    isMain?: boolean;
+    active?: boolean;
+}
+
+interface PageDataForCats {
+    ungroupedCategories?: PageDataCategoryFlags[];
+    groups?: { categories?: PageDataCategoryFlags[] }[];
+}
+
 export async function resolveCategory(
     gameId: number,
     categorySlug?: string,
@@ -107,17 +121,45 @@ export async function resolveCategory(
     // category selections for the same game.
     cacheTag(`game-cats:${gameId}`);
 
-    const path = `/v1/runs/categories?game_id=${gameId}&sort=-total_run_time&limit=200`;
-    const body = await v1Fetch<{ result: CategoriesEndpointRow[] }>(path);
-    const rows = body.result ?? [];
-    const categories: ResolvedCategory[] = rows.map((r) => ({
-        id: r.categoryId,
-        name: normalizeSlug(r.categoryDisplay),
-        display: r.categoryDisplay,
-        primaryTiming: r.primaryTiming ?? 'rt',
-        defaultSubcategoryHash: r.defaultSubcategoryHash ?? null,
-        sortAscending: r.sortAscending ?? true,
-    }));
+    const runsPath = `/v1/runs/categories?game_id=${gameId}&sort=-total_run_time&limit=200`;
+    const [runsResp, pageDataResp] = await Promise.all([
+        v1Fetch<{ result: CategoriesEndpointRow[] }>(runsPath),
+        v1Fetch<{ result?: PageDataForCats }>(`/v1/games/${gameId}`).catch(
+            () => ({ result: undefined as PageDataForCats | undefined }),
+        ),
+    ]);
+
+    const flagsById = new Map<number, { isMain: boolean; active: boolean }>();
+    const collect = (cats?: PageDataCategoryFlags[]) => {
+        for (const c of cats ?? []) {
+            flagsById.set(c.id, {
+                isMain: c.isMain ?? false,
+                active: c.active ?? true,
+            });
+        }
+    };
+    collect(pageDataResp.result?.ungroupedCategories);
+    for (const g of pageDataResp.result?.groups ?? []) {
+        collect(g.categories);
+    }
+
+    const rows = runsResp.result ?? [];
+    const categories: ResolvedCategory[] = rows.map((r) => {
+        const flags = flagsById.get(r.category_id);
+        return {
+            id: r.category_id,
+            name: normalizeSlug(r.category_display),
+            display: r.category_display,
+            primaryTiming:
+                r.primary_timing === 'gt' || r.primary_timing === 'gametime'
+                    ? ('gt' as const)
+                    : ('rt' as const),
+            defaultSubcategoryHash: r.default_subcategory_hash ?? null,
+            sortAscending: r.sort_ascending ?? true,
+            isMain: flags?.isMain ?? false,
+            active: flags?.active ?? true,
+        };
+    });
 
     let selected: ResolvedCategory | null = null;
     if (categorySlug) {

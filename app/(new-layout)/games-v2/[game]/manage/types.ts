@@ -11,4 +11,6 @@ export interface ManagePageData {
     initialCategoryId: number;
     initialVariables: VariableDef[];
     initialMinimums: MinimumTime[];
+    initialSlug: string | null;
+    initialAbbreviation: string | null;
 }
