@@ -247,7 +247,9 @@ export const ListTournaments = ({
                 );
 
                 const cardImage = tournament.logoUrl
-                    ? `/${tournament.logoUrl}`
+                    ? tournament.logoUrl.startsWith('http')
+                        ? tournament.logoUrl
+                        : `/${tournament.logoUrl}`
                     : tournament.gameImage && tournament.gameImage !== 'noimage'
                       ? tournament.gameImage
                       : null;
