@@ -17,7 +17,9 @@ export const CurrentTournaments = ({
                 {tournaments.map((tournament) => {
                     const isLogo = !!tournament.logoUrl;
                     const cardImage = tournament.logoUrl
-                        ? `/${tournament.logoUrl}`
+                        ? tournament.logoUrl.startsWith('http')
+                            ? tournament.logoUrl
+                            : `/${tournament.logoUrl}`
                         : tournament.gameImage &&
                             tournament.gameImage !== 'noimage'
                           ? tournament.gameImage

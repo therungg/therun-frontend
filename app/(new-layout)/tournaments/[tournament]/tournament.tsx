@@ -153,7 +153,9 @@ export const GenericTournament = ({
     const totalRuns = data?.runList?.length ?? null;
 
     const heroArt = tournament.logoUrl
-        ? `/${tournament.logoUrl}`
+        ? tournament.logoUrl.startsWith('http')
+            ? tournament.logoUrl
+            : `/${tournament.logoUrl}`
         : tournament.gameImage && tournament.gameImage !== 'noimage'
           ? tournament.gameImage
           : '/logo_dark_theme_no_text_transparent.png';

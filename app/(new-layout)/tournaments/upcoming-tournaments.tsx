@@ -57,7 +57,11 @@ const UpcomingTournament = ({ tournament }: { tournament: Tournament }) => {
                 {isLogo ? (
                     <Image
                         alt={`Logo for ${tournament.name}`}
-                        src={`/${tournament.logoUrl}`}
+                        src={
+                            tournament.logoUrl!.startsWith('http')
+                                ? tournament.logoUrl!
+                                : `/${tournament.logoUrl}`
+                        }
                         width={62}
                         height={83}
                         style={{
