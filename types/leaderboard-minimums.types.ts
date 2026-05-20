@@ -1,5 +1,5 @@
 export interface MinimumTime {
-    subcategoryHash: string;
+    subcategoryKey: string;
     minTimeMs: number | null;
     minGameTimeMs: number | null;
     setBy: number | null;
@@ -7,7 +7,7 @@ export interface MinimumTime {
 }
 
 export interface UpsertMinimumTimeInput {
-    subcategoryHash: string;
+    subcategoryKey: string;
     minTimeMs: number | null;
     minGameTimeMs: number | null;
 }

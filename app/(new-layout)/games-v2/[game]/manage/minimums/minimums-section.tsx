@@ -85,7 +85,7 @@ export function MinimumsSection({ data, selectedCategory }: Props) {
                 gameSlug: data.game.name,
                 gameId: data.game.id,
                 categoryId: selectedCategory.id,
-                subcategoryHash: values.subcategoryHash,
+                subcategoryKey: values.subcategoryKey,
                 minTimeMs: values.minTimeMs,
                 minGameTimeMs: values.minGameTimeMs,
             });
@@ -116,7 +116,7 @@ export function MinimumsSection({ data, selectedCategory }: Props) {
                 gameSlug: data.game.name,
                 gameId: data.game.id,
                 categoryId: selectedCategory.id,
-                subcategoryHash: row.subcategoryHash,
+                subcategoryKey: row.subcategoryKey,
             });
             if ('error' in res) {
                 toast.error(res.error);
@@ -161,6 +161,7 @@ export function MinimumsSection({ data, selectedCategory }: Props) {
                     editing={
                         formState.mode === 'edit' ? formState.editing : null
                     }
+                    variables={variables}
                     onSubmit={handleSubmit}
                     onCancel={() => {
                         setFormState({ open: false });
@@ -194,7 +195,7 @@ export function MinimumsSection({ data, selectedCategory }: Props) {
                             ) : (
                                 minimums.map((row) => (
                                     <MinimumRow
-                                        key={row.subcategoryHash}
+                                        key={row.subcategoryKey}
                                         row={row}
                                         variables={variables}
                                         onEdit={(r) =>

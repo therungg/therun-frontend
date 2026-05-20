@@ -1,27 +1,58 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
-import type { ResolvedCategory } from '../../../../../types/leaderboards.types';
-import { IdentifiersSection } from './identifiers/identifiers-section';
-import { MinimumsSection } from './minimums/minimums-section';
-import { TimingSettingsSection } from './timing/timing-settings-section';
-import type { ManagePageData } from './types';
-import { VisibilitySection } from './visibility/visibility-section';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useState } from 'react';
+import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
+import { CategoryTab } from './category-tab/category-tab';
+import { GameTab } from './game-tab/game-tab';
+import { TabStrip } from './tab-strip';
+import type { ManagePageData, ManageTab } from './types';
 
 interface Props {
     data: ManagePageData;
 }
 
 export function ManagePage({ data }: Props) {
+    const router = useRouter();
+    const pathname = usePathname();
+    const searchParams = useSearchParams();
+    const [activeTab, setActiveTab] = useState<ManageTab>(data.initialTab);
     const [selectedCategoryId, setSelectedCategoryId] = useState(
         data.initialCategoryId,
     );
+    const [rows, setRows] = useState<ManageCategoryRow[]>(data.initialRows);
+    const [groups, setGroups] = useState<ManageGroup[]>(data.initialGroups);
 
-    const selectedCategory: ResolvedCategory | null = useMemo(
-        () => data.categories.find((c) => c.id === selectedCategoryId) ?? null,
-        [data.categories, selectedCategoryId],
+    const applyRowPatch = useCallback(
+        (categoryId: number, patch: { isMain?: boolean; active?: boolean }) => {
+            setRows((rs) =>
+                rs.map((r) => (r.id === categoryId ? { ...r, ...patch } : r)),
+            );
+        },
+        [],
     );
+
+    const updateUrl = useCallback(
+        (nextTab: ManageTab, nextCategoryId: number) => {
+            const params = new URLSearchParams(searchParams.toString());
+            params.set('tab', nextTab);
+            if (nextTab === 'category' && nextCategoryId > 0) {
+                params.set('categoryId', String(nextCategoryId));
+            } else {
+                params.delete('categoryId');
+            }
+            router.replace(`${pathname}?${params.toString()}`, {
+                scroll: false,
+            });
+        },
+        [pathname, router, searchParams],
+    );
+
+    const handleTabChange = (next: ManageTab) => {
+        setActiveTab(next);
+        updateUrl(next, selectedCategoryId);
+    };
 
     return (
         <div>
@@ -43,12 +74,6 @@ export function ManagePage({ data }: Props) {
                 </div>
                 <div className="ms-auto d-flex gap-2">
                     <Link
-                        href={`/games-v2/${data.game.name}/manage/categories`}
-                        className="btn btn-sm btn-outline-secondary"
-                    >
-                        Quick-manage categories
-                    </Link>
-                    <Link
                         href={`/games-v2/${data.game.name}`}
                         className="btn btn-sm btn-outline-secondary"
                     >
@@ -57,54 +82,45 @@ export function ManagePage({ data }: Props) {
                 </div>
             </header>
 
-            <IdentifiersSection
-                gameSlug={data.game.name}
-                gameId={data.game.id}
-                initialSlug={data.initialSlug}
-                initialAbbreviation={data.initialAbbreviation}
-            />
+            <TabStrip activeTab={activeTab} onChange={handleTabChange} />
 
-            {data.categories.length === 0 ? (
-                <p className="text-center text-muted my-5">
-                    This game has no categories yet.
-                </p>
-            ) : (
-                <>
-                    <div className="d-flex flex-wrap gap-2 mb-3">
-                        {data.categories.map((cat) => (
-                            <button
-                                key={cat.id}
-                                type="button"
-                                className={`btn btn-sm ${
-                                    cat.id === selectedCategoryId
-                                        ? 'btn-primary'
-                                        : 'btn-outline-secondary'
-                                }`}
-                                onClick={() => setSelectedCategoryId(cat.id)}
-                            >
-                                {cat.display}
-                            </button>
-                        ))}
-                    </div>
-
-                    <VisibilitySection
-                        gameSlug={data.game.name}
-                        gameId={data.game.id}
-                        category={selectedCategory}
-                    />
-
-                    <TimingSettingsSection
-                        gameSlug={data.game.name}
-                        gameId={data.game.id}
-                        category={selectedCategory}
-                    />
-
-                    <MinimumsSection
-                        data={data}
-                        selectedCategory={selectedCategory}
-                    />
-                </>
-            )}
+            <div hidden={activeTab !== 'game'}>
+                <GameTab
+                    game={data.game}
+                    initialSlug={data.initialSlug}
+                    initialAbbreviation={data.initialAbbreviation}
+                    rows={rows}
+                    groups={groups}
+                    onGroupsChange={setGroups}
+                    onRowChange={applyRowPatch}
+                    onRowGroupChange={(categoryId, groupId, groupName) => {
+                        setRows((rs) =>
+                            rs.map((r) =>
+                                r.id === categoryId
+                                    ? { ...r, groupId, groupName }
+                                    : r,
+                            ),
+                        );
+                    }}
+                    onEditCategory={(id) => {
+                        setSelectedCategoryId(id);
+                        setActiveTab('category');
+                        updateUrl('category', id);
+                    }}
+                />
+            </div>
+            <div hidden={activeTab !== 'category'}>
+                <CategoryTab
+                    data={data}
+                    rows={rows}
+                    selectedCategoryId={selectedCategoryId}
+                    onSelectCategory={(id) => {
+                        setSelectedCategoryId(id);
+                        updateUrl('category', id);
+                    }}
+                    onVisibilityChange={applyRowPatch}
+                />
+            </div>
         </div>
     );
 }

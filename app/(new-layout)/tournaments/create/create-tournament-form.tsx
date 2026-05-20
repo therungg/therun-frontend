@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useState, useTransition } from 'react';
 import { createTournamentAction } from '../actions/create-tournament.action';
+import { uploadTournamentImageAction } from '../actions/upload-tournament-image';
 import { formStyles as styles } from '../components/form-primitives';
 import {
     emptyFormState,
@@ -34,6 +35,19 @@ export function CreateTournamentForm() {
         }
 
         startTransition(async () => {
+            let logoUrl = state.logoUrl.trim() || undefined;
+            if (state.logoFile) {
+                const fd = new FormData();
+                fd.append('image', state.logoFile);
+                fd.append('name', state.name.trim());
+                const up = await uploadTournamentImageAction(fd);
+                if ('error' in up) {
+                    setError(up.error);
+                    return;
+                }
+                logoUrl = up.imageUrl;
+            }
+
             const res = await createTournamentAction({
                 name: state.name.trim(),
                 shortName: state.shortName.trim() || undefined,
@@ -50,7 +64,7 @@ export function CreateTournamentForm() {
                 minimumTimeSeconds: minTimeNum,
                 gameTime: state.gameTime || undefined,
                 url: state.url.trim() || undefined,
-                logoUrl: state.logoUrl.trim() || undefined,
+                logoUrl,
                 organizer: state.organizer.trim() || undefined,
             });
             if (res?.error) {

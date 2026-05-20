@@ -1033,9 +1033,12 @@ Fetch the ranked leaderboard for a game+category. Unfiltered queries hit Redis (
   result: {
     items: {
       rank: number;
+      runId: number | null;      // null only for a stale-cache fallback row; populated for all normal entries
       runnerName: string;
       userId: number | null;
-      time: number;              // milliseconds
+      time: number;              // milliseconds — equals the queried timing's value (kept for back-compat)
+      realTime: number | null;   // the runner's true best realtime in this triple (independent of the queried timing)
+      gameTime: number | null;   // the runner's true best gametime in this triple (independent of the queried timing)
       verificationStatus: string;
       vodUrl: string | null;
       runDate: string;
@@ -1055,6 +1058,18 @@ Fetch the ranked leaderboard for a game+category. Unfiltered queries hit Redis (
 ```
 
 **Auth:** None (public).
+
+#### Both timings per entry — no second request
+
+Each entry carries both `realTime` and `gameTime`. The server looks up each runner's GT-flagged row and RT-flagged row separately in the same `(game, category, subcategory)` triple, so the two times reflect the runner's actual best in each timing — even when those records come from different runs.
+
+Migration note for the celeste/leaderboard-table flow (`app/(new-layout)/games-v2/[game]/leaderboard/leaderboard-table.tsx`) that previously made two paginated calls (`?timing=rt` + `?timing=gt`) and merged by `runnerName`:
+
+- Make a single request with the desired `?timing=` (or omit it and let the server pick the category default).
+- Read `realTime` and `gameTime` directly off each entry. No merge.
+- Delete the secondary fetch + `secondaryByRunner` merge. It was page-bounded and produced `—` for runners whose ranks across timings differed by more than `pageSize` (e.g. a runner ranked 1 GT but 28 RT showed `—` for RT on page 1).
+
+`time` still equals the queried timing's value so existing callers don't break, but new code should prefer `realTime`/`gameTime` explicitly.
 
 #### Timing defaults
 
@@ -1164,10 +1179,51 @@ Reject a pending run. Promotes next-best run if rejected run held the leaderboar
 }
 
 // Response
-{ result: { rejected: true } }
+{
+  result: {
+    rejected: true;
+    nextRunIdForUser: number | null;
+  }
+}
 ```
 
+`nextRunIdForUser` is the ID of the same runner's promoted entry on the standard (RT) leaderboard, falling back to GT if the runner has no remaining RT-eligible run. `null` if the runner has no other non-rejected run in this subcategory.
+
 **Auth:** Required. Caller must be a moderator for the run's game.
+
+### GET /v1/leaderboards/runs/{runId}
+
+Single run detail. Used by the run management table to render the target row.
+
+```typescript
+// Response
+{
+  result: {
+    runId: number;
+    gameId: number;
+    gameDisplay: string;
+    categoryId: number;
+    categoryDisplay: string;
+    subcategoryHash: string;
+    runnerName: string;
+    userId: number | null;
+    isGuest: boolean;
+    time: number;              // primary-timing ms; falls back to realTime if primary is gametime and gameTime is null
+    realTime: number | null;
+    gameTime: number | null;
+    runDate: string;           // ISO, from ended_at
+    vodUrl: string | null;
+    verificationStatus: 'pending' | 'verified' | 'rejected';
+    variables: Record<string, string>;
+  }
+}
+```
+
+Returns 404 if the run does not exist.
+
+The primary timing applied to `time` follows the same precedence as the leaderboard query: `games.force_real_time` > effective hide flags > `categories.primary_timing`. No `?timing=` override is accepted.
+
+**Auth:** None (public).
 
 ### GET /v1/leaderboards/mod-queue/{gameId}
 
@@ -1198,6 +1254,17 @@ Edit a run's metadata.
 Move a run to a different category.
 
 **Auth:** Required. Caller must be a moderator for the run's game.
+
+### POST /v1/leaderboards/invalidate-cache/{gameId}
+
+Force-clear the Redis leaderboard cache for a game. Use after running a backfill, after editing variables in bulk, or any time the cached board is out of sync with Postgres. The next read of each board re-warms from PG.
+
+```typescript
+// Response
+{ result: { invalidated: { gameId: number } } }
+```
+
+**Auth:** Required. Caller must hold global `edit` permission on the `leaderboard` subject — admin, board-admin, or board-moderator role. Per-game moderators are not authorized; this is a globally-scoped grant only.
 
 ---
 

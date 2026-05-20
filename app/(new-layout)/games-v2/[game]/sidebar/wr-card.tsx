@@ -15,17 +15,20 @@ const WrHistoryDrawer = dynamic(
 );
 
 interface Props {
-    rt: LeaderboardResponse;
-    gt: LeaderboardResponse;
+    leaderboard: LeaderboardResponse;
     category: ResolvedCategory;
     gameSlug: string;
-    subcategoryHash: string;
+    subcategoryKey: string;
 }
 
-export function WrCard({ rt, gt, category, gameSlug, subcategoryHash }: Props) {
+export function WrCard({
+    leaderboard,
+    category,
+    gameSlug,
+    subcategoryKey,
+}: Props) {
     const [open, setOpen] = useState(false);
-    const primary = category.primaryTiming === 'gt' ? gt : rt;
-    const top = primary.entries[0];
+    const top = leaderboard.entries[0];
     if (!top || top.time === null) return null;
 
     return (
@@ -65,7 +68,7 @@ export function WrCard({ rt, gt, category, gameSlug, subcategoryHash }: Props) {
                     gameSlug={gameSlug}
                     categorySlug={category.name}
                     categoryDisplay={category.display}
-                    subcategoryHash={subcategoryHash}
+                    subcategoryKey={subcategoryKey}
                 />
             )}
         </section>

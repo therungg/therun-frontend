@@ -16,7 +16,7 @@ export function FilterBar({
     selectedVarFilters,
     verified,
 }: Props) {
-    const filterDefs = defs.filter((d) => d.kind === 'filter');
+    const filterDefs = defs.filter((d) => d.role === 'filter');
 
     return (
         <div className="mb-3">

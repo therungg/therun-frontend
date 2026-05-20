@@ -10,7 +10,7 @@ interface Input {
     gameSlug: string;
     gameId: number;
     categoryId: number;
-    subcategoryHash: string;
+    subcategoryKey: string;
 }
 
 export async function deleteMinimumAction(
@@ -30,7 +30,7 @@ export async function deleteMinimumAction(
             user.id,
             input.gameId,
             input.categoryId,
-            input.subcategoryHash,
+            input.subcategoryKey,
         );
         return { result };
     } catch (e) {

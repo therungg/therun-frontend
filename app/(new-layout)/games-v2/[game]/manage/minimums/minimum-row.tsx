@@ -22,7 +22,7 @@ export function MinimumRow({
 }: Props) {
     return (
         <tr>
-            <td>{describeSubcategory(row.subcategoryHash, variables)}</td>
+            <td>{describeSubcategory(row.subcategoryKey, variables)}</td>
             <td>
                 {row.minTimeMs === null ? (
                     <span className="text-muted">—</span>

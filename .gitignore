@@ -46,6 +46,7 @@ bun.lockb
 
 *:Zone.Identifier
 .worktrees/
+.scratch/
 
 # Sentry Config File
 .env.sentry-build-plugin

@@ -18,13 +18,15 @@ export function VariablePills({ defs, selected }: Props) {
         <div className="d-flex gap-2 flex-wrap mb-2">
             {defs.map((def) => (
                 <VariablePill
-                    key={def.name}
+                    key={def.nameNormalized}
                     def={def}
                     selectedValues={
-                        selected[def.name]?.split(',').filter(Boolean) ?? []
+                        selected[def.nameNormalized]
+                            ?.split(',')
+                            .filter(Boolean) ?? []
                     }
-                    isOpen={openName === def.name}
-                    onOpen={() => setOpenName(def.name)}
+                    isOpen={openName === def.nameNormalized}
+                    onOpen={() => setOpenName(def.nameNormalized)}
                     onClose={() => setOpenName(null)}
                 />
             ))}

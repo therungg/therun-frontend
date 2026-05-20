@@ -8,6 +8,17 @@ import { getLeaderboard, getVariables } from '~src/lib/leaderboards-v1';
 import type { GamePageData, GamePageSearchParams } from './types';
 
 const DEFAULT_PAGE_SIZE = 25;
+const RESERVED_LOWER = new Set([
+    'category',
+    'combined',
+    'verified',
+    'country',
+    'year',
+    'page',
+    'pagesize',
+    'timing',
+    'view',
+]);
 
 export async function loadGamePageData(
     slug: string,
@@ -33,9 +44,12 @@ export async function loadGamePageData(
                 primaryTiming: 'rt',
             },
             categories,
+            groups: resolved.groups,
             variables: [],
-            leaderboardRt: emptyBoard(),
-            leaderboardGt: emptyBoard(),
+            reservedParams: [],
+            validCombinations: { mode: 'open' },
+            leaderboard: emptyBoard(),
+            invalidCombination: null,
             quickStats: await getQuickStats(game.id),
             recentPbs: [],
             sessionUsername,
@@ -43,8 +57,39 @@ export async function loadGamePageData(
         };
     }
 
-    const subcategoryHash =
-        sp.subcategory ?? selected.defaultSubcategoryHash ?? '';
+    const varsResp = await getVariables(game.name, selected.name).catch(() => ({
+        variables: [],
+        reservedParams: [],
+        validCombinations: { mode: 'open' as const },
+    }));
+
+    const subVarNames = new Set(
+        varsResp.variables
+            .filter((v) => v.role === 'subcategory')
+            .map((v) => v.nameNormalized),
+    );
+    const filterVarNames = new Set(
+        varsResp.variables
+            .filter((v) => v.role === 'filter')
+            .map((v) => v.nameNormalized),
+    );
+    const reservedLower = new Set([
+        ...RESERVED_LOWER,
+        ...varsResp.reservedParams.map((r) => r.toLowerCase()),
+    ]);
+
+    const subcategoryValues: Record<string, string> = {};
+    const varFilters: Record<string, string> = {};
+    for (const [rawKey, raw] of Object.entries(sp)) {
+        if (typeof raw !== 'string' || raw.length === 0) continue;
+        const key = rawKey.toLowerCase();
+        if (reservedLower.has(key)) continue;
+        if (subVarNames.has(key)) subcategoryValues[key] = raw;
+        else if (filterVarNames.has(key)) varFilters[key] = raw;
+        // Unknown keys are ignored to avoid sending them to the backend.
+    }
+
+    const combined = sp.combined === '1' || sp.combined === 'true';
     const verified = sp.verified === 'true';
     const page = sp.page ? Math.max(1, parseInt(sp.page, 10) || 1) : 1;
     const pageSize = sp.pageSize
@@ -53,61 +98,56 @@ export async function loadGamePageData(
               Math.max(1, parseInt(sp.pageSize, 10) || DEFAULT_PAGE_SIZE),
           )
         : DEFAULT_PAGE_SIZE;
-    const varFilters = extractVarFilters(sp);
 
     const baseQuery = {
         gameSlug: game.name,
         categorySlug: selected.name,
-        subcategoryHash,
+        subcategoryValues,
+        combined,
         verified,
         page,
         pageSize,
         varFilters,
     };
 
-    const [variables, leaderboardRt, leaderboardGt, quickStats, recentPbs] =
-        await Promise.all([
-            getVariables(game.name, selected.name).catch(() => []),
-            getLeaderboard({ ...baseQuery, timing: 'rt' }),
-            getLeaderboard({ ...baseQuery, timing: 'gt' }),
-            getQuickStats(game.id).catch(() => ({
-                totalRunTime: 0,
-                totalAttemptCount: 0,
-                totalFinishedAttemptCount: 0,
-                uniqueRunners: 0,
-            })),
-            getRecentPbs(game.id).catch(() => []),
-        ]);
+    const [boardResult, quickStats, recentPbs] = await Promise.all([
+        getLeaderboard({ ...baseQuery, timing: selected.primaryTiming }),
+        getQuickStats(game.id).catch(() => ({
+            totalRunTime: 0,
+            totalAttemptCount: 0,
+            totalFinishedAttemptCount: 0,
+            uniqueRunners: 0,
+        })),
+        getRecentPbs(game.id).catch(() => []),
+    ]);
+
+    const leaderboard = boardResult.ok ? boardResult.result : emptyBoard();
+    const invalidCombination = boardResult.ok
+        ? null
+        : { validCombinations: boardResult.validCombinations };
 
     return {
         game,
         selectedCategory: selected,
         categories,
-        variables,
-        leaderboardRt,
-        leaderboardGt,
+        groups: resolved.groups,
+        variables: varsResp.variables,
+        reservedParams: varsResp.reservedParams,
+        validCombinations: varsResp.validCombinations,
+        leaderboard,
+        invalidCombination,
         quickStats,
         recentPbs,
         sessionUsername,
         activeFilters: {
-            subcategoryHash,
+            subcategoryValues,
+            varFilters,
+            combined,
             verified,
             page,
             pageSize,
-            varFilters,
-            selectedSubcategoryValues: extractSubcategoryValues(sp),
         },
     };
-}
-
-function extractVarFilters(sp: GamePageSearchParams): Record<string, string> {
-    const out: Record<string, string> = {};
-    for (const [k, v] of Object.entries(sp)) {
-        if (k.startsWith('var_') && typeof v === 'string' && v.length > 0) {
-            out[k.slice(4)] = v;
-        }
-    }
-    return out;
 }
 
 function emptyBoard() {
@@ -117,33 +157,18 @@ function emptyBoard() {
         pageSize: DEFAULT_PAGE_SIZE,
         totalItems: 0,
         totalPages: 0,
+        hideRealTime: false,
+        hideGameTime: false,
     };
 }
 
 function emptyFilters() {
     return {
-        subcategoryHash: '',
+        subcategoryValues: {} as Record<string, string>,
+        varFilters: {} as Record<string, string>,
+        combined: false,
         verified: false,
         page: 1,
         pageSize: DEFAULT_PAGE_SIZE,
-        varFilters: {} as Record<string, string>,
-        selectedSubcategoryValues: {} as Record<string, string>,
     };
 }
-
-function extractSubcategoryValues(
-    sp: GamePageSearchParams,
-): Record<string, string> {
-    const out: Record<string, string> = {};
-    for (const [k, v] of Object.entries(sp)) {
-        if (k.startsWith('subvar_') && typeof v === 'string' && v.length > 0) {
-            out[k.slice(7)] = v;
-        }
-    }
-    return out;
-}
-
-// Note: jump-to-my-rank ('jump to user's leaderboard page when off-page')
-// is blocked pending a backend path from username → numeric user_id. The
-// /leaderboards/user/{userId}/rankings endpoint needs a numeric ID; the
-// session only exposes `username`. See plan's "Deferred work" section.
