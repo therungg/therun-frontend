@@ -7,6 +7,7 @@ import type { User } from '../../../../../types/session.types';
 import type { Tournament } from '../../../../../types/tournament.types';
 import { deleteTournamentAction } from '../../actions/delete-tournament.action';
 import { updateTournamentAction } from '../../actions/update-tournament.action';
+import { uploadTournamentImageAction } from '../../actions/upload-tournament-image';
 import { formStyles as styles } from '../../components/form-primitives';
 import {
     TournamentFormFields,
@@ -34,6 +35,7 @@ function fromTournament(t: Tournament): TournamentFormState {
         gameTime: !!t.gameTime,
         url: t.url ?? '',
         logoUrl: t.logoUrl ?? '',
+        logoFile: null,
         organizer: t.organizer ?? '',
     };
 }
@@ -73,11 +75,24 @@ export function EditTournamentForm({
         }
 
         startTransition(async () => {
+            let logoUrl = state.logoUrl.trim() || undefined;
+            if (state.logoFile) {
+                const fd = new FormData();
+                fd.append('image', state.logoFile);
+                fd.append('name', tournament.name);
+                const up = await uploadTournamentImageAction(fd);
+                if ('error' in up) {
+                    setError(up.error);
+                    return;
+                }
+                logoUrl = up.imageUrl;
+            }
+
             const res = await updateTournamentAction(tournament.name, {
                 shortName: state.shortName.trim() || undefined,
                 description: state.description.trim() || undefined,
                 url: state.url.trim() || undefined,
-                logoUrl: state.logoUrl.trim() || undefined,
+                logoUrl,
                 organizer: state.organizer.trim() || undefined,
                 gameTime: state.gameTime,
                 heats: state.heats,
@@ -91,6 +106,13 @@ export function EditTournamentForm({
             if (res && 'error' in res) {
                 setError(res.errors?.join(', ') || res.error || 'Error');
             } else {
+                if (logoUrl !== undefined) {
+                    setState((prev) => ({
+                        ...prev,
+                        logoUrl: logoUrl ?? '',
+                        logoFile: null,
+                    }));
+                }
                 setOkMsg('Saved.');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }

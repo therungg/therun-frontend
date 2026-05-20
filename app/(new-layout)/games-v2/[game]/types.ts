@@ -4,34 +4,39 @@ import type {
     RecentPb,
     ResolvedCategory,
     ResolvedGame,
+    ResolvedGroup,
+    ValidCombinations,
     VariableDef,
 } from '../../../../types/leaderboards.types';
 
 export interface GamePageSearchParams {
     category?: string;
-    subcategory?: string;
+    combined?: string;
     verified?: string;
     page?: string;
     pageSize?: string;
-    [varKey: string]: string | undefined; // var_* and subvar_* keys
+    [key: string]: string | undefined;
 }
 
 export interface GamePageData {
     game: ResolvedGame;
     selectedCategory: ResolvedCategory;
     categories: ResolvedCategory[];
+    groups: ResolvedGroup[];
     variables: VariableDef[];
-    leaderboardRt: LeaderboardResponse;
-    leaderboardGt: LeaderboardResponse;
+    reservedParams: string[];
+    validCombinations: ValidCombinations;
+    leaderboard: LeaderboardResponse;
+    invalidCombination: { validCombinations: string[] } | null;
     quickStats: QuickStats;
     recentPbs: RecentPb[];
     sessionUsername: string | null;
     activeFilters: {
-        subcategoryHash: string;
+        subcategoryValues: Record<string, string>;
+        varFilters: Record<string, string>;
+        combined: boolean;
         verified: boolean;
         page: number;
         pageSize: number;
-        varFilters: Record<string, string>;
-        selectedSubcategoryValues: Record<string, string>;
     };
 }

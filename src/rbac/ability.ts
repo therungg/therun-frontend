@@ -74,11 +74,12 @@ const rolePermissions: Record<Role, DefinePermissions> = {
         can('view-restricted', 'stories');
         can('edit', 'stories', { user: user.username });
     },
-    // Moderators can ban users, remove runs, and edit runs
+    // Moderators can ban users, remove runs, and edit runs and leaderboards
     moderator(_user, { can }) {
         can('ban', 'user');
         can('ban', 'run');
         can('edit', 'run');
+        can('edit', 'leaderboard');
     },
     'story-beta-user': function (user, { can }) {
         can('view-restricted', 'stories');

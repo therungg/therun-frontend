@@ -31,6 +31,7 @@ export interface TournamentFormState {
     gameTime: boolean;
     url: string;
     logoUrl: string;
+    logoFile: File | null;
     organizer: string;
 }
 
@@ -48,6 +49,7 @@ export function emptyFormState(): TournamentFormState {
         gameTime: false,
         url: '',
         logoUrl: '',
+        logoFile: null,
         organizer: '',
     };
 }
@@ -280,16 +282,81 @@ export function TournamentFormFields({
                     </Field>
                     <div className={styles.fieldGridFull}>
                         <Field
-                            label="Logo URL"
+                            label="Logo"
                             optional
-                            help="Square or wide image used in tournament cards and headers."
+                            help="Square image used in tournament cards and headers. PNG, JPEG, or WEBP. Max 5MB."
                         >
-                            <TextInput
-                                type="url"
-                                value={state.logoUrl}
-                                onChange={(e) => set('logoUrl', e.target.value)}
-                                placeholder="https://…/logo.png"
-                            />
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    gap: '1rem',
+                                    alignItems: 'flex-start',
+                                    flexWrap: 'wrap',
+                                }}
+                            >
+                                {state.logoUrl && !state.logoFile && (
+                                    <img
+                                        src={state.logoUrl}
+                                        alt="Current logo"
+                                        style={{
+                                            width: 96,
+                                            height: 96,
+                                            objectFit: 'contain',
+                                            border: '1px solid #2a2a2a',
+                                            borderRadius: 4,
+                                            background: '#111',
+                                        }}
+                                    />
+                                )}
+                                {state.logoFile && (
+                                    <img
+                                        src={URL.createObjectURL(
+                                            state.logoFile,
+                                        )}
+                                        alt="New logo preview"
+                                        style={{
+                                            width: 96,
+                                            height: 96,
+                                            objectFit: 'contain',
+                                            border: '1px solid #2a2a2a',
+                                            borderRadius: 4,
+                                            background: '#111',
+                                        }}
+                                    />
+                                )}
+                                <div style={{ flex: 1, minWidth: 200 }}>
+                                    <input
+                                        type="file"
+                                        accept="image/png, image/jpeg, image/webp"
+                                        onChange={(e) =>
+                                            set(
+                                                'logoFile',
+                                                e.target.files?.[0] ?? null,
+                                            )
+                                        }
+                                    />
+                                    {state.logoFile && (
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                set('logoFile', null)
+                                            }
+                                            style={{
+                                                marginTop: '0.5rem',
+                                                fontSize: '0.85rem',
+                                                background: 'transparent',
+                                                border: '1px solid #444',
+                                                color: '#aaa',
+                                                padding: '0.25rem 0.5rem',
+                                                borderRadius: 4,
+                                                cursor: 'pointer',
+                                            }}
+                                        >
+                                            Clear selection
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
                         </Field>
                     </div>
                 </FieldGrid>

@@ -41,8 +41,8 @@ export function VariablePill({
 
     const setValues = (next: string[]) => {
         const sp = new URLSearchParams(searchParams.toString());
-        if (next.length === 0) sp.delete(`var_${def.name}`);
-        else sp.set(`var_${def.name}`, next.join(','));
+        if (next.length === 0) sp.delete(def.nameNormalized);
+        else sp.set(def.nameNormalized, next.join(','));
         sp.delete('page');
         startTransition(() => {
             router.push(`${pathname}?${sp.toString()}`);
@@ -60,8 +60,8 @@ export function VariablePill({
 
     const label =
         selectedValues.length === 0
-            ? def.display
-            : `${def.display}: ${selectedValues.join(', ')}`;
+            ? def.name
+            : `${def.name}: ${selectedValues.join(', ')}`;
 
     return (
         <div className="position-relative" ref={containerRef}>
@@ -78,17 +78,28 @@ export function VariablePill({
                     className="position-absolute mt-1 p-2 border rounded bg-body shadow-sm"
                     style={{ zIndex: 10, minWidth: '12rem' }}
                 >
-                    {def.values.map((v) => (
-                        <label key={v} className="d-block">
-                            <input
-                                type="checkbox"
-                                checked={selectedValues.includes(v)}
-                                onChange={() => toggle(v)}
-                                className="me-1"
-                            />
-                            {v}
-                        </label>
-                    ))}
+                    {def.values.map((bucket, idx) => {
+                        const canonical = bucket[0];
+                        return (
+                            <label
+                                key={`${def.nameNormalized}-${idx}`}
+                                className="d-block"
+                                title={
+                                    bucket.length > 1
+                                        ? `Aliases: ${bucket.slice(1).join(', ')}`
+                                        : undefined
+                                }
+                            >
+                                <input
+                                    type="checkbox"
+                                    checked={selectedValues.includes(canonical)}
+                                    onChange={() => toggle(canonical)}
+                                    className="me-1"
+                                />
+                                {canonical}
+                            </label>
+                        );
+                    })}
                 </div>
             )}
         </div>

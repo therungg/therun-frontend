@@ -1,58 +1,74 @@
+import Link from 'next/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
 
 interface Props {
-    rank: number;
-    rtEntry?: LeaderboardEntry;
-    gtEntry?: LeaderboardEntry;
+    entry: LeaderboardEntry;
     isCurrentUser: boolean;
-    primaryTiming: 'rt' | 'gt';
+    canManage: boolean;
+    gameSlug: string;
+    hideRealTime: boolean;
+    hideGameTime: boolean;
 }
 
 export function LeaderboardRow({
-    rank,
-    rtEntry,
-    gtEntry,
+    entry,
     isCurrentUser,
-    primaryTiming,
+    canManage,
+    gameSlug,
+    hideRealTime,
+    hideGameTime,
 }: Props) {
-    const primary = primaryTiming === 'gt' ? gtEntry : rtEntry;
-    if (!primary) return null;
+    const showManageButton = canManage && entry.runId != null && !entry.isGuest;
 
     return (
         <tr className={isCurrentUser ? 'table-active' : undefined}>
-            <td>{rank}</td>
+            <td>{entry.rank}</td>
             <td>
-                <UserLink username={primary.runnerName} url={undefined} />
+                <UserLink username={entry.runnerName} url={undefined} />
             </td>
+            {!hideRealTime && (
+                <td>
+                    {entry.realTime != null ? (
+                        <DurationToFormatted duration={entry.realTime} />
+                    ) : (
+                        '—'
+                    )}
+                </td>
+            )}
+            {!hideGameTime && (
+                <td>
+                    {entry.gameTime != null ? (
+                        <DurationToFormatted duration={entry.gameTime} />
+                    ) : (
+                        '—'
+                    )}
+                </td>
+            )}
             <td>
-                {rtEntry?.time != null ? (
-                    <DurationToFormatted duration={rtEntry.time} />
-                ) : (
-                    '—'
-                )}
-            </td>
-            <td>
-                {gtEntry?.time != null ? (
-                    <DurationToFormatted duration={gtEntry.time} />
-                ) : (
-                    '—'
-                )}
-            </td>
-            <td>
-                {primary.runDate
-                    ? new Date(primary.runDate).toLocaleDateString()
+                {entry.runDate
+                    ? new Date(entry.runDate).toLocaleDateString()
                     : ''}
             </td>
             <td>
-                {primary.vodUrl ? (
-                    <a href={primary.vodUrl} target="_blank" rel="noreferrer">
+                {entry.vodUrl ? (
+                    <a href={entry.vodUrl} target="_blank" rel="noreferrer">
                         VOD
                     </a>
                 ) : null}
             </td>
-            <td>{primary.verificationStatus === 'verified' ? '✓' : ''}</td>
+            <td>{entry.verificationStatus === 'verified' ? '✓' : ''}</td>
+            <td>
+                {showManageButton ? (
+                    <Link
+                        href={`/games-v2/${gameSlug}/manage/run/${entry.runId}`}
+                        className="btn btn-sm btn-outline-secondary"
+                    >
+                        Manage
+                    </Link>
+                ) : null}
+            </td>
         </tr>
     );
 }

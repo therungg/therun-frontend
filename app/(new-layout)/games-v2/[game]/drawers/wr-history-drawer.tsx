@@ -11,7 +11,7 @@ interface Props {
     gameSlug: string;
     categorySlug: string;
     categoryDisplay: string;
-    subcategoryHash: string;
+    subcategoryKey: string;
 }
 
 export function WrHistoryDrawer({
@@ -20,7 +20,7 @@ export function WrHistoryDrawer({
     gameSlug,
     categorySlug,
     categoryDisplay,
-    subcategoryHash,
+    subcategoryKey,
 }: Props) {
     const [history, setHistory] = useState<WrHistoryEntry[] | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -30,7 +30,7 @@ export function WrHistoryDrawer({
         let cancelled = false;
         setHistory(null);
         setError(null);
-        const url = `${process.env.NEXT_PUBLIC_DATA_URL}/v1/leaderboards/wr-history/${encodeURIComponent(gameSlug)}/${encodeURIComponent(categorySlug)}?subcategory=${encodeURIComponent(subcategoryHash)}`;
+        const url = `${process.env.NEXT_PUBLIC_DATA_URL}/v1/leaderboards/wr-history/${encodeURIComponent(gameSlug)}/${encodeURIComponent(categorySlug)}?subcategory=${encodeURIComponent(subcategoryKey)}`;
         fetch(url)
             .then((r) => {
                 if (!r.ok) throw new Error(`${r.status}`);
@@ -47,7 +47,7 @@ export function WrHistoryDrawer({
         return () => {
             cancelled = true;
         };
-    }, [show, gameSlug, categorySlug, subcategoryHash]);
+    }, [show, gameSlug, categorySlug, subcategoryKey]);
 
     return (
         <Modal show={show} onHide={onHide} size="xl">

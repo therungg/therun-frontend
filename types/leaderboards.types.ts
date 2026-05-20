@@ -3,11 +3,14 @@ export interface ResolvedGame {
     name: string;
     display: string;
     image?: string | null;
-    // From the per-game configurable verified default. Undefined if backend
-    // hasn't surfaced this field yet (backend dep #2).
     defaultVerified?: boolean;
-    // Used to decide which timing column drives row order.
     primaryTiming?: 'rt' | 'gt';
+}
+
+export interface ResolvedGroup {
+    id: number;
+    name: string;
+    sortOrder: number;
 }
 
 export interface ResolvedCategory {
@@ -15,10 +18,19 @@ export interface ResolvedCategory {
     name: string;
     display: string;
     primaryTiming: 'rt' | 'gt';
-    defaultSubcategoryHash?: string | null;
     sortAscending?: boolean;
     isMain?: boolean;
     active?: boolean;
+    groupId?: number | null;
+    groupName?: string | null;
+    totalRunTime?: number;
+    totalAttemptCount?: number;
+    totalFinishedAttemptCount?: number;
+    uniqueRunners?: number;
+    rules?: string | null;
+    showMilliseconds?: boolean;
+    requireVideo?: boolean;
+    requireVideoTopN?: number | null;
 }
 
 export interface QuickStats {
@@ -39,27 +51,52 @@ export interface RecentPb {
     isPb: boolean;
 }
 
-// Variable definition from /v1/leaderboards/{game}/{category}/variables.
+// Variable definition shared between the admin CRUD endpoint and the public
+// /variables endpoint. They now return the same shape; the public endpoint
+// just excludes unpublished versions and applies the merge rule.
 //
-// Backend dep #1: `kind` (subcategory vs filter classification) is needed
-// for hash computation vs query filtering. The current response surfaces
-// `type` as a UI input style (`select`); confirm the classification field
-// name before Task 5 ships. Until then this type uses an optional `kind`
-// and code that needs the classification falls through to "treat as filter".
-export interface VariableDef {
+// `values` is a list of buckets. Each bucket is a list of accepted aliases;
+// index 0 is the canonical display form. `nameNormalized` is the URL filter
+// key (lowercase, whitespace + `=`/`|` stripped from `name`).
+export interface VariableRow {
+    id: number;
+    gameId: number;
+    categoryId: number | null; // null = game-wide
     name: string;
-    display: string;
-    type: string; // input style hint (e.g. 'select')
-    kind?: 'subcategory' | 'filter';
-    values: string[];
-    defaultValue?: string | null;
-    required: boolean;
+    nameNormalized: string;
+    role: 'subcategory' | 'filter';
+    values: string[][];
+    defaultValueIndex: number | null;
     sortOrder: number;
-    scope: 'game' | 'category';
+    description: string | null;
+    version: number;
+    published: boolean;
 }
 
+// VariableDef is the merged/public-read flattening. Identical shape to
+// VariableRow plus a derived `scope` for UI labeling (which scope the row
+// came from after the merge).
+export type VariableDef = VariableRow & {
+    scope: 'game' | 'category';
+};
+
+export interface ValidCombinationsOpen {
+    mode: 'open';
+}
+export interface ValidCombinationsManaged {
+    mode: 'managed';
+    keys: string[];
+}
+export type ValidCombinations =
+    | ValidCombinationsOpen
+    | ValidCombinationsManaged;
+
+// Wire shape of the public /variables response. `getVariables` in
+// leaderboards-v1.ts enriches each row to `VariableDef` (adds `scope`).
 export interface VariablesResponse {
-    variables: VariableDef[];
+    variables: VariableRow[];
+    reservedParams: string[];
+    validCombinations: ValidCombinations;
 }
 
 export interface LeaderboardEntry {
@@ -69,9 +106,12 @@ export interface LeaderboardEntry {
     userId?: number | null;
     isGuest: boolean;
     time: number | null;
+    realTime: number | null;
+    gameTime: number | null;
     runDate: string | null;
     vodUrl?: string | null;
     verificationStatus: 'pending' | 'verified' | 'rejected';
+    // Keyed by nameNormalized; values are canonical bucket values.
     variables?: Record<string, string> | null;
 }
 
@@ -81,6 +121,8 @@ export interface LeaderboardResponse {
     pageSize: number;
     totalItems: number;
     totalPages: number;
+    hideRealTime: boolean;
+    hideGameTime: boolean;
 }
 
 export interface WrHistoryEntry {
@@ -94,8 +136,40 @@ export interface WrHistoryEntry {
 export interface UserRanking {
     gameId: number;
     categoryId: number;
-    subcategoryHash: string;
+    subcategoryKey: string;
     timing: 'rt' | 'gt';
     rank: number;
     time: number;
+}
+
+// Backend: GET /v1/leaderboards/runs/{runId}
+export interface RunDetail {
+    runId: number;
+    gameId: number;
+    gameDisplay: string;
+    categoryId: number;
+    categoryDisplay: string;
+    subcategoryKey: string;
+    runnerName: string;
+    userId: number | null;
+    isGuest: boolean;
+    time: number;
+    realTime: number | null;
+    gameTime: number | null;
+    runDate: string;
+    vodUrl: string | null;
+    verificationStatus: 'pending' | 'verified' | 'rejected';
+    variables: Record<string, string>;
+}
+
+// Submit warnings (no UI consumer in this app yet — see plan coordination notes).
+export interface SubmitWarning {
+    nameNormalized: string;
+    submitted: string;
+    resolved: string;
+    reason:
+        | 'no_match_default_used'
+        | 'missing_default_used'
+        | 'no_match_filter_dropped'
+        | 'combination_invalid_default_used';
 }

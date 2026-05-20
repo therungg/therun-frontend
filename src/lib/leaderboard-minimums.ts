@@ -37,11 +37,11 @@ export async function deleteMinimumTime(
     sessionId: string,
     gameId: number,
     categoryId: number,
-    subcategoryHash: string,
+    subcategoryKey: string,
 ): Promise<DeleteMinimumTimeResult> {
     return apiFetch<DeleteMinimumTimeResult>(basePath(gameId, categoryId), {
         sessionId,
         method: 'DELETE',
-        body: { subcategoryHash },
+        body: { subcategoryKey },
     });
 }

@@ -2,12 +2,16 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
-import { computeSubcategoryHash } from '~src/lib/leaderboard-hash';
 import type { VariableDef } from '../../../../../types/leaderboards.types';
 
 interface Props {
     defs: VariableDef[];
     selected: Record<string, string>;
+}
+
+function canonicalOf(def: VariableDef, idx: number): string {
+    const bucket = def.values[idx];
+    return bucket?.[0] ?? '';
 }
 
 export function SubcategoryPills({ defs, selected }: Props) {
@@ -16,22 +20,14 @@ export function SubcategoryPills({ defs, selected }: Props) {
     const searchParams = useSearchParams();
     const [isPending, startTransition] = useTransition();
 
-    const subcatDefs = defs.filter((d) => d.kind === 'subcategory');
+    const subcatDefs = defs.filter((d) => d.role === 'subcategory');
     if (subcatDefs.length === 0) return null;
 
     const onPick = (def: VariableDef, value: string) => {
-        const next = { ...selected, [def.name]: value };
-        let hash: string;
-        try {
-            hash = computeSubcategoryHash(defs, next);
-        } catch {
-            return; // required variable not yet selected; defensive refuse
-        }
         const sp = new URLSearchParams(searchParams.toString());
-        if (hash) sp.set('subcategory', hash);
-        else sp.delete('subcategory');
+        sp.set(def.nameNormalized, value);
         sp.delete('page');
-        sp.set(`subvar_${def.name}`, value);
+        sp.delete('combined');
         startTransition(() => {
             router.push(`${pathname}?${sp.toString()}`);
         });
@@ -39,30 +35,43 @@ export function SubcategoryPills({ defs, selected }: Props) {
 
     return (
         <div className="d-flex flex-column gap-2 mb-3">
-            {subcatDefs.map((def) => (
-                <div
-                    key={def.name}
-                    className="d-flex align-items-center gap-2 flex-wrap"
-                >
-                    <span className="small text-muted">{def.display}:</span>
-                    {def.values.map((v) => {
-                        const isActive =
-                            (selected[def.name] ?? def.defaultValue) === v;
-                        return (
-                            <button
-                                key={v}
-                                type="button"
-                                onClick={() => onPick(def, v)}
-                                disabled={isPending}
-                                aria-pressed={isActive}
-                                className={`btn btn-sm ${isActive ? 'btn-primary' : 'btn-outline-secondary'}`}
-                            >
-                                {v}
-                            </button>
-                        );
-                    })}
-                </div>
-            ))}
+            {subcatDefs.map((def) => {
+                const defaultCanonical =
+                    def.defaultValueIndex != null
+                        ? canonicalOf(def, def.defaultValueIndex)
+                        : '';
+                const activeValue =
+                    selected[def.nameNormalized] ?? defaultCanonical;
+                return (
+                    <div
+                        key={def.nameNormalized}
+                        className="d-flex align-items-center gap-2 flex-wrap"
+                    >
+                        <span className="small text-muted">{def.name}:</span>
+                        {def.values.map((bucket, idx) => {
+                            const canonical = bucket[0];
+                            const isActive = activeValue === canonical;
+                            return (
+                                <button
+                                    key={`${def.nameNormalized}-${idx}`}
+                                    type="button"
+                                    onClick={() => onPick(def, canonical)}
+                                    disabled={isPending}
+                                    aria-pressed={isActive}
+                                    className={`btn btn-sm ${isActive ? 'btn-primary' : 'btn-outline-secondary'}`}
+                                    title={
+                                        bucket.length > 1
+                                            ? `Aliases: ${bucket.slice(1).join(', ')}`
+                                            : undefined
+                                    }
+                                >
+                                    {canonical}
+                                </button>
+                            );
+                        })}
+                    </div>
+                );
+            })}
         </div>
     );
 }

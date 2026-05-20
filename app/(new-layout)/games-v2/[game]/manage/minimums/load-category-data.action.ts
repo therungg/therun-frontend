@@ -30,11 +30,11 @@ export async function loadCategoryDataAction(input: Input): Promise<
     }
 
     try {
-        const [variables, minimums] = await Promise.all([
+        const [varsResp, minimums] = await Promise.all([
             getVariables(input.gameSlug, input.categorySlug),
             listMinimumTimes(user.id, input.gameId, input.categoryId),
         ]);
-        return { result: { variables, minimums } };
+        return { result: { variables: varsResp.variables, minimums } };
     } catch {
         return { error: 'Failed to load category data.' };
     }

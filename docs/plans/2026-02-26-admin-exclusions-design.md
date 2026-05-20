@@ -2,6 +2,8 @@
 
 > **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
 
+> **Update (2026-05-13):** Backend now supports composite user-scoped rules — a `type='user'` rule can carry optional `gameId` and `categoryId` to ban a runner from one game or one category instead of globally. The types and actions below have been updated. See [`frontend-guide-admin-exclusions.md`](../frontend-guide-admin-exclusions.md) for the complete current API contract, validation rules, and UI flow recommendation.
+
 **Goal:** Admin page at `/admin/exclusions` for managing exclusion rules (user, game, category, run) via the backend API.
 
 **Architecture:** Server component page with auth gate, client component panel for CRUD interactions, server actions for mutations, data fetching lib function for API calls. Follows existing `/admin/roles` patterns exactly.
@@ -26,6 +28,10 @@ export interface ExclusionRule {
     id: number;
     type: ExclusionType;
     targetId: number;
+    // Scope columns — only set when type='user' and the rule is scoped to
+    // a single game or category. Both null = global user ban (or non-user rule).
+    gameId: number | null;
+    categoryId: number | null;
     reason: string | null;
     excludedBy: number;
     createdAt: string;
@@ -79,6 +85,9 @@ export async function createExclusionAction(
     type: ExclusionType,
     targetId: number,
     reason?: string,
+    // Composite scope — only valid when type='user'. categoryId requires gameId.
+    // Backend rejects scope on other types and bare categoryId without gameId.
+    scope?: { gameId?: number; categoryId?: number },
 ) {
     const user = await getSession();
     confirmPermission(user, 'edit', 'user');
@@ -86,7 +95,13 @@ export async function createExclusionAction(
     await apiFetch('/admin/exclusions', {
         sessionId: user.id,
         method: 'POST',
-        body: JSON.stringify({ type, targetId, reason }),
+        body: JSON.stringify({
+            type,
+            targetId,
+            reason,
+            gameId: scope?.gameId,
+            categoryId: scope?.categoryId,
+        }),
     });
 
     revalidatePath('/admin/exclusions');

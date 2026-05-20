@@ -3,7 +3,11 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
 
-export function ClearFiltersButton() {
+interface Props {
+    variableKeys: string[];
+}
+
+export function ClearFiltersButton({ variableKeys }: Props) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -11,12 +15,10 @@ export function ClearFiltersButton() {
 
     const onClick = () => {
         const sp = new URLSearchParams(searchParams.toString());
-        sp.delete('subcategory');
         sp.delete('verified');
         sp.delete('page');
-        for (const k of Array.from(sp.keys())) {
-            if (k.startsWith('var_') || k.startsWith('subvar_')) sp.delete(k);
-        }
+        sp.delete('combined');
+        for (const k of variableKeys) sp.delete(k);
         const qs = sp.toString();
         startTransition(() => {
             router.push(qs ? `${pathname}?${qs}` : pathname);

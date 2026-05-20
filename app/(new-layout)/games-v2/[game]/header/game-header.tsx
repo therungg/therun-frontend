@@ -33,7 +33,7 @@ export function GameHeader({ game, stats, canManage }: Props) {
                 </small>
             </div>
             {canManage && (
-                <div className="ms-auto">
+                <div className="ms-auto d-flex gap-2">
                     <Link
                         href={`/games-v2/${game.name}/manage`}
                         className="btn btn-sm btn-outline-secondary"

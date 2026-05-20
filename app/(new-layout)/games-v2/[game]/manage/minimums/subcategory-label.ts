@@ -1,21 +1,37 @@
 import type { VariableDef } from '../../../../../../types/leaderboards.types';
 
-// Decode a subcategoryHash into a human-readable label using the category's
-// subcategory variables. Hash format is opaque to the frontend; if we can't
-// match it against the variable values, fall back to the raw hash so users
-// can still see and delete the row.
+/**
+ * Decode a plain-text `subcategoryKey` ("platform=n64|region=us") into a
+ * human-readable label using the category's subcategory variable defs.
+ * Falls back to the raw key if decoding fails so admins always have
+ * something to click.
+ */
 export function describeSubcategory(
-    hash: string,
+    subcategoryKey: string,
     variables: VariableDef[],
 ): string {
-    if (!hash) return 'Default';
+    if (!subcategoryKey) return 'Default';
 
-    const subcatVars = variables.filter((v) => v.kind === 'subcategory');
-    if (subcatVars.length === 0) return hash;
+    const subcatVars = new Map(
+        variables
+            .filter((v) => v.role === 'subcategory')
+            .map((v) => [v.nameNormalized, v]),
+    );
+    if (subcatVars.size === 0) return subcategoryKey;
 
-    // Heuristic: the backend's hash is constructed from sorted variable
-    // values. We don't have access to the exact algorithm here, so we display
-    // the raw hash with a hint when we can't decode confidently. A future
-    // improvement is to ask the backend to return a `subcategoryLabel` field.
-    return hash;
+    const parts = subcategoryKey.split('|').map((pair) => {
+        const eq = pair.indexOf('=');
+        if (eq < 0) return pair;
+        const key = pair.slice(0, eq);
+        const value = pair.slice(eq + 1);
+        const def = subcatVars.get(key);
+        if (!def) return `${key}=${value}`;
+        const bucket = def.values.find((b) =>
+            b.some((alias) => alias.toLowerCase() === value.toLowerCase()),
+        );
+        const display = bucket?.[0] ?? value;
+        return `${def.name}: ${display}`;
+    });
+
+    return parts.join(' · ');
 }
