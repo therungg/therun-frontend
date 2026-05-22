@@ -3,7 +3,6 @@ import type { MinimumTime } from '../../../../../types/leaderboard-minimums.type
 import type {
     ResolvedCategory,
     ResolvedGame,
-    VariableDef,
 } from '../../../../../types/leaderboards.types';
 
 export type ManageTab = 'game' | 'category';
@@ -12,8 +11,7 @@ export interface ManagePageData {
     game: ResolvedGame;
     categories: ResolvedCategory[];
     initialCategoryId: number;
-    initialVariables: VariableDef[];
-    initialMinimums: MinimumTime[];
+    initialMinimum: MinimumTime | null;
     initialSlug: string | null;
     initialAbbreviation: string | null;
     initialRows: ManageCategoryRow[];
