@@ -10,7 +10,6 @@ interface Input {
     gameSlug: string;
     gameId: number;
     categoryId: number;
-    subcategoryKey: string;
     minTimeMs: number | null;
     minGameTimeMs: number | null;
 }
@@ -42,7 +41,7 @@ export async function upsertMinimumAction(
             input.gameId,
             input.categoryId,
             {
-                subcategoryKey: input.subcategoryKey,
+                subcategoryHash: '',
                 minTimeMs: input.minTimeMs,
                 minGameTimeMs: input.minGameTimeMs,
             },

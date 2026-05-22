@@ -2,10 +2,8 @@
 
 import { getSession } from '~src/actions/session.action';
 import { listMinimumTimes } from '~src/lib/leaderboard-minimums';
-import { getVariables } from '~src/lib/leaderboards-v1';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 import type { MinimumTime } from '../../../../../../types/leaderboard-minimums.types';
-import type { VariableDef } from '../../../../../../types/leaderboards.types';
 
 interface Input {
     gameSlug: string;
@@ -16,7 +14,7 @@ interface Input {
 
 export async function loadCategoryDataAction(input: Input): Promise<
     | {
-          result: { variables: VariableDef[]; minimums: MinimumTime[] };
+          result: { minimum: MinimumTime | null };
       }
     | { error: string }
 > {
@@ -30,11 +28,13 @@ export async function loadCategoryDataAction(input: Input): Promise<
     }
 
     try {
-        const [varsResp, minimums] = await Promise.all([
-            getVariables(input.gameSlug, input.categorySlug),
-            listMinimumTimes(user.id, input.gameId, input.categoryId),
-        ]);
-        return { result: { variables: varsResp.variables, minimums } };
+        const minimums = await listMinimumTimes(
+            user.id,
+            input.gameId,
+            input.categoryId,
+        );
+        const minimum = minimums.find((m) => m.subcategoryHash === '') ?? null;
+        return { result: { minimum } };
     } catch {
         return { error: 'Failed to load category data.' };
     }

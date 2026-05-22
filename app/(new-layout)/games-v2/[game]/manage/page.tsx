@@ -5,7 +5,6 @@ import { listManageCategories, listManageGroups } from '~src/lib/category-mgmt';
 import { getGameIdentifiers } from '~src/lib/game-mgmt';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listMinimumTimes } from '~src/lib/leaderboard-minimums';
-import { getVariables } from '~src/lib/leaderboards-v1';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 import { isLowActivityCategory } from '~src/utils/format-stats';
 import { ManagePage } from './manage-page';
@@ -39,30 +38,23 @@ export default async function GameManagePage({ params, searchParams }: Props) {
 
     const initialTab: ManageTab = tab === 'category' ? 'category' : 'game';
 
-    const [
-        initialIdentifiers,
-        initialVariables,
-        initialMinimums,
-        initialRows,
-        initialGroups,
-    ] = await Promise.all([
-        getGameIdentifiers(game.id).catch(() => ({
-            slug: null,
-            abbreviation: null,
-        })),
-        initialCategory
-            ? getVariables(game.name, initialCategory.name)
-                  .then((r) => r.variables)
-                  .catch(() => [])
-            : Promise.resolve([]),
-        initialCategory
-            ? listMinimumTimes(user.id, game.id, initialCategory.id).catch(
-                  () => [],
-              )
-            : Promise.resolve([]),
-        listManageCategories(game.id).catch(() => []),
-        listManageGroups(game.id).catch(() => []),
-    ]);
+    const [initialIdentifiers, initialMinimums, initialRows, initialGroups] =
+        await Promise.all([
+            getGameIdentifiers(game.id).catch(() => ({
+                slug: null,
+                abbreviation: null,
+            })),
+            initialCategory
+                ? listMinimumTimes(user.id, game.id, initialCategory.id).catch(
+                      () => [],
+                  )
+                : Promise.resolve([]),
+            listManageCategories(game.id).catch(() => []),
+            listManageGroups(game.id).catch(() => []),
+        ]);
+
+    const initialMinimum =
+        initialMinimums.find((m) => m.subcategoryHash === '') ?? null;
 
     const statsById = new Map(categories.map((c) => [c.id, c]));
     const enrichedRows = initialRows
@@ -85,8 +77,7 @@ export default async function GameManagePage({ params, searchParams }: Props) {
                     game,
                     categories,
                     initialCategoryId: initialCategory?.id ?? -1,
-                    initialVariables,
-                    initialMinimums,
+                    initialMinimum,
                     initialSlug: initialIdentifiers.slug,
                     initialAbbreviation: initialIdentifiers.abbreviation,
                     initialRows: enrichedRows,
