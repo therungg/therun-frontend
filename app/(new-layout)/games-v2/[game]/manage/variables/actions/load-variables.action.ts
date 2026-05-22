@@ -12,6 +12,7 @@ import type { VariableRow } from '../../../../../../../types/leaderboards.types'
 interface Input {
     gameSlug: string;
     gameId: number;
+    categoryId?: number | null;
 }
 
 interface LoadResult {
@@ -33,14 +34,18 @@ export async function loadVariablesAction(
     }
 
     try {
-        const [variables, { categories }] = await Promise.all([
-            listGameVariables(user.id, input.gameId),
+        // Backend lists by scope: one call returns game-wide (categoryId IS
+        // NULL) rows, another returns rows for a specific category. Fetch both
+        // in parallel when a category is selected so the section can show
+        // either tab without refetching.
+        const [gameWide, categorySpecific, { categories }] = await Promise.all([
+            listGameVariables(user.id, input.gameId, null),
+            input.categoryId != null
+                ? listGameVariables(user.id, input.gameId, input.categoryId)
+                : Promise.resolve<VariableRow[]>([]),
             resolveCategory(input.gameId),
         ]);
 
-        // Reserved params come from the public /variables endpoint. Any
-        // category works — pick the first; fall back to a hardcoded list if
-        // the call fails or the game has no categories.
         let reservedParams: string[] = [
             'combined',
             'verified',
@@ -68,7 +73,7 @@ export async function loadVariablesAction(
 
         return {
             result: {
-                variables,
+                variables: [...gameWide, ...categorySpecific],
                 reservedParams,
                 categories: categories.map((c) => ({
                     id: c.id,

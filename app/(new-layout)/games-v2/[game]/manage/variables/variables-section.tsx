@@ -42,7 +42,11 @@ export function VariablesSection({
     const busy = isLoading || isSaving;
 
     const refresh = async () => {
-        const res = await loadVariablesAction({ gameSlug, gameId });
+        const res = await loadVariablesAction({
+            gameSlug,
+            gameId,
+            categoryId: selectedCategory?.id ?? null,
+        });
         if ('error' in res) {
             setLoadError(res.error);
             setRows([]);
@@ -57,7 +61,7 @@ export function VariablesSection({
     useEffect(() => {
         startLoadTransition(() => refresh());
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [gameId]);
+    }, [gameId, selectedCategory?.id]);
 
     const visible = (Array.isArray(rows) ? rows : [])
         .filter((r) =>
