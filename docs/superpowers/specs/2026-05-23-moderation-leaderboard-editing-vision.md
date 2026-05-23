@@ -55,7 +55,7 @@ These are the non-negotiables every phase must honor.
 
 ## 3. Core model — the leaderboard is a derivation
 
-Define the leaderboard as a **pure function** of the raw `finished_runs` plus a small set of moderation records that either **filter** those runs or **add** a candidate time. The board is always recomputed from current inputs — there is no separate "standings" state to keep in sync. Nothing else moves a runner on a board.
+Define the leaderboard as a **pure function** of the raw `finished_runs` plus a small set of moderation records that either **filter** those runs or **add** a candidate time. The board is recomputed whenever its inputs change (a moderation write or a new run) and served from cache — there is no hand-maintained standings state that can drift. Nothing else moves a runner on a board.
 
 For a board *slice* — `(game, category, subcategoryKey, timing)` — a runner's effective entry is the **fastest surviving candidate**:
 
@@ -68,7 +68,7 @@ effective_entry(runner, slice) = min time over CANDIDATES, where
               AND r passes the board's standing policies (minimum, etc.)
 ```
 
-No "mode," no `effectiveFrom`, no supersession state, no "pinned vs ceiling." The board is just the `min` over surviving candidates, recomputed on demand. Everything the brief asks for emerges from this (§4): a verdict/exclusion **removes** a candidate, a manual time **adds** one, and a later faster eligible run wins the `min` on its own.
+No "mode," no `effectiveFrom`, no supersession state, no "pinned vs ceiling." The board is just the `min` over surviving candidates, recomputed when its inputs change. Everything the brief asks for emerges from this (§4): a verdict/exclusion **removes** a candidate, a manual time **adds** one, and a later faster eligible run wins the `min` on its own.
 
 The model has exactly **four moderation record types** — three that *filter* runs (verdict, exclusion, policy) and one that *adds* a candidate (manual time). Everything else in this document — queue, bulk, self-service, reporting — is just a way of *creating, previewing, and undoing* these four records. Each record shares a common envelope:
 

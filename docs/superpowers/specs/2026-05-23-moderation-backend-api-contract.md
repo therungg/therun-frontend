@@ -21,7 +21,7 @@ This is the exact, buildable contract for everything the backend still needs to 
 - **Reason:** every mod write requires `reason: string`, **trimmed length ≥ 10**; else `400 "reason is required (min 10 characters)"`. Self-service writes (`/v1/me/*`) take `reason` optional.
 - **Preview pairing:** every bulk-mutating endpoint has a read-only `/preview` sibling with the same body minus `reason`, returning the blast radius. Call it before committing.
 - **Audit:** every mutation writes one or more `logs` rows (`action`, `entity`, `target`, `remark=reason`, `data`). The per-game `mod-actions` feed must surface the new actions (extend its action enum).
-- **Cache:** any write that changes a board MUST flush the Redis leaderboard cache for the affected `(gameId[, categoryId])` synchronously — manual times and verdicts must be visible immediately, not at TTL. (Mass-management exclude/include rely on the caller flushing; for the new endpoints, flush server-side.)
+- **Cache:** any write that changes a board updates Redis **server-side and synchronously** so the change is visible immediately (not at TTL). Prefer a **targeted per-runner update** on the affected slice over a whole-game flush (see §A.1 and §H.3). Manual times are folded into the board build — never merged at read time.
 - **The board is a derivation.** A runner's entry on a slice is `min` over candidates = `{ eligible finished_runs } ∪ { manual_times }`, where
   `eligible(run) = leaderboard_eligible = true AND excluded = false AND verification_status <> 'rejected' AND passes all active board policies`.
   Verdicts/exclusions/policies **remove** run candidates; a manual time (§A) **adds** one. There is no stored standings state.
@@ -84,6 +84,16 @@ entry(runner, slice) = candidate with min time_ms on slice.timing
 `eligible(r)` is the existing predicate (`leaderboard_eligible AND NOT excluded AND verification_status<>'rejected' AND passes policies`). A manual time is a board entry **even if the runner has zero finished_runs** on the slice; `rank`/`totalRunners` everywhere must count it. Add `source: 'run' | 'manual'` and `manualTimeId?: number` to the public `LeaderboardEntry` so the UI can mark "set time."
 
 **No supersession code.** A faster eligible run wins the `min` because it is smaller; if it is later rejected/excluded the board recomputes and the manual time wins again. There is no state to maintain.
+
+**Performance — bake into the build, never merge at read time.** "Recomputed" means recomputed on the *events that change inputs* (a manual-time write, or a run ingest) — **not per request.** The board stays a materialized Redis structure (per-runner sorted set: member = runner, score = best time); public reads remain `ZRANGE`/`ZRANK`/`ZCARD` with no Postgres and no app-side merge. A manual time changes exactly one runner's best on one slice, so applying it is a single targeted update:
+
+```
+on manual-time create/update/delete (and on run ingest):
+  newBest = min( runner's best eligible run on the slice , runner's manual time )
+  ZADD slice_key newBest <runner>      -- one O(log n) member update; ZREM if neither exists
+```
+
+Do **not** drop/rebuild the whole game's board on a manual-time edit, and do **not** union manual times in app code after fetching from Redis. The only place a read-time union is acceptable is the `eligible-runs` mod roster (Postgres, low QPS), where manual-time rows are unioned into the result set.
 
 ### A.2 Endpoints
 
@@ -356,7 +366,7 @@ In-app feed is enough for v1; email/Discord later.
 
 1. **Status vocab:** converge on `pending | verified | rejected` across all endpoints (mass-management's `unverified` → `pending`), or document `unverified ≡ pending` as a permanent contract. The frontend normalizes once at the types boundary either way.
 2. **Overrides survive identity/board moves — verify and extend:** when `move-user` merges a runner or a game/category **reassignment** moves runs, ensure `manual_times`, `run_flags`, run verdicts, and `exclusion_rules` follow the move (re-target ids) and the affected boards recompute. A merge that silently drops a manual time corrupts a board — **fix this before manual times ship.**
-3. **Redis flush on writes:** all new mutating endpoints flush the affected board cache server-side (don't rely on the caller or TTL).
+3. **Redis updates on writes — targeted, not coarse:** new mutating endpoints update the affected board in Redis server-side (don't rely on the caller or TTL). Prefer a **targeted per-runner update** on the affected slice (a single `ZADD`/`ZREM`) over a whole-game flush — manual times are folded into the board build, never merged at read time (§A.1). The existing `invalidate-cache/{gameId}` whole-game flush is fine for rare bans but too coarse for per-runner manual-time edits.
 4. **Preview rank deltas:** the shipped `exclude/preview` orders by RT for all categories; manual times make GT-primary boards common. Make `manual-times/preview` and `verdicts/preview` rank correctly for the slice's `timing`.
 
 ---
