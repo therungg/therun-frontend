@@ -43,36 +43,34 @@ What remains genuinely missing — the rest of this document — is: **a way to 
 
 These are the non-negotiables every phase must honor.
 
-1. **Raw runs are immutable facts; moderation is a layer on top.** A `finished_run` records "this timer uploaded this time at this moment." We never edit or delete it to moderate. Instead we attach *verdicts* and *placements* that change how the board interprets the raw data. (This is exactly how exclusions already work — the row stays, an `excluded` flag is materialized.)
+1. **Raw runs are immutable facts; moderation is a layer on top.** A `finished_run` records "this timer uploaded this time at this moment." We never edit or delete it to moderate. Instead we attach *verdicts* and *manual times* that change how the board interprets the raw data. (This is exactly how exclusions already work — the row stays, an `excluded` flag is materialized.)
 2. **Everything is reversible.** Every moderation action is a record. Undo deletes/deactivates the record and the board recomputes. Bulk actions undo as a unit. (This is exactly how reassignment already works.)
 3. **Everything is audited.** Who, what, when, why — written to `logs`, surfaced to mods, and the runner-visible slice of it surfaced to the runner.
 4. **Bulk is the default.** Single-run moderation is just "bulk of one." Every action takes a *set* of targets — an explicit list, or a filter/query that resolves to a set.
 5. **Trust-tiered self-service.** The corrections with no abuse incentive (lowering your own time, hiding your own junk) happen instantly with no mod. The abusable ones (claiming a *faster* time) appear immediately but marked and queued for confirmation.
 6. **Surface, don't hunt.** Board policies and anomaly heuristics push likely-wrong runs into a triage queue. Mods work a curated, prioritized feed, not raw boards.
-7. **A leaderboard position is a decision with provenance.** It can come from a real run, a corrected/claimed time, or a pinned override. Every entry knows which, who decided it, and why.
+7. **A leaderboard position is a decision with provenance.** It can come from a real run or a manually-asserted time. Every entry knows which, who decided it, and why.
 
 ---
 
-## 3. Core model — the verdict/override layer
+## 3. Core model — the leaderboard is a derivation
 
-Define the leaderboard as a **pure function** of two inputs: the raw `finished_runs`, and an **override layer** of moderation records. Nothing else moves a runner on a board.
+Define the leaderboard as a **pure function** of the raw `finished_runs` plus a small set of moderation records that either **filter** those runs or **add** a candidate time. The board is always recomputed from current inputs — there is no separate "standings" state to keep in sync. Nothing else moves a runner on a board.
 
-For a board *slice* — `(game, category, subcategoryKey, timing)` — a runner's effective entry is resolved in this order:
+For a board *slice* — `(game, category, subcategoryKey, timing)` — a runner's effective entry is the **fastest surviving candidate**:
 
 ```
-effective_entry(runner, slice):
-  if active PINNED placement exists       -> placement.time          (raw runs ignored)
-  else if active CEILING placement exists -> min(placement.time,
-                                                 best eligible run uploaded
-                                                 after placement.effectiveFrom)
-  else                                    -> best eligible finished_run
-                                             (not rejected, not excluded,
-                                              passes board policies)
+effective_entry(runner, slice) = min time over CANDIDATES, where
+  CANDIDATES = { r in finished_runs(runner, slice) : eligible(r) }   # surviving raw runs
+             ∪ { m in manual_times(runner, slice) }                  # asserted times
+  eligible(r) = NOT rejected
+              AND runner NOT excluded from this scope
+              AND r passes the board's standing policies (minimum, etc.)
 ```
 
-"Eligible" = not rejected, runner not excluded from this scope, and the run satisfies the board's standing policies (e.g. above the minimum, has a VOD if required in the top-N).
+No "mode," no `effectiveFrom`, no supersession state, no "pinned vs ceiling." The board is just the `min` over surviving candidates, recomputed on demand. Everything the brief asks for emerges from this (§4): a verdict/exclusion **removes** a candidate, a manual time **adds** one, and a later faster eligible run wins the `min` on its own.
 
-The override layer has exactly **four record types**. Everything else in this document — queue, bulk, self-service, reporting — is just a way of *creating, previewing, and undoing* these four records. Each record shares a common envelope:
+The model has exactly **four moderation record types** — three that *filter* runs (verdict, exclusion, policy) and one that *adds* a candidate (manual time). Everything else in this document — queue, bulk, self-service, reporting — is just a way of *creating, previewing, and undoing* these four records. Each record shares a common envelope:
 
 ```
 { id, active, scope, createdBy, createdAt, reason,
@@ -101,25 +99,25 @@ A verdict never deletes the run. `rejected` is reversible (`unreject`) — resto
 
 The UI infers the shape from the selection (all-one-user-one-category → category rule; all-one-user-many-categories → game rule; mixed → ad-hoc only). The `type=run/game/category` admin exclusions remain for their niche uses.
 
-### 3c. Manual placement — per `(runner, slice, timing)` ★
+### 3c. Manual time — per `(runner, slice, timing)` ★
 
-**This is the new primitive that makes "adjust a leaderboard time" possible.** A placement asserts a time for a runner on a slice that *need not correspond to any `finished_run`.*
+**This is the new primitive that makes "adjust a leaderboard time" possible** — and it's deliberately dumb. A manual time is just **one more candidate** in the `min`, asserted by a mod or runner, that *need not correspond to any `finished_run`.*
 
 ```
 { ...envelope,
   runnerRef:   { userId } | { guestName },
   slice:       { gameId, categoryId, subcategoryKey, timing },
   time:        ms,
-  mode:        'ceiling' | 'pinned',
-  effectiveFrom: ISO timestamp,     // default: createdAt
   evidenceUrl?:  string,            // optional VOD/proof
-  verification:  'pending' | 'verified' | 'rejected' }
+  verification:  'pending' | 'verified' | 'rejected' }   // self-claims start pending; mod-added = verified
 ```
 
-- **ceiling** (default): "this is the runner's real time *until they legitimately beat it.*" A later eligible run that is **faster** than the placement automatically supersedes it (placement deactivates, the real run takes the spot). Slower later runs are ignored. Crucially, it **ignores the runner's existing runs** on the slice (those predate `effectiveFrom` and are presumed to be the wrong data we're correcting).
-- **pinned**: "this is the time, full stop — ignore this runner's runs on this slice until I remove it." For disputes and locked corrections.
+No `mode`, no `effectiveFrom`, no "supersede" flag. A manual time can only ever **win the `min` by being the fastest surviving candidate** — it never raises a runner's time and never deletes a run. The behaviors my earlier draft modeled as "ceiling" and "pinned" are unnecessary:
 
-Placements carry their own provenance and verification, so a self-claimed placement can be shown as "unverified" until a mod confirms it.
+- *"Count 35:48 until they beat it"* → add a 35:48 manual time. A later faster eligible run wins the `min` on its own; a slower one doesn't. **Supersession is emergent, not tracked state.**
+- *"Ignore their (fake) faster runs"* → that's an **exclusion** (§3b) — the one mechanism that removes candidates. Don't invent a second way to make a run "not count."
+
+So a manual time is purely additive; making a runner *slower* is always done by excluding the faster (fake) run, never by a manual time. Manual times carry provenance + verification so a self-claim shows "unverified" until a mod confirms — a rejected manual time is simply dropped from the candidate set, exactly like a rejected run.
 
 ### 3d. Board policy — per slice or category
 
@@ -140,16 +138,16 @@ The 35:45 already exists as a `finished_run`. Two equivalent paths, both one ges
 
 ### Example B — "they have a 35:48 that isn't in `finished_runs`; count it; if they get a better run later, count that" ★
 
-Create a **ceiling placement** at 35:48 for that runner on the slice, `effectiveFrom = now`. No `finished_run` required. It ignores their existing (wrong, faster) runs because those predate it. The moment they upload an eligible run **under** 35:48, the placement is superseded automatically and the real run takes over. A later *slower* run changes nothing. This is the literal behavior the brief asks for.
+Two records, both from primitives we already have: **exclude** their existing (fake, faster) runs on the slice — §3b — and **add a 35:48 manual time** — §3c. The board is now `min({35:48})` = 35:48; no `finished_run` required. When they later upload an eligible run **under** 35:48, it joins the candidate set and wins the `min` automatically; a slower run doesn't. "Supersede if they get a better run later" isn't a feature we build — it's what `min` over current candidates *does*. And if that faster run is itself later rejected, the `min` recomputes and 35:48 returns — no reactivation logic.
 
 ### Example C — self-service "hey, my time is actually this"
 
-Identical mechanism — a placement — but created by the runner from their own run/profile page. The **trust tier** (§6) decides whether it's instant or provisional:
+Same primitives, created by the runner. To assert a *faster* real time with no run, they add a manual time; to disown a fake fast run, they exclude it (you can't make yourself slower by adding a time — you remove the faster thing). The **trust tier** (§6) gates only the abusable direction:
 
-- If the claimed time is *slower* than their current board time → instant (no abuse incentive).
-- If it's a *new best / faster* → it appears immediately, marked "self-reported · unverified," and lands in the mod queue for confirmation. Evidence (VOD) required if the category requires video.
+- Excluding/hiding your own run, or a manual time that *can't* improve your rank → instant.
+- A manual time that would become your new (faster) board entry → appears immediately, marked "self-reported · unverified," and queued for confirmation. Evidence (VOD) required if the category requires video.
 
-"That should just work, even if there is no finished run for that time" — it does: the placement is the time, no run needed.
+"That should just work, even if there is no finished run for that time" — it does: the manual time is just a candidate, no run needed.
 
 ---
 
@@ -172,7 +170,7 @@ Flag sources:
 | Duplicate | identical time across runs/accounts |
 | Fresh-account top time | new account lands in top-N |
 | Reported | a user reported the run (§7) |
-| Pending self-claim | a faster self-placement awaiting confirmation (§6) |
+| Pending self-claim | a faster self-claimed manual time awaiting confirmation (§6) |
 
 ### (2) Board inline
 
@@ -180,7 +178,7 @@ On any leaderboard, mods get per-row checkboxes and a bulk action bar: Exclude �
 
 ### (3) Runner view — "mass edit for one user"
 
-`/(new-layout)/games-v2/[game]/manage/runner/[id]` (and a global variant). Backed by `GET /leaderboards/games/{id}/users/{userId}/eligible-runs` (includes live rank + total runners). Every run by one runner, with bulk actions across all of them: "exclude all of this runner's runs in this game" (ad-hoc or a game-scoped rule), "exclude from all boards," "their real time in X is T" (placement). This is the direct answer to *"mass edit runs for one user."*
+`/(new-layout)/games-v2/[game]/manage/runner/[id]` (and a global variant). Backed by `GET /leaderboards/games/{id}/users/{userId}/eligible-runs` (includes live rank + total runners). Every run by one runner, with bulk actions across all of them: "exclude all of this runner's runs in this game" (ad-hoc or a game-scoped rule), "exclude from all boards," "their real time in X is T" (manual time). This is the direct answer to *"mass edit runs for one user."*
 
 ---
 
@@ -192,9 +190,9 @@ Runners already have `edit run` on their own runs in CASL (`can(action, 'run', {
 |---|---|---|
 | Reject / hide your own run | **Instant** | No abuse incentive — you're removing yourself. |
 | Exclude yourself from a board | **Instant** | Same. |
-| Placement *slower* than your current board time | **Instant** | Can only lower you. |
-| Remove your own placement | **Instant** | Reverts to computed. |
-| Placement *faster* / new best | **Provisional** | Appears immediately, marked "self-reported · unverified," queued for mod confirm. Superseded normally. Reversible. Evidence required if category requires video. |
+| Manual time that can't improve your rank (slower than current) | **Instant** | Harmless — can't win the `min`. |
+| Remove your own manual time | **Instant** | Board recomputes from runs. |
+| Manual time that becomes your new (faster) entry | **Provisional** | Appears immediately, marked "self-reported · unverified," queued for mod confirm. Reversible. Evidence required if category requires video. |
 | Un-reject your own previously-rejected run | **Provisional** | Same as above. |
 
 A **trust signal** modulates where the provisional line sits — accounts with prior *verified* runs, long history, or Patreon status can auto-confirm faster claims; brand-new accounts always queue; **banned users get no self-service.** Mod confirmation of a provisional claim promotes it to `verified`; rejection removes it and may apply a trust penalty to deter spam.
@@ -208,10 +206,11 @@ A **trust signal** modulates where the provisional line sits — accounts with p
 | Case | Resolution |
 |---|---|
 | **Guest runs** | No account → no self-service. Mods can reject/place/exclude by guest name. `move-user` merges guest → account and **re-evaluates** overrides onto the new identity. |
-| **Identity merge / reassignment carries overrides** | When `move-user` or a game/category reassignment moves runs, their verdicts and placements move with them and the affected boards recompute. (Reassignment already moves runs + has an undo log; overrides ride along.) |
-| **Superseding run later rejected** | A ceiling placement that was superseded by run R: if R is later rejected, the placement **reactivates** (or the board recomputes from remaining eligible runs, then falls back to the placement if still active). Default: reactivate. |
-| **Placement below a board minimum** | A mod/pinned placement **overrides** the policy (mod intent beats rule), audited with a note. But a *future* run below the minimum still can't supersede a ceiling placement — supersession requires an *eligible* run. |
-| **Per-timing placements** | A placement is per `timing`. You can set an authoritative RT and leave GT computed, or vice-versa. |
+| **Identity merge / reassignment carries overrides** | When `move-user` or a game/category reassignment moves runs, their verdicts and manual times move with them and the affected boards recompute. (Reassignment already moves runs + has an undo log; overrides ride along.) |
+| **Superseding run later rejected** | Nothing special — the board recomputes from current candidates, so dropping the faster run lets the manual time win the `min` again. No reactivation code. |
+| **Manual time vs. a board minimum** | A run below the minimum is filtered out (ineligible). A **mod**-added manual time bypasses policies (explicit human authority, audited); a **self**-added one is subject to them (and to the trust gate), so a runner can't claim an impossible time. |
+| **Per-timing manual times** | A manual time is per `timing`. Set an authoritative RT and leave GT derived from runs, or vice-versa. |
+| **"Make me slower" is an exclusion, not a manual time** | Manual times only add candidates and can only lower a runner's `min`. Correcting a runner *down* (fake fast run; real time is slower) means **excluding the fake run**; the slower real run or manual time then wins. One mechanism for "doesn't count" (exclusion), one for "also consider this" (manual time). |
 | **Combined / subcategory views** | Records live at the slice level; combined views recompute from slice-level records. |
 | **Reject ≠ delete** | A rejected run stays in `finished_runs` (off-board). If the identical attempt re-uploads, dedup + the existing verdict keep it off the board. |
 | **Concurrent edits / races** | Idempotent where possible; last-writer-wins otherwise; surface the backend's message verbatim (matches reassignment's `tombstone_race` handling). |
@@ -225,8 +224,8 @@ A **trust signal** modulates where the provisional line sits — accounts with p
 
 ## 8. Transparency, notifications & appeals
 
-- **Per-run history** — `GET /v1/runs/{runId}/history` surfaces the verdict/placement timeline. The runner-visible slice ("rejected by a mod on May 3 — reason: spliced VOD; superseded by your 35:12") shows on their run page.
-- **Notifications** — any verdict or placement decision affecting a runner notifies them with the reason. The reject reason is *already* "shown to runner"; this generalizes it to all actions. Channel: in-app feed first (email/Discord later).
+- **Per-run history** — `GET /v1/runs/{runId}/history` surfaces the verdict / manual-time timeline. The runner-visible slice ("rejected by a mod on May 3 — reason: spliced VOD; later beaten by your 35:12") shows on their run page.
+- **Notifications** — any verdict or manual-time decision affecting a runner notifies them with the reason. The reject reason is *already* "shown to runner"; this generalizes it to all actions. Channel: in-app feed first (email/Discord later).
 - **Appeals** — a one-click "appeal" on a runner-visible verdict opens a lightweight queue item. Keeps disputes in the system instead of in Twitch DMs.
 
 ---
@@ -237,12 +236,12 @@ Built on the existing CASL mirror (`src/rbac/ability.ts`). Boards are already sc
 
 | Persona | Capabilities |
 |---|---|
-| **Runner (self)** | Self-service per §6 on own runs/placements only. |
-| **Per-game mod** (`moderatedGames`, `board-moderator` scoped) | Shipped gate is **`verify-reject-run` on the game** (same check as single-run verify/reject). *Already* grants bulk exclude/include + game/category-scoped exclusion rules for their games. Vision adds — same per-game gate — placements, board policies, queue, and bulk verify/reject. Global exclusion stays board-admin+. |
+| **Runner (self)** | Self-service per §6 on own runs/manual times only. |
+| **Per-game mod** (`moderatedGames`, `board-moderator` scoped) | Shipped gate is **`verify-reject-run` on the game** (same check as single-run verify/reject). *Already* grants bulk exclude/include + game/category-scoped exclusion rules for their games. Vision adds — same per-game gate — manual times, board policies, queue, and bulk verify/reject. Global exclusion stays board-admin+. |
 | **board-admin** | All of the above globally + manage moderators + reassignment. |
 | **admin** | Everything. |
 
-CASL changes: the backend gate is `verify-reject-run` on a game; the frontend mirror expresses this as `edit`/`moderate` on `leaderboard`/`run` with a `{ game }` condition — keep that as the core gate and ensure it tracks `verify-reject-run`. Add a `place` action for manual placements and a `moderation-queue` subject with `view`. The backend re-checks every endpoint regardless of UI gating.
+CASL changes: the backend gate is `verify-reject-run` on a game; the frontend mirror expresses this as `edit`/`moderate` on `leaderboard`/`run` with a `{ game }` condition — keep that as the core gate and ensure it tracks `verify-reject-run`. Add a `place` action for manual times and a `moderation-queue` subject with `view`. The backend re-checks every endpoint regardless of UI gating.
 
 ---
 
@@ -267,12 +266,12 @@ Single-run verify/reject (`/leaderboards/{verify,reject}/{runId}`), `move-user`,
 
 Follow the shipped conventions — bearer auth, per-game `verify-reject-run` gate, a `preview` paired with every bulk mutation, mandatory reason, an audit row, and ad-hoc-vs-rule where it fits.
 
-- **Manual placements** ★ — `GET/POST/PUT/DELETE /leaderboards/games/{gameId}/placements` + `placements/preview`; **board-compute must apply placements** per §3's resolution rule. The headline ask; nothing else delivers the 35:48 case.
+- **Manual times** ★ — `GET/POST/PUT/DELETE /leaderboards/games/{gameId}/manual-times` + `manual-times/preview`; **board-compute must add manual times to the candidate set** before the `min` (§3). A thin table of extra candidates — no modes, no supersession state. The headline ask; nothing else delivers the 35:48 case.
 - **Bulk verify/reject verdicts** — `POST .../verdicts` + `.../verdicts/preview` `{ action:'verify'|'reject'|'unreject', runIds[], reason }`, promotion-aware. (Exclude already covers bulk *removal*; this adds bulk *verify* and promotion-aware *reject*.)
 - **Triage queue + ingest flags** — `GET .../queue`; flag producers in the ingest path (`sync-runs-to-postgres`): impossible time, PB jump, missing-VOD-in-top-N, duplicate, fresh-account-top-N, reported, pending self-claim.
 - **Board policies** — generalize `/minimums` into `.../policies` (`minTime`/`maxTime`/`requireVideoTopN`/auto-flag thresholds); the `below_minimum` ineligible_reason already exists.
-- **Self-service** — `POST /v1/me/runs/{runId}/verdict`, `POST /v1/me/placements`; **trust tier enforced server-side.**
-- **Reporting / appeals / notifications** — `POST /v1/reports`, `GET .../reports`; `POST /v1/runs/{runId}/appeal`; emit a notification on every verdict/placement decision; `GET /v1/runs/{runId}/history` for transparency.
+- **Self-service** — `POST /v1/me/runs/{runId}/verdict`, `POST /v1/me/manual-times`; **trust tier enforced server-side.**
+- **Reporting / appeals / notifications** — `POST /v1/reports`, `GET .../reports`; `POST /v1/runs/{runId}/appeal`; emit a notification on every verdict/manual-time decision; `GET /v1/runs/{runId}/history` for transparency.
 
 ---
 
@@ -281,7 +280,7 @@ Follow the shipped conventions — bearer auth, per-game `verify-reject-run` gat
 The vision is the end state. Each phase ships independently, top-to-bottom in value-per-effort.
 
 - **P1 — Wire up shipped bulk exclusion (frontend-only).** Roster + runner views, multi-select with rule-shape suggestion, the blast-radius preview sheet, the per-game audit feed, and 24h client-side undo — all against endpoints that **already exist**. Highest value-per-effort: it's the "mass edit for many or one user" need, and the backend is done.
-- **P2 — Manual placements.** Ceiling/pinned + supersession (new backend + UI). Answers the 35:48 case and "adjust a leaderboard time." The true novel core of the vision.
+- **P2 — Manual times.** A thin candidate-time table + board-compute integration (new backend + UI). Answers the 35:48 case and "adjust a leaderboard time." The true novel core of the vision.
 - **P3 — Bulk verify/reject verdicts.** Extend the bulk model from exclude-only to verify and promotion-aware reject.
 - **P4 — Triage & auto-flag.** The queue + ingest-time anomaly heuristics + minimums-as-policies. Answers "a LOT of wrong runs" and "super easy to manage."
 - **P5 — Self-service & community.** Trust-tiered self verdicts/claims + reporting + appeals + notifications.
@@ -296,4 +295,4 @@ Each phase gets its own `docs/superpowers/specs/` design and a `docs/superpowers
 - A runner can fix their own board time — including a time with no `finished_run` — without contacting anyone, and a faster claim is visibly provisional until confirmed.
 - The set of wrong runs a mod must look at is a **curated queue**, not the whole board.
 - No moderation action ever destroys raw data, and every one is reversible and attributable.
-- Setting "their real time is 35:45 / 35:48" is a single, obvious gesture in all three forms (reject-above, ceiling placement, self-claim).
+- Setting "their real time is 35:45 / 35:48" is a single, obvious gesture in all three forms (exclude-the-fakes, add a manual time, self-claim).

@@ -5,6 +5,7 @@
 **Reads with:**
 - Vision (source of truth): `docs/superpowers/specs/2026-05-23-moderation-leaderboard-editing-vision.md`
 - Shipped building block: `docs/frontend-guide-leaderboard-mod-mass-management.md`
+- Exact endpoint specs: `docs/superpowers/specs/2026-05-23-moderation-backend-api-contract.md`
 
 ---
 
@@ -23,6 +24,21 @@ Keep doing what mass-management already does well, everywhere:
 
 ---
 
+## The core model (read this first)
+
+The leaderboard is a **pure derivation**, not a stored standings table. For a slice `(game, category, subcategoryKey, timing)`, a runner's board time is:
+
+```
+min over CANDIDATES, where
+  CANDIDATES = eligible finished_runs  ∪  manually-added times
+  eligible(run) = leaderboard_eligible AND NOT excluded
+                  AND verification_status <> 'rejected' AND passes board policies
+```
+
+Three of the four moderation primitives **filter** the run candidates (verdicts, exclusions, policies — mostly shipped); one **adds** a candidate (manual times — §1). Everything the brief calls "adjust a leaderboard time" is a combination of *excluding* bad runs and *adding* a manual time, with the `min` doing the rest. There is no override state, no supersession bookkeeping — see §1.
+
+---
+
 ## Status at a glance
 
 | Capability | Vision § | Status | Backend work |
@@ -32,7 +48,7 @@ Keep doing what mass-management already does well, everywhere:
 | Per-game audit feed + client-side undo | 8, 10 | ✅ Done | — |
 | Single-run verify/reject (+ promotion) | 3a | ✅ Done | — |
 | Minimum times (`below_minimum`) | 3d | ✅ Done | Fold into policies (below) |
-| **Manual placements (ceiling/pinned + supersession)** | 3c, 4B | ❗ **Missing** | **§1 — headline** |
+| **Manual times (extra candidates in the `min`)** | 3c, 4B | ❗ **Missing** | **§1 — headline** |
 | Bulk verify/reject verdicts | 3a, 5 | ❗ Missing | §2 |
 | Triage queue + ingest-time auto-flag | 5 | ❗ Missing | §3 |
 | Board policies (generalize minimums) | 3d | ◐ Partial | §4 |
@@ -46,70 +62,71 @@ Priority order = §1 → §7 (matches vision phases P2→P5; P1 is frontend-only
 
 ---
 
-## 1. Manual placements ★ (the headline ask)
+## 1. Manual times ★ (the headline ask)
 
-**Why:** the vision's defining new capability. Lets a mod *or a runner* assert a leaderboard time that **need not correspond to any `finished_run`** — "their real time is 35:48; count it; if they get a better run later, count that." Nothing shipped does this; exclusion can only *remove*, never *assert*.
+**Why:** the vision's defining capability — and it's deliberately small. Because the board is the `min` over *eligible runs + manually-added times*, a manual time is just **one more candidate**. It lets a mod or runner assert a time that **need not correspond to any `finished_run`** ("their real time is 35:48"). A manual time can only ever *lower* a runner's `min`; making someone *slower* is an **exclusion** of the faster (fake) run, never a manual time.
 
-### Data model — new table `leaderboard_placements`
+**This replaces the earlier "placement" idea.** There are **no** modes (`ceiling`/`pinned`), no `effectiveFrom`, no `active`/supersession state, and no reactivation. "Count it until they beat it" is not a feature — it is what `min` over current candidates does (a faster eligible run wins on its own; if it is later rejected the manual time wins again). "Ignore their fake faster runs" is an exclusion. Dropping all that state is the whole point.
+
+### Data model — new table `manual_times`
 
 ```
 id              bigserial pk
-user_id         bigint null            -- null => guest placement
-guest_name      text null              -- set iff user_id is null
+user_id         bigint null   -- null => guest
+guest_name      text null     -- set iff user_id is null
 game_id         bigint not null
 category_id     bigint not null
 subcategory_key text not null default ''
-timing          text not null          -- 'realtime' | 'gametime'
+timing          text not null -- 'realtime' | 'gametime'
 time_ms         bigint not null
-mode            text not null          -- 'ceiling' | 'pinned'
-effective_from  timestamptz not null default now()
 evidence_url    text null
-verification_status text not null default 'pending'  -- pending|verified|rejected
-source          text not null          -- 'mod' | 'self' | 'system'
-created_by      bigint not null        -- users.id
+verification_status text not null default 'pending'  -- pending|verified|rejected (self-claims)
+source          text not null -- 'mod' | 'self' | 'system'
+created_by      bigint not null
 reason          text not null
-active          boolean not null default true
 created_at      timestamptz not null default now()
--- unique active placement per (runner, game, category, subcategory_key, timing)
+-- one manual time per (runner, game, category, subcategory_key, timing); POST upserts on conflict
 ```
 
-### Board-compute change (the important part)
+No `mode` / `effective_from` / `active` / `superseded_by` columns — the derivation makes them unnecessary.
 
-Wherever the best-per-user entry is resolved for a slice `(game, category, subcategoryKey, timing)` — the Redis leaderboard build **and** the `eligible-runs` reads — apply:
+### Board-compute change (the only real work)
 
-```
-if active pinned placement      -> entry = placement (ignore this runner's runs on the slice)
-else if active ceiling placement-> entry = min(placement.time_ms,
-                                               best eligible run with ended_at > effective_from)
-else                            -> best eligible finished_run   (today's behavior)
-```
-
-A placement is itself a board entry even when the runner has **no** finished_run on the slice. Rank/`totalRunners` in `eligible-runs` and the public board must count it.
-
-### Supersession
-
-- A ceiling placement is **superseded** by a later eligible run that is *faster* — recommended key: `ended_at > effective_from AND time_faster AND eligible`. Slower/older runs never supersede.
-- If the superseding run is later excluded/rejected, **reactivate** the placement (or recompute and fall back to it if still active).
-- "Eligible" for supersession = the same predicate (`leaderboard_eligible AND NOT excluded AND verification_status<>'rejected'`) **plus** policy checks — a future sub-minimum run cannot supersede.
-
-### Endpoints
+Wherever a runner's best entry is resolved for a slice — the Redis board build, the `eligible-runs` reads, and the public board — **add manual times to the candidate set** before taking the `min`:
 
 ```
-GET    /leaderboards/games/{gameId}/placements?categoryId=&subcategoryKey=&runner=
-POST   /leaderboards/games/{gameId}/placements/preview   -- blast radius, like exclude/preview
-POST   /leaderboards/games/{gameId}/placements           -- create
-PUT    /leaderboards/games/{gameId}/placements/{id}      -- edit time/mode/reason
-DELETE /leaderboards/games/{gameId}/placements/{id}      -- body { reason }
+candidates(runner, slice) =
+    { eligible finished_runs for (runner, slice) }
+  ∪ { manual_times for (runner, slice)
+        where verification_status <> 'rejected'
+          AND (source = 'mod' OR passesPolicies(m)) }   -- self-claims still respect minimums
+entry(runner, slice) = candidate with the smallest time_ms (on slice.timing)
 ```
 
-`POST` body: `{ runnerRef: {userId} | {guestName}, categoryId, subcategoryKey, timing, timeMs, mode, effectiveFrom?, evidenceUrl?, reason }`. Gate: `verify-reject-run` for mod source; the self source comes via §5. Cache: flush Redis for the affected board (placements must be reflected immediately, not at TTL).
+A manual time is a board entry **even when the runner has no finished_run** on the slice — `rank`/`totalRunners` in every read must count it. Expose `source: 'run' | 'manual'` (and the manual-time id) on the entry so the UI can mark "set time."
+
+There is **nothing to compute on supersession** — boards are recomputed from current candidates. No state transitions, no reactivation.
+
+### Endpoints (full shapes in the API-contract doc §A)
+
+```
+GET    /leaderboards/games/{gameId}/manual-times
+POST   /leaderboards/games/{gameId}/manual-times/preview      -- blast radius, like exclude/preview
+POST   /leaderboards/games/{gameId}/manual-times              -- create/upsert (mod => verified)
+PUT    /leaderboards/games/{gameId}/manual-times/{id}         -- edit timeMs / evidence / reason
+DELETE /leaderboards/games/{gameId}/manual-times/{id}         -- body { reason }; board recomputes
+POST   /leaderboards/games/{gameId}/manual-times/{id}/verdict -- mod confirm/deny a self-claim
+```
+
+`POST` body: `{ runnerRef: {userId} | {guestName}, categoryId, subcategoryKey, timing, timeMs, evidenceUrl?, reason }`. Gate `verify-reject-run` (mod); self-created manual times go through §5. Every write flushes the affected board's Redis cache and writes a `logs` row.
 
 ### Edge cases
 
-- **Below a minimum:** a mod/pinned placement is allowed below the policy floor (mod intent wins) — log it. A *future* sub-floor run still can't supersede.
-- **Per-timing:** placement is per `timing`; setting an RT placement leaves GT computed.
-- **Guests:** keyed by `guest_name`; `move-user` must re-target guest placements onto the merged `user_id`.
-- **Combined views:** recompute from slice-level placements.
+- **Below a minimum:** a `source='mod'` manual time bypasses policies (explicit authority, audited); a `source='self'` one must pass them (enforced in §5), so a runner can't claim an impossible time.
+- **Per-timing:** one manual time per `timing`; an RT manual time leaves GT derived from runs.
+- **Guests:** keyed by `guest_name`; `move-user` must re-target onto the merged `user_id`.
+- **Combined views:** recompute from slice-level candidates.
+- **Self-claim provisional:** a `pending` self manual time is still a candidate (wins the `min` if fastest, shown "unverified"); a mod `reject` drops it from the set, exactly like a rejected run.
 
 ---
 
@@ -130,22 +147,22 @@ Promotion-aware like the single reject's `nextRunIdForUser`, but for the whole s
 
 ---
 
-## 3. Triage queue + ingest-time auto-flag
+## 3. Triage queue + ingest auto-flags
 
 **Why:** "there will be a LOT of wrong runs." Mods must work a curated, prioritized feed — not scrub raw boards.
 
 ### Flag producers (extend the ingest path, `sync-runs-to-postgres`)
 
-Compute on insert (and backfill): `impossible` (negative/zero, or faster than the game's known WR by > X%), `pb_jump` (improvement over runner's prior best > X%), `missing_vod` (top-N where `requireVideo`/`requireVideoTopN` set, no `vodUrl`), `duplicate` (identical time across runs/accounts), `fresh_account_top_n`, `reported` (from §6), `pending_self_claim` (from §5). `below_minimum` already exists.
+Compute on insert (and backfill): `impossible` (negative/zero, or faster than the category's known WR by > X%), `pb_jump` (improvement over runner's prior best > X%), `missing_vod` (top-N where `requireVideo`/`requireVideoTopN` set, no `vodUrl`), `duplicate` (identical time across runs/accounts), `fresh_account_top_n`, `reported` (from §6), `pending_self_claim` (from §5). `below_minimum` already exists.
 
-Persist as `run_flags(run_id, reason, severity, created_at, resolved_at)` (or compute-on-read if cheaper). A run leaving the board via verdict/exclude/placement resolves its flags.
+Persist as `run_flags(run_id, reason, severity, created_at, resolved_at)` (or compute-on-read if cheaper). A run leaving the board via verdict/exclude/manual-time resolves its flags.
 
 ### Endpoint
 
 ```
 GET  /leaderboards/games/{gameId}/queue?reason=&page=&pageSize=
      -> [{ run, flagReason, severity, suggestedAction, runnerContext }]
-POST /leaderboards/games/{gameId}/queue/{itemId}/resolve   -- optional explicit dismiss
+POST /leaderboards/games/{gameId}/queue/{flagId}/resolve   -- optional explicit dismiss
 ```
 
 Plus a **global** queue for board-admin/admin across games. Thresholds (X%, N) should be configurable per §4.
@@ -170,20 +187,21 @@ Evaluated at ingest → set `ineligible_reason` (hard) or emit a `run_flags` row
 
 ## 5. Self-service (trust-tiered) ★
 
-**Why:** "moderate your own runs, or say 'hey my time is actually this' — and it should just work." Runners act on **their own** runs/placements, gated by a server-side trust tier, not `verify-reject-run`.
+**Why:** "moderate your own runs, or say 'hey my time is actually this' — and it should just work." Runners act on **their own** runs/manual times, gated by a server-side trust tier, not `verify-reject-run`.
 
 ```
 POST /v1/me/runs/{runId}/verdict     -- body { action: 'reject'|'unreject', reason? }
-POST /v1/me/placements               -- body { categoryId, subcategoryKey, timing, timeMs, evidenceUrl?, reason? }
-DELETE /v1/me/placements/{id}
+POST /v1/me/manual-times             -- body { gameId, categoryId, subcategoryKey, timing, timeMs, evidenceUrl?, reason? }
+DELETE /v1/me/manual-times/{id}
 ```
 
 Server-side trust gate (the whole point — never trust the client for this):
 
-- **Instant:** reject/hide own run; remove own placement; placement *slower* than the runner's current board time. No abuse incentive.
-- **Provisional:** a *faster*/new-best self-placement, or un-rejecting own run → write it but mark `source='self'`, `verification_status='pending'`, and emit a `pending_self_claim` flag (§3). It shows on the board marked unverified and is superseded normally. Mod confirm → `verified`; mod reject → removed (+ optional trust penalty).
+- **Instant:** reject/hide own run; remove own manual time; a manual time that *can't* improve your rank (not faster than your current board time). No abuse incentive.
+- **Provisional:** a *faster*/new-best self manual time, or un-rejecting own run → write it but mark `source='self'`, `verification_status='pending'`, and emit a `pending_self_claim` flag (§3). It shows on the board marked unverified and stays a candidate in the `min`. Mod confirm → `verified`; mod reject → dropped (+ optional trust penalty).
+- A self manual time must also pass board policies (e.g. minimum); reject sub-floor claims.
 - Evidence (`evidenceUrl`) **required** when the category has `requireVideo` and the claim enters the top-N.
-- **Banned users:** blocked entirely. **Ownership:** the run/placement runner must equal the caller's resolved `users.id`.
+- **Banned users:** blocked entirely. **Ownership:** the run/manual-time runner must equal the caller's resolved `users.id`.
 
 Needs a **trust signal** — e.g. has ≥1 prior verified run / account age / patreon tier — to decide what auto-confirms vs. queues. Expose the thresholds as config.
 
@@ -191,15 +209,22 @@ Needs a **trust signal** — e.g. has ≥1 prior verified run / account age / pa
 
 ## 6. Community reporting
 
-**Why:** crowd-source detection; feed the queue.
-
+```sql
+CREATE TABLE run_reports (
+  id               bigserial PRIMARY KEY,
+  run_id           bigint NOT NULL,
+  reporter_user_id bigint NOT NULL,
+  reason           text   NOT NULL,
+  created_at       timestamptz NOT NULL DEFAULT now(),
+  resolved_at      timestamptz NULL,
+  resolution       text   NULL          -- 'upheld' | 'dismissed'
+);
+CREATE UNIQUE INDEX ON run_reports (run_id, reporter_user_id);  -- dedupe
 ```
-POST /v1/reports                     -- authed, rate-limited, dedupe per (reporter, runId)
-     body { runId, reason }
-GET  /leaderboards/games/{gameId}/reports    -- mod view
-```
 
-A report emits a `reported` flag (§3). Weight by reporter trust — low-trust reports aggregate rather than auto-flag. Resolving the run (verdict/exclude/placement) closes its reports.
+**`POST /v1/reports`** — public (authed). Body `{ runId, reason }`. Rate-limit per reporter (e.g. ≤ 20/day). Dedupe per `(run_id, reporter)`. Emits a `reported` flag (§3); weight by reporter trust — low-trust reports aggregate (only flag once count ≥ threshold) rather than auto-flag. Response `{ result: { reported: true } }`.
+
+**`GET /leaderboards/games/{gameId}/reports`** — mod view. Query `resolved?=false`. Returns reports joined to run + reporter name. Resolving the run closes its reports (`resolution='upheld'` on exclude/reject, `'dismissed'` on verify).
 
 ---
 
@@ -209,28 +234,28 @@ A report emits a `reported` flag (§3). Weight by reporter trust — low-trust r
 
 ```
 POST /v1/runs/{runId}/appeal         -- runner disputes a verdict -> queue item
-GET  /v1/runs/{runId}/history        -- public-safe verdict/placement timeline
+GET  /v1/runs/{runId}/history        -- public-safe verdict / manual-time timeline
 ```
 
-**Notifications:** on every verdict/placement/claim decision affecting a runner, emit a notification with the reason. A `notifications(user_id, type, payload, read_at, created_at)` table feeding an in-app feed is enough for v1; email/Discord later.
+**Notifications:** on every verdict/manual-time/claim decision affecting a runner, emit a notification with the reason. A `notifications(user_id, type, payload, read_at, created_at)` table feeding an in-app feed is enough for v1; email/Discord later.
 
 ---
 
 ## 8. Reconciliation items
 
 - **Status vocabulary:** mass-management returns `unverified|verified|rejected`; `leaderboards.types.ts` uses `pending|verified|rejected`. Pick one canonical set (recommend `pending`) or document `unverified ≡ pending` as a stable contract so the frontend can normalize once.
-- **Overrides survive identity/board moves (verify, then specify):** when `move-user` merges a runner or a game/category reassignment moves runs, do verdicts, `run_flags`, and placements follow? Exclusion *rules* are keyed `(user, game[, category])` — after a game reassignment, do they re-target the new game id, or silently stop matching? Define and test this; the vision requires overrides to ride along and the boards to recompute.
-- **Redis cache on writes:** confirm whether `exclude/include/verdict/placement` writes flush the Redis leaderboard build or rely on the 1h TTL. Placements in particular **must** be reflected in the cached board immediately.
-- **Preview rank deltas use RT ordering** for all categories (known mass-management follow-up). Placements make GT-primary boards more common — fixing GT ranks in preview rises in priority.
+- **Overrides survive identity/board moves (verify, then specify):** when `move-user` merges a runner or a game/category reassignment moves runs, do verdicts, `run_flags`, and manual times follow? Exclusion *rules* are keyed `(user, game[, category])` — after a game reassignment, do they re-target the new game id, or silently stop matching? Define and test this; the vision requires overrides to ride along and the boards to recompute.
+- **Redis cache on writes:** confirm whether `exclude/include/verdict/manual-time` writes flush the Redis leaderboard build or rely on the 1h TTL. Manual times in particular **must** be reflected in the cached board immediately.
+- **Preview rank deltas use RT ordering** for all categories (known mass-management follow-up). Manual times make GT-primary boards more common — fixing GT ranks in preview rises in priority.
 
 ---
 
 ## Build order
 
-1. **Manual placements** (§1) + board-compute + preview — unblocks the headline use case and vision P2.
+1. **Manual times** (§1) — thin candidate table + board-compute + preview. Unblocks the headline use case and vision P2.
 2. **Bulk verify/reject verdicts** (§2).
 3. **Triage queue + ingest flags + policies** (§3, §4).
 4. **Self-service + trust** (§5).
 5. **Reporting + appeals + notifications** (§6, §7).
 
-§8 reconciliation items are small and can land alongside whichever phase touches them — but verify the move-user/reassignment override-carry behavior **before** placements ship, since a merge that drops placements would silently corrupt a board.
+§8 reconciliation items are small and can land alongside whichever phase touches them — but verify the move-user/reassignment override-carry behavior **before** manual times ship, since a merge that drops a manual time would silently corrupt a board.
