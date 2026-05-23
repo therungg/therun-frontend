@@ -26,7 +26,7 @@ Keep doing what mass-management already does well, everywhere:
 
 ## The core model (read this first)
 
-The leaderboard is a **pure derivation** — logically. Physically it stays materialized in Redis and is rebuilt only when inputs change (a moderation write or a run ingest); public reads stay pure Redis lookups, no per-request compute (see API contract §A.1). For a slice `(game, category, subcategoryKey, timing)`, a runner's board time is:
+The leaderboard is a **pure derivation** — logically. Physically it stays materialized (the `isLeaderboardEntry` flags on `finished_runs` + a Redis read cache) and is rebuilt by the existing unified rebuild pipeline only when inputs change (a moderation write or a run ingest); public reads have no per-request compute (see API contract §A.1). For a slice `(game, category, subcategoryKey, timing)`, a runner's board time is:
 
 ```
 min over CANDIDATES, where
@@ -105,7 +105,7 @@ entry(runner, slice) = candidate with the smallest time_ms (on slice.timing)
 
 A manual time is a board entry **even when the runner has no finished_run** on the slice — `rank`/`totalRunners` in every read must count it. Expose `source: 'run' | 'manual'` (and the manual-time id) on the entry so the UI can mark "set time."
 
-There is **nothing to compute on supersession** — boards are recomputed from current candidates. No state transitions, no reactivation. Recompute is event-driven (a manual-time write or a run ingest) as a targeted per-runner Redis update — not per read; public reads stay pure Redis lookups (contract §A.1, §H.3).
+There is **nothing to compute on supersession** — boards are recomputed from current candidates. No state transitions, no reactivation. Recompute is event-driven via the existing unified rebuild pipeline (`enqueueLeaderboardRebuild` → `rebuildComboFlags`) — not per read; public reads hit the materialized flags + Redis cache (contract §A.1, §H.3).
 
 ### Endpoints (full shapes in the API-contract doc §A)
 
