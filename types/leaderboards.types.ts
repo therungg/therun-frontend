@@ -113,6 +113,10 @@ export interface LeaderboardEntry {
     verificationStatus: 'pending' | 'verified' | 'rejected';
     // Keyed by nameNormalized; values are canonical bucket values.
     variables?: Record<string, string> | null;
+    // Manual-times feature: 'manual' entries are a mod/self-asserted time with no
+    // backing finished_run (runId is null). Defaults to 'run' when absent.
+    source?: 'run' | 'manual';
+    manualTimeId?: number | null;
 }
 
 export interface LeaderboardResponse {
