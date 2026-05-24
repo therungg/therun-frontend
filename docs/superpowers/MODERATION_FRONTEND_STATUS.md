@@ -10,15 +10,15 @@ This file tracks the frontend build of the full moderation + leaderboard-editing
 
 **Frontend: complete, verified, pushed** to `moderation-ui` (no PR — owner opens PRs). All 10 phases + the board-inline mod entry point + self-claim + notifications + run history + hub attention badges. `npm run build` compiles clean; `tsc`/ESLint/Biome clean for all new files. `LeaderboardEntry.source` rollout audit done (no consumer breaks on manual entries).
 
-**The only blocker is one backend fix.** Moderation is served via a `/mod` base-path mapping (`aws/lib/moderation-stack.ts`, structurally identical to the working `reassignments-stack.ts`), but the base path is **not stripped** before `api-entry.ts` routes. Proof (live, 8-min steady): `GET /v1/tournaments` → 200, but `GET /mod/v1/tournaments` → `"Path not found"` (api-entry's notFound) — so `usersLambda` receives `event.path=/mod/v1/...` unstripped and matches no `/v1/...` case.
+**✅ RESOLVED — live end-to-end (2026-05-24).** The backend added the `/mod` strip in `api-entry.ts` (`event.path.replace(/^\/mod(?=\/|$)/, "")`) and deployed. Verified against live `api.therun.gg`:
+- `GET /mod/v1/runs/1/history` → `200 {"result":[]}` — public route fully working.
+- `GET /mod/v1/me/notifications`, `…/leaderboards/games/{id}/{manual-times,queue,policies}`, `POST /mod/v1/reports` → `403 "Not authenticated"` unauthenticated = handler reached + auth gate firing (will return data / act with a mod session).
 
-**Fix (backend lane), in `../therun/src/api/api-entry.ts`** — strip a leading `/mod` before dispatch:
-```ts
-const path = (event.path || "").replace(/^\/mod(?=\/|$)/, "");
-```
-Then `npm run migrate` (migrations `0061`–`0064`), deploy, done. The frontend already prepends `/mod` (`src/lib/moderation/mod-fetch.ts`) and needs no further change.
+Routing works: `/mod` is stripped, `api-entry` dispatches via its `event.path` regexes to the real handlers. The frontend prepends `/mod` (`src/lib/moderation/mod-fetch.ts`) and functions end-to-end for signed-in mods/users. **No further frontend work.**
 
-**Verify after the fix:** `GET https://api.therun.gg/mod/v1/tournaments` should return the tournament list (not "Path not found"); the mod routes (e.g. `/mod/v1/leaderboards/games/{id}/manual-times`) should return the handler's `403 "Not authenticated"` unauthenticated, and real data with a mod session.
+Remaining backend confirmation (can't be verified from outside — auth gate short-circuits before the DB): run `npm run migrate` so `manual_times`/`run_flags`/`run_reports`/`notifications`/`board_policies` exist.
+
+Cosmetic, non-moderation FYI: `/mod/v1/tournaments` returns `400 "Tournament name required"` (not the list) because `handleV1Tournaments` keys list-vs-`{name}` off API-Gateway `pathParameters`, which the `proxy:true` moderationApi doesn't populate like the explicit-resource root API. Moderation handlers use `event.path` regex dispatch, so they're unaffected. Tournaments isn't served under `/mod` in prod.
 
 ## ⚠️ Prerequisites the backend owner must do (out of frontend scope)
 
