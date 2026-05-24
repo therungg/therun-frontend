@@ -8,6 +8,7 @@ import { GameHeader } from './header/game-header';
 import { LeaderboardTable } from './leaderboard/leaderboard-table';
 import { PaginationBar } from './leaderboard/pagination-bar';
 import { RulesPanel } from './rules/rules-panel';
+import { SelfClaimButton } from './self-claim-button';
 import { Sidebar } from './sidebar/sidebar';
 import type { GamePageData } from './types';
 
@@ -78,6 +79,18 @@ export function GamePage({ data, canManage, canManageRuns }: Props) {
                         rules={data.selectedCategory.rules}
                         categoryId={data.selectedCategory.id}
                     />
+                    {data.sessionUsername && (
+                        <div className="d-flex justify-content-end mb-2">
+                            <SelfClaimButton
+                                gameId={data.game.id}
+                                categories={data.categories.map((c) => ({
+                                    id: c.id,
+                                    display: c.display,
+                                }))}
+                                defaultCategoryId={data.selectedCategory.id}
+                            />
+                        </div>
+                    )}
                     {data.invalidCombination ? (
                         <InvalidCombinationNotice
                             gameSlug={data.game.name}
