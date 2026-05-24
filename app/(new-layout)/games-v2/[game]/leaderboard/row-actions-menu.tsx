@@ -1,0 +1,304 @@
+'use client';
+
+import moment from 'moment';
+import { useRouter } from 'next/navigation';
+import { useState, useTransition } from 'react';
+import { Dropdown, Form, Modal } from 'react-bootstrap';
+import { toast } from 'react-toastify';
+import {
+    appealRunAction,
+    loadRunHistoryAction,
+    reportRunAction,
+    selfRunVerdictAction,
+} from '~src/actions/run-user-actions.action';
+import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
+import type { HistoryEvent } from '../../../../../types/moderation.types';
+
+interface Props {
+    entry: LeaderboardEntry;
+    sessionUsername: string | null;
+}
+
+type ModalKind = 'report' | 'appeal' | 'history' | null;
+
+function describeEvent(e: HistoryEvent): string {
+    if (e.type === 'verdict') {
+        if (e.action.includes('unreject')) return 'Run reinstated';
+        if (e.action.includes('reject')) return 'Run rejected';
+        if (e.action.includes('verif')) return 'Run verified';
+        return 'Verdict applied';
+    }
+    if (e.type === 'manual_time') return 'Leaderboard time adjusted';
+    if (e.type === 'exclusion') return 'Run excluded';
+    if (e.type === 'report') return 'Run reported';
+    if (e.type === 'appeal') return 'Appeal opened';
+    return e.action || 'Event';
+}
+
+export function RowActionsMenu({ entry, sessionUsername }: Props) {
+    const router = useRouter();
+    const runId = entry.runId ?? null;
+    const loggedIn = !!sessionUsername;
+    const isOwn = loggedIn && entry.runnerName === sessionUsername;
+    const isRejected = entry.verificationStatus === 'rejected';
+
+    const [modal, setModal] = useState<ModalKind>(null);
+    const [reason, setReason] = useState('');
+    const [history, setHistory] = useState<HistoryEvent[] | null>(null);
+    const [pending, startTransition] = useTransition();
+
+    // Manual-time entries have no finished_run to act on.
+    if (runId == null) return null;
+
+    const close = () => {
+        setModal(null);
+        setReason('');
+    };
+    const reasonValid = reason.trim().length >= 10;
+
+    const openHistory = () => {
+        setModal('history');
+        setHistory(null);
+        startTransition(async () => {
+            const res = await loadRunHistoryAction(runId);
+            if ('error' in res) {
+                toast.error(res.error);
+                setHistory([]);
+            } else {
+                setHistory(res.events);
+            }
+        });
+    };
+
+    const submitReport = () => {
+        startTransition(async () => {
+            const res = await reportRunAction(runId, reason);
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            toast.success(
+                res.reported
+                    ? 'Report submitted. Thank you.'
+                    : 'You have already reported this run.',
+            );
+            close();
+        });
+    };
+
+    const submitAppeal = () => {
+        startTransition(async () => {
+            const res = await appealRunAction(runId, reason);
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            toast.success('Appeal submitted. A moderator will review it.');
+            close();
+        });
+    };
+
+    const selfVerdict = (action: 'reject' | 'unreject') => {
+        const verb = action === 'reject' ? 'hide' : 'restore';
+        if (
+            !confirm(
+                `Are you sure you want to ${verb} your run on the leaderboard?`,
+            )
+        ) {
+            return;
+        }
+        startTransition(async () => {
+            const res = await selfRunVerdictAction(runId, action);
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            if (res.noop) {
+                toast.info('No change needed.');
+            } else if (res.applied === 'provisional') {
+                toast.success('Submitted for moderator review.');
+            } else {
+                toast.success(
+                    action === 'reject'
+                        ? 'Your run is now hidden from the leaderboard.'
+                        : 'Your run has been restored.',
+                );
+            }
+            router.refresh();
+        });
+    };
+
+    return (
+        <>
+            <Dropdown align="end">
+                <Dropdown.Toggle
+                    variant="outline-secondary"
+                    size="sm"
+                    id={`run-actions-${runId}`}
+                >
+                    Actions
+                </Dropdown.Toggle>
+                <Dropdown.Menu>
+                    <Dropdown.Item
+                        as="button"
+                        type="button"
+                        onClick={openHistory}
+                    >
+                        Run history
+                    </Dropdown.Item>
+                    {loggedIn && !isOwn && (
+                        <Dropdown.Item
+                            as="button"
+                            type="button"
+                            onClick={() => setModal('report')}
+                        >
+                            Report run
+                        </Dropdown.Item>
+                    )}
+                    {isOwn && !isRejected && (
+                        <Dropdown.Item
+                            as="button"
+                            type="button"
+                            className="text-danger"
+                            onClick={() => selfVerdict('reject')}
+                        >
+                            Hide my run
+                        </Dropdown.Item>
+                    )}
+                    {isOwn && isRejected && (
+                        <>
+                            <Dropdown.Item
+                                as="button"
+                                type="button"
+                                onClick={() => selfVerdict('unreject')}
+                            >
+                                Restore my run
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                                as="button"
+                                type="button"
+                                onClick={() => setModal('appeal')}
+                            >
+                                Appeal rejection
+                            </Dropdown.Item>
+                        </>
+                    )}
+                </Dropdown.Menu>
+            </Dropdown>
+
+            <Modal show={modal === 'report'} onHide={close} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title className="h6">Report this run</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p className="small text-muted">
+                        Tell the moderators why this run looks wrong (fake time,
+                        spliced video, wrong category…). Minimum 10 characters.
+                    </p>
+                    <Form.Control
+                        as="textarea"
+                        rows={3}
+                        value={reason}
+                        onChange={(e) => setReason(e.target.value)}
+                        disabled={pending}
+                        placeholder="Reason for report"
+                    />
+                </Modal.Body>
+                <Modal.Footer>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={close}
+                        disabled={pending}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-primary"
+                        onClick={submitReport}
+                        disabled={pending || !reasonValid}
+                    >
+                        Submit report
+                    </button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={modal === 'appeal'} onHide={close} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title className="h6">Appeal rejection</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p className="small text-muted">
+                        Explain why this run should be reinstated. A moderator
+                        will review your appeal. Minimum 10 characters.
+                    </p>
+                    <Form.Control
+                        as="textarea"
+                        rows={3}
+                        value={reason}
+                        onChange={(e) => setReason(e.target.value)}
+                        disabled={pending}
+                        placeholder="Why should this run be reinstated?"
+                    />
+                </Modal.Body>
+                <Modal.Footer>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={close}
+                        disabled={pending}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-primary"
+                        onClick={submitAppeal}
+                        disabled={pending || !reasonValid}
+                    >
+                        Submit appeal
+                    </button>
+                </Modal.Footer>
+            </Modal>
+
+            <Modal show={modal === 'history'} onHide={close} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title className="h6">Run history</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {history === null && (
+                        <p className="text-muted small mb-0">Loading…</p>
+                    )}
+                    {history !== null && history.length === 0 && (
+                        <p className="text-muted small mb-0">
+                            No moderation history for this run.
+                        </p>
+                    )}
+                    {history !== null && history.length > 0 && (
+                        <ul className="list-unstyled mb-0">
+                            {history.map((e, i) => (
+                                <li
+                                    key={`${e.at}-${i}`}
+                                    className="border-start ps-3 pb-3 position-relative"
+                                >
+                                    <div className="fw-semibold small">
+                                        {describeEvent(e)}
+                                    </div>
+                                    <div className="text-muted small">
+                                        {e.byRole} · {moment(e.at).fromNow()}
+                                    </div>
+                                    {e.reason && (
+                                        <div className="small fst-italic">
+                                            “{e.reason}”
+                                        </div>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </Modal.Body>
+            </Modal>
+        </>
+    );
+}

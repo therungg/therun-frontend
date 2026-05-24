@@ -55,6 +55,7 @@ export function LeaderboardTable({
                         gameSlug={gameSlug}
                         hideRealTime={hideRealTime}
                         hideGameTime={hideGameTime}
+                        sessionUsername={sessionUsername}
                     />
                 ))}
             </tbody>
