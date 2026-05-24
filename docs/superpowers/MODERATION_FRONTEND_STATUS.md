@@ -6,6 +6,20 @@
 
 This file tracks the frontend build of the full moderation + leaderboard-editing vision. Updated as phases land.
 
+## ✅ Current state & the ONE remaining step (2026-05-24)
+
+**Frontend: complete, verified, pushed** to `moderation-ui` (no PR — owner opens PRs). All 10 phases + the board-inline mod entry point + self-claim + notifications + run history + hub attention badges. `npm run build` compiles clean; `tsc`/ESLint/Biome clean for all new files. `LeaderboardEntry.source` rollout audit done (no consumer breaks on manual entries).
+
+**The only blocker is one backend fix.** Moderation is served via a `/mod` base-path mapping (`aws/lib/moderation-stack.ts`, structurally identical to the working `reassignments-stack.ts`), but the base path is **not stripped** before `api-entry.ts` routes. Proof (live, 8-min steady): `GET /v1/tournaments` → 200, but `GET /mod/v1/tournaments` → `"Path not found"` (api-entry's notFound) — so `usersLambda` receives `event.path=/mod/v1/...` unstripped and matches no `/v1/...` case.
+
+**Fix (backend lane), in `../therun/src/api/api-entry.ts`** — strip a leading `/mod` before dispatch:
+```ts
+const path = (event.path || "").replace(/^\/mod(?=\/|$)/, "");
+```
+Then `npm run migrate` (migrations `0061`–`0064`), deploy, done. The frontend already prepends `/mod` (`src/lib/moderation/mod-fetch.ts`) and needs no further change.
+
+**Verify after the fix:** `GET https://api.therun.gg/mod/v1/tournaments` should return the tournament list (not "Path not found"); the mod routes (e.g. `/mod/v1/leaderboards/games/{id}/manual-times`) should return the handler's `403 "Not authenticated"` unauthenticated, and real data with a mod session.
+
 ## ⚠️ Prerequisites the backend owner must do (out of frontend scope)
 
 1. **Run migrations** in `../therun`: `npm run migrate` (creates `manual_times`, `run_flags`, `run_reports`, `notifications`, `board_policies`).
