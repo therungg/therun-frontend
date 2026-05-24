@@ -9,7 +9,18 @@ This file tracks the frontend build of the full moderation + leaderboard-editing
 ## ⚠️ Prerequisites the backend owner must do (out of frontend scope)
 
 1. **Run migrations** in `../therun`: `npm run migrate` (creates `manual_times`, `run_flags`, `run_reports`, `notifications`, `board_policies`).
-2. **Register API Gateway routes.** `aws/lib/api-stack.ts` uses `proxy: false` and does **not** yet register the `/v1/leaderboards/games/{gameId}/…`, `/v1/me/*`, `/v1/reports`, `/v1/runs/{id}/{history,appeal}` resources. Until added, these paths 403/404 at the gateway. The frontend is built against the handler contract and will work once routing lands. **This is the single thing blocking the feature end-to-end.**
+2. **Register API Gateway routes — VERIFIED STILL MISSING (2026-05-24).** Probed live `https://api.therun.gg`:
+   - `GET /v1/finished-runs?limit=1` → **200** (deployed, works).
+   - `GET /v1/leaderboards/runs/1` → **404 "Run not found"** — the *handler's* plain-text body, so the Lambda is deployed and `/v1/leaderboards/*` routes to it.
+   - `GET /v1/leaderboards/games/1/manual-times`, `…/queue`, `GET /v1/me/notifications`, `POST /v1/reports`, `GET /v1/runs/1/history` → **403 `{"message":"Missing Authentication Token"}`** — the *API Gateway's* unregistered-resource response (not the handler's `"Not authenticated"`).
+
+   So the handlers are deployed but the gateway (`aws/lib/api-stack.ts`, `proxy:false`) hasn't registered these resources. **Exact routes the backend must add** (each `addResource`/`addMethod`, or switch the subtree to a `{proxy+}`):
+   - `/v1/leaderboards/games/{gameId}/…` — the whole mod + mass-mgmt subtree: `manual-times(/{id}(/verdict)?)?`, `verdicts(/preview)?`, `queue(/{flagId}/resolve)?`, `reports`, `policies(/{id})?`, `exclude(/preview)?`, `include`, `exclusion-rules(/{ruleId})?`, `mod-actions`, `users/{userId}/eligible-runs`, `categories/{categoryId}/eligible-runs`. (NB: the already-"shipped" mass-mgmt endpoints are in this same unregistered subtree, so P1's UI also can't reach the backend until this lands.)
+   - `/v1/me/manual-times(/{id})?`, `/v1/me/runs/{runId}/verdict`, `/v1/me/notifications(/{id}/read)?`, `/v1/me/notifications/read-all`.
+   - `/v1/reports`.
+   - `/v1/runs/{runId}/history`, `/v1/runs/{runId}/appeal`.
+
+   **This is the one thing blocking the feature end-to-end.** The frontend is built + verified (production build passes) against the as-shipped handler contract and works the moment these routes are registered. The UI degrades gracefully meanwhile (mod tools admin-gated; reads catch errors → empty states; notifications bell silently empty).
 3. Deferred backend items (from `../therun/docs/superpowers/MODERATION_VISION_STATUS.md`): ingest-time flag producers (`impossible`, `pb_jump`, `duplicate`, `fresh_account_top_n`, `missing_vod`); non-`min_time` policy evaluation; notification emit on bulk exclude.
 
 ## Verification approach
