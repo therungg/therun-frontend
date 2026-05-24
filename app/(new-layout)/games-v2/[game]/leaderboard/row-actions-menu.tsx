@@ -13,10 +13,16 @@ import {
 } from '~src/actions/run-user-actions.action';
 import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
 import type { HistoryEvent } from '../../../../../types/moderation.types';
+import {
+    boardExcludeRunAction,
+    boardRunVerdictAction,
+} from './actions/board-mod-actions.action';
 
 interface Props {
     entry: LeaderboardEntry;
     sessionUsername: string | null;
+    canManage?: boolean;
+    gameSlug: string;
 }
 
 type ModalKind = 'report' | 'appeal' | 'history' | null;
@@ -35,7 +41,12 @@ function describeEvent(e: HistoryEvent): string {
     return e.action || 'Event';
 }
 
-export function RowActionsMenu({ entry, sessionUsername }: Props) {
+export function RowActionsMenu({
+    entry,
+    sessionUsername,
+    canManage,
+    gameSlug,
+}: Props) {
     const router = useRouter();
     const runId = entry.runId ?? null;
     const loggedIn = !!sessionUsername;
@@ -43,6 +54,9 @@ export function RowActionsMenu({ entry, sessionUsername }: Props) {
     const isRejected = entry.verificationStatus === 'rejected';
 
     const [modal, setModal] = useState<ModalKind>(null);
+    const [modAction, setModAction] = useState<
+        'verify' | 'reject' | 'exclude' | null
+    >(null);
     const [reason, setReason] = useState('');
     const [history, setHistory] = useState<HistoryEvent[] | null>(null);
     const [pending, startTransition] = useTransition();
@@ -52,9 +66,47 @@ export function RowActionsMenu({ entry, sessionUsername }: Props) {
 
     const close = () => {
         setModal(null);
+        setModAction(null);
         setReason('');
     };
     const reasonValid = reason.trim().length >= 10;
+
+    const openMod = (a: 'verify' | 'reject' | 'exclude') => {
+        setReason('');
+        setModAction(a);
+    };
+
+    const submitModAction = () => {
+        if (!modAction) return;
+        startTransition(async () => {
+            const res =
+                modAction === 'exclude'
+                    ? await boardExcludeRunAction(
+                          gameSlug,
+                          runId,
+                          reason.trim(),
+                      )
+                    : await boardRunVerdictAction(
+                          gameSlug,
+                          runId,
+                          modAction,
+                          reason.trim(),
+                      );
+            if ('error' in res) {
+                toast.error(res.error);
+                return;
+            }
+            toast.success(
+                modAction === 'verify'
+                    ? 'Run verified.'
+                    : modAction === 'reject'
+                      ? 'Run rejected.'
+                      : 'Run excluded.',
+            );
+            close();
+            router.refresh();
+        });
+    };
 
     const openHistory = () => {
         setModal('history');
@@ -183,8 +235,81 @@ export function RowActionsMenu({ entry, sessionUsername }: Props) {
                             </Dropdown.Item>
                         </>
                     )}
+                    {canManage && (
+                        <>
+                            <Dropdown.Divider />
+                            <Dropdown.Header>Moderator</Dropdown.Header>
+                            <Dropdown.Item
+                                as="button"
+                                type="button"
+                                onClick={() => openMod('verify')}
+                            >
+                                Verify run
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                                as="button"
+                                type="button"
+                                className="text-danger"
+                                onClick={() => openMod('reject')}
+                            >
+                                Reject run
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                                as="button"
+                                type="button"
+                                className="text-danger"
+                                onClick={() => openMod('exclude')}
+                            >
+                                Exclude run
+                            </Dropdown.Item>
+                        </>
+                    )}
                 </Dropdown.Menu>
             </Dropdown>
+
+            <Modal show={modAction !== null} onHide={close} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title className="h6">
+                        {modAction === 'verify'
+                            ? 'Verify run'
+                            : modAction === 'reject'
+                              ? 'Reject run'
+                              : 'Exclude run'}
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <p className="small text-muted">
+                        This changes the leaderboard for everyone. Minimum 10
+                        characters; recorded in the audit log.
+                    </p>
+                    <Form.Control
+                        as="textarea"
+                        rows={3}
+                        value={reason}
+                        onChange={(e) => setReason(e.target.value)}
+                        disabled={pending}
+                        placeholder="Reason"
+                    />
+                </Modal.Body>
+                <Modal.Footer>
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={close}
+                        disabled={pending}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        type="button"
+                        className={`btn btn-sm ${modAction === 'verify' ? 'btn-success' : 'btn-danger'}`}
+                        onClick={submitModAction}
+                        disabled={pending || !reasonValid}
+                    >
+                        {pending ? 'Working…' : 'Confirm'}
+                    </button>
+                </Modal.Footer>
+            </Modal>
 
             <Modal show={modal === 'report'} onHide={close} centered>
                 <Modal.Header closeButton>
