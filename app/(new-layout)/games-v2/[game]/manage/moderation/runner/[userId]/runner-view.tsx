@@ -7,6 +7,7 @@ import type { UserEligibleRunRow } from '../../../../../../../../types/moderatio
 import type { ExcludeTarget } from '../../shared/actions/exclude.action';
 import { ExcludeDialog } from '../../shared/exclude-dialog';
 import { IncludeDialog } from '../../shared/include-dialog';
+import { ManualTimeDialog } from '../../shared/manual-time-dialog';
 
 interface Props {
     gameSlug: string;
@@ -58,7 +59,10 @@ export function RunnerView({ gameSlug, gameDisplay, userId, rows }: Props) {
     const [categoryFilter, setCategoryFilter] = useState<number | 'all'>('all');
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [dialog, setDialog] = useState<
-        { kind: 'exclude'; target: ExcludeTarget } | { kind: 'include' } | null
+        | { kind: 'exclude'; target: ExcludeTarget }
+        | { kind: 'include' }
+        | { kind: 'manual'; group: Group }
+        | null
     >(null);
 
     const visibleGroups =
@@ -210,6 +214,15 @@ export function RunnerView({ gameSlug, gameDisplay, userId, rows }: Props) {
                                         {g.subKey}
                                     </span>
                                 )}
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-primary ms-auto"
+                                    onClick={() =>
+                                        setDialog({ kind: 'manual', group: g })
+                                    }
+                                >
+                                    Set time
+                                </button>
                             </div>
                             <div className="table-responsive">
                                 <table className="table table-sm table-hover align-middle mb-0">
@@ -371,6 +384,18 @@ export function RunnerView({ gameSlug, gameDisplay, userId, rows }: Props) {
                 <IncludeDialog
                     gameSlug={gameSlug}
                     runIds={selectedRunIds}
+                    onDone={afterMutation}
+                    onClose={() => setDialog(null)}
+                />
+            )}
+            {dialog?.kind === 'manual' && (
+                <ManualTimeDialog
+                    gameSlug={gameSlug}
+                    runnerRef={{ userId }}
+                    runnerLabel={`Runner #${userId}`}
+                    categoryId={dialog.group.categoryId}
+                    categoryLabel={dialog.group.categoryName}
+                    subcategoryKey={dialog.group.subKey}
                     onDone={afterMutation}
                     onClose={() => setDialog(null)}
                 />

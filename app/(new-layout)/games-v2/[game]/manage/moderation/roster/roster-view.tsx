@@ -11,6 +11,7 @@ import type {
 } from '../../../../../../../types/moderation.types';
 import { ExcludeDialog } from '../shared/exclude-dialog';
 import { IncludeDialog } from '../shared/include-dialog';
+import { ManualTimeDialog } from '../shared/manual-time-dialog';
 import { loadRosterAction } from './actions/load-roster.action';
 
 type VerificationFilter = 'any' | 'unverified' | 'verified' | 'rejected';
@@ -45,6 +46,9 @@ export function RosterView({
     const [error, setError] = useState<string | null>(null);
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [dialog, setDialog] = useState<'exclude' | 'include' | null>(null);
+    const [manualRow, setManualRow] = useState<LeaderboardRosterRow | null>(
+        null,
+    );
     const [isLoading, startLoad] = useTransition();
 
     const selectedRunIds = useMemo(() => Array.from(selected), [selected]);
@@ -373,15 +377,29 @@ export function RosterView({
                                                     )}
                                                 </td>
                                                 <td className="text-end">
-                                                    {!isGuest &&
-                                                        row.userId != null && (
-                                                            <Link
-                                                                href={`${baseHref}/runner/${row.userId}`}
-                                                                className="btn btn-sm btn-outline-secondary"
-                                                            >
-                                                                View runner
-                                                            </Link>
-                                                        )}
+                                                    <div className="d-flex gap-1 justify-content-end">
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-sm btn-outline-primary"
+                                                            onClick={() =>
+                                                                setManualRow(
+                                                                    row,
+                                                                )
+                                                            }
+                                                        >
+                                                            Set time
+                                                        </button>
+                                                        {!isGuest &&
+                                                            row.userId !=
+                                                                null && (
+                                                                <Link
+                                                                    href={`${baseHref}/runner/${row.userId}`}
+                                                                    className="btn btn-sm btn-outline-secondary"
+                                                                >
+                                                                    View runner
+                                                                </Link>
+                                                            )}
+                                                    </div>
                                                 </td>
                                             </tr>
                                         );
@@ -444,6 +462,27 @@ export function RosterView({
                     runIds={selectedRunIds}
                     onDone={afterMutation}
                     onClose={() => setDialog(null)}
+                />
+            )}
+            {manualRow && categoryId != null && (
+                <ManualTimeDialog
+                    gameSlug={gameSlug}
+                    runnerRef={
+                        manualRow.userId != null
+                            ? { userId: manualRow.userId }
+                            : { guestName: manualRow.runnerName }
+                    }
+                    runnerLabel={manualRow.runnerName}
+                    categoryId={categoryId}
+                    categoryLabel={
+                        categories.find((c) => c.id === categoryId)?.display
+                    }
+                    subcategoryKey={manualRow.subcategoryKey}
+                    onDone={() => {
+                        setManualRow(null);
+                        handleLoad();
+                    }}
+                    onClose={() => setManualRow(null)}
                 />
             )}
         </div>
