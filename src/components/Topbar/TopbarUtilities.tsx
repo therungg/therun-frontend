@@ -1,6 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { NotificationsBell } from './NotificationsBell';
 import styles from './TopbarUtilities.module.scss';
 import { UserMenu } from './UserMenu';
 
@@ -35,6 +36,7 @@ export function TopbarUtilities({
             <div className={styles.desktopOnly}>
                 <DarkModeSlider />
             </div>
+            {username && <NotificationsBell />}
             <UserMenu
                 username={username}
                 picture={picture}
