@@ -8,10 +8,12 @@ import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
     LeaderboardRosterRow,
     RosterFilter,
+    VerdictAction,
 } from '../../../../../../../types/moderation.types';
 import { ExcludeDialog } from '../shared/exclude-dialog';
 import { IncludeDialog } from '../shared/include-dialog';
 import { ManualTimeDialog } from '../shared/manual-time-dialog';
+import { VerdictDialog } from '../shared/verdict-dialog';
 import { loadRosterAction } from './actions/load-roster.action';
 
 type VerificationFilter = 'any' | 'unverified' | 'verified' | 'rejected';
@@ -47,6 +49,9 @@ export function RosterView({
     const [selected, setSelected] = useState<Set<number>>(new Set());
     const [dialog, setDialog] = useState<'exclude' | 'include' | null>(null);
     const [manualRow, setManualRow] = useState<LeaderboardRosterRow | null>(
+        null,
+    );
+    const [verdictAction, setVerdictAction] = useState<VerdictAction | null>(
         null,
     );
     const [isLoading, startLoad] = useTransition();
@@ -431,17 +436,38 @@ export function RosterView({
                         </button>
                         <button
                             type="button"
+                            className="btn btn-sm btn-outline-success"
+                            onClick={() => setVerdictAction('verify')}
+                        >
+                            Verify
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() => setVerdictAction('reject')}
+                        >
+                            Reject
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => setVerdictAction('unreject')}
+                        >
+                            Un-reject
+                        </button>
+                        <button
+                            type="button"
                             className="btn btn-sm btn-primary"
                             onClick={() => setDialog('include')}
                         >
-                            Include selected
+                            Include
                         </button>
                         <button
                             type="button"
                             className="btn btn-sm btn-danger"
                             onClick={() => setDialog('exclude')}
                         >
-                            Exclude selected
+                            Exclude
                         </button>
                     </div>
                 </div>
@@ -462,6 +488,18 @@ export function RosterView({
                     runIds={selectedRunIds}
                     onDone={afterMutation}
                     onClose={() => setDialog(null)}
+                />
+            )}
+            {verdictAction && (
+                <VerdictDialog
+                    gameSlug={gameSlug}
+                    action={verdictAction}
+                    runIds={selectedRunIds}
+                    onDone={() => {
+                        setVerdictAction(null);
+                        afterMutation();
+                    }}
+                    onClose={() => setVerdictAction(null)}
                 />
             )}
             {manualRow && categoryId != null && (

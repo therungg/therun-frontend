@@ -3,11 +3,15 @@
 import { useMemo, useState } from 'react';
 import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
-import type { UserEligibleRunRow } from '../../../../../../../../types/moderation.types';
+import type {
+    UserEligibleRunRow,
+    VerdictAction,
+} from '../../../../../../../../types/moderation.types';
 import type { ExcludeTarget } from '../../shared/actions/exclude.action';
 import { ExcludeDialog } from '../../shared/exclude-dialog';
 import { IncludeDialog } from '../../shared/include-dialog';
 import { ManualTimeDialog } from '../../shared/manual-time-dialog';
+import { VerdictDialog } from '../../shared/verdict-dialog';
 
 interface Props {
     gameSlug: string;
@@ -62,6 +66,7 @@ export function RunnerView({ gameSlug, gameDisplay, userId, rows }: Props) {
         | { kind: 'exclude'; target: ExcludeTarget }
         | { kind: 'include' }
         | { kind: 'manual'; group: Group }
+        | { kind: 'verdict'; action: VerdictAction }
         | null
     >(null);
 
@@ -351,10 +356,40 @@ export function RunnerView({ gameSlug, gameDisplay, userId, rows }: Props) {
                         </button>
                         <button
                             type="button"
+                            className="btn btn-sm btn-outline-success"
+                            onClick={() =>
+                                setDialog({ kind: 'verdict', action: 'verify' })
+                            }
+                        >
+                            Verify
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() =>
+                                setDialog({ kind: 'verdict', action: 'reject' })
+                            }
+                        >
+                            Reject
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() =>
+                                setDialog({
+                                    kind: 'verdict',
+                                    action: 'unreject',
+                                })
+                            }
+                        >
+                            Un-reject
+                        </button>
+                        <button
+                            type="button"
                             className="btn btn-sm btn-primary"
                             onClick={() => setDialog({ kind: 'include' })}
                         >
-                            Include selected runs
+                            Include
                         </button>
                         <button
                             type="button"
@@ -366,7 +401,7 @@ export function RunnerView({ gameSlug, gameDisplay, userId, rows }: Props) {
                                 })
                             }
                         >
-                            Exclude selected runs
+                            Exclude
                         </button>
                     </div>
                 </div>
@@ -396,6 +431,15 @@ export function RunnerView({ gameSlug, gameDisplay, userId, rows }: Props) {
                     categoryId={dialog.group.categoryId}
                     categoryLabel={dialog.group.categoryName}
                     subcategoryKey={dialog.group.subKey}
+                    onDone={afterMutation}
+                    onClose={() => setDialog(null)}
+                />
+            )}
+            {dialog?.kind === 'verdict' && (
+                <VerdictDialog
+                    gameSlug={gameSlug}
+                    action={dialog.action}
+                    runIds={selectedRunIds}
                     onDone={afterMutation}
                     onClose={() => setDialog(null)}
                 />
