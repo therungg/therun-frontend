@@ -80,6 +80,8 @@ export function LeaderboardRow({
                     <RowActionsMenu
                         entry={entry}
                         sessionUsername={sessionUsername}
+                        canManage={canManage}
+                        gameSlug={gameSlug}
                     />
                     {showManageButton && (
                         <Link

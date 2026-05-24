@@ -53,3 +53,5 @@ The backend isn't deployed, so no live E2E. Verification per phase = `npm run ty
 - 2026-05-24: Branch created; backend contract extracted; foundation built.
 - 2026-05-24: P1 (mass-management UI, via subagent) + P9 (notifications) + P7/P8/P10 row actions landed. Foundation typechecks clean (pre-existing errors in unrelated files only).
 - 2026-05-24: P2 (manual times) + P3 (bulk verdicts) direct; P4/P6 (triage+reports) + P5 (policies) via subagents; P7 self-claim. **All 10 phases complete.** Whole moderation surface typechecks + Biome clean.
+- 2026-05-24: Verified backend deploy state — handlers live but API Gateway routes for the new subtrees not yet registered (probed `api.therun.gg`); gateway wiring left to the backend (documented above).
+- 2026-05-24: Enhancement — inline mod actions on the public leaderboard (the vision's "board-inline" entry point): Verify / Reject / Exclude a run from the row Actions menu when you can moderate the game.
