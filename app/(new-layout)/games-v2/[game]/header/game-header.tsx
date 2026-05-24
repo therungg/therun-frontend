@@ -9,9 +9,10 @@ interface Props {
     game: ResolvedGame;
     stats: QuickStats;
     canManage?: boolean;
+    canModerate?: boolean;
 }
 
-export function GameHeader({ game, stats, canManage }: Props) {
+export function GameHeader({ game, stats, canManage, canModerate }: Props) {
     return (
         <header className="d-flex align-items-center gap-3 mb-3">
             {game.image && (
@@ -32,14 +33,24 @@ export function GameHeader({ game, stats, canManage }: Props) {
                     <DurationToFormatted duration={stats.totalRunTime} /> total
                 </small>
             </div>
-            {canManage && (
+            {(canManage || canModerate) && (
                 <div className="ms-auto d-flex gap-2">
-                    <Link
-                        href={`/games-v2/${game.name}/manage`}
-                        className="btn btn-sm btn-outline-secondary"
-                    >
-                        Manage
-                    </Link>
+                    {canModerate && (
+                        <Link
+                            href={`/games-v2/${game.name}/manage/moderation`}
+                            className="btn btn-sm btn-outline-secondary"
+                        >
+                            Moderate
+                        </Link>
+                    )}
+                    {canManage && (
+                        <Link
+                            href={`/games-v2/${game.name}/manage`}
+                            className="btn btn-sm btn-outline-secondary"
+                        >
+                            Manage
+                        </Link>
+                    )}
                 </div>
             )}
         </header>
