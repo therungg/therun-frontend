@@ -7,9 +7,28 @@ interface Props {
     gameSlug: string;
     gameDisplay: string;
     categories: Array<{ id: number; display: string }>;
+    counts: {
+        queue: number | null;
+        reports: number | null;
+        pendingClaims: number | null;
+    };
 }
 
-export function ModerationHub({ gameSlug, gameDisplay, categories }: Props) {
+function CountBadge({ n }: { n: number | null }) {
+    if (!n || n <= 0) return null;
+    return (
+        <span className="badge rounded-pill text-bg-danger">
+            {n > 99 ? '99+' : n}
+        </span>
+    );
+}
+
+export function ModerationHub({
+    gameSlug,
+    gameDisplay,
+    categories,
+    counts,
+}: Props) {
     const router = useRouter();
     const baseHref = `/games-v2/${gameSlug}/manage/moderation`;
 
@@ -32,7 +51,9 @@ export function ModerationHub({ gameSlug, gameDisplay, categories }: Props) {
                         className="card h-100 text-decoration-none text-reset"
                     >
                         <div className="card-body">
-                            <h2 className="h6">Triage queue</h2>
+                            <h2 className="h6 d-flex justify-content-between align-items-center gap-2">
+                                Triage queue <CountBadge n={counts.queue} />
+                            </h2>
                             <p className="text-muted small mb-0">
                                 Flagged runs needing review — impossible times,
                                 missing VOD, reports, and pending self-claims.
@@ -46,7 +67,9 @@ export function ModerationHub({ gameSlug, gameDisplay, categories }: Props) {
                         className="card h-100 text-decoration-none text-reset"
                     >
                         <div className="card-body">
-                            <h2 className="h6">Reports</h2>
+                            <h2 className="h6 d-flex justify-content-between align-items-center gap-2">
+                                Reports <CountBadge n={counts.reports} />
+                            </h2>
                             <p className="text-muted small mb-0">
                                 User-submitted reports of suspicious runs
                                 awaiting review.
@@ -60,7 +83,10 @@ export function ModerationHub({ gameSlug, gameDisplay, categories }: Props) {
                         className="card h-100 text-decoration-none text-reset"
                     >
                         <div className="card-body">
-                            <h2 className="h6">Manual times</h2>
+                            <h2 className="h6 d-flex justify-content-between align-items-center gap-2">
+                                Manual times{' '}
+                                <CountBadge n={counts.pendingClaims} />
+                            </h2>
                             <p className="text-muted small mb-0">
                                 Mod- and self-asserted leaderboard times; verify
                                 or reject pending self-claims.
