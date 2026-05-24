@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
+import { RowActionsMenu } from './row-actions-menu';
 
 interface Props {
     entry: LeaderboardEntry;
@@ -10,6 +11,7 @@ interface Props {
     gameSlug: string;
     hideRealTime: boolean;
     hideGameTime: boolean;
+    sessionUsername: string | null;
 }
 
 export function LeaderboardRow({
@@ -19,6 +21,7 @@ export function LeaderboardRow({
     gameSlug,
     hideRealTime,
     hideGameTime,
+    sessionUsername,
 }: Props) {
     const showManageButton = canManage && entry.runId != null && !entry.isGuest;
 
@@ -58,16 +61,35 @@ export function LeaderboardRow({
                     </a>
                 ) : null}
             </td>
-            <td>{entry.verificationStatus === 'verified' ? '✓' : ''}</td>
             <td>
-                {showManageButton ? (
-                    <Link
-                        href={`/games-v2/${gameSlug}/manage/run/${entry.runId}`}
-                        className="btn btn-sm btn-outline-secondary"
+                {entry.source === 'manual' ? (
+                    <span
+                        className="badge text-bg-info"
+                        title="A moderator-set leaderboard time"
                     >
-                        Manage
-                    </Link>
-                ) : null}
+                        set time
+                    </span>
+                ) : entry.verificationStatus === 'verified' ? (
+                    '✓'
+                ) : (
+                    ''
+                )}
+            </td>
+            <td className="text-end">
+                <div className="d-flex gap-1 justify-content-end">
+                    <RowActionsMenu
+                        entry={entry}
+                        sessionUsername={sessionUsername}
+                    />
+                    {showManageButton && (
+                        <Link
+                            href={`/games-v2/${gameSlug}/manage/run/${entry.runId}`}
+                            className="btn btn-sm btn-outline-secondary"
+                        >
+                            Manage
+                        </Link>
+                    )}
+                </div>
             </td>
         </tr>
     );
