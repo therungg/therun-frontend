@@ -41,6 +41,7 @@ export function GamePage({ data, canManage, canManageRuns }: Props) {
                     game={data.game}
                     stats={data.quickStats}
                     canManage={canManage}
+                    canModerate={canManageRuns}
                 />
                 <p className="text-center text-muted my-5">
                     No runs uploaded for this game yet.
@@ -55,6 +56,7 @@ export function GamePage({ data, canManage, canManageRuns }: Props) {
                 game={data.game}
                 stats={data.quickStats}
                 canManage={canManage}
+                canModerate={canManageRuns}
             />
             <CategoryPills
                 categories={data.categories}
