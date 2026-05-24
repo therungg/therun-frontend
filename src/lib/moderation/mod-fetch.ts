@@ -23,14 +23,20 @@ export interface ModFetchOptions {
 }
 
 function buildUrl(path: string, query?: ModFetchOptions['query']): string {
-    if (!query) return `${BASE_URL}${path}`;
+    // Moderation endpoints are exposed under a `/mod` base-path mapping on the
+    // custom domain (api.therun.gg/mod/...). API Gateway strips `/mod`, so the
+    // Lambda's api-entry.ts sees the normal `/v1/...` path and dispatches as
+    // usual. This applies to every modFetch + meFetch caller. (Same custom-domain
+    // multi-segment base-path limitation that put reassignment under its own path.)
+    const prefixed = `/mod${path}`;
+    if (!query) return `${BASE_URL}${prefixed}`;
     const sp = new URLSearchParams();
     for (const [k, v] of Object.entries(query)) {
         if (v === undefined || v === null || v === '') continue;
         sp.set(k, String(v));
     }
     const qs = sp.toString();
-    return `${BASE_URL}${path}${qs ? `?${qs}` : ''}`;
+    return `${BASE_URL}${prefixed}${qs ? `?${qs}` : ''}`;
 }
 
 async function rawFetch(
