@@ -26,7 +26,49 @@ export function ModerationHub({ gameSlug, gameDisplay, categories }: Props) {
             </div>
 
             <div className="row g-3 mb-4">
-                <div className="col-md-6">
+                <div className="col-md-4">
+                    <Link
+                        href={`${baseHref}/queue`}
+                        className="card h-100 text-decoration-none text-reset"
+                    >
+                        <div className="card-body">
+                            <h2 className="h6">Triage queue</h2>
+                            <p className="text-muted small mb-0">
+                                Flagged runs needing review — impossible times,
+                                missing VOD, reports, and pending self-claims.
+                            </p>
+                        </div>
+                    </Link>
+                </div>
+                <div className="col-md-4">
+                    <Link
+                        href={`${baseHref}/reports`}
+                        className="card h-100 text-decoration-none text-reset"
+                    >
+                        <div className="card-body">
+                            <h2 className="h6">Reports</h2>
+                            <p className="text-muted small mb-0">
+                                User-submitted reports of suspicious runs
+                                awaiting review.
+                            </p>
+                        </div>
+                    </Link>
+                </div>
+                <div className="col-md-4">
+                    <Link
+                        href={`${baseHref}/manual-times`}
+                        className="card h-100 text-decoration-none text-reset"
+                    >
+                        <div className="card-body">
+                            <h2 className="h6">Manual times</h2>
+                            <p className="text-muted small mb-0">
+                                Mod- and self-asserted leaderboard times; verify
+                                or reject pending self-claims.
+                            </p>
+                        </div>
+                    </Link>
+                </div>
+                <div className="col-md-4">
                     <Link
                         href={`${baseHref}/rules`}
                         className="card h-100 text-decoration-none text-reset"
@@ -40,7 +82,21 @@ export function ModerationHub({ gameSlug, gameDisplay, categories }: Props) {
                         </div>
                     </Link>
                 </div>
-                <div className="col-md-6">
+                <div className="col-md-4">
+                    <Link
+                        href={`${baseHref}/policies`}
+                        className="card h-100 text-decoration-none text-reset"
+                    >
+                        <div className="card-body">
+                            <h2 className="h6">Board policies</h2>
+                            <p className="text-muted small mb-0">
+                                Minimum/maximum times, video requirements, and
+                                auto-flag thresholds.
+                            </p>
+                        </div>
+                    </Link>
+                </div>
+                <div className="col-md-4">
                     <Link
                         href={`${baseHref}/log`}
                         className="card h-100 text-decoration-none text-reset"
