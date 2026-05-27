@@ -19,6 +19,7 @@ import {
     resolveRemoveMechanism,
 } from './action-model';
 import { excludeAction, previewExcludeAction } from './actions/exclude.action';
+import { restoreRunsAction } from './actions/restore.action';
 import {
     applyVerdictsAction,
     previewVerdictsAction,
@@ -30,6 +31,8 @@ interface Props {
     target: RunActionTarget;
     onDone: () => void;
     onClose: () => void;
+    /** Initial ban scope for a `ban` verb (default 'category'). */
+    defaultBanScope?: BanScope;
 }
 
 const MIN_REASON = 10;
@@ -51,12 +54,13 @@ export function RunActionDialog({
     target,
     onDone,
     onClose,
+    defaultBanScope,
 }: Props) {
     const [reasonCat, setReasonCat] = useState<RemoveReason>('cheating');
     const [notify, setNotify] = useState<boolean>(
         removeReasonMeta('cheating').defaultNotify,
     );
-    const [scope, setScope] = useState<BanScope>('category');
+    const [scope, setScope] = useState<BanScope>(defaultBanScope ?? 'category');
     const [reason, setReason] = useState('');
     const [preview, setPreview] = useState<PreviewState | null>(null);
     const [previewError, setPreviewError] = useState<string | null>(null);
@@ -74,9 +78,11 @@ export function RunActionDialog({
               }
             : null;
 
-    // Map the verb (+ notify for Remove) to a verdict action, or null when the
-    // route is an exclude instead.
-    const verdictAction: VerdictAction | null =
+    // Map the verb (+ notify for Remove) to a verdict action for the PREVIEW
+    // request, or null when the route is an exclude instead. `restore` previews
+    // as 'unreject' (shows which runs come back); its CONFIRM goes through
+    // restoreRunsAction (include + unreject) instead — see handleConfirm.
+    const previewVerdictAction: VerdictAction | null =
         verb === 'approve'
             ? 'verify'
             : verb === 'restore'
@@ -84,6 +90,10 @@ export function RunActionDialog({
               : verb === 'remove' && resolveRemoveMechanism(notify) === 'reject'
                 ? 'reject'
                 : null;
+
+    // For CONFIRM, restore is NOT a plain verdict apply — exclude it here.
+    const confirmVerdictAction: VerdictAction | null =
+        verb === 'restore' ? null : previewVerdictAction;
 
     const loadPreview = useCallback(() => {
         startPreview(async () => {
@@ -95,10 +105,10 @@ export function RunActionDialog({
                 if ('error' in res) return setPreviewError(res.error);
                 return setPreview({ kind: 'exclude', data: res.preview });
             }
-            if (verdictAction) {
+            if (previewVerdictAction) {
                 const res = await previewVerdictsAction(
                     gameSlug,
-                    verdictAction,
+                    previewVerdictAction,
                     runIds,
                 );
                 if ('error' in res) return setPreviewError(res.error);
@@ -145,10 +155,16 @@ export function RunActionDialog({
                 );
                 return onDone();
             }
-            if (verdictAction) {
+            if (verb === 'restore') {
+                const res = await restoreRunsAction(gameSlug, runIds, trimmed);
+                if ('error' in res) return setError(res.error);
+                toast.success('Restored.');
+                return onDone();
+            }
+            if (confirmVerdictAction) {
                 const res = await applyVerdictsAction(
                     gameSlug,
-                    verdictAction,
+                    confirmVerdictAction,
                     runIds,
                     trimmed,
                 );
