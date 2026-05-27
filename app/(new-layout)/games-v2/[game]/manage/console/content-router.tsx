@@ -168,6 +168,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     Pick a category.
                 </Placeholder>
             );
+        // All three items live inside the single GameTab component.
         case 'groups':
         case 'categories-visibility':
         case 'identifiers':
@@ -186,7 +187,7 @@ export function ContentRouter(props: ContentRouterProps) {
             );
         case 'game-details':
             return (
-                <Placeholder title="Details &amp; metadata">
+                <Placeholder title="Details & metadata">
                     Coming in a later phase.
                 </Placeholder>
             );

@@ -88,7 +88,9 @@ const ALL_GROUPS: NavGroup[] = [
         id: 'per-category',
         label: 'Per category',
         items: [
-            { id: 'standards', label: 'Standards', categoryScoped: true },
+            // Standards self-manages its own category selector, so it is NOT
+            // categoryScoped (it ignores the shell's selected category).
+            { id: 'standards', label: 'Standards', categoryScoped: false },
             { id: 'timing', label: 'Timing', categoryScoped: true },
             { id: 'rules', label: 'Rules', categoryScoped: true },
             { id: 'variables', label: 'Variables', categoryScoped: true },
