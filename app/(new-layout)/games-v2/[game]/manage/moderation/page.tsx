@@ -5,7 +5,9 @@ import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { listManualTimes } from '~src/lib/moderation/manual-times';
 import { listGameReports } from '~src/lib/moderation/reports';
 import { listQueue } from '~src/lib/moderation/triage';
-import { ModerationHub } from './moderation-hub';
+import { defineAbilityFor } from '~src/rbac/ability';
+import { mergeAttention } from './attention/attention-model';
+import { ModerationTabs } from './moderation-tabs';
 
 interface Props {
     params: Promise<{ game: string }>;
@@ -26,30 +28,43 @@ export default async function ModerationHubPage({ params }: Props) {
     const [{ categories }, queueItems, reports, manualTimes] =
         await Promise.all([
             resolveCategory(game.id),
-            // Attention counts — best-effort; null while the routes are
-            // unreachable, so the hub renders no badge rather than erroring.
+            // Inbox sources — best-effort; coerced to [] so a single
+            // unreachable route degrades gracefully rather than erroring.
             listQueue(sessionId, game.id, { limit: 200 }).catch(() => null),
             listGameReports(sessionId, game.id).catch(() => null),
             listManualTimes(sessionId, game.id).catch(() => null),
         ]);
 
+    const categoryById = new Map(categories.map((c) => [c.id, c.display]));
+    const categoryName = (id: number) =>
+        categoryById.get(id) ?? `Category ${id}`;
+
+    const pendingClaims = (manualTimes ?? []).filter(
+        (m) => m.verificationStatus === 'pending',
+    );
+
+    const items = mergeAttention(
+        queueItems ?? [],
+        reports ?? [],
+        pendingClaims,
+        categoryName,
+    );
+
+    // board-admins uniquely hold `edit` on `moderators` (board-moderators and
+    // per-game moderators do not), so it cleanly expresses the Configure gate.
+    // TODO Phase 4: tighten/confirm to board-admin once Configure is built out.
+    const canConfigure = defineAbilityFor(session).can('edit', 'moderators');
+
     return (
-        <ModerationHub
+        <ModerationTabs
             gameSlug={game.name}
             gameDisplay={game.display}
+            canConfigure={canConfigure}
+            items={items}
             categories={categories.map((c) => ({
                 id: c.id,
                 display: c.display,
             }))}
-            counts={{
-                queue: queueItems?.length ?? null,
-                reports: reports?.length ?? null,
-                pendingClaims: manualTimes
-                    ? manualTimes.filter(
-                          (m) => m.verificationStatus === 'pending',
-                      ).length
-                    : null,
-            }}
         />
     );
 }
