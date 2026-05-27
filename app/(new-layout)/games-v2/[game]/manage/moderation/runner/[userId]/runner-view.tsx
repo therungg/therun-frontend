@@ -1,22 +1,19 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
-import type {
-    UserEligibleRunRow,
-    VerdictAction,
-} from '../../../../../../../../types/moderation.types';
-import type { ExcludeTarget } from '../../shared/actions/exclude.action';
-import { ExcludeDialog } from '../../shared/exclude-dialog';
-import { IncludeDialog } from '../../shared/include-dialog';
+import type { UserEligibleRunRow } from '../../../../../../../../types/moderation.types';
+import type { ModVerb, RunActionTarget } from '../../shared/action-model';
 import { ManualTimeDialog } from '../../shared/manual-time-dialog';
-import { VerdictDialog } from '../../shared/verdict-dialog';
+import { RunActionDialog } from '../../shared/run-action-dialog';
 
 interface Props {
     gameSlug: string;
     gameDisplay: string;
     userId: number;
+    runnerName: string;
     rows: UserEligibleRunRow[];
 }
 
@@ -26,6 +23,17 @@ interface Group {
     subKey: string;
     rows: UserEligibleRunRow[];
 }
+
+/** A run-action dialog invocation (kind:'runs' or kind:'runner' ban). */
+type DialogState =
+    | {
+          kind: 'action';
+          verb: ModVerb;
+          target: RunActionTarget;
+          banScope?: 'game';
+      }
+    | { kind: 'manual'; group: Group }
+    | null;
 
 function groupRows(rows: UserEligibleRunRow[]): Group[] {
     const map = new Map<string, Group>();
@@ -50,7 +58,14 @@ function groupRows(rows: UserEligibleRunRow[]): Group[] {
     );
 }
 
-export function RunnerView({ gameSlug, gameDisplay, userId, rows }: Props) {
+export function RunnerView({
+    gameSlug,
+    gameDisplay,
+    userId,
+    runnerName,
+    rows,
+}: Props) {
+    const router = useRouter();
     const baseHref = `/games-v2/${gameSlug}/manage/moderation`;
     const groups = useMemo(() => groupRows(rows), [rows]);
 
@@ -62,13 +77,7 @@ export function RunnerView({ gameSlug, gameDisplay, userId, rows }: Props) {
 
     const [categoryFilter, setCategoryFilter] = useState<number | 'all'>('all');
     const [selected, setSelected] = useState<Set<number>>(new Set());
-    const [dialog, setDialog] = useState<
-        | { kind: 'exclude'; target: ExcludeTarget }
-        | { kind: 'include' }
-        | { kind: 'manual'; group: Group }
-        | { kind: 'verdict'; action: VerdictAction }
-        | null
-    >(null);
+    const [dialog, setDialog] = useState<DialogState>(null);
 
     const visibleGroups =
         categoryFilter === 'all'
@@ -76,6 +85,15 @@ export function RunnerView({ gameSlug, gameDisplay, userId, rows }: Props) {
             : groups.filter((g) => g.categoryId === categoryFilter);
 
     const selectedRunIds = useMemo(() => Array.from(selected), [selected]);
+
+    // All visible rows (respects the category filter) — drives "Remove all".
+    const visibleRunIds = useMemo(
+        () => visibleGroups.flatMap((g) => g.rows.map((r) => r.runId)),
+        [visibleGroups],
+    );
+
+    // For a ban target we need a category — use the first visible group's.
+    const firstVisibleGroup = visibleGroups[0];
 
     const toggleRow = (runId: number) => {
         setSelected((prev) => {
@@ -97,29 +115,85 @@ export function RunnerView({ gameSlug, gameDisplay, userId, rows }: Props) {
         });
     };
 
+    const banTarget = (): RunActionTarget | null => {
+        if (!firstVisibleGroup) return null;
+        return {
+            kind: 'runner',
+            runnerId: userId,
+            runnerName,
+            categoryId: firstVisibleGroup.categoryId,
+            categoryDisplay: firstVisibleGroup.categoryName,
+            gameDisplay,
+        };
+    };
+
+    const openBan = () => {
+        const target = banTarget();
+        if (!target) return;
+        setDialog({ kind: 'action', verb: 'ban', target, banScope: 'game' });
+    };
+
+    const openRunsAction = (verb: ModVerb, runIds: number[], label: string) => {
+        if (runIds.length === 0) return;
+        setDialog({
+            kind: 'action',
+            verb,
+            target: { kind: 'runs', runIds, label },
+        });
+    };
+
     const afterMutation = () => {
         setDialog(null);
-        // Rows came from the server; reload to reflect the change.
-        window.location.reload();
+        setSelected(new Set());
+        // Rows came from the server; refresh to reflect the change.
+        router.refresh();
     };
+
+    const showBanNudge = selected.size >= 3;
 
     return (
         <div className="container py-3">
-            <div className="d-flex align-items-center justify-content-between mb-3">
+            <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
                 <h1 className="h4 mb-0">
-                    Runner <span className="text-muted">#{userId}</span>{' '}
+                    {runnerName}{' '}
                     <span className="text-muted fs-6">in {gameDisplay}</span>
                 </h1>
-                <Link
-                    href={baseHref}
-                    className="btn btn-sm btn-outline-secondary"
-                >
-                    Back to moderation
-                </Link>
+                <div className="d-flex flex-wrap gap-2">
+                    {firstVisibleGroup && (
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-danger"
+                            onClick={openBan}
+                        >
+                            Ban runner…
+                        </button>
+                    )}
+                    {visibleRunIds.length > 0 && (
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() =>
+                                openRunsAction(
+                                    'remove',
+                                    visibleRunIds,
+                                    `all of ${runnerName}'s ${visibleRunIds.length} runs`,
+                                )
+                            }
+                        >
+                            Remove all {visibleRunIds.length} runs
+                        </button>
+                    )}
+                    <Link
+                        href={baseHref}
+                        className="btn btn-sm btn-outline-secondary"
+                    >
+                        Back to moderation
+                    </Link>
+                </div>
             </div>
 
-            <div className="border rounded p-3 mb-3 d-flex flex-wrap align-items-end gap-2">
-                {distinctCategories.length > 1 && (
+            {distinctCategories.length > 1 && (
+                <div className="border rounded p-3 mb-3 d-flex flex-wrap align-items-end gap-2">
                     <div>
                         <label
                             htmlFor="runner-category"
@@ -148,47 +222,8 @@ export function RunnerView({ gameSlug, gameDisplay, userId, rows }: Props) {
                             ))}
                         </select>
                     </div>
-                )}
-                <div className="ms-auto d-flex gap-2">
-                    {categoryFilter !== 'all' && (
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-outline-danger"
-                            onClick={() =>
-                                setDialog({
-                                    kind: 'exclude',
-                                    target: {
-                                        rule: {
-                                            type: 'user',
-                                            targetId: userId,
-                                            categoryId: categoryFilter,
-                                        },
-                                    },
-                                })
-                            }
-                        >
-                            Exclude from{' '}
-                            {distinctCategories.find(
-                                (c) => c.id === categoryFilter,
-                            )?.name ?? 'category'}
-                        </button>
-                    )}
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-danger"
-                        onClick={() =>
-                            setDialog({
-                                kind: 'exclude',
-                                target: {
-                                    rule: { type: 'user', targetId: userId },
-                                },
-                            })
-                        }
-                    >
-                        Exclude this user from the whole game
-                    </button>
                 </div>
-            </div>
+            )}
 
             {visibleGroups.length === 0 ? (
                 <p className="text-muted">
@@ -340,6 +375,25 @@ export function RunnerView({ gameSlug, gameDisplay, userId, rows }: Props) {
                 })
             )}
 
+            {showBanNudge && (
+                <div className="alert alert-info d-flex flex-wrap align-items-center gap-2 py-2">
+                    <span className="mb-0">
+                        Removing many of {runnerName}'s runs?{' '}
+                        <strong>Banning {runnerName}</strong> also covers their
+                        future uploads.
+                    </span>
+                    {firstVisibleGroup && (
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-danger ms-auto"
+                            onClick={openBan}
+                        >
+                            Ban {runnerName} instead…
+                        </button>
+                    )}
+                </div>
+            )}
+
             {selected.size > 0 && (
                 <div
                     className="border-top bg-body shadow-lg p-2 d-flex align-items-center gap-2"
@@ -356,69 +410,53 @@ export function RunnerView({ gameSlug, gameDisplay, userId, rows }: Props) {
                         </button>
                         <button
                             type="button"
-                            className="btn btn-sm btn-outline-success"
+                            className="btn btn-sm btn-success"
                             onClick={() =>
-                                setDialog({ kind: 'verdict', action: 'verify' })
+                                openRunsAction(
+                                    'approve',
+                                    selectedRunIds,
+                                    `${selectedRunIds.length} runs`,
+                                )
                             }
                         >
-                            Verify
-                        </button>
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-outline-danger"
-                            onClick={() =>
-                                setDialog({ kind: 'verdict', action: 'reject' })
-                            }
-                        >
-                            Reject
-                        </button>
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-outline-secondary"
-                            onClick={() =>
-                                setDialog({
-                                    kind: 'verdict',
-                                    action: 'unreject',
-                                })
-                            }
-                        >
-                            Un-reject
-                        </button>
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-primary"
-                            onClick={() => setDialog({ kind: 'include' })}
-                        >
-                            Include
+                            Approve
                         </button>
                         <button
                             type="button"
                             className="btn btn-sm btn-danger"
                             onClick={() =>
-                                setDialog({
-                                    kind: 'exclude',
-                                    target: { runIds: selectedRunIds },
-                                })
+                                openRunsAction(
+                                    'remove',
+                                    selectedRunIds,
+                                    `${selectedRunIds.length} runs`,
+                                )
                             }
                         >
-                            Exclude
+                            Remove…
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() =>
+                                openRunsAction(
+                                    'restore',
+                                    selectedRunIds,
+                                    `${selectedRunIds.length} runs`,
+                                )
+                            }
+                        >
+                            Restore
                         </button>
                     </div>
                 </div>
             )}
 
-            {dialog?.kind === 'exclude' && (
-                <ExcludeDialog
+            {dialog?.kind === 'action' && (
+                <RunActionDialog
                     gameSlug={gameSlug}
+                    verb={dialog.verb}
                     target={dialog.target}
-                    onDone={afterMutation}
-                    onClose={() => setDialog(null)}
-                />
-            )}
-            {dialog?.kind === 'include' && (
-                <IncludeDialog
-                    gameSlug={gameSlug}
-                    runIds={selectedRunIds}
+                    defaultBanScope={dialog.banScope}
                     onDone={afterMutation}
                     onClose={() => setDialog(null)}
                 />
@@ -427,19 +465,10 @@ export function RunnerView({ gameSlug, gameDisplay, userId, rows }: Props) {
                 <ManualTimeDialog
                     gameSlug={gameSlug}
                     runnerRef={{ userId }}
-                    runnerLabel={`Runner #${userId}`}
+                    runnerLabel={runnerName}
                     categoryId={dialog.group.categoryId}
                     categoryLabel={dialog.group.categoryName}
                     subcategoryKey={dialog.group.subKey}
-                    onDone={afterMutation}
-                    onClose={() => setDialog(null)}
-                />
-            )}
-            {dialog?.kind === 'verdict' && (
-                <VerdictDialog
-                    gameSlug={gameSlug}
-                    action={dialog.action}
-                    runIds={selectedRunIds}
                     onDone={afterMutation}
                     onClose={() => setDialog(null)}
                 />
