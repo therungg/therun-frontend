@@ -72,7 +72,13 @@ export function mergeAttention(
         prev.sources = Array.from(new Set([...prev.sources, ...next.sources]));
         prev.severity = maxSeverity(prev.severity, next.severity);
         if (next.createdAt < prev.createdAt) prev.createdAt = next.createdAt;
-        prev.note = prev.note ?? next.note;
+        // Prefer a human-written reason (report/appeal) over a machine flag
+        // detail, so the moderator sees why a person flagged the run.
+        const nextIsHuman =
+            next.sources.includes('report') || next.sources.includes('appeal');
+        prev.note = nextIsHuman
+            ? (next.note ?? prev.note)
+            : (prev.note ?? next.note);
         prev.vodUrl = prev.vodUrl ?? next.vodUrl;
     };
 
