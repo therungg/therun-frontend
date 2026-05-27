@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { RunDetail } from '../../../../../../../types/leaderboards.types';
-import { ExcludeUserControl } from './exclude-user-control';
-import { RejectControl } from './reject-control';
+import type { ModVerb } from '../../moderation/shared/action-model';
+import { RunActionDialog } from '../../moderation/shared/run-action-dialog';
 
 interface Props {
     run: RunDetail;
@@ -57,6 +59,8 @@ function VariablesLine({ vars }: { vars: Record<string, string> }) {
 }
 
 export function RunCard({ run, gameSlug, canExcludeUsers }: Props) {
+    const router = useRouter();
+    const [modVerb, setModVerb] = useState<ModVerb | null>(null);
     const isRejected = run.verificationStatus === 'rejected';
     const canExcludeThisRunner =
         canExcludeUsers && !run.isGuest && run.userId != null;
@@ -111,37 +115,75 @@ export function RunCard({ run, gameSlug, canExcludeUsers }: Props) {
 
             <hr className="my-3" />
 
-            {isRejected ? (
-                <div className="d-flex align-items-center gap-3">
+            <div className="d-flex flex-wrap align-items-center gap-2">
+                {isRejected && (
                     <span className="text-muted small">
                         This run has already been rejected.
                     </span>
+                )}
+                <div className="d-flex gap-2 justify-content-end ms-auto">
+                    {!isRejected && (
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-danger"
+                            onClick={() => setModVerb('remove')}
+                        >
+                            Remove run…
+                        </button>
+                    )}
+                    {isRejected && (
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => setModVerb('restore')}
+                        >
+                            Restore run
+                        </button>
+                    )}
+                    {canExcludeThisRunner && run.userId != null && (
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() => setModVerb('ban')}
+                        >
+                            Ban runner…
+                        </button>
+                    )}
                     <Link
                         href={`/games-v2/${gameSlug}`}
-                        className="btn btn-sm btn-outline-secondary ms-auto"
+                        className="btn btn-sm btn-outline-secondary"
                     >
                         Back to leaderboard
                     </Link>
                 </div>
-            ) : (
-                <div className="d-flex flex-column gap-3">
-                    <RejectControl
-                        runId={run.runId}
-                        gameSlug={gameSlug}
-                        categoryId={run.categoryId}
-                        subcategoryKey={run.subcategoryKey}
-                    />
-                    {canExcludeThisRunner && run.userId != null && (
-                        <ExcludeUserControl
-                            gameSlug={gameSlug}
-                            userId={run.userId}
-                            categoryId={run.categoryId}
-                            runnerName={run.runnerName}
-                            gameDisplay={run.gameDisplay}
-                            categoryDisplay={run.categoryDisplay}
-                        />
-                    )}
-                </div>
+            </div>
+
+            {modVerb && (
+                <RunActionDialog
+                    gameSlug={gameSlug}
+                    verb={modVerb}
+                    target={
+                        modVerb === 'ban'
+                            ? {
+                                  kind: 'runner',
+                                  runnerId: run.userId as number,
+                                  runnerName: run.runnerName,
+                                  categoryId: run.categoryId,
+                                  categoryDisplay: run.categoryDisplay,
+                                  gameDisplay: run.gameDisplay,
+                              }
+                            : {
+                                  kind: 'runs',
+                                  runIds: [run.runId],
+                                  label: `${run.runnerName}'s run`,
+                              }
+                    }
+                    onDone={() => {
+                        setModVerb(null);
+                        router.refresh();
+                    }}
+                    onClose={() => setModVerb(null)}
+                />
             )}
         </section>
     );
