@@ -8,22 +8,26 @@ import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
     LeaderboardRosterRow,
     RosterFilter,
-    VerdictAction,
 } from '../../../../../../../types/moderation.types';
-import { ExcludeDialog } from '../shared/exclude-dialog';
-import { IncludeDialog } from '../shared/include-dialog';
+import type { ModVerb, RunActionTarget } from '../shared/action-model';
 import { ManualTimeDialog } from '../shared/manual-time-dialog';
-import { VerdictDialog } from '../shared/verdict-dialog';
+import { RunActionDialog } from '../shared/run-action-dialog';
 import { loadRosterAction } from './actions/load-roster.action';
 
 type VerificationFilter = 'any' | 'unverified' | 'verified' | 'rejected';
 type VodFilter = 'any' | 'true' | 'false';
+type BoardFilter = 'any' | 'on' | 'off';
 
 interface Props {
     gameSlug: string;
     gameDisplay: string;
     categories: Array<{ id: number; display: string }>;
     initialCategoryId: number | null;
+}
+
+/** Whether a roster row currently appears on either board (RT or GT). */
+function isOnBoard(row: LeaderboardRosterRow): boolean {
+    return row.isLeaderboardEntry || row.isLeaderboardEntryGt;
 }
 
 export function RosterView({
@@ -42,34 +46,50 @@ export function RosterView({
     const [verificationStatus, setVerificationStatus] =
         useState<VerificationFilter>('any');
     const [hasVod, setHasVod] = useState<VodFilter>('any');
+    const [onBoard, setOnBoard] = useState<BoardFilter>('any');
     const [runnerName, setRunnerName] = useState('');
 
     const [rows, setRows] = useState<LeaderboardRosterRow[] | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [selected, setSelected] = useState<Set<number>>(new Set());
-    const [dialog, setDialog] = useState<'exclude' | 'include' | null>(null);
-    const [manualRow, setManualRow] = useState<LeaderboardRosterRow | null>(
-        null,
-    );
-    const [verdictAction, setVerdictAction] = useState<VerdictAction | null>(
-        null,
-    );
+    const [dialog, setDialog] = useState<
+        | { kind: 'action'; verb: ModVerb; target: RunActionTarget }
+        | { kind: 'manual'; row: LeaderboardRosterRow }
+        | null
+    >(null);
     const [isLoading, startLoad] = useTransition();
 
     const selectedRunIds = useMemo(() => Array.from(selected), [selected]);
 
-    // If every selected run belongs to the same registered user, hint that a
-    // standing user-exclusion rule may be a better fit than excluding runs.
-    const ruleHint = useMemo(() => {
-        if (!rows || selected.size < 2) return undefined;
+    // "On board" is a client-side filter — the backend roster endpoint has no
+    // such query param. Account-age and faster-than-WR% filters are NOT added
+    // because LeaderboardRosterRow carries neither field (backend ask, spec §13).
+    const visibleRows = useMemo(() => {
+        if (!rows) return rows;
+        if (onBoard === 'any') return rows;
+        return rows.filter((r) =>
+            onBoard === 'on' ? isOnBoard(r) : !isOnBoard(r),
+        );
+    }, [rows, onBoard]);
+
+    // If every selected run belongs to the same registered user, surface a ban
+    // affordance: a standing user-exclusion rule covers future runs too.
+    const banSubject = useMemo(() => {
+        if (!rows || selected.size < 2) return null;
         const picked = rows.filter((r) => selected.has(r.runId));
         const first = picked[0]?.userId;
-        if (first == null) return undefined;
+        if (first == null) return null;
         const allSameUser = picked.every((r) => r.userId === first);
-        if (!allSameUser) return undefined;
-        const name = picked[0]?.runnerName ?? 'this user';
-        return `All ${picked.length} selected runs belong to ${name}. Consider excluding the user from a runner page instead, to also cover future runs.`;
+        if (!allSameUser) return null;
+        return {
+            userId: first,
+            runnerName: picked[0]?.runnerName ?? 'this runner',
+            count: picked.length,
+        };
     }, [rows, selected]);
+
+    const categoryDisplay =
+        categories.find((c) => c.id === categoryId)?.display ?? 'this category';
 
     const handleLoad = () => {
         if (categoryId == null) return;
@@ -94,13 +114,25 @@ export function RosterView({
     };
 
     const allSelected =
-        rows != null && rows.length > 0 && selected.size === rows.length;
+        visibleRows != null &&
+        visibleRows.length > 0 &&
+        visibleRows.every((r) => selected.has(r.runId));
 
     const toggleAll = () => {
-        if (!rows) return;
-        setSelected(
-            allSelected ? new Set() : new Set(rows.map((r) => r.runId)),
-        );
+        if (!visibleRows) return;
+        if (allSelected) {
+            setSelected((prev) => {
+                const next = new Set(prev);
+                for (const r of visibleRows) next.delete(r.runId);
+                return next;
+            });
+        } else {
+            setSelected((prev) => {
+                const next = new Set(prev);
+                for (const r of visibleRows) next.add(r.runId);
+                return next;
+            });
+        }
     };
 
     const toggleRow = (runId: number) => {
@@ -109,6 +141,35 @@ export function RosterView({
             if (next.has(runId)) next.delete(runId);
             else next.add(runId);
             return next;
+        });
+    };
+
+    const openRunsAction = (verb: ModVerb) => {
+        if (selectedRunIds.length === 0) return;
+        setDialog({
+            kind: 'action',
+            verb,
+            target: {
+                kind: 'runs',
+                runIds: selectedRunIds,
+                label: `${selectedRunIds.length} runs`,
+            },
+        });
+    };
+
+    const openBan = () => {
+        if (!banSubject || categoryId == null) return;
+        setDialog({
+            kind: 'action',
+            verb: 'ban',
+            target: {
+                kind: 'runner',
+                runnerId: banSubject.userId,
+                runnerName: banSubject.runnerName,
+                categoryId,
+                categoryDisplay,
+                gameDisplay,
+            },
         });
     };
 
@@ -132,7 +193,7 @@ export function RosterView({
 
             <div className="border rounded p-3 mb-3">
                 <div className="row g-2 align-items-end">
-                    <div className="col-md-4">
+                    <div className="col-md-3">
                         <label
                             htmlFor="roster-category"
                             className="form-label small text-muted mb-1"
@@ -160,7 +221,7 @@ export function RosterView({
                             ))}
                         </select>
                     </div>
-                    <div className="col-md-3">
+                    <div className="col-md-2">
                         <label
                             htmlFor="roster-subkey"
                             className="form-label small text-muted mb-1"
@@ -221,6 +282,26 @@ export function RosterView({
                     </div>
                     <div className="col-md-2">
                         <label
+                            htmlFor="roster-board"
+                            className="form-label small text-muted mb-1"
+                        >
+                            On board
+                        </label>
+                        <select
+                            id="roster-board"
+                            className="form-select form-select-sm"
+                            value={onBoard}
+                            onChange={(e) =>
+                                setOnBoard(e.target.value as BoardFilter)
+                            }
+                        >
+                            <option value="any">Any</option>
+                            <option value="on">On board</option>
+                            <option value="off">Off board</option>
+                        </select>
+                    </div>
+                    <div className="col-md-2">
+                        <label
                             htmlFor="roster-runner"
                             className="form-label small text-muted mb-1"
                         >
@@ -254,9 +335,9 @@ export function RosterView({
                 </div>
             )}
 
-            {rows != null && (
+            {visibleRows != null && (
                 <>
-                    {rows.length === 0 ? (
+                    {visibleRows.length === 0 ? (
                         <p className="text-muted">
                             No runs match these filters.
                         </p>
@@ -287,7 +368,7 @@ export function RosterView({
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {rows.map((row) => {
+                                    {visibleRows.map((row) => {
                                         const isGuest = row.userId == null;
                                         return (
                                             <tr key={row.runId}>
@@ -363,8 +444,7 @@ export function RosterView({
                                                     )}
                                                 </td>
                                                 <td className="text-center">
-                                                    {(row.isLeaderboardEntry ||
-                                                        row.isLeaderboardEntryGt) && (
+                                                    {isOnBoard(row) && (
                                                         <span
                                                             className="badge text-bg-success"
                                                             title={`On board${
@@ -387,9 +467,10 @@ export function RosterView({
                                                             type="button"
                                                             className="btn btn-sm btn-outline-primary"
                                                             onClick={() =>
-                                                                setManualRow(
+                                                                setDialog({
+                                                                    kind: 'manual',
                                                                     row,
-                                                                )
+                                                                })
                                                             }
                                                         >
                                                             Set time
@@ -418,7 +499,7 @@ export function RosterView({
 
             {selected.size > 0 && (
                 <div
-                    className="border-top bg-body shadow-lg p-2 d-flex align-items-center gap-2"
+                    className="border-top bg-body shadow-lg p-2 d-flex flex-wrap align-items-center gap-2"
                     style={{
                         position: 'sticky',
                         bottom: 0,
@@ -426,6 +507,15 @@ export function RosterView({
                     }}
                 >
                     <span className="fw-bold">{selected.size} selected</span>
+                    {banSubject && (
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={openBan}
+                        >
+                            Ban {banSubject.runnerName} instead…
+                        </button>
+                    )}
                     <div className="ms-auto d-flex gap-2">
                         <button
                             type="button"
@@ -436,91 +526,58 @@ export function RosterView({
                         </button>
                         <button
                             type="button"
-                            className="btn btn-sm btn-outline-success"
-                            onClick={() => setVerdictAction('verify')}
+                            className="btn btn-sm btn-success"
+                            onClick={() => openRunsAction('approve')}
                         >
-                            Verify
-                        </button>
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-outline-danger"
-                            onClick={() => setVerdictAction('reject')}
-                        >
-                            Reject
-                        </button>
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-outline-secondary"
-                            onClick={() => setVerdictAction('unreject')}
-                        >
-                            Un-reject
-                        </button>
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-primary"
-                            onClick={() => setDialog('include')}
-                        >
-                            Include
+                            Approve
                         </button>
                         <button
                             type="button"
                             className="btn btn-sm btn-danger"
-                            onClick={() => setDialog('exclude')}
+                            onClick={() => openRunsAction('remove')}
                         >
-                            Exclude
+                            Remove…
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => openRunsAction('restore')}
+                        >
+                            Restore
                         </button>
                     </div>
                 </div>
             )}
 
-            {dialog === 'exclude' && (
-                <ExcludeDialog
+            {dialog?.kind === 'action' && (
+                <RunActionDialog
                     gameSlug={gameSlug}
-                    target={{ runIds: selectedRunIds }}
-                    ruleHint={ruleHint}
+                    verb={dialog.verb}
+                    target={dialog.target}
+                    defaultBanScope={
+                        dialog.verb === 'ban' ? 'category' : undefined
+                    }
                     onDone={afterMutation}
                     onClose={() => setDialog(null)}
                 />
             )}
-            {dialog === 'include' && (
-                <IncludeDialog
-                    gameSlug={gameSlug}
-                    runIds={selectedRunIds}
-                    onDone={afterMutation}
-                    onClose={() => setDialog(null)}
-                />
-            )}
-            {verdictAction && (
-                <VerdictDialog
-                    gameSlug={gameSlug}
-                    action={verdictAction}
-                    runIds={selectedRunIds}
-                    onDone={() => {
-                        setVerdictAction(null);
-                        afterMutation();
-                    }}
-                    onClose={() => setVerdictAction(null)}
-                />
-            )}
-            {manualRow && categoryId != null && (
+            {dialog?.kind === 'manual' && categoryId != null && (
                 <ManualTimeDialog
                     gameSlug={gameSlug}
                     runnerRef={
-                        manualRow.userId != null
-                            ? { userId: manualRow.userId }
-                            : { guestName: manualRow.runnerName }
+                        dialog.row.userId != null
+                            ? { userId: dialog.row.userId }
+                            : { guestName: dialog.row.runnerName }
                     }
-                    runnerLabel={manualRow.runnerName}
+                    runnerLabel={dialog.row.runnerName}
                     categoryId={categoryId}
-                    categoryLabel={
-                        categories.find((c) => c.id === categoryId)?.display
-                    }
-                    subcategoryKey={manualRow.subcategoryKey}
+                    categoryLabel={categoryDisplay}
+                    subcategoryKey={dialog.row.subcategoryKey}
                     onDone={() => {
-                        setManualRow(null);
+                        setDialog(null);
                         handleLoad();
                     }}
-                    onClose={() => setManualRow(null)}
+                    onClose={() => setDialog(null)}
                 />
             )}
         </div>
