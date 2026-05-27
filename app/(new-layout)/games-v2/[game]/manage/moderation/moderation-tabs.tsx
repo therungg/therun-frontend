@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import Link from '~src/components/link';
 import type { AttentionItem } from './attention/attention-model';
@@ -23,18 +24,44 @@ export function ModerationTabs({
     categories,
 }: Props) {
     const [tab, setTab] = useState<Tab>('moderate');
+    const router = useRouter();
     const baseHref = `/games-v2/${gameSlug}/manage/moderation`;
 
     return (
         <div className="container py-3">
-            <div className="d-flex align-items-center justify-content-between mb-3">
+            <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
                 <h1 className="h4 mb-0">Moderation — {gameDisplay}</h1>
-                <Link
-                    href={`/games-v2/${gameSlug}`}
-                    className="btn btn-sm btn-outline-secondary"
-                >
-                    Back to leaderboards
-                </Link>
+                <div className="d-flex align-items-center gap-2">
+                    {categories.length > 0 && (
+                        <select
+                            className="form-select form-select-sm"
+                            style={{ maxWidth: '16rem' }}
+                            aria-label="Browse a category board"
+                            value=""
+                            onChange={(e) => {
+                                const id = Number.parseInt(e.target.value, 10);
+                                if (Number.isFinite(id)) {
+                                    router.push(
+                                        `${baseHref}/roster?categoryId=${id}`,
+                                    );
+                                }
+                            }}
+                        >
+                            <option value="">Browse a category board…</option>
+                            {categories.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                    {c.display}
+                                </option>
+                            ))}
+                        </select>
+                    )}
+                    <Link
+                        href={`/games-v2/${gameSlug}`}
+                        className="btn btn-sm btn-outline-secondary"
+                    >
+                        Back to leaderboards
+                    </Link>
+                </div>
             </div>
 
             <ul className="nav nav-tabs mb-4">

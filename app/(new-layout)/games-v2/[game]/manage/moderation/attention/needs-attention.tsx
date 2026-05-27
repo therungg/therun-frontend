@@ -2,6 +2,7 @@
 
 import moment from 'moment/moment';
 import { useMemo, useState } from 'react';
+import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { FlagSeverity } from '../../../../../../../types/moderation.types';
@@ -335,16 +336,24 @@ function SingleItemCard({
                         </button>
                     )}
                     {item.userId != null && (
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-outline-danger ms-auto"
-                            onClick={() => {
-                                const t = banTarget(item, gameDisplay);
-                                if (t) act('ban', t);
-                            }}
-                        >
-                            Ban runner…
-                        </button>
+                        <>
+                            <Link
+                                href={`/games-v2/${gameSlug}/manage/moderation/runner/${item.userId}`}
+                                className="btn btn-sm btn-outline-secondary ms-auto"
+                            >
+                                View runner
+                            </Link>
+                            <button
+                                type="button"
+                                className="btn btn-sm btn-outline-danger"
+                                onClick={() => {
+                                    const t = banTarget(item, gameDisplay);
+                                    if (t) act('ban', t);
+                                }}
+                            >
+                                Ban runner…
+                            </button>
+                        </>
                     )}
                 </div>
             )}
@@ -438,6 +447,14 @@ function RunnerGroupCard({
                     {items.length} items needing attention
                 </span>
                 <div className="ms-auto d-flex flex-wrap gap-2">
+                    {userId != null && (
+                        <Link
+                            href={`/games-v2/${gameSlug}/manage/moderation/runner/${userId}`}
+                            className="btn btn-sm btn-outline-secondary"
+                        >
+                            View runner
+                        </Link>
+                    )}
                     {runIds.length > 0 && (
                         <button
                             type="button"
