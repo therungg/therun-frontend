@@ -50,16 +50,18 @@ export default async function ModerationHubPage({ params }: Props) {
         categoryName,
     );
 
-    // board-admins uniquely hold `edit` on `moderators` (board-moderators and
-    // per-game moderators do not), so it cleanly expresses the Configure gate.
-    // TODO Phase 4: tighten/confirm to board-admin once Configure is built out.
-    const canConfigure = defineAbilityFor(session).can('edit', 'moderators');
+    // The Configure tab itself is visible to any moderator (the page gate above
+    // already requires `canModerateGame`): mods can preview Standards, see the
+    // Active bans list, lift bans, and read History. Only *editing* Standards is
+    // gated — board-admins uniquely hold `edit` on `moderators` (board-moderators
+    // and per-game moderators do not), so it cleanly expresses that edit gate.
+    const canEditConfig = defineAbilityFor(session).can('edit', 'moderators');
 
     return (
         <ModerationTabs
             gameSlug={game.name}
             gameDisplay={game.display}
-            canConfigure={canConfigure}
+            canEditConfig={canEditConfig}
             items={items}
             categories={categories.map((c) => ({
                 id: c.id,

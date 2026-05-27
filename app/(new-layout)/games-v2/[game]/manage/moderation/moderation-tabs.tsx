@@ -11,7 +11,7 @@ type Tab = 'moderate' | 'configure';
 interface Props {
     gameSlug: string;
     gameDisplay: string;
-    canConfigure: boolean;
+    canEditConfig: boolean;
     items: AttentionItem[];
     categories: Array<{ id: number; display: string }>;
 }
@@ -19,7 +19,8 @@ interface Props {
 export function ModerationTabs({
     gameSlug,
     gameDisplay,
-    canConfigure,
+    // Consumed in Task 5 when the Configure tab body is assembled.
+    canEditConfig: _canEditConfig,
     items,
     categories,
 }: Props) {
@@ -79,17 +80,15 @@ export function ModerationTabs({
                         )}
                     </button>
                 </li>
-                {canConfigure && (
-                    <li className="nav-item">
-                        <button
-                            type="button"
-                            className={`nav-link ${tab === 'configure' ? 'active' : ''}`}
-                            onClick={() => setTab('configure')}
-                        >
-                            Configure
-                        </button>
-                    </li>
-                )}
+                <li className="nav-item">
+                    <button
+                        type="button"
+                        className={`nav-link ${tab === 'configure' ? 'active' : ''}`}
+                        onClick={() => setTab('configure')}
+                    >
+                        Configure
+                    </button>
+                </li>
             </ul>
 
             {tab === 'moderate' && (
@@ -101,7 +100,7 @@ export function ModerationTabs({
                 />
             )}
 
-            {tab === 'configure' && canConfigure && (
+            {tab === 'configure' && (
                 <ConfigurePlaceholder baseHref={baseHref} />
             )}
         </div>
