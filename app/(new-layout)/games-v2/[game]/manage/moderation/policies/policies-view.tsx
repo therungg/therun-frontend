@@ -3,15 +3,13 @@
 import { type FormEvent, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import Link from '~src/components/link';
-import {
-    DurationToFormatted,
-    timeToMillis,
-} from '~src/components/util/datetime';
+import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
     BoardPolicyRow,
     CreatePolicyInput,
     PolicyType,
 } from '../../../../../../../types/moderation.types';
+import { msToInput, parseTime } from '../configure/time-input';
 import {
     createPolicyAction,
     deletePolicyAction,
@@ -52,30 +50,6 @@ function isPctPolicy(type: PolicyType): boolean {
         type === 'auto_flag_pb_jump_pct' ||
         type === 'auto_flag_faster_than_wr_pct'
     );
-}
-
-// h:mm:ss(.SSS) parse/format idiom (copied from minimums-section).
-function msToInput(ms: number | null): string {
-    if (ms === null) return '';
-    const totalMs = Math.max(0, Math.round(ms));
-    const hours = Math.floor(totalMs / 3600000);
-    const minutes = Math.floor((totalMs % 3600000) / 60000);
-    const seconds = Math.floor((totalMs % 60000) / 1000);
-    const millis = totalMs % 1000;
-    const pad = (n: number, w: number) => String(n).padStart(w, '0');
-    const base =
-        hours > 0
-            ? `${hours}:${pad(minutes, 2)}:${pad(seconds, 2)}`
-            : `${pad(minutes, 2)}:${pad(seconds, 2)}`;
-    return millis === 0 ? base : `${base}.${pad(millis, 3)}`;
-}
-
-function parseTime(s: string): number | null {
-    const trimmed = s.trim();
-    if (trimmed === '') return null;
-    const ms = timeToMillis(trimmed);
-    if (!Number.isFinite(ms) || ms <= 0) return Number.NaN;
-    return ms;
 }
 
 function num(value: unknown): number | undefined {
