@@ -13,7 +13,7 @@ interface Props {
     params: Promise<{ game: string }>;
 }
 
-export default async function ModerationHubPage({ params }: Props) {
+export default async function ModerationPage({ params }: Props) {
     const { game: slug } = await params;
     if (!slug) notFound();
 

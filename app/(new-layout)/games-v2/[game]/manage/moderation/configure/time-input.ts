@@ -1,8 +1,7 @@
 import { timeToMillis } from '~src/components/util/datetime';
 
 // Shared h:mm:ss(.SSS) parse/format idiom for moderation time inputs.
-// Used by the plain-language Standards panel and the (Phase-5-doomed)
-// policies-view.tsx — keep both importing from here to stay DRY.
+// Used by the plain-language Standards panel.
 
 /** Format milliseconds into an `h:mm:ss.SSS` / `m:ss(.SSS)` input string. */
 export function msToInput(ms: number | null): string {
