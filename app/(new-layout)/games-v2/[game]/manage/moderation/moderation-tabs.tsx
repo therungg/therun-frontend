@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Link from '~src/components/link';
 import type { AttentionItem } from './attention/attention-model';
 import { NeedsAttention } from './attention/needs-attention';
+import { HistoryDrawer } from './configure/history-drawer';
 
 type Tab = 'moderate' | 'configure';
 
@@ -25,6 +26,7 @@ export function ModerationTabs({
     categories,
 }: Props) {
     const [tab, setTab] = useState<Tab>('moderate');
+    const [historyOpen, setHistoryOpen] = useState(false);
     const router = useRouter();
     const baseHref = `/games-v2/${gameSlug}/manage/moderation`;
 
@@ -56,6 +58,13 @@ export function ModerationTabs({
                             ))}
                         </select>
                     )}
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() => setHistoryOpen(true)}
+                    >
+                        <span aria-hidden="true">🕘</span> History
+                    </button>
                     <Link
                         href={`/games-v2/${gameSlug}`}
                         className="btn btn-sm btn-outline-secondary"
@@ -103,6 +112,12 @@ export function ModerationTabs({
             {tab === 'configure' && (
                 <ConfigurePlaceholder baseHref={baseHref} />
             )}
+
+            <HistoryDrawer
+                gameSlug={gameSlug}
+                open={historyOpen}
+                onClose={() => setHistoryOpen(false)}
+            />
         </div>
     );
 }
