@@ -169,7 +169,10 @@ export function RunActionDialog({
                     trimmed,
                 );
                 if ('error' in res) return setError(res.error);
-                toast.success(`${VERB_TITLE[verb]} — done.`);
+                const n = res.result.affectedRunCount;
+                toast.success(
+                    `${VERB_TITLE[verb]} — ${n} run${n === 1 ? '' : 's'} updated.`,
+                );
                 return onDone();
             }
             const res = await excludeAction(gameSlug, {
@@ -192,6 +195,11 @@ export function RunActionDialog({
             className="modal d-block"
             tabIndex={-1}
             role="dialog"
+            aria-modal="true"
+            aria-labelledby="run-action-title"
+            onKeyDown={(e) => {
+                if (e.key === 'Escape' && !isConfirming) onClose();
+            }}
             style={{ background: 'rgba(0,0,0,0.5)' }}
         >
             <div
@@ -200,7 +208,7 @@ export function RunActionDialog({
             >
                 <div className="modal-content">
                     <div className="modal-header">
-                        <h5 className="modal-title">
+                        <h5 className="modal-title" id="run-action-title">
                             {VERB_TITLE[verb]} — {headerTarget}
                         </h5>
                         <button
