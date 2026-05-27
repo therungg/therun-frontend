@@ -36,11 +36,15 @@ export default async function RunnerPage({ params }: Props) {
         }
     }
 
+    // UserEligibleRunRow carries no runner name and no name-by-id resolver
+    // exists in src/lib. Fall back to a stable cosmetic label; the ban still
+    // works because the rule keys on the numeric userId, not this string.
     return (
         <RunnerView
             gameSlug={game.name}
             gameDisplay={game.display}
             userId={userId}
+            runnerName={`Runner #${userId}`}
             rows={rows}
         />
     );
