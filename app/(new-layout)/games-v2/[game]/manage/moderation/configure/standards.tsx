@@ -205,7 +205,10 @@ export function Standards({
                             updatePolicyAction(
                                 gameSlug,
                                 existing.id,
-                                { rtMs: value },
+                                // Merge, don't replace: the PUT writes the whole
+                                // value object, so preserve any gtMs the policy
+                                // already had (Standards only edits RT).
+                                { ...existing.value, rtMs: value },
                                 trimmedReason,
                             ),
                         );
