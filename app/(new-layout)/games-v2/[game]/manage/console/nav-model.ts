@@ -102,14 +102,18 @@ const ALL_GROUPS: NavGroup[] = [
     },
 ];
 
-/** Standards sits in the per-category group but is gated by canEditStandards. */
+/**
+ * Standards lives in the per-category group but is visible to ANY moderator
+ * (read-only preview); only board-admins (canEditStandards) may edit it, and that
+ * edit-gating is handled by the Standards component, not by visibility here.
+ */
 function itemVisible(
     groupId: NavGroupId,
     itemId: NavItemId,
     flags: NavFlags,
 ): boolean {
     if (groupId === 'moderate') return flags.canModerate;
-    if (itemId === 'standards') return flags.canEditStandards;
+    if (itemId === 'standards') return flags.canModerate;
     // remaining per-category items + all game items
     return flags.canConfigure;
 }
