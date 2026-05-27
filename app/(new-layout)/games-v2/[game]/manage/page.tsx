@@ -1,63 +1,64 @@
+import { subject as caslSubject } from '@casl/ability';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { getSession } from '~src/actions/session.action';
 import { listManageCategories, listManageGroups } from '~src/lib/category-mgmt';
 import { getGameIdentifiers } from '~src/lib/game-mgmt';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
-import { listMinimumTimes } from '~src/lib/leaderboard-minimums';
-import { confirmPermission } from '~src/rbac/confirm-permission';
+import { canModerateGame } from '~src/lib/moderation/can-moderate';
+import { listManualTimes } from '~src/lib/moderation/manual-times';
+import { listGameReports } from '~src/lib/moderation/reports';
+import { listQueue } from '~src/lib/moderation/triage';
+import { defineAbilityFor } from '~src/rbac/ability';
 import { isLowActivityCategory } from '~src/utils/format-stats';
-import { ManagePage } from './manage-page';
-import type { ManageTab } from './types';
+import { ConsoleShell } from './console/console-shell';
+import { mergeAttention } from './moderation/attention/attention-model';
 
 interface Props {
     params: Promise<{ game: string }>;
-    searchParams: Promise<{ tab?: string; categoryId?: string }>;
 }
 
-export default async function GameManagePage({ params, searchParams }: Props) {
+export default async function GameAdminConsolePage({ params }: Props) {
     const { game: slug } = await params;
-    const { tab, categoryId: categoryIdParam } = await searchParams;
-    const user = await getSession();
+    const session = await getSession();
+    if (!session?.username || !session.id) notFound();
 
     const game = await resolveGame(slug);
     if (!game) notFound();
 
-    confirmPermission(user, 'edit', 'category-settings', { game: game.name });
+    const ability = defineAbilityFor(session);
+    const canModerate = canModerateGame(session, game.name);
+    const canConfigure = ability.can(
+        'edit',
+        caslSubject('category-settings', { game: game.name }),
+    );
+    const canEditStandards = ability.can('edit', 'moderators');
+    if (!canModerate && !canConfigure) notFound();
 
+    const sessionId = session.id;
     const { categories } = await resolveCategory(game.id);
+    const categoryById = new Map(categories.map((c) => [c.id, c.display]));
+    const categoryName = (id: number) =>
+        categoryById.get(id) ?? `Category ${id}`;
 
-    const requestedCategoryId = categoryIdParam
-        ? Number.parseInt(categoryIdParam, 10)
-        : Number.NaN;
-    const requested = Number.isFinite(requestedCategoryId)
-        ? categories.find((c) => c.id === requestedCategoryId)
-        : undefined;
-    const firstActive = categories.find((c) => c.active !== false);
-    const initialCategory = requested ?? firstActive ?? categories[0] ?? null;
+    const initialCategory =
+        categories.find((c) => c.active !== false) ?? categories[0] ?? null;
 
-    const initialTab: ManageTab = tab === 'category' ? 'category' : 'game';
-
-    const [initialIdentifiers, initialMinimums, initialRows, initialGroups] =
+    const [identifiers, rawRows, groups, queueItems, reports, manualTimes] =
         await Promise.all([
             getGameIdentifiers(game.id).catch(() => ({
                 slug: null,
                 abbreviation: null,
             })),
-            initialCategory
-                ? listMinimumTimes(user.id, game.id, initialCategory.id).catch(
-                      () => [],
-                  )
-                : Promise.resolve([]),
             listManageCategories(game.id).catch(() => []),
             listManageGroups(game.id).catch(() => []),
+            listQueue(sessionId, game.id, { limit: 200 }).catch(() => null),
+            listGameReports(sessionId, game.id).catch(() => null),
+            listManualTimes(sessionId, game.id).catch(() => null),
         ]);
 
-    const initialMinimum =
-        initialMinimums.find((m) => m.subcategoryHash === '') ?? null;
-
     const statsById = new Map(categories.map((c) => [c.id, c]));
-    const enrichedRows = initialRows
+    const rows = rawRows
         .map((r) => {
             const stats = statsById.get(r.id);
             return {
@@ -70,20 +71,28 @@ export default async function GameManagePage({ params, searchParams }: Props) {
         })
         .filter((r) => !isLowActivityCategory(r));
 
+    const pendingClaims = (manualTimes ?? []).filter(
+        (m) => m.verificationStatus === 'pending',
+    );
+    const attentionItems = mergeAttention(
+        queueItems ?? [],
+        reports ?? [],
+        pendingClaims,
+        categoryName,
+    );
+
     return (
         <Suspense fallback={null}>
-            <ManagePage
-                data={{
-                    game,
-                    categories,
-                    initialCategoryId: initialCategory?.id ?? -1,
-                    initialMinimum,
-                    initialSlug: initialIdentifiers.slug,
-                    initialAbbreviation: initialIdentifiers.abbreviation,
-                    initialRows: enrichedRows,
-                    initialGroups,
-                    initialTab,
-                }}
+            <ConsoleShell
+                game={game}
+                categories={categories}
+                flags={{ canModerate, canEditStandards, canConfigure }}
+                attentionItems={attentionItems}
+                initialCategoryId={initialCategory?.id ?? null}
+                initialSlug={identifiers.slug}
+                initialAbbreviation={identifiers.abbreviation}
+                initialRows={rows}
+                initialGroups={groups}
             />
         </Suspense>
     );
