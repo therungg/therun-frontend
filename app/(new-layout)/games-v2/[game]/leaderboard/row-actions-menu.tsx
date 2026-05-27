@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Dropdown, Form, Modal } from 'react-bootstrap';
 import { toast } from 'react-toastify';
+import type { ModVerb } from '~app/(new-layout)/games-v2/[game]/manage/moderation/shared/action-model';
+import { RunActionDialog } from '~app/(new-layout)/games-v2/[game]/manage/moderation/shared/run-action-dialog';
 import {
     appealRunAction,
     loadRunHistoryAction,
@@ -13,10 +15,6 @@ import {
 } from '~src/actions/run-user-actions.action';
 import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
 import type { HistoryEvent } from '../../../../../types/moderation.types';
-import {
-    boardExcludeRunAction,
-    boardRunVerdictAction,
-} from './actions/board-mod-actions.action';
 
 interface Props {
     entry: LeaderboardEntry;
@@ -54,9 +52,7 @@ export function RowActionsMenu({
     const isRejected = entry.verificationStatus === 'rejected';
 
     const [modal, setModal] = useState<ModalKind>(null);
-    const [modAction, setModAction] = useState<
-        'verify' | 'reject' | 'exclude' | null
-    >(null);
+    const [modVerb, setModVerb] = useState<ModVerb | null>(null);
     const [reason, setReason] = useState('');
     const [history, setHistory] = useState<HistoryEvent[] | null>(null);
     const [pending, startTransition] = useTransition();
@@ -66,47 +62,9 @@ export function RowActionsMenu({
 
     const close = () => {
         setModal(null);
-        setModAction(null);
         setReason('');
     };
     const reasonValid = reason.trim().length >= 10;
-
-    const openMod = (a: 'verify' | 'reject' | 'exclude') => {
-        setReason('');
-        setModAction(a);
-    };
-
-    const submitModAction = () => {
-        if (!modAction) return;
-        startTransition(async () => {
-            const res =
-                modAction === 'exclude'
-                    ? await boardExcludeRunAction(
-                          gameSlug,
-                          runId,
-                          reason.trim(),
-                      )
-                    : await boardRunVerdictAction(
-                          gameSlug,
-                          runId,
-                          modAction,
-                          reason.trim(),
-                      );
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            toast.success(
-                modAction === 'verify'
-                    ? 'Run verified.'
-                    : modAction === 'reject'
-                      ? 'Run rejected.'
-                      : 'Run excluded.',
-            );
-            close();
-            router.refresh();
-        });
-    };
 
     const openHistory = () => {
         setModal('history');
@@ -242,74 +200,48 @@ export function RowActionsMenu({
                             <Dropdown.Item
                                 as="button"
                                 type="button"
-                                onClick={() => openMod('verify')}
+                                onClick={() => setModVerb('approve')}
                             >
-                                Verify run
+                                Approve run
                             </Dropdown.Item>
                             <Dropdown.Item
                                 as="button"
                                 type="button"
                                 className="text-danger"
-                                onClick={() => openMod('reject')}
+                                onClick={() => setModVerb('remove')}
                             >
-                                Reject run
+                                Remove run…
                             </Dropdown.Item>
-                            <Dropdown.Item
-                                as="button"
-                                type="button"
-                                className="text-danger"
-                                onClick={() => openMod('exclude')}
-                            >
-                                Exclude run
-                            </Dropdown.Item>
+                            {isRejected && (
+                                <Dropdown.Item
+                                    as="button"
+                                    type="button"
+                                    onClick={() => setModVerb('restore')}
+                                >
+                                    Restore run
+                                </Dropdown.Item>
+                            )}
                         </>
                     )}
                 </Dropdown.Menu>
             </Dropdown>
 
-            <Modal show={modAction !== null} onHide={close} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title className="h6">
-                        {modAction === 'verify'
-                            ? 'Verify run'
-                            : modAction === 'reject'
-                              ? 'Reject run'
-                              : 'Exclude run'}
-                    </Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <p className="small text-muted">
-                        This changes the leaderboard for everyone. Minimum 10
-                        characters; recorded in the audit log.
-                    </p>
-                    <Form.Control
-                        as="textarea"
-                        rows={3}
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        disabled={pending}
-                        placeholder="Reason"
-                    />
-                </Modal.Body>
-                <Modal.Footer>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={close}
-                        disabled={pending}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        className={`btn btn-sm ${modAction === 'verify' ? 'btn-success' : 'btn-danger'}`}
-                        onClick={submitModAction}
-                        disabled={pending || !reasonValid}
-                    >
-                        {pending ? 'Working…' : 'Confirm'}
-                    </button>
-                </Modal.Footer>
-            </Modal>
+            {modVerb && (
+                <RunActionDialog
+                    gameSlug={gameSlug}
+                    verb={modVerb}
+                    target={{
+                        kind: 'runs',
+                        runIds: [runId],
+                        label: `${entry.runnerName}'s run`,
+                    }}
+                    onDone={() => {
+                        setModVerb(null);
+                        router.refresh();
+                    }}
+                    onClose={() => setModVerb(null)}
+                />
+            )}
 
             <Modal show={modal === 'report'} onHide={close} centered>
                 <Modal.Header closeButton>
