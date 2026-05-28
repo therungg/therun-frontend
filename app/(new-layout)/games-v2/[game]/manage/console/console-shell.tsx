@@ -1,6 +1,8 @@
 'use client';
 
+import clsx from 'clsx';
 import { useCallback, useMemo, useState } from 'react';
+import { List } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type {
@@ -8,6 +10,8 @@ import type {
     ResolvedGame,
 } from '../../../../../../types/leaderboards.types';
 import type { AttentionItem } from '../moderation/attention/attention-model';
+import { HistoryDrawer } from '../moderation/configure/history-drawer';
+import styles from './console.module.scss';
 import { ConsoleSidebar } from './console-sidebar';
 import { ContentRouter } from './content-router';
 import {
@@ -67,9 +71,15 @@ export function ConsoleShell({
         [],
     );
 
+    // History is a quick-reference overlay, not a destination pane — selecting
+    // it opens the drawer over the current pane (keeps the active item put).
     const handleSelect = (id: NavItemId) => {
-        setActiveItem(id);
         setSidebarOpen(false);
+        if (id === 'history') {
+            setHistoryOpen(true);
+            return;
+        }
+        setActiveItem(id);
     };
 
     const categoryOptions = useMemo(
@@ -77,49 +87,64 @@ export function ConsoleShell({
         [categories],
     );
 
-    const sidebar = (
-        <ConsoleSidebar
-            groups={groups}
-            activeItem={activeItem}
-            onSelect={handleSelect}
-            attentionCount={attentionItems.length}
-            categories={categoryOptions}
-            selectedCategoryId={selectedCategoryId}
-            onSelectCategory={setSelectedCategoryId}
-        />
-    );
-
     return (
-        <div className="container-fluid py-3">
-            <header className="d-flex align-items-center gap-2 mb-3">
+        <div className={styles.shell}>
+            <header className={styles.header}>
                 <button
                     type="button"
-                    className="btn btn-sm btn-outline-secondary d-md-none"
+                    className={clsx(
+                        styles.menuToggle,
+                        'btn btn-sm btn-outline-secondary',
+                    )}
                     aria-label="Toggle navigation"
                     aria-expanded={sidebarOpen}
                     onClick={() => setSidebarOpen((v) => !v)}
                 >
-                    ☰
+                    <List size={18} aria-hidden="true" />
                 </button>
+                {game.image && (
+                    <img
+                        className={styles.cover}
+                        src={game.image}
+                        alt=""
+                        width={44}
+                        height={59}
+                        loading="eager"
+                    />
+                )}
                 <div>
-                    <small className="text-muted d-block">Admin</small>
-                    <h1 className="h4 mb-0">{game.display}</h1>
+                    <div className={styles.eyebrow}>Admin</div>
+                    <h1 className={styles.title}>{game.display}</h1>
                 </div>
-                <Link
-                    href={`/games-v2/${game.name}`}
-                    className="btn btn-sm btn-outline-secondary ms-auto"
-                >
-                    Back to leaderboards
-                </Link>
+                <div className={styles.headerActions}>
+                    <Link
+                        href={`/games-v2/${game.name}`}
+                        className="btn btn-sm btn-outline-secondary"
+                    >
+                        Back to leaderboards
+                    </Link>
+                </div>
             </header>
 
-            <div className="row g-3">
+            <div className={styles.body}>
                 <aside
-                    className={`col-12 col-md-4 col-lg-3 ${sidebarOpen ? '' : 'd-none d-md-block'}`}
+                    className={clsx(
+                        styles.sidebar,
+                        !sidebarOpen && styles.sidebarHidden,
+                    )}
                 >
-                    {sidebar}
+                    <ConsoleSidebar
+                        groups={groups}
+                        activeItem={activeItem}
+                        onSelect={handleSelect}
+                        attentionCount={attentionItems.length}
+                        categories={categoryOptions}
+                        selectedCategoryId={selectedCategoryId}
+                        onSelectCategory={setSelectedCategoryId}
+                    />
                 </aside>
-                <section className="col-12 col-md-8 col-lg-9">
+
+                <section>
                     <ContentRouter
                         activeItem={activeItem}
                         game={game}
@@ -146,11 +171,15 @@ export function ConsoleShell({
                             setSelectedCategoryId(id);
                             setActiveItem('category-settings');
                         }}
-                        historyOpen={historyOpen}
-                        onHistoryClose={() => setHistoryOpen(false)}
                     />
                 </section>
             </div>
+
+            <HistoryDrawer
+                gameSlug={game.name}
+                open={historyOpen}
+                onClose={() => setHistoryOpen(false)}
+            />
         </div>
     );
 }

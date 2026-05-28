@@ -1,5 +1,26 @@
 'use client';
 
+import clsx from 'clsx';
+import {
+    ClockHistory,
+    Collection,
+    Controller,
+    Diagram3,
+    ExclamationTriangle,
+    Eye,
+    Flag,
+    Gear,
+    Grid3x3Gap,
+    type Icon as IconType,
+    JournalText,
+    ListOl,
+    PersonX,
+    ShieldLock,
+    Sliders,
+    Stopwatch,
+    Tag,
+} from 'react-bootstrap-icons';
+import styles from './console.module.scss';
 import type { NavGroup, NavItemId } from './nav-model';
 
 interface Props {
@@ -7,11 +28,30 @@ interface Props {
     activeItem: NavItemId | null;
     onSelect: (id: NavItemId) => void;
     attentionCount: number;
-    /** Category picker for the per-category group. */
     categories: Array<{ id: number; display: string }>;
     selectedCategoryId: number | null;
     onSelectCategory: (id: number) => void;
 }
+
+// One consistent icon set (react-bootstrap-icons) — no emoji.
+const NAV_ICON: Record<NavItemId, IconType> = {
+    attention: ExclamationTriangle,
+    roster: ListOl,
+    reports: Flag,
+    bans: PersonX,
+    history: ClockHistory,
+    standards: Sliders,
+    timing: Stopwatch,
+    rules: JournalText,
+    variables: Diagram3,
+    combinations: Grid3x3Gap,
+    'category-settings': Gear,
+    'game-details': Controller,
+    moderators: ShieldLock,
+    groups: Collection,
+    'categories-visibility': Eye,
+    identifiers: Tag,
+};
 
 export function ConsoleSidebar({
     groups,
@@ -22,60 +62,85 @@ export function ConsoleSidebar({
     selectedCategoryId,
     onSelectCategory,
 }: Props) {
+    // The per-category picker only matters when a category-scoped pane is
+    // open (Standards self-manages its own category, so it isn't one).
+    const activeIsCategoryScoped =
+        groups.flatMap((g) => g.items).find((it) => it.id === activeItem)
+            ?.categoryScoped ?? false;
+
     return (
-        <nav className="d-flex flex-column gap-3" aria-label="Admin console">
+        <nav aria-label="Game admin console">
             {groups.map((group) => (
-                <div key={group.id}>
-                    <div className="text-uppercase small fw-semibold text-muted px-2 mb-1">
-                        {group.label}
-                    </div>
-                    {group.id === 'per-category' && categories.length > 0 && (
-                        <select
-                            className="form-select form-select-sm mb-2"
-                            aria-label="Category"
-                            value={selectedCategoryId ?? ''}
-                            onChange={(e) => {
-                                const id = Number.parseInt(e.target.value, 10);
-                                if (Number.isFinite(id)) onSelectCategory(id);
-                            }}
-                        >
-                            {categories.map((c) => (
-                                <option key={c.id} value={c.id}>
-                                    {c.display}
-                                </option>
-                            ))}
-                        </select>
-                    )}
-                    <ul className="nav nav-pills flex-column">
-                        {group.items.map((item) => (
-                            <li className="nav-item" key={item.id}>
-                                <button
-                                    type="button"
-                                    className={`nav-link w-100 text-start d-flex align-items-center justify-content-between ${
-                                        activeItem === item.id ? 'active' : ''
-                                    }`}
-                                    onClick={() => onSelect(item.id)}
+                <div key={group.id} className={styles.navGroup}>
+                    <div className={styles.groupLabel}>{group.label}</div>
+
+                    {group.id === 'per-category' &&
+                        activeIsCategoryScoped &&
+                        categories.length > 0 && (
+                            <div className={styles.pickerWrap}>
+                                <select
+                                    className={styles.picker}
+                                    aria-label="Category"
+                                    value={selectedCategoryId ?? ''}
+                                    onChange={(e) => {
+                                        const id = Number.parseInt(
+                                            e.target.value,
+                                            10,
+                                        );
+                                        if (Number.isFinite(id)) {
+                                            onSelectCategory(id);
+                                        }
+                                    }}
                                 >
-                                    <span>
-                                        {item.label}
-                                        {item.reserved && (
-                                            <span className="badge text-bg-light ms-2">
-                                                soon
-                                            </span>
-                                        )}
-                                    </span>
-                                    {item.id === 'attention' &&
-                                        attentionCount > 0 && (
-                                            <span className="badge rounded-pill text-bg-danger">
-                                                {attentionCount > 99
-                                                    ? '99+'
-                                                    : attentionCount}
-                                            </span>
-                                        )}
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
+                                    {categories.map((c) => (
+                                        <option key={c.id} value={c.id}>
+                                            {c.display}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                    {group.items.map((item) => {
+                        const Icon = NAV_ICON[item.id];
+                        const isActive = activeItem === item.id;
+                        return (
+                            <button
+                                key={item.id}
+                                type="button"
+                                className={clsx(
+                                    styles.navItem,
+                                    isActive && styles.active,
+                                    item.reserved && styles.reserved,
+                                )}
+                                aria-current={isActive ? 'page' : undefined}
+                                onClick={() => onSelect(item.id)}
+                            >
+                                <Icon
+                                    size={16}
+                                    className={styles.navIcon}
+                                    aria-hidden="true"
+                                />
+                                <span className={styles.navLabel}>
+                                    {item.label}
+                                </span>
+                                {item.reserved && (
+                                    <span className={styles.soon}>soon</span>
+                                )}
+                                {item.id === 'attention' &&
+                                    attentionCount > 0 && (
+                                        <span
+                                            className={styles.count}
+                                            aria-label={`${attentionCount} items need attention`}
+                                        >
+                                            {attentionCount > 99
+                                                ? '99+'
+                                                : attentionCount}
+                                        </span>
+                                    )}
+                            </button>
+                        );
+                    })}
                 </div>
             ))}
         </nav>
