@@ -13,11 +13,11 @@ import { GameTab } from '../game-tab/game-tab';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { NeedsAttention } from '../moderation/attention/needs-attention';
 import { ActiveBans } from '../moderation/configure/active-bans';
-import { HistoryDrawer } from '../moderation/configure/history-drawer';
 import { Standards } from '../moderation/configure/standards';
 import { TimingSettingsSection } from '../timing/timing-settings-section';
 import { CombinationsSection } from '../variables/combinations-section';
 import { VariablesSection } from '../variables/variables-section';
+import styles from './console.module.scss';
 import type { NavItemId } from './nav-model';
 
 export interface ContentRouterProps {
@@ -42,8 +42,6 @@ export interface ContentRouterProps {
         groupName: string | null,
     ) => void;
     onEditCategory: (categoryId: number) => void;
-    historyOpen: boolean;
-    onHistoryClose: () => void;
 }
 
 function Placeholder({
@@ -54,9 +52,11 @@ function Placeholder({
     children?: ReactNode;
 }) {
     return (
-        <div className="border rounded p-4 bg-light-subtle text-muted">
-            <h2 className="h5">{title}</h2>
-            {children}
+        <div className={styles.surface}>
+            <div className={styles.paneHeader}>
+                <h2 className={styles.paneTitle}>{title}</h2>
+            </div>
+            <p className="text-muted mb-0">{children}</p>
         </div>
     );
 }
@@ -83,14 +83,6 @@ export function ContentRouter(props: ContentRouterProps) {
             );
         case 'bans':
             return <ActiveBans gameSlug={game.name} />;
-        case 'history':
-            return (
-                <HistoryDrawer
-                    gameSlug={game.name}
-                    open={props.historyOpen}
-                    onClose={props.onHistoryClose}
-                />
-            );
         case 'roster':
             return (
                 <Placeholder title="Roster">

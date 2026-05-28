@@ -1,0 +1,411 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/mixins' as mx;
+
+// ============================================================
+// Admin Console — shared craft vocabulary
+// Leaderboard-integrity control room. Calm, precise, scannable.
+// Depth = borders + subtle surface tint (the app's strategy).
+// ============================================================
+
+$sidebar-width: 16rem;
+$rail: 3px; // severity spine / active accent width
+
+// ---- Shell layout ------------------------------------------
+.shell {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-2xl;
+    padding: dt.$spacing-2xl;
+    max-width: 1600px;
+    margin-inline: auto;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-lg;
+}
+
+.cover {
+    width: 44px;
+    height: 59px; // 3:4
+    border-radius: dt.$radius-md;
+    object-fit: cover;
+    box-shadow: dt.$shadow-sm;
+    flex-shrink: 0;
+}
+
+.eyebrow {
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
+.title {
+    font-size: dt.$font-size-xl;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.headerActions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}
+
+.body {
+    display: grid;
+    grid-template-columns: $sidebar-width minmax(0, 1fr);
+    gap: dt.$spacing-3xl;
+    align-items: start;
+}
+
+// ---- Sidebar (same canvas, border separation) --------------
+.sidebar {
+    position: sticky;
+    top: dt.$spacing-lg;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-2xl;
+    padding-right: dt.$spacing-lg;
+    border-right: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+}
+
+.navGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.groupLabel {
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    color: var(--bs-secondary-color);
+    padding: 0 dt.$spacing-sm dt.$spacing-xs;
+}
+
+.navItem {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    width: 100%;
+    text-align: left;
+    padding: 0.5rem dt.$spacing-md;
+    border: 0;
+    border-radius: dt.$radius-md;
+    background: transparent;
+    color: var(--bs-body-color);
+    font-size: dt.$font-size-sm;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    transition: background-color dt.$transition-fast, color dt.$transition-fast;
+
+    // quiet left accent rail, revealed on active
+    &::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%) scaleY(0);
+        width: $rail;
+        height: 60%;
+        border-radius: 0 $rail $rail 0;
+        background: var(--bs-primary);
+        transition: transform dt.$transition-base;
+    }
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.06);
+        color: var(--bs-emphasis-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+}
+
+.navIcon {
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+
+.navLabel {
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.active {
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-primary);
+    font-weight: 600;
+
+    &::before {
+        transform: translateY(-50%) scaleY(1);
+    }
+
+    .navIcon {
+        opacity: 1;
+    }
+}
+
+.count {
+    @include mx.monospace-value;
+    font-size: dt.$font-size-2xs;
+    font-weight: 700;
+    min-width: 1.5rem;
+    text-align: center;
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    background: var(--bs-danger);
+    color: #fff;
+}
+
+.soon {
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--bs-tertiary-color);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-sm;
+    padding: 0 0.35rem;
+}
+
+.reserved {
+    opacity: 0.55;
+}
+
+// category picker inside the per-category group
+.pickerWrap {
+    padding: 0 dt.$spacing-sm dt.$spacing-xs;
+}
+
+.picker {
+    width: 100%;
+    font-size: dt.$font-size-sm;
+    padding: 0.4rem 0.6rem;
+    border-radius: dt.$radius-md;
+    // inset: slightly darker than canvas
+    background: color-mix(in srgb, var(--bs-body-bg) 90%, var(--bs-secondary-bg) 10%);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    color: var(--bs-body-color);
+    transition: border-color dt.$transition-fast;
+
+    &:hover {
+        border-color: rgba(var(--bs-primary-rgb), 0.5);
+    }
+
+    &:focus-visible {
+        outline: 0;
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+    }
+}
+
+// ---- Content surfaces --------------------------------------
+.surface {
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-lg;
+    background: color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-secondary-bg) 8%);
+    padding: dt.$spacing-2xl;
+}
+
+.paneHeader {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    margin-bottom: dt.$spacing-xl;
+}
+
+.paneTitle {
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+}
+
+.paneCount {
+    @include mx.monospace-value;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+// ---- Run / attention item with severity spine -------------
+.item {
+    position: relative;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-left-width: $rail;
+    border-left-color: var(--bs-secondary); // low severity default
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+    padding: dt.$spacing-lg dt.$spacing-xl;
+    transition: border-color dt.$transition-fast, box-shadow dt.$transition-base;
+
+    &:hover {
+        box-shadow: dt.$shadow-md;
+    }
+}
+
+.sevHigh {
+    border-left-color: dt.$accent-red;
+}
+.sevMedium {
+    border-left-color: dt.$accent-amber;
+}
+.sevLow {
+    border-left-color: var(--bs-secondary);
+}
+
+.itemTop {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-md;
+}
+
+.metaRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-lg;
+    font-size: dt.$font-size-sm;
+    margin-bottom: dt.$spacing-md;
+}
+
+.metaLabel {
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--bs-tertiary-color);
+    margin-right: 0.3rem;
+}
+
+.time {
+    @include mx.monospace-value;
+    color: var(--bs-emphasis-color);
+}
+
+.note {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin-bottom: dt.$spacing-md;
+}
+
+.actionRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+}
+
+.spacer {
+    margin-left: auto;
+}
+
+.age {
+    margin-left: auto;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    white-space: nowrap;
+}
+
+// ---- Severity / source pills -------------------------------
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    text-transform: uppercase;
+}
+
+.pillNeutral {
+    background: rgba(var(--bs-secondary-rgb), 0.12);
+    color: var(--bs-secondary-color);
+    border-color: rgba(var(--bs-border-color-rgb), 0.5);
+}
+
+.sevPillHigh {
+    background: color-mix(in srgb, #{dt.$accent-red} 16%, transparent);
+    color: dt.$accent-red;
+}
+.sevPillMedium {
+    background: color-mix(in srgb, #{dt.$accent-amber} 18%, transparent);
+    color: color-mix(in srgb, #{dt.$accent-amber} 80%, var(--bs-body-color));
+}
+.sevPillLow {
+    background: rgba(var(--bs-secondary-rgb), 0.12);
+    color: var(--bs-secondary-color);
+}
+
+// ---- Empty state -------------------------------------------
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-3xl dt.$spacing-lg;
+    color: var(--bs-secondary-color);
+}
+
+.emptyIcon {
+    color: var(--bs-primary);
+    opacity: 0.55;
+    margin-bottom: dt.$spacing-xs;
+}
+
+.emptyTitle {
+    font-size: dt.$font-size-md;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    margin: 0;
+}
+
+// ---- Mobile -------------------------------------------------
+.menuToggle {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .shell {
+        padding: dt.$spacing-lg;
+        gap: dt.$spacing-lg;
+    }
+
+    .body {
+        grid-template-columns: minmax(0, 1fr);
+        gap: dt.$spacing-lg;
+    }
+
+    .menuToggle {
+        display: inline-flex;
+    }
+
+    .sidebar {
+        position: static;
+        border-right: 0;
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+        padding-right: 0;
+        padding-bottom: dt.$spacing-lg;
+    }
+
+    .sidebarHidden {
+        display: none;
+    }
+}
