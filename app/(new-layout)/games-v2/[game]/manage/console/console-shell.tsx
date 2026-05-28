@@ -1,9 +1,7 @@
 'use client';
 
-import clsx from 'clsx';
+import { useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
-import { List } from 'react-bootstrap-icons';
-import Link from '~src/components/link';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type {
     ResolvedCategory,
@@ -11,8 +9,7 @@ import type {
 } from '../../../../../../types/leaderboards.types';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { HistoryDrawer } from '../moderation/configure/history-drawer';
-import styles from './console.module.scss';
-import { ConsoleSidebar } from './console-sidebar';
+import { ConsoleChrome } from './console-chrome';
 import { ContentRouter } from './content-router';
 import {
     buildNav,
@@ -45,8 +42,26 @@ export function ConsoleShell({
     initialGroups,
 }: ConsoleShellProps) {
     const groups = useMemo(() => buildNav(flags), [flags]);
-    const [activeItem, setActiveItem] = useState<NavItemId | null>(() =>
-        defaultItem(groups),
+    const searchParams = useSearchParams();
+
+    // A `?pane=` deep-link (used by sub-route pages navigating back) wins over
+    // the default landing pane — but only if it's a pane this viewer can see.
+    const initialActive = useMemo<NavItemId | null>(() => {
+        const requested = searchParams.get('pane');
+        const visible = groups.flatMap((g) => g.items).map((it) => it.id);
+        // `history` is an overlay, not a content pane — never a landing target.
+        if (
+            requested &&
+            requested !== 'history' &&
+            visible.includes(requested as NavItemId)
+        ) {
+            return requested as NavItemId;
+        }
+        return defaultItem(groups);
+    }, [searchParams, groups]);
+
+    const [activeItem, setActiveItem] = useState<NavItemId | null>(
+        initialActive,
     );
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
         initialCategoryId,
@@ -55,7 +70,6 @@ export function ConsoleShell({
     const [manageGroups, setManageGroups] =
         useState<ManageGroup[]>(initialGroups);
     const [historyOpen, setHistoryOpen] = useState(false);
-    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const selectedCategory = useMemo<ResolvedCategory | null>(
         () => categories.find((c) => c.id === selectedCategoryId) ?? null,
@@ -71,10 +85,8 @@ export function ConsoleShell({
         [],
     );
 
-    // History is a quick-reference overlay, not a destination pane — selecting
-    // it opens the drawer over the current pane (keeps the active item put).
-    const handleSelect = (id: NavItemId) => {
-        setSidebarOpen(false);
+    // History is a quick-reference overlay, not a destination pane.
+    const handleNavigate = (id: NavItemId) => {
         if (id === 'history') {
             setHistoryOpen(true);
             return;
@@ -88,98 +100,51 @@ export function ConsoleShell({
     );
 
     return (
-        <div className={styles.shell}>
-            <header className={styles.header}>
-                <button
-                    type="button"
-                    className={clsx(
-                        styles.menuToggle,
-                        'btn btn-sm btn-outline-secondary',
-                    )}
-                    aria-label="Toggle navigation"
-                    aria-expanded={sidebarOpen}
-                    onClick={() => setSidebarOpen((v) => !v)}
-                >
-                    <List size={18} aria-hidden="true" />
-                </button>
-                {game.image && (
-                    <img
-                        className={styles.cover}
-                        src={game.image}
-                        alt=""
-                        width={44}
-                        height={59}
-                        loading="eager"
-                    />
-                )}
-                <div>
-                    <div className={styles.eyebrow}>Admin</div>
-                    <h1 className={styles.title}>{game.display}</h1>
-                </div>
-                <div className={styles.headerActions}>
-                    <Link
-                        href={`/games-v2/${game.name}`}
-                        className="btn btn-sm btn-outline-secondary"
-                    >
-                        Back to leaderboards
-                    </Link>
-                </div>
-            </header>
-
-            <div className={styles.body}>
-                <aside
-                    className={clsx(
-                        styles.sidebar,
-                        !sidebarOpen && styles.sidebarHidden,
-                    )}
-                >
-                    <ConsoleSidebar
-                        groups={groups}
-                        activeItem={activeItem}
-                        onSelect={handleSelect}
-                        attentionCount={attentionItems.length}
-                        categories={categoryOptions}
-                        selectedCategoryId={selectedCategoryId}
-                        onSelectCategory={setSelectedCategoryId}
-                    />
-                </aside>
-
-                <section className={styles.content}>
-                    <ContentRouter
-                        activeItem={activeItem}
-                        game={game}
-                        categories={categoryOptions}
-                        selectedCategory={selectedCategory}
-                        canEditStandards={flags.canEditStandards}
-                        attentionItems={attentionItems}
-                        initialSlug={initialSlug}
-                        initialAbbreviation={initialAbbreviation}
-                        rows={rows}
-                        groups={manageGroups}
-                        onGroupsChange={setManageGroups}
-                        onRowChange={applyRowPatch}
-                        onRowGroupChange={(categoryId, groupId, groupName) =>
-                            setRows((rs) =>
-                                rs.map((r) =>
-                                    r.id === categoryId
-                                        ? { ...r, groupId, groupName }
-                                        : r,
-                                ),
-                            )
-                        }
-                        onEditCategory={(id) => {
-                            setSelectedCategoryId(id);
-                            setActiveItem('category-settings');
-                        }}
-                    />
-                </section>
-            </div>
+        <>
+            <ConsoleChrome
+                game={game}
+                groups={groups}
+                activeItem={activeItem}
+                onNavigate={handleNavigate}
+                attentionCount={attentionItems.length}
+                categories={categoryOptions}
+                selectedCategoryId={selectedCategoryId}
+                onSelectCategory={setSelectedCategoryId}
+            >
+                <ContentRouter
+                    activeItem={activeItem}
+                    game={game}
+                    categories={categoryOptions}
+                    selectedCategory={selectedCategory}
+                    canEditStandards={flags.canEditStandards}
+                    attentionItems={attentionItems}
+                    initialSlug={initialSlug}
+                    initialAbbreviation={initialAbbreviation}
+                    rows={rows}
+                    groups={manageGroups}
+                    onGroupsChange={setManageGroups}
+                    onRowChange={applyRowPatch}
+                    onRowGroupChange={(categoryId, groupId, groupName) =>
+                        setRows((rs) =>
+                            rs.map((r) =>
+                                r.id === categoryId
+                                    ? { ...r, groupId, groupName }
+                                    : r,
+                            ),
+                        )
+                    }
+                    onEditCategory={(id) => {
+                        setSelectedCategoryId(id);
+                        setActiveItem('category-settings');
+                    }}
+                />
+            </ConsoleChrome>
 
             <HistoryDrawer
                 gameSlug={game.name}
                 open={historyOpen}
                 onClose={() => setHistoryOpen(false)}
             />
-        </div>
+        </>
     );
 }
