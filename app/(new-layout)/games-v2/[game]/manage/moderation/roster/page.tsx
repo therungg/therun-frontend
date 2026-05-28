@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
+import { loadConsoleChrome } from '../../console/load-chrome';
+import { SubrouteChrome } from '../../console/subroute-chrome';
 import { RosterView } from './roster-view';
 
 interface Props {
@@ -29,15 +31,25 @@ export default async function RosterPage({ params, searchParams }: Props) {
             ? parsed
             : (categories[0]?.id ?? null);
 
+    const chrome = await loadConsoleChrome(session, game);
+
     return (
-        <RosterView
-            gameSlug={game.name}
-            gameDisplay={game.display}
-            categories={categories.map((c) => ({
-                id: c.id,
-                display: c.display,
-            }))}
-            initialCategoryId={selectedCategoryId}
-        />
+        <SubrouteChrome
+            game={game}
+            categories={chrome.categories}
+            flags={chrome.flags}
+            attentionCount={chrome.attentionCount}
+            activeItem="roster"
+        >
+            <RosterView
+                gameSlug={game.name}
+                gameDisplay={game.display}
+                categories={categories.map((c) => ({
+                    id: c.id,
+                    display: c.display,
+                }))}
+                initialCategoryId={selectedCategoryId}
+            />
+        </SubrouteChrome>
     );
 }

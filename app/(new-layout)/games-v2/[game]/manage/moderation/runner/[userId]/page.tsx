@@ -5,6 +5,8 @@ import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { getUserEligibleRuns } from '~src/lib/moderation/mass-mgmt';
 import { ModError } from '~src/lib/moderation/mod-fetch';
 import type { UserEligibleRunRow } from '../../../../../../../../types/moderation.types';
+import { loadConsoleChrome } from '../../../console/load-chrome';
+import { SubrouteChrome } from '../../../console/subroute-chrome';
 import { RunnerView } from './runner-view';
 
 interface Props {
@@ -36,16 +38,25 @@ export default async function RunnerPage({ params }: Props) {
         }
     }
 
+    const chrome = await loadConsoleChrome(session, game);
+
     // UserEligibleRunRow carries no runner name and no name-by-id resolver
     // exists in src/lib. Fall back to a stable cosmetic label; the ban still
     // works because the rule keys on the numeric userId, not this string.
     return (
-        <RunnerView
-            gameSlug={game.name}
-            gameDisplay={game.display}
-            userId={userId}
-            runnerName={`Runner #${userId}`}
-            rows={rows}
-        />
+        <SubrouteChrome
+            game={game}
+            categories={chrome.categories}
+            flags={chrome.flags}
+            attentionCount={chrome.attentionCount}
+        >
+            <RunnerView
+                gameSlug={game.name}
+                gameDisplay={game.display}
+                userId={userId}
+                runnerName={`Runner #${userId}`}
+                rows={rows}
+            />
+        </SubrouteChrome>
     );
 }

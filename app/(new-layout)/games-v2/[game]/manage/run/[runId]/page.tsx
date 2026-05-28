@@ -1,7 +1,10 @@
 import { subject as caslSubject } from '@casl/ability';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
+import { resolveGame } from '~src/lib/games-v1';
 import { defineAbilityFor } from '~src/rbac/ability';
+import { loadConsoleChrome } from '../../console/load-chrome';
+import { SubrouteChrome } from '../../console/subroute-chrome';
 import { loadManageRunData } from './data';
 import { ManageRunPage } from './manage-run-page';
 
@@ -33,5 +36,18 @@ export default async function GameRunManagePage({ params }: Props) {
     // User-from-category exclusion (POST /admin/exclusions) is admin-only.
     const canExcludeUsers = (session.roles ?? []).includes('admin');
 
-    return <ManageRunPage data={data} canExcludeUsers={canExcludeUsers} />;
+    const game = await resolveGame(slug);
+    if (!game) notFound();
+    const chrome = await loadConsoleChrome(session, game);
+
+    return (
+        <SubrouteChrome
+            game={game}
+            categories={chrome.categories}
+            flags={chrome.flags}
+            attentionCount={chrome.attentionCount}
+        >
+            <ManageRunPage data={data} canExcludeUsers={canExcludeUsers} />
+        </SubrouteChrome>
+    );
 }
