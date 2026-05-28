@@ -34,23 +34,17 @@ export function GameHeader({ game, stats, canManage, canModerate }: Props) {
                 </small>
             </div>
             {(canManage || canModerate) && (
-                <div className="ms-auto d-flex gap-2">
-                    {canModerate && (
-                        <Link
-                            href={`/games-v2/${game.name}/manage/moderation`}
-                            className="btn btn-sm btn-outline-secondary"
-                        >
-                            Moderate
-                        </Link>
-                    )}
-                    {canManage && (
-                        <Link
-                            href={`/games-v2/${game.name}/manage`}
-                            className="btn btn-sm btn-outline-secondary"
-                        >
-                            Manage
-                        </Link>
-                    )}
+                // One entry into the unified admin console. It opens on the
+                // viewer's default pane (the moderation queue for moderators,
+                // game/category settings for config-only admins), so a single
+                // button serves both — labelled for whichever they primarily do.
+                <div className="ms-auto">
+                    <Link
+                        href={`/games-v2/${game.name}/manage`}
+                        className="btn btn-sm btn-outline-secondary"
+                    >
+                        {canModerate ? 'Moderate' : 'Manage'}
+                    </Link>
                 </div>
             )}
         </header>
