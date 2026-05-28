@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { manualTimeVerdictAction } from '../shared/actions/manual-times.action';
+import styles from './manual-time-verdict-row.module.scss';
 
 const MIN_REASON = 10;
 
@@ -27,7 +28,7 @@ export function ManualTimeVerdictRow({
 
     if (verdict == null) {
         return (
-            <div className="d-flex flex-wrap gap-2">
+            <div className={styles.actions}>
                 <button
                     type="button"
                     className="btn btn-sm btn-success"
@@ -68,33 +69,33 @@ export function ManualTimeVerdictRow({
     };
 
     return (
-        <div className="border-top pt-2 mt-1">
+        <div className={styles.form}>
             <label
                 htmlFor={`mt-verdict-reason-${manualTimeId}`}
-                className="form-label small text-muted mb-1"
+                className={styles.fieldLabel}
             >
                 {verdict === 'verify' ? 'Verify' : 'Reject'} reason — required,
                 min {MIN_REASON} characters, audit-logged
             </label>
             <textarea
                 id={`mt-verdict-reason-${manualTimeId}`}
-                className="form-control form-control-sm"
+                className={styles.textarea}
                 rows={2}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 disabled={isWorking}
             />
             {!reasonOk && reason.length > 0 && (
-                <small className="text-danger">
+                <div className={styles.reasonError}>
                     {MIN_REASON - reason.trim().length} more needed.
-                </small>
+                </div>
             )}
             {error && (
-                <div className="alert alert-danger py-2 mt-2 mb-0" role="alert">
+                <div className={styles.errorAlert} role="alert">
                     {error}
                 </div>
             )}
-            <div className="d-flex gap-2 mt-2">
+            <div className={styles.confirmRow}>
                 <button
                     type="button"
                     className="btn btn-sm btn-outline-secondary"

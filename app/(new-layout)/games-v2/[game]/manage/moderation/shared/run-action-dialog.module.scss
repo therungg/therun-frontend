@@ -1,0 +1,147 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/mixins' as mx;
+
+// ============================================================
+// RunActionDialog — modal chrome for approve/remove/ban/restore.
+// Token-based spacing; times tabular-mono; calm depth.
+// ============================================================
+
+// ---- Modal backdrop -----------------------------------------
+.backdrop {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+// ---- Modal content surface ----------------------------------
+.content {
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-lg;
+    background: var(--bs-body-bg);
+    box-shadow: dt.$shadow-xl;
+}
+
+// ---- Header -------------------------------------------------
+.header {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-lg dt.$spacing-xl;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+}
+
+.title {
+    flex: 1;
+    font-size: dt.$font-size-base;
+    font-weight: dt.$heading-font-weight;
+    letter-spacing: dt.$heading-letter-spacing;
+    margin: 0;
+}
+
+// ---- Body ---------------------------------------------------
+.body {
+    padding: dt.$spacing-xl;
+}
+
+// ---- Form fields --------------------------------------------
+.fieldLabel {
+    display: block;
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    color: var(--bs-tertiary-color);
+    margin-bottom: 0.3rem;
+}
+
+// ---- Preview summary ----------------------------------------
+.previewSummary {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin-bottom: dt.$spacing-md;
+}
+
+// ---- Preview table: time cells use monospace ----------------
+.timeCell {
+    @include mx.monospace-value;
+    text-align: right;
+    white-space: nowrap;
+}
+
+// ---- Preview list (exclude kind) ----------------------------
+.previewList {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    padding-left: dt.$spacing-lg;
+    margin-bottom: 0;
+
+    li {
+        margin-bottom: 0.2rem;
+    }
+}
+
+.previewTime {
+    @include mx.monospace-value;
+    font-size: dt.$font-size-sm;
+}
+
+// ---- Loading / error states ---------------------------------
+.previewLoading {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    padding: dt.$spacing-sm 0;
+}
+
+.errorAlert {
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border-radius: dt.$radius-md;
+    border: 1px solid rgba(dt.$accent-red, 0.3);
+    background: color-mix(in srgb, #{dt.$accent-red} 8%, transparent);
+    color: dt.$accent-red;
+    font-size: dt.$font-size-sm;
+    margin-top: dt.$spacing-sm;
+    margin-bottom: 0;
+}
+
+// ---- Reason textarea ----------------------------------------
+.reasonTextarea {
+    font-size: dt.$font-size-sm;
+    border-radius: dt.$radius-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    background: color-mix(in srgb, var(--bs-body-bg) 90%, var(--bs-secondary-bg) 10%);
+    color: var(--bs-body-color);
+    padding: dt.$spacing-sm;
+    width: 100%;
+    resize: vertical;
+    transition: border-color dt.$transition-fast;
+
+    &:focus-visible {
+        outline: 0;
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+.reasonHint {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    margin-top: 0.25rem;
+}
+
+.reasonError {
+    font-size: dt.$font-size-2xs;
+    color: dt.$accent-red;
+    margin-top: 0.2rem;
+}
+
+// ---- Footer -------------------------------------------------
+.footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-md dt.$spacing-xl;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+}

@@ -1,0 +1,165 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/mixins' as mx;
+
+// ============================================================
+// Active Bans — standing exclusions list.
+// Token-based surfaces; severity spine pattern from the console.
+// ============================================================
+
+// ---- Section wrapper ----------------------------------------
+.section {
+    margin-bottom: dt.$spacing-3xl;
+}
+
+.heading {
+    font-size: dt.$font-size-md;
+    font-weight: dt.$heading-font-weight;
+    margin-bottom: dt.$spacing-xs;
+}
+
+.description {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin-bottom: dt.$spacing-lg;
+}
+
+// ---- Stack of ban rows --------------------------------------
+.stack {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+}
+
+// ---- A single ban card --------------------------------------
+$rail: 3px;
+
+.card {
+    position: relative;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-left-width: $rail;
+    border-left-color: dt.$accent-red;
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+    padding: dt.$spacing-md dt.$spacing-xl;
+    transition: box-shadow dt.$transition-base;
+
+    &:hover {
+        box-shadow: dt.$shadow-md;
+    }
+}
+
+// ---- Card layout --------------------------------------------
+.cardRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+}
+
+.cardMeta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    font-size: dt.$font-size-sm;
+}
+
+.runner {
+    font-weight: 600;
+}
+
+.metaLine {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+}
+
+.metaDate {
+    @include mx.monospace-value;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+}
+
+.banReason {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin-top: dt.$spacing-xs;
+    padding-left: dt.$spacing-md;
+    border-left: 2px solid rgba(var(--bs-border-color-rgb), 0.5);
+}
+
+// ---- Lift inline form ---------------------------------------
+.liftForm {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    min-width: 260px;
+}
+
+.liftTextarea {
+    font-size: dt.$font-size-sm;
+    border-radius: dt.$radius-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    background: color-mix(in srgb, var(--bs-body-bg) 90%, var(--bs-secondary-bg) 10%);
+    color: var(--bs-body-color);
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    resize: vertical;
+    transition: border-color dt.$transition-fast;
+
+    &:focus-visible {
+        outline: 0;
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+.liftActions {
+    display: flex;
+    gap: dt.$spacing-sm;
+    justify-content: flex-end;
+}
+
+// ---- Loading / empty / error states -------------------------
+.loading {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    padding: dt.$spacing-lg 0;
+}
+
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: dt.$spacing-xs;
+    padding: dt.$spacing-3xl dt.$spacing-lg;
+    color: var(--bs-secondary-color);
+}
+
+.emptyIcon {
+    color: var(--bs-primary);
+    opacity: 0.6;
+    margin-bottom: dt.$spacing-sm;
+}
+
+.emptyTitle {
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+    color: var(--bs-body-color);
+    margin: 0;
+}
+
+.errorAlert {
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border-radius: dt.$radius-md;
+    border: 1px solid rgba(dt.$accent-red, 0.3);
+    background: color-mix(in srgb, #{dt.$accent-red} 8%, transparent);
+    color: dt.$accent-red;
+    font-size: dt.$font-size-sm;
+}

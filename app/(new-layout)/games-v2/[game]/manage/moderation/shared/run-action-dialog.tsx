@@ -24,6 +24,7 @@ import {
     applyVerdictsAction,
     previewVerdictsAction,
 } from './actions/verdicts.action';
+import styles from './run-action-dialog.module.scss';
 
 interface Props {
     gameSlug: string;
@@ -192,7 +193,7 @@ export function RunActionDialog({
 
     return (
         <div
-            className="modal d-block"
+            className={`modal d-block ${styles.backdrop}`}
             tabIndex={-1}
             role="dialog"
             aria-modal="true"
@@ -200,15 +201,14 @@ export function RunActionDialog({
             onKeyDown={(e) => {
                 if (e.key === 'Escape' && !isConfirming) onClose();
             }}
-            style={{ background: 'rgba(0,0,0,0.5)' }}
         >
             <div
                 className="modal-dialog modal-lg modal-dialog-scrollable"
                 role="document"
             >
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <h5 className="modal-title" id="run-action-title">
+                <div className={`modal-content ${styles.content}`}>
+                    <div className={styles.header}>
+                        <h5 className={styles.title} id="run-action-title">
                             {VERB_TITLE[verb]} — {headerTarget}
                         </h5>
                         <button
@@ -219,12 +219,13 @@ export function RunActionDialog({
                             disabled={isConfirming}
                         />
                     </div>
-                    <div className="modal-body">
+
+                    <div className={styles.body}>
                         {verb === 'remove' && (
                             <div className="mb-3">
                                 <label
                                     htmlFor="remove-reason-cat"
-                                    className="form-label small text-muted mb-1"
+                                    className={styles.fieldLabel}
                                 >
                                     Why are you removing this?
                                 </label>
@@ -310,19 +311,18 @@ export function RunActionDialog({
                         )}
 
                         {isPreviewing && (
-                            <p className="text-muted">Loading preview…</p>
+                            <p className={styles.previewLoading}>
+                                Loading preview…
+                            </p>
                         )}
                         {previewError && (
-                            <div
-                                className="alert alert-danger py-2"
-                                role="alert"
-                            >
+                            <div className={styles.errorAlert} role="alert">
                                 {previewError}
                             </div>
                         )}
 
                         {preview && (
-                            <p className="mb-2">
+                            <p className={styles.previewSummary}>
                                 <strong>{preview.data.affectedRunCount}</strong>{' '}
                                 run
                                 {preview.data.affectedRunCount === 1 ? '' : 's'}{' '}
@@ -345,7 +345,7 @@ export function RunActionDialog({
                                         <thead>
                                             <tr>
                                                 <th>Runner</th>
-                                                <th className="text-end">
+                                                <th className={styles.timeCell}>
                                                     Time
                                                 </th>
                                                 <th>Status</th>
@@ -356,7 +356,11 @@ export function RunActionDialog({
                                                 (s) => (
                                                     <tr key={s.runId}>
                                                         <td>{s.runnerName}</td>
-                                                        <td className="text-end">
+                                                        <td
+                                                            className={
+                                                                styles.timeCell
+                                                            }
+                                                        >
                                                             <DurationToFormatted
                                                                 duration={
                                                                     s.timeMs
@@ -378,7 +382,7 @@ export function RunActionDialog({
 
                         {preview?.kind === 'exclude' &&
                             preview.data.sampleRuns.length > 0 && (
-                                <ul className="small mb-0">
+                                <ul className={styles.previewList}>
                                     {preview.data.sampleRuns.map((s) => (
                                         <li key={s.runId}>
                                             {s.runnerName} — {s.categoryName}
@@ -386,9 +390,15 @@ export function RunActionDialog({
                                                 ? ` (${s.subcategoryKey})`
                                                 : ''}{' '}
                                             {s.time != null && (
-                                                <DurationToFormatted
-                                                    duration={s.time}
-                                                />
+                                                <span
+                                                    className={
+                                                        styles.previewTime
+                                                    }
+                                                >
+                                                    <DurationToFormatted
+                                                        duration={s.time}
+                                                    />
+                                                </span>
                                             )}
                                         </li>
                                     ))}
@@ -398,37 +408,35 @@ export function RunActionDialog({
                         <div className="mt-3">
                             <label
                                 htmlFor="run-action-reason"
-                                className="form-label small text-muted mb-1"
+                                className={styles.fieldLabel}
                             >
                                 Reason — required, min {MIN_REASON} characters,
                                 audit-logged
                             </label>
                             <textarea
                                 id="run-action-reason"
-                                className="form-control form-control-sm"
+                                className={styles.reasonTextarea}
                                 rows={3}
                                 value={reason}
                                 onChange={(e) => setReason(e.target.value)}
                                 disabled={isConfirming}
                             />
                             {!reasonOk && reason.length > 0 && (
-                                <small className="text-danger">
+                                <div className={styles.reasonError}>
                                     {MIN_REASON - reason.trim().length} more
                                     needed.
-                                </small>
+                                </div>
                             )}
                         </div>
 
                         {error && (
-                            <div
-                                className="alert alert-danger py-2 mt-2 mb-0"
-                                role="alert"
-                            >
+                            <div className={styles.errorAlert} role="alert">
                                 {error}
                             </div>
                         )}
                     </div>
-                    <div className="modal-footer">
+
+                    <div className={styles.footer}>
                         <button
                             type="button"
                             className="btn btn-sm btn-outline-secondary"
