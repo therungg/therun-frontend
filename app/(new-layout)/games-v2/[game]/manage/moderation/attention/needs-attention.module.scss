@@ -1,0 +1,314 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/mixins' as mx;
+
+// ============================================================
+// Needs Attention — the moderator triage queue.
+// Scannable by severity; times read like a speedrun timer.
+// ============================================================
+
+$rail: 3px;
+
+// ---- Filter toolbar ----------------------------------------
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: dt.$spacing-lg;
+    margin-bottom: dt.$spacing-2xl;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.fieldLabel {
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    color: var(--bs-tertiary-color);
+}
+
+.select {
+    font-size: dt.$font-size-sm;
+    padding: 0.4rem 2rem 0.4rem 0.7rem;
+    border-radius: dt.$radius-md;
+    background: color-mix(in srgb, var(--bs-body-bg) 90%, var(--bs-secondary-bg) 10%);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    color: var(--bs-body-color);
+    transition: border-color dt.$transition-fast;
+
+    &:hover {
+        border-color: rgba(var(--bs-primary-rgb), 0.5);
+    }
+    &:focus-visible {
+        outline: 0;
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+    }
+}
+
+.count {
+    margin-left: auto;
+    align-self: center;
+    @include mx.monospace-value;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+// ---- Stack of items ----------------------------------------
+.stack {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-lg;
+}
+
+// ---- A single run / claim card -----------------------------
+.card {
+    position: relative;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-left-width: $rail;
+    border-left-color: var(--bs-secondary);
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+    padding: dt.$spacing-lg dt.$spacing-xl;
+    transition: box-shadow dt.$transition-base, border-color dt.$transition-fast;
+
+    &:hover {
+        box-shadow: dt.$shadow-md;
+    }
+}
+
+.sevHigh {
+    border-left-color: dt.$accent-red;
+}
+.sevMedium {
+    border-left-color: dt.$accent-amber;
+}
+.sevLow {
+    border-left-color: var(--bs-secondary);
+}
+
+.cardTop {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-md;
+}
+
+.age {
+    margin-left: auto;
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    white-space: nowrap;
+}
+
+// ---- Meta line ---------------------------------------------
+.meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: dt.$spacing-md dt.$spacing-lg;
+    margin-bottom: dt.$spacing-md;
+    font-size: dt.$font-size-sm;
+}
+
+.runner {
+    font-weight: 600;
+}
+
+.category {
+    color: var(--bs-secondary-color);
+}
+
+.sub {
+    color: var(--bs-tertiary-color);
+}
+
+.timeGroup {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35rem;
+}
+
+.timeLabel {
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--bs-tertiary-color);
+}
+
+.time {
+    @include mx.monospace-value;
+    color: var(--bs-emphasis-color);
+}
+
+.vod {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--bs-primary);
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.noVod {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--bs-tertiary-color);
+}
+
+.status {
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--bs-tertiary-color);
+}
+
+.note {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin-bottom: dt.$spacing-md;
+    padding-left: dt.$spacing-md;
+    border-left: 2px solid rgba(var(--bs-border-color-rgb), 0.5);
+}
+
+// ---- Actions -----------------------------------------------
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}
+
+.pushEnd {
+    margin-left: auto;
+}
+
+// ---- Pills (severity + source) -----------------------------
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: dt.$font-size-2xs;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+}
+
+.sevPillHigh {
+    background: color-mix(in srgb, #{dt.$accent-red} 16%, transparent);
+    color: dt.$accent-red;
+}
+.sevPillMedium {
+    background: color-mix(in srgb, #{dt.$accent-amber} 20%, transparent);
+    color: color-mix(in srgb, #{dt.$accent-amber} 75%, var(--bs-emphasis-color));
+}
+.sevPillLow {
+    background: rgba(var(--bs-secondary-rgb), 0.14);
+    color: var(--bs-secondary-color);
+}
+
+.source {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: dt.$font-size-2xs;
+    font-weight: 500;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: rgba(var(--bs-secondary-rgb), 0.1);
+    color: var(--bs-secondary-color);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+}
+
+// ---- Runner group (multiple items) -------------------------
+.group {
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-md;
+    overflow: hidden;
+}
+
+.groupHead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-md dt.$spacing-xl;
+    background: color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-secondary-bg) 8%);
+}
+
+.disclosure {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    border: 0;
+    background: transparent;
+    color: var(--bs-body-color);
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+        border-radius: dt.$radius-sm;
+    }
+}
+
+.caret {
+    color: var(--bs-tertiary-color);
+    transition: transform dt.$transition-fast;
+}
+
+.groupCountText {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.groupBody {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-md dt.$spacing-xl dt.$spacing-xl;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+}
+
+// nested cards inside a group sit flush (group provides the frame)
+.groupBody .card {
+    background: color-mix(in srgb, var(--bs-body-bg) 96%, var(--bs-secondary-bg) 4%);
+}
+
+// ---- Empty state -------------------------------------------
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: dt.$spacing-xs;
+    padding: dt.$spacing-3xl dt.$spacing-lg;
+    color: var(--bs-secondary-color);
+}
+
+.emptyIcon {
+    color: var(--bs-primary);
+    opacity: 0.6;
+    margin-bottom: dt.$spacing-sm;
+}
+
+.emptyTitle {
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+    color: var(--bs-body-color);
+    margin: 0;
+}
