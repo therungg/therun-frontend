@@ -109,7 +109,9 @@ const ALL_GROUPS: NavGroup[] = [
         id: 'per-category',
         label: 'Per category',
         items: [
-            { id: 'standards', label: 'Standards', categoryScoped: true },
+            // Standards self-manages its own category selector, so it is NOT
+            // categoryScoped (it ignores the shell's selected category).
+            { id: 'standards', label: 'Standards', categoryScoped: false },
             { id: 'timing', label: 'Timing', categoryScoped: true },
             { id: 'rules', label: 'Rules', categoryScoped: true },
             { id: 'variables', label: 'Variables', categoryScoped: true },
@@ -119,10 +121,14 @@ const ALL_GROUPS: NavGroup[] = [
     },
 ];
 
-/** Standards sits in the per-category group but is gated by canEditStandards. */
+/**
+ * Standards lives in the per-category group but is visible to ANY moderator
+ * (read-only preview); only board-admins (canEditStandards) may edit it, and that
+ * edit-gating is handled by the Standards component, not by visibility here.
+ */
 function itemVisible(groupId: NavGroupId, itemId: NavItemId, flags: NavFlags): boolean {
     if (groupId === 'moderate') return flags.canModerate;
-    if (itemId === 'standards') return flags.canEditStandards;
+    if (itemId === 'standards') return flags.canModerate;
     // remaining per-category items + all game items
     return flags.canConfigure;
 }
@@ -803,7 +809,7 @@ Run: `rm -rf .next`
 
 ## Self-review checklist (completed during authoring)
 
-- **Spec coverage:** route at `/manage` (Task 5) ✓; sidebar IA + groups (Tasks 1–2) ✓; per-item permission gating incl. Standards-as-board-admin-in-per-category (Task 1 `itemVisible`, Task 5 flags) ✓; category context picker (Tasks 2,4) ✓; consistent Bootstrap shell (Tasks 2,4) ✓; reserved metadata/moderators slots (Task 1 `reserved`, Task 3 placeholders) ✓. Deferred-by-design (flagged): redirect, restyle, minimums consolidation, legacy deletion.
+- **Spec coverage:** route at `/manage` (Task 5) ✓; sidebar IA + groups (Tasks 1–2) ✓; per-item permission gating — Standards visible to any moderator but editable only by board-admin (Task 1 `itemVisible` uses `canModerate` for visibility; Task 5 passes `canEditStandards` to the component) ✓; category context picker (Tasks 2,4) ✓; consistent Bootstrap shell (Tasks 2,4) ✓; reserved metadata/moderators slots (Task 1 `reserved`, Task 3 placeholders) ✓. Deferred-by-design (flagged): redirect, restyle, minimums consolidation, legacy deletion.
 - **Placeholders:** none — all code blocks are complete; `Placeholder` is a real component, not a TODO.
 - **Type consistency:** `NavItemId`/`NavFlags` defined in Task 1 are used unchanged in Tasks 2–5; `ConsoleShell` props (Task 4) match the `page.tsx` call (Task 5); `ContentRouter` props (Task 3) match the shell call (Task 4). Two call sites carry explicit "match the real component signature" guards (Tasks 3,4) because they consume pre-existing components.
 ```
