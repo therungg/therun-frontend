@@ -144,7 +144,7 @@ export function ConsoleShell({
                     />
                 </aside>
 
-                <section>
+                <section className={styles.content}>
                     <ContentRouter
                         activeItem={activeItem}
                         game={game}
