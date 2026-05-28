@@ -1,0 +1,74 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/mixins' as mx;
+
+// ============================================================
+// ManualTimeVerdictRow — Verify/Reject inline form for self-claims.
+// Token-based spacing; calm separator from the card above.
+// ============================================================
+
+// ---- Initial button strip -----------------------------------
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+}
+
+// ---- Expanded confirm form ----------------------------------
+.form {
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    padding-top: dt.$spacing-md;
+    margin-top: dt.$spacing-sm;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.fieldLabel {
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    color: var(--bs-tertiary-color);
+}
+
+.textarea {
+    font-size: dt.$font-size-sm;
+    border-radius: dt.$radius-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    background: color-mix(in srgb, var(--bs-body-bg) 90%, var(--bs-secondary-bg) 10%);
+    color: var(--bs-body-color);
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    width: 100%;
+    resize: vertical;
+    transition: border-color dt.$transition-fast;
+
+    &:focus-visible {
+        outline: 0;
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+.reasonError {
+    font-size: dt.$font-size-2xs;
+    color: dt.$accent-red;
+}
+
+.errorAlert {
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border-radius: dt.$radius-md;
+    border: 1px solid rgba(dt.$accent-red, 0.3);
+    background: color-mix(in srgb, #{dt.$accent-red} 8%, transparent);
+    color: dt.$accent-red;
+    font-size: dt.$font-size-sm;
+    margin-bottom: 0;
+}
+
+.confirmRow {
+    display: flex;
+    gap: dt.$spacing-sm;
+}

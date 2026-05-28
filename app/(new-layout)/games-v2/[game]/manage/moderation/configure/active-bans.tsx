@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useState, useTransition } from 'react';
+import { PersonSlash, ShieldCheck } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { UserLink } from '~src/components/links/links';
 import type { GameExclusionRuleRow } from '../../../../../../../types/moderation.types';
 import { deleteRuleAction } from '../rules/actions/delete-rule.action';
 import { loadBansAction } from './actions/standards.action';
+import styles from './active-bans.module.scss';
 
 interface Props {
     gameSlug: string;
@@ -51,37 +53,45 @@ function BanRow({
     };
 
     return (
-        <li className="list-group-item">
-            <div className="d-flex flex-wrap align-items-start justify-content-between gap-2">
-                <div className="small">
-                    <strong>
+        <div className={styles.card}>
+            <div className={styles.cardRow}>
+                <div className={styles.cardMeta}>
+                    <span className={styles.runner}>
                         <UserLink username={rule.targetDisplayName} />
-                    </strong>{' '}
-                    — banned from {rule.categoryName ?? <em>the whole game</em>}{' '}
-                    · by {rule.excludedByName} ·{' '}
-                    {new Date(rule.createdAt).toLocaleDateString()}
+                    </span>
+                    <span className={styles.metaLine}>
+                        Banned from{' '}
+                        {rule.categoryName ?? <em>the whole game</em>} · by{' '}
+                        {rule.excludedByName}
+                    </span>
+                    <span className={styles.metaDate}>
+                        {new Date(rule.createdAt).toLocaleDateString()}
+                    </span>
                     {rule.reason && (
-                        <div className="text-muted">{rule.reason}</div>
+                        <div className={styles.banReason}>{rule.reason}</div>
                     )}
                 </div>
+
                 {!expanded ? (
                     <button
                         type="button"
-                        className="btn btn-sm btn-outline-secondary"
+                        className="btn btn-sm btn-outline-danger"
                         onClick={() => {
                             setExpanded(true);
                             setError(null);
                         }}
                     >
+                        <PersonSlash
+                            size={13}
+                            aria-hidden="true"
+                            className="me-1"
+                        />
                         Lift ban
                     </button>
                 ) : (
-                    <div
-                        className="d-flex flex-column gap-1"
-                        style={{ minWidth: 260 }}
-                    >
+                    <div className={styles.liftForm}>
                         <textarea
-                            className="form-control form-control-sm"
+                            className={styles.liftTextarea}
                             rows={2}
                             placeholder={`Reason (min ${MIN_REASON} chars)`}
                             value={reason}
@@ -89,9 +99,9 @@ function BanRow({
                             disabled={isPending}
                         />
                         {error && (
-                            <div className="text-danger small">{error}</div>
+                            <div className={styles.errorAlert}>{error}</div>
                         )}
-                        <div className="d-flex gap-2 justify-content-end">
+                        <div className={styles.liftActions}>
                             <button
                                 type="button"
                                 className="btn btn-sm btn-outline-secondary"
@@ -116,7 +126,7 @@ function BanRow({
                     </div>
                 )}
             </div>
-        </li>
+        </div>
     );
 }
 
@@ -146,21 +156,35 @@ export function ActiveBans({ gameSlug }: Props) {
         setRules((prev) => prev.filter((r) => r.ruleId !== ruleId));
 
     return (
-        <section className="mb-4">
-            <h2 className="h5 mb-2">Active bans</h2>
-            <p className="text-muted small">
+        <section className={styles.section}>
+            <h2 className={styles.heading}>Active bans</h2>
+            <p className={styles.description}>
                 Standing exclusions that keep a runner off this game&apos;s
                 boards. Lifting a ban reinstates their affected runs.
             </p>
 
             {loading ? (
-                <p className="text-muted">Loading active bans…</p>
+                <div className={styles.loading}>
+                    <span>Loading active bans…</span>
+                </div>
             ) : error ? (
-                <div className="alert alert-danger py-2 mb-0">{error}</div>
+                <div className={styles.errorAlert} role="alert">
+                    {error}
+                </div>
             ) : rules.length === 0 ? (
-                <p className="text-muted">No active bans.</p>
+                <div className={styles.empty}>
+                    <ShieldCheck
+                        size={40}
+                        className={styles.emptyIcon}
+                        aria-hidden="true"
+                    />
+                    <p className={styles.emptyTitle}>No active bans</p>
+                    <p className="mb-0">
+                        This game has no standing exclusions.
+                    </p>
+                </div>
             ) : (
-                <ul className="list-group">
+                <div className={styles.stack}>
                     {rules.map((rule) => (
                         <BanRow
                             key={rule.ruleId}
@@ -169,7 +193,7 @@ export function ActiveBans({ gameSlug }: Props) {
                             onLifted={onLifted}
                         />
                     ))}
-                </ul>
+                </div>
             )}
         </section>
     );
