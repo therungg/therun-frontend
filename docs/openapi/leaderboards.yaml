@@ -1,0 +1,855 @@
+openapi: 3.1.0
+info:
+  title: therun.gg — Leaderboard API
+  version: "1.0.0"
+  description: |
+    Route map for all endpoints dispatched by `src/api/leaderboards/handler.ts`
+    (`handleLeaderboards`). Detail level: paths, parameters, and light request/response
+    bodies — not exhaustive schemas.
+
+    > **Source of truth:** this file is a copy synced from the backend repo
+    > (`therun/docs/openapi/leaderboards.yaml`). Edit it there and re-copy; don't
+    > diverge this copy. Render with Swagger UI or Redoc to browse.
+
+    **Base URLs / routing.** All paths below are the logical paths the Lambda sees
+    (api-entry routes anything starting with `/v1/leaderboards`). Two API Gateway
+    fronts serve them:
+      - `https://api.therun.gg` — main RestApi. Serves public reads and the older
+        mod routes (verify/reject, submit, bulk, run PUT/move, mod-queue,
+        invalidate-cache, mass-management).
+      - `https://api.therun.gg/mod` — moderation RestApi (proxy). The `mod` base
+        path is stripped before the Lambda sees it, so the logical path is
+        unchanged. The newer mod routes (manual-times, verdicts, triage queue,
+        reports, policies) are served here. Because it is a catch-all proxy, it
+        also serves the full surface as a fallback.
+
+    **Auth.** Mod/admin routes require `Authorization: Bearer {sessionId}` and a
+    game-management permission (`verify-reject-run`, except invalidate-cache which
+    needs `edit` on `leaderboard`). Public reads need no auth.
+
+servers:
+  - url: https://api.therun.gg
+    description: Main API (public reads + legacy mod routes)
+  - url: https://api.therun.gg/mod
+    description: Moderation API proxy (manual-times, verdicts, triage, policies; full surface fallback)
+
+tags:
+  - name: Public
+    description: Unauthenticated leaderboard reads
+  - name: Runs (mod)
+    description: Single-run verify/reject/edit/move + submission
+  - name: Bulk & Queue
+    description: Mod queue and bulk verify/reject
+  - name: Mass management
+    description: Bulk exclude/include, exclusion rules, eligible-run rosters, audit
+  - name: Manual times
+    description: Mod-entered times not tied to an uploaded run
+  - name: Verdicts
+    description: Bulk verify/reject/unreject verdicts
+  - name: Triage
+    description: Flag queue and community reports
+  - name: Policies
+    description: Board policies (min_time enforced; others stored-but-not-yet-enforced)
+  - name: Cache
+    description: Leaderboard cache invalidation / rebuild
+
+security: []
+
+paths:
+  # ──────────────────────────── Public reads ────────────────────────────
+  /v1/leaderboards/{game}/{category}:
+    get:
+      tags: [Public]
+      summary: Get a leaderboard by game + category
+      description: |
+        Game and category are matched as "searchable" names (lowercased, spaces
+        removed). Arbitrary query params beyond the reserved ones below are treated
+        as variable filters derived from the game/category's variable definitions
+        (see the `/variables` sub-resource).
+      parameters:
+        - { name: game, in: path, required: true, schema: { type: string }, description: Searchable game name }
+        - { name: category, in: path, required: true, schema: { type: string }, description: Searchable category name }
+        - { name: timing, in: query, required: false, schema: { type: string, enum: [rt, gt] }, description: Force realtime/gametime display }
+        - { name: combined, in: query, required: false, schema: { type: string, enum: ["0", "1", "true", "false"] }, description: Aggregate all subcategories into one board }
+        - { name: verified, in: query, required: false, schema: { type: string, enum: ["0", "1", "true", "false"] }, description: Verified runs only }
+        - { name: country, in: query, required: false, schema: { type: string }, description: Country filter }
+        - { name: year, in: query, required: false, schema: { type: integer }, description: Filter runs by end year }
+        - { name: view, in: query, required: false, schema: { type: string }, description: View mode }
+        - { name: page, in: query, required: false, schema: { type: integer, default: 1 } }
+        - { name: pageSize, in: query, required: false, schema: { type: integer, default: 25, maximum: 100 } }
+      responses:
+        "200":
+          description: Leaderboard page
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: "#/components/schemas/LeaderboardEntry" } }
+                  totalItems: { type: integer }
+                  page: { type: integer }
+                  pageSize: { type: integer }
+                  totalPages: { type: integer }
+                  timing: { type: string, enum: [rt, gt] }
+                  defaultTiming: { type: string, enum: [rt, gt] }
+                  forceRealTime: { type: boolean }
+                  hideRealTime: { type: boolean }
+                  hideGameTime: { type: boolean }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404":
+          description: Game/category/leaderboard not found (body may include validCombinations)
+
+  /v1/leaderboards/{game}/{category}/variables:
+    get:
+      tags: [Public]
+      summary: Variable definitions + valid combinations for a leaderboard
+      parameters:
+        - { name: game, in: path, required: true, schema: { type: string } }
+        - { name: category, in: path, required: true, schema: { type: string } }
+      responses:
+        "200":
+          description: Variable defs, reserved params, and valid combinations
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  variables: { type: array, items: { type: object } }
+                  reservedParams: { type: array, items: { type: string } }
+                  validCombinations:
+                    type: object
+                    description: "{ mode: 'open' } or { mode: 'managed', keys: string[] }"
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /v1/leaderboards/runs/{runId}:
+    get:
+      tags: [Public]
+      summary: Get a single run's detail
+      parameters:
+        - { name: runId, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: Run detail
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result: { $ref: "#/components/schemas/RunDetail" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    put:
+      tags: [Runs (mod)]
+      summary: Edit a run (mod)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: runId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Any subset of editable fields.
+              properties:
+                time: { type: integer }
+                gameTime: { type: integer }
+                vodUrl: { type: [string, "null"] }
+                modNote: { type: string }
+                variables: { type: object, additionalProperties: { type: string } }
+                platform: { type: string }
+                emulator: { type: boolean }
+                leaderboardEligible: { type: boolean, description: "Setting true sets ineligible_reason='mod_override'" }
+      responses:
+        "200": { description: "{ result: { updated: true } }" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /v1/leaderboards/runs/{runId}/move:
+    post:
+      tags: [Runs (mod)]
+      summary: Move a run to another category (mod)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: runId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [categoryId]
+              properties:
+                categoryId: { type: integer, description: Target category }
+      responses:
+        "200": { description: "{ result: { moved: true } }" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /v1/leaderboards/wr-history/{game}/{category}:
+    get:
+      tags: [Public]
+      summary: World-record history for a leaderboard
+      parameters:
+        - { name: game, in: path, required: true, schema: { type: string } }
+        - { name: category, in: path, required: true, schema: { type: string } }
+        - { name: subcategory, in: query, required: false, schema: { type: string }, description: Subcategory hash filter }
+      responses:
+        "200":
+          description: WR history entries
+          content:
+            application/json:
+              schema: { type: array, items: { type: object } }
+
+  /v1/leaderboards/user/{userId}/rankings:
+    get:
+      tags: [Public]
+      summary: A user's leaderboard rankings across games/categories
+      parameters:
+        - { name: userId, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200":
+          description: Ranking entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    game: { type: string }
+                    category: { type: string }
+                    time: { type: integer }
+                    gameTime: { type: [integer, "null"] }
+                    primaryTiming: { type: string }
+                    verificationStatus: { type: string }
+                    vodUrl: { type: [string, "null"] }
+                    runDate: { type: string }
+                    rank: { type: integer }
+                    totalRunners: { type: integer }
+
+  # ──────────────────────────── Single-run mod + submit ───────────────────
+  /v1/leaderboards/submit:
+    post:
+      tags: [Runs (mod)]
+      summary: Manually submit a run
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [runnerName, gameId, categoryId, time]
+              properties:
+                runnerName: { type: string }
+                gameId: { type: string }
+                categoryId: { type: string }
+                time: { type: string, description: realtime in ms }
+                gameTime: { type: string }
+                vodUrl: { type: string }
+                variables: { type: object, additionalProperties: { type: string } }
+      responses:
+        "200": { description: "{ id, runnerName, time, warnings[] }" }
+        "400": { description: "Bad request — incl. below-minimum rejection (matches /minimum/i)" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/leaderboards/verify/{runId}:
+    post:
+      tags: [Runs (mod)]
+      summary: Verify a run
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: runId, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200": { description: "{ result: { verified: true } }" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  /v1/leaderboards/reject/{runId}:
+    post:
+      tags: [Runs (mod)]
+      summary: Reject a run
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: runId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason: { type: string }
+      responses:
+        "200": { description: "{ result: { rejected: true, nextRunIdForUser: integer|null } }" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  # ──────────────────────────── Queue + bulk ──────────────────────────────
+  /v1/leaderboards/mod-queue/{gameId}:
+    get:
+      tags: [Bulk & Queue]
+      summary: Paginated moderation queue for a game
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+        - { name: categoryId, in: query, required: false, schema: { type: integer } }
+        - { name: page, in: query, required: false, schema: { type: integer, default: 1 } }
+        - { name: pageSize, in: query, required: false, schema: { type: integer, default: 25, maximum: 100 } }
+        - { name: status, in: query, required: false, schema: { type: string, enum: [pending, verified, rejected, all], default: pending } }
+      responses:
+        "200": { description: "{ result: { items[], totalItems, page, pageSize } }" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/leaderboards/bulk-verify:
+    post:
+      tags: [Bulk & Queue]
+      summary: Bulk-verify runs (per-run permission checked)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [runIds]
+              properties:
+                runIds: { type: array, items: { type: integer }, minItems: 1, maxItems: 100 }
+      responses:
+        "200": { description: "{ result: { verified, skipped } }" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/leaderboards/bulk-reject:
+    post:
+      tags: [Bulk & Queue]
+      summary: Bulk-reject runs (per-run permission checked)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [runIds, reason]
+              properties:
+                runIds: { type: array, items: { type: integer }, minItems: 1, maxItems: 100 }
+                reason: { type: string }
+      responses:
+        "200": { description: "{ result: { rejected, skipped } }" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  # ──────────────────────────── Mass management ───────────────────────────
+  /v1/leaderboards/games/{gameId}/users/{userId}/eligible-runs:
+    get:
+      tags: [Mass management]
+      summary: A user's runs in a game (for bulk action selection)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+        - { name: userId, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200": { description: Array of runs }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/leaderboards/games/{gameId}/categories/{categoryId}/eligible-runs:
+    get:
+      tags: [Mass management]
+      summary: Category roster for bulk action selection
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+        - { name: categoryId, in: path, required: true, schema: { type: integer } }
+        - { name: verificationStatus, in: query, required: false, schema: { type: string, enum: [unverified, verified, rejected] } }
+        - { name: subcategoryKey, in: query, required: false, schema: { type: string } }
+        - { name: hasVod, in: query, required: false, schema: { type: boolean } }
+        - { name: runnerName, in: query, required: false, schema: { type: string } }
+        - { name: endedAfter, in: query, required: false, schema: { type: string, format: date-time } }
+        - { name: endedBefore, in: query, required: false, schema: { type: string, format: date-time } }
+        - { name: limit, in: query, required: false, schema: { type: integer } }
+        - { name: offset, in: query, required: false, schema: { type: integer } }
+      responses:
+        "200": { description: Roster array }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/leaderboards/games/{gameId}/exclusion-rules:
+    get:
+      tags: [Mass management]
+      summary: List exclusion rules for a game
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200": { description: Array of exclusion rules }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/leaderboards/games/{gameId}/exclusion-rules/{ruleId}:
+    delete:
+      tags: [Mass management]
+      summary: Delete an exclusion rule
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+        - { name: ruleId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [reason], properties: { reason: { type: string } } }
+      responses:
+        "200": { description: Deleted }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/leaderboards/games/{gameId}/mod-actions:
+    get:
+      tags: [Mass management]
+      summary: Mod action audit log for a game
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+        - { name: days, in: query, required: false, schema: { type: integer, default: 90, minimum: 1, maximum: 365 } }
+        - { name: limit, in: query, required: false, schema: { type: integer, default: 100, minimum: 1, maximum: 500 } }
+        - { name: offset, in: query, required: false, schema: { type: integer, default: 0 } }
+      responses:
+        "200": { description: Array of mod actions }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/leaderboards/games/{gameId}/exclude/preview:
+    post:
+      tags: [Mass management]
+      summary: Preview an exclude action
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Either ad-hoc runIds or a rule.
+              properties:
+                runIds: { type: array, items: { type: integer } }
+                rule:
+                  type: object
+                  properties:
+                    type: { type: string, enum: [user] }
+                    targetId: { type: integer }
+                    categoryId: { type: [integer, "null"] }
+      responses:
+        "200": { description: Preview result }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/leaderboards/games/{gameId}/exclude:
+    post:
+      tags: [Mass management]
+      summary: Exclude runs (ad-hoc or by rule)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                runIds: { type: array, items: { type: integer } }
+                rule:
+                  type: object
+                  properties:
+                    type: { type: string, enum: [user] }
+                    targetId: { type: integer }
+                    categoryId: { type: [integer, "null"] }
+                reason: { type: string }
+      responses:
+        "200": { description: Result with affected runs }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/leaderboards/games/{gameId}/include:
+    post:
+      tags: [Mass management]
+      summary: Re-include previously excluded runs
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [runIds, reason]
+              properties:
+                runIds: { type: array, items: { type: integer } }
+                reason: { type: string }
+      responses:
+        "200": { description: Result with included run IDs }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  # ──────────────────────────── Manual times ──────────────────────────────
+  /v1/leaderboards/games/{gameId}/manual-times:
+    get:
+      tags: [Manual times]
+      summary: List manual times for a game
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+        - { name: categoryId, in: query, required: false, schema: { type: integer } }
+        - { name: subcategoryKey, in: query, required: false, schema: { type: string } }
+        - { name: userId, in: query, required: false, schema: { type: integer } }
+        - { name: runnerName, in: query, required: false, schema: { type: string } }
+      responses:
+        "200": { description: Array of manual-time objects }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [Manual times]
+      summary: Create a manual time
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [runnerRef, categoryId, timing, timeMs, reason]
+              properties:
+                runnerRef: { type: object, description: "{ userId } or { guestName }" }
+                categoryId: { type: integer }
+                subcategoryKey: { type: string }
+                timing: { type: string, enum: [realtime, gametime] }
+                timeMs: { type: integer, minimum: 1 }
+                evidenceUrl: { type: string }
+                reason: { type: string, minLength: 10 }
+      responses:
+        "200": { description: "{ id, affectedLeaderboards }" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/leaderboards/games/{gameId}/manual-times/preview:
+    post:
+      tags: [Manual times]
+      summary: Preview a manual time
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [runnerRef, categoryId, timing, timeMs]
+              properties:
+                runnerRef: { type: object }
+                categoryId: { type: integer }
+                subcategoryKey: { type: string }
+                timing: { type: string, enum: [realtime, gametime] }
+                timeMs: { type: integer, minimum: 1 }
+      responses:
+        "200": { description: Preview result }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/leaderboards/games/{gameId}/manual-times/{id}:
+    put:
+      tags: [Manual times]
+      summary: Edit a manual time
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, minLength: 10 }
+                timeMs: { type: integer, minimum: 1 }
+                evidenceUrl: { type: string }
+      responses:
+        "200": { description: "{ id, updated: true }" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    delete:
+      tags: [Manual times]
+      summary: Delete a manual time
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [reason], properties: { reason: { type: string, minLength: 10 } } }
+      responses:
+        "200": { description: "{ deleted: true, affectedLeaderboards }" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/leaderboards/games/{gameId}/manual-times/{id}/verdict:
+    post:
+      tags: [Manual times]
+      summary: Verify/reject a manual time
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action, reason]
+              properties:
+                action: { type: string, enum: [verify, reject] }
+                reason: { type: string, minLength: 10 }
+      responses:
+        "200": { description: "{ id, verificationStatus }" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  # ──────────────────────────── Verdicts ──────────────────────────────────
+  /v1/leaderboards/games/{gameId}/verdicts/preview:
+    post:
+      tags: [Verdicts]
+      summary: Preview a bulk verdict
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action, runIds]
+              properties:
+                action: { type: string, enum: [verify, reject, unreject] }
+                runIds: { type: array, items: { type: integer }, minItems: 1, maxItems: 500 }
+      responses:
+        "200": { description: Preview result }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/leaderboards/games/{gameId}/verdicts:
+    post:
+      tags: [Verdicts]
+      summary: Apply a bulk verdict
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action, runIds, reason]
+              properties:
+                action: { type: string, enum: [verify, reject, unreject] }
+                runIds: { type: array, items: { type: integer }, minItems: 1, maxItems: 500 }
+                reason: { type: string, minLength: 10 }
+      responses:
+        "200": { description: Verdict result }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  # ──────────────────────────── Triage ────────────────────────────────────
+  /v1/leaderboards/games/{gameId}/reports:
+    get:
+      tags: [Triage]
+      summary: Unresolved community reports for a game
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200": { description: Array of reports }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/leaderboards/games/{gameId}/queue:
+    get:
+      tags: [Triage]
+      summary: Flag/triage queue for a game
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+        - { name: severity, in: query, required: false, schema: { type: string, enum: [low, medium, high] } }
+        - { name: reason, in: query, required: false, schema: { type: string } }
+        - { name: categoryId, in: query, required: false, schema: { type: integer } }
+        - { name: limit, in: query, required: false, schema: { type: integer, default: 100 } }
+        - { name: offset, in: query, required: false, schema: { type: integer, default: 0 } }
+        - { name: includeResolved, in: query, required: false, schema: { type: string, enum: ["true"] } }
+      responses:
+        "200": { description: Array of queue items }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/leaderboards/games/{gameId}/queue/{flagId}/resolve:
+    post:
+      tags: [Triage]
+      summary: Resolve a flag
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+        - { name: flagId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [reason], properties: { reason: { type: string, minLength: 10 } } }
+      responses:
+        "200": { description: "{ resolved: true }" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  # ──────────────────────────── Policies ──────────────────────────────────
+  /v1/leaderboards/games/{gameId}/policies:
+    get:
+      tags: [Policies]
+      summary: List board policies for a game
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+        - { name: categoryId, in: query, required: false, schema: { type: integer } }
+      responses:
+        "200": { description: Array of policy rows }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [Policies]
+      summary: Create/upsert a board policy
+      description: |
+        Upserts by (gameId, categoryId, subcategoryKey, policyType). Only `min_time`
+        is enforced today (read by ingest, submit, and the rebuild worker); the other
+        types are stored but not yet evaluated. For `min_time`, `value` must contain
+        `minTimeMs` and/or `minGameTimeMs` (milliseconds). `reason` is optional.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [policyType, value]
+              properties:
+                policyType:
+                  type: string
+                  enum: [min_time, max_time, require_video_top_n, auto_flag_pb_jump_pct, auto_flag_faster_than_wr_pct]
+                categoryId: { type: [integer, "null"], description: "null = game-wide" }
+                subcategoryKey: { type: [string, "null"] }
+                value:
+                  type: object
+                  description: "Shape depends on policyType; min_time = { minTimeMs?, minGameTimeMs? } in ms"
+                reason: { type: string }
+      responses:
+        "200": { description: The upserted policy row }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/leaderboards/games/{gameId}/policies/{id}:
+    put:
+      tags: [Policies]
+      summary: Update a board policy's value
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [value]
+              properties:
+                value: { type: object }
+                reason: { type: string }
+      responses:
+        "200": { description: The updated policy row }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    delete:
+      tags: [Policies]
+      summary: Delete a board policy
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { type: object, properties: { reason: { type: string } } }
+      responses:
+        "200": { description: "{ deleted: true }" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
+  # ──────────────────────────── Cache ─────────────────────────────────────
+  /v1/leaderboards/invalidate-cache/{gameId}:
+    post:
+      tags: [Cache]
+      summary: Invalidate caches and (optionally) enqueue a rebuild
+      description: Requires `edit` permission on subject `leaderboard` (not `verify-reject-run`).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+        - { name: categoryId, in: query, required: false, schema: { type: integer } }
+        - { name: cacheOnly, in: query, required: false, schema: { type: string, enum: ["1", "true"] }, description: Skip rebuild enqueue }
+        - { name: rebuildAllFlags, in: query, required: false, schema: { type: string, enum: ["1", "true"] } }
+      responses:
+        "200": { description: "{ result: { invalidated, reproject } }" }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: "Twitch-OAuth session id: `Authorization: Bearer {sessionId}`"
+  responses:
+    BadRequest:
+      description: Invalid request (validation error)
+    Forbidden:
+      description: Not authenticated or not authorized
+    NotFound:
+      description: Resource not found
+  schemas:
+    LeaderboardEntry:
+      type: object
+      properties:
+        rank: { type: integer }
+        runId: { type: integer }
+        runnerName: { type: string }
+        userId: { type: [integer, "null"] }
+        time: { type: integer }
+        realTime: { type: integer }
+        gameTime: { type: [integer, "null"] }
+        verificationStatus: { type: string }
+        vodUrl: { type: [string, "null"] }
+        runDate: { type: string }
+        isGuest: { type: boolean }
+        source: { type: string }
+        manualTimeId: { type: [integer, "null"] }
+    RunDetail:
+      type: object
+      properties:
+        runId: { type: integer }
+        gameId: { type: integer }
+        gameDisplay: { type: string }
+        categoryId: { type: integer }
+        categoryDisplay: { type: string }
+        subcategoryKey: { type: string }
+        runnerName: { type: string }
+        userId: { type: [integer, "null"] }
+        isGuest: { type: boolean }
+        time: { type: integer }
+        realTime: { type: integer }
+        gameTime: { type: [integer, "null"] }
+        runDate: { type: string, format: date-time }
+        vodUrl: { type: [string, "null"] }
+        verificationStatus: { type: string }
+        variables: { type: object, additionalProperties: { type: string } }

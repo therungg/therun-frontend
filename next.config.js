@@ -1,6 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     cacheComponents: true,
+    // The admin API-reference page reads docs/openapi/*.yaml at request time;
+    // keep those bundled into the server trace.
+    outputFileTracingIncludes: {
+        '/admin/api-docs': ['./docs/openapi/**/*'],
+    },
     typescript: {
         ignoreBuildErrors: true,
     },
