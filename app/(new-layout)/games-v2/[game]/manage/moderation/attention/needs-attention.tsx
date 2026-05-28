@@ -1,7 +1,19 @@
 'use client';
 
+import clsx from 'clsx';
 import moment from 'moment/moment';
 import { useMemo, useState } from 'react';
+import {
+    CameraVideo,
+    CameraVideoOff,
+    ChevronDown,
+    ChevronRight,
+    Flag,
+    Hammer,
+    HandIndex,
+    Robot,
+    ShieldCheck,
+} from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
@@ -14,6 +26,7 @@ import {
     groupByRunner,
 } from './attention-model';
 import { ManualTimeVerdictRow } from './manual-time-verdict-row';
+import styles from './needs-attention.module.scss';
 
 type SourceFilter = 'all' | AttentionSource;
 type CategoryFilter = 'any' | number;
@@ -25,24 +38,31 @@ interface Props {
     categories: Array<{ id: number; display: string }>;
 }
 
-const SEVERITY_BADGE: Record<FlagSeverity, string> = {
-    high: 'text-bg-danger',
-    medium: 'text-bg-warning',
-    low: 'text-bg-secondary',
+const SEV_SPINE: Record<FlagSeverity, string> = {
+    high: styles.sevHigh,
+    medium: styles.sevMedium,
+    low: styles.sevLow,
+};
+const SEV_PILL: Record<FlagSeverity, string> = {
+    high: styles.sevPillHigh,
+    medium: styles.sevPillMedium,
+    low: styles.sevPillLow,
 };
 
-const SOURCE_PILL: Record<AttentionSource, { label: string; icon: string }> = {
-    flag: { label: 'flag', icon: '⚙' },
-    report: { label: 'reported', icon: '🚩' },
-    appeal: { label: 'appeal', icon: '⚖' },
-    self_claim: { label: 'self-claim', icon: '✋' },
+const SOURCE_META: Record<
+    AttentionSource,
+    { label: string; Icon: typeof Flag }
+> = {
+    flag: { label: 'flag', Icon: Robot },
+    report: { label: 'reported', Icon: Flag },
+    appeal: { label: 'appeal', Icon: Hammer },
+    self_claim: { label: 'self-claim', Icon: HandIndex },
 };
 
 /** An active run-action invocation against one or more items. */
 interface RunAction {
     verb: ModVerb;
     target: RunActionTarget;
-    // keys removed from the local list when the dialog reports done.
     affectedKeys: string[];
 }
 
@@ -78,17 +98,17 @@ export function NeedsAttention({
 
     return (
         <div>
-            <div className="d-flex flex-wrap align-items-end gap-2 mb-4">
-                <div>
+            <div className={styles.toolbar}>
+                <div className={styles.field}>
                     <label
                         htmlFor="attention-source"
-                        className="form-label small text-muted mb-1"
+                        className={styles.fieldLabel}
                     >
                         Source
                     </label>
                     <select
                         id="attention-source"
-                        className="form-select form-select-sm"
+                        className={styles.select}
                         value={sourceFilter}
                         onChange={(e) =>
                             setSourceFilter(e.target.value as SourceFilter)
@@ -101,16 +121,16 @@ export function NeedsAttention({
                         <option value="self_claim">Self-claims</option>
                     </select>
                 </div>
-                <div>
+                <div className={styles.field}>
                     <label
                         htmlFor="attention-category"
-                        className="form-label small text-muted mb-1"
+                        className={styles.fieldLabel}
                     >
                         Category
                     </label>
                     <select
                         id="attention-category"
-                        className="form-select form-select-sm"
+                        className={styles.select}
                         value={categoryFilter === 'any' ? '' : categoryFilter}
                         onChange={(e) => {
                             const v = e.target.value;
@@ -127,18 +147,23 @@ export function NeedsAttention({
                         ))}
                     </select>
                 </div>
-                <div className="ms-auto text-muted small align-self-center">
+                <div className={styles.count}>
                     {filtered.length} item{filtered.length === 1 ? '' : 's'}
                 </div>
             </div>
 
             {groups.length === 0 ? (
-                <div className="text-center text-muted py-5">
-                    <p className="h5 mb-1">All clear</p>
-                    <p className="mb-0">Nothing needs attention.</p>
+                <div className={styles.empty}>
+                    <ShieldCheck
+                        size={40}
+                        className={styles.emptyIcon}
+                        aria-hidden="true"
+                    />
+                    <p className={styles.emptyTitle}>All clear</p>
+                    <p className="mb-0">Nothing needs attention right now.</p>
                 </div>
             ) : (
-                <div className="d-flex flex-column gap-3">
+                <div className={styles.stack}>
                     {groups.map((g) =>
                         g.items.length > 1 ? (
                             <RunnerGroupCard
@@ -197,63 +222,75 @@ function banTarget(
     };
 }
 
+function SourcePills({ sources }: { sources: AttentionSource[] }) {
+    return (
+        <>
+            {sources.map((s) => {
+                const { label, Icon } = SOURCE_META[s];
+                return (
+                    <span key={s} className={styles.source}>
+                        <Icon size={11} aria-hidden="true" />
+                        {label}
+                    </span>
+                );
+            })}
+        </>
+    );
+}
+
 function ItemMeta({ item }: { item: AttentionItem }) {
     const isGuest = item.userId == null;
     return (
-        <div className="small mb-2">
-            <span className="me-3">
+        <div className={styles.meta}>
+            <span className={styles.runner}>
                 {isGuest ? (
-                    <span>
+                    <>
                         {item.runnerName}{' '}
                         <span className="badge text-bg-secondary">guest</span>
-                    </span>
+                    </>
                 ) : (
                     <UserLink username={item.runnerName} />
                 )}
             </span>
-            <span className="text-muted me-3">{item.categoryName}</span>
+            <span className={styles.category}>{item.categoryName}</span>
             {item.subcategoryKey && (
-                <span className="text-muted me-3">{item.subcategoryKey}</span>
+                <span className={styles.sub}>{item.subcategoryKey}</span>
             )}
-            <span className="me-3">
-                RT <DurationToFormatted duration={item.timeMs} />
+            <span className={styles.timeGroup}>
+                <span className={styles.timeLabel}>RT</span>
+                <span className={styles.time}>
+                    <DurationToFormatted duration={item.timeMs} withMillis />
+                </span>
             </span>
             {item.gameTimeMs != null && (
-                <span className="me-3">
-                    GT <DurationToFormatted duration={item.gameTimeMs} />
+                <span className={styles.timeGroup}>
+                    <span className={styles.timeLabel}>GT</span>
+                    <span className={styles.time}>
+                        <DurationToFormatted
+                            duration={item.gameTimeMs}
+                            withMillis
+                        />
+                    </span>
                 </span>
             )}
             {item.vodUrl ? (
                 <a
-                    className="me-3"
+                    className={styles.vod}
                     href={item.vodUrl}
                     target="_blank"
                     rel="noreferrer"
                 >
-                    VOD
+                    <CameraVideo size={13} aria-hidden="true" /> VOD
                 </a>
             ) : (
-                <span className="text-muted me-3">No VOD</span>
+                <span className={styles.noVod}>
+                    <CameraVideoOff size={13} aria-hidden="true" /> No VOD
+                </span>
             )}
             {item.verificationStatus && (
-                <span className="text-muted">{item.verificationStatus}</span>
+                <span className={styles.status}>{item.verificationStatus}</span>
             )}
         </div>
-    );
-}
-
-function SourcePills({ sources }: { sources: AttentionSource[] }) {
-    return (
-        <>
-            {sources.map((s) => (
-                <span
-                    key={s}
-                    className="badge rounded-pill text-bg-light border text-muted fw-normal"
-                >
-                    {SOURCE_PILL[s].icon} {SOURCE_PILL[s].label}
-                </span>
-            ))}
-        </>
     );
 }
 
@@ -285,13 +322,13 @@ function SingleItemCard({
         onAct({ verb, target, affectedKeys: [item.key] });
 
     return (
-        <div className="border rounded p-3">
-            <div className="d-flex flex-wrap align-items-center gap-2 mb-2">
-                <span className={`badge ${SEVERITY_BADGE[item.severity]}`}>
+        <div className={clsx(styles.card, SEV_SPINE[item.severity])}>
+            <div className={styles.cardTop}>
+                <span className={clsx(styles.pill, SEV_PILL[item.severity])}>
                     {item.severity}
                 </span>
                 <SourcePills sources={item.sources} />
-                <span className="text-muted small ms-auto">
+                <span className={styles.age}>
                     <abbr title={moment(item.createdAt).format('LLLL')}>
                         {moment(item.createdAt).fromNow()}
                     </abbr>
@@ -300,9 +337,7 @@ function SingleItemCard({
 
             <ItemMeta item={item} />
 
-            {item.note && (
-                <div className="small text-muted mb-2">{item.note}</div>
-            )}
+            {item.note && <div className={styles.note}>{item.note}</div>}
 
             {isSelfClaim && item.manualTimeId != null ? (
                 <ManualTimeVerdictRow
@@ -311,7 +346,7 @@ function SingleItemCard({
                     onDone={onDone}
                 />
             ) : (
-                <div className="d-flex flex-wrap gap-2">
+                <div className={styles.actions}>
                     <button
                         type="button"
                         className="btn btn-sm btn-success"
@@ -339,7 +374,10 @@ function SingleItemCard({
                         <>
                             <Link
                                 href={`/games-v2/${gameSlug}/manage/moderation/runner/${item.userId}`}
-                                className="btn btn-sm btn-outline-secondary ms-auto"
+                                className={clsx(
+                                    'btn btn-sm btn-outline-secondary',
+                                    styles.pushEnd,
+                                )}
                             >
                                 View runner
                             </Link>
@@ -406,7 +444,6 @@ function RunnerGroupCard({
                 categoryDisplay: firstWithCat.categoryName,
                 gameDisplay,
             },
-            // A ban removes the runner's runs; clear all this runner's items.
             affectedKeys: allKeys,
         });
     };
@@ -427,26 +464,32 @@ function RunnerGroupCard({
         });
     };
 
+    const Caret = open ? ChevronDown : ChevronRight;
+
     return (
-        <div className="border rounded">
-            <div className="d-flex flex-wrap align-items-center gap-2 p-3">
+        <div className={styles.group}>
+            <div className={styles.groupHead}>
                 <button
                     type="button"
-                    className="btn btn-sm btn-link text-decoration-none p-0 text-reset"
+                    className={styles.disclosure}
                     onClick={() => setOpen((v) => !v)}
                     aria-expanded={open}
                 >
-                    <span className="me-2">{open ? '▾' : '▸'}</span>
+                    <Caret
+                        size={14}
+                        className={styles.caret}
+                        aria-hidden="true"
+                    />
                     {userId != null ? (
                         <UserLink username={runnerName} />
                     ) : (
-                        <strong>{runnerName}</strong>
+                        <span>{runnerName}</span>
                     )}
                 </button>
-                <span className="text-muted small">
+                <span className={styles.groupCountText}>
                     {items.length} items needing attention
                 </span>
-                <div className="ms-auto d-flex flex-wrap gap-2">
+                <div className={clsx(styles.actions, styles.pushEnd)}>
                     {userId != null && (
                         <Link
                             href={`/games-v2/${gameSlug}/manage/moderation/runner/${userId}`}
@@ -477,7 +520,7 @@ function RunnerGroupCard({
             </div>
 
             {open && (
-                <div className="border-top p-3 d-flex flex-column gap-3">
+                <div className={styles.groupBody}>
                     {items.map((it) => (
                         <SingleItemCard
                             key={it.key}
