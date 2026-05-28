@@ -241,6 +241,42 @@ $rail: 3px; // severity spine / active accent width
     color: var(--bs-secondary-color);
 }
 
+// ---- Content wrapper: gently align mounted config forms ----
+// The restyled surfaces (queue, bans, dialog) use their own module classes,
+// so these scoped overrides only reach the not-yet-restyled CONFIGURE forms
+// (Standards/Timing/Rules/Variables/etc.) that still use raw Bootstrap —
+// unifying their cards + inputs with the console's token language.
+.content {
+    :global(.bg-light-subtle) {
+        background: color-mix(
+            in srgb,
+            var(--bs-body-bg) 92%,
+            var(--bs-secondary-bg) 8%
+        );
+        border-color: rgba(var(--bs-border-color-rgb), 0.5) !important;
+        border-radius: dt.$radius-lg !important;
+    }
+
+    :global(.form-control),
+    :global(.form-select) {
+        border-color: rgba(var(--bs-border-color-rgb), 0.6);
+        border-radius: dt.$radius-md;
+        transition: border-color dt.$transition-fast,
+            box-shadow dt.$transition-fast;
+
+        &:focus {
+            border-color: var(--bs-primary);
+            box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+        }
+    }
+
+    // section headings inside config panes → match pane title weight
+    :global(h2.h5) {
+        font-weight: 700;
+        letter-spacing: -0.01em;
+    }
+}
+
 // ---- Run / attention item with severity spine -------------
 .item {
     position: relative;
