@@ -41,11 +41,9 @@ export function deletePolicy(
     sessionId: string,
     gameId: number,
     id: number,
-    reason: string,
 ): Promise<DeletePolicyResult> {
     return modFetch(`${base(gameId)}/${id}`, {
         sessionId,
         method: 'DELETE',
-        body: { reason },
     });
 }

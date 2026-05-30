@@ -237,9 +237,10 @@ export type PolicyType =
     | 'auto_flag_pb_jump_pct'
     | 'auto_flag_faster_than_wr_pct';
 
-export interface MinMaxPolicyValue {
-    rtMs?: number;
-    gtMs?: number;
+// min_time policy value, as stored/validated by the backend.
+export interface MinTimePolicyValue {
+    minTimeMs?: number;
+    minGameTimeMs?: number;
 }
 export interface RequireVideoTopNValue {
     n: number;
@@ -248,7 +249,7 @@ export interface PctPolicyValue {
     pct: number;
 }
 export type PolicyValue =
-    | MinMaxPolicyValue
+    | MinTimePolicyValue
     | RequireVideoTopNValue
     | PctPolicyValue
     | Record<string, unknown>;
@@ -270,12 +271,10 @@ export interface CreatePolicyInput {
     value: Record<string, unknown>;
     categoryId?: number | null;
     subcategoryKey?: string | null;
-    reason: string;
 }
 
 export interface UpdatePolicyInput {
     value: Record<string, unknown>;
-    reason: string;
 }
 
 export interface DeletePolicyResult {

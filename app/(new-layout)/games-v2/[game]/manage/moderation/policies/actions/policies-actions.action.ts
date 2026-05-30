@@ -40,7 +40,6 @@ export async function updatePolicyAction(
     gameSlug: string,
     id: number,
     value: Record<string, unknown>,
-    reason: string,
 ): Promise<{ ok: true; policy: BoardPolicyRow } | { error: string }> {
     const session = await getSession();
     if (!session?.username || !session.id) return { error: 'Not signed in.' };
@@ -52,10 +51,7 @@ export async function updatePolicyAction(
     }
 
     try {
-        const policy = await updatePolicy(session.id, game.id, id, {
-            value,
-            reason,
-        });
+        const policy = await updatePolicy(session.id, game.id, id, { value });
         return { ok: true, policy };
     } catch (e) {
         if (e instanceof ModError) return { error: e.message };
@@ -66,7 +62,6 @@ export async function updatePolicyAction(
 export async function deletePolicyAction(
     gameSlug: string,
     id: number,
-    reason: string,
 ): Promise<{ ok: true } | { error: string }> {
     const session = await getSession();
     if (!session?.username || !session.id) return { error: 'Not signed in.' };
@@ -78,7 +73,7 @@ export async function deletePolicyAction(
     }
 
     try {
-        await deletePolicy(session.id, game.id, id, reason);
+        await deletePolicy(session.id, game.id, id);
         return { ok: true };
     } catch (e) {
         if (e instanceof ModError) return { error: e.message };
