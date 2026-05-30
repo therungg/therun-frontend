@@ -49,7 +49,9 @@ tags:
   - name: Triage
     description: Flag queue and community reports
   - name: Policies
-    description: Board policies (min_time enforced; others stored-but-not-yet-enforced)
+    description: Board policies (min_time + verify_window enforced; others stored-but-not-yet-enforced)
+  - name: Auto-verify
+    description: Trusted-runner grants — their synced runs are auto-verified
   - name: Cache
     description: Leaderboard cache invalidation / rebuild
 
@@ -718,10 +720,12 @@ paths:
       tags: [Policies]
       summary: Create/upsert a board policy
       description: |
-        Upserts by (gameId, categoryId, subcategoryKey, policyType). Only `min_time`
-        is enforced today (read by ingest, submit, and the rebuild worker); the other
-        types are stored but not yet evaluated. For `min_time`, `value` must contain
-        `minTimeMs` and/or `minGameTimeMs` (milliseconds). `reason` is optional.
+        Upserts by (gameId, categoryId, subcategoryKey, policyType). Enforced types:
+        `min_time` (read by ingest, submit, rebuild) and `verify_window` (controls
+        mod-queue visibility; system default top_n=10). The remaining types are stored
+        but not yet evaluated. Value shapes: `min_time` = { minTimeMs?, minGameTimeMs? }
+        in ms; `verify_window` = { mode: "top_n", n } or { mode: "under_time", timeMs }.
+        `reason` is optional.
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: gameId, in: path, required: true, schema: { type: integer } }
@@ -735,7 +739,7 @@ paths:
               properties:
                 policyType:
                   type: string
-                  enum: [min_time, max_time, require_video_top_n, auto_flag_pb_jump_pct, auto_flag_faster_than_wr_pct]
+                  enum: [min_time, max_time, require_video_top_n, auto_flag_pb_jump_pct, auto_flag_faster_than_wr_pct, verify_window]
                 categoryId: { type: [integer, "null"], description: "null = game-wide" }
                 subcategoryKey: { type: [string, "null"] }
                 value:
@@ -787,6 +791,58 @@ paths:
         "403": { $ref: "#/components/responses/Forbidden" }
         "404": { $ref: "#/components/responses/NotFound" }
 
+  # ──────────────────────────── Auto-verify ───────────────────────────────
+  /v1/leaderboards/games/{gameId}/auto-verify:
+    get:
+      tags: [Auto-verify]
+      summary: List auto-verify grants for a game
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200": { description: Array of grant rows (userId, gameId, categoryId|null, createdBy, reason, createdAt) }
+        "403": { $ref: "#/components/responses/Forbidden" }
+    post:
+      tags: [Auto-verify]
+      summary: Grant auto-verify to a user
+      description: |
+        Marks a user trusted for the game (categoryId omitted/null = game-wide) or a
+        specific category. Their future synced runs insert as `verified`. Also
+        backfills: existing pending runs in scope are verified and a rebuild enqueued.
+        Eligibility (min_time) is unaffected — a verified run can still be ineligible.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId: { type: integer, description: the runner to trust }
+                categoryId: { type: [integer, "null"], description: "null/omitted = game-wide" }
+                reason: { type: string }
+      responses:
+        "200": { description: The grant row }
+        "400": { $ref: "#/components/responses/BadRequest" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+
+  /v1/leaderboards/games/{gameId}/auto-verify/{id}:
+    delete:
+      tags: [Auto-verify]
+      summary: Revoke an auto-verify grant
+      description: Future runs are pending again; already-verified runs stay verified.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: gameId, in: path, required: true, schema: { type: integer } }
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200": { description: "{ deleted: true }" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+
   # ──────────────────────────── Cache ─────────────────────────────────────
   /v1/leaderboards/invalidate-cache/{gameId}:
     post:
@@ -798,7 +854,7 @@ paths:
         - { name: gameId, in: path, required: true, schema: { type: integer } }
         - { name: categoryId, in: query, required: false, schema: { type: integer } }
         - { name: cacheOnly, in: query, required: false, schema: { type: string, enum: ["1", "true"] }, description: Skip rebuild enqueue }
-        - { name: rebuildAllFlags, in: query, required: false, schema: { type: string, enum: ["1", "true"] } }
+        - { name: rebuildAllFlags, in: query, required: false, schema: { type: string, enum: ["1", "true"] }, description: "Force a full re-rank of every board in scope. Required to backfill verify_queue_hidden (the verification-window flag) for existing runs — a plain rebuild only re-evaluates changed combos and won't update the window." }
       responses:
         "200": { description: "{ result: { invalidated, reproject } }" }
         "400": { $ref: "#/components/responses/BadRequest" }

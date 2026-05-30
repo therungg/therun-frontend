@@ -15,6 +15,8 @@ const CACHE_INVALIDATION_ROLES: Role[] = [
 interface Input {
     gameSlug: string;
     gameId: number;
+    /** When true, also enqueue a rebuild of every leaderboard flag (`?rebuildAllFlags=1`). */
+    rebuildAllFlags?: boolean;
 }
 
 export async function invalidateGameCacheAction(
@@ -33,8 +35,9 @@ export async function invalidateGameCacheAction(
     }
 
     try {
+        const query = input.rebuildAllFlags ? '?rebuildAllFlags=1' : '';
         await apiFetch<{ invalidated: { gameId: number } }>(
-            `/v1/leaderboards/invalidate-cache/${input.gameId}`,
+            `/v1/leaderboards/invalidate-cache/${input.gameId}${query}`,
             {
                 method: 'POST',
                 sessionId: session.id,
