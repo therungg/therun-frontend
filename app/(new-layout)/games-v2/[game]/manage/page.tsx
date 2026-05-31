@@ -33,6 +33,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
         caslSubject('category-settings', { game: game.name }),
     );
     const canEditStandards = ability.can('edit', 'moderators');
+    const canReassign = ability.can('reassign', 'reassignment');
     if (!canModerate && !canConfigure) notFound();
 
     const sessionId = session.id;
@@ -86,7 +87,12 @@ export default async function GameAdminConsolePage({ params }: Props) {
             <ConsoleShell
                 game={game}
                 categories={categories}
-                flags={{ canModerate, canEditStandards, canConfigure }}
+                flags={{
+                    canModerate,
+                    canEditStandards,
+                    canConfigure,
+                    canReassign,
+                }}
                 attentionItems={attentionItems}
                 initialCategoryId={initialCategory?.id ?? null}
                 initialSlug={identifiers.slug}
