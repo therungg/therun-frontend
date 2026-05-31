@@ -14,8 +14,7 @@ import type { AttentionItem } from '../moderation/attention/attention-model';
 import { NeedsAttention } from '../moderation/attention/needs-attention';
 import { ActiveBans } from '../moderation/configure/active-bans';
 import { Standards } from '../moderation/configure/standards';
-import { CategoryWizard } from '../reassignments/category-wizard';
-import { GameWizard } from '../reassignments/game-wizard';
+import { ReassignPane } from '../reassignments/reassign-pane';
 import { TimingSettingsSection } from '../timing/timing-settings-section';
 import { CombinationsSection } from '../variables/combinations-section';
 import { VariablesSection } from '../variables/variables-section';
@@ -192,22 +191,20 @@ export function ContentRouter(props: ContentRouterProps) {
                 </Placeholder>
             );
         case 'reassign':
-            return selectedCategory ? (
-                <CategoryWizard
-                    sourceCategory={{
-                        id: selectedCategory.id,
-                        display: selectedCategory.display,
-                    }}
+            return (
+                <ReassignPane
+                    gameId={game.id}
+                    gameSlug={game.name}
+                    gameDisplay={game.display}
                     categories={categories}
-                    targetGameSlug={game.name}
-                />
-            ) : (
-                <GameWizard
-                    sourceGameId={game.id}
-                    sourceGameDisplay={game.display}
-                    sourceCategoryNames={Object.fromEntries(
-                        categories.map((c) => [c.id, c.display]),
-                    )}
+                    selectedCategory={
+                        selectedCategory
+                            ? {
+                                  id: selectedCategory.id,
+                                  display: selectedCategory.display,
+                              }
+                            : null
+                    }
                 />
             );
         default:
