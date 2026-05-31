@@ -8,6 +8,7 @@ import type { CategoryStats } from './highlights';
 export type { CategoryStats };
 
 export interface GameSearchResult {
+    id: number;
     game: string;
     display: string;
     image?: string;
@@ -19,6 +20,7 @@ export async function searchGames(query: string): Promise<GameSearchResult[]> {
     const result = await getGamesPage(query, 1, 8);
 
     return result.items.map((g: Game) => ({
+        id: g.id,
         game: g.game,
         display: g.display,
         image: g.image,
