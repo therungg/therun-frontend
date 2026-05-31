@@ -36,9 +36,6 @@ export function ReassignPane({
     selectedCategory,
 }: Props) {
     const [mode, setMode] = useState<Mode>('game');
-
-    // Category mode needs a source. Prefer the rail selection; otherwise let
-    // the mod pick one here so the pane works regardless of rail state.
     const [sourceCategoryId, setSourceCategoryId] = useState<number | null>(
         selectedCategory?.id ?? null,
     );
@@ -50,20 +47,18 @@ export function ReassignPane({
             <div className={styles.modeToggle}>
                 <button
                     type="button"
-                    className={
-                        mode === 'game' ? styles.modeActive : styles.modeButton
-                    }
+                    className={`${styles.modeButton} ${
+                        mode === 'game' ? styles.modeActive : ''
+                    }`}
                     onClick={() => setMode('game')}
                 >
                     Reassign game
                 </button>
                 <button
                     type="button"
-                    className={
-                        mode === 'category'
-                            ? styles.modeActive
-                            : styles.modeButton
-                    }
+                    className={`${styles.modeButton} ${
+                        mode === 'category' ? styles.modeActive : ''
+                    }`}
                     onClick={() => setMode('category')}
                 >
                     Reassign a category
@@ -79,41 +74,56 @@ export function ReassignPane({
                     )}
                 />
             ) : (
-                <div>
-                    <div className={styles.step}>
-                        <label htmlFor="source-cat">Source category</label>
-                        <select
-                            id="source-cat"
-                            value={sourceCategoryId ?? ''}
-                            onChange={(e) =>
-                                setSourceCategoryId(
-                                    e.target.value
-                                        ? Number(e.target.value)
-                                        : null,
-                                )
-                            }
-                        >
-                            <option value="">Select…</option>
-                            {categories.map((c) => (
-                                <option key={c.id} value={c.id}>
-                                    {c.display}
-                                </option>
-                            ))}
-                        </select>
+                <>
+                    <div className={styles.surface}>
+                        <div className={styles.header}>
+                            <p className={styles.eyebrow}>
+                                Category reassignment
+                            </p>
+                            <h3 className={styles.title}>
+                                Pick a source category
+                            </h3>
+                            <p className={styles.subtitle}>
+                                Choose which category to merge into another.
+                            </p>
+                        </div>
+                        <div className={styles.step}>
+                            <label
+                                htmlFor="source-cat"
+                                className={styles.label}
+                            >
+                                Source category
+                            </label>
+                            <select
+                                id="source-cat"
+                                className={styles.select}
+                                value={sourceCategoryId ?? ''}
+                                onChange={(e) =>
+                                    setSourceCategoryId(
+                                        e.target.value
+                                            ? Number(e.target.value)
+                                            : null,
+                                    )
+                                }
+                            >
+                                <option value="">Select a category…</option>
+                                {categories.map((c) => (
+                                    <option key={c.id} value={c.id}>
+                                        {c.display}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
-                    {sourceCategory ? (
+                    {sourceCategory && (
                         <CategoryWizard
                             key={sourceCategory.id}
                             sourceCategory={sourceCategory}
                             categories={categories}
                             targetGameSlug={gameSlug}
                         />
-                    ) : (
-                        <p className={styles.muted}>
-                            Pick a source category to reassign.
-                        </p>
                     )}
-                </div>
+                </>
             )}
         </div>
     );

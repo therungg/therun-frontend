@@ -25,6 +25,14 @@ interface Props {
 
 type Step = 'target' | 'mapping' | 'diffs' | 'impact' | 'status';
 
+const STEPS: { id: Step; label: string }[] = [
+    { id: 'target', label: 'Target' },
+    { id: 'mapping', label: 'Mapping' },
+    { id: 'diffs', label: 'Diffs' },
+    { id: 'impact', label: 'Impact' },
+    { id: 'status', label: 'Run' },
+];
+
 export function GameWizard({
     sourceGameId,
     sourceGameDisplay,
@@ -40,6 +48,8 @@ export function GameWizard({
     const [previewErrors, setPreviewErrors] = useState<PreviewError[]>([]);
     const [createdId, setCreatedId] = useState<number | null>(null);
     const [isPending, startPending] = useTransition();
+
+    const stepIndex = STEPS.findIndex((s) => s.id === step);
 
     const runSearch = (q: string) => {
         setQuery(q);
@@ -107,45 +117,87 @@ export function GameWizard({
     };
 
     return (
-        <div className={styles.wizard}>
-            <h3>Reassign game: {sourceGameDisplay}</h3>
+        <div className={styles.surface}>
+            <div className={styles.header}>
+                <p className={styles.eyebrow}>Game reassignment</p>
+                <h3 className={styles.title}>
+                    Reassign game: {sourceGameDisplay}
+                </h3>
+                <p className={styles.subtitle}>
+                    Merge this entire game — its runs and categories — into
+                    another game.
+                </p>
+            </div>
+
+            <div className={styles.stepper}>
+                {STEPS.map((s, i) => (
+                    <span
+                        key={s.id}
+                        className={`${styles.stepDot} ${
+                            i === stepIndex
+                                ? styles.stepCurrent
+                                : i < stepIndex
+                                  ? styles.stepDone
+                                  : ''
+                        }`}
+                    >
+                        <span className={styles.stepNum}>{i + 1}</span>
+                        {s.label}
+                        {i < STEPS.length - 1 && (
+                            <span className={styles.stepSep} aria-hidden />
+                        )}
+                    </span>
+                ))}
+            </div>
 
             {step === 'target' && (
                 <div className={styles.step}>
-                    <label htmlFor="target-game">Merge into game</label>
+                    <label htmlFor="target-game" className={styles.label}>
+                        Merge into game
+                    </label>
                     <input
                         id="target-game"
+                        className={styles.input}
                         value={query}
                         onChange={(e) => runSearch(e.target.value)}
                         placeholder="Search target game…"
                     />
                     {previewErrors.length > 0 && (
-                        <ul className={styles.error}>
-                            {previewErrors.map((er) => (
-                                <li key={er.code}>{er.message}</li>
+                        <div
+                            className={`${styles.callout} ${styles.calloutError}`}
+                        >
+                            <ul className={styles.errorList}>
+                                {previewErrors.map((er) => (
+                                    <li key={er.code}>{er.message}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+                    {results.length > 0 && (
+                        <ul className={styles.results}>
+                            {results.map((g) => (
+                                <li key={g.id}>
+                                    <button
+                                        type="button"
+                                        className={styles.resultItem}
+                                        disabled={isPending}
+                                        onClick={() => pickTarget(g)}
+                                    >
+                                        {g.display}
+                                    </button>
+                                </li>
                             ))}
                         </ul>
                     )}
-                    <ul>
-                        {results.map((g) => (
-                            <li key={g.id}>
-                                <button
-                                    type="button"
-                                    disabled={isPending}
-                                    onClick={() => pickTarget(g)}
-                                >
-                                    {g.display}
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
                 </div>
             )}
 
             {step === 'mapping' && (
-                <div className={styles.step}>
-                    <p>Decide what happens to each source category.</p>
-                    <table>
+                <>
+                    <p className={styles.muted}>
+                        Decide what happens to each source category.
+                    </p>
+                    <table className={styles.table}>
                         <thead>
                             <tr>
                                 <th>Source category</th>
@@ -162,6 +214,7 @@ export function GameWizard({
                                     </td>
                                     <td>
                                         <select
+                                            className={styles.rowSelect}
                                             value={row.decision}
                                             onChange={(e) =>
                                                 setRowDecision(
@@ -179,8 +232,7 @@ export function GameWizard({
                                             <option value="drop">Drop</option>
                                         </select>
                                         {row.decision === 'merge' && (
-                                            <span className={styles.muted}>
-                                                {' '}
+                                            <span className={styles.targetHint}>
                                                 → target #
                                                 {row.targetCategoryId ?? '?'}
                                             </span>
@@ -197,32 +249,39 @@ export function GameWizard({
                             ))}
                         </tbody>
                     </table>
-                    <button
-                        type="button"
-                        disabled={!mappingIsComplete(mapping)}
-                        onClick={() => setStep('diffs')}
-                    >
-                        Next: settings diffs
-                    </button>
-                </div>
+                    <div className={styles.actions}>
+                        <span className={styles.spacer} />
+                        <button
+                            type="button"
+                            className={styles.btnPrimary}
+                            disabled={!mappingIsComplete(mapping)}
+                            onClick={() => setStep('diffs')}
+                        >
+                            Next: settings diffs
+                        </button>
+                    </div>
+                </>
             )}
 
             {step === 'diffs' && (
-                <div className={styles.step}>
+                <>
                     {diffs.length === 0 ? (
-                        <p className={styles.muted}>
+                        <div className={styles.callout}>
                             No conflicting settings to acknowledge.
-                        </p>
+                        </div>
                     ) : (
                         diffs.map((pair) => (
-                            <div key={pair.sourceCategoryId}>
-                                <h4>
+                            <div
+                                key={pair.sourceCategoryId}
+                                className={styles.diffPair}
+                            >
+                                <h4 className={styles.diffTitle}>
                                     {sourceCategoryNames[
                                         pair.sourceCategoryId
                                     ] ?? pair.sourceCategoryId}{' '}
                                     → #{pair.targetCategoryId}
                                 </h4>
-                                <table>
+                                <table className={styles.table}>
                                     <thead>
                                         <tr>
                                             <th>Field</th>
@@ -234,15 +293,23 @@ export function GameWizard({
                                         {pair.diffs.map((d) => (
                                             <tr key={d.field}>
                                                 <td>{d.field}</td>
-                                                <td>{String(d.source)}</td>
-                                                <td>{String(d.target)}</td>
+                                                <td className={styles.cellMono}>
+                                                    {String(d.source)}
+                                                </td>
+                                                <td className={styles.cellMono}>
+                                                    {String(d.target)}
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
-                                <label>
+                                <label
+                                    className={styles.ack}
+                                    style={{ marginTop: '0.75rem' }}
+                                >
                                     <input
                                         type="checkbox"
+                                        className={styles.ackBox}
                                         checked={ackedPairs.has(
                                             pair.sourceCategoryId,
                                         )}
@@ -260,46 +327,69 @@ export function GameWizard({
                                                 return next;
                                             })
                                         }
-                                    />{' '}
-                                    I understand
+                                    />
+                                    <span>I understand these differences</span>
                                 </label>
                             </div>
                         ))
                     )}
-                    <div>
+                    <div className={styles.actions}>
                         <button
                             type="button"
+                            className={styles.btnGhost}
                             onClick={() => setStep('mapping')}
                         >
                             Back
                         </button>
+                        <span className={styles.spacer} />
                         <button
                             type="button"
+                            className={styles.btnPrimary}
                             disabled={!allAcked}
                             onClick={() => setStep('impact')}
                         >
                             Next: impact
                         </button>
                     </div>
-                </div>
+                </>
             )}
 
             {step === 'impact' && (
-                <div className={styles.step}>
-                    <p>
-                        {mapping.length} source categories will be processed.
-                        Merging into <strong>{target?.display}</strong>.
-                    </p>
-                    <p className={styles.muted}>
-                        This can only be undone via the audit log.
-                    </p>
-                    <button type="button" onClick={() => setStep('diffs')}>
-                        Back
-                    </button>
-                    <button type="button" disabled={isPending} onClick={submit}>
-                        {isPending ? 'Starting…' : 'Confirm reassignment'}
-                    </button>
-                </div>
+                <>
+                    <div className={styles.impact}>
+                        <div className={styles.impactRow}>
+                            <span className={styles.statMoved}>
+                                {mapping.length}
+                            </span>
+                            <span>
+                                source categories will be processed, merging
+                                into <strong>{target?.display}</strong>.
+                            </span>
+                        </div>
+                    </div>
+                    <div className={`${styles.callout} ${styles.calloutWarn}`}>
+                        This runs a hard merge. It can only be reversed via the
+                        audit log.
+                    </div>
+                    <div className={styles.actions}>
+                        <button
+                            type="button"
+                            className={styles.btnGhost}
+                            onClick={() => setStep('diffs')}
+                        >
+                            Back
+                        </button>
+                        <span className={styles.spacer} />
+                        <button
+                            type="button"
+                            className={styles.btnPrimary}
+                            disabled={isPending}
+                            onClick={submit}
+                        >
+                            {isPending ? 'Starting…' : 'Confirm reassignment'}
+                        </button>
+                    </div>
+                </>
             )}
 
             {step === 'status' && createdId !== null && (
