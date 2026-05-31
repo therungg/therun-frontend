@@ -16,55 +16,104 @@ interface Props<T extends GameReassignment | CategoryReassignment> {
     onRestart?: () => void;
 }
 
+const BADGE_CLASS: Record<string, string> = {
+    pending: styles.badgePending,
+    running: styles.badgeRunning,
+    undoing: styles.badgeRunning,
+    completed: styles.badgeDone,
+    undone: styles.badgeDone,
+    failed: styles.badgeFailed,
+};
+
 export function ReassignmentStatus<
     T extends GameReassignment | CategoryReassignment,
 >({ id, fetcher, targetGameSlug, onUndo, onRestart }: Props<T>) {
     const { data, error } = useReassignmentStatus<T>(id, fetcher);
 
     if (error && !data) {
-        return <p className={styles.error}>Failed to load status: {error}</p>;
+        return (
+            <div className={`${styles.callout} ${styles.calloutError}`}>
+                Failed to load status: {error}
+            </div>
+        );
     }
     if (!data) {
-        return <p className={styles.muted}>Loading status…</p>;
+        return (
+            <div className={styles.statusLine}>
+                <span className={styles.spinner} aria-hidden />
+                <span className={styles.muted}>Loading status…</span>
+            </div>
+        );
     }
 
+    const inFlight = data.status === 'pending' || data.status === 'running';
+
     return (
-        <div className={styles.step}>
-            <p>
-                Status: <strong>{data.status}</strong>
-            </p>
+        <div>
+            <div className={styles.statusLine}>
+                {inFlight && <span className={styles.spinner} aria-hidden />}
+                <span
+                    className={`${styles.statusBadge} ${
+                        BADGE_CLASS[data.status] ?? styles.badgePending
+                    }`}
+                >
+                    {data.status}
+                </span>
+            </div>
+
             {data.status === 'completed' && (
                 <>
                     <p className={styles.success}>
-                        Done. {data.runsMovedCount} runs moved.
+                        Done —{' '}
+                        <span className={styles.statMoved}>
+                            {data.runsMovedCount}
+                        </span>{' '}
+                        runs moved.
                     </p>
-                    {targetGameSlug && (
-                        <p>
-                            <Link href={`/games-v2/${targetGameSlug}`}>
+                    <div className={styles.actions}>
+                        {targetGameSlug && (
+                            <Link
+                                href={`/games-v2/${targetGameSlug}`}
+                                className={styles.link}
+                            >
                                 View target game ↗
                             </Link>
-                        </p>
-                    )}
-                    {onUndo && (
-                        <button type="button" onClick={onUndo}>
-                            Undo
-                        </button>
-                    )}
+                        )}
+                        <span className={styles.spacer} />
+                        {onUndo && (
+                            <button
+                                type="button"
+                                className={styles.btnGhost}
+                                onClick={onUndo}
+                            >
+                                Undo
+                            </button>
+                        )}
+                    </div>
                 </>
             )}
+
             {data.status === 'failed' && (
                 <>
-                    <p className={styles.error}>
+                    <div className={`${styles.callout} ${styles.calloutError}`}>
                         {data.statusMessage ?? 'Reassignment failed.'}
-                    </p>
+                    </div>
                     {onRestart && (
-                        <button type="button" onClick={onRestart}>
-                            Restart
-                        </button>
+                        <div className={styles.actions}>
+                            <span className={styles.spacer} />
+                            <button
+                                type="button"
+                                className={styles.btnGhost}
+                                onClick={onRestart}
+                            >
+                                Restart
+                            </button>
+                        </div>
                     )}
                 </>
             )}
-            {(data.status === 'pending' || data.status === 'running') && (
+
+            {inFlight && (
                 <p className={styles.muted}>
                     Working… this may take a few seconds.
                 </p>

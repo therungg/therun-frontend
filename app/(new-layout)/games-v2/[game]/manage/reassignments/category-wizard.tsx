@@ -34,8 +34,13 @@ export function CategoryWizard({
 
     if (createdId !== null) {
         return (
-            <div className={styles.wizard}>
-                <h3>Reassigning {sourceCategory.display}</h3>
+            <div className={styles.surface}>
+                <div className={styles.header}>
+                    <p className={styles.eyebrow}>Category reassignment</p>
+                    <h3 className={styles.title}>
+                        Reassigning {sourceCategory.display}
+                    </h3>
+                </div>
                 <ReassignmentStatus
                     id={createdId}
                     fetcher={getCategoryStatusAction}
@@ -68,13 +73,25 @@ export function CategoryWizard({
     };
 
     return (
-        <div className={styles.wizard}>
-            <h3>Reassign category: {sourceCategory.display}</h3>
+        <div className={styles.surface}>
+            <div className={styles.header}>
+                <p className={styles.eyebrow}>Category reassignment</p>
+                <h3 className={styles.title}>
+                    Reassign category: {sourceCategory.display}
+                </h3>
+                <p className={styles.subtitle}>
+                    Merge this category's runs into another category in the same
+                    game.
+                </p>
+            </div>
 
             <div className={styles.step}>
-                <label htmlFor="target-cat">Target category (same game)</label>
+                <label htmlFor="target-cat" className={styles.label}>
+                    Target category
+                </label>
                 <select
                     id="target-cat"
+                    className={styles.select}
                     value={targetId ?? ''}
                     onChange={(e) =>
                         setTargetId(
@@ -82,7 +99,7 @@ export function CategoryWizard({
                         )
                     }
                 >
-                    <option value="">Select…</option>
+                    <option value="">Select a category…</option>
                     {targets.map((c) => (
                         <option key={c.id} value={c.id}>
                             {c.display}
@@ -91,26 +108,33 @@ export function CategoryWizard({
                 </select>
             </div>
 
-            <div className={styles.step}>
-                <label>
-                    <input
-                        type="checkbox"
-                        checked={acknowledged}
-                        onChange={(e) => setAcknowledged(e.target.checked)}
-                    />{' '}
+            <label className={styles.ack}>
+                <input
+                    type="checkbox"
+                    className={styles.ackBox}
+                    checked={acknowledged}
+                    onChange={(e) => setAcknowledged(e.target.checked)}
+                />
+                <span>
                     I understand the source category becomes a redirect and its
                     runs move to the target. This is reversible via the audit
                     log.
-                </label>
-            </div>
+                </span>
+            </label>
 
-            <button
-                type="button"
-                onClick={submit}
-                disabled={targetId === null || !acknowledged || isSubmitting}
-            >
-                {isSubmitting ? 'Starting…' : 'Confirm reassignment'}
-            </button>
+            <div className={styles.actions}>
+                <span className={styles.spacer} />
+                <button
+                    type="button"
+                    className={styles.btnPrimary}
+                    onClick={submit}
+                    disabled={
+                        targetId === null || !acknowledged || isSubmitting
+                    }
+                >
+                    {isSubmitting ? 'Starting…' : 'Confirm reassignment'}
+                </button>
+            </div>
         </div>
     );
 }

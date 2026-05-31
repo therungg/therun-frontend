@@ -1,51 +1,547 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/mixins' as mx;
+
+// ============================================================
+// Reassignment wizards — same control-room vocabulary as the
+// console: bordered surfaces, token spacing, quiet accents.
+// ============================================================
+
+$rail: 3px;
+
 .wizard {
-    max-width: 760px;
-}
-
-.step {
-    margin-bottom: 1.5rem;
-}
-
-.error {
-    color: var(--bs-danger, #dc3545);
-}
-
-.success {
-    color: var(--bs-success, #198754);
-}
-
-.muted {
-    opacity: 0.7;
-}
-
-.decisionPill {
-    display: inline-block;
-    padding: 0.1rem 0.5rem;
-    border-radius: 0.5rem;
-    background: rgba(255, 255, 255, 0.08);
-    font-size: 0.85rem;
-}
-
-.modeToggle {
+    max-width: 820px;
     display: flex;
-    gap: 0.25rem;
-    margin-bottom: 1.5rem;
+    flex-direction: column;
+    gap: dt.$spacing-xl;
+}
+
+// ---- Surface card ------------------------------------------
+.surface {
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-lg;
+    background: color-mix(
+        in srgb,
+        var(--bs-body-bg) 92%,
+        var(--bs-secondary-bg) 8%
+    );
+    padding: dt.$spacing-2xl;
+}
+
+.header {
+    margin-bottom: dt.$spacing-xl;
+}
+
+.eyebrow {
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: dt.$font-weight-bold;
+    color: var(--bs-secondary-color);
+    margin-bottom: dt.$spacing-2xs;
+}
+
+.title {
+    font-size: dt.$font-size-xl;
+    font-weight: dt.$font-weight-bold;
+    letter-spacing: -0.01em;
+    margin: 0;
+    line-height: dt.$line-height-tight;
+}
+
+.subtitle {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: dt.$spacing-xs 0 0;
+}
+
+// ---- Mode toggle (segmented control) -----------------------
+.modeToggle {
+    display: inline-flex;
+    padding: dt.$spacing-2xs;
+    gap: dt.$spacing-2xs;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-md;
+    background: color-mix(
+        in srgb,
+        var(--bs-body-bg) 90%,
+        var(--bs-secondary-bg) 10%
+    );
 }
 
 .modeButton {
-    padding: 0.4rem 0.9rem;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 0.5rem;
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
+    @include mx.button-reset;
+    padding: 0.4rem dt.$spacing-lg;
+    border-radius: dt.$radius-sm;
+    font-size: dt.$font-size-sm;
+    font-weight: dt.$font-weight-medium;
+    color: var(--bs-secondary-color);
+    transition: background-color dt.$transition-fast,
+        color dt.$transition-fast;
+
+    &:hover {
+        color: var(--bs-emphasis-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
 }
 
 .modeActive {
-    padding: 0.4rem 0.9rem;
-    border: 1px solid var(--bs-primary, #0d6efd);
-    border-radius: 0.5rem;
-    background: var(--bs-primary, #0d6efd);
+    background: var(--bs-primary);
     color: #fff;
+    font-weight: dt.$font-weight-semibold;
+
+    &:hover {
+        color: #fff;
+    }
+}
+
+// ---- Stepper ------------------------------------------------
+.stepper {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+    margin-bottom: dt.$spacing-xl;
+}
+
+.stepDot {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+.stepNum {
+    @include mx.monospace-value;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-radius: dt.$radius-full;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    font-size: dt.$font-size-2xs;
+    font-weight: dt.$font-weight-bold;
+}
+
+.stepCurrent {
+    color: var(--bs-emphasis-color);
+    font-weight: dt.$font-weight-semibold;
+
+    .stepNum {
+        background: var(--bs-primary);
+        border-color: var(--bs-primary);
+        color: #fff;
+    }
+}
+
+.stepDone {
+    color: var(--bs-secondary-color);
+
+    .stepNum {
+        background: color-mix(in srgb, #{dt.$accent-green} 18%, transparent);
+        border-color: color-mix(in srgb, #{dt.$accent-green} 40%, transparent);
+        color: dt.$accent-green;
+    }
+}
+
+.stepSep {
+    flex: 0 0 1.25rem;
+    height: 1px;
+    background: rgba(var(--bs-border-color-rgb), 0.5);
+}
+
+// ---- Form blocks -------------------------------------------
+.step {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-xl;
+
+    &:last-of-type {
+        margin-bottom: 0;
+    }
+}
+
+.label {
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: dt.$font-weight-semibold;
+    color: var(--bs-secondary-color);
+}
+
+.input,
+.select {
+    width: 100%;
+    max-width: 420px;
+    font-size: dt.$font-size-md;
+    padding: 0.5rem dt.$spacing-md;
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    color: var(--bs-body-color);
+    transition: border-color dt.$transition-fast,
+        box-shadow dt.$transition-fast;
+
+    &:hover {
+        border-color: rgba(var(--bs-primary-rgb), 0.5);
+    }
+
+    &:focus-visible {
+        outline: 0;
+        @include mx.focus-ring;
+    }
+}
+
+// ---- Target search results ---------------------------------
+.results {
+    list-style: none;
+    margin: dt.$spacing-sm 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-2xs;
+    max-width: 420px;
+}
+
+.resultItem {
+    @include mx.button-reset;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    text-align: left;
+    padding: 0.5rem dt.$spacing-md;
+    border-radius: dt.$radius-md;
+    border: 1px solid transparent;
+    font-size: dt.$font-size-md;
+    color: var(--bs-body-color);
+    transition: background-color dt.$transition-fast,
+        border-color dt.$transition-fast;
+
+    &:hover:not(:disabled) {
+        background: rgba(var(--bs-primary-rgb), 0.07);
+        border-color: rgba(var(--bs-primary-rgb), 0.25);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: default;
+    }
+}
+
+// ---- Mapping / diff tables ---------------------------------
+.table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: dt.$font-size-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-md;
+    overflow: hidden;
+
+    th {
+        text-align: left;
+        font-size: dt.$font-size-2xs;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        font-weight: dt.$font-weight-bold;
+        color: var(--bs-secondary-color);
+        padding: dt.$spacing-sm dt.$spacing-md;
+        background: color-mix(
+            in srgb,
+            var(--bs-body-bg) 88%,
+            var(--bs-secondary-bg) 12%
+        );
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    }
+
+    td {
+        padding: dt.$spacing-sm dt.$spacing-md;
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
+        vertical-align: middle;
+    }
+
+    tr:last-child td {
+        border-bottom: 0;
+    }
+}
+
+.rowSelect {
+    font-size: dt.$font-size-sm;
+    padding: 0.3rem dt.$spacing-sm;
+    border-radius: dt.$radius-sm;
+    background: var(--bs-body-bg);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    color: var(--bs-body-color);
+
+    &:focus-visible {
+        outline: 0;
+        @include mx.focus-ring;
+    }
+}
+
+.cellMono {
+    @include mx.monospace-value;
+    color: var(--bs-secondary-color);
+}
+
+// ---- Diff pair card ----------------------------------------
+.diffPair {
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-md;
+    padding: dt.$spacing-lg;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.diffTitle {
+    font-size: dt.$font-size-md;
+    font-weight: dt.$font-weight-semibold;
+    margin: 0 0 dt.$spacing-md;
+}
+
+// ---- Acknowledge checkbox ----------------------------------
+.ack {
+    display: flex;
+    align-items: flex-start;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+    line-height: dt.$line-height-base;
     cursor: pointer;
+}
+
+.ackBox {
+    margin-top: 0.15rem;
+    flex-shrink: 0;
+    accent-color: var(--bs-primary);
+    width: 1rem;
+    height: 1rem;
+    cursor: pointer;
+}
+
+// ---- Pills -------------------------------------------------
+.decisionPill {
+    display: inline-flex;
+    align-items: center;
+    margin-left: dt.$spacing-sm;
+    padding: 0.1rem dt.$spacing-sm;
+    border-radius: dt.$radius-pill;
+    background: color-mix(in srgb, #{dt.$accent-blue} 14%, transparent);
+    color: dt.$accent-blue;
+    font-size: dt.$font-size-2xs;
+    font-weight: dt.$font-weight-semibold;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.targetHint {
+    @include mx.monospace-value;
+    margin-left: dt.$spacing-sm;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+// ---- Status states -----------------------------------------
+.statusLine {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-md;
+    margin-bottom: dt.$spacing-md;
+}
+
+.statusBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.15rem dt.$spacing-md;
+    border-radius: dt.$radius-pill;
+    font-size: dt.$font-size-2xs;
+    font-weight: dt.$font-weight-bold;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.badgePending {
+    background: color-mix(in srgb, #{dt.$accent-amber} 18%, transparent);
+    color: color-mix(in srgb, #{dt.$accent-amber} 82%, var(--bs-body-color));
+}
+
+.badgeRunning {
+    background: color-mix(in srgb, #{dt.$accent-blue} 16%, transparent);
+    color: dt.$accent-blue;
+}
+
+.badgeDone {
+    background: color-mix(in srgb, #{dt.$accent-green} 18%, transparent);
+    color: dt.$accent-green;
+}
+
+.badgeFailed {
+    background: color-mix(in srgb, #{dt.$accent-red} 16%, transparent);
+    color: dt.$accent-red;
+}
+
+.spinner {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(var(--bs-primary-rgb), 0.25);
+    border-top-color: var(--bs-primary);
+    border-radius: dt.$radius-full;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.statMoved {
+    @include mx.monospace-value;
+    font-weight: dt.$font-weight-bold;
+    color: var(--bs-emphasis-color);
+}
+
+// ---- Callouts ----------------------------------------------
+.callout {
+    display: flex;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    border-radius: dt.$radius-md;
+    border-left: $rail solid var(--bs-secondary);
+    background: rgba(var(--bs-secondary-rgb), 0.08);
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.calloutWarn {
+    border-left-color: dt.$accent-amber;
+    background: color-mix(in srgb, #{dt.$accent-amber} 10%, transparent);
+    color: color-mix(in srgb, #{dt.$accent-amber} 75%, var(--bs-body-color));
+}
+
+.calloutError {
+    border-left-color: dt.$accent-red;
+    background: color-mix(in srgb, #{dt.$accent-red} 10%, transparent);
+    color: dt.$accent-red;
+}
+
+.errorList {
+    margin: 0;
+    padding-left: dt.$spacing-xl;
+}
+
+// ---- Impact summary ----------------------------------------
+.impact {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+    margin-bottom: dt.$spacing-xl;
+}
+
+.impactRow {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-md;
+}
+
+// ---- Footer / actions --------------------------------------
+.actions {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-xl;
+    padding-top: dt.$spacing-lg;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+}
+
+.spacer {
+    flex: 1;
+}
+
+// ---- Buttons -----------------------------------------------
+.btnPrimary {
+    @include mx.button-reset;
+    padding: 0.5rem dt.$spacing-xl;
+    border-radius: dt.$radius-md;
+    background: var(--bs-primary);
+    color: #fff;
+    font-size: dt.$font-size-sm;
+    font-weight: dt.$font-weight-semibold;
+    transition: filter dt.$transition-fast, opacity dt.$transition-fast;
+
+    &:hover:not(:disabled) {
+        filter: brightness(1.08);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+    }
+
+    &:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+}
+
+.btnGhost {
+    @include mx.button-reset;
+    padding: 0.5rem dt.$spacing-lg;
+    border-radius: dt.$radius-md;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    color: var(--bs-body-color);
+    font-size: dt.$font-size-sm;
+    font-weight: dt.$font-weight-medium;
+    transition: background-color dt.$transition-fast,
+        border-color dt.$transition-fast;
+
+    &:hover:not(:disabled) {
+        background: rgba(var(--bs-secondary-rgb), 0.1);
+        border-color: rgba(var(--bs-primary-rgb), 0.4);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+
+    &:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+    }
+}
+
+.link {
+    color: var(--bs-primary);
+    font-weight: dt.$font-weight-medium;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+// ---- Misc helpers ------------------------------------------
+.error {
+    color: dt.$accent-red;
+    font-size: dt.$font-size-sm;
+}
+
+.success {
+    color: dt.$accent-green;
+    font-size: dt.$font-size-sm;
+}
+
+.muted {
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
 }
