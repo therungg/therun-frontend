@@ -3,6 +3,7 @@ import { PaginatedData } from '~src/components/pagination/pagination.types';
 export type PaginatedGameResult = PaginatedData<Game>;
 
 export interface Game {
+    id: number;
     game: string;
     sort: number;
     categories: Category[];
