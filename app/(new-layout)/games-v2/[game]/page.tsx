@@ -1,6 +1,6 @@
 import { subject as caslSubject } from '@casl/ability';
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
@@ -30,6 +30,10 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
 
     const data = await loadGamePageData(game, sp, sessionUsername);
     if (!data) notFound();
+
+    if (data.game.redirectedToGameId != null && data.game.redirectedToSlug) {
+        permanentRedirect(`/games-v2/${data.game.redirectedToSlug}`);
+    }
 
     const ability = defineAbilityFor(session);
     const canManage = ability.can(

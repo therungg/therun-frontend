@@ -5,6 +5,8 @@ export interface ResolvedGame {
     image?: string | null;
     defaultVerified?: boolean;
     primaryTiming?: 'rt' | 'gt';
+    redirectedToGameId?: number | null;
+    redirectedToSlug?: string | null;
 }
 
 export interface ResolvedGroup {
