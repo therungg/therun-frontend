@@ -17,6 +17,7 @@ export const actions = [
     // eslint-disable-next-line sonarjs/no-duplicate-string
     'view-restricted',
     'moderate',
+    'reassign',
 ] as const;
 export const subjects = [
     'user',
@@ -30,6 +31,7 @@ export const subjects = [
     'stories',
     'roles',
     'category-settings',
+    'reassignment',
 ] as const;
 type AllowedActions = (typeof actions)[number];
 type AllowedSubjects = (typeof subjects)[number];
@@ -89,10 +91,12 @@ const rolePermissions: Record<Role, DefinePermissions> = {
         can('edit', 'leaderboard');
         can('edit', 'moderators');
         can('edit', 'category-settings');
+        can('reassign', 'reassignment');
     },
     'board-moderator': function (_user, { can }) {
         can('edit', 'leaderboard');
         can('edit', 'category-settings');
+        can('reassign', 'reassignment');
     },
     'race-admin': function (_user, { can }) {
         can('edit', 'race');
