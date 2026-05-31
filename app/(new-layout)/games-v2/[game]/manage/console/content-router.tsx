@@ -14,6 +14,8 @@ import type { AttentionItem } from '../moderation/attention/attention-model';
 import { NeedsAttention } from '../moderation/attention/needs-attention';
 import { ActiveBans } from '../moderation/configure/active-bans';
 import { Standards } from '../moderation/configure/standards';
+import { CategoryWizard } from '../reassignments/category-wizard';
+import { GameWizard } from '../reassignments/game-wizard';
 import { TimingSettingsSection } from '../timing/timing-settings-section';
 import { CombinationsSection } from '../variables/combinations-section';
 import { VariablesSection } from '../variables/variables-section';
@@ -188,6 +190,25 @@ export function ContentRouter(props: ContentRouterProps) {
                 <Placeholder title="Moderators">
                     Coming in a later phase.
                 </Placeholder>
+            );
+        case 'reassign':
+            return selectedCategory ? (
+                <CategoryWizard
+                    sourceCategory={{
+                        id: selectedCategory.id,
+                        display: selectedCategory.display,
+                    }}
+                    categories={categories}
+                    targetGameSlug={game.name}
+                />
+            ) : (
+                <GameWizard
+                    sourceGameId={game.id}
+                    sourceGameDisplay={game.display}
+                    sourceCategoryNames={Object.fromEntries(
+                        categories.map((c) => [c.id, c.display]),
+                    )}
+                />
             );
         default:
             return (

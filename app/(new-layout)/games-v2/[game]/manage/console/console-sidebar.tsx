@@ -2,6 +2,7 @@
 
 import clsx from 'clsx';
 import {
+    ArrowLeftRight,
     ClockHistory,
     Collection,
     Controller,
@@ -51,6 +52,7 @@ const NAV_ICON: Record<NavItemId, IconType> = {
     groups: Collection,
     'categories-visibility': Eye,
     identifiers: Tag,
+    reassign: ArrowLeftRight,
 };
 
 export function ConsoleSidebar({
