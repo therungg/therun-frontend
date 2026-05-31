@@ -53,7 +53,15 @@ export async function resolveGame(slug: string): Promise<ResolvedGame | null> {
     const normalized = normalizeSlug(slug);
     cacheTag(`game-resolve:${normalized}`);
 
-    let lookup: { result: { id: number; name: string; display: string } };
+    let lookup: {
+        result: {
+            id: number;
+            name: string;
+            display: string;
+            redirectedToGameId?: number | null;
+            redirectedToSlug?: string | null;
+        };
+    };
     try {
         lookup = await v1Fetch(
             `/v1/games/by-slug/${encodeURIComponent(normalized)}`,
@@ -74,7 +82,14 @@ export async function resolveGame(slug: string): Promise<ResolvedGame | null> {
         // Image is non-essential; degrade gracefully.
     }
 
-    return { id, name, display, image };
+    return {
+        id,
+        name,
+        display,
+        image,
+        redirectedToGameId: lookup.result.redirectedToGameId ?? null,
+        redirectedToSlug: lookup.result.redirectedToSlug ?? null,
+    };
 }
 
 export async function getQuickStats(gameId: number): Promise<QuickStats> {
