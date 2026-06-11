@@ -68,12 +68,24 @@ export async function apiFetch<T>(
     if (!res.ok) {
         let message = `${res.status} ${path}`;
         let errors: string[] | undefined;
-        try {
-            const j = await res.json();
-            if (j?.error) message = j.error;
-            if (Array.isArray(j?.errors)) errors = j.errors;
-        } catch {
-            // non-JSON body — keep default message
+        const raw = (await res.text()).trim();
+        if (raw) {
+            try {
+                const j = JSON.parse(raw);
+                if (j && typeof j === 'object') {
+                    // JSON error: backend `{ error }`, gateway `{ message }`.
+                    if (typeof j.error === 'string') message = j.error;
+                    else if (typeof j.message === 'string') message = j.message;
+                    else message = raw;
+                    if (Array.isArray(j.errors)) errors = j.errors;
+                } else {
+                    message = raw;
+                }
+            } catch {
+                // Plain-text body (e.g. backend `yourFault` returns the raw
+                // string "Forbidden"). Surface it instead of a generic code.
+                message = raw;
+            }
         }
         throw new ApiError(res.status, message, errors);
     }
