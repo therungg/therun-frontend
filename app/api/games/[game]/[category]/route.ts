@@ -24,6 +24,7 @@ export async function GET(
 
     return apiResponse({
         body: gameData,
-        cache: { maxAge: 60, swr: 15000 },
+        // getCategory is remote-cached for days; match the CDN freshness.
+        cache: { maxAge: 3600, swr: 86400 },
     });
 }
