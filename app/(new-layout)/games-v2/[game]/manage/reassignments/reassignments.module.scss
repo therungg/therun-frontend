@@ -7,6 +7,19 @@
 // ============================================================
 
 $rail: 3px;
+$xxs: 0.25rem; // tighter than $spacing-xs for inset chrome
+
+@mixin btn-reset {
+    appearance: none;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+}
+
+@mixin focus-ring {
+    box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+}
 
 .wizard {
     max-width: 820px;
@@ -35,17 +48,17 @@ $rail: 3px;
     font-size: dt.$font-size-2xs;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    font-weight: dt.$font-weight-bold;
+    font-weight: 700;
     color: var(--bs-secondary-color);
-    margin-bottom: dt.$spacing-2xs;
+    margin-bottom: $xxs;
 }
 
 .title {
     font-size: dt.$font-size-xl;
-    font-weight: dt.$font-weight-bold;
+    font-weight: 700;
     letter-spacing: -0.01em;
     margin: 0;
-    line-height: dt.$line-height-tight;
+    line-height: 1.1;
 }
 
 .subtitle {
@@ -57,8 +70,8 @@ $rail: 3px;
 // ---- Mode toggle (segmented control) -----------------------
 .modeToggle {
     display: inline-flex;
-    padding: dt.$spacing-2xs;
-    gap: dt.$spacing-2xs;
+    padding: $xxs;
+    gap: $xxs;
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
     border-radius: dt.$radius-md;
     background: color-mix(
@@ -69,11 +82,11 @@ $rail: 3px;
 }
 
 .modeButton {
-    @include mx.button-reset;
+    @include btn-reset;
     padding: 0.4rem dt.$spacing-lg;
     border-radius: dt.$radius-sm;
     font-size: dt.$font-size-sm;
-    font-weight: dt.$font-weight-medium;
+    font-weight: 500;
     color: var(--bs-secondary-color);
     transition: background-color dt.$transition-fast,
         color dt.$transition-fast;
@@ -91,7 +104,7 @@ $rail: 3px;
 .modeActive {
     background: var(--bs-primary);
     color: #fff;
-    font-weight: dt.$font-weight-semibold;
+    font-weight: 600;
 
     &:hover {
         color: #fff;
@@ -122,15 +135,15 @@ $rail: 3px;
     justify-content: center;
     width: 1.4rem;
     height: 1.4rem;
-    border-radius: dt.$radius-full;
+    border-radius: 999px;
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
     font-size: dt.$font-size-2xs;
-    font-weight: dt.$font-weight-bold;
+    font-weight: 700;
 }
 
 .stepCurrent {
     color: var(--bs-emphasis-color);
-    font-weight: dt.$font-weight-semibold;
+    font-weight: 600;
 
     .stepNum {
         background: var(--bs-primary);
@@ -171,7 +184,7 @@ $rail: 3px;
     font-size: dt.$font-size-2xs;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    font-weight: dt.$font-weight-semibold;
+    font-weight: 600;
     color: var(--bs-secondary-color);
 }
 
@@ -194,7 +207,7 @@ $rail: 3px;
 
     &:focus-visible {
         outline: 0;
-        @include mx.focus-ring;
+        @include focus-ring;
     }
 }
 
@@ -205,12 +218,12 @@ $rail: 3px;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: dt.$spacing-2xs;
+    gap: $xxs;
     max-width: 420px;
 }
 
 .resultItem {
-    @include mx.button-reset;
+    @include btn-reset;
     display: flex;
     align-items: center;
     width: 100%;
@@ -249,7 +262,7 @@ $rail: 3px;
         font-size: dt.$font-size-2xs;
         text-transform: uppercase;
         letter-spacing: 0.04em;
-        font-weight: dt.$font-weight-bold;
+        font-weight: 700;
         color: var(--bs-secondary-color);
         padding: dt.$spacing-sm dt.$spacing-md;
         background: color-mix(
@@ -281,7 +294,7 @@ $rail: 3px;
 
     &:focus-visible {
         outline: 0;
-        @include mx.focus-ring;
+        @include focus-ring;
     }
 }
 
@@ -300,7 +313,7 @@ $rail: 3px;
 
 .diffTitle {
     font-size: dt.$font-size-md;
-    font-weight: dt.$font-weight-semibold;
+    font-weight: 600;
     margin: 0 0 dt.$spacing-md;
 }
 
@@ -311,7 +324,7 @@ $rail: 3px;
     gap: dt.$spacing-sm;
     font-size: dt.$font-size-sm;
     color: var(--bs-body-color);
-    line-height: dt.$line-height-base;
+    line-height: 1.6;
     cursor: pointer;
 }
 
@@ -330,11 +343,11 @@ $rail: 3px;
     align-items: center;
     margin-left: dt.$spacing-sm;
     padding: 0.1rem dt.$spacing-sm;
-    border-radius: dt.$radius-pill;
-    background: color-mix(in srgb, #{dt.$accent-blue} 14%, transparent);
-    color: dt.$accent-blue;
+    border-radius: 999px;
+    background: rgba(var(--bs-primary-rgb), 0.14);
+    color: var(--bs-primary);
     font-size: dt.$font-size-2xs;
-    font-weight: dt.$font-weight-semibold;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.03em;
 }
@@ -360,9 +373,9 @@ $rail: 3px;
     align-items: center;
     gap: 0.3rem;
     padding: 0.15rem dt.$spacing-md;
-    border-radius: dt.$radius-pill;
+    border-radius: 999px;
     font-size: dt.$font-size-2xs;
-    font-weight: dt.$font-weight-bold;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
@@ -373,8 +386,8 @@ $rail: 3px;
 }
 
 .badgeRunning {
-    background: color-mix(in srgb, #{dt.$accent-blue} 16%, transparent);
-    color: dt.$accent-blue;
+    background: rgba(var(--bs-primary-rgb), 0.16);
+    color: var(--bs-primary);
 }
 
 .badgeDone {
@@ -392,7 +405,7 @@ $rail: 3px;
     height: 1rem;
     border: 2px solid rgba(var(--bs-primary-rgb), 0.25);
     border-top-color: var(--bs-primary);
-    border-radius: dt.$radius-full;
+    border-radius: 999px;
     animation: spin 0.7s linear infinite;
     flex-shrink: 0;
 }
@@ -405,7 +418,7 @@ $rail: 3px;
 
 .statMoved {
     @include mx.monospace-value;
-    font-weight: dt.$font-weight-bold;
+    font-weight: 700;
     color: var(--bs-emphasis-color);
 }
 
@@ -469,13 +482,13 @@ $rail: 3px;
 
 // ---- Buttons -----------------------------------------------
 .btnPrimary {
-    @include mx.button-reset;
+    @include btn-reset;
     padding: 0.5rem dt.$spacing-xl;
     border-radius: dt.$radius-md;
     background: var(--bs-primary);
     color: #fff;
     font-size: dt.$font-size-sm;
-    font-weight: dt.$font-weight-semibold;
+    font-weight: 600;
     transition: filter dt.$transition-fast, opacity dt.$transition-fast;
 
     &:hover:not(:disabled) {
@@ -494,13 +507,13 @@ $rail: 3px;
 }
 
 .btnGhost {
-    @include mx.button-reset;
+    @include btn-reset;
     padding: 0.5rem dt.$spacing-lg;
     border-radius: dt.$radius-md;
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
     color: var(--bs-body-color);
     font-size: dt.$font-size-sm;
-    font-weight: dt.$font-weight-medium;
+    font-weight: 500;
     transition: background-color dt.$transition-fast,
         border-color dt.$transition-fast;
 
@@ -522,7 +535,7 @@ $rail: 3px;
 
 .link {
     color: var(--bs-primary);
-    font-weight: dt.$font-weight-medium;
+    font-weight: 500;
     text-decoration: none;
 
     &:hover {

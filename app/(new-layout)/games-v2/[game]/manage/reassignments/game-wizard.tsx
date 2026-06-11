@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { type GameSearchResult, searchGames } from '~src/lib/game-search';
+import { resolveGame } from '~src/lib/games-v1';
 import type {
     CategoryMappingEntry,
     CategorySettingsDiffs,
@@ -64,10 +65,20 @@ export function GameWizard({
     };
 
     const pickTarget = (g: GameSearchResult) => {
-        setTarget(g);
         startPending(async () => {
             try {
-                const preview = await previewGameAction(sourceGameId, g.id);
+                // Search results (Algolia) carry only the slug, not the numeric
+                // game id the reassignment API needs — resolve it first.
+                const resolved = await resolveGame(g.game);
+                if (!resolved) {
+                    toast.error('Could not resolve target game.');
+                    return;
+                }
+                setTarget({ ...g, id: resolved.id });
+                const preview = await previewGameAction(
+                    sourceGameId,
+                    resolved.id,
+                );
                 if (!preview.valid) {
                     setPreviewErrors(preview.errors);
                     return;
