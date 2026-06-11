@@ -99,7 +99,7 @@ export interface CategoryActivity extends GameActivity {
 // --- Data fetching ---
 
 export async function getGlobalStats(offset?: string): Promise<GlobalStats> {
-    'use cache';
+    'use cache: remote';
     cacheLife('minutes');
     cacheTag(offset ? `global-stats-${offset}` : 'global-stats');
 
@@ -115,7 +115,7 @@ interface PaginatedFinishedRuns {
 }
 
 export async function getRecentNotablePBs(limit = 5): Promise<FinishedRunPB[]> {
-    'use cache';
+    'use cache: remote';
     cacheLife('minutes');
     cacheTag('notable-pbs');
 
@@ -126,7 +126,7 @@ export async function getRecentNotablePBs(limit = 5): Promise<FinishedRunPB[]> {
 }
 
 export async function getRecentPBs(limit = 20): Promise<FinishedRunPB[]> {
-    'use cache';
+    'use cache: remote';
     cacheLife('minutes');
     cacheTag('recent-pbs');
 
@@ -139,7 +139,7 @@ export async function getRecentPBs(limit = 20): Promise<FinishedRunPB[]> {
 export async function getMostActiveGames(
     period: 'day' | 'week' | 'month' = 'week',
 ): Promise<ActiveGame[]> {
-    'use cache';
+    'use cache: remote';
     cacheLife('hours');
     cacheTag('active-games');
 
@@ -149,7 +149,7 @@ export async function getMostActiveGames(
 }
 
 export async function getGameImageMap(): Promise<Record<string, string>> {
-    'use cache';
+    'use cache: remote';
     cacheLife('hours');
     cacheTag('game-images');
 
@@ -166,7 +166,7 @@ export async function getGameImageMap(): Promise<Record<string, string>> {
 }
 
 export async function getTopGames(limit = 3): Promise<GameWithImage[]> {
-    'use cache';
+    'use cache: remote';
     cacheLife('days');
     cacheTag('top-games');
 
@@ -179,7 +179,7 @@ export async function getTopCategoriesForGame(
     gameId: number,
     limit = 3,
 ): Promise<CategoryStats[]> {
-    'use cache';
+    'use cache: remote';
     cacheLife('hours');
     cacheTag(`top-categories-${gameId}`);
 
@@ -194,7 +194,7 @@ export async function getGameActivity(
     limit = 6,
     minPlayers = 2,
 ): Promise<GameActivity[]> {
-    'use cache';
+    'use cache: remote';
     cacheLife('hours');
     cacheTag(`game-activity-${from}-${to}`);
 
@@ -209,7 +209,7 @@ export async function getCategoryActivityForGame(
     to: string,
     limit = 2,
 ): Promise<CategoryActivity[]> {
-    'use cache';
+    'use cache: remote';
     cacheLife('hours');
     cacheTag(`category-activity-${gameId}-${from}-${to}`);
 
@@ -219,7 +219,7 @@ export async function getCategoryActivityForGame(
 }
 
 export async function getWeeklyTopRunners(limit = 10): Promise<WeeklyRunner[]> {
-    'use cache';
+    'use cache: remote';
     cacheLife('hours');
     cacheTag('top-runners');
 
@@ -233,7 +233,7 @@ export async function getWeeklyTopRunners(limit = 10): Promise<WeeklyRunner[]> {
 }
 
 export async function getMostPBsRunners(limit = 10): Promise<WeeklyRunner[]> {
-    'use cache';
+    'use cache: remote';
     cacheLife('hours');
     cacheTag('pb-runners');
 
@@ -247,8 +247,10 @@ export async function getMostPBsRunners(limit = 10): Promise<WeeklyRunner[]> {
 }
 
 export async function getLiveCount(): Promise<number> {
-    'use cache';
-    cacheLife('seconds');
+    'use cache: remote';
+    // 'seconds' would revalidate every second; the count only needs to be
+    // fresh-ish, and each revalidation is a backend hit.
+    cacheLife({ stale: 10, revalidate: 30, expire: 300 });
     cacheTag('live-count');
 
     const res = await fetch('https://api.therun.gg/live/count');

@@ -11,8 +11,10 @@ export const getAllLiveRuns = async (
     game: string | null = null,
     category: string | null = null,
 ): Promise<LiveRun[]> => {
-    'use cache';
-    cacheLife('seconds');
+    'use cache: remote';
+    // Live data only needs to be seconds-fresh for the initial SSR; the
+    // live page streams updates over the websocket after load.
+    cacheLife({ stale: 5, revalidate: 15, expire: 120 });
     let url = `${LIVE_RUN_URL}?minify=true`;
 
     if (game) {

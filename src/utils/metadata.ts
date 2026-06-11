@@ -1,7 +1,8 @@
 import { Metadata } from 'next';
 import { OpenGraphType } from 'next/dist/lib/metadata/types/opengraph-types';
-import { getBaseUrl } from '~src/actions/base-url.action';
-import { safeDecodeURI, safeEncodeURI } from './uri';
+import { getGameGlobal } from '~src/components/game/get-game';
+import { getGlobalUser } from '~src/lib/get-global-user';
+import { safeDecodeURI } from './uri';
 
 declare type OpenGraphImage = {
     url: string | URL;
@@ -124,19 +125,15 @@ export default function buildMetadata(props?: MetadataProps): Metadata {
 export async function getUserProfilePhoto(
     username: string,
 ): Promise<OpenGraphImage[] | undefined> {
-    let response: Response;
+    // Call the lib directly — fetching our own /api proxy here doubled every
+    // user-page view into a second Vercel invocation.
+    let data: { picture?: string } | undefined;
     try {
-        response = await fetch(
-            `${await getBaseUrl()}/api/users/${username}/global`,
-        );
-    } catch (_e) {
-        console.log(_e);
+        data = await getGlobalUser(username);
+    } catch (e) {
+        console.log(e);
         return undefined;
     }
-
-    if (!response.ok) return undefined;
-
-    const data = await response.json();
 
     if (!data?.picture) return undefined;
 
@@ -153,18 +150,14 @@ export async function getUserProfilePhoto(
 export async function getGameImage(
     game: string,
 ): Promise<OpenGraphImage[] | undefined> {
-    let response: Response;
+    // getGameGlobal does its own URI encoding.
+    let data: { image?: string } | undefined;
     try {
-        response = await fetch(
-            `${await getBaseUrl()}/api/games/${safeEncodeURI(game)}/global`,
-        );
+        data = await getGameGlobal(game);
     } catch (e) {
-        // Allow this one since it's server-side
         console.error(e);
         return undefined;
     }
-
-    const data = await response.json();
 
     if (!data?.image) return undefined;
 

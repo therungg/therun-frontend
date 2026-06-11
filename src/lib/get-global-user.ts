@@ -4,7 +4,7 @@ import { cacheLife } from 'next/cache';
 import { type UserData } from './get-session-data';
 
 export const getGlobalUser = async (user: string) => {
-    'use cache';
+    'use cache: remote';
     cacheLife('hours');
     const url = `${process.env.NEXT_PUBLIC_DATA_URL}/users/global/${user}`;
 

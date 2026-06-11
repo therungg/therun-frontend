@@ -3,8 +3,8 @@ import { Live } from '~app/(new-layout)/live/live';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
 import { liveRunArrayToMap } from '~app/(new-layout)/live/utilities';
 import { getAllPatrons } from '~app/api/patreons/get-all-patrons.action';
-import { getBaseUrl } from '~src/actions/base-url.action';
 import { getSession } from '~src/actions/session.action';
+import { getGlobalUser } from '~src/lib/get-global-user';
 import { getAllLiveRuns } from '~src/lib/live-runs';
 import buildMetadata from '~src/utils/metadata';
 
@@ -41,22 +41,19 @@ export default async function LiveUser(props: PageProps) {
 export async function generateMetadata(props: PageProps): Promise<Metadata> {
     const params = await props.params;
     let imageUrl = undefined;
-    const baseUrl = await getBaseUrl();
     const username = params.username;
 
     if (!username) return buildMetadata();
 
-    let response: Response;
+    // Call the lib directly — fetching our own /api proxy here doubled every
+    // live-page view into a second Vercel invocation.
     try {
-        response = await fetch(`${baseUrl}/api/users/${username}/global`);
+        const data = await getGlobalUser(username);
+        if (data?.picture) {
+            imageUrl = data.picture;
+        }
     } catch (_e) {
         return buildMetadata();
-    }
-
-    const data = await response.json();
-
-    if (data?.picture) {
-        imageUrl = data.picture;
     }
 
     return buildMetadata({
