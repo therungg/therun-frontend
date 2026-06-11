@@ -18,30 +18,10 @@ const nextConfig = {
     },
     reactStrictMode: true,
     images: {
-        remotePatterns: [
-            {
-                protocol: 'https',
-                hostname: 'usevk6e5826mt9j6.public.blob.vercel-storage.com',
-                port: '',
-            },
-            {
-                protocol: 'https',
-                hostname: 'adflsi3tfe9nexsk.public.blob.vercel-storage.com',
-                port: '',
-            },
-            {
-                protocol: 'https',
-                hostname: 'images.igdb.com',
-            },
-            {
-                protocol: 'https',
-                hostname: 'raw.githubusercontent.com',
-            },
-            {
-                protocol: 'https',
-                hostname: 'static-cdn.jtvnw.net',
-            },
-        ],
+        // No Vercel image optimization — every transformation is billed and
+        // the sources (Twitch avatars, IGDB covers) are already CDN-sized.
+        // next/image renders a plain <img> with the original URL.
+        unoptimized: true,
     },
     async redirects() {
         return [

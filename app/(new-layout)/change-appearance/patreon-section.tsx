@@ -1,10 +1,10 @@
 'use client';
 
 import axios from 'axios';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { mutate } from 'swr';
+import Link from '~src/components/link';
 import { legacyPresetMap } from '~src/components/patreon/legacy-preset-map';
 import type { PatronPreferences, PerMode } from '../../../types/patreon.types';
 import type { User } from '../../../types/session.types';

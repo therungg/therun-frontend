@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { useMemo } from 'react';
+import Link from '~src/components/link';
 import { FilterBar } from './filters/filter-bar';
 import { CategoryPills } from './header/category-pills';
 import { GameHeader } from './header/game-header';

@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
     QuickStats,

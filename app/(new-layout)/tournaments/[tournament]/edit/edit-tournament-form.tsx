@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { useState, useTransition } from 'react';
+import Link from '~src/components/link';
 import { canDeleteTournament } from '~src/lib/tournament-permissions';
 import type { User } from '../../../../../types/session.types';
 import type { Tournament } from '../../../../../types/tournament.types';

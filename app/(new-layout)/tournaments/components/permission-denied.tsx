@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '~src/components/link';
 import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
 import styles from './tournament-form.module.scss';
 

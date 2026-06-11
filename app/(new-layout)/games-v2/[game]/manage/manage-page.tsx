@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useState } from 'react';
+import Link from '~src/components/link';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import { CategoryTab } from './category-tab/category-tab';
 import { GameTab } from './game-tab/game-tab';
