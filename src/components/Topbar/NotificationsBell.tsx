@@ -48,7 +48,11 @@ export function NotificationsBell() {
 
     useEffect(() => {
         refresh();
-        const t = setInterval(refresh, 60_000);
+        // Skip polling in background tabs — forgotten tabs and OBS sources
+        // were polling the backend around the clock.
+        const t = setInterval(() => {
+            if (!document.hidden) refresh();
+        }, 60_000);
         return () => clearInterval(t);
     }, [refresh]);
 

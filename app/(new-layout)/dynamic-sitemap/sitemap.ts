@@ -64,7 +64,6 @@ const sitemapForRaces = async (): Promise<MetadataRoute.Sitemap> => {
 
     return allItems.map((race) => ({
         url: 'https://therun.gg/races/' + race.raceId,
-        lastModified: new Date(),
         changeFrequency: 'weekly',
         priority: 0.4,
     }));
@@ -75,7 +74,6 @@ const sitemapForUsers = async (): Promise<MetadataRoute.Sitemap> => {
 
     return users.map((user) => ({
         url: 'https://therun.gg/' + user.username,
-        lastModified: new Date(),
         changeFrequency: 'weekly',
         priority: 0.8,
     }));
@@ -99,7 +97,6 @@ const sitemapForRaceStats = async (): Promise<MetadataRoute.Sitemap> => {
                 url:
                     'https://therun.gg/races/stats/' +
                     safeEncodeURI(stat.displayValue),
-                lastModified: new Date(),
                 changeFrequency: 'daily' as const,
                 priority: 0.7,
             };
@@ -128,7 +125,6 @@ const sitemapForRaceStats = async (): Promise<MetadataRoute.Sitemap> => {
                     safeEncodeURI(game) +
                     '/' +
                     safeEncodeURI(category),
-                lastModified: new Date(),
                 changeFrequency: 'daily',
                 priority: 0.6,
             });
@@ -143,7 +139,6 @@ const sitemapForTournaments = async (): Promise<MetadataRoute.Sitemap> => {
 
     return tournaments.map((tournament) => ({
         url: 'https://therun.gg/' + tournament,
-        lastModified: new Date(),
         changeFrequency: 'daily',
         priority: 0.6,
     }));
@@ -154,7 +149,6 @@ const sitemapForEvents = async (): Promise<MetadataRoute.Sitemap> => {
 
     return allEvents.map((event) => ({
         url: 'https://therun.gg/events/' + event.slug,
-        lastModified: new Date(),
         changeFrequency: 'weekly',
         priority: 0.4,
     }));
@@ -175,7 +169,6 @@ const sitemapForRuns = async (
             safeEncodeURI(run.game) +
             '/' +
             safeEncodeURI(run.run),
-        lastModified: new Date(),
         changeFrequency: 'weekly',
         priority: 0.5,
     }));
