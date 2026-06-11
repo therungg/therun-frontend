@@ -1,8 +1,8 @@
 'use client';
 
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { RunDetail } from '../../../../../../../types/leaderboards.types';
 import type { ModVerb } from '../../moderation/shared/action-model';

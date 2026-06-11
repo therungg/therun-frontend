@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { useState, useTransition } from 'react';
+import Link from '~src/components/link';
 import { createTournamentAction } from '../actions/create-tournament.action';
 import { uploadTournamentImageAction } from '../actions/upload-tournament-image';
 import { formStyles as styles } from '../components/form-primitives';

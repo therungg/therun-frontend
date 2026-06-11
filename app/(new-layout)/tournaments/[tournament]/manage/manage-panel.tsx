@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
+import Link from '~src/components/link';
 import {
     canManageAdmins,
     hasCapability,

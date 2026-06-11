@@ -31,3 +31,11 @@ function withMiddlewares(middlewares: MiddlewareFn[]) {
 }
 
 export const proxy = withMiddlewares(middlewareList);
+
+// Only tournament-slug redirects live here, but without a matcher the proxy
+// runs on every request — including static assets and images, which was ~37%
+// of all Vercel invocations. Skip api routes, Next internals, and any path
+// with a file extension (tournament slugs are single plain segments).
+export const config = {
+    matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\..*).*)'],
+};
