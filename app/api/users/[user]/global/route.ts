@@ -14,9 +14,12 @@ export async function GET(
 
     return apiResponse({
         body: userData,
+        // getGlobalUser is remote-cached for hours; a shorter CDN maxAge
+        // just turns repeat requests into STALE revalidation invocations
+        // without serving fresher data.
         cache: {
-            maxAge: 60,
-            swr: 15000,
+            maxAge: 3600,
+            swr: 86400,
         },
     });
 }
