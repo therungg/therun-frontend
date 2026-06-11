@@ -7,6 +7,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 // the header immediately instead of after the cache lifetime.
 const ALLOWED_TAGS: Record<string, 'seconds' | 'minutes' | 'hours' | 'days'> = {
     'featured-patrons': 'hours',
+    patrons: 'hours',
 };
 
 export async function POST(request: NextRequest) {

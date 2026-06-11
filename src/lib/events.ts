@@ -1,5 +1,6 @@
 'use server';
 
+import { cacheLife, cacheTag } from 'next/cache';
 import { PaginatedData } from '~src/components/pagination/pagination.types';
 import {
     CreateEventInput,
@@ -34,7 +35,24 @@ export const getEventById = async (
 };
 
 export const getAllEvents = async (): Promise<EventWithOrganizerName[]> => {
-    return apiFetch<EventWithOrganizerName[]>('/events');
+    'use cache: remote';
+    cacheLife('hours');
+    cacheTag('events');
+
+    // GET /events was never registered on the gateway (only sub-routes
+    // exist), so this aggregates the paginated endpoint instead.
+    const allEvents: EventWithOrganizerName[] = [];
+    let page = 1;
+
+    while (true) {
+        const result = await getEventsPaginated(page, 100);
+        allEvents.push(...result.items);
+
+        if (page >= result.totalPages) break;
+        page++;
+    }
+
+    return allEvents;
 };
 
 export const getAllEventOrganizers = async (): Promise<EventOrganizer[]> => {

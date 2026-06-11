@@ -27,7 +27,7 @@ export const getPaginatedFinishedRaces: PaginationFetcher<Race> = async (
     page = 1,
     pageSize = paginationPageSize,
 ): Promise<PaginatedRaces> => {
-    'use cache';
+    'use cache: remote';
     cacheLife('minutes');
     cacheTag('finished-races');
 
@@ -137,15 +137,17 @@ export const getGlobalRaceStats = async (): Promise<GlobalStats> => {
 };
 
 export const getRaceGameStats = async (limit = 3): Promise<GameStats[]> => {
+    'use cache: remote';
+    cacheLife('minutes');
+    cacheTag('race-game-stats');
+
     let url = `${racesApiUrl}/stats/games`;
 
     if (limit > 0) {
         url += `?limit=${limit}`;
     }
 
-    const races = await fetch(url, {
-        next: { revalidate: limit > 0 && limit < 10 ? 10 : 60 * 60 },
-    });
+    const races = await fetch(url);
 
     return ((await races.json()).result as GameStats[]).sort((a, b) => {
         // Hack because api returns ties in totalGames randomly.
@@ -160,9 +162,13 @@ export const getRaceGameStats = async (limit = 3): Promise<GameStats[]> => {
 export const getRaceGameStatsByGame = async (
     game: string,
 ): Promise<RaceGameStatsByGame> => {
+    'use cache: remote';
+    cacheLife('minutes');
+    cacheTag('race-game-stats');
+
     const url = `${racesApiUrl}/stats/games/${game}`;
 
-    const stats = await fetch(url, { next: { revalidate: 60 } });
+    const stats = await fetch(url);
 
     return (await stats.json()).result as RaceGameStatsByGame;
 };
