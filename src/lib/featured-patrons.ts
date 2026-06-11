@@ -29,7 +29,10 @@ async function hydratePatron(
 }
 
 export async function getFeaturedPatrons(): Promise<FeaturedPatronsResponse> {
-    'use cache';
+    // Remote: this runs in the header on every page render, and plain
+    // 'use cache' is in-memory only at runtime — on Vercel that meant a
+    // patreon-api + two users/global backend calls per page view.
+    'use cache: remote';
     cacheLife('hours');
     cacheTag('featured-patrons');
 
