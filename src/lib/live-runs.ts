@@ -41,6 +41,8 @@ export const getLiveRunsForGameCategory = async (
     game: string,
     category: string,
 ): Promise<LiveRun[]> => {
+    'use cache: remote';
+    cacheLife({ stale: 5, revalidate: 15, expire: 120 });
     const result = await fetch(
         `${LIVE_RUN_URL}?game=${safeEncodeURI(game)}&category=${safeEncodeURI(
             category,
@@ -51,6 +53,10 @@ export const getLiveRunsForGameCategory = async (
 };
 
 export const getLiveRunForUser = async (username: string) => {
+    'use cache: remote';
+    // Called on every profile/game page render and polled by overlays via
+    // /api/live/[username]; viewers of the same runner share one entry.
+    cacheLife({ stale: 5, revalidate: 15, expire: 120 });
     const result = await fetch(`${LIVE_RUN_URL}?username=${username}`);
 
     const resolved = (await result.json()).result;
@@ -61,12 +67,19 @@ export const getLiveRunForUser = async (username: string) => {
 };
 
 export const getTopNLiveRuns = async (n = 5): Promise<LiveRun[]> => {
+    'use cache: remote';
+    // Backup-polled by every open frontpage tab (use-run-refresh).
+    cacheLife({ stale: 5, revalidate: 15, expire: 120 });
     const result = await fetch(`${LIVE_RUN_URL}?limit=${n}`);
 
     return (await result.json()).result;
 };
 
 export const getRandomTopLiveRun = async () => {
+    'use cache: remote';
+    // Everyone gets the same "random" pick within the window — acceptable
+    // for variety, and it keeps pollers off the backend.
+    cacheLife({ stale: 5, revalidate: 15, expire: 120 });
     const result = await fetch(`${LIVE_RUN_URL}?random=true`);
 
     return (await result.json()).result;
