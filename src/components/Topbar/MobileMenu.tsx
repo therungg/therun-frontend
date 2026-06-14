@@ -76,6 +76,14 @@ export function MobileMenu({ username, featuredPatrons }: MobileMenuProps) {
 
     const close = useCallback(() => setOpen(false), []);
 
+    // Close the menu on navigation. Nav links call `close` directly, but a
+    // search-result click inside the menu navigates without any close handler —
+    // watching the pathname covers that (and any other) navigation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => {
+        setOpen(false);
+    }, [pathname]);
+
     // Focus trap
     useEffect(() => {
         if (!open) return;
