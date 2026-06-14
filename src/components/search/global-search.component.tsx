@@ -38,6 +38,13 @@ export const GlobalSearch = React.memo<SearchProps>(
             { dedupingInterval: 500 },
         );
 
+        // Close the results dropdown on navigation. Clicking a result is a
+        // click *inside* the panel, so the click-outside handler never fires;
+        // watching the pathname closes the panel once navigation lands.
+        React.useEffect(() => {
+            setIsResultsPanelOpen(false);
+        }, [pathname]);
+
         React.useEffect(() => {
             const params = new URLSearchParams(searchParams.toString());
             if (!query) {
