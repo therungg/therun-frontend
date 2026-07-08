@@ -113,6 +113,22 @@ describe('dangerSplit', () => {
             ]),
         ).toBeNull();
     });
+    test('looks up previous split by index property, not array position', () => {
+        const splits = [
+            split({ index: 0, name: 'A', avgTotalMs: 60000 }),
+            split({ index: 2, name: 'B', avgTotalMs: 120000 }),
+            split({
+                index: 3,
+                name: 'Danger',
+                deaths: 40,
+                resetShare: 0.41,
+            }),
+        ];
+        const danger = dangerSplit(splits);
+        expect(danger!.split.name).toBe('Danger');
+        expect(danger!.afterName).toBe('B');
+        expect(danger!.startsAtMs).toBe(120000);
+    });
 });
 
 describe('communityPercentile', () => {

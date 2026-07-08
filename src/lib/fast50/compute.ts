@@ -100,7 +100,10 @@ export const dangerSplit = (
     const worst = candidates.reduce((a, b) =>
         b.resetShare > a.resetShare ? b : a,
     );
-    const prev = worst.index > 0 ? splits[worst.index - 1] : null;
+    const prev =
+        worst.index > 0
+            ? (splits.find((s) => s.index === worst.index - 1) ?? null)
+            : null;
     return {
         split: worst,
         startsAtMs: prev?.avgTotalMs ?? null,
