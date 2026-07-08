@@ -35,4 +35,8 @@ describe('capture store', () => {
         storage.setItem('fast50-capture:runner:my game:any%', '{nope');
         expect(loadCapture(storage, 'runner', 'my game', 'any%')).toBeNull();
     });
+    test('null on never-written key', () => {
+        const storage = fakeStorage();
+        expect(loadCapture(storage, 'nobody', 'no game', 'no%')).toBeNull();
+    });
 });
