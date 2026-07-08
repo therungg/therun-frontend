@@ -18,7 +18,7 @@ import {
 type WebsocketType = 'username' | 'race' | 'story';
 
 export const useLiveRunsWebsocket = <Message = WebsocketLiveRunMessage>(
-    username?: string,
+    username?: string | null,
 ) => useReconnectWebsocket<Message>('username', username);
 
 export const useAllRacesWebsocket = () =>

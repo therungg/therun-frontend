@@ -9,16 +9,18 @@ export const useRunCapture = (
     username: string | null,
 ): { lastEvent: string | null } => {
     const [lastEvent, setLastEvent] = useState<string | null>(null);
-    const message = useLiveRunsWebsocket<WebsocketLiveRunMessage>(
-        username ?? undefined,
-    );
+    const message = useLiveRunsWebsocket<WebsocketLiveRunMessage>(username);
 
     useEffect(() => {
         if (!username || !message || message.type !== 'UPDATE') return;
         if (message.user.toLowerCase() !== username.toLowerCase()) return;
         if (!message.run?.isMinified) {
-            saveCapture(window.localStorage, message.run);
-            setLastEvent(new Date().toISOString());
+            try {
+                const captured = saveCapture(window.localStorage, message.run);
+                setLastEvent(captured.savedAt);
+            } catch (err) {
+                console.warn('fast50: failed to save capture', err);
+            }
         }
     }, [message, username]);
 

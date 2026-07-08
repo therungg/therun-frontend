@@ -16,7 +16,7 @@ export const captureKey = (
 export const saveCapture = (
     storage: Pick<Storage, 'setItem'>,
     run: LiveRun,
-): void => {
+): CapturedRun => {
     const payload: CapturedRun = {
         savedAt: new Date().toISOString(),
         run,
@@ -25,6 +25,7 @@ export const saveCapture = (
         captureKey(run.user, run.game, run.category),
         JSON.stringify(payload),
     );
+    return payload;
 };
 
 export const loadCapture = (
