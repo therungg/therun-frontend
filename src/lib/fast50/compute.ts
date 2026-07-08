@@ -53,9 +53,10 @@ export const quantile = (sortedAsc: number[], q: number): number | null => {
 export const forecastBands = (
     runs: DossierFinishedRun[],
     recent = 20,
+    minRuns = 5,
 ): { p10Ms: number; p50Ms: number; p90Ms: number; sample: number } | null => {
     const sample = runs.slice(-recent).map((r) => r.timeMs);
-    if (sample.length < 5) return null;
+    if (sample.length < minRuns) return null;
     const sorted = [...sample].sort((a, b) => a - b);
     return {
         p10Ms: quantile(sorted, 0.1) as number,
@@ -88,13 +89,16 @@ export const roadmap = (
 
 export const dangerSplit = (
     splits: DossierSplit[],
+    opts?: { minResetShare?: number; minDeaths?: number },
 ): {
     split: DossierSplit;
     startsAtMs: number | null;
     afterName: string | null;
 } | null => {
+    const minResetShare = opts?.minResetShare ?? 0.15;
+    const minDeaths = opts?.minDeaths ?? 5;
     const candidates = splits.filter(
-        (s) => s.resetShare >= 0.15 && s.deaths >= 5,
+        (s) => s.resetShare >= minResetShare && s.deaths >= minDeaths,
     );
     if (candidates.length === 0) return null;
     const worst = candidates.reduce((a, b) =>

@@ -89,7 +89,10 @@ export const evaluators: Record<SlideId, SlideEvaluator> = {
     },
 
     'danger-zone': (d) => {
-        const danger = dangerSplit(d.splits);
+        const danger = dangerSplit(d.splits, {
+            minResetShare: THRESHOLDS.dangerMinResetShare,
+            minDeaths: THRESHOLDS.dangerMinDeaths,
+        });
         if (!danger) return null;
         const pct = Math.round(danger.split.resetShare * 100);
         const when = danger.startsAtMs
@@ -135,7 +138,11 @@ export const evaluators: Record<SlideId, SlideEvaluator> = {
     },
 
     forecast: (d) => {
-        const bands = forecastBands(d.finishedRuns);
+        const bands = forecastBands(
+            d.finishedRuns,
+            20,
+            THRESHOLDS.forecastMinRuns,
+        );
         if (!bands) return null;
         return {
             score: 60 + Math.min(20, bands.sample),
@@ -176,7 +183,10 @@ export const evaluators: Record<SlideId, SlideEvaluator> = {
 
     survived: (d) => {
         if (!d.postRun) return null;
-        const danger = dangerSplit(d.splits);
+        const danger = dangerSplit(d.splits, {
+            minResetShare: THRESHOLDS.dangerMinResetShare,
+            minDeaths: THRESHOLDS.dangerMinDeaths,
+        });
         if (!danger) return null;
         const passed = d.postRun.splits.some(
             (s) => s.index === danger.split.index && s.singleMs !== null,
@@ -193,7 +203,7 @@ export const evaluators: Record<SlideId, SlideEvaluator> = {
         if (!d.postRun) return null;
         if (d.postRun.goldCount < THRESHOLDS.goldRushMinGolds) return null;
         return {
-            score: 60 + d.postRun.goldCount * 15,
+            score: Math.min(100, 60 + d.postRun.goldCount * 15),
             headline: `${d.postRun.goldCount} gold${d.postRun.goldCount > 1 ? 's' : ''} tonight — splits they had never done faster`,
         };
     },
