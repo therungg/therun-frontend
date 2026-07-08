@@ -128,9 +128,9 @@ const buildGrinderRuns = (): DossierFinishedRun[] => {
             const t = (i - (n - 20)) / 19; // 0..1
             offsetMs = (2 + t * 3) * 60 * 1000 + (i % 5) * 1000;
         } else {
-            // older 40: downward trend from pb+30m (oldest) to pb+5m
+            // older 40: downward trend from pb+8m (oldest) to pb+5m
             const t = i / (n - 21); // 0..1 across the older portion
-            offsetMs = (30 - t * 25) * 60 * 1000 + ((i * 37) % 4000) - 2000;
+            offsetMs = (8 - t * 3) * 60 * 1000 + ((i * 37) % 4000) - 2000;
         }
         const daysAgo = Math.round(730 - (i / (n - 1)) * 730);
         runs.push({
@@ -138,8 +138,6 @@ const buildGrinderRuns = (): DossierFinishedRun[] => {
             endedAt: isoDaysAgo(daysAgo),
         });
     }
-    // Ensure strictly the last run is the fastest overall (a pb-adjacent run)
-    runs[n - 1] = { timeMs: grinderPbMs + 30_000, endedAt: isoDaysAgo(1) };
     return runs;
 };
 
@@ -401,23 +399,23 @@ const sparseSobMs = 14 * 60 * 1000 + 55 * 1000;
 
 const sparseSplitsRaw: DossierSplit[] = [
     split(0, 'Start', 1 * 60 * 1000 + 30 * 1000, {
-        deaths: 5,
-        resetShare: 0.5,
+        deaths: 4,
+        resetShare: 4 / 9,
         attemptsReached: 34,
     }),
     split(1, 'Cave', 2 * 60 * 1000 + 10 * 1000, {
         deaths: 3,
-        resetShare: 0.3,
+        resetShare: 3 / 9,
         attemptsReached: 20,
     }),
     split(2, 'Bridge', 3 * 60 * 1000 + 0 * 1000, {
         deaths: 1,
-        resetShare: 0.1,
+        resetShare: 1 / 9,
         attemptsReached: 10,
     }),
     split(3, 'Tower', 4 * 60 * 1000 + 20 * 1000, {
         deaths: 1,
-        resetShare: 0.1,
+        resetShare: 1 / 9,
         attemptsReached: 5,
     }),
     split(4, 'Finale', 4 * 60 * 1000 + 40 * 1000, {
