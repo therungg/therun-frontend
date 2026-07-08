@@ -99,6 +99,68 @@ describe('postRunFromLive', () => {
         expect(post!.splits[0].goldSaveMs).toBe(2000);
         expect(post!.goldCount).toBe(1);
     });
+    test('nulls the single after a skipped split, but keeps totalMs', () => {
+        const run = liveRun({
+            splits: [
+                {
+                    name: 'Split A',
+                    comparisons: {},
+                    single: null,
+                    total: null,
+                    splitTime: 50000,
+                    bestPossible: 45000,
+                    average: 52000,
+                    attemptsStarted: 10,
+                    attemptsFinished: 4,
+                    consistency: 1,
+                    predictedSingleTime: null,
+                    predictedTotalTime: null,
+                    recentCompletionsSingle: [],
+                    recentCompletionsTotal: [],
+                },
+                {
+                    name: 'Split B (skipped)',
+                    comparisons: {},
+                    single: null,
+                    total: null,
+                    splitTime: null, // skipped — no totalMs recorded
+                    bestPossible: 20000,
+                    average: 25000,
+                    attemptsStarted: 10,
+                    attemptsFinished: 4,
+                    consistency: 1,
+                    predictedSingleTime: null,
+                    predictedTotalTime: null,
+                    recentCompletionsSingle: [],
+                    recentCompletionsTotal: [],
+                },
+                {
+                    name: 'Split C',
+                    comparisons: {},
+                    single: null,
+                    total: null,
+                    splitTime: 130000, // cumulative — spans the skipped split too
+                    bestPossible: 60000,
+                    average: 65000,
+                    attemptsStarted: 10,
+                    attemptsFinished: 4,
+                    consistency: 1,
+                    predictedSingleTime: null,
+                    predictedTotalTime: null,
+                    recentCompletionsSingle: [],
+                    recentCompletionsTotal: [],
+                },
+            ] as unknown as LiveRun['splits'],
+        });
+        const post = postRunFromLive(run, dossierSplits, 'capture');
+        expect(post!.splits[1].singleMs).toBeNull();
+        expect(post!.splits[2].singleMs).toBeNull();
+        expect(post!.splits[2].totalMs).toBe(130000);
+        expect(post!.splits[1].isGold).toBe(false);
+        expect(post!.splits[2].isGold).toBe(false);
+        expect(post!.splits[1].deltaVsAvgMs).toBeNull();
+        expect(post!.splits[2].deltaVsAvgMs).toBeNull();
+    });
 });
 
 describe('postRunFromHistory', () => {
@@ -130,5 +192,74 @@ describe('postRunFromHistory', () => {
     test('null with no finished runs', () => {
         const history: History = { ...historyFixture, runs: [] };
         expect(postRunFromHistory(history, dossierSplits)).toBeNull();
+    });
+    test('exclusion path: regenerated history already includes the new gold', () => {
+        // splits[0].values and bestAchievedTime reflect a regeneration that
+        // already folded in the final run's 53000 split time.
+        const history: History = {
+            ...historyFixture,
+            runs: [
+                ...historyFixture.runs,
+                {
+                    splits: [
+                        { splitTime: '53000', totalTime: '53000' },
+                        { splitTime: '110000', totalTime: '163000' },
+                    ],
+                    time: '163000',
+                    duration: '163000',
+                    startedAt: '2026-05-05T18:00:00Z',
+                    endedAt: '2026-05-05T18:03:00Z',
+                },
+            ],
+            splits: [
+                {
+                    ...historyFixture.splits[0],
+                    single: {
+                        ...historyFixture.splits[0].single,
+                        bestAchievedTime: '53000',
+                    },
+                    values: [60000, 61000, 62000, 53000],
+                },
+                historyFixture.splits[1],
+            ],
+        };
+        const post = postRunFromHistory(history, buildSplits(history));
+        // Prior gold = min of the remaining completions after removing one
+        // occurrence of 53000 → 60000. 53000 beats it.
+        expect(post!.splits[0].isGold).toBe(true);
+        expect(post!.splits[0].goldSaveMs).toBe(7000);
+    });
+    test('exclusion path: tie after removing one occurrence is not a gold', () => {
+        // Another run already achieved 53000, so after excluding the final
+        // run's own occurrence, the prior gold is still 53000 — not beaten.
+        const history: History = {
+            ...historyFixture,
+            runs: [
+                ...historyFixture.runs,
+                {
+                    splits: [
+                        { splitTime: '53000', totalTime: '53000' },
+                        { splitTime: '110000', totalTime: '163000' },
+                    ],
+                    time: '163000',
+                    duration: '163000',
+                    startedAt: '2026-05-05T18:00:00Z',
+                    endedAt: '2026-05-05T18:03:00Z',
+                },
+            ],
+            splits: [
+                {
+                    ...historyFixture.splits[0],
+                    single: {
+                        ...historyFixture.splits[0].single,
+                        bestAchievedTime: '53000',
+                    },
+                    values: [53000, 61000, 53000],
+                },
+                historyFixture.splits[1],
+            ],
+        };
+        const post = postRunFromHistory(history, buildSplits(history));
+        expect(post!.splits[0].isGold).toBe(false);
     });
 });
