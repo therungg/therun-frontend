@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { forecastBands } from '../compute';
+import { dangerSplit, forecastBands } from '../compute';
 import { FIXTURES, fixturePost } from '../fixtures';
 
 describe('fixtures', () => {
@@ -19,6 +19,7 @@ describe('fixtures', () => {
         const s = FIXTURES.sparse;
         expect(s.finishedRuns.length).toBeLessThan(5);
         expect(s.community).toBeNull();
+        expect(dangerSplit(s.splits)).toBeNull();
     });
     test('post variants carry postRun', () => {
         for (const d of Object.values(fixturePost)) {
