@@ -58,6 +58,11 @@ describe('forecastBands', () => {
         const bands = forecastBands(runsOf(times), 20);
         expect(bands!.p90Ms).toBe(100); // old slow runs ignored
     });
+    test('minRuns param raises the gate above the default', () => {
+        const runs = runsOf([1, 2, 3, 4, 5, 6]);
+        expect(forecastBands(runs, 20)).not.toBeNull();
+        expect(forecastBands(runs, 20, 7)).toBeNull();
+    });
 });
 
 describe('runPercentile / runRank', () => {
@@ -128,6 +133,13 @@ describe('dangerSplit', () => {
         expect(danger!.split.name).toBe('Danger');
         expect(danger!.afterName).toBe('B');
         expect(danger!.startsAtMs).toBe(120000);
+    });
+    test('opts.minDeaths raises the gate above the default', () => {
+        const splits = [
+            split({ index: 0, name: 'A', deaths: 40, resetShare: 0.41 }),
+        ];
+        expect(dangerSplit(splits)).not.toBeNull();
+        expect(dangerSplit(splits, { minDeaths: 50 })).toBeNull();
     });
 });
 
