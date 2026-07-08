@@ -28,11 +28,19 @@ export const postRunFromLive = (
     if (finalTimeMs === null) return null;
 
     let prevTotal = 0;
+    // True once a split's totalMs comes back null (skipped). The split right
+    // after it would otherwise get `totalMs - prevTotal` spanning both the
+    // skipped split AND itself — a combined duration we can't attribute to a
+    // single segment, so its singleMs must be null too.
+    let prevTotalWasNull = false;
     const splits: PostRunSplit[] = live.splits.map((s, index) => {
         const totalMs = toMs(s.splitTime);
         const singleMs =
-            totalMs === null ? null : Math.max(0, totalMs - prevTotal);
+            totalMs === null || prevTotalWasNull
+                ? null
+                : Math.max(0, totalMs - prevTotal);
         if (totalMs !== null) prevTotal = totalMs;
+        prevTotalWasNull = totalMs === null;
         const priorGoldMs = toMs(s.bestPossible);
         const avg = dossierSplits[index]?.avgSingleMs ?? toMs(s.average);
         return {
@@ -67,7 +75,8 @@ export const postRunFromHistory = (
     const finished = history.runs.filter((r) => toMs(r.time) !== null);
     const lastRun = finished[finished.length - 1];
     if (!lastRun) return null;
-    const finalTimeMs = toMs(lastRun.time) as number;
+    const finalTimeMs = toMs(lastRun.time);
+    if (finalTimeMs === null) return null; // guaranteed by the filter above
 
     const splits: PostRunSplit[] = lastRun.splits.map((s, index) => {
         const singleMs = toMs(s.splitTime);
@@ -75,6 +84,15 @@ export const postRunFromHistory = (
         const meta = dossierSplits[index];
         // Prior gold: the all-time gold, unless THIS value set it — then
         // the best of the remaining completions.
+        //
+        // `meta.completions` (built from history.splits[i].values) may or
+        // may not already include the final run's own split time, depending
+        // on when history was last regenerated relative to this run: if it
+        // does — and that value is what set goldMs — removing one occurrence
+        // recovers the prior gold; which occurrence is irrelevant since
+        // equal values are interchangeable (same multiset minimum either
+        // way). If it doesn't, the filter is a no-op and goldMs already
+        // excludes the final run.
         let priorGoldMs = meta?.goldMs ?? null;
         if (
             singleMs !== null &&
@@ -89,6 +107,8 @@ export const postRunFromHistory = (
         }
         return {
             index,
+            // dossierSplits and lastRun.splits are index-aligned by
+            // construction (both derived from the same split list).
             name: meta?.name ?? `Split ${index + 1}`,
             singleMs,
             totalMs,
