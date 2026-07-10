@@ -3,6 +3,10 @@ import { Deck } from '~src/components/fast50/deck/deck';
 import { SLIDE_COMPONENTS } from '~src/components/fast50/slides/slide-registry';
 import { getRunnerDossier } from '~src/lib/fast50/dossier';
 
+export const metadata = {
+    robots: { index: false, follow: false },
+};
+
 export default async function DeckPage({
     params,
     searchParams,

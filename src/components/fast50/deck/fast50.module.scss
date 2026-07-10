@@ -754,3 +754,181 @@
     background: var(--muted, #8a93a3);
     opacity: 0.4;
 }
+
+// ---------------------------------------------------------------------------
+// Backstage picker — dark and utilitarian, never on stream.
+// ---------------------------------------------------------------------------
+
+.picker {
+    min-height: 100dvh;
+    padding: 48px clamp(20px, 4vw, 64px);
+    background: #07090d;
+    color: #f2f5f9;
+    font-family: var(--font-sans), sans-serif;
+
+    --accent: #21c96e;
+    --danger: #ff4d5e;
+    --gold: #ffd24d;
+    --muted: #8a93a3;
+}
+
+.pickerTitle {
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 24px;
+}
+
+.pickerSubtitle {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0 0 12px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.pickerForm {
+    display: flex;
+    gap: 8px;
+    max-width: 480px;
+    margin-bottom: 12px;
+}
+
+.pickerInput {
+    flex: 1;
+    padding: 10px 12px;
+    font-size: 15px;
+    background: #11151c;
+    border: 1px solid rgba(242, 245, 249, 0.15);
+    border-radius: 4px;
+    color: #f2f5f9;
+
+    &:focus {
+        outline: none;
+        border-color: var(--accent);
+    }
+}
+
+.pickerButton {
+    padding: 10px 18px;
+    font-size: 15px;
+    font-weight: 600;
+    background: var(--accent);
+    color: #07090d;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+
+    &:hover:not(:disabled) {
+        filter: brightness(1.1);
+    }
+}
+
+.pickerError {
+    color: var(--danger);
+    font-size: 14px;
+    margin: 0 0 24px;
+}
+
+.runList {
+    list-style: none;
+    margin: 0 0 40px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 720px;
+}
+
+.runRow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 10px 14px;
+    background: #11151c;
+    border: 1px solid rgba(242, 245, 249, 0.08);
+    border-radius: 4px;
+}
+
+.runLabel {
+    flex: 1;
+    min-width: 200px;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.badge {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(242, 245, 249, 0.1);
+    color: var(--muted);
+
+    &.badgeDanger {
+        background: rgba(255, 77, 94, 0.15);
+        color: var(--danger);
+    }
+}
+
+.runLinks {
+    display: flex;
+    gap: 12px;
+
+    a {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--accent);
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+.captureSection {
+    max-width: 480px;
+    margin-bottom: 40px;
+}
+
+.captureStatus {
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0 0 12px;
+}
+
+.captureList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.captureItem {
+    font-size: 13px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.pickerFooter {
+    font-size: 13px;
+
+    a {
+        color: var(--muted);
+        text-decoration: none;
+
+        &:hover {
+            color: var(--accent);
+        }
+    }
+}
