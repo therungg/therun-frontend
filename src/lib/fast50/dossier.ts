@@ -76,6 +76,18 @@ interface StreaksResult {
 // though the live payload includes it (`{ ..., country: "AU", ... }`).
 type ProfileResult = UserData & { country?: string };
 
+// Cached by game alone — the `/games/{game}` payload is ~400KB and covers
+// every category for the game, so keying it (like `getRunnerDossier` does)
+// by username/category/deck too would re-fetch and re-cache the same heavy
+// payload per runner/category/deck combination.
+const getGameLeaderboards = async (
+    game: string,
+): Promise<CategoryLeaderboardResult> => {
+    'use cache';
+    cacheLife('hours');
+    return apiFetch<CategoryLeaderboardResult>(`/games/${safeEncodeURI(game)}`);
+};
+
 export const getRunnerDossier = async (
     username: string,
     game: string,
@@ -155,12 +167,7 @@ export const getRunnerDossier = async (
                 `/games/${safeEncodeURI(resolvedGame)}/${safeEncodeURI(resolvedCategory)}/segments`,
             ),
         ),
-        track(
-            'leaderboards',
-            apiFetch<CategoryLeaderboardResult>(
-                `/games/${safeEncodeURI(resolvedGame)}`,
-            ),
-        ),
+        track('leaderboards', getGameLeaderboards(resolvedGame)),
         track('playtime', getAdvancedUserStats(resolvedUsername, '0')),
         track(
             'streaks',
