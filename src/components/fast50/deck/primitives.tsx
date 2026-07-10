@@ -325,7 +325,6 @@ export const PercentileBars = ({
                     <div className={styles.percentileTrack}>
                         <div
                             className={styles.percentileFill}
-                            data-visible={play || undefined}
                             style={{
                                 width: play
                                     ? `${100 - item.percentile}%`

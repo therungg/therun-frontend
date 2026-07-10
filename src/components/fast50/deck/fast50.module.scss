@@ -276,7 +276,9 @@
         }
     }
 
-    &[data-dimmed] {
+    // Dimmed nodes still honor the stage-2 reveal: hidden until
+    // [data-visible], then appear at reduced opacity/scale.
+    &[data-visible][data-dimmed] {
         opacity: 0.25;
         transform: scale(0.85);
     }
