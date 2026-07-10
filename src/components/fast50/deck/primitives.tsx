@@ -5,7 +5,10 @@ import Image from 'next/image';
 import React from 'react';
 import CountUp from 'react-countup';
 import { GameImage } from '~src/components/image/gameimage';
-import { formatTimeMs } from '~src/components/live/commentary-drawer/format';
+import {
+    formatDelta,
+    formatTimeMs,
+} from '~src/components/live/commentary-drawer/format';
 import { roadmap } from '~src/lib/fast50/compute';
 import type { DossierSplit } from '~src/lib/fast50/dossier.types';
 import styles from './fast50.module.scss';
@@ -17,12 +20,17 @@ export const Reveal = ({
     when,
     children,
     className,
+    delayMs,
 }: {
     when: boolean;
     children: React.ReactNode;
     className?: string;
+    delayMs?: number;
 }) => (
-    <div className={clsx(styles.reveal, when && styles.revealed, className)}>
+    <div
+        className={clsx(styles.reveal, when && styles.revealed, className)}
+        style={delayMs ? { transitionDelay: `${delayMs}ms` } : undefined}
+    >
         {children}
     </div>
 );
@@ -31,12 +39,14 @@ export const BigNumber = ({
     value,
     play,
     format,
+    className,
 }: {
     value: number;
     play: boolean;
     format?: (n: number) => string;
+    className?: string;
 }) => (
-    <div className={styles.hero}>
+    <div className={clsx(styles.hero, className)}>
         {play ? (
             <CountUp
                 end={value}
@@ -119,11 +129,13 @@ export const RoadTrack = ({
     stage,
     highlightIndex,
     zoom,
+    tone = 'danger',
 }: {
     splits: DossierSplit[];
     stage: number;
     highlightIndex?: number;
     zoom?: boolean;
+    tone?: 'danger' | 'accent';
 }) => {
     const road = roadmap(splits);
     if (road.length === 0) return null;
@@ -153,6 +165,7 @@ export const RoadTrack = ({
                     width={180}
                     height={300}
                     className={styles.dangerBand}
+                    data-tone={tone}
                     data-visible={stage >= 1 || undefined}
                 />
             ) : null}
@@ -172,11 +185,21 @@ export const RoadTrack = ({
                         key={r.index}
                         className={styles.roadNode}
                         data-visible={stage >= 2 || undefined}
-                        data-danger={isHighlight || undefined}
+                        data-tone={isHighlight ? tone : undefined}
                         data-dimmed={(zoom && !isHighlight) || undefined}
                         style={{ transitionDelay: `${i * 90}ms` }}
                     >
                         <circle cx={x} cy={TRACK_Y} r={isHighlight ? 14 : 9} />
+                        {isHighlight && tone === 'accent' ? (
+                            <text
+                                x={x}
+                                y={TRACK_Y - 26}
+                                textAnchor="middle"
+                                className={styles.roadCheck}
+                            >
+                                ✓
+                            </text>
+                        ) : null}
                         <text x={x} y={TRACK_Y + 52} textAnchor="middle">
                             {r.name}
                         </text>
@@ -339,5 +362,114 @@ export const PercentileBars = ({
                 </div>
             ))}
         </div>
+    );
+};
+
+// ---------------------------------------------------------------------------
+// DeltaBars — vertical bars from a zero baseline: negative deltas (faster)
+// drop below in --accent, positive deltas (slower) rise above in --danger.
+// Gold splits are star-marked in --gold. Used by the story-of-the-run slide.
+// ---------------------------------------------------------------------------
+
+const DELTA_H = 420;
+const DELTA_PAD = 60;
+const DELTA_BASELINE = DELTA_H / 2;
+const DELTA_MAX_HALF = DELTA_BASELINE - 60;
+const DELTA_BAR_MAX_W = 96;
+const DELTA_GAP = 16;
+
+export const DeltaBars = ({
+    items,
+    play,
+}: {
+    items: { label: string; deltaMs: number; gold?: boolean }[];
+    play: boolean;
+}) => {
+    if (items.length === 0) return null;
+
+    const maxAbs = Math.max(...items.map((i) => Math.abs(i.deltaMs)), 1);
+    const available = SVG_W - DELTA_PAD * 2;
+    const n = items.length;
+    const barWidth = Math.min(
+        DELTA_BAR_MAX_W,
+        (available - DELTA_GAP * (n - 1)) / n,
+    );
+    const rowWidth = barWidth * n + DELTA_GAP * (n - 1);
+    const startX = (SVG_W - rowWidth) / 2;
+
+    return (
+        <svg
+            viewBox={`0 0 ${SVG_W} ${DELTA_H}`}
+            className={styles.deltaBars}
+            role="img"
+            aria-label="Split deltas vs average"
+        >
+            <line
+                x1={DELTA_PAD}
+                y1={DELTA_BASELINE}
+                x2={SVG_W - DELTA_PAD}
+                y2={DELTA_BASELINE}
+                className={styles.deltaBaseline}
+            />
+            {items.map((item, i) => {
+                const x = startX + i * (barWidth + DELTA_GAP);
+                const magnitude = Math.round(
+                    (Math.abs(item.deltaMs) / maxAbs) * DELTA_MAX_HALF,
+                );
+                const height = Math.max(magnitude, 3);
+                const isFaster = item.deltaMs < 0;
+                const y = isFaster ? DELTA_BASELINE : DELTA_BASELINE - height;
+                const tipY = isFaster ? y + height : y;
+                const tone =
+                    item.deltaMs === 0
+                        ? 'muted'
+                        : isFaster
+                          ? 'accent'
+                          : 'danger';
+                const valueTone = item.gold ? 'gold' : tone;
+                const delayMs = i * 55;
+
+                return (
+                    <g
+                        key={item.label}
+                        className={styles.deltaBarGroup}
+                        data-visible={play || undefined}
+                        style={{ transitionDelay: `${delayMs}ms` }}
+                    >
+                        <rect
+                            x={x}
+                            y={y}
+                            width={barWidth}
+                            height={height}
+                            rx={4}
+                            className={styles.deltaBar}
+                            data-tone={tone}
+                            style={{
+                                transformOrigin: isFaster ? 'top' : 'bottom',
+                                transitionDelay: `${delayMs}ms`,
+                            }}
+                        />
+                        <text
+                            x={x + barWidth / 2}
+                            y={isFaster ? tipY + 26 : tipY - 12}
+                            textAnchor="middle"
+                            className={styles.deltaBarValue}
+                            data-tone={valueTone}
+                        >
+                            {item.gold ? '★ ' : ''}
+                            {formatDelta(item.deltaMs).text}
+                        </text>
+                        <text
+                            x={x + barWidth / 2}
+                            y={DELTA_H - 14}
+                            textAnchor="middle"
+                            className={styles.deltaBarLabel}
+                        >
+                            {item.label}
+                        </text>
+                    </g>
+                );
+            })}
+        </svg>
     );
 };

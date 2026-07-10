@@ -263,7 +263,7 @@
         transform: scale(1);
     }
 
-    &[data-danger] {
+    &[data-tone='danger'] {
         circle {
             fill: var(--danger);
             transform-box: fill-box;
@@ -276,12 +276,36 @@
         }
     }
 
+    // Survived slide: same highlight, but a static check state instead of
+    // the pulsing danger animation.
+    &[data-tone='accent'] {
+        circle {
+            fill: var(--accent);
+        }
+
+        text {
+            fill: var(--accent);
+        }
+    }
+
     // Dimmed nodes still honor the stage-2 reveal: hidden until
     // [data-visible], then appear at reduced opacity/scale.
     &[data-visible][data-dimmed] {
         opacity: 0.25;
         transform: scale(0.85);
     }
+}
+
+.roadCheck {
+    fill: var(--accent);
+    font-size: 30px;
+    font-weight: 800;
+    opacity: 0;
+    transition: opacity 0.4s ease 0.15s;
+}
+
+.roadNode[data-visible] .roadCheck {
+    opacity: 1;
 }
 
 .roadClock {
@@ -316,6 +340,10 @@
 
     &[data-visible] {
         opacity: 0.12;
+    }
+
+    &[data-tone='accent'] {
+        fill: var(--accent);
     }
 }
 
@@ -404,6 +432,20 @@
             stroke: var(--accent);
             fill: var(--accent);
         }
+
+        // Tonight's marker drops in with a bounce instead of a plain fade.
+        line {
+            stroke-width: 5;
+            stroke-dasharray: none;
+            transform-box: fill-box;
+            transform-origin: top;
+            transform: scaleY(0);
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+    }
+
+    &[data-visible][data-tone='accent'] line {
+        transform: scaleY(1);
     }
 
     &[data-tone='gold'] {
@@ -538,6 +580,136 @@
     &.revealed {
         transform: scale(1);
     }
+}
+
+// ---------------------------------------------------------------------------
+// Gold rush slide
+// ---------------------------------------------------------------------------
+
+.heroGold {
+    color: var(--gold);
+}
+
+.goldList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6vw;
+    margin-top: 1.5vw;
+}
+
+.goldItem {
+    font-size: clamp(20px, 1.7vw, 32px);
+    font-weight: 600;
+    max-width: 52ch;
+
+    &::before {
+        content: '★ ';
+        color: var(--gold);
+    }
+}
+
+.goldBonus {
+    margin-top: 0.6vw;
+    font-size: clamp(18px, 1.4vw, 26px);
+    font-weight: 600;
+    color: var(--muted);
+}
+
+// ---------------------------------------------------------------------------
+// The table slide
+// ---------------------------------------------------------------------------
+
+.tableList {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5vw;
+    margin-top: 1.5vw;
+}
+
+.tableRow {
+    font-size: clamp(20px, 1.7vw, 32px);
+    font-weight: 600;
+    color: var(--muted);
+    max-width: 52ch;
+}
+
+// ---------------------------------------------------------------------------
+// Story of the run slide — DeltaBars
+// ---------------------------------------------------------------------------
+
+.deltaBars {
+    width: 100%;
+    height: auto;
+    margin-top: 2.5vw;
+    overflow: visible;
+}
+
+.deltaBaseline {
+    stroke: var(--muted);
+    stroke-width: 2;
+    opacity: 0.4;
+}
+
+.deltaBarGroup {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+
+    &[data-visible] {
+        opacity: 1;
+    }
+}
+
+.deltaBar {
+    transform-box: fill-box;
+    transform: scaleY(0);
+    transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    &[data-tone='accent'] {
+        fill: var(--accent);
+    }
+
+    &[data-tone='danger'] {
+        fill: var(--danger);
+    }
+
+    &[data-tone='muted'] {
+        fill: var(--muted);
+        opacity: 0.4;
+    }
+}
+
+.deltaBarGroup[data-visible] .deltaBar {
+    transform: scaleY(1);
+}
+
+.deltaBarValue {
+    font-size: 18px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+
+    &[data-tone='accent'] {
+        fill: var(--accent);
+    }
+
+    &[data-tone='danger'] {
+        fill: var(--danger);
+    }
+
+    &[data-tone='muted'] {
+        fill: var(--muted);
+    }
+
+    &[data-tone='gold'] {
+        fill: var(--gold);
+    }
+}
+
+.deltaBarLabel {
+    fill: var(--muted);
+    font-size: 15px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
 }
 
 // ---------------------------------------------------------------------------
