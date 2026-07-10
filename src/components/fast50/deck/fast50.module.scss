@@ -1,0 +1,149 @@
+.stage {
+    // the 1920x1080 canvas
+    position: fixed;
+    inset: 0;
+    background: #07090d;
+    color: #f2f5f9;
+    overflow: hidden;
+    font-variant-numeric: tabular-nums;
+
+    --accent: #21c96e; // therun green, brightened for dark bg
+    --danger: #ff4d5e;
+    --gold: #ffd24d;
+    --muted: #8a93a3;
+}
+
+.slide {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 6vw;
+
+    &[data-danger] {
+        .kicker {
+            color: var(--danger);
+        }
+    }
+}
+
+.slideContent {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75vw;
+}
+
+.kicker {
+    font-size: clamp(20px, 1.6vw, 32px);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.headline {
+    font-size: clamp(40px, 4.2vw, 84px);
+    font-weight: 800;
+    line-height: 1.05;
+    max-width: 26ch;
+}
+
+.hero {
+    // the one huge number
+    font-size: clamp(120px, 16vw, 300px);
+    font-weight: 800;
+    line-height: 0.9;
+}
+
+.timeText {
+    font-variant-numeric: tabular-nums;
+}
+
+.backdrop {
+    position: absolute;
+    inset: 0;
+    opacity: 0.08;
+    display: flex;
+    justify-content: flex-end;
+    img {
+        height: 100%;
+        width: auto;
+    }
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, #07090d 30%, transparent 80%);
+    }
+}
+
+.blackout {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 10;
+}
+
+.hud {
+    // slide dots; only visible on mouse move (deck.tsx toggles .hudVisible)
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 20;
+    &.hudVisible {
+        opacity: 1;
+    }
+
+    button {
+        width: 8px;
+        height: 8px;
+        padding: 0;
+        border: none;
+        border-radius: 50%;
+        background: var(--muted, #8a93a3);
+        opacity: 0.4;
+        cursor: pointer;
+        transition:
+            opacity 0.2s,
+            background 0.2s,
+            transform 0.2s;
+
+        &:hover {
+            opacity: 0.8;
+        }
+
+        &[data-active] {
+            background: var(--accent, #21c96e);
+            opacity: 1;
+            transform: scale(1.3);
+        }
+
+        &[data-overflow] {
+            opacity: 0.25;
+            width: 6px;
+            height: 6px;
+        }
+    }
+}
+
+.reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+        opacity 0.6s ease,
+        transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    &.revealed {
+        opacity: 1;
+        transform: none;
+    }
+}
