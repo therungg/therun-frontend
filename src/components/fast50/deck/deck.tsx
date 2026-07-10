@@ -1,9 +1,11 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import React, { useEffect, useReducer, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { loadCapture } from '~src/components/fast50/capture/capture-store';
 import type { RunnerDossier } from '~src/lib/fast50/dossier.types';
-import type { ComposedSlide } from './compose-deck';
+import { postRunFromLive } from '~src/lib/fast50/post-run';
+import { type ComposedSlide, composeDeck } from './compose-deck';
 import { deckReducer, initialDeckState, STAGES_PER_SLIDE } from './deck-state';
 import type { SlideEvaluation, SlideId } from './evaluators';
 import styles from './fast50.module.scss';
@@ -24,7 +26,37 @@ export const Deck = ({
     components: Partial<Record<SlideId, SlideComponent>>;
 }) => {
     const router = useRouter();
-    const renderable = slides.filter((s) => components[s.id]);
+
+    // Post-run decks may have been captured live (before the backend history
+    // caught up) and stashed in localStorage — prefer that over the
+    // server-composed postRun when present.
+    const effectiveDossier = useMemo(() => {
+        if (dossier.deck !== 'post' || typeof window === 'undefined')
+            return dossier;
+        const captured = loadCapture(
+            window.localStorage,
+            dossier.runner.username,
+            dossier.game.game,
+            dossier.game.category,
+        );
+        if (!captured) return dossier;
+        const postRun = postRunFromLive(
+            captured.run,
+            dossier.splits,
+            'capture',
+        );
+        return postRun ? { ...dossier, postRun } : dossier;
+    }, [dossier]);
+
+    const effectiveSlides = useMemo(
+        () =>
+            effectiveDossier === dossier
+                ? slides
+                : composeDeck(effectiveDossier),
+        [effectiveDossier, dossier, slides],
+    );
+
+    const renderable = effectiveSlides.filter((s) => components[s.id]);
     const [state, dispatch] = useReducer(deckReducer, initialDeckState);
     const [hudVisible, setHudVisible] = useState(false);
     const hudTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -71,7 +103,7 @@ export const Deck = ({
         <div className={styles.stage}>
             <Component
                 key={current.id}
-                dossier={dossier}
+                dossier={effectiveDossier}
                 evaluation={current.evaluation}
                 stage={state.stage}
             />

@@ -1,6 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
+import Image from 'next/image';
 import React from 'react';
 import CountUp from 'react-countup';
 import { GameImage } from '~src/components/image/gameimage';
@@ -39,7 +40,9 @@ export const BigNumber = ({
                 formattingFn={format}
             />
         ) : (
-            <span style={{ opacity: 0 }}>{format ? format(value) : value}</span>
+            <span style={{ opacity: 0 }}>
+                {format ? format(value) : value.toLocaleString()}
+            </span>
         )}
     </div>
 );
@@ -60,6 +63,7 @@ export const SlideShell = ({
     stage,
     backdrop,
     danger,
+    avatar,
     children,
 }: {
     kicker: string;
@@ -67,6 +71,7 @@ export const SlideShell = ({
     stage: number;
     backdrop?: string;
     danger?: boolean;
+    avatar?: string;
     children?: React.ReactNode;
 }) => (
     <div className={styles.slide} data-danger={danger || undefined}>
@@ -85,7 +90,14 @@ export const SlideShell = ({
         <div className={styles.slideContent}>
             <div className={styles.kicker}>{kicker}</div>
             <Reveal when={stage >= 0}>
-                <h1 className={styles.headline}>{headline}</h1>
+                <div className={styles.headlineRow}>
+                    {avatar ? (
+                        <span className={styles.avatar}>
+                            <Image src={avatar} alt="" fill sizes="180px" />
+                        </span>
+                    ) : null}
+                    <h1 className={styles.headline}>{headline}</h1>
+                </div>
             </Reveal>
             {children}
         </div>

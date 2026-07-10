@@ -6,6 +6,7 @@
     color: #f2f5f9;
     overflow: hidden;
     font-variant-numeric: tabular-nums;
+    font-family: var(--font-sans), sans-serif;
 
     --accent: #21c96e; // therun green, brightened for dark bg
     --danger: #ff4d5e;
@@ -45,11 +46,32 @@
     font-weight: 700;
 }
 
+.headlineRow {
+    display: flex;
+    align-items: center;
+    gap: 2vw;
+}
+
 .headline {
     font-size: clamp(40px, 4.2vw, 84px);
     font-weight: 800;
     line-height: 1.05;
     max-width: 26ch;
+}
+
+.avatar {
+    position: relative;
+    flex: none;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--accent);
+    box-shadow: 0 0 40px rgba(33, 201, 110, 0.25);
+
+    img {
+        object-fit: cover;
+    }
 }
 
 .hero {
@@ -146,4 +168,219 @@
         opacity: 1;
         transform: none;
     }
+}
+
+// ---------------------------------------------------------------------------
+// Intro slide
+// ---------------------------------------------------------------------------
+
+.introGame {
+    font-size: clamp(24px, 2vw, 40px);
+    font-weight: 600;
+    color: var(--muted);
+    margin-top: 0.5vw;
+}
+
+.statRow {
+    display: flex;
+    gap: 4vw;
+    margin-top: 2.5vw;
+}
+
+.statLabel {
+    display: block;
+    font-size: clamp(14px, 1vw, 20px);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+    margin-bottom: 0.4vw;
+}
+
+.statValue {
+    display: block;
+    font-size: clamp(36px, 3.4vw, 64px);
+    font-weight: 800;
+}
+
+// ---------------------------------------------------------------------------
+// Roadmap slide
+// ---------------------------------------------------------------------------
+
+.roadmapSvg {
+    width: 100%;
+    height: auto;
+    margin-top: 3vw;
+    overflow: visible;
+}
+
+.roadTrack {
+    fill: none;
+    stroke: var(--muted);
+    stroke-width: 3;
+    stroke-dasharray: 1520;
+    stroke-dashoffset: 1520;
+    transition: stroke-dashoffset 1s ease;
+
+    &[data-drawn] {
+        stroke-dashoffset: 0;
+    }
+}
+
+.roadNode {
+    opacity: 0;
+    transform: scale(0.3);
+    transform-box: fill-box;
+    transform-origin: center;
+    transition:
+        opacity 0.4s ease,
+        transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+    circle {
+        fill: var(--accent);
+        stroke: #07090d;
+        stroke-width: 3;
+    }
+
+    text {
+        fill: #f2f5f9;
+        font-size: 22px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    &[data-visible] {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    &[data-danger] {
+        circle {
+            fill: var(--danger);
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: roadPulse 1.6s ease-in-out infinite;
+        }
+
+        text {
+            fill: var(--danger);
+        }
+    }
+}
+
+.roadClock {
+    fill: var(--muted) !important;
+    font-size: 18px;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: normal;
+    font-variant-numeric: tabular-nums;
+}
+
+@keyframes roadPulse {
+    0%,
+    100% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 0 rgba(255, 77, 94, 0.7));
+    }
+    50% {
+        transform: scale(1.18);
+        filter: drop-shadow(0 0 12px rgba(255, 77, 94, 0.7));
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Result slide
+// ---------------------------------------------------------------------------
+
+.deltaLine {
+    display: flex;
+    align-items: baseline;
+    gap: 1.2vw;
+    margin-top: 1.5vw;
+
+    &[data-tone='ahead'] .deltaValue {
+        color: var(--accent);
+    }
+    &[data-tone='behind'] .deltaValue {
+        color: var(--danger);
+    }
+    &[data-tone='neutral'] .deltaValue {
+        color: var(--muted);
+    }
+}
+
+.deltaValue {
+    font-size: clamp(28px, 2.6vw, 48px);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.deltaLabel {
+    font-size: clamp(16px, 1.1vw, 22px);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.pbBadge {
+    display: inline-block;
+    margin-top: 1.5vw;
+    padding: 0.6vw 1.4vw;
+    border-radius: 999px;
+    background: var(--gold);
+    color: #1a1300;
+    font-size: clamp(20px, 1.6vw, 32px);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    transform: scale(0.5);
+
+    &.revealed {
+        transform: scale(1);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Demo route
+// ---------------------------------------------------------------------------
+
+.demoSwitcher {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.35;
+    transition: opacity 0.2s;
+
+    &:hover {
+        opacity: 1;
+    }
+
+    a {
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted, #8a93a3);
+        border: 1px solid currentColor;
+        text-decoration: none;
+
+        &[data-active] {
+            color: var(--accent, #21c96e);
+            border-color: var(--accent, #21c96e);
+        }
+    }
+}
+
+.demoDivider {
+    width: 1px;
+    height: 14px;
+    background: var(--muted, #8a93a3);
+    opacity: 0.4;
 }
