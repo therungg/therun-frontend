@@ -170,6 +170,14 @@
     }
 }
 
+.subStat {
+    font-size: clamp(20px, 1.6vw, 32px);
+    font-weight: 600;
+    color: var(--muted);
+    margin-top: 1vw;
+    max-width: 42ch;
+}
+
 // ---------------------------------------------------------------------------
 // Intro slide
 // ---------------------------------------------------------------------------
@@ -267,6 +275,11 @@
             fill: var(--danger);
         }
     }
+
+    &[data-dimmed] {
+        opacity: 0.25;
+        transform: scale(0.85);
+    }
 }
 
 .roadClock {
@@ -288,6 +301,189 @@
         transform: scale(1.18);
         filter: drop-shadow(0 0 12px rgba(255, 77, 94, 0.7));
     }
+}
+
+// ---------------------------------------------------------------------------
+// Danger zone slide
+// ---------------------------------------------------------------------------
+
+.dangerBand {
+    fill: var(--danger);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+
+    &[data-visible] {
+        opacity: 0.12;
+    }
+}
+
+.watchCue {
+    margin-top: 1.5vw;
+    max-width: 46ch;
+    font-size: clamp(20px, 1.7vw, 34px);
+    font-weight: 700;
+    color: var(--danger);
+}
+
+// ---------------------------------------------------------------------------
+// Forecast slide — DistributionStrip
+// ---------------------------------------------------------------------------
+
+.distStrip {
+    width: 100%;
+    height: auto;
+    margin-top: 3vw;
+    overflow: visible;
+}
+
+.distAxis {
+    stroke: var(--muted);
+    stroke-width: 2;
+    opacity: 0.4;
+}
+
+.distBand {
+    fill: var(--accent);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+
+    &[data-visible] {
+        opacity: 0.14;
+    }
+}
+
+.distTick {
+    stroke: var(--muted);
+    stroke-width: 2;
+    opacity: 0;
+    transition:
+        opacity 0.4s ease,
+        transform 0.4s ease;
+    transform: scaleY(0.4);
+    transform-box: fill-box;
+    transform-origin: center;
+
+    &[data-visible] {
+        opacity: 0.5;
+        transform: scaleY(1);
+    }
+}
+
+.distMedian {
+    stroke: var(--accent);
+    stroke-width: 4;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+
+    &[data-visible] {
+        opacity: 1;
+    }
+}
+
+.distMarker {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+
+    line {
+        stroke-width: 3;
+        stroke-dasharray: 6 6;
+    }
+
+    text {
+        font-size: 20px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+    }
+
+    &[data-tone='accent'] {
+        line,
+        text {
+            stroke: var(--accent);
+            fill: var(--accent);
+        }
+    }
+
+    &[data-tone='gold'] {
+        line,
+        text {
+            stroke: var(--gold);
+            fill: var(--gold);
+        }
+    }
+
+    &[data-tone='muted'] {
+        line,
+        text {
+            stroke: var(--muted);
+            fill: var(--muted);
+        }
+    }
+
+    &[data-visible] {
+        opacity: 1;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// World class slide — PercentileBars
+// ---------------------------------------------------------------------------
+
+.percentileBars {
+    display: flex;
+    flex-direction: column;
+    gap: 1vw;
+    margin-top: 2.5vw;
+    width: min(60vw, 1100px);
+}
+
+.percentileRow {
+    display: grid;
+    grid-template-columns: 16ch 1fr 8ch;
+    align-items: center;
+    gap: 1.5vw;
+}
+
+.percentileLabel {
+    font-size: clamp(16px, 1.3vw, 26px);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+}
+
+.percentileTrack {
+    position: relative;
+    height: clamp(20px, 2.2vw, 36px);
+    background: rgba(242, 245, 249, 0.08);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.percentileFill {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 0;
+    border-radius: 999px;
+    background: var(--muted);
+    transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.percentileRow[data-best] {
+    .percentileLabel {
+        color: var(--accent);
+    }
+    .percentileFill {
+        background: var(--accent);
+    }
+}
+
+.percentileValue {
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(16px, 1.2vw, 24px);
+    font-weight: 700;
+    color: #f2f5f9;
+    text-align: right;
 }
 
 // ---------------------------------------------------------------------------
