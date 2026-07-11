@@ -87,6 +87,14 @@ export const roadmap = (
             : [{ index: s.index, name: s.name, atMs: s.avgTotalMs }],
     );
 
+// Single source of truth for the "danger split" thresholds — evaluators.ts
+// imports this instead of redeclaring matching numbers, so the two can't
+// drift apart.
+export const DANGER_SPLIT_DEFAULTS = {
+    minResetShare: 0.15,
+    minDeaths: 5,
+} as const;
+
 export const dangerSplit = (
     splits: DossierSplit[],
     opts?: { minResetShare?: number; minDeaths?: number },
@@ -95,8 +103,9 @@ export const dangerSplit = (
     startsAtMs: number | null;
     afterName: string | null;
 } | null => {
-    const minResetShare = opts?.minResetShare ?? 0.15;
-    const minDeaths = opts?.minDeaths ?? 5;
+    const minResetShare =
+        opts?.minResetShare ?? DANGER_SPLIT_DEFAULTS.minResetShare;
+    const minDeaths = opts?.minDeaths ?? DANGER_SPLIT_DEFAULTS.minDeaths;
     const candidates = splits.filter(
         (s) => s.resetShare >= minResetShare && s.deaths >= minDeaths,
     );

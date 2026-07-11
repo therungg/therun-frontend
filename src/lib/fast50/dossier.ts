@@ -156,7 +156,6 @@ export const getRunnerDossier = async (
 
     const historyPromise: Promise<History> = fetch(
         getSplitsHistoryUrl(run.historyFilename, false),
-        { mode: 'cors' },
     ).then((r) => r.json());
 
     const [

@@ -1,5 +1,6 @@
 import { formatTimeMs } from '~src/components/live/commentary-drawer/format';
 import {
+    DANGER_SPLIT_DEFAULTS,
     dangerSplit,
     forecastBands,
     runPercentile,
@@ -36,8 +37,8 @@ export const THRESHOLDS = {
     grindAttempts: 500, // below this, attempts aren't a story
     grindMaxScoreAttempts: 5000,
     oneShotMaxFinishRate: 0.25,
-    dangerMinResetShare: 0.15,
-    dangerMinDeaths: 5,
+    dangerMinResetShare: DANGER_SPLIT_DEFAULTS.minResetShare,
+    dangerMinDeaths: DANGER_SPLIT_DEFAULTS.minDeaths,
     worldClassPercentile: 10,
     profileMachineFinishRate: 0.5,
     forecastMinRuns: 5,
