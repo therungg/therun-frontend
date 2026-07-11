@@ -1,10 +1,23 @@
 'use client';
 
 import React from 'react';
-import { formatTimeMs } from '~src/components/live/commentary-drawer/format';
 import type { SlideComponent } from '../deck/deck';
 import styles from '../deck/fast50.module.scss';
 import { BigNumber, Reveal, SlideShell } from '../deck/primitives';
+
+// `formatTimeMs` truncates to whole seconds, so a genuine (positive) gold
+// save under a second reads as "0:00 faster than ever before" — confirmed
+// via live curl (ERoadhouse's LEGO Star Wars Any%, a sub-second Jundland
+// Wastes gold). Saves are always positive here, so show tenths under a
+// minute instead of borrowing the clock formatter.
+const formatSave = (ms: number): string => {
+    const totalSeconds = ms / 1000;
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = Math.floor(totalSeconds % 60);
+    if (minutes > 0) return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    const tenths = Math.floor((totalSeconds * 10) % 10);
+    return `${seconds}.${tenths}s`;
+};
 
 export const GoldRushSlide: SlideComponent = ({
     dossier,
@@ -36,8 +49,9 @@ export const GoldRushSlide: SlideComponent = ({
                         delayMs={i * 130}
                         className={styles.goldItem}
                     >
-                        {s.name} — {formatTimeMs(s.goldSaveMs)} faster than ever
-                        before
+                        {s.name} —{' '}
+                        {s.goldSaveMs !== null ? formatSave(s.goldSaveMs) : '—'}{' '}
+                        faster than ever before
                     </Reveal>
                 ))}
                 {bonus ? (
