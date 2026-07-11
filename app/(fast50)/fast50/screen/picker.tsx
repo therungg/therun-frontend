@@ -67,10 +67,18 @@ export const Picker = () => {
     const onLookup = (e: React.FormEvent) => {
         e.preventDefault();
         const trimmed = username.trim();
+        if (!trimmed) {
+            setResult({ error: 'Enter a username' });
+            return;
+        }
         startTransition(async () => {
-            const res = await lookupRunner(trimmed);
-            setResult(res);
-            setLookedUp(trimmed);
+            try {
+                const res = await lookupRunner(trimmed);
+                setResult(res);
+                setLookedUp(trimmed);
+            } catch {
+                setResult({ error: 'Lookup failed — try again' });
+            }
         });
     };
 
