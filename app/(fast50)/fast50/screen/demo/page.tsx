@@ -1,14 +1,65 @@
-import React, { Suspense } from 'react';
-import { Demo } from './demo';
+import Link from 'next/link';
+import React from 'react';
+import { composeDeck } from '~src/components/fast50/deck/compose-deck';
+import { Deck } from '~src/components/fast50/deck/deck';
+import styles from '~src/components/fast50/deck/fast50.module.scss';
+import { SLIDE_COMPONENTS } from '~src/components/fast50/slides/slide-registry';
+import { FIXTURES, fixturePost } from '~src/lib/fast50/fixtures';
 
 export const metadata = {
     robots: { index: false, follow: false },
 };
 
-export default function DemoPage() {
+const FIXTURE_IDS = ['grinder', 'prodigy', 'sparse'] as const;
+type FixtureId = (typeof FIXTURE_IDS)[number];
+
+const isFixtureId = (v: string | undefined): v is FixtureId =>
+    !!v && (FIXTURE_IDS as readonly string[]).includes(v);
+
+export default async function DemoPage({
+    searchParams,
+}: {
+    searchParams: Promise<{ fixture?: string; deck?: string }>;
+}) {
+    const { fixture: fixtureParam, deck: deckParam } = await searchParams;
+    const fixture: FixtureId = isFixtureId(fixtureParam)
+        ? fixtureParam
+        : 'grinder';
+    const deck = deckParam === 'post' ? 'post' : 'pre';
+    const dossier = (deck === 'post' ? fixturePost : FIXTURES)[fixture];
+
     return (
-        <Suspense>
-            <Demo />
-        </Suspense>
+        <>
+            <Deck
+                key={`${fixture}-${deck}`}
+                dossier={dossier}
+                slides={composeDeck(dossier)}
+                components={SLIDE_COMPONENTS}
+            />
+            <div className={styles.demoSwitcher}>
+                {FIXTURE_IDS.map((id) => (
+                    <Link
+                        key={id}
+                        href={`/fast50/screen/demo?fixture=${id}&deck=${deck}`}
+                        data-active={id === fixture || undefined}
+                    >
+                        {id}
+                    </Link>
+                ))}
+                <span className={styles.demoDivider} />
+                <Link
+                    href={`/fast50/screen/demo?fixture=${fixture}&deck=pre`}
+                    data-active={deck === 'pre' || undefined}
+                >
+                    pre
+                </Link>
+                <Link
+                    href={`/fast50/screen/demo?fixture=${fixture}&deck=post`}
+                    data-active={deck === 'post' || undefined}
+                >
+                    post
+                </Link>
+            </div>
+        </>
     );
 }
