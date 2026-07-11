@@ -35,6 +35,7 @@ export interface Run {
     variables?: { [key: string]: string };
     emulator?: boolean;
     originalRun?: string;
+    displayRun?: string;
 }
 
 export interface Variables {
