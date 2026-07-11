@@ -65,6 +65,15 @@ export const Deck = ({
     const router = useRouter();
     const effective = useEffectiveDossier(dossier, slides);
 
+    useEffect(() => {
+        const failed = dossier.sources
+            .filter((s) => !s.ok)
+            .sort((a, b) => a.name.localeCompare(b.name));
+        for (const s of failed) {
+            console.warn(`fast50: dossier source failed — ${s.name}`, s.error);
+        }
+    }, [dossier.sources]);
+
     const renderable = effective.slides.filter((s) => components[s.id]);
     const [state, dispatch] = useReducer(deckReducer, initialDeckState);
     const [hudVisible, setHudVisible] = useState(false);
@@ -104,7 +113,10 @@ export const Deck = ({
         return () => window.removeEventListener('mousemove', onMove);
     }, []);
 
-    const current = renderable[state.slideIndex];
+    const current =
+        renderable.length > 0
+            ? renderable[Math.min(state.slideIndex, renderable.length - 1)]
+            : undefined;
     if (!current) return null;
     const Component = components[current.id] as SlideComponent;
 

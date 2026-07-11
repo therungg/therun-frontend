@@ -18,9 +18,9 @@ export const lookupRunner = async (
 ): Promise<RunnerLookup | { error: string }> => {
     const trimmed = username.trim();
     if (!trimmed) return { error: 'Enter a username' };
-    const runs = await getUserRuns(trimmed).catch(() => null);
-    if (!runs || runs.length === 0)
-        return { error: `No runs found for '${trimmed}'` };
+    const runs = await getUserRuns(trimmed).catch(() => 'error' as const);
+    if (runs === 'error') return { error: 'Lookup failed — try again' };
+    if (runs.length === 0) return { error: `No runs found for '${trimmed}'` };
 
     const detailed = await Promise.all(
         runs.slice(0, 12).map(async (r) => {
