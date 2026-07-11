@@ -132,8 +132,27 @@ export const getRunnerDossier = async (
     // Use the resolved, canonically-cased values from here on rather than
     // the raw URL params.
     const resolvedUsername = run.user;
-    const resolvedGame = run.game;
-    const resolvedCategory = run.run;
+    let resolvedGame = run.game;
+    let resolvedCategory = run.run;
+
+    // The single-run lookup endpoint (`getRun`) returns `game: null` and a
+    // mangled `run` (the raw variable-qualified key, e.g.
+    // "legostarwars:thecompletesaga(pc/console)#any%#platform:pc#variables:…")
+    // for categories that carry variables (platform, solo/co-op, etc.) —
+    // confirmed via live curl against ERoadhouse's LEGO Star Wars "Any%".
+    // `displayRun` ("Game#Category") stays clean in that case; fall back to
+    // it, and to the original URL params as a last resort, rather than
+    // rendering a null game name and a garbled category.
+    if (!resolvedGame) {
+        const hashIndex = run.displayRun?.indexOf('#') ?? -1;
+        if (hashIndex > -1) {
+            resolvedGame = run.displayRun?.slice(0, hashIndex) || game;
+            resolvedCategory = run.displayRun?.slice(hashIndex + 1) || category;
+        } else {
+            resolvedGame = game;
+            resolvedCategory = category;
+        }
+    }
 
     const historyPromise: Promise<History> = fetch(
         getSplitsHistoryUrl(run.historyFilename, false),
@@ -232,12 +251,18 @@ export const getRunnerDossier = async (
           )
         : null;
 
+    // `live` can be a *non-null but unfinished* entry — e.g. the runner just
+    // reset and the stale live-feed row hasn't been evicted yet
+    // (`hasReset: true`, confirmed via live curl for two active KPDR/120%
+    // speedrunners whose feeds were mid-reset during rehearsal). In that
+    // case `postRunFromLive` correctly returns null for *that* attempt, but
+    // the presenter still needs a post-run deck — fall back to the last
+    // completed run in history rather than showing a blank deck.
     const postRun =
-        deck === 'post' && live
-            ? postRunFromLive(live, splits, 'live')
-            : deck === 'post' && history
-              ? postRunFromHistory(history, splits)
-              : null;
+        deck === 'post'
+            ? ((live && postRunFromLive(live, splits, 'live')) ??
+              (history ? postRunFromHistory(history, splits) : null))
+            : null;
 
     return {
         deck,
