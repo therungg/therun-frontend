@@ -24,9 +24,16 @@ export const lookupRunner = async (
 
     const detailed = await Promise.all(
         runs.slice(0, 12).map(async (r) => {
+            // Isolate each dossier call: a single malformed payload must not
+            // reject the outer Promise.all and kill the whole lookup. A
+            // failed dossier reads as slide count 0 below.
             const [pre, post] = await Promise.all([
-                getRunnerDossier(trimmed, r.game, r.run, 'pre'),
-                getRunnerDossier(trimmed, r.game, r.run, 'post'),
+                getRunnerDossier(trimmed, r.game, r.run, 'pre').catch(
+                    () => null,
+                ),
+                getRunnerDossier(trimmed, r.game, r.run, 'post').catch(
+                    () => null,
+                ),
             ]);
             return {
                 game: r.game,
