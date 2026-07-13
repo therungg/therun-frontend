@@ -5,7 +5,7 @@ import { dangerSplit, roadmap } from '~src/lib/fast50/compute';
 import type { SlideComponent } from '../deck/deck';
 import { RoadTrack, SlideShell } from '../deck/primitives';
 
-export const RoadmapSlide: SlideComponent = ({ dossier, stage }) => {
+export const RoadmapSlide: SlideComponent = ({ dossier, stage, prep }) => {
     const road = roadmap(dossier.splits);
     const danger = dangerSplit(dossier.splits);
     if (road.length === 0) return null;
@@ -20,6 +20,7 @@ export const RoadmapSlide: SlideComponent = ({ dossier, stage }) => {
                 splits={dossier.splits}
                 stage={stage}
                 highlightIndex={danger?.split.index}
+                notes={prep?.roadmapNotes}
             />
         </SlideShell>
     );

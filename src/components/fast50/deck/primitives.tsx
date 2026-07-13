@@ -11,6 +11,7 @@ import {
 } from '~src/components/live/commentary-drawer/format';
 import { roadmap } from '~src/lib/fast50/compute';
 import type { DossierSplit } from '~src/lib/fast50/dossier.types';
+import type { PrepRoadmapNote } from '~src/lib/fast50/prep.types';
 import styles from './fast50.module.scss';
 
 const SVG_W = 1600;
@@ -130,12 +131,14 @@ export const RoadTrack = ({
     highlightIndex,
     zoom,
     tone = 'danger',
+    notes,
 }: {
     splits: DossierSplit[];
     stage: number;
     highlightIndex?: number;
     zoom?: boolean;
     tone?: 'danger' | 'accent';
+    notes?: PrepRoadmapNote[];
 }) => {
     const road = roadmap(splits);
     if (road.length === 0) return null;
@@ -144,6 +147,7 @@ export const RoadTrack = ({
     // Cap visible landmarks at 8: always keep first, last, highlighted.
     const keep = new Set<number>([road[0].index, road[road.length - 1].index]);
     if (highlightIndex !== undefined) keep.add(highlightIndex);
+    for (const n of notes ?? []) keep.add(n.splitIndex);
     const rest = road.filter((r) => !keep.has(r.index));
     const step = Math.ceil(rest.length / Math.max(1, 8 - keep.size));
     const visible = road.filter((r, i) => keep.has(r.index) || i % step === 0);
@@ -212,6 +216,22 @@ export const RoadTrack = ({
                             {formatTimeMs(r.atMs)}
                         </text>
                     </g>
+                );
+            })}
+            {(notes ?? []).map((n) => {
+                const node = road.find((r) => r.index === n.splitIndex);
+                if (!node) return null;
+                return (
+                    <text
+                        key={n.splitIndex}
+                        x={xAt(node.atMs)}
+                        y={TRACK_Y - 34}
+                        textAnchor="middle"
+                        className={styles.roadNote}
+                        data-visible={stage >= 2 || undefined}
+                    >
+                        {n.text}
+                    </text>
                 );
             })}
         </svg>
