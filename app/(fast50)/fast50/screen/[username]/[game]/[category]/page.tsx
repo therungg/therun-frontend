@@ -38,21 +38,24 @@ export default async function DeckPage({
     // Prep is best-effort: any failure (no auth, backend down, bad session
     // id) falls back to the pure auto-composed deck.
     let prep: PrepSessionData | null = null;
-    try {
-        const user = await getSession();
-        if (user.id) {
-            const requested = session ? Number(session) : undefined;
-            if (requested && Number.isInteger(requested) && requested > 0) {
-                prep = (await getPrepSession(user.id, requested)).data;
-            } else {
-                const sessions = await listPrepSessions(user.id, u, g, c);
-                if (sessions[0]) {
-                    prep = (await getPrepSession(user.id, sessions[0].id)).data;
+    if (session !== 'none') {
+        try {
+            const user = await getSession();
+            if (user.id) {
+                const requested = session ? Number(session) : undefined;
+                if (requested && Number.isInteger(requested) && requested > 0) {
+                    prep = (await getPrepSession(user.id, requested)).data;
+                } else {
+                    const sessions = await listPrepSessions(user.id, u, g, c);
+                    if (sessions[0]) {
+                        prep = (await getPrepSession(user.id, sessions[0].id))
+                            .data;
+                    }
                 }
             }
+        } catch {
+            prep = null;
         }
-    } catch {
-        prep = null;
     }
 
     const { slides } = composePreppedDeck(dossier, prep);
