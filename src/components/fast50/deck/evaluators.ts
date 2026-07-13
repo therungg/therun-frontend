@@ -47,6 +47,7 @@ export const THRESHOLDS = {
     goldRushMinGolds: 1,
     tableMinLeftMs: 20_000,
     mainSlots: 4,
+    verdictDemolishMarginMs: 60_000, // beat the called shot by this → DEMOLISHED
 } as const;
 
 const hours = (ms: number) => Math.round(ms / 3600_000);
