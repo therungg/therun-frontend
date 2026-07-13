@@ -52,6 +52,7 @@ export default async function PrepStudioPage({
     return (
         <main className={styles.page}>
             <Studio
+                key={initial?.id ?? 'new'}
                 runner={{ username: u, game: g, category: c }}
                 dossierPre={dossierPre}
                 dossierPost={dossierPost}
