@@ -2,6 +2,8 @@ import { subject as caslSubject } from '@casl/ability';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { resolveGame } from '~src/lib/games-v1';
+import { getRunProvenance } from '~src/lib/moderation/provenance';
+import { getRunHistory } from '~src/lib/moderation/runs';
 import { defineAbilityFor } from '~src/rbac/ability';
 import { loadConsoleChrome } from '../../console/load-chrome';
 import { SubrouteChrome } from '../../console/subroute-chrome';
@@ -40,6 +42,11 @@ export default async function GameRunManagePage({ params }: Props) {
     if (!game) notFound();
     const chrome = await loadConsoleChrome(session, game);
 
+    const [provenance, history] = await Promise.all([
+        getRunProvenance(session.id, game.id, runId).catch(() => null),
+        getRunHistory(runId).catch(() => []),
+    ]);
+
     return (
         <SubrouteChrome
             game={game}
@@ -47,7 +54,12 @@ export default async function GameRunManagePage({ params }: Props) {
             flags={chrome.flags}
             attentionCount={chrome.attentionCount}
         >
-            <ManageRunPage data={data} canExcludeUsers={canExcludeUsers} />
+            <ManageRunPage
+                data={data}
+                canExcludeUsers={canExcludeUsers}
+                provenance={provenance}
+                history={history}
+            />
         </SubrouteChrome>
     );
 }

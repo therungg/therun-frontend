@@ -2,15 +2,27 @@
 
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
+import type {
+    HistoryEvent,
+    RunProvenance,
+} from '../../../../../../../types/moderation.types';
+import { ModProvenancePanel } from '../../../run-view/mod-provenance-panel';
 import { RunCard } from './run-card';
 import type { ManageRunData } from './types';
 
 interface Props {
     data: ManageRunData;
     canExcludeUsers: boolean;
+    provenance: RunProvenance | null;
+    history: HistoryEvent[];
 }
 
-export function ManageRunPage({ data, canExcludeUsers }: Props) {
+export function ManageRunPage({
+    data,
+    canExcludeUsers,
+    provenance,
+    history,
+}: Props) {
     const { game, run } = data;
 
     return (
@@ -60,6 +72,15 @@ export function ManageRunPage({ data, canExcludeUsers }: Props) {
                         ? ` · ${run.subcategoryKey.replace(/\|/g, ' · ')}`
                         : ''}
                 </small>
+            </div>
+
+            <div className="mb-3">
+                <ModProvenancePanel
+                    provenance={provenance}
+                    history={history}
+                    gameSlug={game.name}
+                    runId={run.runId}
+                />
             </div>
 
             <RunCard

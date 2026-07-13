@@ -5,6 +5,7 @@ import { useState } from 'react';
 import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { RunDetail } from '../../../../../../../types/leaderboards.types';
+import { VariablesLine, VerificationBadge } from '../../../run-view/run-badges';
 import type { ModVerb } from '../../moderation/shared/action-model';
 import { RunActionDialog } from '../../moderation/shared/run-action-dialog';
 
@@ -12,50 +13,6 @@ interface Props {
     run: RunDetail;
     gameSlug: string;
     canExcludeUsers: boolean;
-}
-
-function VerificationBadge({
-    status,
-}: {
-    status: RunDetail['verificationStatus'];
-}) {
-    if (status === 'verified') {
-        return (
-            <span className="badge text-bg-success" aria-label="verified">
-                ✓ Verified
-            </span>
-        );
-    }
-    if (status === 'pending') {
-        return (
-            <span className="badge text-bg-warning" aria-label="pending">
-                ⌛ Pending
-            </span>
-        );
-    }
-    return (
-        <span
-            className="badge text-bg-secondary opacity-75"
-            aria-label="rejected"
-        >
-            Rejected
-        </span>
-    );
-}
-
-function VariablesLine({ vars }: { vars: Record<string, string> }) {
-    const entries = Object.entries(vars);
-    if (entries.length === 0) return null;
-    const text = entries.map(([k, v]) => `${k}=${v}`).join(', ');
-    return (
-        <div
-            className="text-muted small text-truncate"
-            title={text}
-            style={{ maxWidth: '100%' }}
-        >
-            {text}
-        </div>
-    );
 }
 
 export function RunCard({ run, gameSlug, canExcludeUsers }: Props) {
@@ -111,7 +68,7 @@ export function RunCard({ run, gameSlug, canExcludeUsers }: Props) {
                 </div>
             </div>
 
-            <VariablesLine vars={run.variables} />
+            <VariablesLine variables={run.variables} />
 
             <hr className="my-3" />
 
