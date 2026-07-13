@@ -7,9 +7,12 @@ export function getRunProvenance(
     gameId: number,
     runId: number,
 ): Promise<RunProvenance> {
-    return modFetch(`/leaderboards/games/${gameId}/runs/${runId}/provenance`, {
-        sessionId,
-    });
+    return modFetch(
+        `/v1/leaderboards/games/${gameId}/runs/${runId}/provenance`,
+        {
+            sessionId,
+        },
+    );
 }
 
 export function getManualTimeProvenance(
@@ -18,7 +21,7 @@ export function getManualTimeProvenance(
     manualTimeId: number,
 ): Promise<RunProvenance> {
     return modFetch(
-        `/leaderboards/games/${gameId}/manual-times/${manualTimeId}/provenance`,
+        `/v1/leaderboards/games/${gameId}/manual-times/${manualTimeId}/provenance`,
         { sessionId },
     );
 }

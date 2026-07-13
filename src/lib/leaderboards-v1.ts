@@ -205,6 +205,7 @@ export async function getManualTimeById(
     'use cache';
     cacheLife('minutes');
     cacheTag(`manual-time:${id}`);
+
     try {
         const body = await v1Fetch<{ result: ManualTimeDetail }>(
             `/v1/leaderboards/manual-times/${id}`,
