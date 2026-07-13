@@ -4,6 +4,7 @@ import type {
     PostRun,
     RunnerDossier,
 } from './dossier.types';
+import type { PrepSessionData } from './prep.types';
 
 // Helper to build a split quickly
 const split = (
@@ -574,4 +575,40 @@ export const fixturePost: Record<
     grinder: { ...grinder, deck: 'post', postRun: grinderPostRun },
     prodigy: { ...prodigy, deck: 'post', postRun: prodigyPostRun },
     sparse: { ...sparse, deck: 'post', postRun: sparsePostRun },
+};
+
+export const fixturePrep: PrepSessionData = {
+    interview: {
+        goal: {
+            text: 'beat his average — and survive Water Temple',
+            // slightly above the fixture's final time so the demo verdict is HIT
+            targetTimeMs:
+                (fixturePost.grinder.postRun?.finalTimeMs ?? 0) + 45_000,
+        },
+        quotes: [
+            {
+                id: 'fixture-quote-1',
+                text: "I've never made it past the danger split with a crowd watching.",
+                context: 'On nerves',
+            },
+        ],
+        facts: [
+            {
+                id: 'fixture-fact-1',
+                template: 'versus',
+                title: 'Attempts',
+                body: '4,812 at home',
+                secondary: '1 tonight',
+            },
+        ],
+    },
+    clips: [
+        {
+            id: 'fixture-clip-1',
+            videoUrl: '/fast50-demo-clip.mp4',
+            title: 'The wrong-warp',
+            caption: 'Watch the camera flick — blink and you miss it',
+        },
+    ],
+    roadmapNotes: [{ splitIndex: 2, text: 'He invented this skip' }],
 };
