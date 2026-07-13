@@ -10,7 +10,8 @@ import type {
     CustomSlideKind,
     PrepSessionData,
 } from '~src/lib/fast50/prep.types';
-import { type ComposedSlide, composeDeck } from './compose-deck';
+import type { ComposedSlide } from './compose-deck';
+import { composePreppedDeck } from './compose-prepped-deck';
 import { deckReducer, initialDeckState, STAGES_PER_SLIDE } from './deck-state';
 import type { SlideEvaluation, SlideId } from './evaluators';
 import styles from './fast50.module.scss';
@@ -19,6 +20,7 @@ export type SlideComponent = React.ComponentType<{
     dossier: RunnerDossier;
     evaluation: SlideEvaluation;
     stage: number;
+    prep?: PrepSessionData | null;
 }>;
 
 export type CustomSlideComponent = React.ComponentType<{
@@ -35,6 +37,7 @@ export type CustomSlideComponent = React.ComponentType<{
 const useEffectiveDossier = (
     dossier: RunnerDossier,
     slides: ComposedSlide[],
+    prep: PrepSessionData | null | undefined,
 ): { dossier: RunnerDossier; slides: ComposedSlide[] } => {
     const [override, setOverride] = useState<{
         dossier: RunnerDossier;
@@ -58,8 +61,11 @@ const useEffectiveDossier = (
         );
         if (!postRun) return;
         const effective = { ...dossier, postRun };
-        setOverride({ dossier: effective, slides: composeDeck(effective) });
-    }, [dossier]);
+        setOverride({
+            dossier: effective,
+            slides: composePreppedDeck(effective, prep).slides,
+        });
+    }, [dossier, prep]);
 
     return override ?? { dossier, slides };
 };
@@ -68,13 +74,18 @@ export const Deck = ({
     dossier,
     slides,
     components,
+    customComponents,
+    prep,
 }: {
     dossier: RunnerDossier;
     slides: ComposedSlide[];
     components: Partial<Record<SlideId, SlideComponent>>;
+    customComponents?: Partial<Record<CustomSlideKind, CustomSlideComponent>>;
+    prep?: PrepSessionData | null;
 }) => {
     const router = useRouter();
-    const effective = useEffectiveDossier(dossier, slides);
+    const effective = useEffectiveDossier(dossier, slides, prep);
+    const custom = customComponents ?? {};
 
     useEffect(() => {
         const failed = dossier.sources
@@ -85,8 +96,8 @@ export const Deck = ({
         }
     }, [dossier.sources]);
 
-    const renderable = effective.slides.filter(
-        (s) => components[s.id as SlideId],
+    const renderable = effective.slides.filter((s) =>
+        s.custom ? custom[s.custom.kind] : components[s.id as SlideId],
     );
     const [state, dispatch] = useReducer(deckReducer, initialDeckState);
     const [hudVisible, setHudVisible] = useState(false);
@@ -131,16 +142,37 @@ export const Deck = ({
             ? renderable[Math.min(state.slideIndex, renderable.length - 1)]
             : undefined;
     if (!current) return null;
-    const Component = components[current.id as SlideId] as SlideComponent;
 
     return (
         <div className={styles.stage}>
-            <Component
-                key={current.id}
-                dossier={effective.dossier}
-                evaluation={current.evaluation}
-                stage={state.stage}
-            />
+            {current.custom
+                ? (() => {
+                      const CustomComponent = custom[
+                          current.custom.kind
+                      ] as CustomSlideComponent;
+                      return (
+                          <CustomComponent
+                              key={current.id}
+                              dossier={effective.dossier}
+                              content={current.custom}
+                              stage={state.stage}
+                          />
+                      );
+                  })()
+                : (() => {
+                      const Component = components[
+                          current.id as SlideId
+                      ] as SlideComponent;
+                      return (
+                          <Component
+                              key={current.id}
+                              dossier={effective.dossier}
+                              evaluation={current.evaluation}
+                              stage={state.stage}
+                              prep={prep}
+                          />
+                      );
+                  })()}
             {state.blackout ? <div className={styles.blackout} /> : null}
             <div
                 className={`${styles.hud} ${hudVisible ? styles.hudVisible : ''}`}
@@ -158,6 +190,18 @@ export const Deck = ({
                     />
                 ))}
             </div>
+            {prep && prep.clips.length > 0 ? (
+                <div className={styles.preloadVideos} aria-hidden>
+                    {prep.clips.map((c) => (
+                        <video
+                            key={c.id}
+                            src={c.videoUrl}
+                            preload="auto"
+                            muted
+                        />
+                    ))}
+                </div>
+            ) : null}
         </div>
     );
 };

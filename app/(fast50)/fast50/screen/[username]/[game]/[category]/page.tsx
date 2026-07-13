@@ -1,6 +1,9 @@
 import { composeDeck } from '~src/components/fast50/deck/compose-deck';
 import { Deck } from '~src/components/fast50/deck/deck';
-import { SLIDE_COMPONENTS } from '~src/components/fast50/slides/slide-registry';
+import {
+    CUSTOM_SLIDE_COMPONENTS,
+    SLIDE_COMPONENTS,
+} from '~src/components/fast50/slides/slide-registry';
 import { getRunnerDossier } from '~src/lib/fast50/dossier';
 
 export const metadata = {
@@ -35,6 +38,7 @@ export default async function DeckPage({
             dossier={dossier}
             slides={composeDeck(dossier)}
             components={SLIDE_COMPONENTS}
+            customComponents={CUSTOM_SLIDE_COMPONENTS}
         />
     );
 }
