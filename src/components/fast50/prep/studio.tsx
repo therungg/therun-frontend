@@ -16,13 +16,15 @@ import {
     type PrepSessionSummary,
     type PrepSlideRef,
 } from '~src/lib/fast50/prep.types';
+import { DeckBuilder } from './deck-builder';
 import { InterviewPanel } from './interview-panel';
 import styles from './prep-studio.module.scss';
+import { PreviewPane } from './preview-pane';
 
 export const Studio = ({
     runner,
     dossierPre,
-    dossierPost: _dossierPost,
+    dossierPost,
     sessions,
     initial,
 }: {
@@ -43,8 +45,8 @@ export const Studio = ({
     const [savedAt, setSavedAt] = useState<Date | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [newLabel, setNewLabel] = useState('');
-    const [_deckTab, _setDeckTab] = useState<'pre' | 'post'>('pre');
-    const [_selected, _setSelected] = useState<PrepSlideRef | null>(null);
+    const [deckTab, setDeckTab] = useState<'pre' | 'post'>('pre');
+    const [selected, setSelected] = useState<PrepSlideRef | null>(null);
 
     const studioPath = `/fast50/prep/${encodeURIComponent(runner.username)}/${encodeURIComponent(runner.game)}/${encodeURIComponent(runner.category)}`;
 
@@ -175,6 +177,13 @@ export const Studio = ({
                 <Link className={styles.buttonGhost} href="/fast50/prep">
                     ← runners
                 </Link>
+                <Link
+                    className={styles.buttonGhost}
+                    href={`/fast50/screen/${encodeURIComponent(runner.username)}/${encodeURIComponent(runner.game)}/${encodeURIComponent(runner.category)}?deck=${deckTab}${session ? `&session=${session.id}` : ''}`}
+                    target="_blank"
+                >
+                    Open deck ↗
+                </Link>
             </div>
 
             {session ? (
@@ -222,9 +231,50 @@ export const Studio = ({
                             }))}
                             onChange={onChange}
                         />
-                        {/* Task 12: builder + preview */}
-                        <div />
-                        <div />
+                        <div>
+                            <div className={styles.tabs}>
+                                <button
+                                    type="button"
+                                    className={styles.tab}
+                                    data-active={deckTab === 'pre' || undefined}
+                                    onClick={() => setDeckTab('pre')}
+                                >
+                                    pre-run
+                                </button>
+                                <button
+                                    type="button"
+                                    className={styles.tab}
+                                    data-active={
+                                        deckTab === 'post' || undefined
+                                    }
+                                    onClick={() => setDeckTab('post')}
+                                    disabled={!dossierPost}
+                                >
+                                    post-run
+                                </button>
+                            </div>
+                            <DeckBuilder
+                                deck={deckTab}
+                                dossier={
+                                    deckTab === 'post' && dossierPost
+                                        ? dossierPost
+                                        : dossierPre
+                                }
+                                data={data}
+                                onChange={onChange}
+                                selected={selected}
+                                onSelect={setSelected}
+                            />
+                        </div>
+                        <PreviewPane
+                            dossier={
+                                deckTab === 'post' && dossierPost
+                                    ? dossierPost
+                                    : dossierPre
+                            }
+                            data={data}
+                            selected={selected}
+                        />
                     </div>
                 </>
             ) : (
