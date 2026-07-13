@@ -157,8 +157,17 @@ export const Picker = () => {
                                 >
                                     post {r.postSlides}
                                 </span>
+                                {r.prepError ? (
+                                    <span
+                                        className={`${styles.badge} ${styles.badgeDanger}`}
+                                        title="prep lookup failed — backend unavailable?"
+                                    >
+                                        prep ?
+                                    </span>
+                                ) : null}
                                 {r.prepSessions.length > 0 ? (
                                     <select
+                                        aria-label="Prep session"
                                         className={styles.pickerSessionSelect}
                                         value={selected}
                                         onChange={(e) =>

@@ -108,9 +108,13 @@ Wired into `api-entry.ts` via `path.startsWith("/fast50")`.
 | `/fast50/prep/{id}` | DELETE | Soft delete |
 | `/fast50/prep/upload-url` | POST | Presigned S3 PUT for a clip |
 
-- All routes authenticated (`Bearer {sessionId}`) and gated via `confirmPermission`
-  against the event subject (event-admin / admin). **Reads included** — prep content is
-  not public.
+- All routes authenticated (`Bearer {sessionId}`) and **admin-only** via
+  `confirmPermission(user, "moderate", "admins")` (decision 2026-07-13: everything
+  fast50 is admin-only — event-admin does NOT qualify; a bare `edit`/`event` check is
+  unsafe because CASL type-level checks ignore the conditional "own events" default
+  rule). **Reads included** — prep content is not public. The same admin-only gate
+  applies to every fast50 frontend surface: prep studio, picker, deck pages, demo,
+  and the `lookupRunner` server action.
 - `upload-url` mirrors `src/api/events/upload-event-image.ts`: body
   `{ contentType, contentLength }`, `video/mp4` only, 200MB cap, key
   `fast50/clips/{uuid}.mp4` in the media bucket, 300s expiry, returns

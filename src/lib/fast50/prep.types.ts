@@ -169,10 +169,13 @@ const parseRef = (raw: unknown): PrepSlideRef | undefined => {
     return undefined;
 };
 
-const parseRefs = (raw: unknown): PrepSlideRef[] | undefined =>
-    Array.isArray(raw)
-        ? raw.map(parseRef).filter((r): r is PrepSlideRef => r !== undefined)
-        : undefined;
+const parseRefs = (raw: unknown): PrepSlideRef[] | undefined => {
+    if (!Array.isArray(raw)) return undefined;
+    const refs = raw
+        .map(parseRef)
+        .filter((r): r is PrepSlideRef => r !== undefined);
+    return refs.length > 0 ? refs : undefined;
+};
 
 export const parsePrepData = (raw: unknown): PrepSessionData => {
     const root = obj(raw);

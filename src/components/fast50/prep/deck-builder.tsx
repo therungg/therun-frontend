@@ -29,7 +29,9 @@ export const DeckBuilder = ({
     selected: PrepSlideRef | null;
     onSelect: (ref: PrepSlideRef) => void;
 }) => {
-    const frozen = deck === 'pre' ? data.deckOrder?.pre : data.deckOrder?.post;
+    const rawFrozen =
+        deck === 'pre' ? data.deckOrder?.pre : data.deckOrder?.post;
+    const frozen = rawFrozen && rawFrozen.length > 0 ? rawFrozen : undefined;
     const composed = composePreppedDeck(dossier, data);
     const included: PrepSlideRef[] =
         frozen ??

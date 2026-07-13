@@ -8,6 +8,7 @@ import {
 import { getRunnerDossier } from '~src/lib/fast50/dossier';
 import { getPrepSession, listPrepSessions } from '~src/lib/fast50/prep';
 import type { PrepSessionData } from '~src/lib/fast50/prep.types';
+import { confirmPermission } from '~src/rbac/confirm-permission';
 
 export const metadata = {
     robots: { index: false, follow: false },
@@ -20,6 +21,17 @@ export default async function DeckPage({
     params: Promise<{ username: string; game: string; category: string }>;
     searchParams: Promise<{ deck?: string; session?: string }>;
 }) {
+    const authUser = await getSession();
+    try {
+        confirmPermission(authUser, 'moderate', 'admins');
+    } catch {
+        return (
+            <main style={{ padding: '20vh 10vw', fontSize: 24 }}>
+                Not authorized.
+            </main>
+        );
+    }
+
     const { username, game, category } = await params;
     const { deck, session } = await searchParams;
     const kind = deck === 'post' ? 'post' : 'pre';

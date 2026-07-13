@@ -27,6 +27,13 @@ describe('parsePrepData', () => {
         expect(parsed.roadmapNotes).toEqual([{ splitIndex: 1, text: 'n' }]);
         expect(parsed.deckOrder?.pre).toEqual([{ kind: 'stat', id: 'intro' }]);
     });
+
+    test('empty deckOrder arrays normalize to absent', () => {
+        const parsed = parsePrepData({
+            deckOrder: { pre: [], post: [{ kind: 'wat', id: 'x' }] },
+        });
+        expect(parsed.deckOrder).toBeUndefined();
+    });
 });
 
 describe('customSlidesFromPrep', () => {

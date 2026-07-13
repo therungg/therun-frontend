@@ -10,7 +10,7 @@ export const metadata = {
 export default async function PrepIndexPage() {
     const user = await getSession();
     try {
-        confirmPermission(user, 'edit', 'event');
+        confirmPermission(user, 'moderate', 'admins');
     } catch {
         return <main className={styles.denied}>Not authorized.</main>;
     }

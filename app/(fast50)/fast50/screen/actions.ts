@@ -7,6 +7,7 @@ import { getRunnerDossier } from '~src/lib/fast50/dossier';
 import { getPrepSession, listPrepSessions } from '~src/lib/fast50/prep';
 import type { PrepSessionSummary } from '~src/lib/fast50/prep.types';
 import { getUserRuns } from '~src/lib/get-user-runs';
+import { confirmPermission } from '~src/rbac/confirm-permission';
 
 export interface RunnerLookup {
     runs: {
@@ -16,6 +17,7 @@ export interface RunnerLookup {
         postSlides: number;
         prepSessions: PrepSessionSummary[];
         prepWarnings: number;
+        prepError: boolean;
     }[];
 }
 
@@ -24,11 +26,17 @@ export const lookupRunner = async (
 ): Promise<RunnerLookup | { error: string }> => {
     const trimmed = username.trim();
     if (!trimmed) return { error: 'Enter a username' };
+
+    const user = await getSession().catch(() => null);
+    try {
+        confirmPermission(user, 'moderate', 'admins');
+    } catch {
+        return { error: 'Not authorized' };
+    }
+
     const runs = await getUserRuns(trimmed).catch(() => 'error' as const);
     if (runs === 'error') return { error: 'Lookup failed — try again' };
     if (runs.length === 0) return { error: `No runs found for '${trimmed}'` };
-
-    const user = await getSession().catch(() => null);
 
     const detailed = await Promise.all(
         runs.slice(0, 12).map(async (r) => {
@@ -48,6 +56,7 @@ export const lookupRunner = async (
             // no prep info on the row.
             let prepSessions: PrepSessionSummary[] = [];
             let prepWarnings = 0;
+            let prepError = false;
             if (user?.id) {
                 try {
                     prepSessions = await listPrepSessions(
@@ -70,6 +79,7 @@ export const lookupRunner = async (
                     }
                 } catch {
                     prepSessions = [];
+                    prepError = true;
                 }
             }
 
@@ -84,6 +94,7 @@ export const lookupRunner = async (
                     : 0,
                 prepSessions,
                 prepWarnings,
+                prepError,
             };
         }),
     );
