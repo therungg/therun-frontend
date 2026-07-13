@@ -33,6 +33,8 @@ export interface ResolvedCategory {
     showMilliseconds?: boolean;
     requireVideo?: boolean;
     requireVideoTopN?: number | null;
+    hideRealTime?: boolean;
+    hideGameTime?: boolean;
 }
 
 export interface QuickStats {

@@ -10,9 +10,16 @@ interface Props {
     stats: QuickStats;
     canManage?: boolean;
     canModerate?: boolean;
+    sessionUsername?: string | null;
 }
 
-export function GameHeader({ game, stats, canManage, canModerate }: Props) {
+export function GameHeader({
+    game,
+    stats,
+    canManage,
+    canModerate,
+    sessionUsername,
+}: Props) {
     return (
         <header className="d-flex align-items-center gap-3 mb-3">
             {game.image && (
@@ -33,18 +40,29 @@ export function GameHeader({ game, stats, canManage, canModerate }: Props) {
                     <DurationToFormatted duration={stats.totalRunTime} /> total
                 </small>
             </div>
-            {(canManage || canModerate) && (
-                // One entry into the unified admin console. It opens on the
-                // viewer's default pane (the moderation queue for moderators,
-                // game/category settings for config-only admins), so a single
-                // button serves both — labelled for whichever they primarily do.
-                <div className="ms-auto">
-                    <Link
-                        href={`/games-v2/${game.name}/manage`}
-                        className="btn btn-sm btn-outline-secondary"
-                    >
-                        {canModerate ? 'Moderate' : 'Manage'}
-                    </Link>
+            {(sessionUsername || canManage || canModerate) && (
+                <div className="ms-auto d-flex gap-2">
+                    {sessionUsername && (
+                        <Link
+                            href={`/games-v2/${game.name}/submit`}
+                            className="btn btn-sm btn-primary"
+                        >
+                            Submit a run
+                        </Link>
+                    )}
+                    {(canManage || canModerate) && (
+                        // One entry into the unified admin console. It opens on
+                        // the viewer's default pane (the moderation queue for
+                        // moderators, game/category settings for config-only
+                        // admins), so a single button serves both — labelled
+                        // for whichever they primarily do.
+                        <Link
+                            href={`/games-v2/${game.name}/manage`}
+                            className="btn btn-sm btn-outline-secondary"
+                        >
+                            {canModerate ? 'Moderate' : 'Manage'}
+                        </Link>
+                    )}
                 </div>
             )}
         </header>
