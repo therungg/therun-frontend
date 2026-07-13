@@ -3,6 +3,7 @@
 import { cacheLife, cacheTag } from 'next/cache';
 import type {
     LeaderboardResponse,
+    ManualTimeDetail,
     RunDetail,
     UserRanking,
     ValidCombinations,
@@ -190,6 +191,23 @@ export async function getRunById(runId: number): Promise<RunDetail | null> {
     try {
         const body = await v1Fetch<{ result: RunDetail }>(
             `/v1/leaderboards/runs/${runId}`,
+        );
+        return body.result;
+    } catch (e) {
+        if (e instanceof V1FetchError && e.status === 404) return null;
+        throw e;
+    }
+}
+
+export async function getManualTimeById(
+    id: number,
+): Promise<ManualTimeDetail | null> {
+    'use cache';
+    cacheLife('minutes');
+    cacheTag(`manual-time:${id}`);
+    try {
+        const body = await v1Fetch<{ result: ManualTimeDetail }>(
+            `/v1/leaderboards/manual-times/${id}`,
         );
         return body.result;
     } catch (e) {
