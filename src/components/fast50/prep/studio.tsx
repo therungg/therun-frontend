@@ -89,8 +89,12 @@ export const Studio = ({
     const onDelete = async () => {
         if (!session) return;
         if (!window.confirm(`Delete prep session '${session.label}'?`)) return;
-        await deletePrepAction(session.id);
-        router.push(studioPath);
+        try {
+            await deletePrepAction(session.id);
+            router.push(studioPath);
+        } catch (e) {
+            setError(e instanceof Error ? e.message : 'Delete failed');
+        }
     };
 
     // Ctrl+S saves; leaving with unsaved changes warns.
