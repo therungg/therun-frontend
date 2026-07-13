@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import React from 'react';
+import { getSession } from '~src/actions/session.action';
 import { composePreppedDeck } from '~src/components/fast50/deck/compose-prepped-deck';
 import { Deck } from '~src/components/fast50/deck/deck';
 import styles from '~src/components/fast50/deck/fast50.module.scss';
@@ -8,6 +9,7 @@ import {
     SLIDE_COMPONENTS,
 } from '~src/components/fast50/slides/slide-registry';
 import { FIXTURES, fixturePost, fixturePrep } from '~src/lib/fast50/fixtures';
+import { confirmPermission } from '~src/rbac/confirm-permission';
 
 export const metadata = {
     robots: { index: false, follow: false },
@@ -24,6 +26,17 @@ export default async function DemoPage({
 }: {
     searchParams: Promise<{ fixture?: string; deck?: string; prep?: string }>;
 }) {
+    const user = await getSession();
+    try {
+        confirmPermission(user, 'moderate', 'admins');
+    } catch {
+        return (
+            <main style={{ padding: '20vh 10vw', fontSize: 24 }}>
+                Not authorized.
+            </main>
+        );
+    }
+
     const {
         fixture: fixtureParam,
         deck: deckParam,

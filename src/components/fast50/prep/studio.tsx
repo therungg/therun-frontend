@@ -62,8 +62,11 @@ export const Studio = ({
         try {
             const updated = await savePrepAction(session.id, { label, data });
             setSession(updated);
+            setData(updated.data);
+            setLabel(updated.label);
             setDirty(false);
             setSavedAt(new Date());
+            router.refresh();
         } catch (e) {
             setError(e instanceof Error ? e.message : 'Save failed');
         } finally {
@@ -74,6 +77,7 @@ export const Studio = ({
     const onCreate = async (duplicate: boolean) => {
         const trimmed = newLabel.trim();
         if (!trimmed) return;
+        if (dirty && !window.confirm('Discard unsaved changes?')) return;
         setError(null);
         try {
             const created = await createPrepAction({
@@ -128,13 +132,18 @@ export const Studio = ({
                 </h1>
                 <select
                     value={session?.id ?? ''}
-                    onChange={(e) =>
+                    onChange={(e) => {
+                        if (
+                            dirty &&
+                            !window.confirm('Discard unsaved changes?')
+                        )
+                            return;
                         router.push(
                             e.target.value
                                 ? `${studioPath}?session=${e.target.value}`
                                 : studioPath,
-                        )
-                    }
+                        );
+                    }}
                 >
                     {sessions.length === 0 ? (
                         <option value="">no sessions yet</option>
