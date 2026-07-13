@@ -111,6 +111,7 @@ export async function updateManualTimeAction(
     if ('error' in g) return g;
     try {
         await updateManualTime(g.sessionId, g.gameId, id, input);
+        revalidateRunDetails([], [id]);
         return { ok: true };
     } catch (e) {
         return fail(e);
@@ -156,6 +157,7 @@ export async function manualTimeVerdictAction(
             action,
             reason,
         });
+        revalidateRunDetails([], [id]);
         return { ok: true, verificationStatus: r.verificationStatus };
     } catch (e) {
         return fail(e);
