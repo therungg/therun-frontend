@@ -1,0 +1,234 @@
+// Prep studio — a TOOL, not a broadcast surface. Dense, px-based, dark.
+
+.page {
+    min-height: 100vh;
+    background: #0b0e14;
+    color: #e6ebf2;
+    padding: 24px;
+    font-family: var(--font-sans), sans-serif;
+}
+
+.denied {
+    padding: 20vh 10vw;
+    font-size: 24px;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.headerTitle {
+    font-size: 18px;
+    font-weight: 700;
+    margin-right: auto;
+}
+
+.studio {
+    display: grid;
+    grid-template-columns: 380px 340px 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+.pane {
+    background: #11151d;
+    border: 1px solid #1e2530;
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.paneTitle {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8a93a3;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+
+    input,
+    textarea,
+    select {
+        background: #0b0e14;
+        border: 1px solid #2a3342;
+        color: inherit;
+        border-radius: 6px;
+        padding: 8px;
+        font: inherit;
+    }
+}
+
+.row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.button {
+    background: #21c96e;
+    color: #06210f;
+    border: 0;
+    border-radius: 6px;
+    padding: 8px 14px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: default;
+    }
+}
+
+.buttonGhost {
+    background: transparent;
+    color: #8a93a3;
+    border: 1px solid #2a3342;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+}
+
+.itemCard {
+    border: 1px solid #2a3342;
+    border-radius: 6px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.itemLabel {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.itemMeta {
+    font-size: 12px;
+    color: #8a93a3;
+}
+
+.deckList {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.deckItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #2a3342;
+    border-radius: 6px;
+    padding: 8px;
+
+    &[data-selected] {
+        border-color: #21c96e;
+    }
+
+    &[data-custom] {
+        border-style: dashed;
+    }
+}
+
+.deckItemLabel {
+    flex: 1;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.iconButton {
+    background: transparent;
+    border: 0;
+    color: #8a93a3;
+    cursor: pointer;
+    font-size: 14px;
+
+    &:hover {
+        color: #e6ebf2;
+    }
+}
+
+.tabs {
+    display: flex;
+    gap: 4px;
+}
+
+.tab {
+    background: transparent;
+    border: 1px solid #2a3342;
+    color: #8a93a3;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+
+    &[data-active] {
+        color: #e6ebf2;
+        border-color: #21c96e;
+    }
+}
+
+.preview {
+    position: sticky;
+    top: 24px;
+}
+
+.previewViewport {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid #1e2530;
+    position: relative;
+}
+
+.previewScale {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920px;
+    height: 1080px;
+    transform-origin: top left;
+}
+
+.warning {
+    color: #ffd24d;
+    font-size: 13px;
+}
+
+.error {
+    color: #ff4d5e;
+    font-size: 13px;
+}
+
+.savedAt {
+    font-size: 12px;
+    color: #8a93a3;
+}
+
+.runList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 720px;
+}
+
+.runRow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid #2a3342;
+    border-radius: 6px;
+    padding: 10px 14px;
+}
