@@ -12,7 +12,10 @@ import {
     updateManualTime,
 } from '~src/lib/moderation/manual-times';
 import { ModError } from '~src/lib/moderation/mod-fetch';
-import { revalidateAffectedBoards } from '~src/lib/moderation/revalidate-boards';
+import {
+    revalidateAffectedBoards,
+    revalidateRunDetails,
+} from '~src/lib/moderation/revalidate-boards';
 import type {
     CreateManualTimeResult,
     ManualTimeFilter,
@@ -92,6 +95,7 @@ export async function createManualTimeAction(
             g.gameName,
             result.affectedLeaderboards,
         );
+        revalidateRunDetails([], [result.id]);
         return { ok: true, result };
     } catch (e) {
         return fail(e);
@@ -132,6 +136,7 @@ export async function deleteManualTimeAction(
             g.gameName,
             result.affectedLeaderboards,
         );
+        revalidateRunDetails([], [id]);
         return { ok: true };
     } catch (e) {
         return fail(e);
