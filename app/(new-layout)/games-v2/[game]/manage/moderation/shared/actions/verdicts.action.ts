@@ -4,7 +4,10 @@ import { getSession } from '~src/actions/session.action';
 import { resolveGame } from '~src/lib/games-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { ModError } from '~src/lib/moderation/mod-fetch';
-import { revalidateAffectedBoards } from '~src/lib/moderation/revalidate-boards';
+import {
+    revalidateAffectedBoards,
+    revalidateRunDetails,
+} from '~src/lib/moderation/revalidate-boards';
 import { applyVerdicts, previewVerdicts } from '~src/lib/moderation/verdicts';
 import type {
     BulkVerdictResult,
@@ -69,6 +72,7 @@ export async function applyVerdictsAction(
             g.gameName,
             result.affectedLeaderboards,
         );
+        revalidateRunDetails(runIds);
         return { ok: true, result };
     } catch (e) {
         return fail(e);

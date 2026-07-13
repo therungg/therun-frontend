@@ -5,7 +5,10 @@ import { resolveGame } from '~src/lib/games-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { exclude, previewExclude } from '~src/lib/moderation/mass-mgmt';
 import { ModError } from '~src/lib/moderation/mod-fetch';
-import { revalidateAffectedBoards } from '~src/lib/moderation/revalidate-boards';
+import {
+    revalidateAffectedBoards,
+    revalidateRunDetails,
+} from '~src/lib/moderation/revalidate-boards';
 import type {
     BulkExcludeResult,
     CreateRuleResult,
@@ -68,6 +71,7 @@ export async function excludeAction(
                 game.name,
                 result.affectedLeaderboards,
             );
+            if ('runIds' in input) revalidateRunDetails(input.runIds);
         }
         return { ok: true, result };
     } catch (e) {

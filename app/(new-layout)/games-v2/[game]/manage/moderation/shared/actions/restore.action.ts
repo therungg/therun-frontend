@@ -5,7 +5,10 @@ import { resolveGame } from '~src/lib/games-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { include } from '~src/lib/moderation/mass-mgmt';
 import { ModError } from '~src/lib/moderation/mod-fetch';
-import { revalidateAffectedBoards } from '~src/lib/moderation/revalidate-boards';
+import {
+    revalidateAffectedBoards,
+    revalidateRunDetails,
+} from '~src/lib/moderation/revalidate-boards';
 import { applyVerdicts } from '~src/lib/moderation/verdicts';
 import type { AffectedLeaderboard } from '../../../../../../../../types/moderation.types';
 
@@ -54,6 +57,7 @@ export async function restoreRunsAction(
             affected.push(lb);
         }
         await revalidateAffectedBoards(game.id, game.name, affected);
+        revalidateRunDetails(runIds);
 
         return { ok: true };
     } catch (e) {

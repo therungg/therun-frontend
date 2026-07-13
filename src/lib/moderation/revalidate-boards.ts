@@ -36,3 +36,15 @@ export async function revalidateAffectedBoards(
         // Best-effort cache invalidation; the TTL will catch up regardless.
     }
 }
+
+// Run/manual detail pages cache under run:{id} / manual-time:{id} (minutes profile).
+// Call after any verdict/exclude/restore/manual-time mutation so the detail page
+// reflects the action immediately.
+export function revalidateRunDetails(
+    runIds: number[],
+    manualTimeIds: number[] = [],
+): void {
+    for (const id of runIds) revalidateTag(`run:${id}`, 'minutes');
+    for (const id of manualTimeIds)
+        revalidateTag(`manual-time:${id}`, 'minutes');
+}

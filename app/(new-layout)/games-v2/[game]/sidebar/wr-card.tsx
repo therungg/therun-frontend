@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
+import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
@@ -31,6 +32,13 @@ export function WrCard({
     const top = leaderboard.entries[0];
     if (!top || top.time === null) return null;
 
+    const detailHref =
+        top.source === 'manual' && top.manualTimeId != null
+            ? `/games-v2/${gameSlug}/manual/${top.manualTimeId}`
+            : top.runId != null
+              ? `/games-v2/${gameSlug}/run/${top.runId}`
+              : null;
+
     return (
         <section className="border rounded p-3 mb-3">
             <div className="d-flex justify-content-between align-items-baseline">
@@ -44,7 +52,13 @@ export function WrCard({
                 </button>
             </div>
             <div className="fs-4 fw-bold">
-                <DurationToFormatted duration={top.time} />
+                {detailHref ? (
+                    <Link href={detailHref} className="text-decoration-none">
+                        <DurationToFormatted duration={top.time} />
+                    </Link>
+                ) : (
+                    <DurationToFormatted duration={top.time} />
+                )}
             </div>
             <div>
                 <UserLink username={top.runnerName} url={undefined} />

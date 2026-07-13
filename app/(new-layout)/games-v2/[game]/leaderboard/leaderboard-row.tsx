@@ -24,6 +24,12 @@ export function LeaderboardRow({
     sessionUsername,
 }: Props) {
     const showManageButton = canManage && entry.runId != null && !entry.isGuest;
+    const detailHref =
+        entry.source === 'manual' && entry.manualTimeId != null
+            ? `/games-v2/${gameSlug}/manual/${entry.manualTimeId}`
+            : entry.runId != null
+              ? `/games-v2/${gameSlug}/run/${entry.runId}`
+              : null;
 
     return (
         <tr className={isCurrentUser ? 'table-active' : undefined}>
@@ -34,7 +40,18 @@ export function LeaderboardRow({
             {!hideRealTime && (
                 <td>
                     {entry.realTime != null ? (
-                        <DurationToFormatted duration={entry.realTime} />
+                        detailHref ? (
+                            <Link
+                                href={detailHref}
+                                className="text-decoration-none"
+                            >
+                                <DurationToFormatted
+                                    duration={entry.realTime}
+                                />
+                            </Link>
+                        ) : (
+                            <DurationToFormatted duration={entry.realTime} />
+                        )
                     ) : (
                         '—'
                     )}
@@ -43,7 +60,18 @@ export function LeaderboardRow({
             {!hideGameTime && (
                 <td>
                     {entry.gameTime != null ? (
-                        <DurationToFormatted duration={entry.gameTime} />
+                        detailHref ? (
+                            <Link
+                                href={detailHref}
+                                className="text-decoration-none"
+                            >
+                                <DurationToFormatted
+                                    duration={entry.gameTime}
+                                />
+                            </Link>
+                        ) : (
+                            <DurationToFormatted duration={entry.gameTime} />
+                        )
                     ) : (
                         '—'
                     )}

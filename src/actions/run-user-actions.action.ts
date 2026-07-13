@@ -3,6 +3,7 @@
 import { getSession } from '~src/actions/session.action';
 import { ModError } from '~src/lib/moderation/mod-fetch';
 import { createReport } from '~src/lib/moderation/reports';
+import { revalidateRunDetails } from '~src/lib/moderation/revalidate-boards';
 import { appealRun, getRunHistory } from '~src/lib/moderation/runs';
 import { selfRunVerdict } from '~src/lib/moderation/self-service';
 import type { HistoryEvent } from '../../types/moderation.types';
@@ -42,6 +43,7 @@ export async function appealRunAction(
     }
     try {
         await appealRun(s.id, runId, { reason: reason.trim() });
+        revalidateRunDetails([runId]);
         return { ok: true };
     } catch (e) {
         return toError(e);
@@ -63,6 +65,7 @@ export async function selfRunVerdictAction(
             action,
             reason: reason?.trim() || undefined,
         });
+        revalidateRunDetails([runId]);
         return { ok: true, applied: r.applied, noop: r.noop };
     } catch (e) {
         return toError(e);
