@@ -1,7 +1,7 @@
 # Run Detail Page + Provenance — Design
 
 **Date:** 2026-07-13
-**Status:** Approved design, pending spec review. First item of Tier 0 (see `2026-07-13-leaderboards-vs-src-roadmap.md`).
+**Status:** Implemented on branch run-detail-provenance (both repos) — pending final review, Joey's merge, backend migration 0070 + deploy.
 **Scope:** Frontend (`therun-fr`) + backend (`../therun`) — backend access granted for this task.
 
 ---
