@@ -10,6 +10,7 @@ import type {
 import type { HistoryEvent } from '../../../../../types/moderation.types';
 import { OriginPanel } from './origin-panel';
 import { RunActions } from './run-actions';
+import { VariablesLine, VerificationBadge } from './run-badges';
 import { RunHistoryList } from './run-history-list';
 
 export interface RunViewModel {
@@ -30,53 +31,6 @@ export interface RunViewModel {
     origin: RunOrigin | null;
     verifiedBy: RunOriginRef | null;
     rejectionReason: string | null;
-}
-
-// Reimplemented (not lifted) from manage/run/[runId]/run-card.tsx — those copies
-// are private to that file and lifting them would require editing run-card.tsx,
-// which is outside this task's commit scope. Markup kept identical.
-function VerificationBadge({
-    status,
-}: {
-    status: RunViewModel['verificationStatus'];
-}) {
-    if (status === 'verified') {
-        return (
-            <span className="badge text-bg-success" aria-label="verified">
-                ✓ Verified
-            </span>
-        );
-    }
-    if (status === 'pending') {
-        return (
-            <span className="badge text-bg-warning" aria-label="pending">
-                ⌛ Pending
-            </span>
-        );
-    }
-    return (
-        <span
-            className="badge text-bg-secondary opacity-75"
-            aria-label="rejected"
-        >
-            Rejected
-        </span>
-    );
-}
-
-function VariablesLine({ vars }: { vars: Record<string, string> }) {
-    const entries = Object.entries(vars);
-    if (entries.length === 0) return null;
-    const text = entries.map(([k, v]) => `${k}=${v}`).join(', ');
-    return (
-        <div
-            className="text-muted small text-truncate"
-            title={text}
-            style={{ maxWidth: '100%' }}
-        >
-            {text}
-        </div>
-    );
 }
 
 export function RunView({
@@ -204,7 +158,7 @@ export function RunView({
                                 </div>
                             )}
                         </div>
-                        <VariablesLine vars={model.variables} />
+                        <VariablesLine variables={model.variables} />
                     </div>
                     <OriginPanel model={model} />
                     <RunActions
