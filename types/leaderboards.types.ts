@@ -220,3 +220,21 @@ export interface SubmitWarning {
         | 'no_match_filter_dropped'
         | 'combination_invalid_default_used';
 }
+
+// Backend: POST /v1/me/submissions
+export interface SubmitRunInput {
+    gameId: number;
+    categoryId: number;
+    time?: number;
+    gameTime?: number;
+    runDate: string;
+    vodUrl?: string;
+    variables?: Record<string, string>;
+}
+
+export interface SubmitRunResult {
+    id: number;
+    verificationStatus: 'pending' | 'verified';
+    applied: 'instant' | 'provisional';
+    warnings: SubmitWarning[];
+}
