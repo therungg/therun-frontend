@@ -14,7 +14,7 @@ Decisions already made with Joey:
 
 - Run detail + provenance is the first Tier 0 spec (before submission form, profiles, launch).
 - **Public summary, mod full detail.**
-- Launch un-gating (separate spec) will be all-at-once; this page ships unpublished behind the existing v2 admin gate until then, but is built as a public page (no admin checks of its own).
+- Launch un-gating (separate spec) will be all-at-once. Decision at implementation (2026-07-14): the run/manual detail pages carry NO gate of their own and are reachable pre-launch by direct URL — the underlying API data is public regardless, and the only links to them live on admin-gated board pages. The launch flip needs no changes here.
 
 ## 2. Ground truth (verified in both repos, 2026-07-13)
 

@@ -24,7 +24,10 @@ export function RunActions({
 
     const isRun = model.kind === 'run';
     const canReport = isRun && sessionUsername != null;
-    const canAppeal = isRun && sessionUsername === model.runnerName;
+    const canAppeal =
+        isRun &&
+        sessionUsername === model.runnerName &&
+        model.verificationStatus === 'rejected';
 
     const close = () => {
         setModal(null);

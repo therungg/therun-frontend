@@ -80,6 +80,7 @@ export function ManageRunPage({
                     history={history}
                     gameSlug={game.name}
                     runId={run.runId}
+                    showConsoleLink={false}
                 />
             </div>
 

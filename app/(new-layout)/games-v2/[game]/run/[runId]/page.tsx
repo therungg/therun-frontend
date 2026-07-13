@@ -16,6 +16,7 @@ interface PageProps {
 }
 
 async function load(gameSlug: string, runIdRaw: string) {
+    if (!/^\d+$/.test(runIdRaw)) return null;
     const runId = Number.parseInt(runIdRaw, 10);
     if (!Number.isFinite(runId)) return null;
     const game = await resolveGame(gameSlug);

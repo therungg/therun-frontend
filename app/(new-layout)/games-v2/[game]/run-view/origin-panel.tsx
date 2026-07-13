@@ -1,5 +1,6 @@
 import Link from '~src/components/link';
 import { originSummary } from '~src/lib/run-view/origin-summary';
+import { safeEncodeURI } from '~src/utils/uri';
 import type { RunViewModel } from './run-view';
 
 export function OriginPanel({ model }: { model: RunViewModel }) {
@@ -31,9 +32,9 @@ export function OriginPanel({ model }: { model: RunViewModel }) {
             {showSplitsLink && (
                 <div className="mt-2">
                     <Link
-                        href={`/${model.runnerName}/${encodeURIComponent(
-                            model.game.display,
-                        )}`}
+                        href={`/${safeEncodeURI(
+                            model.runnerName,
+                        )}/${safeEncodeURI(model.game.display)}`}
                     >
                         View splits & attempt stats
                     </Link>
