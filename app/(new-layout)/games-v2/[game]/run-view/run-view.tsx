@@ -1,6 +1,6 @@
 import type React from 'react';
 import { UserLink } from '~src/components/links/links';
-import { Vod } from '~src/components/run/dashboard/vod';
+import { Vod, youtubeParser } from '~src/components/run/dashboard/vod';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
     ResolvedGame,
@@ -31,6 +31,10 @@ export interface RunViewModel {
     origin: RunOrigin | null;
     verifiedBy: RunOriginRef | null;
     rejectionReason: string | null;
+}
+
+function isEmbeddableVod(url: string): boolean {
+    return Boolean(youtubeParser(url)) || url.includes('twitch');
 }
 
 export function RunView({
@@ -102,9 +106,26 @@ export function RunView({
             <div className="row g-3">
                 <div className="col-lg-8">
                     {model.vodUrl ? (
-                        <div style={{ width: '100%', aspectRatio: '16 / 9' }}>
-                            <Vod vod={model.vodUrl} />
-                        </div>
+                        isEmbeddableVod(model.vodUrl) ? (
+                            <div
+                                style={{ width: '100%', aspectRatio: '16 / 9' }}
+                            >
+                                <Vod vod={model.vodUrl} />
+                            </div>
+                        ) : (
+                            <div
+                                className="border rounded d-flex align-items-center justify-content-center text-muted"
+                                style={{ aspectRatio: '16 / 9' }}
+                            >
+                                <a
+                                    href={model.vodUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                >
+                                    Watch video / view evidence ↗
+                                </a>
+                            </div>
+                        )
                     ) : (
                         <div
                             className="border rounded d-flex align-items-center justify-content-center text-muted"

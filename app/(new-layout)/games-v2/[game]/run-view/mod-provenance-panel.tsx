@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { buildProvenanceTimeline } from '~src/lib/run-view/provenance-timeline';
 import type {
     HistoryEvent,
@@ -12,13 +13,15 @@ function formatAt(at: string | null): string {
 export function ModProvenancePanel({
     provenance,
     history,
-    gameSlug: _gameSlug,
-    runId: _runId,
+    gameSlug,
+    runId,
+    showConsoleLink = true,
 }: {
     provenance: RunProvenance | null;
     history: HistoryEvent[];
     gameSlug: string;
     runId: number | null;
+    showConsoleLink?: boolean;
 }) {
     const timeline = buildProvenanceTimeline(provenance, history);
     const mod = provenance?.moderation ?? null;
@@ -26,7 +29,17 @@ export function ModProvenancePanel({
 
     return (
         <div className="border border-warning-subtle rounded p-3 mt-3">
-            <h2 className="h6">Moderator view</h2>
+            <div className="d-flex align-items-center justify-content-between">
+                <h2 className="h6 mb-0">Moderator view</h2>
+                {showConsoleLink && runId != null && (
+                    <Link
+                        href={`/games-v2/${gameSlug}/manage/run/${runId}`}
+                        className="btn btn-sm btn-outline-secondary"
+                    >
+                        Open in console
+                    </Link>
+                )}
+            </div>
 
             {!provenance && (
                 <p className="text-muted small mb-0">
