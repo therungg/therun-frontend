@@ -47,7 +47,7 @@ const Youtube = ({ url }: { url: string }) => {
     );
 };
 
-const youtubeParser = (url: string) => {
+export const youtubeParser = (url: string) => {
     const regExp =
         /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
     const match = url.match(regExp);
