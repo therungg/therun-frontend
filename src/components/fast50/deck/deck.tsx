@@ -74,7 +74,9 @@ export const Deck = ({
         }
     }, [dossier.sources]);
 
-    const renderable = effective.slides.filter((s) => components[s.id]);
+    const renderable = effective.slides.filter(
+        (s) => components[s.id as SlideId],
+    );
     const [state, dispatch] = useReducer(deckReducer, initialDeckState);
     const [hudVisible, setHudVisible] = useState(false);
     const hudTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -118,7 +120,7 @@ export const Deck = ({
             ? renderable[Math.min(state.slideIndex, renderable.length - 1)]
             : undefined;
     if (!current) return null;
-    const Component = components[current.id] as SlideComponent;
+    const Component = components[current.id as SlideId] as SlideComponent;
 
     return (
         <div className={styles.stage}>

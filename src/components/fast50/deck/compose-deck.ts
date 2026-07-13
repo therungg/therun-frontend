@@ -1,4 +1,5 @@
 import type { RunnerDossier } from '~src/lib/fast50/dossier.types';
+import type { CustomSlideContent } from '~src/lib/fast50/prep.types';
 import {
     evaluators,
     type SlideEvaluation,
@@ -7,10 +8,11 @@ import {
 } from './evaluators';
 
 export interface ComposedSlide {
-    id: SlideId;
+    id: string;
     evaluation: SlideEvaluation;
     anchor: boolean;
     overflow: boolean;
+    custom?: CustomSlideContent;
 }
 
 const PRE_ANCHORS: SlideId[] = ['intro', 'roadmap'];
