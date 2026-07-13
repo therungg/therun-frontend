@@ -166,6 +166,47 @@ export interface RunDetail {
     vodUrl: string | null;
     verificationStatus: 'pending' | 'verified' | 'rejected';
     variables: Record<string, string>;
+    origin?: RunOrigin;
+    verifiedBy?: RunOriginRef | null;
+    verifiedAt?: string | null;
+    rejectionReason?: string | null;
+}
+
+export interface RunOriginRef {
+    userId: number;
+    name: string;
+}
+
+export type RunOriginPath =
+    | 'timer'
+    | 'guest_submit'
+    | 'submission'
+    | 'manual_mod'
+    | 'manual_self';
+
+export interface RunOrigin {
+    path: RunOriginPath | null;
+    submittedBy: RunOriginRef | null;
+    speedrunRunId: string | null;
+    ingestedAt: string | null;
+}
+
+// Backend: GET /v1/leaderboards/manual-times/{id}
+export interface ManualTimeDetail {
+    manualTimeId: number;
+    gameId: number;
+    gameDisplay: string;
+    categoryId: number;
+    categoryDisplay: string;
+    subcategoryKey: string;
+    runnerName: string;
+    userId: number | null;
+    isGuest: boolean;
+    timing: 'realtime' | 'gametime';
+    timeMs: number;
+    evidenceUrl: string | null;
+    verificationStatus: 'pending' | 'verified' | 'rejected';
+    origin: RunOrigin;
 }
 
 // Submit warnings (no UI consumer in this app yet — see plan coordination notes).

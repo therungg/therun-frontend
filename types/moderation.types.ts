@@ -516,6 +516,61 @@ export interface NotificationFilter {
     offset?: number;
 }
 
+// ── Run provenance (mod-only full chain) ─────────────────────────────────────
+
+export interface ProvenanceEntityRef {
+    gameId: number;
+    gameName: string;
+    categoryId: number;
+    categoryName: string;
+}
+
+export interface ProvenanceReassignment {
+    kind: 'game' | 'category';
+    reassignmentId: number;
+    from: ProvenanceEntityRef;
+    to: ProvenanceEntityRef;
+    movedAt: string;
+    undoneAt: string | null;
+    performedBy: { userId: number; name: string } | null;
+}
+
+export interface ProvenanceIdentity {
+    fromGuestName: string | null;
+    fromUserId: number | null;
+    to: { userId: number; name: string } | null;
+    mergedAt: string;
+    performedBy: { userId: number; name: string } | null;
+}
+
+export interface RunProvenance {
+    ingest: {
+        path:
+            | 'timer'
+            | 'guest_submit'
+            | 'submission'
+            | 'manual_mod'
+            | 'manual_self'
+            | null;
+        submittedBy: { userId: number; name: string } | null;
+        createdBy: { userId: number; name: string } | null;
+        reason: string | null;
+        ingestedAt: string | null;
+        speedrunRunId: string | null;
+        platform: string | null;
+        emulator: boolean | null;
+        rawVariables: Record<string, string> | null;
+    };
+    reassignments: ProvenanceReassignment[];
+    identity: ProvenanceIdentity[];
+    moderation: {
+        modNote: string | null;
+        ineligibleReason: string | null;
+        excluded: boolean;
+        verifyQueueHidden: boolean;
+    };
+}
+
 export interface MarkAllReadResult {
     read: number;
 }
