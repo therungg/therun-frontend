@@ -5,6 +5,11 @@ import React, { useEffect, useReducer, useRef, useState } from 'react';
 import { loadCapture } from '~src/components/fast50/capture/capture-store';
 import type { RunnerDossier } from '~src/lib/fast50/dossier.types';
 import { postRunFromLive } from '~src/lib/fast50/post-run';
+import type {
+    CustomSlideContent,
+    CustomSlideKind,
+    PrepSessionData,
+} from '~src/lib/fast50/prep.types';
 import { type ComposedSlide, composeDeck } from './compose-deck';
 import { deckReducer, initialDeckState, STAGES_PER_SLIDE } from './deck-state';
 import type { SlideEvaluation, SlideId } from './evaluators';
@@ -13,6 +18,12 @@ import styles from './fast50.module.scss';
 export type SlideComponent = React.ComponentType<{
     dossier: RunnerDossier;
     evaluation: SlideEvaluation;
+    stage: number;
+}>;
+
+export type CustomSlideComponent = React.ComponentType<{
+    dossier: RunnerDossier;
+    content: CustomSlideContent;
     stage: number;
 }>;
 

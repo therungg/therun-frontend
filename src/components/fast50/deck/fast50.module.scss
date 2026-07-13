@@ -932,3 +932,114 @@
         }
     }
 }
+
+// --- custom prep slides ---
+
+.quoteText {
+    font-size: 4.6vw;
+    line-height: 1.15;
+    font-weight: 700;
+    max-width: 62vw;
+    margin: 0;
+}
+
+.quoteAttribution {
+    display: flex;
+    align-items: center;
+    gap: 1vw;
+    font-size: 1.6vw;
+    color: var(--muted);
+}
+
+.factVersus {
+    display: flex;
+    align-items: baseline;
+    gap: 2.4vw;
+    font-size: 4.2vw;
+    font-weight: 700;
+}
+
+.factVs {
+    font-size: 1.8vw;
+    color: var(--muted);
+}
+
+.factBody {
+    font-size: 4.2vw;
+    font-weight: 700;
+    max-width: 66vw;
+    line-height: 1.15;
+
+    &[data-history] {
+        font-weight: 400;
+        font-style: italic;
+    }
+}
+
+.clipFrame {
+    position: absolute;
+    inset: 0;
+    background: #000;
+    opacity: 0;
+    transition: opacity 400ms ease;
+
+    video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    &[data-playing] {
+        opacity: 1;
+    }
+}
+
+.verdictStamp {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 1.2vw;
+    font-size: 5vw;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+
+    &[data-kind='missed'] {
+        color: var(--danger);
+    }
+
+    &[data-kind='died'] {
+        color: var(--danger);
+        font-size: 3.2vw;
+    }
+
+    &[data-kind='demolished'] {
+        color: var(--gold);
+    }
+}
+
+.verdictDelta {
+    font-size: 1.8vw;
+    color: var(--muted);
+}
+
+.preloadVideos {
+    display: none;
+}
+
+.roadNote {
+    fill: var(--accent);
+    font-size: 26px;
+    font-weight: 600;
+    opacity: 0;
+    transition: opacity 500ms ease;
+
+    &[data-visible] {
+        opacity: 1;
+    }
+}
+
+// .stage is position: fixed for the live deck; the prep studio preview
+// embeds it inside a scaled wrapper, which needs absolute positioning.
+.stageEmbedded {
+    position: absolute !important;
+}
