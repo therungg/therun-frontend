@@ -210,6 +210,8 @@ export async function resolveCategory(
             showMilliseconds: r.show_milliseconds ?? true,
             requireVideo: r.require_video ?? false,
             requireVideoTopN: r.require_video_top_n ?? null,
+            hideRealTime: r.hide_real_time ?? false,
+            hideGameTime: r.hide_game_time ?? false,
         };
     });
 
