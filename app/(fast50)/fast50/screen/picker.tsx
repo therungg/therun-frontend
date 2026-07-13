@@ -57,6 +57,7 @@ export const Picker = () => {
     const { lastEvent } = useRunCapture(armedUsername);
 
     const [captures, setCaptures] = useState<CaptureEntry[]>([]);
+    const [sessionSel, setSessionSel] = useState<Record<string, string>>({});
 
     // Read localStorage post-mount (SSR-safe) and again whenever a new
     // capture snapshot lands so the list stays live while armed.
@@ -118,12 +119,21 @@ export const Picker = () => {
                     {result.runs.map((r) => {
                         const preDanger = r.preSlides < 4;
                         const postDanger = r.postSlides < 4;
+                        const rowKey = `${r.game}-${r.category}`;
                         const base = `/fast50/screen/${encodeURIComponent(lookedUp)}/${encodeURIComponent(r.game)}/${encodeURIComponent(r.category)}`;
+                        const prepBase = `/fast50/prep/${encodeURIComponent(lookedUp)}/${encodeURIComponent(r.game)}/${encodeURIComponent(r.category)}`;
+                        const selected =
+                            sessionSel[rowKey] ??
+                            (r.prepSessions[0]
+                                ? String(r.prepSessions[0].id)
+                                : '');
+                        const sessionQs = selected
+                            ? `&session=${selected}`
+                            : r.prepSessions.length > 0
+                              ? '&session=none'
+                              : '';
                         return (
-                            <li
-                                key={`${r.game}-${r.category}`}
-                                className={styles.runRow}
-                            >
+                            <li key={rowKey} className={styles.runRow}>
                                 <span className={styles.runLabel}>
                                     {r.game} — {r.category}
                                 </span>
@@ -147,13 +157,43 @@ export const Picker = () => {
                                 >
                                     post {r.postSlides}
                                 </span>
+                                {r.prepSessions.length > 0 ? (
+                                    <select
+                                        className={styles.pickerSessionSelect}
+                                        value={selected}
+                                        onChange={(e) =>
+                                            setSessionSel((s) => ({
+                                                ...s,
+                                                [rowKey]: e.target.value,
+                                            }))
+                                        }
+                                    >
+                                        {r.prepSessions.map((s) => (
+                                            <option key={s.id} value={s.id}>
+                                                prep: {s.label}
+                                            </option>
+                                        ))}
+                                        <option value="">no prep</option>
+                                    </select>
+                                ) : null}
+                                {r.prepWarnings > 0 ? (
+                                    <span
+                                        className={`${styles.badge} ${styles.badgeDanger}`}
+                                        title="prepped slides will be dropped — open the prep studio"
+                                    >
+                                        {r.prepWarnings} prep ⚠
+                                    </span>
+                                ) : null}
                                 <span className={styles.runLinks}>
-                                    <Link href={`${base}?deck=pre`}>
+                                    <Link href={`${base}?deck=pre${sessionQs}`}>
                                         Pre-run deck
                                     </Link>
-                                    <Link href={`${base}?deck=post`}>
+                                    <Link
+                                        href={`${base}?deck=post${sessionQs}`}
+                                    >
                                         Post-run deck
                                     </Link>
+                                    <Link href={prepBase}>Prep →</Link>
                                 </span>
                             </li>
                         );
