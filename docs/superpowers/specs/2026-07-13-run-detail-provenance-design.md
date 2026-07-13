@@ -1,7 +1,7 @@
 # Run Detail Page + Provenance — Design
 
 **Date:** 2026-07-13
-**Status:** Implemented on branch run-detail-provenance (both repos) — pending final review, Joey's merge, backend migration 0070 + deploy.
+**Status:** Implemented on branch run-detail-provenance (both repos); final whole-branch review passed with fixes applied (2026-07-14). Pending Joey's merge + backend migration 0070 + deploy.
 **Scope:** Frontend (`therun-fr`) + backend (`../therun`) — backend access granted for this task.
 
 ---
