@@ -1,7 +1,7 @@
 # Game Setup Wizard + Board Claim Flow — Design
 
 **Date:** 2026-07-14
-**Status:** Approved design, not yet implemented
+**Status:** Implemented (frontend; backend contract in docs/frontend-guide-board-claims-and-setup.md pending)
 **Roadmap:** Tier 1 items 5 (wizard) and part of 7 (mod application flow) from `2026-07-13-leaderboards-vs-src-roadmap.md`
 
 ---
