@@ -6,6 +6,7 @@ import type { SetupStepId } from '~src/lib/setup/completeness';
 import styles from './setup.module.scss';
 import { StepCategories } from './steps/step-categories';
 import { StepDetails } from './steps/step-details';
+import { StepRules } from './steps/step-rules';
 import { StepTiming } from './steps/step-timing';
 import { StepVariables } from './steps/step-variables';
 import { StepWelcome } from './steps/step-welcome';
@@ -193,6 +194,10 @@ function CurrentStep({
                     onAdvance={onAdvance}
                     onBack={onBack}
                 />
+            );
+        case 'rules':
+            return (
+                <StepRules data={data} onAdvance={onAdvance} onBack={onBack} />
             );
         default:
             // Placeholder until each step's task lands; replaced task-by-task.
