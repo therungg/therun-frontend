@@ -199,6 +199,23 @@ export async function getRunById(runId: number): Promise<RunDetail | null> {
     }
 }
 
+export async function getUserRankingsByName(
+    username: string,
+): Promise<UserRanking[]> {
+    'use cache';
+    cacheLife('minutes');
+    cacheTag(`user-rankings:${username.toLowerCase()}`);
+
+    try {
+        const path = `/v1/leaderboards/user/by-name/${encodeURIComponent(username)}/rankings`;
+        const body = await v1Fetch<{ result: UserRanking[] }>(path);
+        return body.result ?? [];
+    } catch (e) {
+        if (e instanceof V1FetchError && e.status === 404) return [];
+        throw e;
+    }
+}
+
 export async function getManualTimeById(
     id: number,
 ): Promise<ManualTimeDetail | null> {

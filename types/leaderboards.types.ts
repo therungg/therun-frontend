@@ -142,12 +142,22 @@ export interface WrHistoryEntry {
 }
 
 export interface UserRanking {
+    game: string;
+    gameSlug: string;
     gameId: number;
+    category: string;
+    categorySlug: string;
     categoryId: number;
     subcategoryKey: string;
-    timing: 'rt' | 'gt';
-    rank: number;
+    runId: number;
     time: number;
+    gameTime: number | null;
+    primaryTiming: 'rt' | 'gt';
+    verificationStatus: 'pending' | 'verified' | 'rejected';
+    vodUrl: string | null;
+    runDate: string;
+    rank: number | null;
+    totalRunners: number;
 }
 
 // Backend: GET /v1/leaderboards/runs/{runId}
