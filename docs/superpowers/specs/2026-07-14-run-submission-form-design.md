@@ -1,7 +1,7 @@
 # Run Submission Form — Design
 
 **Date:** 2026-07-14
-**Status:** Spec (autonomous continuation of Tier 0, per Joey's standing instruction 2026-07-14). Second Tier 0 item, after run detail + provenance.
+**Status:** Implemented on branch run-submission-form (both repos, stacked on run-detail-provenance); final whole-branch review passed with fixes applied (2026-07-14). Pending Joey's merge + migration 0070 + deploy. Deploy-note: trust model insta-verifies improving submissions from accounts >7 days old (mirrors manual-times precedent by design) — see review notes in the ledger if a "new WR always pending" carve-out is wanted.
 **Scope:** Backend (`../therun`) + frontend (`therun-fr`), branches `run-submission-form` in each (based on the pushed `run-detail-provenance` branches, which this depends on: `source` column, detail pages to link to).
 
 ---
