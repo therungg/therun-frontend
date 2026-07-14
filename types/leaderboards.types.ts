@@ -239,4 +239,5 @@ export interface SubmitRunResult {
     verificationStatus: 'pending' | 'verified';
     applied: 'instant' | 'provisional';
     warnings: SubmitWarning[];
+    subcategoryKey: string;
 }
