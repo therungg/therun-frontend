@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react';
 import Link from '~src/components/link';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
+import type { BoardClaimRequest } from '../../../../../../types/board-claims.types';
 import type {
     ResolvedCategory,
     ResolvedGame,
@@ -11,6 +12,7 @@ import { CategorySettingsSection } from '../category-tab/category-settings-secti
 import { RulesSection } from '../category-tab/rules-section';
 import { GameTab } from '../game-tab/game-tab';
 import type { AttentionItem } from '../moderation/attention/attention-model';
+import { ModApplicationsCard } from '../moderation/attention/mod-applications-card';
 import { NeedsAttention } from '../moderation/attention/needs-attention';
 import { ActiveBans } from '../moderation/configure/active-bans';
 import { Standards } from '../moderation/configure/standards';
@@ -28,6 +30,7 @@ export interface ContentRouterProps {
     selectedCategory: ResolvedCategory | null;
     canEditStandards: boolean;
     attentionItems: AttentionItem[];
+    modApplications?: BoardClaimRequest[];
     initialSlug: string | null;
     initialAbbreviation: string | null;
     rows: ManageCategoryRow[];
@@ -70,17 +73,26 @@ export function ContentRouter(props: ContentRouterProps) {
         selectedCategory,
         canEditStandards,
         attentionItems,
+        modApplications,
     } = props;
 
     switch (activeItem) {
         case 'attention':
             return (
-                <NeedsAttention
-                    gameSlug={game.name}
-                    gameDisplay={game.display}
-                    items={attentionItems}
-                    categories={categories}
-                />
+                <>
+                    {modApplications && modApplications.length > 0 && (
+                        <ModApplicationsCard
+                            gameSlug={game.name}
+                            applications={modApplications}
+                        />
+                    )}
+                    <NeedsAttention
+                        gameSlug={game.name}
+                        gameDisplay={game.display}
+                        items={attentionItems}
+                        categories={categories}
+                    />
+                </>
             );
         case 'bans':
             return <ActiveBans gameSlug={game.name} />;

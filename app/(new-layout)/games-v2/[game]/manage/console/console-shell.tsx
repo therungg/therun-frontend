@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
+import type { BoardClaimRequest } from '../../../../../../types/board-claims.types';
 import type {
     ResolvedCategory,
     ResolvedGame,
@@ -23,6 +24,7 @@ export interface ConsoleShellProps {
     categories: ResolvedCategory[];
     flags: NavFlags;
     attentionItems: AttentionItem[];
+    modApplications?: BoardClaimRequest[];
     initialCategoryId: number | null;
     initialSlug: string | null;
     initialAbbreviation: string | null;
@@ -35,6 +37,7 @@ export function ConsoleShell({
     categories,
     flags,
     attentionItems,
+    modApplications,
     initialCategoryId,
     initialSlug,
     initialAbbreviation,
@@ -118,6 +121,7 @@ export function ConsoleShell({
                     selectedCategory={selectedCategory}
                     canEditStandards={flags.canEditStandards}
                     attentionItems={attentionItems}
+                    modApplications={modApplications}
                     initialSlug={initialSlug}
                     initialAbbreviation={initialAbbreviation}
                     rows={rows}
