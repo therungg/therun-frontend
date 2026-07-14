@@ -1,7 +1,7 @@
 # Profile Leaderboard PBs — Design
 
 **Date:** 2026-07-14
-**Status:** Spec (autonomous Tier 0 continuation). Third Tier 0 item; leaves only launch un-gating (Joey's trigger).
+**Status:** Implemented on branch profile-leaderboard-pbs (both repos, stacked on run-submission-form); final whole-branch review verdict "Ready to merge" (2026-07-14). Leaves only launch un-gating (Joey's trigger).
 **Scope:** Backend + frontend, branches `profile-leaderboard-pbs` stacked on `run-submission-form`.
 
 ## 1. Goal
