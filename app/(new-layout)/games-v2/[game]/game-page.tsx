@@ -2,6 +2,7 @@
 
 import { useMemo } from 'react';
 import Link from '~src/components/link';
+import type { ClaimCtaState } from './claim/claim-cta';
 import { FilterBar } from './filters/filter-bar';
 import { CategoryPills } from './header/category-pills';
 import { GameHeader } from './header/game-header';
@@ -16,6 +17,7 @@ interface Props {
     data: GamePageData;
     canManage: boolean;
     canManageRuns: boolean;
+    claim?: ClaimCtaState | null;
 }
 
 function parseSubcategoryKey(key: string): Record<string, string> {
@@ -29,7 +31,7 @@ function parseSubcategoryKey(key: string): Record<string, string> {
     return out;
 }
 
-export function GamePage({ data, canManage, canManageRuns }: Props) {
+export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
     const variableKeys = useMemo(
         () => data.variables.map((v) => v.nameNormalized),
         [data.variables],
@@ -44,6 +46,7 @@ export function GamePage({ data, canManage, canManageRuns }: Props) {
                     canManage={canManage}
                     canModerate={canManageRuns}
                     sessionUsername={data.sessionUsername}
+                    claim={claim}
                 />
                 <p className="text-center text-muted my-5">
                     No runs uploaded for this game yet.
@@ -60,6 +63,7 @@ export function GamePage({ data, canManage, canManageRuns }: Props) {
                 canManage={canManage}
                 canModerate={canManageRuns}
                 sessionUsername={data.sessionUsername}
+                claim={claim}
             />
             <CategoryPills
                 categories={data.categories}
