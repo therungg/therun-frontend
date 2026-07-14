@@ -2,6 +2,7 @@ import { subject as caslSubject } from '@casl/ability';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { getSession } from '~src/actions/session.action';
+import { listGameBoardClaims } from '~src/lib/board-claims';
 import { listManageCategories, listManageGroups } from '~src/lib/category-mgmt';
 import { getGameIdentifiers } from '~src/lib/game-mgmt';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
@@ -11,6 +12,7 @@ import { listGameReports } from '~src/lib/moderation/reports';
 import { listQueue } from '~src/lib/moderation/triage';
 import { defineAbilityFor } from '~src/rbac/ability';
 import { isLowActivityCategory } from '~src/utils/format-stats';
+import type { BoardClaimRequest } from '../../../../../types/board-claims.types';
 import { ConsoleShell } from './console/console-shell';
 import { mergeAttention } from './moderation/attention/attention-model';
 
@@ -34,6 +36,10 @@ export default async function GameAdminConsolePage({ params }: Props) {
     );
     const canEditStandards = ability.can('edit', 'moderators');
     const canReassign = ability.can('reassign', 'reassignment');
+    const canEditMods = ability.can(
+        'edit',
+        caslSubject('moderators', { game: game.name }),
+    );
     if (!canModerate && !canConfigure) notFound();
 
     const sessionId = session.id;
@@ -82,6 +88,13 @@ export default async function GameAdminConsolePage({ params }: Props) {
         categoryName,
     );
 
+    let modApplications: BoardClaimRequest[] = [];
+    if (canEditMods) {
+        modApplications = await listGameBoardClaims(sessionId, game.id).catch(
+            () => [],
+        );
+    }
+
     return (
         <Suspense fallback={null}>
             <ConsoleShell
@@ -94,6 +107,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                     canReassign,
                 }}
                 attentionItems={attentionItems}
+                modApplications={modApplications}
                 initialCategoryId={initialCategory?.id ?? null}
                 initialSlug={identifiers.slug}
                 initialAbbreviation={identifiers.abbreviation}
