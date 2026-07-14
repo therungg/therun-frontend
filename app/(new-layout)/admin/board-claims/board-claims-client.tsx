@@ -146,7 +146,12 @@ function ClaimRow({
                     disabled={disabled}
                     onClick={() =>
                         onDecide(
-                            () => approveClaimAction(request.id, role),
+                            () =>
+                                approveClaimAction(
+                                    request.id,
+                                    role,
+                                    request.gameId,
+                                ),
                             `Approved ${request.username}`,
                         )
                     }

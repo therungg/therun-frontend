@@ -110,6 +110,7 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
         metadata,
         completeness,
         wrTimes,
+        renderedAt: Date.now(),
     };
 
     const initialStep: SetupStepId =

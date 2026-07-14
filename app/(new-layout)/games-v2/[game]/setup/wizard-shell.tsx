@@ -1,8 +1,10 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import type { SetupStepId } from '~src/lib/setup/completeness';
+import { useRouter, useSearchParams } from 'next/navigation';
+import {
+    SETUP_STEP_ORDER,
+    type SetupStepId,
+} from '~src/lib/setup/completeness';
 import styles from './setup.module.scss';
 import { StepCategories } from './steps/step-categories';
 import { StepDetails } from './steps/step-details';
@@ -32,11 +34,15 @@ interface Props {
 
 export function WizardShell({ data, initialStep }: Props) {
     const router = useRouter();
-    const [step, setStep] = useState<SetupStepId>(initialStep);
+    const searchParams = useSearchParams();
+    const stepParam = searchParams.get('step');
+    const step: SetupStepId =
+        stepParam && SETUP_STEP_ORDER.includes(stepParam as SetupStepId)
+            ? (stepParam as SetupStepId)
+            : initialStep;
     const stepIndex = STEPS.findIndex((s) => s.id === step);
 
     const goTo = (id: SetupStepId) => {
-        setStep(id);
         // Keep the URL shareable/resumable and re-read server state so a step
         // always sees writes committed by previous steps (or by co-mods).
         router.replace(`/games-v2/${data.game.name}/setup?step=${id}`, {
@@ -102,6 +108,7 @@ export function WizardShell({ data, initialStep }: Props) {
             <div className={styles.layout}>
                 <main>
                     <CurrentStep
+                        key={`${step}-${data.renderedAt}`}
                         step={step}
                         data={data}
                         onAdvance={onAdvance}

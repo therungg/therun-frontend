@@ -61,6 +61,7 @@ user's assignment role is `game-admin`) to the session payload; the frontend wil
 then grant `edit moderators` per-game in `src/rbac/ability.ts` defaultPermissions.
 Until this ships, the wizard's mod-team section and the console's join-team
 approvals work only for site staff.
+The backend must whitelist assignable roles per surface (game-admin/game-mod only from these flows) and scope role-assignment create/delete authorization to the target game when opening them to game-admins — the frontend's checks are advisory.
 
 ## 3. Game metadata
 
