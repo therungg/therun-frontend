@@ -7,6 +7,7 @@ import styles from './setup.module.scss';
 import { StepCategories } from './steps/step-categories';
 import { StepDetails } from './steps/step-details';
 import { StepRules } from './steps/step-rules';
+import { StepStandards } from './steps/step-standards';
 import { StepTiming } from './steps/step-timing';
 import { StepVariables } from './steps/step-variables';
 import { StepWelcome } from './steps/step-welcome';
@@ -198,6 +199,14 @@ function CurrentStep({
         case 'rules':
             return (
                 <StepRules data={data} onAdvance={onAdvance} onBack={onBack} />
+            );
+        case 'standards':
+            return (
+                <StepStandards
+                    data={data}
+                    onAdvance={onAdvance}
+                    onBack={onBack}
+                />
             );
         default:
             // Placeholder until each step's task lands; replaced task-by-task.
