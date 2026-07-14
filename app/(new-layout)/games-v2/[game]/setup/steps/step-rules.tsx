@@ -87,7 +87,15 @@ export function StepRules({ data, onAdvance }: StepProps) {
     const saveAllAndContinue = () => {
         startSaving(async () => {
             let failed = false;
+            let skipped = 0;
             for (const c of activeCategories) {
+                const isUntouchedTemplate =
+                    rulesById[c.id] === STARTER_TEMPLATE &&
+                    !(c.rules ?? '').trim();
+                if (isUntouchedTemplate) {
+                    skipped += 1;
+                    continue;
+                }
                 const res = await updateCategorySettingsAction({
                     gameSlug: data.game.name,
                     gameId: data.game.id,
@@ -101,7 +109,14 @@ export function StepRules({ data, onAdvance }: StepProps) {
                     setSavedIds((s) => new Set(s).add(c.id));
                 }
             }
-            if (!failed) onAdvance();
+            if (!failed) {
+                if (skipped > 0) {
+                    toast.info(
+                        `Skipped ${skipped} categor${skipped === 1 ? 'y' : 'ies'} still holding the unedited template — they'll show as "no rules" until you fill them in.`,
+                    );
+                }
+                onAdvance();
+            }
         });
     };
 
@@ -111,7 +126,8 @@ export function StepRules({ data, onAdvance }: StepProps) {
             <p className="text-muted">
                 Every category needs rules — we pre-filled a skeleton so you
                 edit instead of writing from scratch. Replace the [bracketed]
-                parts.
+                parts. Categories you leave untouched stay rule-less — the
+                template is only saved once you edit it or save it yourself.
             </p>
             <div className="row g-3">
                 <div className="col-md-4">
