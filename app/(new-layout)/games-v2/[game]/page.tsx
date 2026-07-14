@@ -2,9 +2,12 @@ import { subject as caslSubject } from '@casl/ability';
 import type { Metadata } from 'next';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
+import { getMyBoardClaim } from '~src/lib/board-claims';
+import { listGameModerators } from '~src/lib/game-moderators';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
+import type { ClaimCtaState } from './claim/claim-cta';
 import { loadGamePageData } from './data';
 import { GamePage } from './game-page';
 import type { GamePageSearchParams } from './types';
@@ -44,11 +47,26 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
         'edit',
         caslSubject('leaderboard', { game: data.game.name }),
     );
+
+    let claim: ClaimCtaState | null = null;
+    if (sessionUsername && !canManage && !canManageRuns) {
+        const [mods, myClaim] = await Promise.all([
+            listGameModerators(data.game.id),
+            getMyBoardClaim(session.id, data.game.id),
+        ]);
+        claim = {
+            gameId: data.game.id,
+            hasModerators: mods.length > 0,
+            myClaimPending: myClaim?.status === 'pending',
+        };
+    }
+
     return (
         <GamePage
             data={data}
             canManage={canManage}
             canManageRuns={canManageRuns}
+            claim={claim}
         />
     );
 }

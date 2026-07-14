@@ -4,6 +4,7 @@ import type {
     QuickStats,
     ResolvedGame,
 } from '../../../../../types/leaderboards.types';
+import { ClaimCta, type ClaimCtaState } from '../claim/claim-cta';
 
 interface Props {
     game: ResolvedGame;
@@ -11,6 +12,7 @@ interface Props {
     canManage?: boolean;
     canModerate?: boolean;
     sessionUsername?: string | null;
+    claim?: ClaimCtaState | null;
 }
 
 export function GameHeader({
@@ -19,6 +21,7 @@ export function GameHeader({
     canManage,
     canModerate,
     sessionUsername,
+    claim,
 }: Props) {
     return (
         <header className="d-flex align-items-center gap-3 mb-3">
@@ -42,6 +45,9 @@ export function GameHeader({
             </div>
             {(sessionUsername || canManage || canModerate) && (
                 <div className="ms-auto d-flex gap-2">
+                    {claim && sessionUsername && (
+                        <ClaimCta claim={claim} gameDisplay={game.display} />
+                    )}
                     {sessionUsername && (
                         <Link
                             href={`/games-v2/${game.name}/submit`}
