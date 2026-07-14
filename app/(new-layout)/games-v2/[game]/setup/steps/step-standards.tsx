@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { suggestMinTimeMs } from '~src/lib/setup/suggestions';
 import { parseTimeInput } from '~src/lib/time-input';
+import type { PolicyType } from '../../../../../../types/moderation.types';
 import { updateCategorySettingsAction } from '../../manage/category-tab/actions/update-category-settings.action';
 import { createPolicyAction } from '../../manage/moderation/policies/actions/policies-actions.action';
 import type { StepProps } from '../types';
@@ -33,9 +34,20 @@ export function StepStandards({ data, onAdvance }: StepProps) {
     const [topN, setTopN] = useState('5');
     const [minTimeEnabled, setMinTimeEnabled] = useState(false);
     const [minTimeText, setMinTimeText] = useState('');
-    const [flagWrPct, setFlagWrPct] = useState(true);
+    const [flagWrPct, setFlagWrPct] = useState(
+        !data.policies.some(
+            (p) =>
+                p.policyType === 'auto_flag_faster_than_wr_pct' &&
+                p.categoryId === null,
+        ),
+    );
     const [error, setError] = useState<string | null>(null);
     const [isSaving, startSaving] = useTransition();
+
+    const policyExists = (type: PolicyType, categoryId: number | null) =>
+        data.policies.some(
+            (p) => p.policyType === type && p.categoryId === categoryId,
+        );
 
     const scopedCat =
         scopeCategoryId === null
@@ -49,6 +61,7 @@ export function StepStandards({ data, onAdvance }: StepProps) {
     const save = () => {
         startSaving(async () => {
             setError(null);
+            const skippedExisting: string[] = [];
 
             // Video requirement → category settings.
             const videoTargets =
@@ -72,37 +85,55 @@ export function StepStandards({ data, onAdvance }: StepProps) {
 
             // Minimum time → min_time policy ({ minTimeMs, minGameTimeMs }).
             if (minTimeEnabled) {
-                const ms = parseTimeInput(minTimeText);
-                if (!ms || ms <= 0) {
-                    setError(
-                        'Enter the minimum time as h:mm:ss, m:ss, or seconds.',
-                    );
-                    return;
-                }
-                const res = await createPolicyAction(data.game.name, {
-                    policyType: 'min_time',
-                    value: { minTimeMs: ms },
-                    categoryId: scopeCategoryId,
-                });
-                if ('error' in res) {
-                    setError(res.error);
-                    return;
+                if (policyExists('min_time', scopeCategoryId)) {
+                    skippedExisting.push('minimum time');
+                } else {
+                    const ms = parseTimeInput(minTimeText);
+                    if (!ms || ms <= 0) {
+                        setError(
+                            'Enter the minimum time as h:mm:ss, m:ss, or seconds.',
+                        );
+                        return;
+                    }
+                    const res = await createPolicyAction(data.game.name, {
+                        policyType: 'min_time',
+                        value: { minTimeMs: ms },
+                        categoryId: scopeCategoryId,
+                    });
+                    if ('error' in res) {
+                        setError(res.error);
+                        return;
+                    }
                 }
             }
 
             // Auto-flag: hold suspiciously fast runs for manual review.
             if (flagWrPct) {
-                const res = await createPolicyAction(data.game.name, {
-                    policyType: 'auto_flag_faster_than_wr_pct',
-                    value: { pct: 5 },
-                    categoryId: scopeCategoryId,
-                });
-                if ('error' in res) {
-                    setError(res.error);
-                    return;
+                if (
+                    policyExists(
+                        'auto_flag_faster_than_wr_pct',
+                        scopeCategoryId,
+                    )
+                ) {
+                    skippedExisting.push('auto-flag');
+                } else {
+                    const res = await createPolicyAction(data.game.name, {
+                        policyType: 'auto_flag_faster_than_wr_pct',
+                        value: { pct: 5 },
+                        categoryId: scopeCategoryId,
+                    });
+                    if ('error' in res) {
+                        setError(res.error);
+                        return;
+                    }
                 }
             }
 
+            if (skippedExisting.length > 0) {
+                toast.info(
+                    `Already configured (edit in Manage → Standards): ${skippedExisting.join(', ')}`,
+                );
+            }
             toast.success('Standards saved');
             onAdvance();
         });
