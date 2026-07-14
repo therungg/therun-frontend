@@ -1528,8 +1528,8 @@ function ClaimRow({
                     className="btn btn-sm btn-outline-danger"
                     disabled={disabled}
                     onClick={() => {
-                        const reason =
-                            window.prompt('Reason (optional):') ?? '';
+                        const reason = window.prompt('Reason (optional):');
+                        if (reason === null) return; // Cancel aborts
                         onDecide(
                             () => denyClaimAction(request.id, reason),
                             `Denied ${request.username}`,
@@ -1783,9 +1783,11 @@ function ApplicationRow({
                     type="button"
                     className="btn btn-sm btn-outline-danger"
                     disabled={disabled}
-                    onClick={() =>
-                        onDeny(window.prompt('Reason (optional):') ?? '')
-                    }
+                    onClick={() => {
+                        const reason = window.prompt('Reason (optional):');
+                        if (reason === null) return; // Cancel aborts
+                        onDeny(reason);
+                    }}
                 >
                     Deny
                 </button>
