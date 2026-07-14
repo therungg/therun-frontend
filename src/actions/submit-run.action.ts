@@ -3,7 +3,10 @@
 import { getSession } from '~src/actions/session.action';
 import { submitRun } from '~src/lib/me-submissions';
 import { ModError } from '~src/lib/moderation/mod-fetch';
-import { revalidateRunDetails } from '~src/lib/moderation/revalidate-boards';
+import {
+    revalidateAffectedBoards,
+    revalidateRunDetails,
+} from '~src/lib/moderation/revalidate-boards';
 import type {
     SubmitRunInput,
     SubmitRunResult,
@@ -18,6 +21,7 @@ function toError(e: unknown): { error: string } {
 
 /** Submit a run for a game/category you don't have a live timer feed for. */
 export async function submitRunAction(
+    gameSlug: string,
     input: SubmitRunInput,
 ): Promise<Result<SubmitRunResult>> {
     const s = await getSession();
@@ -27,6 +31,16 @@ export async function submitRunAction(
     try {
         const r = await submitRun(s.id, input);
         revalidateRunDetails([r.id]);
+        try {
+            await revalidateAffectedBoards(input.gameId, gameSlug, [
+                {
+                    categoryId: input.categoryId,
+                    subcategoryKey: r.subcategoryKey,
+                },
+            ]);
+        } catch {
+            // Best-effort cache invalidation; submission already succeeded.
+        }
         return { ok: true, ...r };
     } catch (e) {
         return toError(e);

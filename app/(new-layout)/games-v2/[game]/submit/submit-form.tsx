@@ -93,6 +93,7 @@ export function SubmitForm({ game, categories, groups }: Props) {
     useEffect(() => {
         let cancelled = false;
         setVarsError(false);
+        setError(null);
         startVarsTransition(async () => {
             try {
                 const resp = await loadVariablesAction(
@@ -203,7 +204,7 @@ export function SubmitForm({ game, categories, groups }: Props) {
         if (vodUrl.trim().length > 0) input.vodUrl = vodUrl.trim();
         if (Object.keys(chosen).length > 0) input.variables = chosen;
 
-        const res = await submitRunAction(input);
+        const res = await submitRunAction(game.name, input);
         setSubmitting(false);
         if ('error' in res) {
             setError(res.error);
