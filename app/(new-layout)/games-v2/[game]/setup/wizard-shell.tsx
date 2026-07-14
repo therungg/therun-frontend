@@ -6,6 +6,7 @@ import type { SetupStepId } from '~src/lib/setup/completeness';
 import styles from './setup.module.scss';
 import { StepCategories } from './steps/step-categories';
 import { StepDetails } from './steps/step-details';
+import { StepFinish } from './steps/step-finish';
 import { StepRules } from './steps/step-rules';
 import { StepStandards } from './steps/step-standards';
 import { StepTiming } from './steps/step-timing';
@@ -208,12 +209,9 @@ function CurrentStep({
                     onBack={onBack}
                 />
             );
-        default:
-            // Placeholder until each step's task lands; replaced task-by-task.
+        case 'finish':
             return (
-                <p className="text-muted">
-                    This step is under construction. Use Skip to continue.
-                </p>
+                <StepFinish data={data} onAdvance={onAdvance} onBack={onBack} />
             );
     }
 }
