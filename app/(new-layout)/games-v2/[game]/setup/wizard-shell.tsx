@@ -7,6 +7,7 @@ import styles from './setup.module.scss';
 import { StepCategories } from './steps/step-categories';
 import { StepDetails } from './steps/step-details';
 import { StepTiming } from './steps/step-timing';
+import { StepVariables } from './steps/step-variables';
 import { StepWelcome } from './steps/step-welcome';
 import type { WizardData } from './types';
 
@@ -184,6 +185,14 @@ function CurrentStep({
         case 'timing':
             return (
                 <StepTiming data={data} onAdvance={onAdvance} onBack={onBack} />
+            );
+        case 'variables':
+            return (
+                <StepVariables
+                    data={data}
+                    onAdvance={onAdvance}
+                    onBack={onBack}
+                />
             );
         default:
             // Placeholder until each step's task lands; replaced task-by-task.
