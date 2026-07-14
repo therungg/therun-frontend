@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
+import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardClaimRequest } from '../../../../../../types/board-claims.types';
 import type {
     ResolvedCategory,
@@ -18,6 +19,7 @@ import {
     type NavFlags,
     type NavItemId,
 } from './nav-model';
+import { SetupChecklistCard } from './setup-checklist-card';
 
 export interface ConsoleShellProps {
     game: ResolvedGame;
@@ -30,6 +32,7 @@ export interface ConsoleShellProps {
     initialAbbreviation: string | null;
     initialRows: ManageCategoryRow[];
     initialGroups: ManageGroup[];
+    setupCompleteness?: BoardCompleteness | null;
 }
 
 export function ConsoleShell({
@@ -43,6 +46,7 @@ export function ConsoleShell({
     initialAbbreviation,
     initialRows,
     initialGroups,
+    setupCompleteness,
 }: ConsoleShellProps) {
     const groups = useMemo(() => buildNav(flags), [flags]);
     const searchParams = useSearchParams();
@@ -114,6 +118,12 @@ export function ConsoleShell({
                 selectedCategoryId={selectedCategoryId}
                 onSelectCategory={setSelectedCategoryId}
             >
+                {setupCompleteness && (
+                    <SetupChecklistCard
+                        gameSlug={game.name}
+                        completeness={setupCompleteness}
+                    />
+                )}
                 <ContentRouter
                     activeItem={activeItem}
                     game={game}
