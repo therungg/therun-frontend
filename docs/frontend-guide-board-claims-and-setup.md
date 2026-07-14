@@ -51,6 +51,17 @@ Body: `{ "reason"?: string }` → notification to requester.
 → `{ "result": [ { "assignmentId": 1, "userId": 42, "username": "runner1", "role": "game-admin", "createdAt": "…" } ] }`
 Public because the claim CTA needs "does this board have mods?" for logged-out render too.
 
+### NEW: session shape — per-game admin tier
+`user.moderatedGames: string[]` cannot distinguish a game-admin (may manage the mod
+team) from a game-mod (may not). The frontend gates mod-team management on CASL
+`edit moderators`, which today only global `admin`/`board-admin` roles satisfy — so a
+per-game game-admin cannot add/remove mods on their own board until the session
+exposes the tier. Please add e.g. `user.adminedGames: string[]` (games where the
+user's assignment role is `game-admin`) to the session payload; the frontend will
+then grant `edit moderators` per-game in `src/rbac/ability.ts` defaultPermissions.
+Until this ships, the wizard's mod-team section and the console's join-team
+approvals work only for site staff.
+
 ## 3. Game metadata
 
 Extend `PUT /v1/games/{gameId}` (existing, already takes `slug`/`abbreviation`) with:
