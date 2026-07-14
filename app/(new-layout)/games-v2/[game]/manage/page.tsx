@@ -4,12 +4,20 @@ import { Suspense } from 'react';
 import { getSession } from '~src/actions/session.action';
 import { listGameBoardClaims } from '~src/lib/board-claims';
 import { listManageCategories, listManageGroups } from '~src/lib/category-mgmt';
-import { getGameIdentifiers } from '~src/lib/game-mgmt';
+import { getGameIdentifiers, getGameMetadata } from '~src/lib/game-mgmt';
+import { listGameModerators } from '~src/lib/game-moderators';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
+import { listGameVariables } from '~src/lib/leaderboard-variables';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { listManualTimes } from '~src/lib/moderation/manual-times';
+import { listPolicies } from '~src/lib/moderation/policies';
 import { listGameReports } from '~src/lib/moderation/reports';
 import { listQueue } from '~src/lib/moderation/triage';
+import {
+    type BoardCompleteness,
+    categoryFactsFromResolved,
+    computeCompleteness,
+} from '~src/lib/setup/completeness';
 import { defineAbilityFor } from '~src/rbac/ability';
 import { isLowActivityCategory } from '~src/utils/format-stats';
 import type { BoardClaimRequest } from '../../../../../types/board-claims.types';
@@ -95,6 +103,32 @@ export default async function GameAdminConsolePage({ params }: Props) {
         );
     }
 
+    // The checklist card links into the configure-gated setup wizard, so only
+    // compute it for viewers who can actually configure the board.
+    let setupCompleteness: BoardCompleteness | null = null;
+    if (canConfigure) {
+        const [variables, policies, moderators, metadata] = await Promise.all([
+            listGameVariables(sessionId, game.id).catch(() => []),
+            listPolicies(sessionId, game.id).catch(() => []),
+            listGameModerators(game.id).catch(() => []),
+            getGameMetadata(game.id).catch(() => null),
+        ]);
+        if (metadata) {
+            setupCompleteness = computeCompleteness({
+                categories: categoryFactsFromResolved(categories),
+                variableCount: variables.length,
+                policyCount: policies.length,
+                requireVideoAnywhere: categories.some(
+                    (c) => c.active && c.requireVideo,
+                ),
+                slug: identifiers.slug,
+                abbreviation: identifiers.abbreviation,
+                moderatorCount: moderators.length,
+                configured: metadata.configured,
+            });
+        }
+    }
+
     return (
         <Suspense fallback={null}>
             <ConsoleShell
@@ -113,6 +147,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 initialAbbreviation={identifiers.abbreviation}
                 initialRows={rows}
                 initialGroups={groups}
+                setupCompleteness={setupCompleteness}
             />
         </Suspense>
     );
