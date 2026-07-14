@@ -1,0 +1,81 @@
+.page {
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 1.5rem 1rem 4rem;
+}
+
+.stepper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    margin: 1rem 0 1.5rem;
+}
+
+.stepDot {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: var(--bs-secondary-color, #888);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.stepNum {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    font-size: 0.75rem;
+}
+
+.stepCurrent {
+    color: var(--bs-primary, #0d6efd);
+    font-weight: 600;
+}
+
+.stepDone {
+    color: var(--bs-success, #198754);
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 16rem;
+    gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+    .layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.rail {
+    font-size: 0.85rem;
+}
+
+.railCard {
+    position: sticky;
+    top: 1rem;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+}
+
+.navBar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--bs-border-color, #dee2e6);
+}
+
+.spacer {
+    flex: 1;
+}
