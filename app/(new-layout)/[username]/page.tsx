@@ -10,6 +10,7 @@ import { getGameGlobal } from '~src/components/game/get-game';
 import { JsonLd } from '~src/components/json-ld';
 import { getGlobalUser } from '~src/lib/get-global-user';
 import { getUserRuns } from '~src/lib/get-user-runs';
+import { getUserRankingsByName } from '~src/lib/leaderboards-v1';
 import { getLiveRunForUser } from '~src/lib/live-runs';
 import { getUserRaceStats } from '~src/lib/races';
 import {
@@ -78,12 +79,14 @@ export default async function Page(props: PageProps) {
         });
     }
 
-    const [userData, liveData, raceStats, session] = await Promise.all([
-        getGlobalUser(username),
-        getLiveRunForUser(username),
-        getUserRaceStats(username),
-        getSession(),
-    ] as const);
+    const [userData, liveData, raceStats, session, rankings] =
+        await Promise.all([
+            getGlobalUser(username),
+            getLiveRunForUser(username),
+            getUserRaceStats(username),
+            getSession(),
+            getUserRankingsByName(username).catch(() => []),
+        ] as const);
 
     // Find favorite game+category by total playtime
     const favoriteRun =
@@ -148,6 +151,7 @@ export default async function Page(props: PageProps) {
                 userData={userData}
                 allGlobalGameData={allGlobalGameData}
                 raceStats={raceStats}
+                rankings={rankings}
             />
         </>
     );

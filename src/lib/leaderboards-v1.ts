@@ -176,7 +176,7 @@ export async function getWrHistory(
 export async function getUserRankings(userId: number): Promise<UserRanking[]> {
     'use cache';
     cacheLife('minutes');
-    cacheTag(`user-rankings:${userId}`);
+    cacheTag(`user-rankings:id:${userId}`);
 
     const path = `/v1/leaderboards/user/${userId}/rankings`;
     const body = await v1Fetch<{ result: UserRanking[] }>(path);
@@ -204,7 +204,7 @@ export async function getUserRankingsByName(
 ): Promise<UserRanking[]> {
     'use cache';
     cacheLife('minutes');
-    cacheTag(`user-rankings:${username.toLowerCase()}`);
+    cacheTag(`user-rankings:name:${username.toLowerCase()}`);
 
     try {
         const path = `/v1/leaderboards/user/by-name/${encodeURIComponent(username)}/rankings`;

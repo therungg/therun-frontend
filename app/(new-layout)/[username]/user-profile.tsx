@@ -3,8 +3,10 @@
 import React, { useEffect, useReducer, useState } from 'react';
 import { Col, Row, Tab, Tabs } from 'react-bootstrap';
 import { TwitchEmbed } from 'react-twitch-embed';
+import type { UserRanking } from 'types/leaderboards.types';
 import type { User as IUser, User } from 'types/session.types';
 import { GlobalGameData } from '~app/(new-layout)/[username]/[game]/[run]/run';
+import { LeaderboardPbs } from '~app/(new-layout)/[username]/leaderboard-pbs';
 import { prepareSessions } from '~app/(new-layout)/[username]/prepare-sessions.component';
 import { getRunmap } from '~app/(new-layout)/[username]/runmap.component';
 import { LiveRun } from '~app/(new-layout)/live/live.types';
@@ -35,6 +37,7 @@ export interface UserPageProps {
     allGlobalGameData: GlobalGameData[];
     liveData?: LiveRun;
     raceStats?: UserRaceStats;
+    rankings?: UserRanking[];
 }
 
 export const UserProfile = ({
@@ -47,6 +50,7 @@ export const UserProfile = ({
     allGlobalGameData,
     liveData,
     raceStats,
+    rankings,
 }: UserPageProps) => {
     const [useGameTime, setUseGameTime] = useState(
         hasGameTime && defaultGameTime,
@@ -292,6 +296,15 @@ export const UserProfile = ({
                         withChat={true}
                     />
                 </Tab>
+                {rankings && rankings.length > 0 && (
+                    <Tab eventKey="rankings" title="Leaderboard PBs">
+                        <Row>
+                            <Col>
+                                <LeaderboardPbs rankings={rankings} />
+                            </Col>
+                        </Row>
+                    </Tab>
+                )}
             </Tabs>
         </>
     );
