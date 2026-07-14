@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import type { SetupStepId } from '~src/lib/setup/completeness';
 import styles from './setup.module.scss';
+import { StepCategories } from './steps/step-categories';
 import { StepDetails } from './steps/step-details';
 import { StepWelcome } from './steps/step-welcome';
 import type { WizardData } from './types';
@@ -166,6 +167,14 @@ function CurrentStep({
         case 'details':
             return (
                 <StepDetails
+                    data={data}
+                    onAdvance={onAdvance}
+                    onBack={onBack}
+                />
+            );
+        case 'categories':
+            return (
+                <StepCategories
                     data={data}
                     onAdvance={onAdvance}
                     onBack={onBack}
