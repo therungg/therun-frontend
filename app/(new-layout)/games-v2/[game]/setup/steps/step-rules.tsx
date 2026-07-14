@@ -89,6 +89,10 @@ export function StepRules({ data, onAdvance }: StepProps) {
             let failed = false;
             let skipped = 0;
             for (const c of activeCategories) {
+                if (rulesById[c.id] === undefined) {
+                    skipped += 1;
+                    continue;
+                }
                 const isUntouchedTemplate =
                     rulesById[c.id] === STARTER_TEMPLATE &&
                     !(c.rules ?? '').trim();

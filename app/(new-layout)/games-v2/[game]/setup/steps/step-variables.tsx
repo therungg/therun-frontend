@@ -97,6 +97,7 @@ export function StepVariables({ data, onAdvance }: StepProps) {
     };
 
     const removeVariable = (v: VariableRow) => {
+        if (!window.confirm(`Delete variable "${v.name}"?`)) return;
         startSaving(async () => {
             const res = await deleteVariableAction({
                 gameSlug: data.game.name,

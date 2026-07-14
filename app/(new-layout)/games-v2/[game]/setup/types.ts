@@ -23,6 +23,8 @@ export interface WizardData {
     completeness: BoardCompleteness;
     /** categoryId → fastest verified time (ms) in its primary timing, or null. */
     wrTimes: Record<number, number | null>;
+    /** Server-render stamp used to remount steps when fresh data lands. */
+    renderedAt: number;
 }
 
 export interface StepProps {

@@ -26,6 +26,10 @@ export async function approveApplicationAction(
         return { error: 'Only board admins can manage the mod team.' };
     }
 
+    if (input.role !== 'game-admin' && input.role !== 'game-mod') {
+        return { error: 'Invalid role.' };
+    }
+
     try {
         await approveBoardClaim(user.id, input.claimId, input.role);
         const game = await resolveGame(input.gameSlug);

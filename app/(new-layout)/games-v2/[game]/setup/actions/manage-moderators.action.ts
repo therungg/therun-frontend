@@ -30,6 +30,10 @@ export async function addGameModeratorAction(
         return { error: 'Only board admins can manage the mod team.' };
     }
 
+    if (input.role !== 'game-admin' && input.role !== 'game-mod') {
+        return { error: 'Invalid role.' };
+    }
+
     const trimmed = input.username.trim();
     if (!trimmed) return { error: 'Username is required.' };
 

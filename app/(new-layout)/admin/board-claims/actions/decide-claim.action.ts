@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ApiError } from '~src/lib/api-client';
 import { approveBoardClaim, denyBoardClaim } from '~src/lib/board-claims';
@@ -15,12 +15,17 @@ function isAdmin(roles: string[] | undefined): boolean {
 export async function approveClaimAction(
     claimId: number,
     role: BoardModRole,
+    gameId: number,
 ): Promise<{ ok: true } | { error: string }> {
     const user = await getSession();
     if (!isAdmin(user?.roles)) return { error: 'Admin role required.' };
+    if (role !== 'game-admin' && role !== 'game-mod') {
+        return { error: 'Invalid role.' };
+    }
     try {
         await approveBoardClaim(user.id, claimId, role);
         revalidatePath(PAGE_PATH);
+        revalidateTag(`game-mods:${gameId}`, 'minutes');
         return { ok: true };
     } catch (e) {
         if (e instanceof ApiError) return { error: e.message };

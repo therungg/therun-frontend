@@ -44,7 +44,9 @@ export function StepDetails({ data, onAdvance }: StepProps) {
                     .split(',')
                     .map((p) => p.trim())
                     .filter(Boolean),
-                releaseYear: releaseYear ? Number(releaseYear) : null,
+                releaseYear: releaseYear.trim()
+                    ? Number(releaseYear.trim())
+                    : null,
                 discordUrl: discordUrl.trim() || null,
             });
             if ('error' in metaRes) {
