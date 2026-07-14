@@ -63,8 +63,8 @@ export function categoryFactsFromResolved(
     return categories.map((c) => ({
         id: c.id,
         display: c.display,
-        active: c.active,
-        isMain: c.isMain,
+        active: c.active ?? true,
+        isMain: c.isMain ?? false,
         hasRules: (c.rules ?? '').trim().length > 0,
     }));
 }
