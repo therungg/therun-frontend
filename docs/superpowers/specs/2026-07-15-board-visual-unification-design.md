@@ -1,7 +1,7 @@
 # Board Visual Unification — Design
 
 Date: 2026-07-15
-Status: approved
+Status: implemented
 Branch: `tier1-console-completion` (continues the tier-1 stack)
 
 ## Problem
