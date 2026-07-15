@@ -1,52 +1,122 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
 .page {
-    max-width: 64rem;
+    max-width: 72rem;
     margin: 0 auto;
-    padding: 1.5rem 1rem 4rem;
+    padding: dt.$spacing-2xl dt.$spacing-lg dt.$spacing-3xl;
 }
 
+// ---- Header (console pattern) ------------------------------
+.header {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-lg;
+}
+
+.cover {
+    width: 44px;
+    height: 59px;
+    border-radius: dt.$radius-md;
+    object-fit: cover;
+    box-shadow: dt.$shadow-sm;
+    flex-shrink: 0;
+}
+
+.eyebrow {
+    @include board.board-eyebrow;
+}
+
+.title {
+    font-size: dt.$font-size-xl;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.subtitle {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+// ---- Progress rail -----------------------------------------
 .stepper {
     display: flex;
+    align-items: center;
     flex-wrap: wrap;
-    gap: 0.5rem 1rem;
-    margin: 1rem 0 1.5rem;
+    gap: 2px;
+    margin: dt.$spacing-xl 0 dt.$spacing-2xl;
 }
 
-.stepDot {
+.stepNode {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    font-size: 0.85rem;
-    color: var(--bs-secondary-color, #888);
+    gap: 0.45rem;
+    font-size: dt.$font-size-xs;
+    font-weight: 500;
+    color: var(--bs-tertiary-color);
     background: none;
-    border: none;
-    padding: 0;
+    border: 0;
+    padding: 0.25rem 0.5rem;
+    border-radius: dt.$radius-md;
     cursor: pointer;
+    transition: color dt.$transition-fast, background-color dt.$transition-fast;
+
+    &:hover {
+        color: var(--bs-body-color);
+        background: rgba(var(--bs-primary-rgb), 0.06);
+    }
 }
 
 .stepNum {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1.35rem;
+    height: 1.35rem;
     border-radius: 50%;
-    border: 1px solid currentColor;
-    font-size: 0.75rem;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.8);
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    flex-shrink: 0;
+    transition: background-color dt.$transition-fast,
+        border-color dt.$transition-fast, color dt.$transition-fast;
+}
+
+.stepConnector {
+    width: 1.25rem;
+    height: 1px;
+    background: rgba(var(--bs-border-color-rgb), 0.6);
+    flex-shrink: 0;
 }
 
 .stepCurrent {
-    color: var(--bs-primary, #0d6efd);
+    color: var(--bs-emphasis-color);
     font-weight: 600;
+
+    .stepNum {
+        background: var(--bs-primary);
+        border-color: var(--bs-primary);
+        color: #fff;
+    }
 }
 
 .stepDone {
-    color: var(--bs-success, #198754);
+    color: var(--bs-secondary-color);
+
+    .stepNum {
+        border-color: var(--bs-primary);
+        color: var(--bs-primary);
+    }
 }
 
+// ---- Layout -------------------------------------------------
 .layout {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 16rem;
-    gap: 1.5rem;
+    grid-template-columns: minmax(0, 1fr) 17rem;
+    gap: dt.$spacing-3xl;
+    align-items: start;
 }
 
 @media (max-width: 900px) {
@@ -55,27 +125,158 @@
     }
 }
 
+// wraps step content: unify raw Bootstrap inputs inside
+.main {
+    :global(.form-control),
+    :global(.form-select) {
+        @include board.board-input-rules;
+    }
+
+    :global(h2.h4) {
+        font-size: dt.$font-size-lg;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        margin-bottom: dt.$spacing-sm;
+    }
+
+    :global(h3.h6) {
+        @include board.board-eyebrow;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-bottom: dt.$spacing-md;
+    }
+}
+
+// ---- Right rail ---------------------------------------------
 .rail {
-    font-size: 0.85rem;
+    font-size: dt.$font-size-sm;
 }
 
 .railCard {
+    @include board.board-surface(dt.$spacing-lg);
     position: sticky;
-    top: 1rem;
-    border: 1px solid var(--bs-border-color, #dee2e6);
-    border-radius: 0.5rem;
-    padding: 0.75rem 1rem;
+    top: dt.$spacing-lg;
 }
 
+.railTitle {
+    @include board.board-eyebrow;
+    display: block;
+    margin-bottom: dt.$spacing-sm;
+}
+
+.railRow {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    padding-block: 2px;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-xs;
+}
+
+.railIcon {
+    flex-shrink: 0;
+    position: relative;
+    top: 1px;
+    color: var(--bs-tertiary-color);
+}
+
+.railIconDone {
+    color: var(--bs-primary);
+}
+
+// ---- Step nav -----------------------------------------------
 .navBar {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    margin-top: 1.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--bs-border-color, #dee2e6);
+    gap: dt.$spacing-md;
+    margin-top: dt.$spacing-2xl;
+    padding-top: dt.$spacing-lg;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
 }
 
 .spacer {
     flex: 1;
+}
+
+// ---- Step section anatomy (Tasks 7–8) ----------------------
+.section {
+    @include board.board-surface(dt.$spacing-xl);
+    margin-bottom: dt.$spacing-lg;
+}
+
+.sectionHint {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin-bottom: dt.$spacing-md;
+}
+
+.statTile {
+    @include board.board-surface(dt.$spacing-lg);
+    text-align: center;
+    min-width: 9rem;
+}
+
+.statValue {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xl;
+    font-weight: 700;
+    display: block;
+}
+
+.statLabel {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.table {
+    @include board.board-table;
+}
+
+// calm notices with a severity spine (replace Bootstrap alerts)
+%note {
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-left-width: 3px;
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    font-size: dt.$font-size-sm;
+    margin-bottom: dt.$spacing-md;
+}
+
+.infoNote {
+    @extend %note;
+    border-left-color: var(--bs-primary);
+}
+
+.warnNote {
+    @extend %note;
+    border-left-color: dt.$accent-amber;
+}
+
+.errorNote {
+    @extend %note;
+    border-left-color: dt.$accent-red;
+    color: dt.$accent-red;
+}
+
+// list rows (mod team, review list) replacing .list-group
+.rows {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    margin-bottom: dt.$spacing-md;
+    padding: 0;
+    list-style: none;
+}
+
+.rowItem {
+    @include board.board-surface(dt.$spacing-sm dt.$spacing-lg);
+    border-radius: dt.$radius-md;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+    font-size: dt.$font-size-sm;
 }

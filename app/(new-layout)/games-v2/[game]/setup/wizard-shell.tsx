@@ -1,6 +1,8 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Fragment } from 'react';
+import { Check2, Dot } from 'react-bootstrap-icons';
 import {
     SETUP_STEP_ORDER,
     type SetupStepId,
@@ -61,48 +63,62 @@ export function WizardShell({ data, initialStep }: Props) {
 
     return (
         <div className={styles.page}>
-            <header className="d-flex align-items-center gap-3">
+            <header className={styles.header}>
                 {data.game.image && (
                     <img
                         src={data.game.image}
                         alt={data.game.display}
-                        width={36}
-                        height={48}
-                        className="rounded"
-                        style={{ aspectRatio: '3 / 4' }}
+                        width={44}
+                        height={59}
+                        className={styles.cover}
                     />
                 )}
                 <div>
-                    <h1 className="mb-0 h3">Set up {data.game.display}</h1>
-                    <small className="text-muted">
+                    <div className={styles.eyebrow}>Game setup</div>
+                    <h1 className={styles.title}>Set up {data.game.display}</h1>
+                    <div className={styles.subtitle}>
                         Every step saves as you go — you can leave and come back
                         anytime.
-                    </small>
+                    </div>
                 </div>
             </header>
 
             <nav className={styles.stepper} aria-label="Setup steps">
                 {STEPS.map((s, i) => (
-                    <button
-                        type="button"
-                        key={s.id}
-                        className={`${styles.stepDot} ${
-                            i === stepIndex
-                                ? styles.stepCurrent
-                                : statusFor(s.id)?.status === 'done'
-                                  ? styles.stepDone
-                                  : ''
-                        }`}
-                        onClick={() => goTo(s.id)}
-                    >
-                        <span className={styles.stepNum}>{i + 1}</span>
-                        {s.label}
-                    </button>
+                    <Fragment key={s.id}>
+                        {i > 0 && (
+                            <span
+                                className={styles.stepConnector}
+                                aria-hidden
+                            />
+                        )}
+                        <button
+                            type="button"
+                            className={`${styles.stepNode} ${
+                                i === stepIndex
+                                    ? styles.stepCurrent
+                                    : statusFor(s.id)?.status === 'done'
+                                      ? styles.stepDone
+                                      : ''
+                            }`}
+                            onClick={() => goTo(s.id)}
+                        >
+                            <span className={styles.stepNum}>
+                                {statusFor(s.id)?.status === 'done' &&
+                                i !== stepIndex ? (
+                                    <Check2 size={12} aria-hidden />
+                                ) : (
+                                    i + 1
+                                )}
+                            </span>
+                            {s.label}
+                        </button>
+                    </Fragment>
                 ))}
             </nav>
 
             <div className={styles.layout}>
-                <main>
+                <main className={styles.main}>
                     <CurrentStep
                         key={`${step}-${data.renderedAt}`}
                         step={step}
@@ -134,17 +150,27 @@ export function WizardShell({ data, initialStep }: Props) {
                 </main>
                 <aside className={styles.rail}>
                     <div className={styles.railCard}>
-                        <strong>Your board so far</strong>
-                        <ul className="list-unstyled mb-0 mt-2">
-                            {data.completeness.steps.map((s) => (
-                                <li key={s.step} className="mb-1">
-                                    {s.status === 'done' ? '✓ ' : '· '}
-                                    <span className="text-muted">
-                                        {s.summary}
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
+                        <span className={styles.railTitle}>
+                            Your board so far
+                        </span>
+                        {data.completeness.steps.map((s) => (
+                            <div key={s.step} className={styles.railRow}>
+                                {s.status === 'done' ? (
+                                    <Check2
+                                        size={12}
+                                        className={`${styles.railIcon} ${styles.railIconDone}`}
+                                        aria-label="done"
+                                    />
+                                ) : (
+                                    <Dot
+                                        size={12}
+                                        className={styles.railIcon}
+                                        aria-hidden
+                                    />
+                                )}
+                                <span>{s.summary}</span>
+                            </div>
+                        ))}
                     </div>
                 </aside>
             </div>
