@@ -69,7 +69,6 @@ const ALL_GROUPS: NavGroup[] = [
                 id: 'game-details',
                 label: 'Details & metadata',
                 categoryScoped: false,
-                reserved: true,
             },
             {
                 id: 'moderators',
