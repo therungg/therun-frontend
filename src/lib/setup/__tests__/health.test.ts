@@ -8,8 +8,8 @@ function completeness(over: Partial<BoardCompleteness>): BoardCompleteness {
     return {
         steps: [],
         firstIncomplete: null,
-        doneCount: 8,
-        totalCount: 8,
+        doneCount: 6,
+        totalCount: 6,
         blockers: [],
         warnings: [],
         ...over,
@@ -33,15 +33,18 @@ describe('computeBoardHealth', () => {
         ]);
     });
 
-    it('grades any completeness blocker at-risk', () => {
+    it('grades any completeness blocker at-risk and maps categories to categories-visibility', () => {
         const h = computeBoardHealth({
             completeness: completeness({
-                blockers: ['No main category selected'],
+                blockers: [
+                    'No categories are marked main (shown on the board)',
+                ],
                 steps: [
                     {
                         step: 'categories',
                         status: 'blocker',
-                        summary: 'No main category selected',
+                        summary:
+                            'No categories are marked main (shown on the board)',
                     },
                 ],
             }),
@@ -51,25 +54,20 @@ describe('computeBoardHealth', () => {
         expect(h.grade).toBe('at-risk');
         expect(h.items[0]).toEqual({
             severity: 'blocker',
-            label: 'No main category selected',
+            label: 'No categories are marked main (shown on the board)',
             pane: 'categories-visibility',
         });
     });
 
-    it('maps rules/standards warnings to their panes', () => {
+    it('maps a category-config warning to the rules pane', () => {
         const h = computeBoardHealth({
             completeness: completeness({
-                warnings: ['2 categories have no rules'],
+                warnings: ['1 of 2 main categories not configured'],
                 steps: [
                     {
-                        step: 'rules',
+                        step: 'category-config',
                         status: 'warning',
-                        summary: '2 categories have no rules',
-                    },
-                    {
-                        step: 'standards',
-                        status: 'warning',
-                        summary: 'No video requirement or minimum time',
+                        summary: '1 of 2 main categories not configured',
                     },
                 ],
             }),
@@ -79,13 +77,52 @@ describe('computeBoardHealth', () => {
         expect(h.grade).toBe('needs-attention');
         expect(h.items).toContainEqual({
             severity: 'warning',
-            label: '2 categories have no rules',
+            label: '1 of 2 main categories not configured',
             pane: 'rules',
+        });
+    });
+
+    it('maps a defaults item to the timing pane', () => {
+        const h = computeBoardHealth({
+            completeness: completeness({
+                warnings: ['Optional bulk settings not reviewed'],
+                steps: [
+                    {
+                        step: 'defaults',
+                        status: 'warning',
+                        summary: 'Optional bulk settings not reviewed',
+                    },
+                ],
+            }),
+            attentionCreatedAts: [],
+            now: NOW,
         });
         expect(h.items).toContainEqual({
             severity: 'warning',
-            label: 'No video requirement or minimum time',
-            pane: 'standards',
+            label: 'Optional bulk settings not reviewed',
+            pane: 'timing',
+        });
+    });
+
+    it('maps a details warning to the game-details pane', () => {
+        const h = computeBoardHealth({
+            completeness: completeness({
+                warnings: ['Slug or abbreviation missing'],
+                steps: [
+                    {
+                        step: 'details',
+                        status: 'warning',
+                        summary: 'Slug or abbreviation missing',
+                    },
+                ],
+            }),
+            attentionCreatedAts: [],
+            now: NOW,
+        });
+        expect(h.items).toContainEqual({
+            severity: 'warning',
+            label: 'Slug or abbreviation missing',
+            pane: 'game-details',
         });
     });
 

@@ -4,10 +4,8 @@ export type SetupStepId =
     | 'welcome'
     | 'details'
     | 'categories'
-    | 'timing'
-    | 'variables'
-    | 'rules'
-    | 'standards'
+    | 'category-config'
+    | 'defaults'
     | 'finish';
 
 export type SetupStepStatus = 'done' | 'todo' | 'warning' | 'blocker';
@@ -50,10 +48,8 @@ export const SETUP_STEP_ORDER: SetupStepId[] = [
     'welcome',
     'details',
     'categories',
-    'timing',
-    'variables',
-    'rules',
-    'standards',
+    'category-config',
+    'defaults',
     'finish',
 ];
 
@@ -72,7 +68,10 @@ export function categoryFactsFromResolved(
 export function computeCompleteness(
     input: CompletenessInput,
 ): BoardCompleteness {
-    const active = input.categories.filter((c) => c.active);
+    // "main" everywhere = active && isMain — not-main is not shown on the
+    // leaderboard, so mains are the categories that actually appear.
+    const mains = input.categories.filter((c) => c.active && c.isMain);
+    const emptyBoard = input.categories.length === 0;
     const steps: SetupStepState[] = [];
 
     steps.push({ step: 'welcome', status: 'done', summary: 'Board snapshot' });
@@ -91,7 +90,7 @@ export function computeCompleteness(
               },
     );
 
-    if (input.categories.length === 0) {
+    if (emptyBoard) {
         // Ingestion-empty board: categories appear when runs arrive; the
         // wizard is completable without them (spec: empty-board exception).
         steps.push({
@@ -99,71 +98,58 @@ export function computeCompleteness(
             status: 'done',
             summary: 'No ingested categories yet — they appear as runs arrive',
         });
-    } else if (active.length === 0) {
+    } else if (mains.length === 0) {
         steps.push({
             step: 'categories',
             status: 'blocker',
-            summary: 'No categories are shown on the board',
-        });
-    } else if (!active.some((c) => c.isMain)) {
-        steps.push({
-            step: 'categories',
-            status: 'blocker',
-            summary: 'No main category selected',
+            summary: 'No categories are marked main (shown on the board)',
         });
     } else {
         steps.push({
             step: 'categories',
             status: 'done',
-            summary: `${active.length} shown / ${
-                input.categories.length - active.length
+            summary: `${mains.length} shown / ${
+                input.categories.length - mains.length
             } hidden`,
         });
     }
 
-    steps.push({
-        step: 'timing',
-        status: 'done',
-        summary: 'Timing follows ingested defaults unless changed',
-    });
-
-    steps.push({
-        step: 'variables',
-        status: 'done',
-        summary:
-            input.variableCount > 0
-                ? `${input.variableCount} variable${
-                      input.variableCount === 1 ? '' : 's'
-                  }`
-                : 'None configured (optional)',
-    });
-
-    const activeWithoutRules = active.filter((c) => !c.hasRules);
-    if (input.categories.length === 0 || activeWithoutRules.length === 0) {
-        steps.push({ step: 'rules', status: 'done', summary: 'Rules set' });
-    } else {
+    if (emptyBoard || mains.length === 0) {
         steps.push({
-            step: 'rules',
-            status: 'warning',
-            summary: `${activeWithoutRules.length} categor${
-                activeWithoutRules.length === 1 ? 'y has' : 'ies have'
-            } no rules`,
+            step: 'category-config',
+            status: 'todo',
+            summary: 'Configure categories after choosing mains',
         });
+    } else {
+        const mainsWithoutRules = mains.filter((c) => !c.hasRules);
+        if (mainsWithoutRules.length === 0) {
+            steps.push({
+                step: 'category-config',
+                status: 'done',
+                summary: `All ${mains.length} main categories configured`,
+            });
+        } else {
+            steps.push({
+                step: 'category-config',
+                status: 'warning',
+                summary: `${mainsWithoutRules.length} of ${mains.length} main categories not configured`,
+            });
+        }
     }
 
-    steps.push(
-        input.policyCount > 0 || input.requireVideoAnywhere
-            ? {
-                  step: 'standards',
-                  status: 'done',
-                  summary: 'Verification standards set',
-              }
-            : {
-                  step: 'standards',
-                  status: 'warning',
-                  summary: 'No video requirement or minimum time',
-              },
-    );
+    const hasDefaultsContent =
+        input.variableCount > 0 ||
+        input.policyCount > 0 ||
+        input.requireVideoAnywhere;
+    steps.push({
+        step: 'defaults',
+        status: 'done',
+        summary: hasDefaultsContent
+            ? `${input.variableCount} variable${
+                  input.variableCount === 1 ? '' : 's'
+              } · standards set`
+            : 'Optional bulk settings',
+    });
 
     steps.push(
         input.configured
