@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
@@ -82,6 +82,13 @@ export function ConsoleShell({
     const [activeItem, setActiveItem] = useState<NavItemId | null>(
         initialActive,
     );
+
+    // Same-page ?pane= links (health card, moderators pane) update the URL
+    // without remounting the shell — sync state to the validated param.
+    useEffect(() => {
+        setActiveItem(initialActive);
+    }, [initialActive]);
+
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
         initialCategoryId,
     );
@@ -131,7 +138,8 @@ export function ConsoleShell({
                 onSelectCategory={setSelectedCategoryId}
             >
                 {setupCompleteness &&
-                setupCompleteness.doneCount < setupCompleteness.totalCount ? (
+                setupCompleteness.steps.find((s) => s.step === 'finish')
+                    ?.status !== 'done' ? (
                     <SetupChecklistCard
                         gameSlug={game.name}
                         completeness={setupCompleteness}

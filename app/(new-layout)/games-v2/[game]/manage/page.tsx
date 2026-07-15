@@ -114,6 +114,10 @@ export default async function GameAdminConsolePage({ params }: Props) {
     let boardHealth: BoardHealth | null = null;
     let gameDetails: GameDetailsData | null = null;
     let moderators: GameModerator[] = [];
+    // Moderators load under canConfigure but the pane gates on canEditMods.
+    // Safe because every edit-moderators holder also has category-settings:
+    // backend deriveGameLists guarantees adminedGames ⊆ moderatedGames, and
+    // the board-admin role grants both (src/rbac/ability.ts).
     if (canConfigure) {
         const [variables, policies, gameMods, metadata] = await Promise.all([
             listGameVariables(sessionId, game.id).catch(() => []),

@@ -27,7 +27,7 @@ export function BoardHealthCard({ gameSlug, health }: Props) {
                 </span>
                 <ul className="list-unstyled mb-0 small">
                     {health.items.map((item) => (
-                        <li key={item.label}>
+                        <li key={`${item.pane ?? 'none'}-${item.label}`}>
                             {item.severity === 'blocker'
                                 ? '✕ '
                                 : item.severity === 'warning'

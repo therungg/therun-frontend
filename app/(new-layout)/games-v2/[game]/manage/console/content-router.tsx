@@ -208,7 +208,7 @@ export function ContentRouter(props: ContentRouterProps) {
                 />
             ) : (
                 <Placeholder title="Details & metadata">
-                    Coming in a later phase.
+                    Couldn't load game details — reload the page.
                 </Placeholder>
             );
         case 'moderators':
