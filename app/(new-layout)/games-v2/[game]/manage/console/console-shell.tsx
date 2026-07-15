@@ -5,7 +5,10 @@ import { useCallback, useMemo, useState } from 'react';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
-import type { BoardClaimRequest } from '../../../../../../types/board-claims.types';
+import type {
+    BoardClaimRequest,
+    GameModerator,
+} from '../../../../../../types/board-claims.types';
 import type {
     ResolvedCategory,
     ResolvedGame,
@@ -38,6 +41,7 @@ export interface ConsoleShellProps {
     setupCompleteness?: BoardCompleteness | null;
     boardHealth?: BoardHealth | null;
     gameDetails?: GameDetailsData | null;
+    moderators?: GameModerator[];
 }
 
 export function ConsoleShell({
@@ -54,6 +58,7 @@ export function ConsoleShell({
     setupCompleteness,
     boardHealth,
     gameDetails,
+    moderators,
 }: ConsoleShellProps) {
     const groups = useMemo(() => buildNav(flags), [flags]);
     const searchParams = useSearchParams();
@@ -146,6 +151,7 @@ export function ConsoleShell({
                     gameDetails={gameDetails}
                     attentionItems={attentionItems}
                     modApplications={modApplications}
+                    moderators={moderators}
                     initialSlug={initialSlug}
                     initialAbbreviation={initialAbbreviation}
                     rows={rows}

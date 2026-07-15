@@ -21,7 +21,10 @@ import {
 import { type BoardHealth, computeBoardHealth } from '~src/lib/setup/health';
 import { defineAbilityFor } from '~src/rbac/ability';
 import { isLowActivityCategory } from '~src/utils/format-stats';
-import type { BoardClaimRequest } from '../../../../../types/board-claims.types';
+import type {
+    BoardClaimRequest,
+    GameModerator,
+} from '../../../../../types/board-claims.types';
 import { ConsoleShell } from './console/console-shell';
 import type { GameDetailsData } from './console/game-details-pane';
 import { mergeAttention } from './moderation/attention/attention-model';
@@ -110,13 +113,15 @@ export default async function GameAdminConsolePage({ params }: Props) {
     let setupCompleteness: BoardCompleteness | null = null;
     let boardHealth: BoardHealth | null = null;
     let gameDetails: GameDetailsData | null = null;
+    let moderators: GameModerator[] = [];
     if (canConfigure) {
-        const [variables, policies, moderators, metadata] = await Promise.all([
+        const [variables, policies, gameMods, metadata] = await Promise.all([
             listGameVariables(sessionId, game.id).catch(() => []),
             listPolicies(sessionId, game.id).catch(() => []),
             listGameModerators(game.id).catch(() => []),
             getGameMetadata(game.id).catch(() => null),
         ]);
+        moderators = gameMods;
         if (metadata) {
             setupCompleteness = computeCompleteness({
                 categories: categoryFactsFromResolved(categories),
@@ -157,6 +162,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                     canEditStandards,
                     canConfigure,
                     canReassign,
+                    canEditMods,
                 }}
                 attentionItems={attentionItems}
                 modApplications={modApplications}
@@ -168,6 +174,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 setupCompleteness={setupCompleteness}
                 boardHealth={boardHealth}
                 gameDetails={gameDetails}
+                moderators={moderators}
             />
         </Suspense>
     );

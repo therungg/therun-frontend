@@ -13,8 +13,8 @@ export type NavItemId =
     | 'variables'
     | 'combinations'
     | 'category-settings'
-    | 'game-details' // reserved (placeholder)
-    | 'moderators' // reserved (placeholder)
+    | 'game-details'
+    | 'moderators'
     | 'groups'
     | 'categories-visibility'
     | 'identifiers'
@@ -43,6 +43,7 @@ export interface NavFlags {
     canEditStandards: boolean; // ability.can('edit','moderators')
     canConfigure: boolean; // ability.can('edit','category-settings',{game})
     canReassign: boolean; // ability.can('reassign','reassignment')
+    canEditMods: boolean; // ability.can('edit','moderators',{game})
 }
 
 const ALL_GROUPS: NavGroup[] = [
@@ -74,7 +75,6 @@ const ALL_GROUPS: NavGroup[] = [
                 id: 'moderators',
                 label: 'Moderators',
                 categoryScoped: false,
-                reserved: true,
             },
             { id: 'groups', label: 'Groups', categoryScoped: false },
             {
@@ -117,6 +117,7 @@ function itemVisible(
     flags: NavFlags,
 ): boolean {
     if (itemId === 'reassign') return flags.canReassign;
+    if (itemId === 'moderators') return flags.canEditMods;
     if (groupId === 'moderate') return flags.canModerate;
     if (itemId === 'standards') return flags.canModerate;
     // remaining per-category items + all game items

@@ -3,7 +3,10 @@
 import type { ReactNode } from 'react';
 import Link from '~src/components/link';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
-import type { BoardClaimRequest } from '../../../../../../types/board-claims.types';
+import type {
+    BoardClaimRequest,
+    GameModerator,
+} from '../../../../../../types/board-claims.types';
 import type {
     ResolvedCategory,
     ResolvedGame,
@@ -23,6 +26,7 @@ import { VariablesSection } from '../variables/variables-section';
 import styles from './console.module.scss';
 import type { GameDetailsData } from './game-details-pane';
 import { GameDetailsPane } from './game-details-pane';
+import { ModeratorsPane } from './moderators-pane';
 import type { NavItemId } from './nav-model';
 
 export interface ContentRouterProps {
@@ -33,6 +37,7 @@ export interface ContentRouterProps {
     canEditStandards: boolean;
     attentionItems: AttentionItem[];
     modApplications?: BoardClaimRequest[];
+    moderators?: GameModerator[];
     initialSlug: string | null;
     initialAbbreviation: string | null;
     gameDetails?: GameDetailsData | null;
@@ -77,6 +82,7 @@ export function ContentRouter(props: ContentRouterProps) {
         canEditStandards,
         attentionItems,
         modApplications,
+        moderators,
     } = props;
 
     switch (activeItem) {
@@ -207,9 +213,12 @@ export function ContentRouter(props: ContentRouterProps) {
             );
         case 'moderators':
             return (
-                <Placeholder title="Moderators">
-                    Coming in a later phase.
-                </Placeholder>
+                <ModeratorsPane
+                    gameSlug={game.name}
+                    gameId={game.id}
+                    moderators={moderators ?? []}
+                    pendingApplications={modApplications?.length ?? 0}
+                />
             );
         case 'reassign':
             return (
