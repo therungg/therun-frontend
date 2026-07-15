@@ -6,6 +6,7 @@ import type {
     ResolvedCategory,
     ResolvedGroup,
 } from '../../../../../types/leaderboards.types';
+import styles from '../game-page.module.scss';
 
 interface Props {
     categories: ResolvedCategory[];
@@ -51,9 +52,7 @@ export function CategoryPills({
                 onClick={() => onSelect(c.name)}
                 disabled={isPending}
                 aria-pressed={active}
-                className={`btn btn-sm ${
-                    active ? 'btn-primary' : 'btn-outline-secondary'
-                }`}
+                className={`${styles.pill} ${active ? styles.pillActive : ''}`}
             >
                 {c.display}
             </button>
@@ -126,18 +125,21 @@ export function CategoryPills({
     return (
         <div aria-label="Category">
             {sections.map((section, idx) => (
-                <div key={section.id ?? `ungrouped-${idx}`} className="mb-2">
+                <div
+                    key={section.id ?? `ungrouped-${idx}`}
+                    className={styles.bandRow}
+                >
                     {section.name && (
-                        <small className="text-muted text-uppercase fw-bold d-block mb-1">
+                        <span className={styles.groupLabel}>
                             {section.name}
-                        </small>
+                        </span>
                     )}
                     {section.pills.length === 0 ? (
                         <small className="text-muted">
                             No categories enabled for this group.
                         </small>
                     ) : (
-                        <nav className="d-flex gap-2 flex-wrap">
+                        <nav className={styles.bandRow}>
                             {section.pills.map(renderPill)}
                         </nav>
                     )}

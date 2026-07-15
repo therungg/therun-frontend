@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
@@ -5,6 +6,7 @@ import type {
     ResolvedGame,
 } from '../../../../../types/leaderboards.types';
 import { ClaimCta, type ClaimCtaState } from '../claim/claim-cta';
+import styles from '../game-page.module.scss';
 
 interface Props {
     game: ResolvedGame;
@@ -13,6 +15,7 @@ interface Props {
     canModerate?: boolean;
     sessionUsername?: string | null;
     claim?: ClaimCtaState | null;
+    selfClaim?: ReactNode;
 }
 
 export function GameHeader({
@@ -22,32 +25,37 @@ export function GameHeader({
     canModerate,
     sessionUsername,
     claim,
+    selfClaim,
 }: Props) {
     return (
-        <header className="d-flex align-items-center gap-3 mb-3">
+        <header className={styles.header}>
             {game.image && (
                 <img
                     src={game.image}
                     alt={game.display}
                     width={48}
                     height={64}
-                    className="rounded"
-                    style={{ aspectRatio: '3 / 4' }}
+                    className={styles.cover}
                     loading="eager"
                 />
             )}
             <div>
-                <h1 className="mb-0">{game.display}</h1>
-                <small className="text-muted">
-                    {stats.uniqueRunners.toLocaleString()} runners ·{' '}
-                    <DurationToFormatted duration={stats.totalRunTime} /> total
-                </small>
+                <h1 className={styles.title}>{game.display}</h1>
+                <div className={styles.metaLine}>
+                    <span>{stats.uniqueRunners.toLocaleString()}</span> runners
+                    ·{' '}
+                    <span>
+                        <DurationToFormatted duration={stats.totalRunTime} />
+                    </span>{' '}
+                    total
+                </div>
             </div>
             {(sessionUsername || canManage || canModerate) && (
-                <div className="ms-auto d-flex gap-2">
+                <div className={styles.actions}>
                     {claim && sessionUsername && (
                         <ClaimCta claim={claim} gameDisplay={game.display} />
                     )}
+                    {selfClaim}
                     {sessionUsername && (
                         <Link
                             href={`/games-v2/${game.name}/submit`}

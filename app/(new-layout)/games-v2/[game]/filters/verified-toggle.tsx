@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
+import styles from '../game-page.module.scss';
 
 interface Props {
     verified: boolean;
@@ -24,7 +25,7 @@ export function VerifiedToggle({ verified }: Props) {
     };
 
     return (
-        <label className="d-flex align-items-center gap-2 mb-3">
+        <label className={styles.checkPill}>
             <input
                 type="checkbox"
                 checked={verified}

@@ -15,7 +15,7 @@ export function VariablePills({ defs, selected }: Props) {
     if (defs.length === 0) return null;
 
     return (
-        <div className="d-flex gap-2 flex-wrap mb-2">
+        <div className="d-flex gap-1 flex-wrap">
             {defs.map((def) => (
                 <VariablePill
                     key={def.nameNormalized}
