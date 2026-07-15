@@ -10,8 +10,7 @@ import type { StepProps } from '../types';
 interface RowState {
     id: number;
     display: string;
-    active: boolean;
-    isMain: boolean;
+    main: boolean;
     groupId: number | null;
     uniqueRunners: number;
     totalFinishedAttemptCount: number;
@@ -22,13 +21,16 @@ export function StepCategories({ data, onAdvance }: StepProps) {
     // Pre-check: resolveCategory already filters low-activity categories, so
     // everything we see is worth showing; keep current flags as the baseline
     // and default the top category to main when none is set.
-    const anyMain = data.categories.some((c) => c.isMain && c.active);
+    const anyMain = data.categories.some(
+        (c) => (c.active ?? true) && (c.isMain ?? false),
+    );
     const [rows, setRows] = useState<RowState[]>(
         data.categories.map((c, i) => ({
             id: c.id,
             display: c.display,
-            active: c.active ?? true,
-            isMain: c.isMain || (!anyMain && i === 0),
+            main:
+                ((c.active ?? true) && (c.isMain ?? false)) ||
+                (!anyMain && i === 0),
             groupId: c.groupId ?? null,
             uniqueRunners: c.uniqueRunners ?? 0,
             totalFinishedAttemptCount: c.totalFinishedAttemptCount ?? 0,
@@ -67,21 +69,17 @@ export function StepCategories({ data, onAdvance }: StepProps) {
         );
     }
 
-    const activeCount = rows.filter((r) => r.active).length;
-    const share = activityShare(rows);
-    const mainOk = rows.some((r) => r.active && r.isMain);
+    const checkedCount = rows.filter((r) => r.main).length;
+    const share = activityShare(
+        rows.map((r) => ({
+            totalFinishedAttemptCount: r.totalFinishedAttemptCount,
+            active: r.main,
+        })),
+    );
+    const mainOk = checkedCount > 0;
 
-    const setActive = (id: number, active: boolean) =>
-        setRows((rs) =>
-            rs.map((r) =>
-                r.id === id
-                    ? { ...r, active, isMain: active ? r.isMain : false }
-                    : r,
-            ),
-        );
-
-    const setMain = (id: number) =>
-        setRows((rs) => rs.map((r) => ({ ...r, isMain: r.id === id })));
+    const setMain = (id: number, main: boolean) =>
+        setRows((rs) => rs.map((r) => (r.id === id ? { ...r, main } : r)));
 
     const setGroup = (id: number, groupId: number | null) =>
         setRows((rs) => rs.map((r) => (r.id === id ? { ...r, groupId } : r)));
@@ -109,8 +107,8 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                 const orig = data.categories.find((c) => c.id === r.id);
                 return (
                     orig &&
-                    ((orig.active ?? true) !== r.active ||
-                        !!orig.isMain !== r.isMain ||
+                    ((orig.active ?? true) !== r.main ||
+                        (orig.isMain ?? false) !== r.main ||
                         (orig.groupId ?? null) !== r.groupId)
                 );
             });
@@ -122,8 +120,8 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                     gameSlug: data.game.name,
                     gameId: data.game.id,
                     categoryId: r.id,
-                    active: r.active,
-                    isMain: r.isMain,
+                    active: r.main,
+                    isMain: r.main,
                     groupId: r.groupId,
                 });
                 if ('error' in res) {
@@ -146,30 +144,30 @@ export function StepCategories({ data, onAdvance }: StepProps) {
         <section>
             <h2 className="h4">Categories</h2>
             <div className="alert alert-info py-2">
-                These categories were discovered from ingested runs. The ones
-                checked below hold {share}% of this board’s finished runs.
+                Checked categories are your main categories — they appear on the
+                leaderboards. Unchecked categories stay hidden. Checked
+                categories hold {share}% of this board’s finished runs.
             </div>
             <table className="table align-middle">
                 <thead>
                     <tr>
-                        <th>Show</th>
+                        <th>Show on board (main)</th>
                         <th>Category</th>
                         <th className="text-end">Runners</th>
                         <th className="text-end">Runs</th>
-                        <th>Main</th>
                         {showGroups && <th>Group</th>}
                     </tr>
                 </thead>
                 <tbody>
                     {rows.map((r) => (
-                        <tr key={r.id} className={r.active ? '' : 'text-muted'}>
+                        <tr key={r.id} className={r.main ? '' : 'text-muted'}>
                             <td>
                                 <input
                                     type="checkbox"
                                     className="form-check-input"
-                                    checked={r.active}
+                                    checked={r.main}
                                     onChange={(e) =>
-                                        setActive(r.id, e.target.checked)
+                                        setMain(r.id, e.target.checked)
                                     }
                                 />
                             </td>
@@ -186,16 +184,6 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                             </td>
                             <td className="text-end">
                                 {r.totalFinishedAttemptCount.toLocaleString()}
-                            </td>
-                            <td>
-                                <input
-                                    type="radio"
-                                    className="form-check-input"
-                                    name="main-category"
-                                    checked={r.isMain}
-                                    disabled={!r.active}
-                                    onChange={() => setMain(r.id)}
-                                />
                             </td>
                             {showGroups && (
                                 <td>
@@ -225,7 +213,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                 </tbody>
             </table>
             <div className="text-muted small mb-2">
-                {activeCount} shown / {rows.length - activeCount} hidden
+                {checkedCount} shown / {rows.length - checkedCount} hidden
             </div>
 
             <button
@@ -256,14 +244,15 @@ export function StepCategories({ data, onAdvance }: StepProps) {
 
             {!mainOk && (
                 <div className="alert alert-warning py-2 mt-2">
-                    Pick a main category — it’s the board visitors land on.
+                    Mark at least one category as main — they’re what visitors
+                    see.
                 </div>
             )}
             {progress && <div className="text-muted small">{progress}</div>}
             <button
                 type="button"
                 className="btn btn-primary mt-2"
-                disabled={isSaving || activeCount === 0 || !mainOk}
+                disabled={isSaving || !mainOk}
                 onClick={save}
             >
                 {isSaving ? 'Saving…' : 'Save & continue'}
