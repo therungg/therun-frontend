@@ -2,6 +2,7 @@
 
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
+import styles from './leaderboard.module.scss';
 
 interface Props {
     page: number;
@@ -28,13 +29,10 @@ export function PaginationBar({ page, totalPages }: Props) {
     const windowed = pageWindow(page, totalPages, 5);
 
     return (
-        <nav
-            aria-label="Leaderboard pages"
-            className="d-flex gap-1 justify-content-center"
-        >
+        <nav aria-label="Leaderboard pages" className={styles.pager}>
             <button
                 type="button"
-                className="btn btn-sm btn-outline-secondary"
+                className={styles.pageBtn}
                 disabled={page === 1 || isPending}
                 onClick={() => go(page - 1)}
             >
@@ -47,14 +45,14 @@ export function PaginationBar({ page, totalPages }: Props) {
                     onClick={() => go(p)}
                     disabled={isPending}
                     aria-current={p === page ? 'page' : undefined}
-                    className={`btn btn-sm ${p === page ? 'btn-primary' : 'btn-outline-secondary'}`}
+                    className={`${styles.pageBtn} ${p === page ? styles.pageBtnActive : ''}`}
                 >
                     {p}
                 </button>
             ))}
             <button
                 type="button"
-                className="btn btn-sm btn-outline-secondary"
+                className={styles.pageBtn}
                 disabled={page >= totalPages || isPending}
                 onClick={() => go(page + 1)}
             >

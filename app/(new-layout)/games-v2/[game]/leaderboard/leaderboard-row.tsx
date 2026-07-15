@@ -1,7 +1,9 @@
+import { CheckCircleFill, PlayBtn } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
+import styles from './leaderboard.module.scss';
 import { RowActionsMenu } from './row-actions-menu';
 
 interface Props {
@@ -32,19 +34,20 @@ export function LeaderboardRow({
               : null;
 
     return (
-        <tr className={isCurrentUser ? 'table-active' : undefined}>
-            <td>{entry.rank}</td>
-            <td>
+        <tr className={isCurrentUser ? styles.youRow : undefined}>
+            <td
+                className={`${styles.rank} ${entry.rank === 1 ? styles.rank1 : entry.rank === 2 ? styles.rank2 : entry.rank === 3 ? styles.rank3 : ''}`}
+            >
+                {entry.rank}
+            </td>
+            <td className={styles.runner}>
                 <UserLink username={entry.runnerName} url={undefined} />
             </td>
             {!hideRealTime && (
-                <td>
+                <td className={styles.time}>
                     {entry.realTime != null ? (
                         detailHref ? (
-                            <Link
-                                href={detailHref}
-                                className="text-decoration-none"
-                            >
+                            <Link href={detailHref}>
                                 <DurationToFormatted
                                     duration={entry.realTime}
                                 />
@@ -58,13 +61,10 @@ export function LeaderboardRow({
                 </td>
             )}
             {!hideGameTime && (
-                <td>
+                <td className={styles.time}>
                     {entry.gameTime != null ? (
                         detailHref ? (
-                            <Link
-                                href={detailHref}
-                                className="text-decoration-none"
-                            >
+                            <Link href={detailHref}>
                                 <DurationToFormatted
                                     duration={entry.gameTime}
                                 />
@@ -77,31 +77,40 @@ export function LeaderboardRow({
                     )}
                 </td>
             )}
-            <td>
+            <td className={styles.meta}>
                 {entry.runDate
                     ? new Date(entry.runDate).toLocaleDateString()
                     : ''}
             </td>
             <td>
                 {entry.vodUrl ? (
-                    <a href={entry.vodUrl} target="_blank" rel="noreferrer">
-                        VOD
+                    <a
+                        href={entry.vodUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={styles.iconLink}
+                        aria-label="Watch VOD"
+                        title="Watch VOD"
+                    >
+                        <PlayBtn size={16} />
                     </a>
                 ) : null}
             </td>
             <td>
                 {entry.source === 'manual' ? (
                     <span
-                        className="badge text-bg-info"
+                        className={styles.setPill}
                         title="A moderator-set leaderboard time"
                     >
                         set time
                     </span>
                 ) : entry.verificationStatus === 'verified' ? (
-                    '✓'
-                ) : (
-                    ''
-                )}
+                    <CheckCircleFill
+                        size={13}
+                        className={styles.verified}
+                        aria-label="Verified"
+                    />
+                ) : null}
             </td>
             <td className="text-end">
                 <div className="d-flex gap-1 justify-content-end">
