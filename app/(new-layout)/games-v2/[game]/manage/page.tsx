@@ -18,6 +18,7 @@ import {
     categoryFactsFromResolved,
     computeCompleteness,
 } from '~src/lib/setup/completeness';
+import { type BoardHealth, computeBoardHealth } from '~src/lib/setup/health';
 import { defineAbilityFor } from '~src/rbac/ability';
 import { isLowActivityCategory } from '~src/utils/format-stats';
 import type { BoardClaimRequest } from '../../../../../types/board-claims.types';
@@ -106,6 +107,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
     // The checklist card links into the configure-gated setup wizard, so only
     // compute it for viewers who can actually configure the board.
     let setupCompleteness: BoardCompleteness | null = null;
+    let boardHealth: BoardHealth | null = null;
     if (canConfigure) {
         const [variables, policies, moderators, metadata] = await Promise.all([
             listGameVariables(sessionId, game.id).catch(() => []),
@@ -125,6 +127,11 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 abbreviation: identifiers.abbreviation,
                 moderatorCount: moderators.length,
                 configured: metadata.configured,
+            });
+            boardHealth = computeBoardHealth({
+                completeness: setupCompleteness,
+                attentionCreatedAts: attentionItems.map((a) => a.createdAt),
+                now: Date.now(),
             });
         }
     }
@@ -148,6 +155,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 initialRows={rows}
                 initialGroups={groups}
                 setupCompleteness={setupCompleteness}
+                boardHealth={boardHealth}
             />
         </Suspense>
     );

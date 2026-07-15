@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { useCallback, useMemo, useState } from 'react';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
+import type { BoardHealth } from '~src/lib/setup/health';
 import type { BoardClaimRequest } from '../../../../../../types/board-claims.types';
 import type {
     ResolvedCategory,
@@ -11,6 +12,7 @@ import type {
 } from '../../../../../../types/leaderboards.types';
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { HistoryDrawer } from '../moderation/configure/history-drawer';
+import { BoardHealthCard } from './board-health-card';
 import { ConsoleChrome } from './console-chrome';
 import { ContentRouter } from './content-router';
 import {
@@ -33,6 +35,7 @@ export interface ConsoleShellProps {
     initialRows: ManageCategoryRow[];
     initialGroups: ManageGroup[];
     setupCompleteness?: BoardCompleteness | null;
+    boardHealth?: BoardHealth | null;
 }
 
 export function ConsoleShell({
@@ -47,6 +50,7 @@ export function ConsoleShell({
     initialRows,
     initialGroups,
     setupCompleteness,
+    boardHealth,
 }: ConsoleShellProps) {
     const groups = useMemo(() => buildNav(flags), [flags]);
     const searchParams = useSearchParams();
@@ -118,12 +122,18 @@ export function ConsoleShell({
                 selectedCategoryId={selectedCategoryId}
                 onSelectCategory={setSelectedCategoryId}
             >
-                {setupCompleteness && (
+                {setupCompleteness &&
+                setupCompleteness.doneCount < setupCompleteness.totalCount ? (
                     <SetupChecklistCard
                         gameSlug={game.name}
                         completeness={setupCompleteness}
                     />
-                )}
+                ) : boardHealth ? (
+                    <BoardHealthCard
+                        gameSlug={game.name}
+                        health={boardHealth}
+                    />
+                ) : null}
                 <ContentRouter
                     activeItem={activeItem}
                     game={game}
