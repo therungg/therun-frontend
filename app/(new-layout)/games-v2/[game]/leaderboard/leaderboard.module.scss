@@ -1,5 +1,5 @@
-@use '../../../../styles/design-tokens' as dt;
-@use '../../../../styles/board' as board;
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
 
 .wrapper {
     @include board.board-surface(0);
