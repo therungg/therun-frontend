@@ -6,5 +6,5 @@ interface Props {
 
 export default async function RedirectToManageGameTab({ params }: Props) {
     const { game } = await params;
-    redirect(`/games-v2/${game}/manage?tab=game`);
+    redirect(`/games-v2/${game}/manage?pane=groups`);
 }
