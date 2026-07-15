@@ -156,7 +156,9 @@ function CategoryConfigBody({
                 className="btn btn-primary mt-2"
                 onClick={handleNext}
             >
-                {isLast ? 'Continue' : 'Next category →'}
+                {isLast
+                    ? 'Continue to all-categories settings'
+                    : 'Next category →'}
             </button>
         </section>
     );
@@ -417,7 +419,6 @@ function VariablesSection({
     data: WizardData;
     category: ResolvedCategory;
 }) {
-    const router = useRouter();
     const [variables, setVariables] = useState<VariableRow[]>(
         data.variables.filter((v) => v.categoryId === category.id),
     );
@@ -462,7 +463,9 @@ function VariablesSection({
             setVariables((vs) => [...vs, res.result]);
             setEditor(null);
             toast.success(`Variable "${res.result.name}" created`);
-            router.refresh();
+            // No router.refresh() here: it would remount the step (renderedAt
+            // key) and wipe unsaved sibling-section drafts. Local state covers
+            // this mount; navigation refreshes re-sync server data.
         });
     };
 
@@ -480,7 +483,7 @@ function VariablesSection({
                 return;
             }
             setVariables((vs) => vs.filter((x) => x.id !== v.id));
-            router.refresh();
+            // No router.refresh() — see saveVariable.
         });
     };
 
