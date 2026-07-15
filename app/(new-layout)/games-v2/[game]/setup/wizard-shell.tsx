@@ -7,12 +7,10 @@ import {
 } from '~src/lib/setup/completeness';
 import styles from './setup.module.scss';
 import { StepCategories } from './steps/step-categories';
+import { StepCategoryConfig } from './steps/step-category-config';
+import { StepDefaults } from './steps/step-defaults';
 import { StepDetails } from './steps/step-details';
 import { StepFinish } from './steps/step-finish';
-import { StepRules } from './steps/step-rules';
-import { StepStandards } from './steps/step-standards';
-import { StepTiming } from './steps/step-timing';
-import { StepVariables } from './steps/step-variables';
 import { StepWelcome } from './steps/step-welcome';
 import type { WizardData } from './types';
 
@@ -20,10 +18,8 @@ const STEPS: { id: SetupStepId; label: string; skippable: boolean }[] = [
     { id: 'welcome', label: 'Welcome', skippable: false },
     { id: 'details', label: 'Details', skippable: true },
     { id: 'categories', label: 'Categories', skippable: true },
-    { id: 'timing', label: 'Timing', skippable: true },
-    { id: 'variables', label: 'Variables', skippable: true },
-    { id: 'rules', label: 'Rules', skippable: true },
-    { id: 'standards', label: 'Standards', skippable: true },
+    { id: 'category-config', label: 'Configure', skippable: true },
+    { id: 'defaults', label: 'All categories', skippable: true },
     { id: 'finish', label: 'Mods & finish', skippable: false },
 ];
 
@@ -192,25 +188,17 @@ function CurrentStep({
                     onBack={onBack}
                 />
             );
-        case 'timing':
+        case 'category-config':
             return (
-                <StepTiming data={data} onAdvance={onAdvance} onBack={onBack} />
-            );
-        case 'variables':
-            return (
-                <StepVariables
+                <StepCategoryConfig
                     data={data}
                     onAdvance={onAdvance}
                     onBack={onBack}
                 />
             );
-        case 'rules':
+        case 'defaults':
             return (
-                <StepRules data={data} onAdvance={onAdvance} onBack={onBack} />
-            );
-        case 'standards':
-            return (
-                <StepStandards
+                <StepDefaults
                     data={data}
                     onAdvance={onAdvance}
                     onBack={onBack}
