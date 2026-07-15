@@ -811,8 +811,8 @@ git commit -m "feat(game-page): unified header action group, control band, quiet
 - [ ] **Step 1: Create `sidebar.module.scss`**
 
 ```scss
-@use '../../../../styles/design-tokens' as dt;
-@use '../../../../styles/board' as board;
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
 
 .panel {
     @include board.board-surface(dt.$spacing-lg);
