@@ -62,8 +62,17 @@ export default async function SetupPage({ params, searchParams }: PageProps) {
     ]);
 
     // Fastest verified time per active category (for min-time suggestions).
+    // Mains sorted first so legacy active-non-main rows can't displace them
+    // out of the top-N fetch cap.
     const activeCats = catData.categories
-        .filter((c) => c.active)
+        .filter((c) => c.active ?? true)
+        .sort(
+            (a, b) =>
+                Number((b.active ?? true) && (b.isMain ?? false)) -
+                    Number((a.active ?? true) && (a.isMain ?? false)) ||
+                (b.totalFinishedAttemptCount ?? 0) -
+                    (a.totalFinishedAttemptCount ?? 0),
+        )
         .slice(0, WR_FETCH_CAP);
     const wrTimes: Record<number, number | null> = {};
     await Promise.all(

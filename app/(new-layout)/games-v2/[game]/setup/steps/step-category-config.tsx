@@ -661,11 +661,14 @@ function StandardsSection({
     const [error, setError] = useState<string | null>(null);
     const [saved, setSaved] = useState(false);
     const [isSaving, startSaving] = useTransition();
+    const [createdPolicies, setCreatedPolicies] = useState<Set<string>>(
+        new Set(),
+    );
 
     const policyExists = (type: PolicyType) =>
         data.policies.some(
             (p) => p.policyType === type && p.categoryId === category.id,
-        );
+        ) || createdPolicies.has(`${type}:${category.id ?? 'null'}`);
 
     const wr = data.wrTimes[category.id] ?? null;
     const suggestion = suggestMinTimeMs(
@@ -675,6 +678,17 @@ function StandardsSection({
 
     const save = () => {
         setSaved(false);
+        setError(null);
+
+        if (
+            requireVideo &&
+            topNOnly &&
+            (!Number.isInteger(Number(topN)) || Number(topN) <= 0)
+        ) {
+            setError('Top N must be a positive whole number.');
+            return;
+        }
+
         startSaving(async () => {
             setError(null);
 
@@ -729,6 +743,9 @@ function StandardsSection({
                         setError(res.error);
                         return;
                     }
+                    setCreatedPolicies((prev) =>
+                        new Set(prev).add(`min_time:${category.id ?? 'null'}`),
+                    );
                 }
             }
 

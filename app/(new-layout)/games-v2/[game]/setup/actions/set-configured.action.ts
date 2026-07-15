@@ -1,6 +1,6 @@
 'use server';
 
-import { revalidateTag } from 'next/cache';
+import { updateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ApiError } from '~src/lib/api-client';
 import { updateGame } from '~src/lib/game-mgmt';
@@ -25,7 +25,7 @@ export async function setGameConfiguredAction(
 
     try {
         await updateGame(user.id, input.gameId, { configured: true });
-        revalidateTag(`game-meta:${input.gameId}`, 'minutes');
+        updateTag(`game-meta:${input.gameId}`);
         return { ok: true };
     } catch (e) {
         if (e instanceof ApiError) return { error: e.message };
