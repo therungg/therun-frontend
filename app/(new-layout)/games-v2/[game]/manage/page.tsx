@@ -23,6 +23,7 @@ import { defineAbilityFor } from '~src/rbac/ability';
 import { isLowActivityCategory } from '~src/utils/format-stats';
 import type { BoardClaimRequest } from '../../../../../types/board-claims.types';
 import { ConsoleShell } from './console/console-shell';
+import type { GameDetailsData } from './console/game-details-pane';
 import { mergeAttention } from './moderation/attention/attention-model';
 
 interface Props {
@@ -108,6 +109,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
     // compute it for viewers who can actually configure the board.
     let setupCompleteness: BoardCompleteness | null = null;
     let boardHealth: BoardHealth | null = null;
+    let gameDetails: GameDetailsData | null = null;
     if (canConfigure) {
         const [variables, policies, moderators, metadata] = await Promise.all([
             listGameVariables(sessionId, game.id).catch(() => []),
@@ -133,6 +135,15 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 attentionCreatedAts: attentionItems.map((a) => a.createdAt),
                 now: Date.now(),
             });
+            gameDetails = {
+                identifiers,
+                metadata,
+                game: {
+                    id: game.id,
+                    name: game.name,
+                    image: game.image ?? null,
+                },
+            };
         }
     }
 
@@ -156,6 +167,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 initialGroups={groups}
                 setupCompleteness={setupCompleteness}
                 boardHealth={boardHealth}
+                gameDetails={gameDetails}
             />
         </Suspense>
     );

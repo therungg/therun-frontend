@@ -15,6 +15,7 @@ import { HistoryDrawer } from '../moderation/configure/history-drawer';
 import { BoardHealthCard } from './board-health-card';
 import { ConsoleChrome } from './console-chrome';
 import { ContentRouter } from './content-router';
+import type { GameDetailsData } from './game-details-pane';
 import {
     buildNav,
     defaultItem,
@@ -36,6 +37,7 @@ export interface ConsoleShellProps {
     initialGroups: ManageGroup[];
     setupCompleteness?: BoardCompleteness | null;
     boardHealth?: BoardHealth | null;
+    gameDetails?: GameDetailsData | null;
 }
 
 export function ConsoleShell({
@@ -51,6 +53,7 @@ export function ConsoleShell({
     initialGroups,
     setupCompleteness,
     boardHealth,
+    gameDetails,
 }: ConsoleShellProps) {
     const groups = useMemo(() => buildNav(flags), [flags]);
     const searchParams = useSearchParams();
@@ -140,6 +143,7 @@ export function ConsoleShell({
                     categories={categoryOptions}
                     selectedCategory={selectedCategory}
                     canEditStandards={flags.canEditStandards}
+                    gameDetails={gameDetails}
                     attentionItems={attentionItems}
                     modApplications={modApplications}
                     initialSlug={initialSlug}

@@ -21,6 +21,8 @@ import { TimingSettingsSection } from '../timing/timing-settings-section';
 import { CombinationsSection } from '../variables/combinations-section';
 import { VariablesSection } from '../variables/variables-section';
 import styles from './console.module.scss';
+import type { GameDetailsData } from './game-details-pane';
+import { GameDetailsPane } from './game-details-pane';
 import type { NavItemId } from './nav-model';
 
 export interface ContentRouterProps {
@@ -33,6 +35,7 @@ export interface ContentRouterProps {
     modApplications?: BoardClaimRequest[];
     initialSlug: string | null;
     initialAbbreviation: string | null;
+    gameDetails?: GameDetailsData | null;
     rows: ManageCategoryRow[];
     groups: ManageGroup[];
     onGroupsChange: (g: ManageGroup[]) => void;
@@ -191,7 +194,13 @@ export function ContentRouter(props: ContentRouterProps) {
                 />
             );
         case 'game-details':
-            return (
+            return props.gameDetails ? (
+                <GameDetailsPane
+                    identifiers={props.gameDetails.identifiers}
+                    metadata={props.gameDetails.metadata}
+                    game={props.gameDetails.game}
+                />
+            ) : (
                 <Placeholder title="Details & metadata">
                     Coming in a later phase.
                 </Placeholder>
