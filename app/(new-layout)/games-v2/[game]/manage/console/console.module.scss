@@ -1,5 +1,6 @@
 @use '../../../../styles/design-tokens' as dt;
 @use '../../../../styles/mixins' as mx;
+@use '../../../../styles/board' as board;
 
 // ============================================================
 // Admin Console — shared craft vocabulary
@@ -36,11 +37,7 @@ $rail: 3px; // severity spine / active accent width
 }
 
 .eyebrow {
-    font-size: dt.$font-size-2xs;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 600;
-    color: var(--bs-secondary-color);
+    @include board.board-eyebrow;
 }
 
 .title {
@@ -214,10 +211,7 @@ $rail: 3px; // severity spine / active accent width
 
 // ---- Content surfaces --------------------------------------
 .surface {
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    border-radius: dt.$radius-lg;
-    background: color-mix(in srgb, var(--bs-body-bg) 92%, var(--bs-secondary-bg) 8%);
-    padding: dt.$spacing-2xl;
+    @include board.board-surface;
 }
 
 .paneHeader {
@@ -259,15 +253,7 @@ $rail: 3px; // severity spine / active accent width
 
     :global(.form-control),
     :global(.form-select) {
-        border-color: rgba(var(--bs-border-color-rgb), 0.6);
-        border-radius: dt.$radius-md;
-        transition: border-color dt.$transition-fast,
-            box-shadow dt.$transition-fast;
-
-        &:focus {
-            border-color: var(--bs-primary);
-            box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
-        }
+        @include board.board-input-rules;
     }
 
     // section headings inside config panes → match pane title weight
@@ -329,8 +315,9 @@ $rail: 3px; // severity spine / active accent width
 }
 
 .time {
-    @include mx.monospace-value;
-    color: var(--bs-emphasis-color);
+    @include board.mono-time;
+    font-weight: 600;
+    letter-spacing: -0.02em;
 }
 
 .note {
