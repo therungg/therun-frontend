@@ -1,0 +1,85 @@
+@use '../../styles/design-tokens' as dt;
+@use '../../styles/board' as board;
+
+.page {
+    max-width: 56rem;
+    margin: 0 auto;
+    padding: dt.$spacing-2xl dt.$spacing-lg dt.$spacing-3xl;
+}
+
+.title {
+    font-size: dt.$font-size-xl;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin-bottom: dt.$spacing-xs;
+}
+
+.gameCard {
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+    margin-bottom: dt.$spacing-lg;
+}
+
+.gameHead {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+    margin-bottom: dt.$spacing-md;
+
+    a {
+        color: var(--bs-emphasis-color);
+        text-decoration: none;
+
+        &:hover {
+            color: var(--bs-primary);
+        }
+    }
+}
+
+.gameMeta {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+.rivalPill {
+    @include board.board-pill(dt.$accent-amber);
+    margin-left: auto;
+}
+
+.item {
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-left: 3px solid var(--bs-secondary);
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+    padding: dt.$spacing-md dt.$spacing-lg;
+    margin-bottom: dt.$spacing-sm;
+}
+
+.itemTop {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+}
+
+.meta {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+.stalePill {
+    @include board.board-pill(dt.$accent-amber);
+}
+
+.actionRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+}
+
+.empty {
+    @include board.board-surface;
+    text-align: center;
+    color: var(--bs-secondary-color);
+}

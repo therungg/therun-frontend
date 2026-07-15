@@ -24,7 +24,7 @@ export function ClaimCta({ claim, gameDisplay }: Props) {
 
     if (pending) {
         return (
-            <span className="btn btn-sm btn-outline-secondary disabled">
+            <span className="text-muted small align-self-center">
                 Application pending
             </span>
         );
@@ -55,7 +55,7 @@ export function ClaimCta({ claim, gameDisplay }: Props) {
         <>
             <button
                 type="button"
-                className="btn btn-sm btn-outline-primary"
+                className="btn btn-sm btn-outline-secondary"
                 onClick={() => setOpen(true)}
             >
                 {label}
@@ -98,7 +98,7 @@ export function ClaimCta({ claim, gameDisplay }: Props) {
                                     placeholder="Why do you want to moderate this board?"
                                 />
                                 {error && (
-                                    <div className="alert alert-danger mt-2 mb-0 py-2">
+                                    <div className="text-danger small mt-2 mb-0">
                                         {error}
                                     </div>
                                 )}
