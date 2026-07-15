@@ -499,6 +499,8 @@ export type NotificationType =
     | 'manual_time_verdict'
     | 'manual_time_deleted'
     | 'verdict_applied'
+    | 'board_claim_approved'
+    | 'board_claim_denied'
     | (string & {});
 
 export interface NotificationRow {

@@ -20,7 +20,8 @@ export async function listRoleAssignmentsForUser(
 
 export async function assignRole(
     body: {
-        userId: number;
+        userId?: number;
+        username?: string;
         role: GameMgmtRole;
         seriesId?: number;
         gameId?: number;

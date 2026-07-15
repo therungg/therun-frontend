@@ -57,7 +57,10 @@ export function StepFinish({ data }: StepProps) {
                 ...ms,
                 {
                     assignmentId: res.result.assignmentId,
-                    userId: res.result.userId,
+                    // userId is unknown here (backend resolved it by username);
+                    // it's refreshed from the server list on next mount, and
+                    // the list only renders username/role, so this is fine.
+                    userId: -1,
                     username: res.result.username,
                     role,
                     createdAt: new Date().toISOString(),
