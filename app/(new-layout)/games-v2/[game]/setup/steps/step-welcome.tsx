@@ -1,5 +1,6 @@
 'use client';
 
+import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
 
 export function StepWelcome({ data, onAdvance }: StepProps) {
@@ -68,12 +69,9 @@ export function StepWelcome({ data, onAdvance }: StepProps) {
 
 function StatTile({ value, label }: { value: number; label: string }) {
     return (
-        <div
-            className="border rounded p-3 text-center"
-            style={{ minWidth: '9rem' }}
-        >
-            <div className="h3 mb-0">{value.toLocaleString()}</div>
-            <small className="text-muted">{label}</small>
+        <div className={styles.statTile}>
+            <span className={styles.statValue}>{value.toLocaleString()}</span>
+            <span className={styles.statLabel}>{label}</span>
         </div>
     );
 }
