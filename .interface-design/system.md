@@ -1,11 +1,12 @@
-# Interface Design System — therun.gg Admin Console
+# Interface Design System — therun.gg games-v2
 
-Scope: the unified game admin console at `/games-v2/[game]/manage` and its moderation surfaces. Extends the app's existing system; does not replace it.
+Scope: all games-v2 surfaces — the public leaderboard, the setup wizard, the unified admin console at /games-v2/[game]/manage, and claim surfaces. Extends the app's existing system; does not replace it.
 
 ## Intent
 
 - **Human:** a speedrun game moderator / board-admin. Opens this to triage suspicious/flagged runs at volume and to configure leaderboard standards. Often acting between other things; wants to act fast and confidently without mistakes.
 - **Verb:** *triage* flagged runs (approve / remove / ban) and *configure* standards/categories.
+- **Human (public):** a speedrunner or viewer scanning a leaderboard. Wants the board to be overzichtelijk — instantly legible, calm, competitive. **Verb:** *scan* ranks and times.
 - **Feel:** a calm, precise **leaderboard-integrity control room**. Authoritative, fast, trustworthy, uncluttered. Speedrun precision shows up as tabular monospace times. Severity is the visual organizing principle. Craft whispers.
 
 ## Domain & color world
@@ -16,6 +17,7 @@ Splits/timers, WR/PB, ranks, categories & platforms, verification/VODs, flags/se
 
 1. **Severity spine** — a 3px colored left edge on every attention/run item (red=high, amber=medium, neutral=low). Lets a moderator scan the queue by integrity risk at a glance. This is the console's defining element.
 2. **Tabular monospace times** — every run time uses `$font-mono` with tabular numerals, like a speedrun timer. Times are data, aligned and scannable.
+3. **Rank accents** — ranks 1/2/3 colored gold/silver/bronze ($accent-gold/$accent-silver/$accent-bronze) in the mono rank column. The public board's defining element; the wizard's live preview shares it.
 
 ## Defaults rejected
 
@@ -37,5 +39,6 @@ Splits/timers, WR/PB, ranks, categories & platforms, verification/VODs, flags/se
 ## Components
 
 - `console.module.scss` — shared console styles: `.shell`, `.sidebar`, `.navGroup`, `.navItem`/`.active`, `.surface`, `.severitySpine`/`--high`/`--med`/`--low`, `.time` (mono tabular), `.metaRow`, `.actionRow`, `.empty`.
+- `styles/_board.scss` — shared board vocabulary (board-surface, board-table, board-rank, mono-time, board-eyebrow, control-pill, board-pill, board-input-rules). All games-v2 module.scss files compose these.
 - Reuse app `Badge` for status pills; reuse `Panel` only for page-level framing if needed (its bookmark tab is heavy for dense lists — prefer the lighter `.surface`).
 - Sidebar item = icon + label + optional count badge; active = green left accent + tinted bg.
