@@ -12,6 +12,7 @@ import {
     approveClaimAction,
     denyClaimAction,
 } from './actions/decide-claim.action';
+import styles from './board-claims.module.scss';
 
 const STALE_DAYS = 7;
 
@@ -42,39 +43,39 @@ export function BoardClaimsClient({ groups }: Props) {
 
     if (groups.length === 0) {
         return (
-            <div className="container py-4">
-                <h1>Board applications</h1>
-                <p className="text-muted">No pending applications.</p>
+            <div className={styles.page}>
+                <h1 className={styles.title}>Board applications</h1>
+                <div className={styles.empty}>No pending applications.</div>
             </div>
         );
     }
 
     return (
-        <div className="container py-4">
-            <h1>Board applications</h1>
+        <div className={styles.page}>
+            <h1 className={styles.title}>Board applications</h1>
             <p className="text-muted">
                 Approving grants a per-game moderator role and notifies the
                 applicant with a link to the setup wizard.
             </p>
             {groups.map((g) => (
-                <div key={g.gameId} className="card mb-3">
-                    <div className="card-header d-flex align-items-center gap-2">
+                <div key={g.gameId} className={styles.gameCard}>
+                    <div className={styles.gameHead}>
                         <Link href={`/games-v2/${g.gameSlug}`}>
                             <strong>{g.gameDisplay}</strong>
                         </Link>
                         {g.board && (
-                            <span className="text-muted small">
+                            <span className={styles.gameMeta}>
                                 {g.board.uniqueRunners} runners ·{' '}
                                 {g.board.totalFinishedRuns} runs
                             </span>
                         )}
                         {g.requests.length > 1 && (
-                            <span className="badge bg-info ms-auto">
+                            <span className={styles.rivalPill}>
                                 {g.requests.length} rival applications
                             </span>
                         )}
                     </div>
-                    <div className="card-body">
+                    <div>
                         {g.requests.map((r) => (
                             <ClaimRow
                                 key={r.id}
@@ -106,12 +107,12 @@ function ClaimRow({
     const s = request.signals;
 
     return (
-        <div className="border rounded p-3 mb-2">
-            <div className="d-flex align-items-center gap-2 flex-wrap">
+        <div className={styles.item}>
+            <div className={styles.itemTop}>
                 <Link href={`/${request.username}`}>
                     <strong>{request.username}</strong>
                 </Link>
-                <span className="text-muted small">
+                <span className={styles.meta}>
                     {s.runsOnGame} runs on this game · {s.totalRuns} total ·
                     account since{' '}
                     {s.accountCreatedAt
@@ -121,13 +122,13 @@ function ClaimRow({
                     prior denials
                 </span>
                 {isStale(request.createdAt) && (
-                    <span className="badge bg-warning text-dark">stale</span>
+                    <span className={styles.stalePill}>stale</span>
                 )}
             </div>
             <p className="mb-2 mt-2" style={{ whiteSpace: 'pre-wrap' }}>
                 {request.motivation}
             </p>
-            <div className="d-flex align-items-center gap-2">
+            <div className={styles.actionRow}>
                 <select
                     className="form-select form-select-sm w-auto"
                     value={role}
@@ -142,7 +143,7 @@ function ClaimRow({
                 </select>
                 <button
                     type="button"
-                    className="btn btn-sm btn-success"
+                    className="btn btn-sm btn-primary"
                     disabled={disabled}
                     onClick={() =>
                         onDecide(
