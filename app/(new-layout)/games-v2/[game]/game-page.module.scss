@@ -99,7 +99,6 @@
 
 .rulesToggle {
     @include board.control-pill;
-    margin-left: auto;
     font-size: dt.$font-size-xs;
 }
 

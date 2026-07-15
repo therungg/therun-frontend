@@ -206,12 +206,6 @@
     margin-bottom: dt.$spacing-lg;
 }
 
-.sectionHint {
-    font-size: dt.$font-size-sm;
-    color: var(--bs-secondary-color);
-    margin-bottom: dt.$spacing-md;
-}
-
 .statTile {
     @include board.board-surface(dt.$spacing-lg);
     text-align: center;

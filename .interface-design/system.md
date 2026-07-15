@@ -25,7 +25,7 @@ Splits/timers, WR/PB, ranks, categories & platforms, verification/VODs, flags/se
 - Bootstrap raw `border rounded p-3` uniform boxes → token-based **console surfaces** with a severity spine and distinct meta/action zones.
 - Generic gray equal-weight admin sidebar → **same-canvas** sidebar (border separation, not a different bg), grouped rhythm (Moderate vs Configure), the attention count as a quiet focal integrity signal, refined active state with a green accent.
 
-## Rules (apply everywhere in the console)
+## Rules (apply everywhere in games-v2)
 
 - **Tokens, not magic numbers.** Use `_design-tokens.scss` (`$spacing-*`, `$radius-*`, `$shadow-*`, `$font-size-*`, `$transition-*`, accent colors, `$font-mono`). Co-locate styles as `*.module.scss` (project convention).
 - **Depth = borders + subtle surface tint** (the app's strategy). Borders are low-opacity green/`--bs-border-color`; never harsh. Sidebar shares the canvas bg with a right border. Inputs slightly inset.

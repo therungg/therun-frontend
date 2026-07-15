@@ -34,7 +34,6 @@ export function RulesPanel({ rules, categoryId }: Props) {
             <button
                 type="button"
                 className={styles.rulesToggle}
-                style={{ marginLeft: 0 }}
                 onClick={() => setOpen((o) => !o)}
                 aria-expanded={open}
             >
