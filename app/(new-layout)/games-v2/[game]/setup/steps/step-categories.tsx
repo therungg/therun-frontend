@@ -69,6 +69,13 @@ export function StepCategories({ data, onAdvance }: StepProps) {
         );
     }
 
+    const legacyHiddenCount = rows.filter((r) => {
+        const orig = data.categories.find((c) => c.id === r.id);
+        return (
+            orig && (orig.active ?? true) && !(orig.isMain ?? false) && !r.main
+        );
+    }).length;
+
     const checkedCount = rows.filter((r) => r.main).length;
     const share = activityShare(
         rows.map((r) => ({
@@ -148,6 +155,13 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                 leaderboards. Unchecked categories stay hidden. Checked
                 categories hold {share}% of this board’s finished runs.
             </div>
+            {legacyHiddenCount > 0 && (
+                <div className="alert alert-warning py-2">
+                    {legacyHiddenCount} previously shown categor
+                    {legacyHiddenCount === 1 ? 'y' : 'ies'} will be hidden when
+                    you save — check them to keep them on the board.
+                </div>
+            )}
             <table className="table align-middle">
                 <thead>
                     <tr>

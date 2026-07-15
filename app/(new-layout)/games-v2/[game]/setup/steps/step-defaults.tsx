@@ -64,6 +64,9 @@ function BulkApplySection({ data }: { data: WizardData }) {
     const [rowErrors, setRowErrors] = useState<Record<number, string>>({});
     const [progress, setProgress] = useState<string | null>(null);
     const [isApplying, startApplying] = useTransition();
+    const [createdPolicies, setCreatedPolicies] = useState<Set<string>>(
+        new Set(),
+    );
 
     const anyMainRowEnabled =
         enablePrimary ||
@@ -169,11 +172,13 @@ function BulkApplySection({ data }: { data: WizardData }) {
 
             let policyFailed = false;
             if (enablePolicy) {
-                const alreadyConfigured = data.policies.some(
-                    (p) =>
-                        p.policyType === 'auto_flag_faster_than_wr_pct' &&
-                        p.categoryId === null,
-                );
+                const policyKey = 'auto_flag_faster_than_wr_pct:null';
+                const alreadyConfigured =
+                    data.policies.some(
+                        (p) =>
+                            p.policyType === 'auto_flag_faster_than_wr_pct' &&
+                            p.categoryId === null,
+                    ) || createdPolicies.has(policyKey);
                 if (alreadyConfigured) {
                     toast.info(
                         'The world-record review policy is already configured for this game.',
@@ -187,6 +192,10 @@ function BulkApplySection({ data }: { data: WizardData }) {
                     if ('error' in res) {
                         setPolicyError(res.error);
                         policyFailed = true;
+                    } else {
+                        setCreatedPolicies((prev) =>
+                            new Set(prev).add(policyKey),
+                        );
                     }
                 }
             }
