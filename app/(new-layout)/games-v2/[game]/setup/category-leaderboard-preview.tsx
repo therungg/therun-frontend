@@ -1,10 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import lb from '../leaderboard/leaderboard.module.scss';
 import {
     loadLeaderboardPreviewAction,
     type PreviewEntry,
 } from './actions/load-leaderboard-preview.action';
+import styles from './setup.module.scss';
 
 export interface PreviewDraft {
     primaryTiming: 'realtime' | 'gametime';
@@ -127,7 +129,7 @@ export function CategoryLeaderboardPreview({
     };
 
     return (
-        <div className="border rounded p-3">
+        <div className={styles.section} style={{ marginBottom: 0 }}>
             <h3 className="h6 mb-1">Live preview — top 20</h3>
             <p className="text-muted small mb-3">reflects your unsaved edits</p>
 
@@ -142,7 +144,9 @@ export function CategoryLeaderboardPreview({
             )}
 
             {!loading && error && (
-                <div className="alert alert-warning py-2 d-flex align-items-center justify-content-between gap-2 mb-0">
+                <div
+                    className={`${styles.warnNote} d-flex align-items-center justify-content-between gap-2 mb-0`}
+                >
                     <span className="small">{error}</span>
                     <button
                         type="button"
@@ -162,10 +166,12 @@ export function CategoryLeaderboardPreview({
 
             {!loading && !error && entries && entries.length > 0 && (
                 <div className="table-responsive">
-                    <table className="table table-sm mb-0 align-middle">
+                    <table className={lb.table}>
                         <thead>
                             <tr>
-                                <th scope="col">#</th>
+                                <th scope="col" className={lb.rank}>
+                                    #
+                                </th>
                                 <th scope="col">Runner</th>
                                 {showRt && <th scope="col">RT</th>}
                                 {showIgt && <th scope="col">IGT</th>}
@@ -183,28 +189,43 @@ export function CategoryLeaderboardPreview({
                                     <tr
                                         key={`${entry.rank}-${entry.runnerName}`}
                                         className={
-                                            held ? 'text-muted' : undefined
-                                        }
-                                        style={
-                                            held ? { opacity: 0.6 } : undefined
+                                            held ? styles.heldRow : undefined
                                         }
                                     >
-                                        <td>{entry.rank}</td>
-                                        <td>
+                                        <td
+                                            className={`${lb.rank} ${
+                                                entry.rank === 1
+                                                    ? lb.rank1
+                                                    : entry.rank === 2
+                                                      ? lb.rank2
+                                                      : entry.rank === 3
+                                                        ? lb.rank3
+                                                        : ''
+                                            }`}
+                                        >
+                                            {entry.rank}
+                                        </td>
+                                        <td className={lb.runner}>
                                             {entry.runnerName}{' '}
                                             {held && (
-                                                <span className="badge text-bg-danger">
+                                                <span
+                                                    className={styles.heldPill}
+                                                >
                                                     would be held
                                                 </span>
                                             )}{' '}
                                             {pending && (
-                                                <span className="badge text-bg-secondary">
+                                                <span
+                                                    className={
+                                                        styles.pendingPill
+                                                    }
+                                                >
                                                     {entry.verificationStatus}
                                                 </span>
                                             )}
                                         </td>
                                         {showRt && (
-                                            <td>
+                                            <td className={lb.time}>
                                                 {formatEntryTime(
                                                     entry.realTime,
                                                     draft.showMilliseconds,
@@ -212,7 +233,7 @@ export function CategoryLeaderboardPreview({
                                             </td>
                                         )}
                                         {showIgt && (
-                                            <td>
+                                            <td className={lb.time}>
                                                 {formatEntryTime(
                                                     entry.gameTime,
                                                     draft.showMilliseconds,
@@ -221,11 +242,13 @@ export function CategoryLeaderboardPreview({
                                         )}
                                         <td>
                                             {entry.vodUrl ? (
-                                                <span className="small">
+                                                <span className={lb.meta}>
                                                     VOD
                                                 </span>
                                             ) : noVideo ? (
-                                                <span className="text-muted small fst-italic">
+                                                <span
+                                                    className={`${lb.meta} fst-italic`}
+                                                >
                                                     no video
                                                 </span>
                                             ) : null}
