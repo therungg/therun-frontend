@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useCallback, useEffect, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import type { PrimaryTiming } from '~src/lib/category-mgmt';
 import { suggestMinTimeMs } from '~src/lib/setup/suggestions';
@@ -16,6 +16,10 @@ import { createPolicyAction } from '../../manage/moderation/policies/actions/pol
 import { updateTimingSettingsAction } from '../../manage/timing/actions/update-timing-settings.action';
 import { createVariableAction } from '../../manage/variables/actions/create-variable.action';
 import { deleteVariableAction } from '../../manage/variables/actions/delete-variable.action';
+import {
+    CategoryLeaderboardPreview,
+    type PreviewDraft,
+} from '../category-leaderboard-preview';
 import type { StepProps, WizardData } from '../types';
 
 const STARTER_TEMPLATE = `Timing starts on [first input / cutscene end].
@@ -111,6 +115,21 @@ function CategoryConfigBody({
     const index = mains.findIndex((c) => c.id === current.id);
     const isLast = index === mains.length - 1;
 
+    const [previewDraft, setPreviewDraft] = useState<PreviewDraft>({
+        primaryTiming: toPrimaryTiming(current.primaryTiming),
+        hideRealTime: current.hideRealTime ?? false,
+        hideGameTime: current.hideGameTime ?? false,
+        showMilliseconds: current.showMilliseconds ?? true,
+        minTimeMs: null,
+        minGameTimeMs: null,
+        requireVideo: current.requireVideo ?? false,
+    });
+    const updatePreviewDraft = useCallback(
+        (partial: Partial<PreviewDraft>) =>
+            setPreviewDraft((d) => ({ ...d, ...partial })),
+        [],
+    );
+
     const goToCategory = (id: number) => {
         router.replace(urlFor(data.game.name, id), { scroll: true });
         router.refresh();
@@ -146,10 +165,31 @@ function CategoryConfigBody({
                 ))}
             </div>
 
-            <TimingSection data={data} category={current} />
-            <RulesSection data={data} category={current} />
-            <VariablesSection data={data} category={current} />
-            <StandardsSection data={data} category={current} />
+            <div className="row">
+                <div className="col-lg-7">
+                    <TimingSection
+                        data={data}
+                        category={current}
+                        onDraftChange={updatePreviewDraft}
+                    />
+                    <RulesSection data={data} category={current} />
+                    <VariablesSection data={data} category={current} />
+                    <StandardsSection
+                        data={data}
+                        category={current}
+                        onDraftChange={updatePreviewDraft}
+                    />
+                </div>
+                <div className="col-lg-5">
+                    <div className="position-sticky" style={{ top: '1rem' }}>
+                        <CategoryLeaderboardPreview
+                            gameSlug={data.game.name}
+                            categorySlug={current.name}
+                            draft={previewDraft}
+                        />
+                    </div>
+                </div>
+            </div>
 
             <button
                 type="button"
@@ -169,9 +209,11 @@ function CategoryConfigBody({
 function TimingSection({
     data,
     category,
+    onDraftChange,
 }: {
     data: WizardData;
     category: ResolvedCategory;
+    onDraftChange?: (partial: Partial<PreviewDraft>) => void;
 }) {
     const [primaryTiming, setPrimaryTiming] = useState<PrimaryTiming>(
         toPrimaryTiming(category.primaryTiming),
@@ -190,6 +232,21 @@ function TimingSection({
     const [isSaving, startSaving] = useTransition();
 
     const bothHidden = hideRealTime && hideGameTime;
+
+    useEffect(() => {
+        onDraftChange?.({
+            primaryTiming,
+            hideRealTime,
+            hideGameTime,
+            showMilliseconds,
+        });
+    }, [
+        primaryTiming,
+        hideRealTime,
+        hideGameTime,
+        showMilliseconds,
+        onDraftChange,
+    ]);
 
     const save = () => {
         setSaved(false);
@@ -643,9 +700,11 @@ function VariablesSection({
 function StandardsSection({
     data,
     category,
+    onDraftChange,
 }: {
     data: WizardData;
     category: ResolvedCategory;
+    onDraftChange?: (partial: Partial<PreviewDraft>) => void;
 }) {
     const [requireVideo, setRequireVideo] = useState(
         category.requireVideo ?? false,
@@ -664,6 +723,31 @@ function StandardsSection({
     const [createdPolicies, setCreatedPolicies] = useState<Set<string>>(
         new Set(),
     );
+
+    useEffect(() => {
+        const parsedMinTime = minTimeEnabled
+            ? parseTimeInput(minTimeText)
+            : null;
+        const parsedMinGameTime = minGameTimeEnabled
+            ? parseTimeInput(minGameTimeText)
+            : null;
+        onDraftChange?.({
+            requireVideo,
+            minTimeMs:
+                parsedMinTime && parsedMinTime > 0 ? parsedMinTime : null,
+            minGameTimeMs:
+                parsedMinGameTime && parsedMinGameTime > 0
+                    ? parsedMinGameTime
+                    : null,
+        });
+    }, [
+        requireVideo,
+        minTimeEnabled,
+        minTimeText,
+        minGameTimeEnabled,
+        minGameTimeText,
+        onDraftChange,
+    ]);
 
     const policyExists = (type: PolicyType) =>
         data.policies.some(
