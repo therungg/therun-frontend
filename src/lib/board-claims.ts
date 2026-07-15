@@ -6,12 +6,17 @@ import type {
 } from '../../types/board-claims.types';
 import { ApiError, apiFetch } from './api-client';
 
+// Board-claim endpoints ride the `/mod` base-path mapping (proxy sibling
+// RestApi) because the main API Gateway is at its 500-resource hard cap —
+// same routing as every modFetch caller. The gateway strips `/mod`, so the
+// Lambda still dispatches on `/v1/board-claims/...`.
+
 export async function submitBoardClaim(
     sessionId: string,
     gameId: number,
     motivation: string,
 ): Promise<{ id: number }> {
-    return apiFetch<{ id: number }>('/v1/board-claims', {
+    return apiFetch<{ id: number }>('/mod/v1/board-claims', {
         method: 'POST',
         sessionId,
         body: { gameId, motivation },
@@ -24,7 +29,7 @@ export async function getMyBoardClaim(
 ): Promise<BoardClaimRequest | null> {
     try {
         const result = await apiFetch<BoardClaimRequest | null>(
-            `/v1/board-claims/mine?gameId=${gameId}`,
+            `/mod/v1/board-claims/mine?gameId=${gameId}`,
             { sessionId },
         );
         return result ?? null;
@@ -40,7 +45,7 @@ export async function listPendingBoardClaims(
 ): Promise<BoardClaimRequest[]> {
     try {
         const result = await apiFetch<BoardClaimRequest[]>(
-            '/v1/board-claims?status=pending',
+            '/mod/v1/board-claims?status=pending',
             { sessionId },
         );
         return result ?? [];
@@ -56,7 +61,7 @@ export async function listGameBoardClaims(
 ): Promise<BoardClaimRequest[]> {
     try {
         const result = await apiFetch<BoardClaimRequest[]>(
-            `/v1/board-claims?status=pending&gameId=${gameId}`,
+            `/mod/v1/board-claims?status=pending&gameId=${gameId}`,
             { sessionId },
         );
         return result ?? [];
@@ -72,7 +77,7 @@ export async function approveBoardClaim(
     role: BoardModRole,
 ): Promise<{ approved: boolean }> {
     return apiFetch<{ approved: boolean }>(
-        `/v1/board-claims/${claimId}/approve`,
+        `/mod/v1/board-claims/${claimId}/approve`,
         { method: 'POST', sessionId, body: { role } },
     );
 }
@@ -82,9 +87,12 @@ export async function denyBoardClaim(
     claimId: number,
     reason?: string,
 ): Promise<{ denied: boolean }> {
-    return apiFetch<{ denied: boolean }>(`/v1/board-claims/${claimId}/deny`, {
-        method: 'POST',
-        sessionId,
-        body: { reason: reason ?? null },
-    });
+    return apiFetch<{ denied: boolean }>(
+        `/mod/v1/board-claims/${claimId}/deny`,
+        {
+            method: 'POST',
+            sessionId,
+            body: { reason: reason ?? null },
+        },
+    );
 }
