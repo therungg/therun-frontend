@@ -1,7 +1,7 @@
 # Tier 1 Console Completion — Design
 
 **Date:** 2026-07-15
-**Status:** Approved design (autonomous — Joey delegated 2026-07-15: "proceed with the next tier... you can just go"), not yet implemented
+**Status:** Implemented (autonomous — Joey delegated 2026-07-15: "proceed with the next tier... you can just go")
 **Roadmap:** Tier 1 items 6 (board health score), 7-remainder (moderator management pane), 8 (game details pane), 9 (setup debt cleanup) from `2026-07-13-leaderboards-vs-src-roadmap.md`
 **Branch:** `tier1-console-completion` stacked on `game-setup-wizard`
 
