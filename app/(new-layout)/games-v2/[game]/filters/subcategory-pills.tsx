@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
 import type { VariableDef } from '../../../../../types/leaderboards.types';
+import styles from '../game-page.module.scss';
 
 interface Props {
     defs: VariableDef[];
@@ -34,7 +35,7 @@ export function SubcategoryPills({ defs, selected }: Props) {
     };
 
     return (
-        <div className="d-flex flex-column gap-2 mb-3">
+        <div className="d-flex flex-column gap-1">
             {subcatDefs.map((def) => {
                 const defaultCanonical =
                     def.defaultValueIndex != null
@@ -47,7 +48,7 @@ export function SubcategoryPills({ defs, selected }: Props) {
                         key={def.nameNormalized}
                         className="d-flex align-items-center gap-2 flex-wrap"
                     >
-                        <span className="small text-muted">{def.name}:</span>
+                        <span className={styles.groupLabel}>{def.name}</span>
                         {def.values.map((bucket, idx) => {
                             const canonical = bucket[0];
                             const isActive = activeValue === canonical;
@@ -58,7 +59,7 @@ export function SubcategoryPills({ defs, selected }: Props) {
                                     onClick={() => onPick(def, canonical)}
                                     disabled={isPending}
                                     aria-pressed={isActive}
-                                    className={`btn btn-sm ${isActive ? 'btn-primary' : 'btn-outline-secondary'}`}
+                                    className={`${styles.pill} ${isActive ? styles.pillActive : ''}`}
                                     title={
                                         bucket.length > 1
                                             ? `Aliases: ${bucket.slice(1).join(', ')}`

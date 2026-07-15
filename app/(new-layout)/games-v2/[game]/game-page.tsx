@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import Link from '~src/components/link';
 import type { ClaimCtaState } from './claim/claim-cta';
 import { FilterBar } from './filters/filter-bar';
+import styles from './game-page.module.scss';
 import { CategoryPills } from './header/category-pills';
 import { GameHeader } from './header/game-header';
 import { LeaderboardTable } from './leaderboard/leaderboard-table';
@@ -48,9 +49,11 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                     sessionUsername={data.sessionUsername}
                     claim={claim}
                 />
-                <p className="text-center text-muted my-5">
-                    No runs uploaded for this game yet.
-                </p>
+                <div className={styles.notice}>
+                    <p className="text-muted mb-0">
+                        No runs uploaded for this game yet.
+                    </p>
+                </div>
             </div>
         );
     }
@@ -64,39 +67,41 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                 canModerate={canManageRuns}
                 sessionUsername={data.sessionUsername}
                 claim={claim}
+                selfClaim={
+                    data.sessionUsername ? (
+                        <SelfClaimButton
+                            gameId={data.game.id}
+                            categories={data.categories.map((c) => ({
+                                id: c.id,
+                                display: c.display,
+                            }))}
+                            defaultCategoryId={data.selectedCategory.id}
+                        />
+                    ) : null
+                }
             />
-            <CategoryPills
-                categories={data.categories}
-                groups={data.groups}
-                selectedCategoryName={data.selectedCategory.name}
-                variableKeys={variableKeys}
+            <div className={styles.band}>
+                <CategoryPills
+                    categories={data.categories}
+                    groups={data.groups}
+                    selectedCategoryName={data.selectedCategory.name}
+                    variableKeys={variableKeys}
+                />
+                <FilterBar
+                    defs={data.variables}
+                    selectedSubcategoryValues={
+                        data.activeFilters.subcategoryValues
+                    }
+                    selectedVarFilters={data.activeFilters.varFilters}
+                    verified={data.activeFilters.verified}
+                />
+            </div>
+            <RulesPanel
+                rules={data.selectedCategory.rules}
+                categoryId={data.selectedCategory.id}
             />
             <div className="row">
                 <div className="col-lg-8">
-                    <FilterBar
-                        defs={data.variables}
-                        selectedSubcategoryValues={
-                            data.activeFilters.subcategoryValues
-                        }
-                        selectedVarFilters={data.activeFilters.varFilters}
-                        verified={data.activeFilters.verified}
-                    />
-                    <RulesPanel
-                        rules={data.selectedCategory.rules}
-                        categoryId={data.selectedCategory.id}
-                    />
-                    {data.sessionUsername && (
-                        <div className="d-flex justify-content-end mb-2">
-                            <SelfClaimButton
-                                gameId={data.game.id}
-                                categories={data.categories.map((c) => ({
-                                    id: c.id,
-                                    display: c.display,
-                                }))}
-                                defaultCategoryId={data.selectedCategory.id}
-                            />
-                        </div>
-                    )}
                     {data.invalidCombination ? (
                         <InvalidCombinationNotice
                             gameSlug={data.game.name}
@@ -139,7 +144,7 @@ function InvalidCombinationNotice({
     suggestions: string[];
 }) {
     return (
-        <div className="border rounded p-4 my-3 text-center">
+        <div className={styles.notice}>
             <h3 className="h5 mb-2">No leaderboard for this combination</h3>
             <p className="text-muted small">
                 The variable combination you picked isn't an active board for
@@ -155,7 +160,7 @@ function InvalidCombinationNotice({
                         <Link
                             key={key}
                             href={`/games-v2/${gameSlug}?${sp.toString()}`}
-                            className="btn btn-sm btn-outline-secondary"
+                            className={styles.pill}
                         >
                             {key.replace(/\|/g, ' · ')}
                         </Link>

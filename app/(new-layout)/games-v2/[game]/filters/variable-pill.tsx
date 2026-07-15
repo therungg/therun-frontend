@@ -3,6 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useRef, useTransition } from 'react';
 import type { VariableDef } from '../../../../../types/leaderboards.types';
+import styles from '../game-page.module.scss';
 
 interface Props {
     def: VariableDef;
@@ -69,15 +70,12 @@ export function VariablePill({
                 type="button"
                 onClick={() => (isOpen ? onClose() : onOpen())}
                 disabled={isPending}
-                className={`btn btn-sm ${selectedValues.length > 0 ? 'btn-primary' : 'btn-outline-secondary'}`}
+                className={`${styles.pill} ${selectedValues.length > 0 ? styles.pillActive : ''}`}
             >
                 {label}
             </button>
             {isOpen && (
-                <div
-                    className="position-absolute mt-1 p-2 border rounded bg-body shadow-sm"
-                    style={{ zIndex: 10, minWidth: '12rem' }}
-                >
+                <div className={styles.dropdownPanel}>
                     {def.values.map((bucket, idx) => {
                         const canonical = bucket[0];
                         return (

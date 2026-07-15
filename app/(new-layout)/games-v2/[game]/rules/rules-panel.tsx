@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { ChevronDown, ChevronRight } from 'react-bootstrap-icons';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import styles from '../game-page.module.scss';
 
 interface Props {
     rules: string | null | undefined;
@@ -28,23 +30,28 @@ export function RulesPanel({ rules, categoryId }: Props) {
     if (!rules || rules.trim().length === 0) return null;
 
     return (
-        <section className="border rounded mb-3">
+        <section className="mb-3">
             <button
                 type="button"
-                className="btn btn-link w-100 text-decoration-none d-flex align-items-center gap-2 px-3 py-2 text-start"
+                className={styles.rulesToggle}
+                style={{ marginLeft: 0 }}
                 onClick={() => setOpen((o) => !o)}
                 aria-expanded={open}
             >
-                <span aria-hidden="true">{open ? '▾' : '▸'}</span>
+                {open ? (
+                    <ChevronDown size={12} aria-hidden />
+                ) : (
+                    <ChevronRight size={12} aria-hidden />
+                )}
                 <strong>Rules</strong>
                 {!open && (
-                    <span className="text-muted small flex-grow-1 text-truncate">
+                    <span className="text-muted small text-truncate">
                         {buildExcerpt(rules)}
                     </span>
                 )}
             </button>
             {open && (
-                <div className="px-3 pb-3">
+                <div className={styles.rulesBody}>
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                         {rules}
                     </ReactMarkdown>

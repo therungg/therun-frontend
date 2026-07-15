@@ -1,4 +1,5 @@
 import type { VariableDef } from '../../../../../types/leaderboards.types';
+import styles from '../game-page.module.scss';
 import { SubcategoryPills } from './subcategory-pills';
 import { VariablePills } from './variable-pills';
 import { VerifiedToggle } from './verified-toggle';
@@ -19,7 +20,7 @@ export function FilterBar({
     const filterDefs = defs.filter((d) => d.role === 'filter');
 
     return (
-        <div className="mb-3">
+        <div className={`${styles.bandRow} ${styles.bandRowSub}`}>
             <SubcategoryPills
                 defs={defs}
                 selected={selectedSubcategoryValues}

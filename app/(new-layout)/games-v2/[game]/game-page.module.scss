@@ -1,0 +1,132 @@
+@use '../../styles/design-tokens' as dt;
+@use '../../styles/board' as board;
+
+// ---- Header -------------------------------------------------
+.header {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-lg;
+    margin-bottom: dt.$spacing-xl;
+}
+
+.cover {
+    width: 48px;
+    height: 64px;
+    border-radius: dt.$radius-md;
+    object-fit: cover;
+    box-shadow: dt.$shadow-sm;
+    flex-shrink: 0;
+}
+
+.title {
+    font-size: dt.$font-size-2xl;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+    line-height: 1.15;
+}
+
+.metaLine {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+
+    span {
+        @include board.mono-time;
+        color: var(--bs-secondary-color);
+    }
+}
+
+.actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+// ---- Control band ------------------------------------------
+.band {
+    @include board.board-surface(dt.$spacing-sm dt.$spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.bandRow {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    flex-wrap: wrap;
+}
+
+// subordinate second row: hairline above, smaller quieter pills
+.bandRowSub {
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.3);
+    padding-top: dt.$spacing-xs;
+
+    .pill {
+        font-size: dt.$font-size-xs;
+        padding: 0.2rem 0.6rem;
+    }
+}
+
+.groupLabel {
+    @include board.board-eyebrow;
+    margin-right: dt.$spacing-xs;
+}
+
+.pill {
+    @include board.control-pill;
+}
+
+.pillActive {
+    @include board.control-pill-active;
+}
+
+// verified-toggle: label pill wrapping a native checkbox
+.checkPill {
+    @include board.control-pill;
+    gap: 0.45rem;
+    margin: 0;
+
+    input {
+        accent-color: var(--bs-primary);
+        margin: 0;
+    }
+}
+
+.rulesToggle {
+    @include board.control-pill;
+    margin-left: auto;
+    font-size: dt.$font-size-xs;
+}
+
+.rulesBody {
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+    margin-bottom: dt.$spacing-lg;
+    font-size: dt.$font-size-sm;
+
+    > :last-child {
+        margin-bottom: 0;
+    }
+}
+
+// variable-pill dropdown panel
+.dropdownPanel {
+    @include board.board-surface(dt.$spacing-sm dt.$spacing-md);
+    position: absolute;
+    z-index: 10;
+    margin-top: dt.$spacing-xs;
+    box-shadow: dt.$shadow-md;
+    background: var(--bs-body-bg);
+    min-width: 10rem;
+}
+
+// invalid-combination / empty notices
+.notice {
+    @include board.board-surface;
+    text-align: center;
+    margin-block: dt.$spacing-lg;
+}
