@@ -38,11 +38,17 @@ export function StepWelcome({ data, onAdvance }: StepProps) {
             <p className="mb-1">The next steps walk you through:</p>
             <ol>
                 <li>Game details — cover, platforms, links</li>
-                <li>Categories — choose what shows on the board</li>
-                <li>Timing — how times display and rank</li>
-                <li>Variables — subcategories and filters</li>
-                <li>Rules — per-category rules text</li>
-                <li>Standards — video proof and minimum times</li>
+                <li>
+                    Pick your main categories — choose what shows on the board
+                </li>
+                <li>
+                    Configure each main category — timing, rules, variables,
+                    standards
+                </li>
+                <li>
+                    Settings for all categories — bulk defaults and game-wide
+                    variables
+                </li>
                 <li>Mod team — invite co-moderators, then go live</li>
             </ol>
             <p className="text-muted small">

@@ -19,10 +19,8 @@ const STEP_LABELS: Record<SetupStepId, string> = {
     welcome: 'Welcome',
     details: 'Game details',
     categories: 'Categories',
-    timing: 'Timing',
-    variables: 'Variables',
-    rules: 'Rules',
-    standards: 'Standards',
+    'category-config': 'Category configuration',
+    defaults: 'All-categories settings',
     finish: 'Finish',
 };
 
@@ -39,6 +37,28 @@ export function StepFinish({ data }: StepProps) {
     );
     const blockers = reviewSteps.filter((s) => s.status === 'blocker');
     const warnings = reviewSteps.filter((s) => s.status === 'warning');
+
+    const firstUnconfiguredMain = data.categories
+        .filter(
+            (c) =>
+                (c.active ?? true) &&
+                (c.isMain ?? false) &&
+                !(c.rules ?? '').trim(),
+        )
+        .sort(
+            (a, b) =>
+                (b.totalFinishedAttemptCount ?? 0) -
+                (a.totalFinishedAttemptCount ?? 0),
+        )[0];
+
+    const editLinkFor = (s: (typeof reviewSteps)[number]) => {
+        if (s.step === 'category-config' && s.status !== 'done') {
+            return firstUnconfiguredMain
+                ? `/games-v2/${data.game.name}/setup?step=category-config&cat=${firstUnconfiguredMain.id}`
+                : `/games-v2/${data.game.name}/setup?step=category-config`;
+        }
+        return `/games-v2/${data.game.name}/setup?step=${s.step}`;
+    };
 
     const addMod = () => {
         startPending(async () => {
@@ -217,10 +237,7 @@ export function StepFinish({ data }: StepProps) {
                         </span>
                         <strong>{STEP_LABELS[s.step]}</strong>
                         <span className="text-muted small">{s.summary}</span>
-                        <Link
-                            href={`/games-v2/${data.game.name}/setup?step=${s.step}`}
-                            className="ms-auto small"
-                        >
+                        <Link href={editLinkFor(s)} className="ms-auto small">
                             edit
                         </Link>
                     </li>
