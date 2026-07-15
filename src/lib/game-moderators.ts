@@ -13,7 +13,7 @@ export async function listGameModerators(
 
     try {
         const result = await apiFetch<GameModerator[]>(
-            `/v1/games/${gameId}/moderators`,
+            `/mod/v1/games/${gameId}/moderators`,
         );
         return result ?? [];
     } catch (e) {
