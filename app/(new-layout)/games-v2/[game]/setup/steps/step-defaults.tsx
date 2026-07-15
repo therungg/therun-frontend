@@ -723,14 +723,11 @@ function GameWideVariablesSection({ data }: { data: WizardData }) {
             )}
 
             {variables.length > 0 && (
-                <ul className="list-group mb-0">
+                <ul className={`${styles.rows} mb-0`}>
                     {variables.map((v) => (
-                        <li
-                            key={v.id}
-                            className="list-group-item d-flex align-items-center gap-2"
-                        >
+                        <li key={v.id} className={styles.rowItem}>
                             <strong>{v.name}</strong>
-                            <span className="badge bg-secondary">{v.role}</span>
+                            <span className={styles.pendingPill}>{v.role}</span>
                             <span className="text-muted small">
                                 {v.values.map((bucket) => bucket[0]).join(', ')}
                             </span>

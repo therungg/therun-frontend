@@ -105,7 +105,7 @@ function ApplicationRow({
         <div className={`${styles.item} ${styles.sevLow} mb-2`}>
             <div className={styles.itemTop}>
                 <strong>{request.username}</strong>
-                <span className={styles.metaRow}>
+                <span className="text-muted small">
                     {s.runsOnGame} runs on this game · {s.totalRuns} total
                 </span>
             </div>

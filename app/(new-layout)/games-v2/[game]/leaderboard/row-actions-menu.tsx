@@ -135,7 +135,7 @@ export function RowActionsMenu({
                 >
                     Actions
                 </Dropdown.Toggle>
-                <Dropdown.Menu>
+                <Dropdown.Menu popperConfig={{ strategy: 'fixed' }}>
                     <Dropdown.Item
                         as="button"
                         type="button"

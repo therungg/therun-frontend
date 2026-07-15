@@ -73,7 +73,7 @@ export function SelfClaimButton({
         <>
             <button
                 type="button"
-                className="btn btn-sm btn-outline-primary"
+                className="btn btn-sm btn-outline-secondary"
                 onClick={() => setOpen(true)}
             >
                 Submit / correct my time

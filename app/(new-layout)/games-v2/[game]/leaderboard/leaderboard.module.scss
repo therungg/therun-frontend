@@ -64,6 +64,14 @@
     }
 }
 
+.youRow:hover td {
+    background: color-mix(
+        in srgb,
+        rgba(var(--bs-primary-rgb), 0.06) 60%,
+        var(--bs-tertiary-bg) 40%
+    );
+}
+
 .iconLink {
     display: inline-flex;
     align-items: center;
