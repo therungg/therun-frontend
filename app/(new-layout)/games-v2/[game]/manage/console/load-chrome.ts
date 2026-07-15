@@ -35,6 +35,10 @@ export async function loadConsoleChrome(
             caslSubject('category-settings', { game: game.name }),
         ),
         canReassign: ability.can('reassign', 'reassignment'),
+        canEditMods: ability.can(
+            'edit',
+            caslSubject('moderators', { game: game.name }),
+        ),
     };
 
     const { categories } = await resolveCategory(game.id);
