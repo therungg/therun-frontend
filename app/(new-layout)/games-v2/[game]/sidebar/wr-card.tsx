@@ -9,6 +9,7 @@ import type {
     LeaderboardResponse,
     ResolvedCategory,
 } from '../../../../../types/leaderboards.types';
+import styles from './sidebar.module.scss';
 
 const WrHistoryDrawer = dynamic(
     () => import('../drawers/wr-history-drawer').then((m) => m.WrHistoryDrawer),
@@ -40,18 +41,18 @@ export function WrCard({
               : null;
 
     return (
-        <section className="border rounded p-3 mb-3">
-            <div className="d-flex justify-content-between align-items-baseline">
-                <small className="text-muted">World Record</small>
+        <section className={styles.panel}>
+            <div className={styles.panelHead}>
+                <span className={styles.eyebrow}>World Record</span>
                 <button
                     type="button"
-                    className="btn btn-link btn-sm p-0"
+                    className={styles.quietLink}
                     onClick={() => setOpen(true)}
                 >
                     History
                 </button>
             </div>
-            <div className="fs-4 fw-bold">
+            <div className={styles.wrTime}>
                 {detailHref ? (
                     <Link href={detailHref} className="text-decoration-none">
                         <DurationToFormatted duration={top.time} />
@@ -64,13 +65,18 @@ export function WrCard({
                 <UserLink username={top.runnerName} url={undefined} />
             </div>
             {top.runDate && (
-                <small className="text-muted">
+                <div className={styles.rowMeta}>
                     Set {new Date(top.runDate).toLocaleDateString()}
-                </small>
+                </div>
             )}
             {top.vodUrl && (
                 <div className="mt-2">
-                    <a href={top.vodUrl} target="_blank" rel="noreferrer">
+                    <a
+                        href={top.vodUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="small"
+                    >
                         Watch VOD
                     </a>
                 </div>

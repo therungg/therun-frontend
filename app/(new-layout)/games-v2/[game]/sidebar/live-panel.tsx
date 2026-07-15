@@ -5,6 +5,7 @@ import { useState } from 'react';
 import useSWR from 'swr';
 import type { LiveRun } from '~app/(new-layout)/live/live.types';
 import { fetcher } from '~src/utils/fetcher';
+import styles from './sidebar.module.scss';
 
 const LiveDrawer = dynamic(
     () => import('../drawers/live-drawer').then((m) => m.LiveDrawer),
@@ -25,13 +26,13 @@ export function LivePanel({ gameDisplay }: Props) {
     const loading = data === undefined;
 
     return (
-        <section className="border rounded p-3 mb-3">
-            <div className="d-flex justify-content-between align-items-baseline mb-2">
-                <small className="text-muted">Live now</small>
+        <section className={styles.panel}>
+            <div className={styles.panelHead}>
+                <span className={styles.eyebrow}>Live now</span>
                 {!loading && runners.length > 0 && (
                     <button
                         type="button"
-                        className="btn btn-link btn-sm p-0"
+                        className={styles.quietLink}
                         onClick={() => setOpen(true)}
                     >
                         View all ({runners.length})
@@ -47,10 +48,7 @@ export function LivePanel({ gameDisplay }: Props) {
             ) : (
                 <ul className="list-unstyled mb-0">
                     {runners.slice(0, 5).map((r) => (
-                        <li
-                            key={r.login}
-                            className="d-flex justify-content-between align-items-baseline"
-                        >
+                        <li key={r.login} className={styles.row}>
                             <a
                                 href={r.url}
                                 target="_blank"
@@ -60,9 +58,9 @@ export function LivePanel({ gameDisplay }: Props) {
                                 {r.user}
                             </a>
                             {r.category && (
-                                <small className="text-muted">
+                                <span className={styles.rowMeta}>
                                     {r.category}
-                                </small>
+                                </span>
                             )}
                         </li>
                     ))}

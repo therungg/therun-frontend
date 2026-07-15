@@ -1,0 +1,74 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+.panel {
+    @include board.board-surface(dt.$spacing-lg);
+    margin-bottom: dt.$spacing-lg;
+}
+
+.panelHead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: dt.$spacing-sm;
+}
+
+.eyebrow {
+    @include board.board-eyebrow;
+}
+
+.quietLink {
+    background: none;
+    border: 0;
+    padding: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    cursor: pointer;
+    transition: color dt.$transition-fast;
+
+    &:hover {
+        color: var(--bs-primary);
+    }
+}
+
+// the sidebar's one loud element
+.wrTime {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xl;
+    font-weight: 700;
+    color: dt.$accent-gold;
+    line-height: 1.2;
+
+    a {
+        color: inherit;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+}
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: dt.$spacing-sm;
+    padding-block: 2px;
+    font-size: dt.$font-size-sm;
+}
+
+.rowMeta {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+.statLabel {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+}
+
+.statValue {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+}
