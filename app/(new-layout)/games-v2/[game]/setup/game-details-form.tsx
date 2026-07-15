@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import type { GameIdentifiers, GameMetadata } from '~src/lib/game-mgmt';
 import { updateIdentifiersAction } from '../manage/identifiers/actions/update-identifiers.action';
 import { updateGameMetadataAction } from './actions/update-game-metadata.action';
+import styles from './setup.module.scss';
 
 export function GameDetailsForm({
     identifiers,
@@ -148,7 +149,7 @@ export function GameDetailsForm({
                     />
                 </div>
             </div>
-            {error && <div className="alert alert-danger mt-3">{error}</div>}
+            {error && <div className={`${styles.errorNote} mt-3`}>{error}</div>}
             <button
                 type="button"
                 className="btn btn-primary mt-3"
