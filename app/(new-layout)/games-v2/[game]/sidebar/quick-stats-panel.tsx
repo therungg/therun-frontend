@@ -1,5 +1,6 @@
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { QuickStats } from '../../../../../types/leaderboards.types';
+import styles from './sidebar.module.scss';
 
 interface Props {
     stats: QuickStats;
@@ -7,26 +8,34 @@ interface Props {
 
 export function QuickStatsPanel({ stats }: Props) {
     return (
-        <section className="border rounded p-3 mb-3">
-            <small className="text-muted d-block mb-2">Quick stats</small>
-            <dl className="row mb-0 small">
-                <dt className="col-7">Runners</dt>
-                <dd className="col-5 text-end">
+        <section className={styles.panel}>
+            <span className={`${styles.eyebrow} d-block mb-2`}>
+                Quick stats
+            </span>
+            <div className={styles.row}>
+                <span className={styles.statLabel}>Runners</span>
+                <span className={styles.statValue}>
                     {stats.uniqueRunners.toLocaleString()}
-                </dd>
-                <dt className="col-7">Total run time</dt>
-                <dd className="col-5 text-end">
+                </span>
+            </div>
+            <div className={styles.row}>
+                <span className={styles.statLabel}>Total run time</span>
+                <span className={styles.statValue}>
                     <DurationToFormatted duration={stats.totalRunTime} />
-                </dd>
-                <dt className="col-7">Total attempts</dt>
-                <dd className="col-5 text-end">
+                </span>
+            </div>
+            <div className={styles.row}>
+                <span className={styles.statLabel}>Total attempts</span>
+                <span className={styles.statValue}>
                     {stats.totalAttemptCount.toLocaleString()}
-                </dd>
-                <dt className="col-7">Finished attempts</dt>
-                <dd className="col-5 text-end">
+                </span>
+            </div>
+            <div className={styles.row}>
+                <span className={styles.statLabel}>Finished attempts</span>
+                <span className={styles.statValue}>
                     {stats.totalFinishedAttemptCount.toLocaleString()}
-                </dd>
-            </dl>
+                </span>
+            </div>
         </section>
     );
 }
