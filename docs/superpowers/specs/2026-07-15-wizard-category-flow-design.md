@@ -1,7 +1,7 @@
 # Wizard Category-Major Flow — Design Delta
 
 **Date:** 2026-07-15
-**Status:** Approved (Joey, live feedback during testing), not yet implemented
+**Status:** Implemented
 **Amends:** `2026-07-14-game-setup-wizard-design.md` (step structure only; claim flow, console, actions unchanged)
 **Branch:** `tier1-console-completion` (direct, per Joey)
 
