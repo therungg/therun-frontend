@@ -14,7 +14,7 @@ function input(over: Partial<CompletenessInput>): CompletenessInput {
             {
                 id: 2,
                 display: '100%',
-                active: true,
+                active: false,
                 isMain: false,
                 hasRules: true,
             },
@@ -38,27 +38,7 @@ describe('computeCompleteness', () => {
         expect(c.doneCount).toBe(c.totalCount);
     });
 
-    it('flags no-active-categories as a blocker', () => {
-        const c = computeCompleteness(
-            input({
-                categories: [
-                    {
-                        id: 1,
-                        display: 'Any%',
-                        active: false,
-                        isMain: false,
-                        hasRules: false,
-                    },
-                ],
-            }),
-        );
-        const cats = c.steps.find((s) => s.step === 'categories');
-        expect(cats?.status).toBe('blocker');
-        expect(c.blockers.length).toBeGreaterThan(0);
-        expect(c.firstIncomplete).toBe('categories');
-    });
-
-    it('flags active-but-no-main as a blocker', () => {
+    it('flags no-main as a blocker on categories, todo on category-config', () => {
         const c = computeCompleteness(
             input({
                 categories: [
@@ -69,23 +49,69 @@ describe('computeCompleteness', () => {
                         isMain: false,
                         hasRules: true,
                     },
+                    {
+                        id: 2,
+                        display: '100%',
+                        active: false,
+                        isMain: false,
+                        hasRules: false,
+                    },
+                ],
+            }),
+        );
+        const cats = c.steps.find((s) => s.step === 'categories');
+        expect(cats?.status).toBe('blocker');
+        expect(cats?.summary).toBe(
+            'No categories are marked main (shown on the board)',
+        );
+        expect(c.blockers).toContain(
+            'No categories are marked main (shown on the board)',
+        );
+        expect(c.firstIncomplete).toBe('categories');
+
+        const config = c.steps.find((s) => s.step === 'category-config');
+        expect(config?.status).toBe('todo');
+        expect(config?.summary).toBe(
+            'Configure categories after choosing mains',
+        );
+    });
+
+    it('does not count isMain:true but active:false as main', () => {
+        const c = computeCompleteness(
+            input({
+                categories: [
+                    {
+                        id: 1,
+                        display: 'Any%',
+                        active: false,
+                        isMain: true,
+                        hasRules: true,
+                    },
                 ],
             }),
         );
         expect(c.steps.find((s) => s.step === 'categories')?.status).toBe(
             'blocker',
         );
+        expect(c.steps.find((s) => s.step === 'category-config')?.status).toBe(
+            'todo',
+        );
     });
 
-    it('treats an ingestion-empty board as completable (no category blocker)', () => {
+    it('treats an ingestion-empty board as completable (categories and category-config not blocking)', () => {
         const c = computeCompleteness(input({ categories: [] }));
-        expect(c.steps.find((s) => s.step === 'categories')?.status).toBe(
-            'done',
+        const cats = c.steps.find((s) => s.step === 'categories');
+        expect(cats?.status).toBe('done');
+        expect(cats?.summary).toBe(
+            'No ingested categories yet — they appear as runs arrive',
         );
+
+        const config = c.steps.find((s) => s.step === 'category-config');
+        expect(config?.status).toBe('todo');
         expect(c.blockers).toEqual([]);
     });
 
-    it('warns when active categories lack rules', () => {
+    it('reports "N shown / M hidden" using mains count, not active count', () => {
         const c = computeCompleteness(
             input({
                 categories: [
@@ -94,30 +120,132 @@ describe('computeCompleteness', () => {
                         display: 'Any%',
                         active: true,
                         isMain: true,
+                        hasRules: true,
+                    },
+                    {
+                        id: 2,
+                        display: '100%',
+                        active: false,
+                        isMain: false,
+                        hasRules: true,
+                    },
+                    {
+                        id: 3,
+                        display: 'Low%',
+                        active: true,
+                        isMain: false,
+                        hasRules: true,
+                    },
+                ],
+            }),
+        );
+        expect(c.steps.find((s) => s.step === 'categories')?.summary).toBe(
+            '1 shown / 2 hidden',
+        );
+    });
+
+    it('warns on category-config counting only mains without rules (a hidden category without rules is ignored)', () => {
+        const c = computeCompleteness(
+            input({
+                categories: [
+                    {
+                        id: 1,
+                        display: 'Any%',
+                        active: true,
+                        isMain: true,
+                        hasRules: true,
+                    },
+                    {
+                        id: 2,
+                        display: '100%',
+                        active: true,
+                        isMain: true,
+                        hasRules: false,
+                    },
+                    {
+                        id: 3,
+                        display: 'Low%',
+                        active: false,
+                        isMain: false,
                         hasRules: false,
                     },
                 ],
             }),
         );
-        const rules = c.steps.find((s) => s.step === 'rules');
-        expect(rules?.status).toBe('warning');
-        expect(rules?.summary).toContain('1');
+        const config = c.steps.find((s) => s.step === 'category-config');
+        expect(config?.status).toBe('warning');
+        expect(config?.summary).toBe('1 of 2 main categories not configured');
+        expect(c.warnings).toContain('1 of 2 main categories not configured');
     });
 
-    it('warns when there are no standards at all', () => {
+    it('marks category-config done when all mains have rules', () => {
         const c = computeCompleteness(
-            input({ policyCount: 0, requireVideoAnywhere: false }),
+            input({
+                categories: [
+                    {
+                        id: 1,
+                        display: 'Any%',
+                        active: true,
+                        isMain: true,
+                        hasRules: true,
+                    },
+                    {
+                        id: 2,
+                        display: '100%',
+                        active: true,
+                        isMain: true,
+                        hasRules: true,
+                    },
+                ],
+            }),
         );
-        expect(c.steps.find((s) => s.step === 'standards')?.status).toBe(
-            'warning',
-        );
+        const config = c.steps.find((s) => s.step === 'category-config');
+        expect(config?.status).toBe('done');
+        expect(config?.summary).toBe('All 2 main categories configured');
     });
 
-    it('counts require-video as a standard', () => {
-        const c = computeCompleteness(
-            input({ policyCount: 0, requireVideoAnywhere: true }),
+    it('always marks defaults done, with a summary reflecting bulk settings state', () => {
+        const optional = computeCompleteness(
+            input({
+                variableCount: 0,
+                policyCount: 0,
+                requireVideoAnywhere: false,
+            }),
         );
-        expect(c.steps.find((s) => s.step === 'standards')?.status).toBe(
+        const defaultsOptional = optional.steps.find(
+            (s) => s.step === 'defaults',
+        );
+        expect(defaultsOptional?.status).toBe('done');
+        expect(defaultsOptional?.summary).toBe('Optional bulk settings');
+
+        const configured = computeCompleteness(
+            input({
+                variableCount: 3,
+                policyCount: 0,
+                requireVideoAnywhere: false,
+            }),
+        );
+        const defaultsConfigured = configured.steps.find(
+            (s) => s.step === 'defaults',
+        );
+        expect(defaultsConfigured?.status).toBe('done');
+        expect(defaultsConfigured?.summary).toContain('standards set');
+
+        const viaPolicy = computeCompleteness(
+            input({ variableCount: 0, policyCount: 2 }),
+        );
+        expect(viaPolicy.steps.find((s) => s.step === 'defaults')?.status).toBe(
+            'done',
+        );
+
+        const viaVideo = computeCompleteness(
+            input({
+                variableCount: 0,
+                policyCount: 0,
+                requireVideoAnywhere: true,
+            }),
+        );
+        expect(viaVideo.steps.find((s) => s.step === 'defaults')?.status).toBe(
             'done',
         );
     });
@@ -129,12 +257,28 @@ describe('computeCompleteness', () => {
         expect(c.firstIncomplete).toBe('details');
     });
 
-    it('always marks welcome, timing, and variables done', () => {
+    it('always marks welcome done', () => {
+        const c = computeCompleteness(input({ configured: false }));
+        expect(c.steps.find((s) => s.step === 'welcome')?.status).toBe('done');
+    });
+
+    it('orders firstIncomplete by SETUP_STEP_ORDER, not by step-array insertion', () => {
         const c = computeCompleteness(
-            input({ variableCount: 0, configured: false }),
+            input({
+                slug: null,
+                categories: [
+                    {
+                        id: 1,
+                        display: 'Any%',
+                        active: false,
+                        isMain: false,
+                        hasRules: false,
+                    },
+                ],
+                configured: false,
+            }),
         );
-        for (const id of ['welcome', 'timing', 'variables'] as const) {
-            expect(c.steps.find((s) => s.step === id)?.status).toBe('done');
-        }
+        // details, categories, and finish are all incomplete; details comes first.
+        expect(c.firstIncomplete).toBe('details');
     });
 });

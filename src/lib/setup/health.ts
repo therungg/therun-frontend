@@ -21,10 +21,8 @@ export const STALE_TRIAGE_MS = 7 * 24 * 60 * 60 * 1000;
 const STEP_PANE: Partial<Record<SetupStepId, string>> = {
     details: 'game-details',
     categories: 'categories-visibility',
-    rules: 'rules',
-    standards: 'standards',
-    variables: 'variables',
-    timing: 'timing',
+    'category-config': 'rules',
+    defaults: 'timing',
 };
 
 export function computeBoardHealth(input: {
