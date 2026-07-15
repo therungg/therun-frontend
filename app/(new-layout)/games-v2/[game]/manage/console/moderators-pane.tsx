@@ -12,6 +12,7 @@ import {
     addGameModeratorAction,
     removeGameModeratorAction,
 } from '../../setup/actions/manage-moderators.action';
+import styles from './console.module.scss';
 
 interface Props {
     gameSlug: string;
@@ -86,10 +87,13 @@ export function ModeratorsPane({
     };
 
     return (
-        <section>
-            <h2 className="h5">Moderators</h2>
+        <section className={styles.surface}>
+            <div className={styles.paneHeader}>
+                <h2 className={styles.paneTitle}>Moderators</h2>
+                <span className={styles.paneCount}>{mods.length}</span>
+            </div>
             {pendingApplications > 0 && (
-                <div className="alert alert-info py-2">
+                <div className={styles.noteInfo}>
                     {pendingApplications} pending application
                     {pendingApplications === 1 ? '' : 's'} —{' '}
                     <Link href={`/games-v2/${gameSlug}/manage?pane=attention`}>
@@ -97,14 +101,13 @@ export function ModeratorsPane({
                     </Link>
                 </div>
             )}
-            <ul className="list-group mb-3">
+            <div className="mb-3">
                 {mods.map((m) => (
-                    <li
-                        key={m.assignmentId}
-                        className="list-group-item d-flex align-items-center gap-2"
-                    >
+                    <div key={m.assignmentId} className={styles.modRow}>
                         <strong>{m.username}</strong>
-                        <span className="badge bg-secondary">
+                        <span
+                            className={`${styles.pill} ${styles.pillNeutral}`}
+                        >
                             {m.role === 'game-admin'
                                 ? 'board admin'
                                 : 'moderator'}
@@ -120,14 +123,14 @@ export function ModeratorsPane({
                         >
                             Remove
                         </button>
-                    </li>
+                    </div>
                 ))}
                 {mods.length === 0 && (
-                    <li className="list-group-item text-muted">
+                    <div className={`${styles.modRow} text-muted`}>
                         No moderators on record yet.
-                    </li>
+                    </div>
                 )}
-            </ul>
+            </div>
             <div className="d-flex gap-2">
                 <input
                     className="form-control w-auto"

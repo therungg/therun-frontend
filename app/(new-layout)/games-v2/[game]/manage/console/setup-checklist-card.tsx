@@ -1,5 +1,6 @@
 import Link from '~src/components/link';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
+import styles from './console.module.scss';
 
 interface Props {
     gameSlug: string;
@@ -11,9 +12,15 @@ export function SetupChecklistCard({ gameSlug, completeness }: Props) {
     if (open.length === 0) return null;
 
     return (
-        <div className="card mb-3 border-primary">
-            <div className="card-body d-flex align-items-center gap-3 flex-wrap">
+        <div className={styles.inlineCard}>
+            <div className="d-flex align-items-center gap-3 flex-wrap w-100">
                 <div>
+                    <span
+                        className={styles.eyebrow}
+                        style={{ display: 'block' }}
+                    >
+                        Setup
+                    </span>
                     <strong>
                         Finish setup — {completeness.doneCount} of{' '}
                         {completeness.totalCount} done

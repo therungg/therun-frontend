@@ -400,6 +400,59 @@ $rail: 3px; // severity spine / active accent width
     margin: 0;
 }
 
+// ---- Inline cards above the content pane -------------------
+.inlineCard {
+    @include board.board-surface(dt.$spacing-lg dt.$spacing-xl);
+    display: flex;
+    align-items: flex-start;
+    gap: dt.$spacing-lg;
+    flex-wrap: wrap;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.healthRow {
+    display: flex;
+    align-items: baseline;
+    gap: 0.45rem;
+    font-size: dt.$font-size-sm;
+    padding-block: 1px;
+
+    a {
+        color: inherit;
+    }
+}
+
+.healthIconBlocker {
+    color: dt.$accent-red;
+}
+.healthIconWarning {
+    color: dt.$accent-amber;
+}
+.healthIconInfo {
+    color: var(--bs-tertiary-color);
+}
+
+.modRow {
+    @include board.board-surface(dt.$spacing-sm dt.$spacing-lg);
+    border-radius: dt.$radius-md;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    flex-wrap: wrap;
+    font-size: dt.$font-size-sm;
+    margin-bottom: dt.$spacing-xs;
+}
+
+.noteInfo {
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-left: 3px solid var(--bs-primary);
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    font-size: dt.$font-size-sm;
+    margin-bottom: dt.$spacing-md;
+}
+
 // ---- Mobile -------------------------------------------------
 .menuToggle {
     display: none;

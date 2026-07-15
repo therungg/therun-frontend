@@ -7,6 +7,7 @@ import type {
     BoardClaimRequest,
     BoardModRole,
 } from '../../../../../../../types/board-claims.types';
+import styles from '../../console/console.module.scss';
 import {
     approveApplicationAction,
     denyApplicationAction,
@@ -43,14 +44,14 @@ export function ModApplicationsCard({ gameSlug, applications }: Props) {
     };
 
     return (
-        <div className="card mb-3 border-info">
-            <div className="card-header">
-                <strong>Moderator applications</strong>{' '}
-                <span className="text-muted small">
+        <div className={`${styles.surface} mb-3`}>
+            <div className={styles.paneHeader}>
+                <h2 className={styles.paneTitle}>Moderator applications</h2>
+                <span className={styles.paneCount}>
                     {remaining.length} pending
                 </span>
             </div>
-            <div className="card-body">
+            <div>
                 {remaining.map((r) => (
                     <ApplicationRow
                         key={r.id}
@@ -101,17 +102,17 @@ function ApplicationRow({
     const [role, setRole] = useState<BoardModRole>('game-mod');
     const s = request.signals;
     return (
-        <div className="border rounded p-2 mb-2">
-            <div className="d-flex gap-2 align-items-center flex-wrap">
+        <div className={`${styles.item} ${styles.sevLow} mb-2`}>
+            <div className={styles.itemTop}>
                 <strong>{request.username}</strong>
-                <span className="text-muted small">
+                <span className={styles.metaRow}>
                     {s.runsOnGame} runs on this game · {s.totalRuns} total
                 </span>
             </div>
             <p className="mb-2 mt-1 small" style={{ whiteSpace: 'pre-wrap' }}>
                 {request.motivation}
             </p>
-            <div className="d-flex gap-2 align-items-center">
+            <div className={styles.actionRow}>
                 <select
                     className="form-select form-select-sm w-auto"
                     value={role}
@@ -122,7 +123,7 @@ function ApplicationRow({
                 </select>
                 <button
                     type="button"
-                    className="btn btn-sm btn-success"
+                    className="btn btn-sm btn-primary"
                     disabled={disabled}
                     onClick={() => onApprove(role)}
                 >

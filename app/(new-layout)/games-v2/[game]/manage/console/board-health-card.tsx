@@ -1,5 +1,11 @@
+import {
+    DashLg,
+    ExclamationTriangleFill,
+    XOctagonFill,
+} from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import type { BoardHealth } from '~src/lib/setup/health';
+import styles from './console.module.scss';
 
 const GRADE_LABEL = {
     healthy: 'Healthy',
@@ -8,9 +14,9 @@ const GRADE_LABEL = {
 } as const;
 
 const GRADE_CLASS = {
-    healthy: 'bg-success',
-    'needs-attention': 'bg-warning text-dark',
-    'at-risk': 'bg-danger',
+    healthy: styles.sevPillLow,
+    'needs-attention': styles.sevPillMedium,
+    'at-risk': styles.sevPillHigh,
 } as const;
 
 interface Props {
@@ -20,31 +26,46 @@ interface Props {
 
 export function BoardHealthCard({ gameSlug, health }: Props) {
     return (
-        <div className="card mb-3">
-            <div className="card-body d-flex align-items-start gap-3 flex-wrap">
-                <span className={`badge ${GRADE_CLASS[health.grade]}`}>
-                    Board health: {GRADE_LABEL[health.grade]}
-                </span>
-                <ul className="list-unstyled mb-0 small">
-                    {health.items.map((item) => (
-                        <li key={`${item.pane ?? 'none'}-${item.label}`}>
-                            {item.severity === 'blocker'
-                                ? '✕ '
-                                : item.severity === 'warning'
-                                  ? '! '
-                                  : '· '}
-                            {item.pane ? (
-                                <Link
-                                    href={`/games-v2/${gameSlug}/manage?pane=${item.pane}`}
-                                >
-                                    {item.label}
-                                </Link>
-                            ) : (
-                                item.label
-                            )}
-                        </li>
-                    ))}
-                </ul>
+        <div className={styles.inlineCard}>
+            <span className={`${styles.pill} ${GRADE_CLASS[health.grade]}`}>
+                Board health: {GRADE_LABEL[health.grade]}
+            </span>
+            <div>
+                {health.items.map((item) => (
+                    <div
+                        key={`${item.pane ?? 'none'}-${item.label}`}
+                        className={styles.healthRow}
+                    >
+                        {item.severity === 'blocker' ? (
+                            <XOctagonFill
+                                size={12}
+                                className={styles.healthIconBlocker}
+                                aria-hidden
+                            />
+                        ) : item.severity === 'warning' ? (
+                            <ExclamationTriangleFill
+                                size={12}
+                                className={styles.healthIconWarning}
+                                aria-hidden
+                            />
+                        ) : (
+                            <DashLg
+                                size={12}
+                                className={styles.healthIconInfo}
+                                aria-hidden
+                            />
+                        )}
+                        {item.pane ? (
+                            <Link
+                                href={`/games-v2/${gameSlug}/manage?pane=${item.pane}`}
+                            >
+                                {item.label}
+                            </Link>
+                        ) : (
+                            item.label
+                        )}
+                    </div>
+                ))}
             </div>
         </div>
     );
