@@ -280,3 +280,15 @@
     flex-wrap: wrap;
     font-size: dt.$font-size-sm;
 }
+
+.heldPill {
+    @include board.board-pill(dt.$accent-red);
+}
+
+.pendingPill {
+    @include board.board-pill;
+}
+
+.heldRow td {
+    opacity: 0.55;
+}

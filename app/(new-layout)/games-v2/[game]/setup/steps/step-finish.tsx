@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
+import { Check2, Dot } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import Link from '~src/components/link';
 import type { SetupStepId } from '~src/lib/setup/completeness';
@@ -13,6 +14,7 @@ import {
     removeGameModeratorAction,
 } from '../actions/manage-moderators.action';
 import { setGameConfiguredAction } from '../actions/set-configured.action';
+import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
 
 const STEP_LABELS: Record<SetupStepId, string> = {
@@ -130,7 +132,7 @@ export function StepFinish({ data }: StepProps) {
 
     if (done) {
         return (
-            <section className="text-center py-5">
+            <section className={`${styles.section} text-center py-5`}>
                 <h2>Your board is live</h2>
                 <p className="text-muted">
                     Nice work. Runs are on the board and your standards are
@@ -161,14 +163,11 @@ export function StepFinish({ data }: StepProps) {
                 Don’t moderate alone — a second pair of eyes keeps the queue
                 moving.
             </p>
-            <ul className="list-group mb-2">
+            <ul className={`${styles.rows} mb-2`}>
                 {mods.map((m) => (
-                    <li
-                        key={m.assignmentId}
-                        className="list-group-item d-flex align-items-center gap-2"
-                    >
+                    <li key={m.assignmentId} className={styles.rowItem}>
                         <strong>{m.username}</strong>
-                        <span className="badge bg-secondary">
+                        <span className={styles.pendingPill}>
                             {m.role === 'game-admin'
                                 ? 'board admin'
                                 : 'moderator'}
@@ -184,7 +183,7 @@ export function StepFinish({ data }: StepProps) {
                     </li>
                 ))}
                 {mods.length === 0 && (
-                    <li className="list-group-item text-muted">
+                    <li className={`${styles.rowItem} text-muted`}>
                         No moderators listed yet (the backend mod list may not
                         be deployed — you can still finish setup).
                     </li>
@@ -216,12 +215,9 @@ export function StepFinish({ data }: StepProps) {
             </div>
 
             <h2 className="h4">Review & finish</h2>
-            <ul className="list-group mb-3">
+            <ul className={`${styles.rows} mb-3`}>
                 {reviewSteps.map((s) => (
-                    <li
-                        key={s.step}
-                        className="list-group-item d-flex align-items-center gap-2"
-                    >
+                    <li key={s.step} className={styles.rowItem}>
                         <span
                             className={
                                 s.status === 'blocker'
@@ -233,7 +229,11 @@ export function StepFinish({ data }: StepProps) {
                                         : 'text-muted'
                             }
                         >
-                            {s.status === 'done' ? '✓' : '•'}
+                            {s.status === 'done' ? (
+                                <Check2 size={14} aria-hidden />
+                            ) : (
+                                <Dot size={14} aria-hidden />
+                            )}
                         </span>
                         <strong>{STEP_LABELS[s.step]}</strong>
                         <span className="text-muted small">{s.summary}</span>
@@ -244,18 +244,18 @@ export function StepFinish({ data }: StepProps) {
                 ))}
             </ul>
             {blockers.length > 0 && (
-                <div className="alert alert-danger py-2">
+                <div className={styles.errorNote}>
                     Fix before finishing:{' '}
                     {blockers.map((b) => b.summary).join(' · ')}
                 </div>
             )}
             {warnings.length > 0 && blockers.length === 0 && (
-                <div className="alert alert-warning py-2">
+                <div className={styles.warnNote}>
                     Worth a look (won’t block you):{' '}
                     {warnings.map((w) => w.summary).join(' · ')}
                 </div>
             )}
-            {error && <div className="alert alert-danger">{error}</div>}
+            {error && <div className={styles.errorNote}>{error}</div>}
             <button
                 type="button"
                 className="btn btn-success"

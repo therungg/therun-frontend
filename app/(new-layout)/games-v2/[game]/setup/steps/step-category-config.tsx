@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState, useTransition } from 'react';
+import { Check2 } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import type { PrimaryTiming } from '~src/lib/category-mgmt';
 import { suggestMinTimeMs } from '~src/lib/setup/suggestions';
@@ -20,6 +21,7 @@ import {
     CategoryLeaderboardPreview,
     type PreviewDraft,
 } from '../category-leaderboard-preview';
+import styles from '../setup.module.scss';
 import type { StepProps, WizardData } from '../types';
 
 const STARTER_TEMPLATE = `Timing starts on [first input / cutscene end].
@@ -280,8 +282,10 @@ function TimingSection({
     };
 
     return (
-        <section className="border rounded p-3 mb-3">
-            <h3 className="h6">Timing {saved && '✓'}</h3>
+        <section className={styles.section}>
+            <h3 className="h6">
+                Timing {saved && <Check2 size={14} aria-label="saved" />}
+            </h3>
             <div className="row g-3 align-items-end">
                 <div className="col-auto">
                     <label
@@ -349,12 +353,12 @@ function TimingSection({
                 </div>
             </div>
             {bothHidden && (
-                <div className="alert alert-danger py-2 mt-2 mb-0">
+                <div className={`${styles.errorNote} mt-2 mb-0`}>
                     A category can’t hide both RT and IGT.
                 </div>
             )}
             {error && (
-                <div className="alert alert-danger py-2 mt-2 mb-0">{error}</div>
+                <div className={`${styles.errorNote} mt-2 mb-0`}>{error}</div>
             )}
             <button
                 type="button"
@@ -403,8 +407,10 @@ function RulesSection({
     };
 
     return (
-        <section className="border rounded p-3 mb-3">
-            <h3 className="h6">Rules {saved && '✓'}</h3>
+        <section className={styles.section}>
+            <h3 className="h6">
+                Rules {saved && <Check2 size={14} aria-label="saved" />}
+            </h3>
             <p className="text-muted small mb-2">
                 Replace the [bracketed] parts. Nothing is saved until you click
                 Save rules.
@@ -545,7 +551,7 @@ function VariablesSection({
     };
 
     return (
-        <section className="border rounded p-3 mb-3">
+        <section className={styles.section}>
             <h3 className="h6">Variables</h3>
             <p className="small text-muted mb-2">
                 <strong>Subcategory</strong> splits this category into separate
@@ -582,7 +588,7 @@ function VariablesSection({
             </div>
 
             {editor && (
-                <div className="border rounded p-3 mb-3">
+                <div className={styles.section}>
                     <label
                         className="form-label"
                         htmlFor={`var-name-${category.id}`}
@@ -643,7 +649,7 @@ function VariablesSection({
                         placeholder="PC, Switch, PS5"
                     />
                     {error && (
-                        <div className="alert alert-danger py-2 mt-2 mb-0">
+                        <div className={`${styles.errorNote} mt-2 mb-0`}>
                             {error}
                         </div>
                     )}
@@ -668,14 +674,11 @@ function VariablesSection({
             )}
 
             {variables.length > 0 && (
-                <ul className="list-group mb-0">
+                <ul className={`${styles.rows} mb-0`}>
                     {variables.map((v) => (
-                        <li
-                            key={v.id}
-                            className="list-group-item d-flex align-items-center gap-2"
-                        >
+                        <li key={v.id} className={styles.rowItem}>
                             <strong>{v.name}</strong>
-                            <span className="badge bg-secondary">{v.role}</span>
+                            <span className={styles.pendingPill}>{v.role}</span>
                             <span className="text-muted small">
                                 {v.values.map((bucket) => bucket[0]).join(', ')}
                             </span>
@@ -844,120 +847,110 @@ function StandardsSection({
     };
 
     return (
-        <section className="border rounded p-3 mb-3">
-            <h3 className="h6">Standards {saved && '✓'}</h3>
+        <section className={styles.section}>
+            <h3 className="h6">
+                Standards {saved && <Check2 size={14} aria-label="saved" />}
+            </h3>
 
-            <div className="card mb-2">
-                <div className="card-body">
-                    <label className="form-check-label">
-                        <input
-                            type="checkbox"
-                            className="form-check-input me-2"
-                            checked={requireVideo}
-                            onChange={(e) => setRequireVideo(e.target.checked)}
-                        />
-                        <strong>Require video proof</strong>
-                    </label>
-                    {requireVideo && (
-                        <div className="mt-2 ms-4">
-                            <label className="form-check-label">
-                                <input
-                                    type="checkbox"
-                                    className="form-check-input me-2"
-                                    checked={topNOnly}
-                                    onChange={(e) =>
-                                        setTopNOnly(e.target.checked)
-                                    }
-                                />
-                                Only for top
-                            </label>{' '}
+            <div className={styles.section}>
+                <label className="form-check-label">
+                    <input
+                        type="checkbox"
+                        className="form-check-input me-2"
+                        checked={requireVideo}
+                        onChange={(e) => setRequireVideo(e.target.checked)}
+                    />
+                    <strong>Require video proof</strong>
+                </label>
+                {requireVideo && (
+                    <div className="mt-2 ms-4">
+                        <label className="form-check-label">
                             <input
-                                className="form-control form-control-sm d-inline-block"
-                                style={{ width: '4rem' }}
-                                inputMode="numeric"
-                                value={topN}
-                                disabled={!topNOnly}
-                                onChange={(e) => setTopN(e.target.value)}
-                            />{' '}
-                            places
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            <div className="card mb-2">
-                <div className="card-body">
-                    <label className="form-check-label">
-                        <input
-                            type="checkbox"
-                            className="form-check-input me-2"
-                            checked={minTimeEnabled}
-                            onChange={(e) =>
-                                setMinTimeEnabled(e.target.checked)
-                            }
-                        />
-                        <strong>Minimum time</strong>{' '}
-                        <span className="text-muted small">
-                            auto-flags impossibly fast submissions
-                        </span>
-                    </label>
-                    {minTimeEnabled && (
-                        <div className="mt-2 ms-4">
-                            <input
-                                className="form-control w-auto d-inline-block"
-                                value={minTimeText}
-                                onChange={(e) => setMinTimeText(e.target.value)}
-                                placeholder="e.g. 10:00"
+                                type="checkbox"
+                                className="form-check-input me-2"
+                                checked={topNOnly}
+                                onChange={(e) => setTopNOnly(e.target.checked)}
                             />
-                            {suggestion !== null && wr !== null && (
-                                <button
-                                    type="button"
-                                    className="btn btn-link btn-sm"
-                                    onClick={() =>
-                                        setMinTimeText(formatMs(suggestion))
-                                    }
-                                >
-                                    Fastest verified run is {formatMs(wr)} —
-                                    suggest {formatMs(suggestion)}
-                                </button>
-                            )}
-                        </div>
-                    )}
-                </div>
+                            Only for top
+                        </label>{' '}
+                        <input
+                            className="form-control form-control-sm d-inline-block"
+                            style={{ width: '4rem' }}
+                            inputMode="numeric"
+                            value={topN}
+                            disabled={!topNOnly}
+                            onChange={(e) => setTopN(e.target.value)}
+                        />{' '}
+                        places
+                    </div>
+                )}
             </div>
 
-            <div className="card mb-2">
-                <div className="card-body">
-                    <label className="form-check-label">
+            <div className={styles.section}>
+                <label className="form-check-label">
+                    <input
+                        type="checkbox"
+                        className="form-check-input me-2"
+                        checked={minTimeEnabled}
+                        onChange={(e) => setMinTimeEnabled(e.target.checked)}
+                    />
+                    <strong>Minimum time</strong>{' '}
+                    <span className="text-muted small">
+                        auto-flags impossibly fast submissions
+                    </span>
+                </label>
+                {minTimeEnabled && (
+                    <div className="mt-2 ms-4">
                         <input
-                            type="checkbox"
-                            className="form-check-input me-2"
-                            checked={minGameTimeEnabled}
-                            onChange={(e) =>
-                                setMinGameTimeEnabled(e.target.checked)
-                            }
+                            className="form-control w-auto d-inline-block"
+                            value={minTimeText}
+                            onChange={(e) => setMinTimeText(e.target.value)}
+                            placeholder="e.g. 10:00"
                         />
-                        <strong>In-game time minimum</strong>{' '}
-                        <span className="text-muted small">
-                            optional, only for categories that track IGT
-                        </span>
-                    </label>
-                    {minGameTimeEnabled && (
-                        <div className="mt-2 ms-4">
-                            <input
-                                className="form-control w-auto d-inline-block"
-                                value={minGameTimeText}
-                                onChange={(e) =>
-                                    setMinGameTimeText(e.target.value)
+                        {suggestion !== null && wr !== null && (
+                            <button
+                                type="button"
+                                className="btn btn-link btn-sm"
+                                onClick={() =>
+                                    setMinTimeText(formatMs(suggestion))
                                 }
-                                placeholder="e.g. 10:00"
-                            />
-                        </div>
-                    )}
-                </div>
+                            >
+                                Fastest verified run is {formatMs(wr)} — suggest{' '}
+                                {formatMs(suggestion)}
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
 
-            {error && <div className="alert alert-danger py-2">{error}</div>}
+            <div className={styles.section}>
+                <label className="form-check-label">
+                    <input
+                        type="checkbox"
+                        className="form-check-input me-2"
+                        checked={minGameTimeEnabled}
+                        onChange={(e) =>
+                            setMinGameTimeEnabled(e.target.checked)
+                        }
+                    />
+                    <strong>In-game time minimum</strong>{' '}
+                    <span className="text-muted small">
+                        optional, only for categories that track IGT
+                    </span>
+                </label>
+                {minGameTimeEnabled && (
+                    <div className="mt-2 ms-4">
+                        <input
+                            className="form-control w-auto d-inline-block"
+                            value={minGameTimeText}
+                            onChange={(e) => setMinGameTimeText(e.target.value)}
+                            placeholder="e.g. 10:00"
+                        />
+                    </div>
+                )}
+            </div>
+
+            {error && <div className={styles.errorNote}>{error}</div>}
             <button
                 type="button"
                 className="btn btn-sm btn-outline-primary"

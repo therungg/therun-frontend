@@ -9,6 +9,7 @@ import { createPolicyAction } from '../../manage/moderation/policies/actions/pol
 import { updateTimingSettingsAction } from '../../manage/timing/actions/update-timing-settings.action';
 import { createVariableAction } from '../../manage/variables/actions/create-variable.action';
 import { deleteVariableAction } from '../../manage/variables/actions/delete-variable.action';
+import styles from '../setup.module.scss';
 import type { StepProps, WizardData } from '../types';
 
 export function StepDefaults({ data, onAdvance }: StepProps) {
@@ -207,7 +208,7 @@ function BulkApplySection({ data }: { data: WizardData }) {
     };
 
     return (
-        <section className="border rounded p-3 mb-3">
+        <section className={styles.section}>
             <h3 className="h6">
                 Apply to all {mains.length} main categor
                 {mains.length === 1 ? 'y' : 'ies'}
@@ -404,7 +405,7 @@ function BulkApplySection({ data }: { data: WizardData }) {
             </div>
 
             {guardError && (
-                <div className="alert alert-danger py-2 mt-2 mb-0">
+                <div className={`${styles.errorNote} mt-2 mb-0`}>
                     {guardError}
                 </div>
             )}
@@ -428,13 +429,13 @@ function BulkApplySection({ data }: { data: WizardData }) {
                 </label>
             </div>
             {policyError && (
-                <div className="alert alert-danger py-2 mt-2 mb-0">
+                <div className={`${styles.errorNote} mt-2 mb-0`}>
                     {policyError}
                 </div>
             )}
 
             {Object.keys(rowErrors).length > 0 && (
-                <div className="alert alert-danger py-2 mt-2 mb-0">
+                <div className={`${styles.errorNote} mt-2 mb-0`}>
                     <div>Some categories failed to update:</div>
                     <ul className="mb-0">
                         {mains
@@ -580,11 +581,14 @@ function GameWideVariablesSection({ data }: { data: WizardData }) {
     };
 
     return (
-        <section className="border rounded p-3 mb-3">
+        <section className={styles.section}>
             <h3 className="h6">Game-wide variables</h3>
             <div className="row g-3 mb-3">
                 <div className="col-md-6">
-                    <div className="border rounded p-3 h-100">
+                    <div
+                        className={styles.section}
+                        style={{ height: '100%', marginBottom: 0 }}
+                    >
                         <strong>Subcategory</strong>
                         <p className="mb-0 small text-muted">
                             Splits your leaderboard into separate boards — e.g.
@@ -594,7 +598,10 @@ function GameWideVariablesSection({ data }: { data: WizardData }) {
                     </div>
                 </div>
                 <div className="col-md-6">
-                    <div className="border rounded p-3 h-100">
+                    <div
+                        className={styles.section}
+                        style={{ height: '100%', marginBottom: 0 }}
+                    >
                         <strong>Filter</strong>
                         <p className="mb-0 small text-muted">
                             One board, viewers can narrow it — e.g. Platform.
@@ -633,7 +640,7 @@ function GameWideVariablesSection({ data }: { data: WizardData }) {
             </div>
 
             {editor && (
-                <div className="border rounded p-3 mb-3">
+                <div className={styles.section}>
                     <label className="form-label" htmlFor="defaults-var-name">
                         Name
                     </label>
@@ -691,7 +698,7 @@ function GameWideVariablesSection({ data }: { data: WizardData }) {
                         placeholder="PC, Switch, PS5"
                     />
                     {error && (
-                        <div className="alert alert-danger py-2 mt-2 mb-0">
+                        <div className={`${styles.errorNote} mt-2 mb-0`}>
                             {error}
                         </div>
                     )}
