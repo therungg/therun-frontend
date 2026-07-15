@@ -1,6 +1,6 @@
 # Frontend guide: board claims, per-game moderators, game metadata, configured flag
 
-**Status:** contract proposal — frontend is built against these shapes; endpoints return 404 until implemented.
+**Status:** implemented backend-side on branch game-setup-wizard (../therun) — pending migration 0071 + deploy. DB stores status 'rejected'; the API maps it to 'denied'. Global queue excludes already-moderated boards.
 **Consumers:** claim CTA on `games-v2/[game]`, admin queue at `/admin/board-claims`, console attention pane, setup wizard at `games-v2/[game]/setup`.
 
 ## 1. Board claim requests

@@ -163,6 +163,11 @@ const defaultPermissions: DefinePermissions = (user, { can }) => {
     moderatedGames.forEach((game) => {
         can('edit', 'category-settings', { game });
     });
+
+    // Per-game admins manage their board's mod team.
+    (user.adminedGames || []).forEach((game) => {
+        can('edit', 'moderators', { game });
+    });
 };
 
 export function defineAbilityFor(user?: User): AppAbility {
