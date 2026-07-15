@@ -1,0 +1,158 @@
+@use 'design-tokens' as dt;
+
+// ============================================================
+// Board vocabulary — shared visual language for games-v2:
+// public leaderboard (flagship), setup wizard, admin console,
+// claim surfaces. See .interface-design/system.md.
+// Depth = borders + subtle surface tint. Times are mono tabular.
+// ============================================================
+
+// ---- Surfaces ----------------------------------------------
+@mixin board-surface($padding: dt.$spacing-2xl) {
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-lg;
+    background: color-mix(
+        in srgb,
+        var(--bs-body-bg) 92%,
+        var(--bs-secondary-bg) 8%
+    );
+    padding: $padding;
+}
+
+// ---- Typography --------------------------------------------
+@mixin board-eyebrow {
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    color: var(--bs-secondary-color);
+}
+
+@mixin mono-time {
+    font-family: dt.$font-mono;
+    font-variant-numeric: tabular-nums;
+    color: var(--bs-emphasis-color);
+}
+
+// ---- Dense data table (apply to <table>) -------------------
+@mixin board-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: dt.$font-size-sm;
+
+    thead th {
+        @include board-eyebrow;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-align: left;
+        padding: dt.$spacing-sm dt.$spacing-md;
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+        white-space: nowrap;
+    }
+
+    tbody td {
+        padding: dt.$spacing-xs dt.$spacing-md;
+        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+        vertical-align: middle;
+    }
+
+    tbody tr {
+        transition: background-color dt.$transition-fast;
+
+        &:hover {
+            background: var(--bs-tertiary-bg);
+        }
+    }
+}
+
+// Rank cell: mono, right-aligned, narrow. Top-3 modifiers are
+// consumer classes setting `color` via dt.$accent-gold/silver/bronze.
+@mixin board-rank {
+    @include mono-time;
+    color: var(--bs-secondary-color);
+    text-align: right;
+    width: 2.5rem;
+    font-weight: 600;
+}
+
+// ---- Control band pills ------------------------------------
+@mixin control-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: 0;
+    background: transparent;
+    color: var(--bs-secondary-color);
+    font-size: dt.$font-size-sm;
+    font-weight: 500;
+    padding: dt.$badge-padding;
+    border-radius: dt.$badge-radius;
+    cursor: pointer;
+    transition: background-color dt.$transition-fast,
+        color dt.$transition-fast;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.06);
+        color: var(--bs-emphasis-color);
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+}
+
+@mixin control-pill-active {
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-primary);
+    font-weight: 600;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.12);
+        color: var(--bs-primary);
+    }
+}
+
+// ---- Status pill (severity language) ------------------------
+// $color: dt.$accent-red / dt.$accent-amber / null (neutral)
+@mixin board-pill($color: null) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+
+    @if $color {
+        background: color-mix(in srgb, $color 16%, transparent);
+        color: $color;
+    } @else {
+        background: rgba(var(--bs-secondary-rgb), 0.12);
+        color: var(--bs-secondary-color);
+        border-color: rgba(var(--bs-border-color-rgb), 0.5);
+    }
+}
+
+// ---- Inputs -------------------------------------------------
+// Inner rules only; consumers wrap in a local class:
+//   .main { :global(.form-control), :global(.form-select) { @include board-input-rules; } }
+@mixin board-input-rules {
+    border-color: rgba(var(--bs-border-color-rgb), 0.6);
+    border-radius: dt.$radius-md;
+    transition: border-color dt.$transition-fast,
+        box-shadow dt.$transition-fast;
+
+    &:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+    }
+}
