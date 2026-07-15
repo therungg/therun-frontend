@@ -84,6 +84,30 @@ function BulkApplySection({ data }: { data: WizardData }) {
             return;
         }
 
+        if (enableShowRt !== enableShowIgt) {
+            const offender = mains.find(
+                (c) =>
+                    (enableShowRt && !showRt && (c.hideGameTime ?? false)) ||
+                    (enableShowIgt && !showIgt && (c.hideRealTime ?? false)),
+            );
+            if (offender) {
+                setGuardError(
+                    `Turning this off would leave ${offender.display} with no time shown — enable the other toggle too or adjust that category first.`,
+                );
+                return;
+            }
+        }
+
+        if (
+            enableRequireVideo &&
+            requireVideo &&
+            topN.trim() &&
+            (!Number.isInteger(Number(topN)) || Number(topN) <= 0)
+        ) {
+            setGuardError('Top N must be a positive whole number.');
+            return;
+        }
+
         startApplying(async () => {
             const newErrors: Record<number, string> = {};
 
@@ -93,14 +117,22 @@ function BulkApplySection({ data }: { data: WizardData }) {
                     setProgress(`Applying ${i + 1} / ${mains.length}…`);
 
                     if (enablePrimary || enableShowRt || enableShowIgt) {
+                        const hideRt = enableShowRt
+                            ? !showRt
+                            : (cat.hideRealTime ?? false);
+                        const hideGt = enableShowIgt
+                            ? !showIgt
+                            : (cat.hideGameTime ?? false);
                         const res = await updateTimingSettingsAction({
                             gameSlug: data.game.name,
                             gameId: data.game.id,
                             categoryId: cat.id,
                             ...(enablePrimary ? { primaryTiming } : {}),
-                            ...(enableShowRt ? { hideRealTime: !showRt } : {}),
-                            ...(enableShowIgt
-                                ? { hideGameTime: !showIgt }
+                            ...(enableShowRt || enableShowIgt
+                                ? {
+                                      hideRealTime: hideRt,
+                                      hideGameTime: hideGt,
+                                  }
                                 : {}),
                         });
                         if ('error' in res) {
