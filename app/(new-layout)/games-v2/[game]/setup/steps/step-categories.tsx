@@ -5,6 +5,7 @@ import Link from '~src/components/link';
 import { activityShare } from '~src/lib/setup/suggestions';
 import { createGroupAction } from '../actions/create-group.action';
 import { curateCategoryAction } from '../actions/curate-category.action';
+import styles from '../setup.module.scss';
 import type { StepProps } from '../types';
 
 interface RowState {
@@ -150,19 +151,19 @@ export function StepCategories({ data, onAdvance }: StepProps) {
     return (
         <section>
             <h2 className="h4">Categories</h2>
-            <div className="alert alert-info py-2">
+            <div className={styles.infoNote}>
                 Checked categories are your main categories — they appear on the
                 leaderboards. Unchecked categories stay hidden. Checked
                 categories hold {share}% of this board’s finished runs.
             </div>
             {legacyHiddenCount > 0 && (
-                <div className="alert alert-warning py-2">
+                <div className={styles.warnNote}>
                     {legacyHiddenCount} previously shown categor
                     {legacyHiddenCount === 1 ? 'y' : 'ies'} will be hidden when
                     you save — check them to keep them on the board.
                 </div>
             )}
-            <table className="table align-middle">
+            <table className={styles.table}>
                 <thead>
                     <tr>
                         <th>Show on board (main)</th>
@@ -257,7 +258,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
             )}
 
             {!mainOk && (
-                <div className="alert alert-warning py-2 mt-2">
+                <div className={`${styles.warnNote} mt-2`}>
                     Mark at least one category as main — they’re what visitors
                     see.
                 </div>
