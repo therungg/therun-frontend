@@ -23,8 +23,8 @@ export async function submitBoardClaimAction(
             error: 'Tell the admins a little more (at least 10 characters).',
         };
     }
-    if (motivation.length > 2000) {
-        return { error: 'Keep your application under 2000 characters.' };
+    if (motivation.length > 1000) {
+        return { error: 'Keep your application under 1000 characters.' };
     }
 
     try {

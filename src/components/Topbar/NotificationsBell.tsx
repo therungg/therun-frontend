@@ -7,6 +7,7 @@ import {
     readAllNotificationsAction,
     readNotificationAction,
 } from '~src/actions/notifications.action';
+import Link from '~src/components/link';
 import type { NotificationRow } from '../../../types/moderation.types';
 
 function describe(n: NotificationRow): string {
@@ -28,9 +29,26 @@ function describe(n: NotificationRow): string {
             if (p.action === 'unreject')
                 return 'One of your runs was reinstated by a moderator.';
             return 'A moderator updated one of your runs.';
+        case 'board_claim_approved':
+            return `Your application to moderate ${p.gameDisplay ?? 'this game'} was approved — set up your board`;
+        case 'board_claim_denied': {
+            const reason =
+                typeof p.reason === 'string' && p.reason
+                    ? ` (${p.reason})`
+                    : '';
+            return `Your application to moderate ${p.gameDisplay ?? 'this game'} was declined${reason}`;
+        }
         default:
             return 'You have a new notification.';
     }
+}
+
+function linkFor(n: NotificationRow): string | null {
+    const p = (n.payload ?? {}) as Record<string, unknown>;
+    if (n.type === 'board_claim_approved' && typeof p.gameSlug === 'string') {
+        return `/games-v2/${p.gameSlug}/setup`;
+    }
+    return null;
 }
 
 export function NotificationsBell() {
@@ -168,7 +186,16 @@ export function NotificationsBell() {
                                         </span>
                                     )}
                                     <div className="flex-grow-1">
-                                        <div>{describe(n)}</div>
+                                        {linkFor(n) ? (
+                                            <Link
+                                                href={linkFor(n) as string}
+                                                className="text-decoration-none"
+                                            >
+                                                {describe(n)}
+                                            </Link>
+                                        ) : (
+                                            <div>{describe(n)}</div>
+                                        )}
                                         <small className="text-muted">
                                             {moment(n.createdAt).fromNow()}
                                         </small>

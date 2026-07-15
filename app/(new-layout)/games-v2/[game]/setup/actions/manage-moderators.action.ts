@@ -4,7 +4,6 @@ import { revalidateTag } from 'next/cache';
 import { getSession } from '~src/actions/session.action';
 import { ApiError } from '~src/lib/api-client';
 import { assignRole, revokeRoleAssignment } from '~src/lib/role-assignments';
-import { getPaginatedUsers } from '~src/lib/users';
 import { confirmPermission } from '~src/rbac/confirm-permission';
 import type { BoardModRole } from '../../../../../../types/board-claims.types';
 
@@ -18,8 +17,7 @@ interface AddInput {
 export async function addGameModeratorAction(
     input: AddInput,
 ): Promise<
-    | { result: { userId: number; username: string; assignmentId: number } }
-    | { error: string }
+    { result: { username: string; assignmentId: number } } | { error: string }
 > {
     const user = await getSession();
     try {
@@ -38,21 +36,16 @@ export async function addGameModeratorAction(
     if (!trimmed) return { error: 'Username is required.' };
 
     try {
-        const search = await getPaginatedUsers(1, 10, trimmed, '', user.id);
-        const match = search.items.find(
-            (u) => u.username.toLowerCase() === trimmed.toLowerCase(),
-        );
-        if (!match) return { error: `User "${trimmed}" not found.` };
-
+        // The backend resolves username -> userId itself (per-game admins are
+        // gated on staff-only user search, so we can't look it up client-side).
         const res = await assignRole(
-            { userId: match.id, role: input.role, gameId: input.gameId },
+            { username: trimmed, role: input.role, gameId: input.gameId },
             user.id,
         );
         revalidateTag(`game-mods:${input.gameId}`, 'minutes');
         return {
             result: {
-                userId: match.id,
-                username: match.username,
+                username: trimmed,
                 assignmentId: res.id,
             },
         };
