@@ -15,6 +15,11 @@ Depends on: board visual unification (implemented 2026-07-15, `tier1-console-com
    is never empty. Count badge = active var filters + verified.
 3. **Band rows wrap (`flex-wrap`) instead of horizontal-scroll-with-edge-fade
    on mobile** — fewer moving parts, same legibility.
+4. **The crown column is inset ~2rem from the rail column below it.** The
+   hero card's internal padding (`$spacing-3xl`) offsets its grid columns
+   relative to the page grid, so the crown → live → recent-PBs vertical
+   axis aligns approximately, not exactly. Consequence of deviation 1
+   (rounded-card hero); revisit only if the browser pass finds it jarring.
 
 ## Implementation notes
 
