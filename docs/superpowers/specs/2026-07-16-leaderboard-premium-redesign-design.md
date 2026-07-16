@@ -35,6 +35,10 @@ impression, disciplined data below it.
 5. **Motion as confirmation, not decoration.** One orchestrated load-in, a
    crossfade when the category changes, nothing else. `prefers-reduced-motion`
    respected throughout.
+6. **Subtraction.** Mark the exception, not the rule; make the row the tap
+   target, not a bucket of icon buttons; never show a numbered pager. The
+   one deliberate non-Apple keep: the 3px accent spine (top-3, "you") — it
+   is the site's established signature. Apple-grade, not Apple-brand.
 
 ## Approaches considered
 
@@ -70,13 +74,13 @@ underneath.
 │  │cover │  1,204 runners · 18,433 runs   ┊  58:11.9               │
 │  └──────┘  [Submit run] [Manage] [Claim] ┊  Nindo · 3d ▸ history  │
 ├ CONTROL BAND — sticky glass, full width ─┊────────────────────────┤
-│ [Any%] [100%] [Darker Side]  [Version ▾] ┊ [✓ Verified]   Rules ▸ │
+│ [Any%] [100%] [Darker Side]   [1.0][1.3] ┊  Filters · 2 ▾  Rules ▸│
 ├──────────────────────────────────────────┊────────────────────────┤
 │  BOARD                                   ┊  RAIL (sticky)         │
-│   #  runner        time       date       ┊  ● LIVE NOW            │
-│   1  ● Nindo       58:11.9    3d  ▶ ✓    ┊  RECENT PBS            │
+│   #  runner        time         when     ┊  ● LIVE NOW            │
+│   1  ● Nindo       58:11.9    3d ago  ▶  ┊  RECENT PBS            │
 │   …                                      ┊                        │
-│   pagination                             ┊                        │
+│              [ Show more ]               ┊                        │
 └──────────────────────────────────────────┴────────────────────────┘
 ```
 
@@ -136,9 +140,16 @@ Apple-signature material:
   saturate(180%)`, hairline bottom border. Fallback (`@supports not
   (backdrop-filter…)`): 96% body-bg opacity.
 - Row 1: main category pills (existing active treatment, slightly larger hit
-  areas). Row 2 (only when variables exist): variable pills + verified toggle,
-  subordinate as today. Rules toggle stays at the band's right end; the
-  expanded rules panel renders below the band as today.
+  areas). Row 2 renders only when the category has **subcategory** variables:
+  subcategory pills stay visible — board structure must stay discoverable at
+  a glance (hiding it is SRC's weakness, not a virtue).
+- **Filter-type variables + the verified toggle move into a single "Filters"
+  popover** at the band's right end, with a count badge when active
+  ("Filters · 2"). Boards without filter variables never show it. The
+  existing filter components render inside the popover; URL behavior
+  unchanged.
+- Rules toggle stays at the band's right end beside Filters; the expanded
+  rules panel renders below the band as today.
 - Horizontal scroll with edge-fade masks on overflow (mobile).
 - Behavior, URLs, components unchanged — this is a styling + `position:
   sticky` wrapper change on the existing `CategoryPills`/`FilterBar`.
@@ -158,9 +169,24 @@ comfortable-premium:
   left accent in gold/silver/bronze (the spine vocabulary), rank numeral at
   `$font-size-md` 700, avatar 32px. No medal icons, no emoji, no separate
   podium cards (they collapse badly on filtered/small boards).
-- Runner name 600 `--bs-emphasis-color`; times `mono-time` linked as today;
-  date column becomes relative ("3 days ago", title-attr full date);
-  VOD/verified icons unchanged; actions menu unchanged.
+- Runner name 600 `--bs-emphasis-color`; times `mono-time`; date column
+  becomes relative ("3 days ago", title-attr full date). A row is four
+  things: rank, runner, time(s), when.
+- **Verified column removed — mark the exception, not the rule.** Verified
+  rows show nothing; pending rows get the quiet neutral pill; the existing
+  "set time" pill on manual entries is unchanged. (The verified *filter*
+  lives in the band's Filters popover.)
+- **The whole row opens the run detail.** The time cell keeps the real
+  `<a>`; a stretched-link treatment makes the row the click target (no
+  nested-interactive conflicts; keyboard focus lands on the time link).
+  A small ▶ VOD glyph sits at the row's trailing edge only when a VOD
+  exists, opening the video directly.
+- **The visible ⋮ actions column disappears.** The existing actions menu
+  (report / hide / appeal / mod verdicts) moves to a trailing button that is
+  invisible at rest and revealed on row hover or keyboard focus — same
+  dropdown component, no column of chrome. Mobile: long-press is not
+  reliable, so the run-detail page (which already has all actions) is the
+  path; the hover button simply never shows on coarse pointers.
 - **You-row** keeps its primary tint + spine. If both "you" and podium apply,
   podium wins the spine, tint stays.
 - Hover: `--bs-tertiary-bg` wash + the row's time warms to
@@ -175,7 +201,11 @@ comfortable-premium:
   (`board-surface`, times in `mono-time`). WR card replaced by the crown;
   quick-stats card absorbed into the hero meta line. The rail is sticky
   below the control band.
-- Pagination unchanged structurally; buttons get the larger hit-area pill.
+- **Numbered pagination is replaced by "Show more"** — a single centered
+  quiet button that appends the next page and updates the URL to the latest
+  loaded page (`?page=N` deep links still render that page, with "Show
+  previous" above when landing past page 1). The pager bar component is
+  retired from this page; the wizard preview never paginated.
 - Empty/invalid-combination states unchanged (already calm).
 - Fix ride-along: `run-view/run-badges.tsx` `VerificationBadge` still uses
   Bootstrap `text-bg-success` + `✓`/`⌛` emoji — migrate to `board-pill` +
@@ -208,7 +238,9 @@ Frontend ships monograms first; no blocking dependency.
 ## Non-goals
 
 - No mod-configured theming (Tier 4 — designed-for, not built).
-- No data/behavior/URL changes; no new columns beyond the avatar cell.
+- No data or URL-scheme changes. Behavior changes are limited to the four
+  enumerated ones: row-as-link, hover-revealed actions, Filters popover,
+  "Show more" pagination. Everything else is restyle/relayout only.
 - No changes to console/wizard/claims beyond what shared mixins passively
   give them; no separate podium cards; no webfonts; no color-extraction JS.
 
@@ -218,5 +250,9 @@ Frontend ships monograms first; no blocking dependency.
 - Joey's browser pass, light **and** dark, on: art-rich game, no-art game,
   empty board, 2-entry board, filtered combination, mobile width; sticky band
   over long boards; reduced-motion.
+- Interaction pass: keyboard-only run-detail navigation (focus lands on time
+  link, actions button visible on focus), Filters popover with active-count
+  badge, "Show more" appending + deep-link `?page=3` rendering, mod actions
+  still reachable on touch devices via run detail.
 - Grep checks: no emoji glyphs in touched files; no `alert-*` introduced;
   glass used only in the three sanctioned spots.
