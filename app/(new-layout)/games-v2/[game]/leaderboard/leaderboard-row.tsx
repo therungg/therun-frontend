@@ -60,6 +60,7 @@ export function LeaderboardRow({
     // keep working (we ignore clicks that land on them).
     const onRowClick = (e: React.MouseEvent<HTMLTableRowElement>) => {
         if (!detailHref) return;
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
         const target = e.target as HTMLElement;
         if (target.closest('a, button, input, [role="menu"], [role="dialog"]'))
             return;

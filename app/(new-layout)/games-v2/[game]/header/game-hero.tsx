@@ -49,9 +49,17 @@ export function GameHero({
 
     // The crown only ever shows the actual record: rank 1 on the
     // currently loaded data. On deep-linked later pages entries[0]
-    // is not rank 1, so the crown falls back to its empty state.
+    // is not rank 1, so the crown falls back to a neutral state
+    // instead of claiming the board has no runs.
     const top = leaderboard?.entries[0];
     const wr = top && top.rank === 1 && top.time !== null ? top : null;
+    // Only a genuinely empty board (page 1, zero entries) gets the
+    // "set the first record" copy. A deep-linked page or a null
+    // leaderboard just means we can't see rank 1 from here.
+    const boardIsEmpty =
+        leaderboard != null &&
+        leaderboard.page === 1 &&
+        leaderboard.entries.length === 0;
     const wrHref = wr
         ? wr.source === 'manual' && wr.manualTimeId != null
             ? `/games-v2/${game.name}/manual/${wr.manualTimeId}`
@@ -178,9 +186,13 @@ export function GameHero({
                                     )}
                                 </div>
                             </>
-                        ) : (
+                        ) : boardIsEmpty ? (
                             <div className={styles.crownEmpty}>
                                 No verified runs yet — set the first record.
+                            </div>
+                        ) : (
+                            <div className={styles.crownTime}>
+                                <span className={styles.crownMeta}>—</span>
                             </div>
                         )}
                     </div>

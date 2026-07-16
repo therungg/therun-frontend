@@ -50,8 +50,13 @@ export function LeaderboardPager({
     const [isPending, startTransition] = useTransition();
     // Frozen for the lifetime of this instance so the wrapper's entry
     // animation never re-fires when "Show more"/"Show previous" appends
-    // a page — only the initial mount decides stagger vs. fade.
+    // a page — only the initial mount decides stagger vs. fade. Server
+    // always emits stagger (module scope persists across requests, so
+    // mutating the flag during SSR would desync from a fresh client);
+    // a fresh client computes stagger on hydration too (match). Only
+    // client-side remounts (filter swaps) get the fade.
     const [entryClass] = useState(() => {
+        if (typeof window === 'undefined') return styles.boardStagger;
         const cls = hasAnimatedFirstBoard
             ? styles.boardFade
             : styles.boardStagger;
