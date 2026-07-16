@@ -2,30 +2,6 @@
 @use '../../styles/board' as board;
 
 // ---- Header -------------------------------------------------
-.header {
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-lg;
-    margin-bottom: dt.$spacing-xl;
-}
-
-.cover {
-    width: 48px;
-    height: 64px;
-    border-radius: dt.$radius-md;
-    object-fit: cover;
-    box-shadow: dt.$shadow-sm;
-    flex-shrink: 0;
-}
-
-.title {
-    font-size: dt.$font-size-2xl;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    margin: 0;
-    line-height: 1.15;
-}
-
 .metaLine {
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
@@ -34,15 +10,6 @@
         @include board.mono-time;
         color: var(--bs-secondary-color);
     }
-}
-
-.actions {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: dt.$spacing-sm;
-    flex-wrap: wrap;
-    justify-content: flex-end;
 }
 
 // ---- Control band ------------------------------------------
@@ -313,5 +280,22 @@
     .hero,
     .crown {
         animation: none;
+    }
+}
+
+// ---- Page grid ----------------------------------------------
+.grid {
+    @include board.board-page-columns;
+}
+
+.colMain {
+    min-width: 0;
+}
+
+.rail {
+    @media (min-width: 992px) {
+        position: sticky;
+        top: dt.$spacing-lg;
+        align-self: start;
     }
 }
