@@ -26,7 +26,7 @@ export function LivePanel({ gameDisplay }: Props) {
     const loading = data === undefined;
 
     return (
-        <section className={styles.panel}>
+        <section className={styles.panelGlass}>
             <div className={styles.panelHead}>
                 <span className={styles.eyebrow}>Live now</span>
                 {!loading && runners.length > 0 && (

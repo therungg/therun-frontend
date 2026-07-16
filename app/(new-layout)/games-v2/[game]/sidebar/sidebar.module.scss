@@ -31,22 +31,12 @@
     }
 }
 
-// the sidebar's one loud element
-.wrTime {
-    @include board.mono-time;
-    font-size: dt.$font-size-2xl;
-    font-weight: 700;
-    color: dt.$accent-gold;
-    line-height: 1.2;
-
-    a {
-        color: inherit;
-        text-decoration: none;
-
-        &:hover {
-            text-decoration: underline;
-        }
-    }
+// the "now" element gets the glass material
+.panelGlass {
+    @include board.board-glass;
+    border-radius: dt.$radius-lg;
+    padding: dt.$spacing-lg;
+    margin-bottom: dt.$spacing-lg;
 }
 
 .row {

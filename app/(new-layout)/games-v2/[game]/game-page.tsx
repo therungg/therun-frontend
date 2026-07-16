@@ -6,7 +6,7 @@ import type { ClaimCtaState } from './claim/claim-cta';
 import { FilterBar } from './filters/filter-bar';
 import styles from './game-page.module.scss';
 import { CategoryPills } from './header/category-pills';
-import { GameHeader } from './header/game-header';
+import { GameHero } from './header/game-hero';
 import { LeaderboardTable } from './leaderboard/leaderboard-table';
 import { PaginationBar } from './leaderboard/pagination-bar';
 import { RulesPanel } from './rules/rules-panel';
@@ -41,9 +41,12 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
     if (data.categories.length === 0) {
         return (
             <div>
-                <GameHeader
+                <GameHero
                     game={data.game}
                     stats={data.quickStats}
+                    category={null}
+                    leaderboard={null}
+                    subcategoryKey=""
                     canManage={canManage}
                     canModerate={canManageRuns}
                     sessionUsername={data.sessionUsername}
@@ -58,11 +61,21 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
         );
     }
 
+    const subcategoryKey = data.activeFilters.combined
+        ? ''
+        : Object.keys(data.activeFilters.subcategoryValues)
+              .sort()
+              .map((k) => `${k}=${data.activeFilters.subcategoryValues[k]}`)
+              .join('|');
+
     return (
         <div>
-            <GameHeader
+            <GameHero
                 game={data.game}
                 stats={data.quickStats}
+                category={data.selectedCategory}
+                leaderboard={data.invalidCombination ? null : data.leaderboard}
+                subcategoryKey={subcategoryKey}
                 canManage={canManage}
                 canModerate={canManageRuns}
                 sessionUsername={data.sessionUsername}
@@ -100,8 +113,8 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                 rules={data.selectedCategory.rules}
                 categoryId={data.selectedCategory.id}
             />
-            <div className="row">
-                <div className="col-lg-8">
+            <div className={styles.grid}>
+                <div className={styles.colMain}>
                     {data.invalidCombination ? (
                         <InvalidCombinationNotice
                             gameSlug={data.game.name}
@@ -126,9 +139,9 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                         </>
                     )}
                 </div>
-                <div className="col-lg-4">
+                <aside className={styles.rail}>
                     <Sidebar data={data} />
-                </div>
+                </aside>
             </div>
         </div>
     );
