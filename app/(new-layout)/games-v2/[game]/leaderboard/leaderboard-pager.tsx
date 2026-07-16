@@ -20,6 +20,15 @@ interface Props {
     variableKeys: string[];
 }
 
+// Module-level flag (not state): the parent keys this component by the
+// filter signature, so every category/filter change remounts it. The
+// very first-ever mount of a pager on the page staggers its rows in;
+// every later remount (a category/filter swap) gets the quick 120ms
+// fade instead. Because this lives outside the component, it survives
+// across those remounts while still being fixed for the lifetime of
+// any single instance (Show more/previous never touch it).
+let hasAnimatedFirstBoard = false;
+
 /**
  * Client accumulator around the SSR'd page: "Show more" appends the
  * next page, "Show previous" prepends (deep links land mid-board).
@@ -39,12 +48,16 @@ export function LeaderboardPager({
     const [minPage, setMinPage] = useState(initial.page);
     const [maxPage, setMaxPage] = useState(initial.page);
     const [isPending, startTransition] = useTransition();
-    // No pages loaded beyond the SSR'd one yet: this is the initial
-    // navigation into this instance, so rows stagger in. Once a
-    // "Show more"/"Show previous" appends/prepends a page, this stays
-    // false for the lifetime of the instance (a filter change remounts
-    // via the parent `key`, resetting it).
-    const stagger = pages.length === 1;
+    // Frozen for the lifetime of this instance so the wrapper's entry
+    // animation never re-fires when "Show more"/"Show previous" appends
+    // a page — only the initial mount decides stagger vs. fade.
+    const [entryClass] = useState(() => {
+        const cls = hasAnimatedFirstBoard
+            ? styles.boardFade
+            : styles.boardStagger;
+        hasAnimatedFirstBoard = true;
+        return cls;
+    });
 
     const load = (page: number, position: 'before' | 'after') => {
         startTransition(async () => {
@@ -73,13 +86,9 @@ export function LeaderboardPager({
     };
 
     const merged = mergeEntries(pages);
-    const shownThrough = Math.min(
-        maxPage * initial.pageSize,
-        initial.totalItems,
-    );
 
     return (
-        <div className={stagger ? styles.boardStagger : styles.boardFade}>
+        <div className={entryClass}>
             {minPage > 1 && (
                 <div className={styles.showMoreBar}>
                     <button
@@ -110,7 +119,7 @@ export function LeaderboardPager({
                         {isPending ? 'Loading…' : 'Show more'}
                     </button>
                     <span className={styles.showMoreMeta}>
-                        <span>{shownThrough.toLocaleString()}</span> of{' '}
+                        <span>{merged.length.toLocaleString()}</span> of{' '}
                         <span>{initial.totalItems.toLocaleString()}</span>
                     </span>
                 </div>
