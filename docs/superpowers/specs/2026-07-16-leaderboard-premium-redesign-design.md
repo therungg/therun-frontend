@@ -54,21 +54,51 @@ impression, disciplined data below it.
   swap the ambient source from "cover art" to "mod-chosen theme" without
   relayout.
 
+## Section 0 — Page architecture (one composed grid, not a stack)
+
+Today the page is five blocks under each other (header → band → rules →
+table → sidebar cards). The redesign gives the page **one grid, established
+in the hero and continued to the footer**. The crown sits in the hero's
+right column, and the rail (live + recent PBs) continues that same column
+below the band — a continuous vertical axis instead of a banner with stuff
+underneath.
+
+```
+┌ HERO — full-bleed ambient art ────────────────────────────────────┐
+│                                          ┊                        │
+│  ┌──────┐  SUPER MARIO ODYSSEY           ┊  WORLD RECORD — ANY%   │
+│  │cover │  1,204 runners · 18,433 runs   ┊  58:11.9               │
+│  └──────┘  [Submit run] [Manage] [Claim] ┊  Nindo · 3d ▸ history  │
+├ CONTROL BAND — sticky glass, full width ─┊────────────────────────┤
+│ [Any%] [100%] [Darker Side]  [Version ▾] ┊ [✓ Verified]   Rules ▸ │
+├──────────────────────────────────────────┊────────────────────────┤
+│  BOARD                                   ┊  RAIL (sticky)         │
+│   #  runner        time       date       ┊  ● LIVE NOW            │
+│   1  ● Nindo       58:11.9    3d  ▶ ✓    ┊  RECENT PBS            │
+│   …                                      ┊                        │
+│   pagination                             ┊                        │
+└──────────────────────────────────────────┴────────────────────────┘
+```
+
+- One CSS grid (`minmax(0, 1fr) 340px`, `$spacing-3xl` gutter) shared by
+  hero content and body; the hero's backdrop is full-bleed but its content
+  aligns to the same grid lines as the board and rail. The dashed axis above
+  is the design's spine: crown → live → recent PBs.
+- **Quick-stats card dies**: runner/run counts move into the hero meta line;
+  anything only a mod cares about lives in the console, not here.
+- **Rules** stay a disclosure at the band's right end (unchanged behavior).
+- Rail is `position: sticky` below the band, so live runs stay in view while
+  scrolling long boards.
+- Mobile/tablet (`<lg`): single column — hero (crown under title), band,
+  board, live, recent PBs.
+- The empty-categories page uses the same hero with a calm notice in the
+  board column.
+
 ## Section 1 — The hero (signature element)
 
-Full-width band above the current two-column layout, replacing the current
-small header row.
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│ ░░ cover art, blur(80px) saturate(140%), scrim → page bg ░░░░░░ │
-│  ┌────────┐   SUPER MARIO ODYSSEY                    [Submit run]│
-│  │ cover  │   1,204 runners · 18,433 runs             [Manage ▾] │
-│  │ 96×128 │                                                      │
-│  │        │   WORLD RECORD — ANY%                                │
-│  └────────┘   58:11.9   Nindo · 3 days ago · ▸ history           │
-└──────────────────────────────────────────────────────────────────┘
-```
+Full-bleed band replacing the current header row. Left grid column: sharp
+cover art (96×128, `$radius-lg`, `$shadow-lg`), game title, meta line,
+action group. Right grid column: the crown.
 
 - **Ambient backdrop:** the game's own cover art, `object-fit: cover`,
   `filter: blur(80px) saturate(140%)`, low opacity, under a two-stop scrim
@@ -76,8 +106,6 @@ small header row.
   page. Light and dark mode both work because the scrim ends at the theme's
   body bg. Pure CSS — no color-extraction library, no layout shift
   (`overflow: hidden` band, image absolutely positioned).
-- **Sharp cover art** 96×128 (3:4 per project rule), `$radius-lg`,
-  `$shadow-lg` — the one object that sits "on" the ambience.
 - **Game title** in a new display size (`$font-size-hero-title: 2.25rem`,
   weight 700, tracking −0.02em). Meta line beneath it: quiet, numbers in
   `mono-time`.
@@ -95,7 +123,7 @@ small header row.
   slot shows a calm "No verified runs yet — set the first record" with the
   Submit action emphasized.
 - Mobile: band shrinks (cover 60×80, title `$font-size-2xl`, crown
-  `$font-size-display`), actions wrap below.
+  `$font-size-display`), crown moves under the title, actions wrap below.
 
 ## Section 2 — Frosted sticky control band
 
@@ -140,11 +168,13 @@ comfortable-premium:
 - Wizard live preview (`category-leaderboard-preview.tsx`) reuses these
   classes and inherits the look; verify it still reads at compact width.
 
-## Section 4 — Sidebar, pagination, states
+## Section 4 — Rail, pagination, states
 
-- Sidebar loses the WR card (crown replaced it). Quick stats, live panel,
-  recent PBs stay as `board-surface` panels but gain the glass material on
-  the live panel only (it's the "now" element). Recent-PB times `mono-time`.
+- The sidebar becomes a **rail** with exactly two panels: **Live now**
+  (glass material — it's the "now" element) and **Recent PBs**
+  (`board-surface`, times in `mono-time`). WR card replaced by the crown;
+  quick-stats card absorbed into the hero meta line. The rail is sticky
+  below the control band.
 - Pagination unchanged structurally; buttons get the larger hit-area pill.
 - Empty/invalid-combination states unchanged (already calm).
 - Fix ride-along: `run-view/run-badges.tsx` `VerificationBadge` still uses
