@@ -156,3 +156,50 @@
         box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
     }
 }
+
+// ---- Page grid ----------------------------------------------
+// The board page's single grid: main column + rail. The hero's
+// content and the page body both compose this so the crown column
+// aligns with the rail below it.
+@mixin board-page-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    column-gap: dt.$spacing-3xl;
+    align-items: start;
+
+    @media (max-width: 991.98px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+// ---- Glass ---------------------------------------------------
+// Frosted material. Sanctioned uses only: hero action chips, the
+// sticky control band, the rail's live panel. Never content surfaces.
+@mixin board-glass {
+    background: color-mix(in srgb, var(--bs-body-bg) 72%, transparent);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+
+    @supports not (backdrop-filter: blur(1px)) {
+        background: color-mix(in srgb, var(--bs-body-bg) 96%, transparent);
+    }
+}
+
+// ---- Avatar monogram -----------------------------------------
+// Consumer sets background-color inline (hue derived from name).
+@mixin board-avatar($size: dt.$avatar-sm) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: $size;
+    height: $size;
+    border-radius: 50%;
+    flex-shrink: 0;
+    color: #fff;
+    font-size: calc(#{$size} * 0.38);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    user-select: none;
+}
