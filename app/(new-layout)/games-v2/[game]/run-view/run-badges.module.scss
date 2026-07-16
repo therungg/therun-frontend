@@ -1,0 +1,14 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+.verified {
+    @include board.board-pill(dt.$accent-green);
+}
+
+.pending {
+    @include board.board-pill(dt.$accent-amber);
+}
+
+.rejected {
+    @include board.board-pill;
+}
