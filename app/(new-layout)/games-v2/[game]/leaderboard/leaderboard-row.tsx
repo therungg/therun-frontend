@@ -120,7 +120,12 @@ export function LeaderboardRow({
                 )}
                 {entry.source !== 'manual' &&
                     entry.verificationStatus === 'pending' && (
-                        <span className={styles.setPill}>pending</span>
+                        <span
+                            className={styles.setPill}
+                            title="Awaiting moderator verification"
+                        >
+                            pending
+                        </span>
                     )}
                 {entry.vodUrl && (
                     <a
