@@ -7,7 +7,7 @@ Scope: all games-v2 surfaces — the public leaderboard, the setup wizard, the u
 - **Human:** a speedrun game moderator / board-admin. Opens this to triage suspicious/flagged runs at volume and to configure leaderboard standards. Often acting between other things; wants to act fast and confidently without mistakes.
 - **Verb:** *triage* flagged runs (approve / remove / ban) and *configure* standards/categories.
 - **Human (public):** a speedrunner or viewer scanning a leaderboard. Wants the board to be overzichtelijk — instantly legible, calm, competitive. **Verb:** *scan* ranks and times.
-- **Feel:** a calm, precise **leaderboard-integrity control room**. Authoritative, fast, trustworthy, uncluttered. Speedrun precision shows up as tabular monospace times. Severity is the visual organizing principle. Craft whispers.
+- **Feel:** a calm, precise **leaderboard-integrity control room**. Authoritative, fast, trustworthy, uncluttered. Speedrun precision shows up as tabular monospace times. Severity is the visual organizing principle. Craft whispers. The public board's register moves from calm-admin to premium-competitive (the crown redesign); the console keeps its calm register.
 
 ## Domain & color world
 
@@ -18,6 +18,7 @@ Splits/timers, WR/PB, ranks, categories & platforms, verification/VODs, flags/se
 1. **Severity spine** — a 3px colored left edge on every attention/run item (red=high, amber=medium, neutral=low). Lets a moderator scan the queue by integrity risk at a glance. This is the console's defining element.
 2. **Tabular monospace times** — every run time uses `$font-mono` with tabular numerals, like a speedrun timer. Times are data, aligned and scannable.
 3. **Rank accents** — ranks 1/2/3 colored gold/silver/bronze ($accent-gold/$accent-silver/$accent-bronze) in the mono rank column. The public board's defining element; the wizard's live preview shares it.
+4. **Ambient art hero / the crown** — the game's own cover art, blurred to atmosphere under a scrim, with the category WR set monumentally in gold mono. Per-game identity derived from content, not configuration.
 
 ## Defaults rejected
 
@@ -30,10 +31,11 @@ Splits/timers, WR/PB, ranks, categories & platforms, verification/VODs, flags/se
 - **Tokens, not magic numbers.** Use `_design-tokens.scss` (`$spacing-*`, `$radius-*`, `$shadow-*`, `$font-size-*`, `$transition-*`, accent colors, `$font-mono`). Co-locate styles as `*.module.scss` (project convention).
 - **Depth = borders + subtle surface tint** (the app's strategy). Borders are low-opacity green/`--bs-border-color`; never harsh. Sidebar shares the canvas bg with a right border. Inputs slightly inset.
 - **Surfaces:** canvas → console surface (faint tint + 1px border, `$radius-lg`) → raised (hover/active, `$shadow-md`). Whisper-quiet jumps.
+- **Glass** (board-glass) is reserved for the hero's quiet actions, the sticky control band, and the rail's live panel — never for content surfaces.
 - **Type:** headings 600 + slight negative tracking; labels uppercase `$font-size-2xs` letter-spaced muted; **times always `$font-mono` tabular**. Four text levels (primary/secondary/tertiary/muted via `--bs-*` tones).
 - **Icons:** `react-bootstrap-icons`, ~16px inline / ~18px standalone, `aria-hidden` when decorative, with accessible labels on icon-only buttons.
 - **States:** every interactive element has hover/active/focus-visible/disabled; data has loading/empty/error. Empty states are calm ("All clear"), not barren.
-- **Motion:** `$transition-fast`/`$transition-base`, deceleration easing only. No bounce.
+- **Motion:** `$transition-fast`/`$transition-base`, deceleration easing only. No bounce. One orchestrated load-in per navigation (hero fade-up, first rows stagger); category/filter swaps crossfade. prefers-reduced-motion disables all of it.
 - **Severity map:** high→`$accent-red`, medium→`$accent-amber`, low→neutral `--bs-secondary`. Reuse this everywhere severity/status appears.
 
 ## Components
