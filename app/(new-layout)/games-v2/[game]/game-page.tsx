@@ -1,15 +1,16 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from '~src/components/link';
 import type { ClaimCtaState } from './claim/claim-cta';
 import { FilterBar } from './filters/filter-bar';
+import { FiltersPopover } from './filters/filters-popover';
 import styles from './game-page.module.scss';
 import { CategoryPills } from './header/category-pills';
 import { GameHero } from './header/game-hero';
 import { LeaderboardTable } from './leaderboard/leaderboard-table';
 import { PaginationBar } from './leaderboard/pagination-bar';
-import { RulesPanel } from './rules/rules-panel';
+import { RulesBody, RulesPanel } from './rules/rules-panel';
 import { SelfClaimButton } from './self-claim-button';
 import { Sidebar } from './sidebar/sidebar';
 import type { GamePageData } from './types';
@@ -37,6 +38,8 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
         () => data.variables.map((v) => v.nameNormalized),
         [data.variables],
     );
+    const [rulesOpen, setRulesOpen] = useState(false);
+    useEffect(() => setRulesOpen(false), [data.selectedCategory.id]);
 
     if (data.categories.length === 0) {
         return (
@@ -94,25 +97,36 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                 }
             />
             <div className={styles.band}>
-                <CategoryPills
-                    categories={data.categories}
-                    groups={data.groups}
-                    selectedCategoryName={data.selectedCategory.name}
-                    variableKeys={variableKeys}
-                />
+                <div className={styles.bandRow}>
+                    <CategoryPills
+                        categories={data.categories}
+                        groups={data.groups}
+                        selectedCategoryName={data.selectedCategory.name}
+                        variableKeys={variableKeys}
+                    />
+                    <div className={styles.bandEnd}>
+                        <FiltersPopover
+                            defs={data.variables}
+                            selectedVarFilters={data.activeFilters.varFilters}
+                            verified={data.activeFilters.verified}
+                        />
+                        <RulesPanel
+                            rules={data.selectedCategory.rules}
+                            open={rulesOpen}
+                            onToggle={() => setRulesOpen((o) => !o)}
+                        />
+                    </div>
+                </div>
                 <FilterBar
                     defs={data.variables}
                     selectedSubcategoryValues={
                         data.activeFilters.subcategoryValues
                     }
-                    selectedVarFilters={data.activeFilters.varFilters}
-                    verified={data.activeFilters.verified}
                 />
             </div>
-            <RulesPanel
-                rules={data.selectedCategory.rules}
-                categoryId={data.selectedCategory.id}
-            />
+            {rulesOpen && data.selectedCategory.rules && (
+                <RulesBody rules={data.selectedCategory.rules} />
+            )}
             <div className={styles.grid}>
                 <div className={styles.colMain}>
                     {data.invalidCombination ? (

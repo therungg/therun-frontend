@@ -14,11 +14,50 @@
 
 // ---- Control band ------------------------------------------
 .band {
-    @include board.board-surface(dt.$spacing-sm dt.$spacing-lg);
+    @include board.board-glass;
+    border-radius: dt.$radius-lg;
+    padding: dt.$spacing-sm dt.$spacing-lg;
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-xs;
     margin-bottom: dt.$spacing-lg;
+    position: sticky;
+    top: dt.$spacing-sm;
+    z-index: 20;
+}
+
+.bandEnd {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    flex-shrink: 0;
+}
+
+.popoverRoot {
+    position: relative;
+}
+
+.popoverPanel {
+    @include board.board-surface(dt.$spacing-md dt.$spacing-lg);
+    position: absolute;
+    right: 0;
+    top: calc(100% + #{dt.$spacing-xs});
+    z-index: 30;
+    background: var(--bs-body-bg);
+    box-shadow: dt.$shadow-lg;
+    min-width: 16rem;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.filterCount {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xs;
+    background: rgba(var(--bs-primary-rgb), 0.15);
+    border-radius: 999px;
+    padding: 0 0.4rem;
 }
 
 .bandRow {
@@ -295,7 +334,7 @@
 .rail {
     @media (min-width: 992px) {
         position: sticky;
-        top: dt.$spacing-lg;
+        top: 5rem;
         align-self: start;
     }
 }
