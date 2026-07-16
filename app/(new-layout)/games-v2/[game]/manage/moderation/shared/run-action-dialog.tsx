@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState, useTransition } from 'react';
+import { createPortal } from 'react-dom';
 import { toast } from 'react-toastify';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
@@ -68,6 +69,16 @@ export function RunActionDialog({
     const [error, setError] = useState<string | null>(null);
     const [isPreviewing, startPreview] = useTransition();
     const [isConfirming, startConfirm] = useTransition();
+    // Portal target isn't available during SSR; mount client-side only. This
+    // also keeps the dialog out of the opacity-0 `.reveal` subtree it may be
+    // composed inside (leaderboard row hover affordance), which would
+    // otherwise render an open dialog invisible whenever the row loses hover
+    // or focus (e.g. keyboard: Enter closes the dropdown, focus falls to
+    // body).
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const runIds = target.kind === 'runs' ? target.runIds : [];
     const banRule: UserExclusionRuleInput | null =
@@ -191,7 +202,9 @@ export function RunActionDialog({
             ? target.label
             : `${target.runnerName} · ${scope === 'category' ? target.categoryDisplay : `${target.gameDisplay} (entire game)`}`;
 
-    return (
+    if (!mounted) return null;
+
+    return createPortal(
         <div
             className={`modal d-block ${styles.backdrop}`}
             tabIndex={-1}
@@ -458,6 +471,7 @@ export function RunActionDialog({
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body,
     );
 }
