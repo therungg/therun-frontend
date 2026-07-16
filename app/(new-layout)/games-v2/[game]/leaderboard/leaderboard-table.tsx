@@ -38,10 +38,8 @@ export function LeaderboardTable({
                         <th>Runner</th>
                         {!hideRealTime && <th>Real time</th>}
                         {!hideGameTime && <th>Game time</th>}
-                        <th>Date</th>
-                        <th aria-label="Video" />
-                        <th aria-label="Verified" />
-                        <th />
+                        <th>When</th>
+                        <th aria-label="Video, status and actions" />
                     </tr>
                 </thead>
                 <tbody>

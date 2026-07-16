@@ -10,8 +10,54 @@
 .table {
     @include board.board-table;
 
+    tbody td {
+        padding: dt.$spacing-md dt.$spacing-lg;
+    }
+
     tbody tr:last-child td {
         border-bottom: 0;
+    }
+}
+
+.rowLink {
+    cursor: pointer;
+}
+
+.runnerCell {
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}
+
+.when {
+    white-space: nowrap;
+}
+
+.trailing {
+    text-align: right;
+    white-space: nowrap;
+
+    > * + * {
+        margin-left: dt.$spacing-sm;
+    }
+}
+
+// actions are invisible at rest; revealed on hover / keyboard focus
+.reveal {
+    display: inline-flex;
+    gap: dt.$spacing-xs;
+    opacity: 0;
+    transition: opacity dt.$transition-fast;
+}
+
+tr:hover .reveal,
+tr:focus-within .reveal {
+    opacity: 1;
+}
+
+@media (pointer: coarse) {
+    .reveal {
+        display: none;
     }
 }
 
@@ -72,6 +118,26 @@
     );
 }
 
+// podium rows: medal spine + heavier rank numeral
+// declared after .youRow so a podium+you row keeps the medal spine
+// (same specificity, later source order wins)
+.rank1Row td:first-child {
+    box-shadow: inset 3px 0 0 dt.$accent-gold;
+}
+.rank2Row td:first-child {
+    box-shadow: inset 3px 0 0 dt.$accent-silver;
+}
+.rank3Row td:first-child {
+    box-shadow: inset 3px 0 0 dt.$accent-bronze;
+}
+
+.rank1Row .rank,
+.rank2Row .rank,
+.rank3Row .rank {
+    font-size: dt.$font-size-md;
+    font-weight: 700;
+}
+
 .iconLink {
     display: inline-flex;
     align-items: center;
@@ -81,10 +147,6 @@
     &:hover {
         color: var(--bs-primary);
     }
-}
-
-.verified {
-    color: var(--bs-primary);
 }
 
 .setPill {
