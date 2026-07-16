@@ -1,8 +1,27 @@
 # Leaderboard Premium Redesign — "The Crown" — Design
 
 Date: 2026-07-16
-Status: proposed (awaiting Joey's review)
+Status: implemented
 Depends on: board visual unification (implemented 2026-07-15, `tier1-console-completion`)
+
+## Deviations from this plan
+
+1. **Hero is a full-container-width rounded card (App-Store-card style), not
+   viewport-bleed.** The page renders inside a Bootstrap `.container`, so a
+   true full-bleed backdrop isn't available; the hero is a rounded card that
+   fills the container width instead.
+2. **The Filters popover renders whenever it has content**, not only when
+   filter-type variables exist — it always hosts the verified toggle, so it
+   is never empty. Count badge = active var filters + verified.
+3. **Band rows wrap (`flex-wrap`) instead of horizontal-scroll-with-edge-fade
+   on mobile** — fewer moving parts, same legibility.
+
+## Implementation notes
+
+- The moderator confirm dialog (`RunActionDialog`) is now portaled to
+  `document.body`.
+- "Show more" count shows the loaded-row count (`merged.length`), not the
+  total.
 
 ## Problem
 
