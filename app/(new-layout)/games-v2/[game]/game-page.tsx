@@ -8,8 +8,7 @@ import { FiltersPopover } from './filters/filters-popover';
 import styles from './game-page.module.scss';
 import { CategoryPills } from './header/category-pills';
 import { GameHero } from './header/game-hero';
-import { LeaderboardTable } from './leaderboard/leaderboard-table';
-import { PaginationBar } from './leaderboard/pagination-bar';
+import { LeaderboardPager } from './leaderboard/leaderboard-pager';
 import { RulesBody, RulesPanel } from './rules/rules-panel';
 import { SelfClaimButton } from './self-claim-button';
 import { Sidebar } from './sidebar/sidebar';
@@ -138,19 +137,25 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                             }
                         />
                     ) : (
-                        <>
-                            <LeaderboardTable
-                                leaderboard={data.leaderboard}
-                                sessionUsername={data.sessionUsername}
-                                canManage={canManageRuns}
-                                gameSlug={data.game.name}
-                                variableKeys={variableKeys}
-                            />
-                            <PaginationBar
-                                page={data.leaderboard.page}
-                                totalPages={data.leaderboard.totalPages}
-                            />
-                        </>
+                        <LeaderboardPager
+                            key={`${data.selectedCategory.id}|${subcategoryKey}|${JSON.stringify(data.activeFilters.varFilters)}|${data.activeFilters.combined}|${data.activeFilters.verified}`}
+                            initial={data.leaderboard}
+                            query={{
+                                gameSlug: data.game.name,
+                                categorySlug: data.selectedCategory.name,
+                                timing: data.selectedCategory.primaryTiming,
+                                subcategoryValues:
+                                    data.activeFilters.subcategoryValues,
+                                combined: data.activeFilters.combined,
+                                varFilters: data.activeFilters.varFilters,
+                                verified: data.activeFilters.verified,
+                                pageSize: data.activeFilters.pageSize,
+                            }}
+                            sessionUsername={data.sessionUsername}
+                            canManage={canManageRuns}
+                            gameSlug={data.game.name}
+                            variableKeys={variableKeys}
+                        />
                     )}
                 </div>
                 <aside className={styles.rail}>
