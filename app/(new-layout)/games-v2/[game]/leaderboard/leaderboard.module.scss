@@ -110,3 +110,12 @@
 .pageBtnActive {
     @include board.control-pill-active;
 }
+
+// ---- Runner avatars (monogram) -------------------------------
+.avatar {
+    @include board.board-avatar(dt.$avatar-sm);
+}
+
+.avatarMd {
+    @include board.board-avatar(dt.$avatar-md);
+}
