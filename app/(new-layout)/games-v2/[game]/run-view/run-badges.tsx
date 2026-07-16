@@ -3,6 +3,9 @@
 // Kept prop-plain (no RunDetail/RunViewModel dependency) so either side can
 // import without pulling in the other's types.
 
+import { CheckCircleFill, HourglassSplit } from 'react-bootstrap-icons';
+import styles from './run-badges.module.scss';
+
 export function VerificationBadge({
     status,
 }: {
@@ -10,23 +13,20 @@ export function VerificationBadge({
 }) {
     if (status === 'verified') {
         return (
-            <span className="badge text-bg-success" aria-label="verified">
-                ✓ Verified
+            <span className={styles.verified} aria-label="verified">
+                <CheckCircleFill size={11} aria-hidden /> Verified
             </span>
         );
     }
     if (status === 'pending') {
         return (
-            <span className="badge text-bg-warning" aria-label="pending">
-                ⌛ Pending
+            <span className={styles.pending} aria-label="pending">
+                <HourglassSplit size={11} aria-hidden /> Pending
             </span>
         );
     }
     return (
-        <span
-            className="badge text-bg-secondary opacity-75"
-            aria-label="rejected"
-        >
+        <span className={styles.rejected} aria-label="rejected">
             Rejected
         </span>
     );
