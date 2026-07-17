@@ -88,7 +88,7 @@
 .backdrop {
     position: absolute;
     inset: 0;
-    opacity: 0.08;
+    opacity: 0.22;
     display: flex;
     justify-content: flex-end;
     img {
@@ -230,24 +230,6 @@
     font-size: clamp(52px, 4.8vw, 92px);
     font-weight: 800;
     line-height: 1;
-}
-
-.artCard {
-    position: absolute;
-    right: 6vw;
-    bottom: 6vw;
-    z-index: 1;
-    width: 19vw;
-    border-radius: 14px;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
-
-    img {
-        display: block;
-        width: 100%;
-        height: auto;
-    }
 }
 
 // ---------------------------------------------------------------------------
