@@ -9,6 +9,7 @@ import {
 import type { RunnerDossier } from '~src/lib/fast50/dossier.types';
 
 export type SlideId =
+    | 'the-game'
     | 'intro'
     | 'roadmap'
     | 'grind'
@@ -53,6 +54,11 @@ export const THRESHOLDS = {
 const hours = (ms: number) => Math.round(ms / 3600_000);
 
 export const evaluators: Record<SlideId, SlideEvaluator> = {
+    'the-game': (d) => ({
+        score: 100,
+        headline: `The game — ${d.game.display}`,
+    }),
+
     intro: (d) => ({
         score: 100,
         headline: `${d.runner.username} — ${d.game.display} ${d.game.category}`,
