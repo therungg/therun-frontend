@@ -48,6 +48,9 @@ export function LeaderboardPager({
     const [minPage, setMinPage] = useState(initial.page);
     const [maxPage, setMaxPage] = useState(initial.page);
     const [isPending, startTransition] = useTransition();
+    // Which direction's fetch last failed, if any — drives the inline
+    // error under that direction's bar and lets Retry redo the same load.
+    const [error, setError] = useState<'before' | 'after' | null>(null);
     // Frozen for the lifetime of this instance so the wrapper's entry
     // animation never re-fires when "Show more"/"Show previous" appends
     // a page — only the initial mount decides stagger vs. fade. Server
@@ -67,7 +70,11 @@ export function LeaderboardPager({
     const load = (page: number, position: 'before' | 'after') => {
         startTransition(async () => {
             const res = await fetchLeaderboardPage({ ...query, page });
-            if (!res) return;
+            if (!res) {
+                setError(position);
+                return;
+            }
+            setError(null);
             setPages((prev) =>
                 position === 'after'
                     ? [...prev, res.entries]
@@ -102,8 +109,20 @@ export function LeaderboardPager({
                         disabled={isPending}
                         onClick={() => load(minPage - 1, 'before')}
                     >
-                        Show previous
+                        {isPending ? 'Loading…' : 'Show previous'}
                     </button>
+                    {error === 'before' && (
+                        <div className={styles.pagerError}>
+                            <span>Couldn't load more runs.</span>
+                            <button
+                                type="button"
+                                className={styles.pagerErrorRetry}
+                                onClick={() => load(minPage - 1, 'before')}
+                            >
+                                Retry
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
             <LeaderboardTable
@@ -127,6 +146,18 @@ export function LeaderboardPager({
                         <span>{merged.length.toLocaleString()}</span> of{' '}
                         <span>{initial.totalItems.toLocaleString()}</span>
                     </span>
+                    {error === 'after' && (
+                        <div className={styles.pagerError}>
+                            <span>Couldn't load more runs.</span>
+                            <button
+                                type="button"
+                                className={styles.pagerErrorRetry}
+                                onClick={() => load(maxPage + 1, 'after')}
+                            >
+                                Retry
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

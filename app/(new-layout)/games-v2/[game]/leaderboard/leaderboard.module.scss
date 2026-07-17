@@ -179,6 +179,26 @@ tr:focus-within .reveal {
     }
 }
 
+.pagerError {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    font-size: dt.$font-size-xs;
+    color: dt.$accent-red;
+}
+
+.pagerErrorRetry {
+    @include board.control-pill;
+    padding: 0;
+    text-decoration: underline;
+    color: dt.$accent-red;
+
+    &:hover {
+        background: transparent;
+        color: dt.$accent-red;
+    }
+}
+
 // ---- Entry motion -------------------------------------------
 @keyframes boardRowIn {
     from {

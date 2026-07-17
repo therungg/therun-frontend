@@ -36,6 +36,7 @@ export interface ContentRouterProps {
     selectedCategory: ResolvedCategory | null;
     canEditStandards: boolean;
     attentionItems: AttentionItem[];
+    degradedSources: string[];
     modApplications?: BoardClaimRequest[];
     moderators?: GameModerator[];
     initialSlug: string | null;
@@ -81,6 +82,7 @@ export function ContentRouter(props: ContentRouterProps) {
         selectedCategory,
         canEditStandards,
         attentionItems,
+        degradedSources,
         modApplications,
         moderators,
     } = props;
@@ -99,6 +101,7 @@ export function ContentRouter(props: ContentRouterProps) {
                         gameSlug={game.name}
                         gameDisplay={game.display}
                         items={attentionItems}
+                        degradedSources={degradedSources}
                         categories={categories}
                     />
                 </>

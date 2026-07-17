@@ -2,12 +2,14 @@
 
 import clsx from 'clsx';
 import moment from 'moment/moment';
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 import {
     CameraVideo,
     CameraVideoOff,
     ChevronDown,
     ChevronRight,
+    ExclamationTriangle,
     Flag,
     Hammer,
     HandIndex,
@@ -23,6 +25,7 @@ import { RunActionDialog } from '../shared/run-action-dialog';
 import {
     type AttentionItem,
     type AttentionSource,
+    formatSourceList,
     groupByRunner,
 } from './attention-model';
 import { ManualTimeVerdictRow } from './manual-time-verdict-row';
@@ -35,6 +38,10 @@ interface Props {
     gameSlug: string;
     gameDisplay: string;
     items: AttentionItem[];
+    /** Human-readable names of inbox sources that failed to load (e.g.
+     * "flags", "reports", "manual times"). Non-empty means the list below
+     * may be incomplete — never claim "All clear" while this is non-empty. */
+    degradedSources: string[];
     categories: Array<{ id: number; display: string }>;
 }
 
@@ -70,12 +77,16 @@ export function NeedsAttention({
     gameSlug,
     gameDisplay,
     items: initialItems,
+    degradedSources,
     categories,
 }: Props) {
+    const router = useRouter();
     const [items, setItems] = useState<AttentionItem[]>(initialItems);
     const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
     const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('any');
     const [runAction, setRunAction] = useState<RunAction | null>(null);
+    const isDegraded = degradedSources.length > 0;
+    const degradedMessage = `Couldn't load ${formatSourceList(degradedSources)} — the queue may not be empty.`;
 
     const filtered = useMemo(() => {
         return items.filter((it) => {
@@ -153,41 +164,90 @@ export function NeedsAttention({
             </div>
 
             {groups.length === 0 ? (
-                <div className={styles.empty}>
-                    <ShieldCheck
-                        size={40}
-                        className={styles.emptyIcon}
-                        aria-hidden="true"
-                    />
-                    <p className={styles.emptyTitle}>All clear</p>
-                    <p className="mb-0">Nothing needs attention right now.</p>
-                </div>
+                isDegraded ? (
+                    <div className={styles.empty}>
+                        <ExclamationTriangle
+                            size={40}
+                            className={styles.emptyIconWarning}
+                            aria-hidden="true"
+                        />
+                        <p className={styles.emptyTitleWarning}>
+                            {degradedMessage}
+                        </p>
+                        <button
+                            type="button"
+                            className={clsx(
+                                'btn btn-sm btn-outline-secondary',
+                                styles.retryBtn,
+                            )}
+                            onClick={() => router.refresh()}
+                        >
+                            Retry
+                        </button>
+                    </div>
+                ) : (
+                    <div className={styles.empty}>
+                        <ShieldCheck
+                            size={40}
+                            className={styles.emptyIcon}
+                            aria-hidden="true"
+                        />
+                        <p className={styles.emptyTitle}>All clear</p>
+                        <p className="mb-0">
+                            Nothing needs attention right now.
+                        </p>
+                    </div>
+                )
             ) : (
-                <div className={styles.stack}>
-                    {groups.map((g) =>
-                        g.items.length > 1 ? (
-                            <RunnerGroupCard
-                                key={`u:${g.userId}`}
-                                gameSlug={gameSlug}
-                                gameDisplay={gameDisplay}
-                                runnerName={g.runnerName}
-                                userId={g.userId}
-                                items={g.items}
-                                onAct={setRunAction}
-                                onItemDone={(keys) => removeKeys(keys)}
+                <>
+                    {isDegraded && (
+                        <div className={styles.degradedBanner}>
+                            <ExclamationTriangle
+                                size={16}
+                                className={styles.degradedIcon}
+                                aria-hidden="true"
                             />
-                        ) : (
-                            <SingleItemCard
-                                key={g.items[0].key}
-                                gameSlug={gameSlug}
-                                gameDisplay={gameDisplay}
-                                item={g.items[0]}
-                                onAct={setRunAction}
-                                onDone={() => removeKeys([g.items[0].key])}
-                            />
-                        ),
+                            <span className={styles.degradedText}>
+                                {degradedMessage}
+                            </span>
+                            <button
+                                type="button"
+                                className={clsx(
+                                    'btn btn-sm btn-outline-secondary',
+                                    styles.degradedRetry,
+                                )}
+                                onClick={() => router.refresh()}
+                            >
+                                Retry
+                            </button>
+                        </div>
                     )}
-                </div>
+                    <div className={styles.stack}>
+                        {groups.map((g) =>
+                            g.items.length > 1 ? (
+                                <RunnerGroupCard
+                                    key={`u:${g.userId}`}
+                                    gameSlug={gameSlug}
+                                    gameDisplay={gameDisplay}
+                                    runnerName={g.runnerName}
+                                    userId={g.userId}
+                                    items={g.items}
+                                    onAct={setRunAction}
+                                    onItemDone={(keys) => removeKeys(keys)}
+                                />
+                            ) : (
+                                <SingleItemCard
+                                    key={g.items[0].key}
+                                    gameSlug={gameSlug}
+                                    gameDisplay={gameDisplay}
+                                    item={g.items[0]}
+                                    onAct={setRunAction}
+                                    onDone={() => removeKeys([g.items[0].key])}
+                                />
+                            ),
+                        )}
+                    </div>
+                </>
             )}
 
             {runAction && (

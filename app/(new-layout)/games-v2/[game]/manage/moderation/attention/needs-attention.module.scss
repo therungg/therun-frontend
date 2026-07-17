@@ -312,3 +312,49 @@ $rail: 3px;
     color: var(--bs-body-color);
     margin: 0;
 }
+
+// ---- Degraded state (a source failed to load) ---------------
+// Reuses the empty-state layout with amber replacing the "all clear"
+// green, per the severity-spine amber vocabulary above.
+.emptyIconWarning {
+    color: dt.$accent-amber;
+    margin-bottom: dt.$spacing-sm;
+}
+
+.emptyTitleWarning {
+    max-width: 32rem;
+    font-size: dt.$font-size-md;
+    font-weight: 600;
+    color: color-mix(in srgb, #{dt.$accent-amber} 75%, var(--bs-emphasis-color));
+    margin: 0;
+}
+
+.retryBtn {
+    margin-top: dt.$spacing-sm;
+}
+
+.degradedBanner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-lg;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    border: 1px solid color-mix(in srgb, #{dt.$accent-amber} 35%, transparent);
+    border-radius: dt.$radius-md;
+    background: color-mix(in srgb, #{dt.$accent-amber} 12%, transparent);
+}
+
+.degradedIcon {
+    color: dt.$accent-amber;
+    flex-shrink: 0;
+}
+
+.degradedText {
+    font-size: dt.$font-size-sm;
+    color: color-mix(in srgb, #{dt.$accent-amber} 75%, var(--bs-emphasis-color));
+}
+
+.degradedRetry {
+    margin-left: auto;
+}
