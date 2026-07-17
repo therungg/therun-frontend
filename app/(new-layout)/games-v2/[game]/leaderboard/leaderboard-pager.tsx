@@ -10,6 +10,7 @@ import { fetchLeaderboardPage } from '../actions/fetch-page.action';
 import styles from './leaderboard.module.scss';
 import { LeaderboardTable } from './leaderboard-table';
 import { mergeEntries } from './merge-entries';
+import type { TimingKey } from './timing-columns';
 
 interface Props {
     initial: LeaderboardResponse;
@@ -18,6 +19,7 @@ interface Props {
     canManage: boolean;
     gameSlug: string;
     variableKeys: string[];
+    primaryTiming: TimingKey;
 }
 
 // Module-level flag (not state): the parent keys this component by the
@@ -43,6 +45,7 @@ export function LeaderboardPager({
     canManage,
     gameSlug,
     variableKeys,
+    primaryTiming,
 }: Props) {
     const [pages, setPages] = useState<LeaderboardEntry[][]>([initial.entries]);
     const [minPage, setMinPage] = useState(initial.page);
@@ -131,6 +134,7 @@ export function LeaderboardPager({
                 canManage={canManage}
                 gameSlug={gameSlug}
                 variableKeys={variableKeys}
+                primaryTiming={primaryTiming}
             />
             {maxPage < initial.totalPages && (
                 <div className={styles.showMoreBar}>

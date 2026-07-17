@@ -17,6 +17,12 @@
     tbody tr:last-child td {
         border-bottom: 0;
     }
+
+    // Specificity note: board-table's `thead th` sets color via
+    // board-eyebrow, so the dimmed header needs to be nested here to win.
+    thead th.secondaryHeader {
+        color: var(--bs-tertiary-color);
+    }
 }
 
 .rowLink {
@@ -95,6 +101,27 @@ tr:focus-within .reveal {
         }
     }
 }
+
+// Non-ranking time column: same tabular mono treatment, de-emphasized
+// so the eye lands on the ranked column first.
+.timeSecondary {
+    @extend .time;
+    color: var(--bs-tertiary-color);
+}
+
+// Ranked column header: carries the "ranked" marker pill next to the label.
+.rankedHeader {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+}
+
+.rankedTag {
+    @include board.board-pill;
+}
+
+// .secondaryHeader itself is declared inside `.table` above (see note there)
+// so it wins specificity over board-table's `thead th` color rule.
 
 .meta {
     font-size: dt.$font-size-xs;

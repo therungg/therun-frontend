@@ -2,6 +2,7 @@ import type { LeaderboardResponse } from '../../../../../types/leaderboards.type
 import { ClearFiltersButton } from '../filters/clear-filters-button';
 import styles from './leaderboard.module.scss';
 import { LeaderboardRow } from './leaderboard-row';
+import { type TimingKey, timingColumns } from './timing-columns';
 
 interface Props {
     leaderboard: LeaderboardResponse;
@@ -9,6 +10,7 @@ interface Props {
     canManage: boolean;
     gameSlug: string;
     variableKeys: string[];
+    primaryTiming: TimingKey;
 }
 
 export function LeaderboardTable({
@@ -17,6 +19,7 @@ export function LeaderboardTable({
     canManage,
     gameSlug,
     variableKeys,
+    primaryTiming,
 }: Props) {
     if (leaderboard.entries.length === 0) {
         return (
@@ -28,6 +31,9 @@ export function LeaderboardTable({
     }
 
     const { hideRealTime, hideGameTime } = leaderboard;
+    const hidden = (key: TimingKey) =>
+        key === 'rt' ? hideRealTime : hideGameTime;
+    const { primary, secondary } = timingColumns(primaryTiming);
 
     return (
         <div className={styles.wrapper}>
@@ -36,8 +42,25 @@ export function LeaderboardTable({
                     <tr>
                         <th className={styles.rank}>#</th>
                         <th>Runner</th>
-                        {!hideRealTime && <th>Real time</th>}
-                        {!hideGameTime && <th>Game time</th>}
+                        {!hidden(primary.key) && (
+                            <th
+                                className={styles.rankedHeader}
+                                aria-label={`${primary.label} — ranking column`}
+                            >
+                                {primary.label}
+                                <span
+                                    className={styles.rankedTag}
+                                    aria-hidden="true"
+                                >
+                                    Ranked
+                                </span>
+                            </th>
+                        )}
+                        {!hidden(secondary.key) && (
+                            <th className={styles.secondaryHeader}>
+                                {secondary.label}
+                            </th>
+                        )}
                         <th>When</th>
                         <th aria-label="Video, status and actions" />
                     </tr>
@@ -58,6 +81,7 @@ export function LeaderboardTable({
                             gameSlug={gameSlug}
                             hideRealTime={hideRealTime}
                             hideGameTime={hideGameTime}
+                            primaryTiming={primaryTiming}
                             sessionUsername={sessionUsername}
                         />
                     ))}

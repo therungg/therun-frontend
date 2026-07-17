@@ -161,6 +161,7 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                             canManage={canManageRuns}
                             gameSlug={data.game.name}
                             variableKeys={variableKeys}
+                            primaryTiming={data.selectedCategory.primaryTiming}
                         />
                     )}
                 </div>

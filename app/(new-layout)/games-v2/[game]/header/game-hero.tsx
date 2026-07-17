@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { type ReactNode, useState } from 'react';
+import { HourglassSplit } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
@@ -150,20 +151,31 @@ export function GameHero({
                         </div>
                         {wr ? (
                             <>
-                                <div className={styles.crownTime}>
-                                    {wrHref ? (
-                                        <Link
-                                            href={wrHref}
-                                            className="text-decoration-none"
-                                        >
+                                <div className={styles.crownTimeRow}>
+                                    <div className={styles.crownTime}>
+                                        {wrHref ? (
+                                            <Link
+                                                href={wrHref}
+                                                className="text-decoration-none"
+                                            >
+                                                <DurationToFormatted
+                                                    duration={wr.time as number}
+                                                />
+                                            </Link>
+                                        ) : (
                                             <DurationToFormatted
                                                 duration={wr.time as number}
                                             />
-                                        </Link>
-                                    ) : (
-                                        <DurationToFormatted
-                                            duration={wr.time as number}
-                                        />
+                                        )}
+                                    </div>
+                                    {wr.verificationStatus === 'pending' && (
+                                        <span className={styles.crownPending}>
+                                            <HourglassSplit
+                                                size={11}
+                                                aria-hidden
+                                            />
+                                            Pending verification
+                                        </span>
                                     )}
                                 </div>
                                 <div className={styles.crownMeta}>
