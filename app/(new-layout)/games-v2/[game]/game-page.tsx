@@ -52,6 +52,7 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                     subcategoryKey=""
                     canManage={canManage}
                     canModerate={canManageRuns}
+                    claim={claim}
                 />
                 <div className={styles.notice}>
                     <p className="text-muted mb-0">
@@ -85,6 +86,7 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                 subcategoryKey={subcategoryKey}
                 canManage={canManage}
                 canModerate={canManageRuns}
+                claim={claim}
                 selfClaim={
                     data.sessionUsername ? (
                         <SelfClaimButton
