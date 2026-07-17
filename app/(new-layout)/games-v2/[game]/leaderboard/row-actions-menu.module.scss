@@ -24,3 +24,65 @@
         padding: dt.$spacing-lg;
     }
 }
+
+// ============================================================
+// Menu panel + items — design-system surface replacing the stock
+// Bootstrap dropdown chrome. Applied over react-bootstrap's
+// .dropdown-menu / .dropdown-item (mechanics kept), so values are
+// explicit to win the cascade.
+// ============================================================
+.menu {
+    min-width: 12rem;
+    padding: dt.$spacing-xs;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-md;
+    background: var(--bs-body-bg);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.item {
+    display: block;
+    width: 100%;
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border: 0;
+    border-radius: dt.$radius-sm;
+    background: transparent;
+    color: var(--bs-body-color);
+    font-size: dt.$font-size-sm;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color dt.$transition-fast,
+        color dt.$transition-fast;
+
+    &:hover,
+    &:focus-visible {
+        background: rgba(var(--bs-primary-rgb), 0.08);
+        color: var(--bs-emphasis-color);
+        outline: none;
+    }
+}
+
+// Destructive items (hide / remove) carry the accent-red vocabulary
+// instead of Bootstrap's .text-danger utility.
+.danger {
+    color: dt.$accent-red;
+
+    &:hover,
+    &:focus-visible {
+        background: color-mix(in srgb, #{dt.$accent-red} 10%, transparent);
+        color: dt.$accent-red;
+    }
+}
+
+.menuDivider {
+    height: 1px;
+    margin: dt.$spacing-xs 0;
+    background: rgba(var(--bs-border-color-rgb), 0.4);
+    border: 0;
+    opacity: 1;
+}
+
+.menuHeader {
+    @include board.board-eyebrow;
+    padding: dt.$spacing-xs dt.$spacing-md;
+}
