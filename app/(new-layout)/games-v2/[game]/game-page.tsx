@@ -48,7 +48,8 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                     game={data.game}
                     stats={data.quickStats}
                     category={null}
-                    leaderboard={null}
+                    wrEntry={null}
+                    boardIsEmpty={false}
                     subcategoryKey=""
                     canManage={canManage}
                     canModerate={canManageRuns}
@@ -91,7 +92,8 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                 game={data.game}
                 stats={data.quickStats}
                 category={data.selectedCategory}
-                leaderboard={data.invalidCombination ? null : data.leaderboard}
+                wrEntry={data.wrEntry}
+                boardIsEmpty={data.boardIsEmpty}
                 subcategoryKey={subcategoryKey}
                 canManage={canManage}
                 canModerate={canManageRuns}

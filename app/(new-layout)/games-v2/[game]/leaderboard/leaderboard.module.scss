@@ -147,6 +147,29 @@ tr:focus-within .reveal {
     );
 }
 
+// Find-me lands here programmatically (tabIndex={-1} + .focus()) — the
+// outline is the accessible marker, independent of the flash below.
+.youRow:focus {
+    outline: 2px solid var(--bs-primary);
+    outline-offset: -2px;
+}
+
+@keyframes youRowFlash {
+    0%,
+    100% {
+        background-color: rgba(var(--bs-primary-rgb), 0.06);
+    }
+    30% {
+        background-color: rgba(var(--bs-primary-rgb), 0.22);
+    }
+}
+
+// Temporary pulse layered on top of the permanent .youRow tint, added
+// and removed by the pager after a successful Find me.
+.youRowFlash td {
+    animation: youRowFlash 1.6s ease-out;
+}
+
 // podium rows: medal spine + heavier rank numeral
 // declared after .youRow so a podium+you row keeps the medal spine
 // (same specificity, later source order wins)
@@ -243,7 +266,17 @@ tr:focus-within .reveal {
     padding: dt.$spacing-sm dt.$spacing-2xl;
 }
 
-.showMoreMeta {
+// ---- Range indicator + Find me --------------------------------
+.boardMetaBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    margin-block-end: dt.$spacing-sm;
+}
+
+.rangeIndicator {
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
 
@@ -251,6 +284,20 @@ tr:focus-within .reveal {
         @include board.mono-time;
         color: var(--bs-tertiary-color);
     }
+}
+
+.findMeBtn {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding: dt.$spacing-xs dt.$spacing-lg;
+    margin-left: auto;
+}
+
+.notFoundNote {
+    font-size: dt.$font-size-xs;
+    font-style: italic;
+    color: var(--bs-tertiary-color);
+    margin-left: auto;
 }
 
 .pagerError {
@@ -312,7 +359,8 @@ tr:focus-within .reveal {
 
 @media (prefers-reduced-motion: reduce) {
     .boardStagger tbody tr,
-    .boardFade {
+    .boardFade,
+    .youRowFlash td {
         animation: none;
     }
 }

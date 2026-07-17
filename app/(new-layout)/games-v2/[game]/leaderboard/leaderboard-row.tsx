@@ -17,6 +17,10 @@ import {
     timingColumns,
 } from './timing-columns';
 
+// Find-me scrolls to and focuses this id. At most one row ever carries it
+// (the current session user's own entry), so a fixed id is safe.
+export const YOU_ROW_ID = 'leaderboard-you-row';
+
 interface Props {
     entry: LeaderboardEntry;
     isCurrentUser: boolean;
@@ -101,6 +105,10 @@ export function LeaderboardRow({
 
     return (
         <tr
+            id={isCurrentUser ? YOU_ROW_ID : undefined}
+            // -1: focusable programmatically (Find me scrolls here and
+            // focuses it) without joining the natural tab order.
+            tabIndex={isCurrentUser ? -1 : undefined}
             className={`${podiumClass} ${isCurrentUser ? styles.youRow : ''} ${detailHref ? styles.rowLink : ''}`}
             onClick={onRowClick}
         >

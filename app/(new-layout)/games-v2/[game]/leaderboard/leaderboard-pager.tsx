@@ -1,16 +1,26 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import type { LeaderboardQuery } from '~src/lib/leaderboards-v1';
 import type {
     LeaderboardEntry,
     LeaderboardResponse,
 } from '../../../../../types/leaderboards.types';
 import { fetchLeaderboardPage } from '../actions/fetch-page.action';
+import { computeBoardRange } from './board-range';
 import styles from './leaderboard.module.scss';
+import { YOU_ROW_ID } from './leaderboard-row';
 import { LeaderboardTable } from './leaderboard-table';
 import { mergeEntries } from './merge-entries';
 import type { TimingKey } from './timing-columns';
+
+// "Find me" fallback: the board API has no rank/user lookup that accounts
+// for the current filter state (subcategory, varFilters, verified,
+// combined — see getUserRankingsByName in src/lib/leaderboards-v1.ts,
+// which only returns a fixed default-board rank), so we page forward
+// looking for the session user's row instead of jumping straight there.
+// Capped so a genuinely-absent user doesn't trigger unbounded fetching.
+const MAX_FIND_ME_PAGES = 10;
 
 interface Props {
     initial: LeaderboardResponse;
@@ -56,6 +66,16 @@ export function LeaderboardPager({
     // Which direction's fetch last failed, if any — drives the inline
     // error under that direction's bar and lets Retry redo the same load.
     const [error, setError] = useState<'before' | 'after' | null>(null);
+    // 'searching' drives the Find me button's in-flight label; 'not-found'
+    // replaces it with a quiet note once the forward search exhausts its
+    // cap (or the board is fully loaded) without a match — sticky for the
+    // rest of this mount so a miss doesn't invite endless re-clicking.
+    const [findMeStatus, setFindMeStatus] = useState<
+        'idle' | 'searching' | 'not-found'
+    >('idle');
+    // Bumped after a successful find to (re-)trigger the scroll+focus
+    // effect even if the row was already on-screen from a prior search.
+    const [highlightToken, setHighlightToken] = useState(0);
     // Frozen for the lifetime of this instance so the wrapper's entry
     // animation never re-fires when "Show more"/"Show previous" appends
     // a page — only the initial mount decides stagger vs. fade. Server
@@ -72,6 +92,20 @@ export function LeaderboardPager({
         return cls;
     });
 
+    // Keeps the URL's ?page= in sync with the highest loaded page so
+    // refresh/share lands on a valid deep link.
+    const setUrlPage = (highest: number) => {
+        const sp = new URLSearchParams(window.location.search);
+        if (highest === 1) sp.delete('page');
+        else sp.set('page', String(highest));
+        const qs = sp.toString();
+        window.history.replaceState(
+            null,
+            '',
+            qs ? `${window.location.pathname}?${qs}` : window.location.pathname,
+        );
+    };
+
     const load = (page: number, position: 'before' | 'after') => {
         startTransition(async () => {
             const res = await fetchLeaderboardPage({ ...query, page });
@@ -87,22 +121,93 @@ export function LeaderboardPager({
             );
             if (position === 'after') setMaxPage(page);
             else setMinPage(page);
-            const sp = new URLSearchParams(window.location.search);
-            const highest = position === 'after' ? page : maxPage;
-            if (highest === 1) sp.delete('page');
-            else sp.set('page', String(highest));
-            const qs = sp.toString();
-            window.history.replaceState(
-                null,
-                '',
-                qs
-                    ? `${window.location.pathname}?${qs}`
-                    : window.location.pathname,
-            );
+            setUrlPage(position === 'after' ? page : maxPage);
         });
     };
 
     const merged = mergeEntries(pages);
+    const isCurrentUserVisible =
+        sessionUsername !== null &&
+        merged.some((e) => e.runnerName === sessionUsername);
+    const showFindMe =
+        sessionUsername !== null &&
+        !isCurrentUserVisible &&
+        findMeStatus !== 'not-found' &&
+        initial.totalItems > 0;
+
+    const findMe = () => {
+        if (!sessionUsername || isCurrentUserVisible) return;
+        setFindMeStatus('searching');
+        startTransition(async () => {
+            const fetchedPages: LeaderboardEntry[][] = [];
+            let cursor = maxPage;
+            let found = false;
+            let failed = false;
+            while (
+                !found &&
+                !failed &&
+                fetchedPages.length < MAX_FIND_ME_PAGES &&
+                cursor < initial.totalPages
+            ) {
+                const nextPage = cursor + 1;
+                const res = await fetchLeaderboardPage({
+                    ...query,
+                    page: nextPage,
+                });
+                if (!res) {
+                    failed = true;
+                    break;
+                }
+                fetchedPages.push(res.entries);
+                cursor = nextPage;
+                found = res.entries.some(
+                    (e) => e.runnerName === sessionUsername,
+                );
+            }
+            if (fetchedPages.length > 0) {
+                setPages((prev) => [...prev, ...fetchedPages]);
+                setMaxPage(cursor);
+                setUrlPage(cursor);
+            }
+            if (failed) {
+                setError('after');
+                setFindMeStatus('idle');
+                return;
+            }
+            setError(null);
+            setFindMeStatus(found ? 'idle' : 'not-found');
+            if (found) setHighlightToken((t) => t + 1);
+        });
+    };
+
+    // Scroll to and focus the current user's row after a successful find.
+    // Focus (not just a background flash) is the accessible marker — it
+    // works for anyone regardless of color perception.
+    useEffect(() => {
+        if (highlightToken === 0) return;
+        const row = document.getElementById(YOU_ROW_ID);
+        if (!row) return;
+        const reduceMotion =
+            typeof window !== 'undefined' &&
+            window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        row.scrollIntoView({
+            behavior: reduceMotion ? 'auto' : 'smooth',
+            block: 'center',
+        });
+        row.focus({ preventScroll: true });
+        row.classList.add(styles.youRowFlash);
+        const timer = setTimeout(() => {
+            row.classList.remove(styles.youRowFlash);
+        }, 1600);
+        return () => clearTimeout(timer);
+    }, [highlightToken]);
+
+    const range = computeBoardRange(
+        minPage,
+        initial.pageSize,
+        merged.length,
+        initial.totalItems,
+    );
 
     return (
         <div className={entryClass}>
@@ -130,6 +235,37 @@ export function LeaderboardPager({
                     )}
                 </div>
             )}
+            {(range || showFindMe || findMeStatus === 'not-found') && (
+                <div className={styles.boardMetaBar}>
+                    {range && (
+                        <span className={styles.rangeIndicator}>
+                            Showing{' '}
+                            <span>
+                                {range.first.toLocaleString()}–
+                                {range.last.toLocaleString()}
+                            </span>{' '}
+                            of <span>{range.total.toLocaleString()}</span>
+                        </span>
+                    )}
+                    {showFindMe && (
+                        <button
+                            type="button"
+                            className={styles.findMeBtn}
+                            disabled={isPending}
+                            onClick={findMe}
+                        >
+                            {findMeStatus === 'searching'
+                                ? 'Finding…'
+                                : 'Find me'}
+                        </button>
+                    )}
+                    {findMeStatus === 'not-found' && (
+                        <span className={styles.notFoundNote}>
+                            Not on this board yet
+                        </span>
+                    )}
+                </div>
+            )}
             <LeaderboardTable
                 leaderboard={{ ...initial, entries: merged }}
                 sessionUsername={sessionUsername}
@@ -149,10 +285,6 @@ export function LeaderboardPager({
                     >
                         {isPending ? 'Loading…' : 'Show more'}
                     </button>
-                    <span className={styles.showMoreMeta}>
-                        <span>{merged.length.toLocaleString()}</span> of{' '}
-                        <span>{initial.totalItems.toLocaleString()}</span>
-                    </span>
                     {error === 'after' && (
                         <div className={styles.pagerError}>
                             <span>Couldn't load more runs.</span>
