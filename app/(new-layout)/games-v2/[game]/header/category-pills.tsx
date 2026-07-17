@@ -7,18 +7,14 @@ import type {
     ResolvedGroup,
 } from '../../../../../types/leaderboards.types';
 import styles from '../game-page.module.scss';
+import { CategoryOverflow } from './category-overflow';
+import { computeCategoryVisibility } from './category-visibility';
 
 interface Props {
     categories: ResolvedCategory[];
     groups: ResolvedGroup[];
     selectedCategoryName: string;
     variableKeys: string[];
-}
-
-const FALLBACK_VISIBLE_COUNT = 5;
-
-function byPlaytimeDesc(a: ResolvedCategory, b: ResolvedCategory): number {
-    return (b.totalRunTime ?? 0) - (a.totalRunTime ?? 0);
 }
 
 export function CategoryPills({
@@ -59,92 +55,52 @@ export function CategoryPills({
         );
     };
 
-    const sections = useMemo(() => {
-        const mains = categories.filter((c) => c.isMain);
-        const usingFallback = mains.length === 0;
-        const base = usingFallback
-            ? [...categories]
-                  .sort(byPlaytimeDesc)
-                  .slice(0, FALLBACK_VISIBLE_COUNT)
-            : [...mains].sort(byPlaytimeDesc);
-
-        // Append selected-but-not-in-base, so the active pill is always visible.
-        const baseIds = new Set(base.map((c) => c.id));
-        const selected = categories.find(
-            (c) => c.name === selectedCategoryName,
-        );
-        const visible =
-            selected && !baseIds.has(selected.id) ? [...base, selected] : base;
-
-        // Trivial case: no group structure to show.
-        const usedGroupIds = new Set(
-            visible.map((c) => c.groupId ?? null).filter((id) => id != null),
-        );
-        const trivial =
-            usingFallback ||
-            groups.length === 0 ||
-            (groups.length <= 1 && usedGroupIds.size <= 1);
-
-        if (trivial) {
-            return [{ id: null, name: null, pills: visible }];
-        }
-
-        // Build labeled sections for each group in sortOrder, then trailing ungrouped.
-        const byGroup = new Map<number, ResolvedCategory[]>();
-        const ungrouped: ResolvedCategory[] = [];
-        for (const c of visible) {
-            if (c.groupId == null) ungrouped.push(c);
-            else {
-                const arr = byGroup.get(c.groupId) ?? [];
-                arr.push(c);
-                byGroup.set(c.groupId, arr);
-            }
-        }
-        const result: {
-            id: number | null;
-            name: string | null;
-            pills: ResolvedCategory[];
-        }[] = groups.map((g) => ({
-            id: g.id,
-            name: g.name,
-            pills: (byGroup.get(g.id) ?? []).sort(byPlaytimeDesc),
-        }));
-        if (ungrouped.length > 0) {
-            result.push({
-                id: null,
-                name: null,
-                pills: ungrouped.sort(byPlaytimeDesc),
-            });
-        }
-        return result;
-    }, [categories, groups, selectedCategoryName]);
+    const { sections, overflow } = useMemo(
+        () =>
+            computeCategoryVisibility(categories, groups, selectedCategoryName),
+        [categories, groups, selectedCategoryName],
+    );
 
     if (sections.length === 0) return null;
-    if (sections.length === 1 && sections[0].pills.length <= 1) return null;
+    if (
+        sections.length === 1 &&
+        sections[0].pills.length <= 1 &&
+        overflow.length === 0
+    ) {
+        return null;
+    }
 
     return (
-        <div aria-label="Category">
-            {sections.map((section, idx) => (
-                <div
-                    key={section.id ?? `ungrouped-${idx}`}
-                    className={styles.bandRow}
-                >
-                    {section.name && (
-                        <span className={styles.groupLabel}>
-                            {section.name}
-                        </span>
-                    )}
-                    {section.pills.length === 0 ? (
-                        <small className="text-muted">
-                            No categories enabled for this group.
-                        </small>
-                    ) : (
-                        <nav className={styles.bandRow}>
-                            {section.pills.map(renderPill)}
-                        </nav>
-                    )}
-                </div>
-            ))}
-        </div>
+        <nav aria-label="Category">
+            {sections.map((section, idx) => {
+                const isLast = idx === sections.length - 1;
+                return (
+                    <div
+                        key={section.id ?? `ungrouped-${idx}`}
+                        className={styles.bandRow}
+                    >
+                        {section.name && (
+                            <span className={styles.groupLabel}>
+                                {section.name}
+                            </span>
+                        )}
+                        {section.pills.length === 0 ? (
+                            <small className="text-muted">
+                                No categories enabled for this group.
+                            </small>
+                        ) : (
+                            section.pills.map(renderPill)
+                        )}
+                        {isLast && (
+                            <CategoryOverflow
+                                categories={overflow}
+                                isPending={isPending}
+                                onSelect={onSelect}
+                            />
+                        )}
+                    </div>
+                );
+            })}
+        </nav>
     );
 }

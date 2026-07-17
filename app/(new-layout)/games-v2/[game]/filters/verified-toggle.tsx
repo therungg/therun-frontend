@@ -8,16 +8,18 @@ interface Props {
     verified: boolean;
 }
 
+// Band-level control-pill toggle — lives outside the Filters popover so its
+// state is always visible, not just reflected in a count badge.
 export function VerifiedToggle({ verified }: Props) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const [isPending, startTransition] = useTransition();
 
-    const onChange = (next: boolean) => {
+    const onClick = () => {
         const sp = new URLSearchParams(searchParams.toString());
-        if (next) sp.set('verified', 'true');
-        else sp.delete('verified');
+        if (verified) sp.delete('verified');
+        else sp.set('verified', 'true');
         sp.delete('page');
         startTransition(() => {
             router.push(`${pathname}?${sp.toString()}`);
@@ -25,14 +27,14 @@ export function VerifiedToggle({ verified }: Props) {
     };
 
     return (
-        <label className={styles.checkPill}>
-            <input
-                type="checkbox"
-                checked={verified}
-                disabled={isPending}
-                onChange={(e) => onChange(e.target.checked)}
-            />
-            <span>Verified runs only</span>
-        </label>
+        <button
+            type="button"
+            onClick={onClick}
+            disabled={isPending}
+            aria-pressed={verified}
+            className={`${styles.pill} ${verified ? styles.pillActive : ''}`}
+        >
+            Verified runs only
+        </button>
     );
 }
