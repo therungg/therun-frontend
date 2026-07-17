@@ -91,18 +91,6 @@
     @include board.control-pill-active;
 }
 
-// verified-toggle: label pill wrapping a native checkbox
-.checkPill {
-    @include board.control-pill;
-    gap: 0.45rem;
-    margin: 0;
-
-    input {
-        accent-color: var(--bs-primary);
-        margin: 0;
-    }
-}
-
 .rulesToggle {
     @include board.control-pill;
     font-size: dt.$font-size-xs;

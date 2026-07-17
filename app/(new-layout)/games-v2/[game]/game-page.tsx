@@ -5,6 +5,7 @@ import Link from '~src/components/link';
 import type { ClaimCtaState } from './claim/claim-cta';
 import { FilterBar } from './filters/filter-bar';
 import { FiltersPopover } from './filters/filters-popover';
+import { VerifiedToggle } from './filters/verified-toggle';
 import styles from './game-page.module.scss';
 import { CategoryPills } from './header/category-pills';
 import { GameHero } from './header/game-hero';
@@ -120,10 +121,12 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                         variableKeys={variableKeys}
                     />
                     <div className={styles.bandEnd}>
+                        <VerifiedToggle
+                            verified={data.activeFilters.verified}
+                        />
                         <FiltersPopover
                             defs={data.variables}
                             selectedVarFilters={data.activeFilters.varFilters}
-                            verified={data.activeFilters.verified}
                         />
                         <RulesPanel
                             rules={data.selectedCategory.rules}
@@ -137,6 +140,7 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                     selectedSubcategoryValues={
                         data.activeFilters.subcategoryValues
                     }
+                    selectedVarFilters={data.activeFilters.varFilters}
                 />
             </div>
             {rulesOpen && data.selectedCategory.rules && (

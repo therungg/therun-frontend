@@ -10,7 +10,7 @@ import {
 import { createPortal } from 'react-dom';
 import styles from './board-dialog.module.scss';
 
-const FOCUSABLE_SELECTOR = [
+export const FOCUSABLE_SELECTOR = [
     'a[href]',
     'button:not([disabled])',
     'textarea:not([disabled])',
