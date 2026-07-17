@@ -11,6 +11,7 @@ import type {
     ResolvedCategory,
     ResolvedGame,
 } from '../../../../../types/leaderboards.types';
+import { ClaimCta, type ClaimCtaState } from '../claim/claim-cta';
 import styles from '../game-page.module.scss';
 import { CountryFlag } from '../leaderboard/country-flag';
 import { relativeDate } from '../leaderboard/relative-date';
@@ -28,6 +29,7 @@ interface Props {
     subcategoryKey: string;
     canManage?: boolean;
     canModerate?: boolean;
+    claim?: ClaimCtaState | null;
     selfClaim?: ReactNode;
 }
 
@@ -39,6 +41,7 @@ export function GameHero({
     subcategoryKey,
     canManage,
     canModerate,
+    claim,
     selfClaim,
 }: Props) {
     const [historyOpen, setHistoryOpen] = useState(false);
@@ -104,6 +107,12 @@ export function GameHero({
                             total
                         </div>
                         <div className={styles.heroActions}>
+                            {claim && !claim.hasModerators && (
+                                <ClaimCta
+                                    claim={claim}
+                                    gameDisplay={game.display}
+                                />
+                            )}
                             {selfClaim}
                             <Link
                                 href={`/games-v2/${game.name}/submit`}
