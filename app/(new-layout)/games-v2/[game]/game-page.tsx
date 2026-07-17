@@ -52,13 +52,17 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                     subcategoryKey=""
                     canManage={canManage}
                     canModerate={canManageRuns}
-                    sessionUsername={data.sessionUsername}
-                    claim={claim}
                 />
                 <div className={styles.notice}>
                     <p className="text-muted mb-0">
                         No runs uploaded for this game yet.
                     </p>
+                    <Link
+                        href={`/games-v2/${data.game.name}/submit`}
+                        className="btn btn-sm btn-primary mt-3"
+                    >
+                        Submit the first run
+                    </Link>
                 </div>
             </div>
         );
@@ -81,8 +85,6 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                 subcategoryKey={subcategoryKey}
                 canManage={canManage}
                 canModerate={canManageRuns}
-                sessionUsername={data.sessionUsername}
-                claim={claim}
                 selfClaim={
                     data.sessionUsername ? (
                         <SelfClaimButton
@@ -161,7 +163,7 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                     )}
                 </div>
                 <aside className={styles.rail}>
-                    <Sidebar data={data} />
+                    <Sidebar data={data} claim={claim} />
                 </aside>
             </div>
         </div>
