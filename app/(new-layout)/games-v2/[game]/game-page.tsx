@@ -76,6 +76,15 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
               .map((k) => `${k}=${data.activeFilters.subcategoryValues[k]}`)
               .join('|');
 
+    // Whether the board is narrowed by any user-set filter — drives the empty
+    // state copy ("no runs match these filters" vs "no runs on this board
+    // yet"). Mirrors exactly what ClearFiltersButton would clear from the URL.
+    const filtersActive =
+        data.activeFilters.verified ||
+        data.activeFilters.combined ||
+        Object.keys(data.activeFilters.subcategoryValues).length > 0 ||
+        Object.keys(data.activeFilters.varFilters).length > 0;
+
     return (
         <div>
             <GameHero
@@ -162,6 +171,7 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                             gameSlug={data.game.name}
                             variableKeys={variableKeys}
                             primaryTiming={data.selectedCategory.primaryTiming}
+                            filtersActive={filtersActive}
                         />
                     )}
                 </div>

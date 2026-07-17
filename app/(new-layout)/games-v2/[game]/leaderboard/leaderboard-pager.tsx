@@ -20,6 +20,7 @@ interface Props {
     gameSlug: string;
     variableKeys: string[];
     primaryTiming: TimingKey;
+    filtersActive: boolean;
 }
 
 // Module-level flag (not state): the parent keys this component by the
@@ -46,6 +47,7 @@ export function LeaderboardPager({
     gameSlug,
     variableKeys,
     primaryTiming,
+    filtersActive,
 }: Props) {
     const [pages, setPages] = useState<LeaderboardEntry[][]>([initial.entries]);
     const [minPage, setMinPage] = useState(initial.page);
@@ -135,6 +137,7 @@ export function LeaderboardPager({
                 gameSlug={gameSlug}
                 variableKeys={variableKeys}
                 primaryTiming={primaryTiming}
+                filtersActive={filtersActive}
             />
             {maxPage < initial.totalPages && (
                 <div className={styles.showMoreBar}>

@@ -1,3 +1,5 @@
+import { Funnel, Trophy } from 'react-bootstrap-icons';
+import Link from '~src/components/link';
 import type { LeaderboardResponse } from '../../../../../types/leaderboards.types';
 import { ClearFiltersButton } from '../filters/clear-filters-button';
 import styles from './leaderboard.module.scss';
@@ -15,6 +17,8 @@ interface Props {
     gameSlug: string;
     variableKeys: string[];
     primaryTiming: TimingKey;
+    /** True when any subcategory / variable / verified filter narrows the board. */
+    filtersActive: boolean;
 }
 
 export function LeaderboardTable({
@@ -24,12 +28,43 @@ export function LeaderboardTable({
     gameSlug,
     variableKeys,
     primaryTiming,
+    filtersActive,
 }: Props) {
     if (leaderboard.entries.length === 0) {
         return (
-            <div className={`${styles.wrapper} text-center py-4`}>
-                <p className="text-muted">No runs match these filters.</p>
-                <ClearFiltersButton variableKeys={variableKeys} />
+            <div className={styles.wrapper}>
+                <div className={styles.empty}>
+                    {filtersActive ? (
+                        <>
+                            <Funnel
+                                size={28}
+                                className={styles.emptyIcon}
+                                aria-hidden
+                            />
+                            <p className={styles.emptyTitle}>
+                                No runs match these filters.
+                            </p>
+                            <ClearFiltersButton variableKeys={variableKeys} />
+                        </>
+                    ) : (
+                        <>
+                            <Trophy
+                                size={28}
+                                className={styles.emptyIcon}
+                                aria-hidden
+                            />
+                            <p className={styles.emptyTitle}>
+                                No runs on this board yet.
+                            </p>
+                            <Link
+                                href={`/games-v2/${gameSlug}/submit`}
+                                className={styles.emptyAction}
+                            >
+                                Submit the first run
+                            </Link>
+                        </>
+                    )}
+                </div>
             </div>
         );
     }
