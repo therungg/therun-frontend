@@ -93,11 +93,11 @@ export const deletePrepSession = async (
     await apiFetch(`/fast50/prep/${id}`, { method: 'DELETE', sessionId });
 };
 
-export const getClipUploadUrl = (
+export const getUploadUrl = (
     sessionId: string,
     contentType: string,
     contentLength: number,
-): Promise<{ uploadUrl: string; videoUrl: string }> =>
+): Promise<{ uploadUrl: string; url: string; videoUrl: string }> =>
     apiFetch('/fast50/prep/upload-url', {
         method: 'POST',
         body: { contentType, contentLength },

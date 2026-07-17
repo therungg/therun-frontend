@@ -610,5 +610,7 @@ export const fixturePrep: PrepSessionData = {
             caption: 'Watch the camera flick — blink and you miss it',
         },
     ],
+    // Optional local asset, same pattern as the demo clip above.
+    headshotUrl: '/fast50-demo-headshot.jpg',
     roadmapNotes: [{ splitIndex: 2, text: 'He invented this skip' }],
 };
