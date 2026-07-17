@@ -2,22 +2,11 @@
 @use '../../../../../styles/mixins' as mx;
 
 // ============================================================
-// RunActionDialog — modal chrome for approve/remove/ban/restore.
+// RunActionDialog — body/header/footer content for approve/remove/ban/
+// restore. Overlay + panel chrome now lives in the shared BoardDialog
+// primitive (../../../shared/board-dialog.module.scss).
 // Token-based spacing; times tabular-mono; calm depth.
 // ============================================================
-
-// ---- Modal backdrop -----------------------------------------
-.backdrop {
-    background: rgba(0, 0, 0, 0.5);
-}
-
-// ---- Modal content surface ----------------------------------
-.content {
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    border-radius: dt.$radius-lg;
-    background: var(--bs-body-bg);
-    box-shadow: dt.$shadow-xl;
-}
 
 // ---- Header -------------------------------------------------
 .header {
