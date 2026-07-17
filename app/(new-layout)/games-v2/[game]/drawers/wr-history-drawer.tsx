@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Modal, Table } from 'react-bootstrap';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { WrHistoryEntry } from '../../../../../types/leaderboards.types';
+import { timingMethodLabel } from '../labels';
 
 interface Props {
     show: boolean;
@@ -97,7 +98,9 @@ export function WrHistoryDrawer({
                                                 duration={wr.time}
                                             />
                                         </td>
-                                        <td>{wr.timingMethod}</td>
+                                        <td>
+                                            {timingMethodLabel(wr.timingMethod)}
+                                        </td>
                                         <td>{setAt.toLocaleDateString()}</td>
                                         <td>
                                             {supersededAt

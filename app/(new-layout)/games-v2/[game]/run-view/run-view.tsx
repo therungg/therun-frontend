@@ -8,6 +8,7 @@ import type {
     RunOriginRef,
 } from '../../../../../types/leaderboards.types';
 import type { HistoryEvent } from '../../../../../types/moderation.types';
+import { formatSubcategoryKey } from '../labels';
 import { OriginPanel } from './origin-panel';
 import { RunActions } from './run-actions';
 import { VariablesLine, VerificationBadge } from './run-badges';
@@ -50,6 +51,7 @@ export function RunView({
 }): React.JSX.Element {
     const primaryTime = model.realTime ?? model.gameTime;
     const isRejected = model.verificationStatus === 'rejected';
+    const subcategoryLabel = formatSubcategoryKey(model.subcategoryKey);
 
     return (
         <div>
@@ -82,9 +84,9 @@ export function RunView({
                         <span className="badge text-bg-secondary">
                             {model.categoryDisplay}
                         </span>
-                        {model.subcategoryKey && (
+                        {subcategoryLabel && (
                             <span className="badge text-bg-secondary">
-                                {model.subcategoryKey}
+                                {subcategoryLabel}
                             </span>
                         )}
                         <VerificationBadge status={model.verificationStatus} />

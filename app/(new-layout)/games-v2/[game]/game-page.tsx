@@ -8,6 +8,7 @@ import { FiltersPopover } from './filters/filters-popover';
 import styles from './game-page.module.scss';
 import { CategoryPills } from './header/category-pills';
 import { GameHero } from './header/game-hero';
+import { formatSubcategoryKey, type LabelVariableDef } from './labels';
 import { LeaderboardPager } from './leaderboard/leaderboard-pager';
 import { RulesBody, RulesPanel } from './rules/rules-panel';
 import { SelfClaimButton } from './self-claim-button';
@@ -135,6 +136,7 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                             suggestions={
                                 data.invalidCombination.validCombinations
                             }
+                            defs={data.variables}
                         />
                     ) : (
                         <LeaderboardPager
@@ -170,10 +172,12 @@ function InvalidCombinationNotice({
     gameSlug,
     categorySlug,
     suggestions,
+    defs,
 }: {
     gameSlug: string;
     categorySlug: string;
     suggestions: string[];
+    defs: LabelVariableDef[];
 }) {
     return (
         <div className={styles.notice}>
@@ -194,7 +198,7 @@ function InvalidCombinationNotice({
                             href={`/games-v2/${gameSlug}?${sp.toString()}`}
                             className={styles.pill}
                         >
-                            {key.replace(/\|/g, ' · ')}
+                            {formatSubcategoryKey(key, defs)}
                         </Link>
                     );
                 })}
