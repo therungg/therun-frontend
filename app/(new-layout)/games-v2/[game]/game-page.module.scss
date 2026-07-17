@@ -246,6 +246,13 @@
     margin-bottom: dt.$spacing-xs;
 }
 
+.crownTimeRow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+}
+
 .crownTime {
     @include board.mono-time;
     font-size: dt.$font-size-hero-time;
@@ -264,6 +271,12 @@
     @media (max-width: 991.98px) {
         font-size: dt.$font-size-display;
     }
+}
+
+// Honest caveat when the crowned run hasn't cleared moderation yet —
+// never claim WR-verified status the entry doesn't have.
+.crownPending {
+    @include board.board-pill(dt.$accent-amber);
 }
 
 .crownMeta {

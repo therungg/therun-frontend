@@ -11,6 +11,7 @@ import styles from './leaderboard.module.scss';
 import { relativeDate } from './relative-date';
 import { RowActionsMenu } from './row-actions-menu';
 import { RunnerAvatar } from './runner-avatar';
+import { type TimingKey, timingColumns } from './timing-columns';
 
 interface Props {
     entry: LeaderboardEntry;
@@ -19,6 +20,7 @@ interface Props {
     gameSlug: string;
     hideRealTime: boolean;
     hideGameTime: boolean;
+    primaryTiming: TimingKey;
     sessionUsername: string | null;
 }
 
@@ -29,6 +31,7 @@ export function LeaderboardRow({
     gameSlug,
     hideRealTime,
     hideGameTime,
+    primaryTiming,
     sessionUsername,
 }: Props) {
     const router = useRouter();
@@ -68,8 +71,8 @@ export function LeaderboardRow({
         router.push(detailHref);
     };
 
-    const time = (value: number | null) => (
-        <td className={styles.time}>
+    const time = (value: number | null, dimmed: boolean) => (
+        <td className={dimmed ? styles.timeSecondary : styles.time}>
             {value != null ? (
                 detailHref ? (
                     <Link href={detailHref}>
@@ -83,6 +86,14 @@ export function LeaderboardRow({
             )}
         </td>
     );
+
+    // Same primary-first order as the header (leaderboard-table.tsx), so
+    // cells always line up under the column that claims them.
+    const { primary, secondary } = timingColumns(primaryTiming);
+    const timingValue = (key: TimingKey) =>
+        key === 'rt' ? entry.realTime : entry.gameTime;
+    const timingHidden = (key: TimingKey) =>
+        key === 'rt' ? hideRealTime : hideGameTime;
 
     return (
         <tr
@@ -101,8 +112,10 @@ export function LeaderboardRow({
                     <CountryFlag country={entry.country} />
                 </span>
             </td>
-            {!hideRealTime && time(entry.realTime)}
-            {!hideGameTime && time(entry.gameTime)}
+            {!timingHidden(primary.key) &&
+                time(timingValue(primary.key), false)}
+            {!timingHidden(secondary.key) &&
+                time(timingValue(secondary.key), true)}
             <td
                 className={`${styles.meta} ${styles.when}`}
                 title={
