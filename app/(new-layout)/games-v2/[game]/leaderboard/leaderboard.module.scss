@@ -178,6 +178,51 @@ tr:focus-within .reveal {
     }
 }
 
+// Moderator "Manage" affordance: control-pill styled link with the same
+// coarse-pointer hit-area treatment as the row-actions kebab.
+.manageLink {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding: dt.$spacing-xs dt.$spacing-md;
+    text-decoration: none;
+
+    @media (pointer: coarse) {
+        padding: dt.$spacing-md dt.$spacing-lg;
+    }
+}
+
+// ---- Empty state (calm pattern: icon + title + action) ------
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-3xl dt.$spacing-lg;
+    color: var(--bs-secondary-color);
+}
+
+.emptyIcon {
+    color: var(--bs-primary);
+    opacity: 0.55;
+    margin-bottom: dt.$spacing-xs;
+}
+
+.emptyTitle {
+    font-size: dt.$font-size-md;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    margin: 0;
+}
+
+.emptyAction {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding: dt.$spacing-xs dt.$spacing-lg;
+    text-decoration: none;
+    margin-top: dt.$spacing-xs;
+}
+
 .setPill {
     @include board.board-pill;
     text-transform: none;

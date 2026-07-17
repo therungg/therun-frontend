@@ -170,7 +170,7 @@ export function LeaderboardRow({
                     {showManageButton && (
                         <Link
                             href={`/games-v2/${gameSlug}/manage/run/${entry.runId}`}
-                            className="btn btn-sm btn-outline-secondary"
+                            className={styles.manageLink}
                         >
                             Manage
                         </Link>
