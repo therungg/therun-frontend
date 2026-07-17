@@ -7,7 +7,7 @@ import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
-    LeaderboardResponse,
+    LeaderboardEntry,
     QuickStats,
     ResolvedCategory,
     ResolvedGame,
@@ -26,7 +26,15 @@ interface Props {
     game: ResolvedGame;
     stats: QuickStats;
     category: ResolvedCategory | null;
-    leaderboard: LeaderboardResponse | null;
+    /**
+     * The rank-1 entry for the current category/subcategory — always the
+     * real record, fetched server-side through page 1 even when the board
+     * itself is showing a deep-linked later page. Null when there's no
+     * valid board or it has no runs yet.
+     */
+    wrEntry: LeaderboardEntry | null;
+    /** True only for a genuinely empty (zero-entry) valid board. */
+    boardIsEmpty: boolean;
     subcategoryKey: string;
     canManage?: boolean;
     canModerate?: boolean;
@@ -38,7 +46,8 @@ export function GameHero({
     game,
     stats,
     category,
-    leaderboard,
+    wrEntry,
+    boardIsEmpty,
     subcategoryKey,
     canManage,
     canModerate,
@@ -47,19 +56,12 @@ export function GameHero({
 }: Props) {
     const [historyOpen, setHistoryOpen] = useState(false);
 
-    // The crown only ever shows the actual record: rank 1 on the
-    // currently loaded data. On deep-linked later pages entries[0]
-    // is not rank 1, so the crown falls back to a neutral state
-    // instead of claiming the board has no runs.
-    const top = leaderboard?.entries[0];
-    const wr = top && top.rank === 1 && top.time !== null ? top : null;
-    // Only a genuinely empty board (page 1, zero entries) gets the
-    // "set the first record" copy. A deep-linked page or a null
-    // leaderboard just means we can't see rank 1 from here.
-    const boardIsEmpty =
-        leaderboard != null &&
-        leaderboard.page === 1 &&
-        leaderboard.entries.length === 0;
+    // Defensive: wrEntry is already the real rank-1 record by construction
+    // (data.ts resolves it from a page-1 fetch), but a malformed/empty
+    // response should still fall back to the neutral state rather than
+    // rendering a bogus crown.
+    const wr =
+        wrEntry && wrEntry.rank === 1 && wrEntry.time !== null ? wrEntry : null;
     const wrHref = wr
         ? wr.source === 'manual' && wr.manualTimeId != null
             ? `/games-v2/${game.name}/manual/${wr.manualTimeId}`

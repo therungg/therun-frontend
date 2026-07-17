@@ -1,4 +1,5 @@
 import type {
+    LeaderboardEntry,
     LeaderboardResponse,
     QuickStats,
     RecentPb,
@@ -28,6 +29,15 @@ export interface GamePageData {
     validCombinations: ValidCombinations;
     leaderboard: LeaderboardResponse;
     invalidCombination: { validCombinations: string[] } | null;
+    /**
+     * The actual rank-1 entry for the current category/subcategory, i.e.
+     * the crown's WR — always page 1, even when `leaderboard` itself is a
+     * deep-linked later page. Null when there is no valid board (invalid
+     * combination) or the board has no runs yet.
+     */
+    wrEntry: LeaderboardEntry | null;
+    /** True only for a genuinely empty (zero-entry) valid board. */
+    boardIsEmpty: boolean;
     quickStats: QuickStats;
     recentPbs: RecentPb[];
     sessionUsername: string | null;
