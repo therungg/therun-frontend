@@ -4,6 +4,7 @@
 // import without pulling in the other's types.
 
 import { CheckCircleFill, HourglassSplit } from 'react-bootstrap-icons';
+import { formatVariableList, type LabelVariableDef } from '../labels';
 import styles from './run-badges.module.scss';
 
 export function VerificationBadge({
@@ -34,12 +35,13 @@ export function VerificationBadge({
 
 export function VariablesLine({
     variables,
+    defs,
 }: {
     variables: Record<string, string>;
+    defs?: LabelVariableDef[];
 }) {
-    const entries = Object.entries(variables);
-    if (entries.length === 0) return null;
-    const text = entries.map(([k, v]) => `${k}=${v}`).join(', ');
+    const text = formatVariableList(variables, defs);
+    if (!text) return null;
     return (
         <div
             className="text-muted small text-truncate"
