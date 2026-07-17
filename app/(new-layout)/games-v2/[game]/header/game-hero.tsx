@@ -11,7 +11,6 @@ import type {
     ResolvedCategory,
     ResolvedGame,
 } from '../../../../../types/leaderboards.types';
-import { ClaimCta, type ClaimCtaState } from '../claim/claim-cta';
 import styles from '../game-page.module.scss';
 import { CountryFlag } from '../leaderboard/country-flag';
 import { relativeDate } from '../leaderboard/relative-date';
@@ -29,8 +28,6 @@ interface Props {
     subcategoryKey: string;
     canManage?: boolean;
     canModerate?: boolean;
-    sessionUsername?: string | null;
-    claim?: ClaimCtaState | null;
     selfClaim?: ReactNode;
 }
 
@@ -42,8 +39,6 @@ export function GameHero({
     subcategoryKey,
     canManage,
     canModerate,
-    sessionUsername,
-    claim,
     selfClaim,
 }: Props) {
     const [historyOpen, setHistoryOpen] = useState(false);
@@ -109,21 +104,13 @@ export function GameHero({
                             total
                         </div>
                         <div className={styles.heroActions}>
-                            {claim && sessionUsername && (
-                                <ClaimCta
-                                    claim={claim}
-                                    gameDisplay={game.display}
-                                />
-                            )}
                             {selfClaim}
-                            {sessionUsername && (
-                                <Link
-                                    href={`/games-v2/${game.name}/submit`}
-                                    className="btn btn-sm btn-primary"
-                                >
-                                    Submit a run
-                                </Link>
-                            )}
+                            <Link
+                                href={`/games-v2/${game.name}/submit`}
+                                className="btn btn-sm btn-primary"
+                            >
+                                Submit a run
+                            </Link>
                             {(canManage || canModerate) && (
                                 <Link
                                     href={`/games-v2/${game.name}/manage`}
@@ -190,7 +177,11 @@ export function GameHero({
                             </>
                         ) : boardIsEmpty ? (
                             <div className={styles.crownEmpty}>
-                                No verified runs yet — set the first record.
+                                No verified runs yet —{' '}
+                                <Link href={`/games-v2/${game.name}/submit`}>
+                                    set the first record
+                                </Link>
+                                .
                             </div>
                         ) : (
                             <div className={styles.crownTime}>

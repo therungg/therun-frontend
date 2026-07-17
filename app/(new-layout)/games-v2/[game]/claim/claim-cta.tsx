@@ -13,9 +13,14 @@ export interface ClaimCtaState {
 interface Props {
     claim: ClaimCtaState;
     gameDisplay: string;
+    triggerClassName?: string;
 }
 
-export function ClaimCta({ claim, gameDisplay }: Props) {
+export function ClaimCta({
+    claim,
+    gameDisplay,
+    triggerClassName = 'btn btn-sm btn-outline-secondary',
+}: Props) {
     const [open, setOpen] = useState(false);
     const [pending, setPending] = useState(claim.myClaimPending);
     const [motivation, setMotivation] = useState('');
@@ -55,7 +60,7 @@ export function ClaimCta({ claim, gameDisplay }: Props) {
         <>
             <button
                 type="button"
-                className="btn btn-sm btn-outline-secondary"
+                className={triggerClassName}
                 onClick={() => setOpen(true)}
             >
                 {label}

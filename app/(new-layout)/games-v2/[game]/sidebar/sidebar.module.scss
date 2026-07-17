@@ -62,3 +62,8 @@
     @include board.mono-time;
     font-size: dt.$font-size-sm;
 }
+
+.sidebarFoot {
+    text-align: center;
+    margin-top: dt.$spacing-sm;
+}
