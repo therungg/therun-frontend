@@ -4,8 +4,8 @@ import { getSession } from '~src/actions/session.action';
 import {
     createPrepSession,
     deletePrepSession,
-    getClipUploadUrl,
     getPrepSession,
+    getUploadUrl,
     listPrepSessions,
     updatePrepSession,
 } from '~src/lib/fast50/prep';
@@ -58,10 +58,10 @@ export const deletePrepAction = async (id: number): Promise<void> => {
     await deletePrepSession(user.id, id);
 };
 
-export const clipUploadUrlAction = async (
+export const uploadUrlAction = async (
     contentType: string,
     contentLength: number,
-): Promise<{ uploadUrl: string; videoUrl: string }> => {
+): Promise<{ uploadUrl: string; url: string; videoUrl: string }> => {
     const user = await getSession();
-    return getClipUploadUrl(user.id, contentType, contentLength);
+    return getUploadUrl(user.id, contentType, contentLength);
 };

@@ -42,6 +42,7 @@ export interface PrepSessionData {
         facts: PrepFact[];
     };
     clips: PrepClip[];
+    headshotUrl?: string;
     roadmapNotes: PrepRoadmapNote[];
     deckOrder?: {
         pre?: PrepSlideRef[];
@@ -198,6 +199,8 @@ export const parsePrepData = (raw: unknown): PrepSessionData => {
     };
     const goal = parseGoal(interview.goal);
     if (goal) data.interview.goal = goal;
+    const headshotUrl = str(root.headshotUrl);
+    if (headshotUrl) data.headshotUrl = headshotUrl;
     const order = obj(root.deckOrder);
     const pre = parseRefs(order.pre);
     const post = parseRefs(order.post);

@@ -1,18 +1,21 @@
 'use client';
 
 import React, { useState } from 'react';
-import { clipUploadUrlAction } from '~app/(fast50)/fast50/prep/actions';
+import { uploadUrlAction } from '~app/(fast50)/fast50/prep/actions';
 import { formatTimeMs } from '~src/components/live/commentary-drawer/format';
 import type { PrepFact, PrepSessionData } from '~src/lib/fast50/prep.types';
 import { parseTimeInput } from '~src/lib/fast50/time-input';
 import styles from './prep-studio.module.scss';
 
-const uploadClip = (
+const HEADSHOT_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_HEADSHOT_BYTES = 10 * 1024 * 1024;
+
+const uploadFile = (
     file: File,
     onProgress: (pct: number) => void,
 ): Promise<string> =>
-    clipUploadUrlAction(file.type, file.size).then(
-        ({ uploadUrl, videoUrl }) =>
+    uploadUrlAction(file.type, file.size).then(
+        ({ uploadUrl, url, videoUrl }) =>
             new Promise<string>((resolve, reject) => {
                 const xhr = new XMLHttpRequest();
                 xhr.open('PUT', uploadUrl);
@@ -24,7 +27,7 @@ const uploadClip = (
                 };
                 xhr.onload = () =>
                     xhr.status >= 200 && xhr.status < 300
-                        ? resolve(videoUrl)
+                        ? resolve(url ?? videoUrl)
                         : reject(new Error(`Upload failed (${xhr.status})`));
                 xhr.onerror = () => reject(new Error('Upload failed'));
                 xhr.send(file);
@@ -47,6 +50,8 @@ export const InterviewPanel = ({
     );
     const [uploadPct, setUploadPct] = useState<number | null>(null);
     const [uploadError, setUploadError] = useState<string | null>(null);
+    const [headshotPct, setHeadshotPct] = useState<number | null>(null);
+    const [headshotError, setHeadshotError] = useState<string | null>(null);
     const [noteSplit, setNoteSplit] = useState(0);
     const [noteText, setNoteText] = useState('');
 
@@ -64,7 +69,7 @@ export const InterviewPanel = ({
         setUploadError(null);
         setUploadPct(0);
         try {
-            const videoUrl = await uploadClip(file, setUploadPct);
+            const videoUrl = await uploadFile(file, setUploadPct);
             onChange({
                 ...data,
                 clips: [
@@ -80,6 +85,28 @@ export const InterviewPanel = ({
             setUploadError(e instanceof Error ? e.message : 'Upload failed');
         } finally {
             setUploadPct(null);
+        }
+    };
+
+    const onHeadshotFile = async (file: File | undefined) => {
+        if (!file) return;
+        if (!HEADSHOT_TYPES.includes(file.type)) {
+            setHeadshotError('jpg, png or webp only');
+            return;
+        }
+        if (file.size > MAX_HEADSHOT_BYTES) {
+            setHeadshotError('max 10MB');
+            return;
+        }
+        setHeadshotError(null);
+        setHeadshotPct(0);
+        try {
+            const url = await uploadFile(file, setHeadshotPct);
+            onChange({ ...data, headshotUrl: url });
+        } catch (e) {
+            setHeadshotError(e instanceof Error ? e.message : 'Upload failed');
+        } finally {
+            setHeadshotPct(null);
         }
     };
 
@@ -133,6 +160,47 @@ export const InterviewPanel = ({
                     </span>
                 ) : null}
             </label>
+
+            <div className={styles.paneTitle}>Runner headshot</div>
+            {data.headshotUrl ? (
+                <div className={styles.itemCard}>
+                    {/* Plain img: headshots live on the media CDN, which is
+                        not in next/image remotePatterns. */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                        src={data.headshotUrl}
+                        alt="Runner headshot"
+                        className={styles.headshotPreview}
+                    />
+                    <button
+                        type="button"
+                        className={styles.iconButton}
+                        onClick={() => {
+                            const { headshotUrl: _removed, ...rest } = data;
+                            onChange(rest);
+                        }}
+                    >
+                        remove
+                    </button>
+                </div>
+            ) : (
+                <label className={styles.field}>
+                    Upload photo (jpg / png / webp, shown on the intro slide)
+                    <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        onChange={(e) => onHeadshotFile(e.target.files?.[0])}
+                    />
+                    {headshotPct !== null ? (
+                        <span className={styles.itemMeta}>
+                            uploading… {headshotPct}%
+                        </span>
+                    ) : null}
+                    {headshotError ? (
+                        <span className={styles.error}>{headshotError}</span>
+                    ) : null}
+                </label>
+            )}
 
             <div className={styles.paneTitle}>Quotes (Runner's Words)</div>
             {data.interview.quotes.map((q, i) => (

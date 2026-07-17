@@ -34,6 +34,14 @@ describe('parsePrepData', () => {
         });
         expect(parsed.deckOrder).toBeUndefined();
     });
+
+    test('headshotUrl kept when a string, dropped otherwise', () => {
+        expect(
+            parsePrepData({ headshotUrl: 'https://cdn/h.jpg' }).headshotUrl,
+        ).toBe('https://cdn/h.jpg');
+        expect(parsePrepData({ headshotUrl: 42 }).headshotUrl).toBeUndefined();
+        expect(parsePrepData({ headshotUrl: '' }).headshotUrl).toBeUndefined();
+    });
 });
 
 describe('customSlidesFromPrep', () => {

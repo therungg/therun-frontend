@@ -6,7 +6,7 @@ import type { SlideComponent } from '../deck/deck';
 import styles from '../deck/fast50.module.scss';
 import { Reveal, SlideShell } from '../deck/primitives';
 
-export const IntroSlide: SlideComponent = ({ dossier, stage }) => (
+export const IntroSlide: SlideComponent = ({ dossier, stage, prep }) => (
     <SlideShell
         kicker="Next up"
         headline={dossier.runner.username}
@@ -29,6 +29,18 @@ export const IntroSlide: SlideComponent = ({ dossier, stage }) => (
                 </div>
             </div>
         </Reveal>
+        {prep?.headshotUrl ? (
+            <Reveal
+                when={stage >= 1}
+                delayMs={100}
+                className={styles.headshotCard}
+            >
+                {/* Plain img: headshots live on the media CDN, which is not
+                    in next/image remotePatterns. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={prep.headshotUrl} alt="" />
+            </Reveal>
+        ) : null}
         <div className={styles.statRow}>
             <Reveal when={stage >= 1}>
                 <div>
