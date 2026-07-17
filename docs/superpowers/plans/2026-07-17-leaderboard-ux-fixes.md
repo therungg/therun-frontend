@@ -158,6 +158,7 @@ Branch: `leaderboard-ux-fixes` (stacked on `leaderboard-user-meta`). Base: f19a9
 3. `filters-popover.tsx`: on open, move focus into the panel; trap Tab; restore focus to the trigger on close (reuse the focus utilities from Task 1's primitive if extractable, else local implementation).
 4. `variable-pill.tsx` dropdown: `aria-haspopup="listbox"` + `aria-expanded` on the trigger; Escape closes and restores focus; closing on outside interaction also handles focus leaving via keyboard (`focusout` when focus exits the container).
 5. `category-pills.tsx`: move the `aria-label` onto the actual `<nav>` element (it currently sits on a plain div and is ignored).
+6. **"More categories" overflow:** non-featured active categories are currently unreachable by browsing (pill band renders `isMain` only + the URL-selected one). Add a quiet "More…" pill at the end of the band that reveals the remaining active categories (popover or expanding the band — match the filters-popover pattern). It renders only when non-featured active categories exist.
 
 **Verify:** typecheck/lint gates.
 
@@ -316,6 +317,7 @@ Branch: `leaderboard-ux-fixes` (stacked on `leaderboard-user-meta`). Base: f19a9
 
 **Requirements:**
 1. Renames (nav item + pane heading + any breadcrumb, consistently): Standards → **Minimum time**; Identifiers → **URL & abbreviation**; Combinations → **Sub-boards**; Roster → **Browse runs**; Reassign → **Merge games & categories**. Grep each old name for stragglers in user-facing strings (internal ids/keys may keep their names).
+1b. **Category flag vocabulary (user decision, binding):** everywhere the UI exposes the category flags, `isMain` is called **Featured** and the inverse of `active` is called **Archived**. Update the manage categories table (column headers/toggles — an "Archived" toggle is checked when `active` is false; keep the API field names untouched), its row filter labels (`All / Current / Archived`), the setup wizard's category curation step, and completeness/checklist summaries. Grep games-v2 for user-facing "Main"/"Active" category strings; internal identifiers stay.
 2. Apply Task 2 helpers on moderation surfaces: attention cards' raw `subcategoryKey` and raw `verificationStatus` → formatted; flag detail `k: v` dumps → humanized labels; history drawer `<code>{row.action}</code>` → `historyActionLabel()` sentence (keep the code in a `title` for auditability); mod-provenance raw JSON variables → formatted list.
 3. Board jargon gets visible explanations: the "set time" and "pending" pills open a small info popover on click/tap (accessible button, not title-attr) with the existing tooltip copy. `origin-panel.tsx` "Ingested {date}"/"Ingest date unknown" → "Added {date}"/"Added date unknown". `wr-history-drawer.tsx` "Superseded" column → "Held until". Submit form timing options gain one visible line under the selector explaining RTA vs IGT ("Real time (RTA) — wall-clock time. Game time (IGT) — the in-game timer.").
 4. `combinations-section.tsx`: `open`/`managed` mode badges lose the `<code>` treatment — plain pills with task copy ("Open — runners can submit any combination" / "Managed — only listed sub-boards").
