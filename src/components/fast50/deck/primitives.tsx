@@ -78,6 +78,7 @@ export const SlideShell = ({
     headline,
     stage,
     backdrop,
+    art,
     danger,
     avatar,
     children,
@@ -86,6 +87,7 @@ export const SlideShell = ({
     headline: string;
     stage: number;
     backdrop?: string;
+    art?: string;
     danger?: boolean;
     avatar?: string;
     children?: React.ReactNode;
@@ -102,6 +104,18 @@ export const SlideShell = ({
                     height={640}
                 />
             </div>
+        ) : null}
+        {art ? (
+            <Reveal when={stage >= 0} delayMs={150} className={styles.artCard}>
+                <GameImage
+                    src={art}
+                    quality="hd"
+                    alt=""
+                    fill={false}
+                    width={480}
+                    height={640}
+                />
+            </Reveal>
         ) : null}
         <div className={styles.slideContent}>
             <div className={styles.kicker}>{kicker}</div>
