@@ -1,0 +1,26 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// ============================================================
+// Row actions kebab trigger. Rendered as a plain button (not
+// react-bootstrap's Button) so control-pill fully owns the look —
+// no fighting Bootstrap's .btn cascade. Icon-only: a quiet
+// affordance on fine pointers (revealed via .reveal on hover/focus),
+// legible always-visible on coarse pointers, where padding also
+// grows the hit area to clear the 44px touch minimum.
+// ============================================================
+.toggle {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding: dt.$spacing-xs;
+
+    // Bootstrap's Dropdown.Toggle adds a caret pseudo-element by default;
+    // this trigger is icon-only.
+    &::after {
+        display: none;
+    }
+
+    @media (pointer: coarse) {
+        padding: dt.$spacing-lg;
+    }
+}

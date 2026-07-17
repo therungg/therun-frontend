@@ -1,0 +1,36 @@
+@use '../../../styles/design-tokens' as dt;
+
+// ============================================================
+// SelfRunVerdictDialog — content for the hide/restore-my-run
+// confirm. Overlay + panel chrome lives in the shared BoardDialog
+// primitive (./board-dialog.module.scss).
+// ============================================================
+.header {
+    padding: dt.$spacing-lg dt.$spacing-xl;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+}
+
+.title {
+    font-size: dt.$font-size-base;
+    font-weight: dt.$heading-font-weight;
+    letter-spacing: dt.$heading-letter-spacing;
+    margin: 0;
+}
+
+.body {
+    padding: dt.$spacing-xl;
+}
+
+.message {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0;
+}
+
+.footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-md dt.$spacing-xl;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+}

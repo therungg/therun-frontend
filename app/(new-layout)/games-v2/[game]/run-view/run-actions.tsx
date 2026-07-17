@@ -7,6 +7,10 @@ import {
     appealRunAction,
     reportRunAction,
 } from '~src/actions/run-user-actions.action';
+import {
+    SelfRunVerdictDialog,
+    useSelfRunVerdict,
+} from '../shared/self-run-verdict';
 import type { RunViewModel } from './run-view';
 
 type ModalKind = 'report' | 'appeal' | null;
@@ -21,13 +25,14 @@ export function RunActions({
     const [modal, setModal] = useState<ModalKind>(null);
     const [reason, setReason] = useState('');
     const [pending, startTransition] = useTransition();
+    const selfVerdict = useSelfRunVerdict();
 
     const isRun = model.kind === 'run';
+    const isOwnRun = isRun && sessionUsername === model.runnerName;
     const canReport = isRun && sessionUsername != null;
-    const canAppeal =
-        isRun &&
-        sessionUsername === model.runnerName &&
-        model.verificationStatus === 'rejected';
+    const canAppeal = isOwnRun && model.verificationStatus === 'rejected';
+    const canHide = isOwnRun && model.verificationStatus !== 'rejected';
+    const canRestore = isOwnRun && model.verificationStatus === 'rejected';
 
     const close = () => {
         setModal(null);
@@ -96,6 +101,28 @@ export function RunActions({
                         onClick={() => setModal('appeal')}
                     >
                         Appeal rejection
+                    </button>
+                )}
+                {canHide && (
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-danger"
+                        onClick={() =>
+                            selfVerdict.requestVerdict(model.id, 'reject')
+                        }
+                    >
+                        Hide my run
+                    </button>
+                )}
+                {canRestore && (
+                    <button
+                        type="button"
+                        className="btn btn-sm btn-outline-secondary"
+                        onClick={() =>
+                            selfVerdict.requestVerdict(model.id, 'unreject')
+                        }
+                    >
+                        Restore my run
                     </button>
                 )}
             </div>
@@ -175,6 +202,13 @@ export function RunActions({
                     </button>
                 </Modal.Footer>
             </Modal>
+
+            <SelfRunVerdictDialog
+                confirmState={selfVerdict.confirmState}
+                pending={selfVerdict.pending}
+                onCancel={selfVerdict.cancel}
+                onConfirm={selfVerdict.confirm}
+            />
         </>
     );
 }
