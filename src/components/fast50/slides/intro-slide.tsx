@@ -12,7 +12,6 @@ export const IntroSlide: SlideComponent = ({ dossier, stage }) => (
         headline={dossier.runner.username}
         stage={stage}
         backdrop={dossier.game.image}
-        art={dossier.game.image}
         avatar={
             // 'noimage' is the profile API's no-avatar sentinel.
             dossier.runner.picture !== 'noimage'
