@@ -183,14 +183,28 @@
 // ---------------------------------------------------------------------------
 
 .introGame {
-    font-size: clamp(24px, 2vw, 40px);
-    font-weight: 600;
-    color: var(--muted);
-    margin-top: 0.5vw;
+    margin-top: 0.6vw;
+}
+
+.introGameTitle {
+    font-size: clamp(32px, 3.2vw, 60px);
+    font-weight: 800;
+    line-height: 1.1;
+    max-width: 24ch;
+}
+
+.introCategory {
+    margin-top: 0.35vw;
+    font-size: clamp(20px, 1.6vw, 32px);
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
 }
 
 .statRow {
     display: flex;
+    align-items: flex-end;
     gap: 4vw;
     margin-top: 2.5vw;
 }
@@ -209,6 +223,31 @@
     display: block;
     font-size: clamp(36px, 3.4vw, 64px);
     font-weight: 800;
+}
+
+.statValuePb {
+    display: block;
+    font-size: clamp(52px, 4.8vw, 92px);
+    font-weight: 800;
+    line-height: 1;
+}
+
+.artCard {
+    position: absolute;
+    right: 6vw;
+    bottom: 6vw;
+    z-index: 1;
+    width: 19vw;
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55);
+
+    img {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
 }
 
 // ---------------------------------------------------------------------------
