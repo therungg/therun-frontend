@@ -18,6 +18,7 @@ import { ResultSlide } from './result-slide';
 import { RoadmapSlide } from './roadmap-slide';
 import { StoryOfRunSlide } from './story-of-run-slide';
 import { SurvivedSlide } from './survived-slide';
+import { TheGameSlide } from './the-game-slide';
 import { TheTableSlide } from './the-table-slide';
 import { WhereItLandsSlide } from './where-it-lands-slide';
 import { WorldClassSlide } from './world-class-slide';
@@ -35,6 +36,7 @@ export const CUSTOM_SLIDE_COMPONENTS: Record<
 };
 
 export const SLIDE_COMPONENTS: Partial<Record<SlideId, SlideComponent>> = {
+    'the-game': TheGameSlide,
     intro: IntroSlide,
     roadmap: RoadmapSlide,
     grind: GrindSlide,

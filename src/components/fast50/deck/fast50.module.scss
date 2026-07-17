@@ -182,15 +182,11 @@
 // Intro slide
 // ---------------------------------------------------------------------------
 
-.introGame {
-    margin-top: 0.6vw;
-}
-
-.introGameTitle {
-    font-size: clamp(32px, 3.2vw, 60px);
-    font-weight: 800;
-    line-height: 1.1;
-    max-width: 24ch;
+.introGameLine {
+    font-size: clamp(24px, 2vw, 40px);
+    font-weight: 600;
+    color: var(--muted);
+    margin-top: 0.5vw;
 }
 
 .introCategory {
@@ -200,6 +196,14 @@
     letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--accent);
+}
+
+.hookLine {
+    font-size: clamp(30px, 2.8vw, 56px);
+    font-weight: 700;
+    line-height: 1.25;
+    max-width: 26ch;
+    margin-top: 1.2vw;
 }
 
 .statRow {
@@ -230,6 +234,72 @@
     font-size: clamp(52px, 4.8vw, 92px);
     font-weight: 800;
     line-height: 1;
+}
+
+// ---------------------------------------------------------------------------
+// The Game slide (cold open)
+// ---------------------------------------------------------------------------
+
+.broll {
+    position: absolute;
+    inset: 0;
+
+    video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            90deg,
+            rgba(7, 9, 13, 0.92) 15%,
+            rgba(7, 9, 13, 0.35) 60%,
+            rgba(7, 9, 13, 0.15) 100%
+        );
+    }
+}
+
+.backdropLoud {
+    opacity: 0.5;
+}
+
+.gameBlurb {
+    font-size: clamp(30px, 2.8vw, 56px);
+    font-weight: 700;
+    line-height: 1.25;
+    max-width: 28ch;
+    margin-top: 1.2vw;
+}
+
+.contrastRow {
+    display: flex;
+    align-items: flex-end;
+    gap: 3vw;
+    margin-top: 2.5vw;
+}
+
+.contrastValue {
+    display: block;
+    font-size: clamp(48px, 4.4vw, 84px);
+    font-weight: 800;
+    line-height: 1;
+}
+
+.contrastAccent {
+    color: var(--accent);
+}
+
+.contrastVs {
+    font-size: clamp(20px, 1.6vw, 32px);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+    padding-bottom: 0.6vw;
 }
 
 .headshotCard {

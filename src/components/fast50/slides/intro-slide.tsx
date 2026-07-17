@@ -1,11 +1,13 @@
 'use client';
 
 import React from 'react';
-import { formatTimeMs } from '~src/components/live/commentary-drawer/format';
 import type { SlideComponent } from '../deck/deck';
 import styles from '../deck/fast50.module.scss';
 import { Reveal, SlideShell } from '../deck/primitives';
 
+// "The Runner" beat of the cold open: the game slide before this one owns
+// the what-is-this-game job, so game/category shrink to a muted line and the
+// headshot + narrator hook carry the slide. PB lives on the game slide.
 export const IntroSlide: SlideComponent = ({ dossier, stage, prep }) => (
     <SlideShell
         kicker="Next up"
@@ -20,19 +22,14 @@ export const IntroSlide: SlideComponent = ({ dossier, stage, prep }) => (
         }
     >
         <Reveal when={stage >= 0} delayMs={120}>
-            <div className={styles.introGame}>
-                <div className={styles.introGameTitle}>
-                    {dossier.game.display}
-                </div>
-                <div className={styles.introCategory}>
-                    {dossier.game.category}
-                </div>
+            <div className={styles.introGameLine}>
+                {dossier.game.display} — {dossier.game.category}
             </div>
         </Reveal>
         {prep?.headshotUrl ? (
             <Reveal
-                when={stage >= 1}
-                delayMs={100}
+                when={stage >= 0}
+                delayMs={150}
                 className={styles.headshotCard}
             >
                 {/* Plain img: headshots live on the media CDN, which is not
@@ -41,16 +38,25 @@ export const IntroSlide: SlideComponent = ({ dossier, stage, prep }) => (
                 <img src={prep.headshotUrl} alt="" />
             </Reveal>
         ) : null}
-        <div className={styles.statRow}>
+        {prep?.story?.hook ? (
             <Reveal when={stage >= 1}>
-                <div>
-                    <span className={styles.statLabel}>Personal best</span>
-                    <span className={styles.statValuePb}>
-                        {formatTimeMs(dossier.core.pbMs)}
-                    </span>
-                </div>
+                <div className={styles.hookLine}>{prep.story.hook}</div>
             </Reveal>
-            <Reveal when={stage >= 2}>
+        ) : null}
+        <div className={styles.statRow}>
+            {prep?.story?.avgViewers ? (
+                <Reveal when={stage >= 2}>
+                    <div>
+                        <span className={styles.statLabel}>
+                            Average viewers
+                        </span>
+                        <span className={styles.statValue}>
+                            {prep.story.avgViewers.toLocaleString()}
+                        </span>
+                    </div>
+                </Reveal>
+            ) : null}
+            <Reveal when={stage >= 2} delayMs={90}>
                 <div>
                     <span className={styles.statLabel}>Attempts</span>
                     <span className={styles.statValue}>
@@ -59,7 +65,7 @@ export const IntroSlide: SlideComponent = ({ dossier, stage, prep }) => (
                 </div>
             </Reveal>
             {dossier.leaderboards?.pbPlacing ? (
-                <Reveal when={stage >= 2} delayMs={90}>
+                <Reveal when={stage >= 2} delayMs={180}>
                     <div>
                         <span className={styles.statLabel}>therun.gg rank</span>
                         <span className={styles.statValue}>

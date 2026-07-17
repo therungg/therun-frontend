@@ -35,6 +35,30 @@ describe('parsePrepData', () => {
         expect(parsed.deckOrder).toBeUndefined();
     });
 
+    test('story kept when any field valid, dropped when empty or invalid', () => {
+        expect(
+            parsePrepData({
+                story: {
+                    gameBlurb: 'Beat the game',
+                    casualTimeMs: 144_000_000,
+                    hook: 'Invented the skip',
+                    avgViewers: 40.4,
+                    brollUrl: 'https://cdn/b.mp4',
+                },
+            }).story,
+        ).toEqual({
+            gameBlurb: 'Beat the game',
+            casualTimeMs: 144_000_000,
+            hook: 'Invented the skip',
+            avgViewers: 40,
+            brollUrl: 'https://cdn/b.mp4',
+        });
+        expect(
+            parsePrepData({ story: { avgViewers: -5, hook: 42 } }).story,
+        ).toBeUndefined();
+        expect(parsePrepData({}).story).toBeUndefined();
+    });
+
     test('headshotUrl kept when a string, dropped otherwise', () => {
         expect(
             parsePrepData({ headshotUrl: 'https://cdn/h.jpg' }).headshotUrl,
