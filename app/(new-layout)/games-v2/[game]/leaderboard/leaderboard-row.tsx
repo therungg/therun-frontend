@@ -6,6 +6,7 @@ import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
+import { CountryFlag } from './country-flag';
 import styles from './leaderboard.module.scss';
 import { relativeDate } from './relative-date';
 import { RowActionsMenu } from './row-actions-menu';
@@ -93,9 +94,11 @@ export function LeaderboardRow({
                 <span className={styles.runnerCell}>
                     <RunnerAvatar
                         name={entry.runnerName}
+                        picture={entry.picture}
                         size={entry.rank <= 3 ? 'md' : 'sm'}
                     />
                     <UserLink username={entry.runnerName} url={undefined} />
+                    <CountryFlag country={entry.country} />
                 </span>
             </td>
             {!hideRealTime && time(entry.realTime)}

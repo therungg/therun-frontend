@@ -121,6 +121,10 @@ export interface LeaderboardEntry {
     // backing finished_run (runId is null). Defaults to 'run' when absent.
     source?: 'run' | 'manual';
     manualTimeId?: number | null;
+    // Runner metadata batch-joined by the backend; null for guests and
+    // absent on older backend deploys.
+    picture?: string | null;
+    country?: string | null;
 }
 
 export interface LeaderboardResponse {

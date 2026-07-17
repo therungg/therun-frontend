@@ -231,3 +231,19 @@ tr:focus-within .reveal {
 .avatarMd {
     @include board.board-avatar(dt.$avatar-md);
 }
+
+// Twitch profile picture rendered in the same circle as the monogram.
+.avatarImage {
+    object-fit: cover;
+}
+
+// ---- Country flags -------------------------------------------
+.flag {
+    width: 18px;
+    height: 13px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    object-fit: cover;
+    box-shadow: 0 0 0 1px
+        color-mix(in srgb, var(--bs-body-color) 15%, transparent);
+}

@@ -13,6 +13,7 @@ import type {
 } from '../../../../../types/leaderboards.types';
 import { ClaimCta, type ClaimCtaState } from '../claim/claim-cta';
 import styles from '../game-page.module.scss';
+import { CountryFlag } from '../leaderboard/country-flag';
 import { relativeDate } from '../leaderboard/relative-date';
 
 const WrHistoryDrawer = dynamic(
@@ -173,7 +174,8 @@ export function GameHero({
                                     <UserLink
                                         username={wr.runnerName}
                                         url={undefined}
-                                    />
+                                    />{' '}
+                                    <CountryFlag country={wr.country} />
                                     {wr.runDate && (
                                         <span
                                             title={new Date(
