@@ -8,6 +8,7 @@ import type {
 } from '../../../../../types/leaderboards.types';
 import { fetchLeaderboardPage } from '../actions/fetch-page.action';
 import { computeBoardRange } from './board-range';
+import { planFindMeSearch } from './find-me-plan';
 import styles from './leaderboard.module.scss';
 import { YOU_ROW_ID } from './leaderboard-row';
 import { LeaderboardTable } from './leaderboard-table';
@@ -17,9 +18,11 @@ import type { TimingKey } from './timing-columns';
 // "Find me" fallback: the board API has no rank/user lookup that accounts
 // for the current filter state (subcategory, varFilters, verified,
 // combined — see getUserRankingsByName in src/lib/leaderboards-v1.ts,
-// which only returns a fixed default-board rank), so we page forward
-// looking for the session user's row instead of jumping straight there.
-// Capped so a genuinely-absent user doesn't trigger unbounded fetching.
+// which only returns a fixed default-board rank), so we page forward from
+// maxPage, then (if still not found and budget remains) backward from
+// minPage - 1, looking for the session user's row instead of jumping
+// straight there. Capped so a genuinely-absent user doesn't trigger
+// unbounded fetching — see find-me-plan.ts.
 const MAX_FIND_ME_PAGES = 10;
 
 interface Props {
@@ -66,12 +69,15 @@ export function LeaderboardPager({
     // Which direction's fetch last failed, if any — drives the inline
     // error under that direction's bar and lets Retry redo the same load.
     const [error, setError] = useState<'before' | 'after' | null>(null);
-    // 'searching' drives the Find me button's in-flight label; 'not-found'
-    // replaces it with a quiet note once the forward search exhausts its
-    // cap (or the board is fully loaded) without a match — sticky for the
-    // rest of this mount so a miss doesn't invite endless re-clicking.
+    // 'searching' drives the Find me button's in-flight label. A miss
+    // resolves to one of two sticky notes (so it doesn't invite endless
+    // re-clicking) depending on how much of the board was actually
+    // searched: 'not-found' when the search covered the *entire* board
+    // (honest "not on this board"), 'partial-miss' when the budget ran
+    // out before every page was checked (honest "couldn't find in the
+    // pages searched" — the user's row may still be further out).
     const [findMeStatus, setFindMeStatus] = useState<
-        'idle' | 'searching' | 'not-found'
+        'idle' | 'searching' | 'not-found' | 'partial-miss'
     >('idle');
     // Bumped after a successful find to (re-)trigger the scroll+focus
     // effect even if the row was already on-screen from a prior search.
@@ -133,50 +139,80 @@ export function LeaderboardPager({
         sessionUsername !== null &&
         !isCurrentUserVisible &&
         findMeStatus !== 'not-found' &&
+        findMeStatus !== 'partial-miss' &&
         initial.totalItems > 0;
 
     const findMe = () => {
-        if (!sessionUsername || isCurrentUserVisible) return;
+        if (
+            !sessionUsername ||
+            isCurrentUserVisible ||
+            findMeStatus === 'searching'
+        )
+            return;
         setFindMeStatus('searching');
+        const startMinPage = minPage;
+        const startMaxPage = maxPage;
         startTransition(async () => {
-            const fetchedPages: LeaderboardEntry[][] = [];
-            let cursor = maxPage;
+            const plan = planFindMeSearch(
+                startMinPage,
+                startMaxPage,
+                initial.totalPages,
+                MAX_FIND_ME_PAGES,
+            );
+            const forwardPages: LeaderboardEntry[][] = [];
+            const backwardPages: LeaderboardEntry[][] = [];
+            let newMaxPage = startMaxPage;
+            let newMinPage = startMinPage;
             let found = false;
             let failed = false;
-            while (
-                !found &&
-                !failed &&
-                fetchedPages.length < MAX_FIND_ME_PAGES &&
-                cursor < initial.totalPages
-            ) {
-                const nextPage = cursor + 1;
-                const res = await fetchLeaderboardPage({
-                    ...query,
-                    page: nextPage,
-                });
+            let failedDirection: 'before' | 'after' = 'after';
+            for (const page of plan) {
+                const res = await fetchLeaderboardPage({ ...query, page });
                 if (!res) {
                     failed = true;
+                    failedDirection = page > startMaxPage ? 'after' : 'before';
                     break;
                 }
-                fetchedPages.push(res.entries);
-                cursor = nextPage;
-                found = res.entries.some(
-                    (e) => e.runnerName === sessionUsername,
-                );
+                if (page > startMaxPage) {
+                    forwardPages.push(res.entries);
+                    newMaxPage = page;
+                } else {
+                    backwardPages.push(res.entries);
+                    newMinPage = page;
+                }
+                if (res.entries.some((e) => e.runnerName === sessionUsername)) {
+                    found = true;
+                    break;
+                }
             }
-            if (fetchedPages.length > 0) {
-                setPages((prev) => [...prev, ...fetchedPages]);
-                setMaxPage(cursor);
-                setUrlPage(cursor);
+            if (forwardPages.length > 0 || backwardPages.length > 0) {
+                // mergeEntries re-sorts by rank, so exact concatenation
+                // order here doesn't matter for what's rendered — only
+                // minPage/maxPage need to reflect the new contiguous
+                // window for computeBoardRange.
+                setPages((prev) => [
+                    ...backwardPages,
+                    ...prev,
+                    ...forwardPages,
+                ]);
+                if (newMaxPage !== startMaxPage) setMaxPage(newMaxPage);
+                if (newMinPage !== startMinPage) setMinPage(newMinPage);
+                setUrlPage(newMaxPage);
             }
             if (failed) {
-                setError('after');
+                setError(failedDirection);
                 setFindMeStatus('idle');
                 return;
             }
             setError(null);
-            setFindMeStatus(found ? 'idle' : 'not-found');
-            if (found) setHighlightToken((t) => t + 1);
+            if (found) {
+                setFindMeStatus('idle');
+                setHighlightToken((t) => t + 1);
+                return;
+            }
+            const boardFullyLoaded =
+                newMinPage === 1 && newMaxPage === initial.totalPages;
+            setFindMeStatus(boardFullyLoaded ? 'not-found' : 'partial-miss');
         });
     };
 
@@ -235,7 +271,10 @@ export function LeaderboardPager({
                     )}
                 </div>
             )}
-            {(range || showFindMe || findMeStatus === 'not-found') && (
+            {(range ||
+                showFindMe ||
+                findMeStatus === 'not-found' ||
+                findMeStatus === 'partial-miss') && (
                 <div className={styles.boardMetaBar}>
                     {range && (
                         <span className={styles.rangeIndicator}>
@@ -262,6 +301,11 @@ export function LeaderboardPager({
                     {findMeStatus === 'not-found' && (
                         <span className={styles.notFoundNote}>
                             Not on this board yet
+                        </span>
+                    )}
+                    {findMeStatus === 'partial-miss' && (
+                        <span className={styles.notFoundNote}>
+                            Couldn't find your run in the pages searched
                         </span>
                     )}
                 </div>
