@@ -290,14 +290,12 @@ tr:focus-within .reveal {
     @include board.control-pill;
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
     padding: dt.$spacing-xs dt.$spacing-lg;
-    margin-left: auto;
 }
 
 .notFoundNote {
     font-size: dt.$font-size-xs;
     font-style: italic;
     color: var(--bs-tertiary-color);
-    margin-left: auto;
 }
 
 .pagerError {
