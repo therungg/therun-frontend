@@ -22,3 +22,14 @@ export function timingColumns(primaryTiming: TimingKey): {
         ? { primary: GAME_TIME, secondary: REAL_TIME }
         : { primary: REAL_TIME, secondary: GAME_TIME };
 }
+
+/** Determines if a timing column should be hidden. */
+export function timingColumnHidden(
+    key: TimingKey,
+    {
+        hideRealTime,
+        hideGameTime,
+    }: { hideRealTime: boolean; hideGameTime: boolean },
+): boolean {
+    return key === 'rt' ? hideRealTime : hideGameTime;
+}

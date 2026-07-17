@@ -2,7 +2,11 @@ import type { LeaderboardResponse } from '../../../../../types/leaderboards.type
 import { ClearFiltersButton } from '../filters/clear-filters-button';
 import styles from './leaderboard.module.scss';
 import { LeaderboardRow } from './leaderboard-row';
-import { type TimingKey, timingColumns } from './timing-columns';
+import {
+    type TimingKey,
+    timingColumnHidden,
+    timingColumns,
+} from './timing-columns';
 
 interface Props {
     leaderboard: LeaderboardResponse;
@@ -32,7 +36,7 @@ export function LeaderboardTable({
 
     const { hideRealTime, hideGameTime } = leaderboard;
     const hidden = (key: TimingKey) =>
-        key === 'rt' ? hideRealTime : hideGameTime;
+        timingColumnHidden(key, { hideRealTime, hideGameTime });
     const { primary, secondary } = timingColumns(primaryTiming);
 
     return (

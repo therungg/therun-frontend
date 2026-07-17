@@ -11,7 +11,11 @@ import styles from './leaderboard.module.scss';
 import { relativeDate } from './relative-date';
 import { RowActionsMenu } from './row-actions-menu';
 import { RunnerAvatar } from './runner-avatar';
-import { type TimingKey, timingColumns } from './timing-columns';
+import {
+    type TimingKey,
+    timingColumnHidden,
+    timingColumns,
+} from './timing-columns';
 
 interface Props {
     entry: LeaderboardEntry;
@@ -93,7 +97,7 @@ export function LeaderboardRow({
     const timingValue = (key: TimingKey) =>
         key === 'rt' ? entry.realTime : entry.gameTime;
     const timingHidden = (key: TimingKey) =>
-        key === 'rt' ? hideRealTime : hideGameTime;
+        timingColumnHidden(key, { hideRealTime, hideGameTime });
 
     return (
         <tr
