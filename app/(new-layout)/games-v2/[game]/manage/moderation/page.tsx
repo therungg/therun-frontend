@@ -6,7 +6,11 @@ import { listManualTimes } from '~src/lib/moderation/manual-times';
 import { listGameReports } from '~src/lib/moderation/reports';
 import { listQueue } from '~src/lib/moderation/triage';
 import { defineAbilityFor } from '~src/rbac/ability';
-import { mergeAttention } from './attention/attention-model';
+import {
+    degradedSourcesOf,
+    mergeAttention,
+    resolveSource,
+} from './attention/attention-model';
 import { ModerationTabs } from './moderation-tabs';
 
 interface Props {
@@ -25,27 +29,40 @@ export default async function ModerationPage({ params }: Props) {
     if (!canModerateGame(session, game.name)) notFound();
 
     const sessionId = session.id;
-    const [{ categories }, queueItems, reports, manualTimes] =
+    const [{ categories }, queueRes, reportsRes, manualTimesRes] =
         await Promise.all([
             resolveCategory(game.id),
-            // Inbox sources — best-effort; coerced to [] so a single
-            // unreachable route degrades gracefully rather than erroring.
-            listQueue(sessionId, game.id, { limit: 200 }).catch(() => null),
-            listGameReports(sessionId, game.id).catch(() => null),
-            listManualTimes(sessionId, game.id).catch(() => null),
+            // Inbox sources — best-effort, but honest: a failed fetch
+            // resolves to { ok: false, source } instead of silently
+            // nulling, so the page can tell "no work" from "backend down".
+            resolveSource(
+                listQueue(sessionId, game.id, { limit: 200 }),
+                'flags',
+            ),
+            resolveSource(listGameReports(sessionId, game.id), 'reports'),
+            resolveSource(listManualTimes(sessionId, game.id), 'manual times'),
         ]);
 
     const categoryById = new Map(categories.map((c) => [c.id, c.display]));
     const categoryName = (id: number) =>
         categoryById.get(id) ?? `Category ${id}`;
 
-    const pendingClaims = (manualTimes ?? []).filter(
+    const degradedSources = degradedSourcesOf([
+        queueRes,
+        reportsRes,
+        manualTimesRes,
+    ]);
+    const queueItems = queueRes.ok ? queueRes.data : [];
+    const reports = reportsRes.ok ? reportsRes.data : [];
+    const manualTimes = manualTimesRes.ok ? manualTimesRes.data : [];
+
+    const pendingClaims = manualTimes.filter(
         (m) => m.verificationStatus === 'pending',
     );
 
     const items = mergeAttention(
-        queueItems ?? [],
-        reports ?? [],
+        queueItems,
+        reports,
         pendingClaims,
         categoryName,
     );
@@ -63,6 +80,7 @@ export default async function ModerationPage({ params }: Props) {
             gameDisplay={game.display}
             canEditConfig={canEditConfig}
             items={items}
+            degradedSources={degradedSources}
             categories={categories.map((c) => ({
                 id: c.id,
                 display: c.display,

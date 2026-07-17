@@ -27,7 +27,11 @@ import type {
 } from '../../../../../types/board-claims.types';
 import { ConsoleShell } from './console/console-shell';
 import type { GameDetailsData } from './console/game-details-pane';
-import { mergeAttention } from './moderation/attention/attention-model';
+import {
+    degradedSourcesOf,
+    mergeAttention,
+    resolveSource,
+} from './moderation/attention/attention-model';
 
 interface Props {
     params: Promise<{ game: string }>;
@@ -64,7 +68,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
     const initialCategory =
         categories.find((c) => c.active !== false) ?? categories[0] ?? null;
 
-    const [identifiers, rawRows, groups, queueItems, reports, manualTimes] =
+    const [identifiers, rawRows, groups, queueRes, reportsRes, manualTimesRes] =
         await Promise.all([
             getGameIdentifiers(game.id).catch(() => ({
                 slug: null,
@@ -72,10 +76,21 @@ export default async function GameAdminConsolePage({ params }: Props) {
             })),
             listManageCategories(game.id).catch(() => []),
             listManageGroups(game.id).catch(() => []),
-            listQueue(sessionId, game.id, { limit: 200 }).catch(() => null),
-            listGameReports(sessionId, game.id).catch(() => null),
-            listManualTimes(sessionId, game.id).catch(() => null),
+            resolveSource(
+                listQueue(sessionId, game.id, { limit: 200 }),
+                'flags',
+            ),
+            resolveSource(listGameReports(sessionId, game.id), 'reports'),
+            resolveSource(listManualTimes(sessionId, game.id), 'manual times'),
         ]);
+    const degradedSources = degradedSourcesOf([
+        queueRes,
+        reportsRes,
+        manualTimesRes,
+    ]);
+    const queueItems = queueRes.ok ? queueRes.data : [];
+    const reports = reportsRes.ok ? reportsRes.data : [];
+    const manualTimes = manualTimesRes.ok ? manualTimesRes.data : [];
 
     const statsById = new Map(categories.map((c) => [c.id, c]));
     const rows = rawRows
@@ -91,12 +106,12 @@ export default async function GameAdminConsolePage({ params }: Props) {
         })
         .filter((r) => !isLowActivityCategory(r));
 
-    const pendingClaims = (manualTimes ?? []).filter(
+    const pendingClaims = manualTimes.filter(
         (m) => m.verificationStatus === 'pending',
     );
     const attentionItems = mergeAttention(
-        queueItems ?? [],
-        reports ?? [],
+        queueItems,
+        reports,
         pendingClaims,
         categoryName,
     );
@@ -169,6 +184,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                     canEditMods,
                 }}
                 attentionItems={attentionItems}
+                degradedSources={degradedSources}
                 modApplications={modApplications}
                 initialCategoryId={initialCategory?.id ?? null}
                 initialSlug={identifiers.slug}

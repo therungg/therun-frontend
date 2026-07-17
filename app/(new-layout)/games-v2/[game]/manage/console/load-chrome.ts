@@ -7,7 +7,10 @@ import { listQueue } from '~src/lib/moderation/triage';
 import { defineAbilityFor } from '~src/rbac/ability';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
 import type { User } from '../../../../../../types/session.types';
-import { mergeAttention } from '../moderation/attention/attention-model';
+import {
+    mergeAttention,
+    resolveSource,
+} from '../moderation/attention/attention-model';
 import type { NavFlags } from './nav-model';
 
 export interface ConsoleChromeData {
@@ -46,17 +49,25 @@ export async function loadConsoleChrome(
     const categoryName = (id: number) =>
         categoryById.get(id) ?? `Category ${id}`;
 
-    const [queueItems, reports, manualTimes] = await Promise.all([
-        listQueue(session.id, game.id, { limit: 200 }).catch(() => null),
-        listGameReports(session.id, game.id).catch(() => null),
-        listManualTimes(session.id, game.id).catch(() => null),
+    const [queueRes, reportsRes, manualTimesRes] = await Promise.all([
+        resolveSource(listQueue(session.id, game.id, { limit: 200 }), 'flags'),
+        resolveSource(listGameReports(session.id, game.id), 'reports'),
+        resolveSource(listManualTimes(session.id, game.id), 'manual times'),
     ]);
-    const pendingClaims = (manualTimes ?? []).filter(
+    // A failed source degrades the badge to a lower (possibly zero) count
+    // rather than erroring the page — this chrome only ever renders a
+    // number, so there's no "All clear" claim to protect here. Pages that
+    // render NeedsAttention resolve these sources themselves and surface
+    // degradedSources to the UI.
+    const queueItems = queueRes.ok ? queueRes.data : [];
+    const reports = reportsRes.ok ? reportsRes.data : [];
+    const manualTimes = manualTimesRes.ok ? manualTimesRes.data : [];
+    const pendingClaims = manualTimes.filter(
         (m) => m.verificationStatus === 'pending',
     );
     const attentionCount = mergeAttention(
-        queueItems ?? [],
-        reports ?? [],
+        queueItems,
+        reports,
         pendingClaims,
         categoryName,
     ).length;

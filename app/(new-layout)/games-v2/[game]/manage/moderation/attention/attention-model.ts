@@ -7,6 +7,51 @@ import type {
 
 export type AttentionSource = 'flag' | 'report' | 'appeal' | 'self_claim';
 
+export interface SourceOk<T> {
+    ok: true;
+    data: T;
+}
+export interface SourceFail {
+    ok: false;
+    source: string;
+}
+export type SourceResult<T> = SourceOk<T> | SourceFail;
+
+/**
+ * Wrap a best-effort inbox fetch so a backend failure is visible instead
+ * of silently swallowed: resolves `{ ok: true, data }` on success or
+ * `{ ok: false, source }` on rejection. Callers collect the `source`
+ * names into `degradedSources` so a moderator can tell "no work" from
+ * "backend down" — see NeedsAttention.
+ */
+export function resolveSource<T>(
+    promise: Promise<T>,
+    source: string,
+): Promise<SourceResult<T>> {
+    return promise.then(
+        (data): SourceResult<T> => ({ ok: true, data }),
+        (): SourceResult<T> => ({ ok: false, source }),
+    );
+}
+
+/** Extract the failed `source` names from a list of resolved results. */
+export function degradedSourcesOf(
+    results: Array<SourceResult<unknown>>,
+): string[] {
+    return results.filter((r) => !r.ok).map((r) => (r as SourceFail).source);
+}
+
+/**
+ * Join degraded source names for the warning copy:
+ * "flags" / "flags and reports" / "flags, reports, and manual times".
+ */
+export function formatSourceList(sources: string[]): string {
+    if (sources.length <= 1) return sources[0] ?? '';
+    if (sources.length === 2) return `${sources[0]} and ${sources[1]}`;
+    const head = sources.slice(0, -1).join(', ');
+    return `${head}, and ${sources[sources.length - 1]}`;
+}
+
 export interface AttentionItem {
     key: string;
     sources: AttentionSource[]; // one row may carry several

@@ -32,6 +32,7 @@ export interface ConsoleShellProps {
     categories: ResolvedCategory[];
     flags: NavFlags;
     attentionItems: AttentionItem[];
+    degradedSources: string[];
     modApplications?: BoardClaimRequest[];
     initialCategoryId: number | null;
     initialSlug: string | null;
@@ -49,6 +50,7 @@ export function ConsoleShell({
     categories,
     flags,
     attentionItems,
+    degradedSources,
     modApplications,
     initialCategoryId,
     initialSlug,
@@ -158,6 +160,7 @@ export function ConsoleShell({
                     canEditStandards={flags.canEditStandards}
                     gameDetails={gameDetails}
                     attentionItems={attentionItems}
+                    degradedSources={degradedSources}
                     modApplications={modApplications}
                     moderators={moderators}
                     initialSlug={initialSlug}

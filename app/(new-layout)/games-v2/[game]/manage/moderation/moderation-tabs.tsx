@@ -16,6 +16,7 @@ interface Props {
     gameDisplay: string;
     canEditConfig: boolean;
     items: AttentionItem[];
+    degradedSources: string[];
     categories: Array<{ id: number; display: string }>;
 }
 
@@ -24,6 +25,7 @@ export function ModerationTabs({
     gameDisplay,
     canEditConfig,
     items,
+    degradedSources,
     categories,
 }: Props) {
     const [tab, setTab] = useState<Tab>('moderate');
@@ -106,6 +108,7 @@ export function ModerationTabs({
                     gameSlug={gameSlug}
                     gameDisplay={gameDisplay}
                     items={items}
+                    degradedSources={degradedSources}
                     categories={categories}
                 />
             )}
