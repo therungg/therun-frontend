@@ -1,9 +1,8 @@
 'use client';
 
-import moment from 'moment';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
-import { Dropdown, Form, Modal } from 'react-bootstrap';
+import { Dropdown } from 'react-bootstrap';
 import { ThreeDotsVertical } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import type { ModVerb } from '~app/(new-layout)/games-v2/[game]/manage/moderation/shared/action-model';
@@ -13,13 +12,13 @@ import {
     loadRunHistoryAction,
     reportRunAction,
 } from '~src/actions/run-user-actions.action';
-import { describeEvent } from '~src/lib/run-view/describe-event';
 import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
 import type { HistoryEvent } from '../../../../../types/moderation.types';
 import {
     SelfRunVerdictDialog,
     useSelfRunVerdict,
 } from '../shared/self-run-verdict';
+import { HistoryDialog, ReasonDialog } from './row-action-dialogs';
 import styles from './row-actions-menu.module.scss';
 
 interface Props {
@@ -57,7 +56,6 @@ export function RowActionsMenu({
         setModal(null);
         setReason('');
     };
-    const reasonValid = reason.trim().length >= 10;
 
     const openHistory = () => {
         setModal('history');
@@ -114,10 +112,14 @@ export function RowActionsMenu({
                 >
                     <ThreeDotsVertical aria-hidden size={16} />
                 </Dropdown.Toggle>
-                <Dropdown.Menu popperConfig={{ strategy: 'fixed' }}>
+                <Dropdown.Menu
+                    className={styles.menu}
+                    popperConfig={{ strategy: 'fixed' }}
+                >
                     <Dropdown.Item
                         as="button"
                         type="button"
+                        className={styles.item}
                         onClick={openHistory}
                     >
                         Run history
@@ -126,6 +128,7 @@ export function RowActionsMenu({
                         <Dropdown.Item
                             as="button"
                             type="button"
+                            className={styles.item}
                             onClick={() => setModal('report')}
                         >
                             Report run
@@ -135,7 +138,7 @@ export function RowActionsMenu({
                         <Dropdown.Item
                             as="button"
                             type="button"
-                            className="text-danger"
+                            className={`${styles.item} ${styles.danger}`}
                             onClick={() =>
                                 selfVerdict.requestVerdict(runId, 'reject')
                             }
@@ -148,6 +151,7 @@ export function RowActionsMenu({
                             <Dropdown.Item
                                 as="button"
                                 type="button"
+                                className={styles.item}
                                 onClick={() =>
                                     selfVerdict.requestVerdict(
                                         runId,
@@ -160,6 +164,7 @@ export function RowActionsMenu({
                             <Dropdown.Item
                                 as="button"
                                 type="button"
+                                className={styles.item}
                                 onClick={() => setModal('appeal')}
                             >
                                 Appeal rejection
@@ -168,11 +173,14 @@ export function RowActionsMenu({
                     )}
                     {canManage && (
                         <>
-                            <Dropdown.Divider />
-                            <Dropdown.Header>Moderator</Dropdown.Header>
+                            <Dropdown.Divider className={styles.menuDivider} />
+                            <Dropdown.Header className={styles.menuHeader}>
+                                Moderator
+                            </Dropdown.Header>
                             <Dropdown.Item
                                 as="button"
                                 type="button"
+                                className={styles.item}
                                 onClick={() => setModVerb('approve')}
                             >
                                 Approve run
@@ -180,7 +188,7 @@ export function RowActionsMenu({
                             <Dropdown.Item
                                 as="button"
                                 type="button"
-                                className="text-danger"
+                                className={`${styles.item} ${styles.danger}`}
                                 onClick={() => setModVerb('remove')}
                             >
                                 Remove run…
@@ -189,6 +197,7 @@ export function RowActionsMenu({
                                 <Dropdown.Item
                                     as="button"
                                     type="button"
+                                    className={styles.item}
                                     onClick={() => setModVerb('restore')}
                                 >
                                     Restore run
@@ -216,119 +225,42 @@ export function RowActionsMenu({
                 />
             )}
 
-            <Modal show={modal === 'report'} onHide={close} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title className="h6">Report this run</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <p className="small text-muted">
-                        Tell the moderators why this run looks wrong (fake time,
-                        spliced video, wrong category…). Minimum 10 characters.
-                    </p>
-                    <Form.Control
-                        as="textarea"
-                        rows={3}
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        disabled={pending}
-                        placeholder="Reason for report"
-                    />
-                </Modal.Body>
-                <Modal.Footer>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={close}
-                        disabled={pending}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-primary"
-                        onClick={submitReport}
-                        disabled={pending || !reasonValid}
-                    >
-                        Submit report
-                    </button>
-                </Modal.Footer>
-            </Modal>
+            <ReasonDialog
+                open={modal === 'report'}
+                onClose={close}
+                labelledBy={`report-title-${runId}`}
+                eyebrow="Report"
+                title="Report this run"
+                blurb="Tell the moderators why this run looks wrong (fake time, spliced video, wrong category…)."
+                placeholder="Reason for report"
+                submitLabel="Submit report"
+                reason={reason}
+                onReasonChange={setReason}
+                onSubmit={submitReport}
+                pending={pending}
+            />
 
-            <Modal show={modal === 'appeal'} onHide={close} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title className="h6">Appeal rejection</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <p className="small text-muted">
-                        Explain why this run should be reinstated. A moderator
-                        will review your appeal. Minimum 10 characters.
-                    </p>
-                    <Form.Control
-                        as="textarea"
-                        rows={3}
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        disabled={pending}
-                        placeholder="Why should this run be reinstated?"
-                    />
-                </Modal.Body>
-                <Modal.Footer>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-outline-secondary"
-                        onClick={close}
-                        disabled={pending}
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-primary"
-                        onClick={submitAppeal}
-                        disabled={pending || !reasonValid}
-                    >
-                        Submit appeal
-                    </button>
-                </Modal.Footer>
-            </Modal>
+            <ReasonDialog
+                open={modal === 'appeal'}
+                onClose={close}
+                labelledBy={`appeal-title-${runId}`}
+                eyebrow="Appeal"
+                title="Appeal rejection"
+                blurb="Explain why this run should be reinstated. A moderator will review your appeal."
+                placeholder="Why should this run be reinstated?"
+                submitLabel="Submit appeal"
+                reason={reason}
+                onReasonChange={setReason}
+                onSubmit={submitAppeal}
+                pending={pending}
+            />
 
-            <Modal show={modal === 'history'} onHide={close} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title className="h6">Run history</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    {history === null && (
-                        <p className="text-muted small mb-0">Loading…</p>
-                    )}
-                    {history !== null && history.length === 0 && (
-                        <p className="text-muted small mb-0">
-                            No moderation history for this run.
-                        </p>
-                    )}
-                    {history !== null && history.length > 0 && (
-                        <ul className="list-unstyled mb-0">
-                            {history.map((e, i) => (
-                                <li
-                                    key={`${e.at}-${i}`}
-                                    className="border-start ps-3 pb-3 position-relative"
-                                >
-                                    <div className="fw-semibold small">
-                                        {describeEvent(e)}
-                                    </div>
-                                    <div className="text-muted small">
-                                        {e.byRole} · {moment(e.at).fromNow()}
-                                    </div>
-                                    {e.reason && (
-                                        <div className="small fst-italic">
-                                            “{e.reason}”
-                                        </div>
-                                    )}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </Modal.Body>
-            </Modal>
+            <HistoryDialog
+                open={modal === 'history'}
+                onClose={close}
+                labelledBy={`history-title-${runId}`}
+                history={history}
+            />
 
             <SelfRunVerdictDialog
                 confirmState={selfVerdict.confirmState}

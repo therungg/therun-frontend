@@ -1,0 +1,140 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// ============================================================
+// Report / appeal / history dialog chrome for the public board.
+// Overlay + panel live in the shared BoardDialog primitive
+// (../shared/board-dialog.module.scss); this file is the
+// header/body/footer content, mirroring the moderation
+// run-action-dialog vocabulary (eyebrow, title, reason textarea,
+// right-aligned footer).
+// ============================================================
+
+// ---- Header -------------------------------------------------
+.header {
+    display: flex;
+    align-items: flex-start;
+    gap: dt.$spacing-md;
+    padding: dt.$spacing-lg dt.$spacing-xl;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+}
+
+.headingBlock {
+    flex: 1;
+    min-width: 0;
+}
+
+.eyebrow {
+    @include board.board-eyebrow;
+    margin: 0 0 dt.$spacing-xs 0;
+}
+
+.title {
+    font-size: dt.$font-size-base;
+    font-weight: dt.$heading-font-weight;
+    letter-spacing: dt.$heading-letter-spacing;
+    margin: 0;
+}
+
+// ---- Body ---------------------------------------------------
+.body {
+    padding: dt.$spacing-xl;
+}
+
+.blurb {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0 0 dt.$spacing-md 0;
+}
+
+// ---- Reason field -------------------------------------------
+.fieldLabel {
+    display: block;
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    color: var(--bs-tertiary-color);
+    margin-bottom: dt.$spacing-xs;
+}
+
+.reasonTextarea {
+    font-size: dt.$font-size-sm;
+    border-radius: dt.$radius-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    background: color-mix(
+        in srgb,
+        var(--bs-body-bg) 90%,
+        var(--bs-secondary-bg) 10%
+    );
+    color: var(--bs-body-color);
+    padding: dt.$spacing-sm;
+    width: 100%;
+    resize: vertical;
+    transition: border-color dt.$transition-fast;
+
+    &:focus-visible {
+        outline: 0;
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+.reasonError {
+    font-size: dt.$font-size-2xs;
+    color: dt.$accent-red;
+    margin-top: dt.$spacing-xs;
+}
+
+// ---- Footer -------------------------------------------------
+.footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-md dt.$spacing-xl;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+}
+
+// ---- History list -------------------------------------------
+.historyStatus {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0;
+}
+
+.historyList {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.historyItem {
+    border-left: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding: 0 0 dt.$spacing-md dt.$spacing-md;
+
+    &:last-child {
+        padding-bottom: 0;
+    }
+}
+
+.historyEvent {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-body-color);
+}
+
+.historyMeta {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+.historyReason {
+    font-size: dt.$font-size-sm;
+    font-style: italic;
+    color: var(--bs-secondary-color);
+}
