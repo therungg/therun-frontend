@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState, useTransition } from 'react';
-import { createPortal } from 'react-dom';
 import { toast } from 'react-toastify';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
@@ -10,6 +9,7 @@ import type {
     VerdictAction,
     VerdictPreviewResult,
 } from '../../../../../../../types/moderation.types';
+import { BoardDialog } from '../../../shared/board-dialog';
 import {
     type BanScope,
     type ModVerb,
@@ -69,16 +69,6 @@ export function RunActionDialog({
     const [error, setError] = useState<string | null>(null);
     const [isPreviewing, startPreview] = useTransition();
     const [isConfirming, startConfirm] = useTransition();
-    // Portal target isn't available during SSR; mount client-side only. This
-    // also keeps the dialog out of the opacity-0 `.reveal` subtree it may be
-    // composed inside (leaderboard row hover affordance), which would
-    // otherwise render an open dialog invisible whenever the row loses hover
-    // or focus (e.g. keyboard: Enter closes the dropdown, focus falls to
-    // body).
-    const [mounted, setMounted] = useState(false);
-    useEffect(() => {
-        setMounted(true);
-    }, []);
 
     const runIds = target.kind === 'runs' ? target.runIds : [];
     const banRule: UserExclusionRuleInput | null =
@@ -202,276 +192,251 @@ export function RunActionDialog({
             ? target.label
             : `${target.runnerName} · ${scope === 'category' ? target.categoryDisplay : `${target.gameDisplay} (entire game)`}`;
 
-    if (!mounted) return null;
+    // Ignore close requests (Escape included) while a confirm mutation is in
+    // flight — mirrors the disabled Cancel/close-button state below.
+    const requestClose = () => {
+        if (!isConfirming) onClose();
+    };
 
-    return createPortal(
-        <div
-            className={`modal d-block ${styles.backdrop}`}
-            tabIndex={-1}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="run-action-title"
-            onKeyDown={(e) => {
-                if (e.key === 'Escape' && !isConfirming) onClose();
-            }}
+    return (
+        <BoardDialog
+            open
+            onClose={requestClose}
+            labelledBy="run-action-title"
+            size="lg"
+            closeOnBackdropClick={false}
         >
-            <div
-                className="modal-dialog modal-lg modal-dialog-scrollable"
-                role="document"
-            >
-                <div className={`modal-content ${styles.content}`}>
-                    <div className={styles.header}>
-                        <h5 className={styles.title} id="run-action-title">
-                            {VERB_TITLE[verb]} — {headerTarget}
-                        </h5>
-                        <button
-                            type="button"
-                            className="btn-close"
-                            aria-label="Close"
-                            onClick={onClose}
+            <div className={styles.header}>
+                <h5 className={styles.title} id="run-action-title">
+                    {VERB_TITLE[verb]} — {headerTarget}
+                </h5>
+                <button
+                    type="button"
+                    className="btn-close"
+                    aria-label="Close"
+                    onClick={requestClose}
+                    disabled={isConfirming}
+                />
+            </div>
+
+            <div className={styles.body}>
+                {verb === 'remove' && (
+                    <div className="mb-3">
+                        <label
+                            htmlFor="remove-reason-cat"
+                            className={styles.fieldLabel}
+                        >
+                            Why are you removing this?
+                        </label>
+                        <select
+                            id="remove-reason-cat"
+                            className="form-select form-select-sm"
+                            value={reasonCat}
+                            onChange={(e) =>
+                                onReasonCatChange(
+                                    e.target.value as RemoveReason,
+                                )
+                            }
                             disabled={isConfirming}
-                        />
-                    </div>
-
-                    <div className={styles.body}>
-                        {verb === 'remove' && (
-                            <div className="mb-3">
-                                <label
-                                    htmlFor="remove-reason-cat"
-                                    className={styles.fieldLabel}
-                                >
-                                    Why are you removing this?
-                                </label>
-                                <select
-                                    id="remove-reason-cat"
-                                    className="form-select form-select-sm"
-                                    value={reasonCat}
-                                    onChange={(e) =>
-                                        onReasonCatChange(
-                                            e.target.value as RemoveReason,
-                                        )
-                                    }
-                                    disabled={isConfirming}
-                                >
-                                    {REMOVE_REASONS.map((r) => (
-                                        <option key={r.value} value={r.value}>
-                                            {r.label}
-                                        </option>
-                                    ))}
-                                </select>
-                                <div className="form-text">
-                                    {removeReasonMeta(reasonCat).blurb}
-                                </div>
-                                <div className="form-check form-switch mt-2">
-                                    <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        role="switch"
-                                        id="remove-notify"
-                                        checked={notify}
-                                        onChange={(e) =>
-                                            setNotify(e.target.checked)
-                                        }
-                                        disabled={isConfirming}
-                                    />
-                                    <label
-                                        className="form-check-label small"
-                                        htmlFor="remove-notify"
-                                    >
-                                        Notify the runner and allow an appeal
-                                    </label>
-                                </div>
-                            </div>
-                        )}
-
-                        {verb === 'ban' && target.kind === 'runner' && (
-                            <div className="mb-3 d-flex gap-3">
-                                <div className="form-check">
-                                    <input
-                                        type="radio"
-                                        className="form-check-input"
-                                        id="ban-scope-category"
-                                        name="ban-scope"
-                                        checked={scope === 'category'}
-                                        onChange={() => setScope('category')}
-                                        disabled={isConfirming}
-                                    />
-                                    <label
-                                        htmlFor="ban-scope-category"
-                                        className="form-check-label small"
-                                    >
-                                        From this category
-                                    </label>
-                                </div>
-                                <div className="form-check">
-                                    <input
-                                        type="radio"
-                                        className="form-check-input"
-                                        id="ban-scope-game"
-                                        name="ban-scope"
-                                        checked={scope === 'game'}
-                                        onChange={() => setScope('game')}
-                                        disabled={isConfirming}
-                                    />
-                                    <label
-                                        htmlFor="ban-scope-game"
-                                        className="form-check-label small"
-                                    >
-                                        From the entire game
-                                    </label>
-                                </div>
-                            </div>
-                        )}
-
-                        {isPreviewing && (
-                            <p className={styles.previewLoading}>
-                                Loading preview…
-                            </p>
-                        )}
-                        {previewError && (
-                            <div className={styles.errorAlert} role="alert">
-                                {previewError}
-                            </div>
-                        )}
-
-                        {preview && (
-                            <p className={styles.previewSummary}>
-                                <strong>{preview.data.affectedRunCount}</strong>{' '}
-                                run
-                                {preview.data.affectedRunCount === 1 ? '' : 's'}{' '}
-                                affected across{' '}
-                                <strong>
-                                    {preview.data.affectedLeaderboards.length}
-                                </strong>{' '}
-                                leaderboard
-                                {preview.data.affectedLeaderboards.length === 1
-                                    ? ''
-                                    : 's'}
-                                .
-                            </p>
-                        )}
-
-                        {preview?.kind === 'verdict' &&
-                            preview.data.sampleRuns.length > 0 && (
-                                <div className="table-responsive">
-                                    <table className="table table-sm align-middle mb-0">
-                                        <thead>
-                                            <tr>
-                                                <th>Runner</th>
-                                                <th className={styles.timeCell}>
-                                                    Time
-                                                </th>
-                                                <th>Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {preview.data.sampleRuns.map(
-                                                (s) => (
-                                                    <tr key={s.runId}>
-                                                        <td>{s.runnerName}</td>
-                                                        <td
-                                                            className={
-                                                                styles.timeCell
-                                                            }
-                                                        >
-                                                            <DurationToFormatted
-                                                                duration={
-                                                                    s.timeMs
-                                                                }
-                                                            />
-                                                        </td>
-                                                        <td className="small text-muted">
-                                                            {s.currentStatus}
-                                                            {' → '}
-                                                            {s.newStatus}
-                                                        </td>
-                                                    </tr>
-                                                ),
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-
-                        {preview?.kind === 'exclude' &&
-                            preview.data.sampleRuns.length > 0 && (
-                                <ul className={styles.previewList}>
-                                    {preview.data.sampleRuns.map((s) => (
-                                        <li key={s.runId}>
-                                            {s.runnerName} — {s.categoryName}
-                                            {s.subcategoryKey
-                                                ? ` (${s.subcategoryKey})`
-                                                : ''}{' '}
-                                            {s.time != null && (
-                                                <span
-                                                    className={
-                                                        styles.previewTime
-                                                    }
-                                                >
-                                                    <DurationToFormatted
-                                                        duration={s.time}
-                                                    />
-                                                </span>
-                                            )}
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-
-                        <div className="mt-3">
-                            <label
-                                htmlFor="run-action-reason"
-                                className={styles.fieldLabel}
-                            >
-                                Reason — required, min {MIN_REASON} characters,
-                                audit-logged
-                            </label>
-                            <textarea
-                                id="run-action-reason"
-                                className={styles.reasonTextarea}
-                                rows={3}
-                                value={reason}
-                                onChange={(e) => setReason(e.target.value)}
+                        >
+                            {REMOVE_REASONS.map((r) => (
+                                <option key={r.value} value={r.value}>
+                                    {r.label}
+                                </option>
+                            ))}
+                        </select>
+                        <div className="form-text">
+                            {removeReasonMeta(reasonCat).blurb}
+                        </div>
+                        <div className="form-check form-switch mt-2">
+                            <input
+                                className="form-check-input"
+                                type="checkbox"
+                                role="switch"
+                                id="remove-notify"
+                                checked={notify}
+                                onChange={(e) => setNotify(e.target.checked)}
                                 disabled={isConfirming}
                             />
-                            {!reasonOk && reason.length > 0 && (
-                                <div className={styles.reasonError}>
-                                    {MIN_REASON - reason.trim().length} more
-                                    needed.
-                                </div>
-                            )}
+                            <label
+                                className="form-check-label small"
+                                htmlFor="remove-notify"
+                            >
+                                Notify the runner and allow an appeal
+                            </label>
                         </div>
-
-                        {error && (
-                            <div className={styles.errorAlert} role="alert">
-                                {error}
-                            </div>
-                        )}
                     </div>
+                )}
 
-                    <div className={styles.footer}>
-                        <button
-                            type="button"
-                            className="btn btn-sm btn-outline-secondary"
-                            onClick={onClose}
-                            disabled={isConfirming}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="button"
-                            className={`btn btn-sm ${verb === 'approve' ? 'btn-success' : 'btn-danger'}`}
-                            onClick={handleConfirm}
-                            disabled={busy || !reasonOk || !!previewError}
-                        >
-                            {isConfirming
-                                ? 'Working…'
-                                : `Confirm ${VERB_TITLE[verb].toLowerCase()}`}
-                        </button>
+                {verb === 'ban' && target.kind === 'runner' && (
+                    <div className="mb-3 d-flex gap-3">
+                        <div className="form-check">
+                            <input
+                                type="radio"
+                                className="form-check-input"
+                                id="ban-scope-category"
+                                name="ban-scope"
+                                checked={scope === 'category'}
+                                onChange={() => setScope('category')}
+                                disabled={isConfirming}
+                            />
+                            <label
+                                htmlFor="ban-scope-category"
+                                className="form-check-label small"
+                            >
+                                From this category
+                            </label>
+                        </div>
+                        <div className="form-check">
+                            <input
+                                type="radio"
+                                className="form-check-input"
+                                id="ban-scope-game"
+                                name="ban-scope"
+                                checked={scope === 'game'}
+                                onChange={() => setScope('game')}
+                                disabled={isConfirming}
+                            />
+                            <label
+                                htmlFor="ban-scope-game"
+                                className="form-check-label small"
+                            >
+                                From the entire game
+                            </label>
+                        </div>
                     </div>
+                )}
+
+                {isPreviewing && (
+                    <p className={styles.previewLoading}>Loading preview…</p>
+                )}
+                {previewError && (
+                    <div className={styles.errorAlert} role="alert">
+                        {previewError}
+                    </div>
+                )}
+
+                {preview && (
+                    <p className={styles.previewSummary}>
+                        <strong>{preview.data.affectedRunCount}</strong> run
+                        {preview.data.affectedRunCount === 1 ? '' : 's'}{' '}
+                        affected across{' '}
+                        <strong>
+                            {preview.data.affectedLeaderboards.length}
+                        </strong>{' '}
+                        leaderboard
+                        {preview.data.affectedLeaderboards.length === 1
+                            ? ''
+                            : 's'}
+                        .
+                    </p>
+                )}
+
+                {preview?.kind === 'verdict' &&
+                    preview.data.sampleRuns.length > 0 && (
+                        <div className="table-responsive">
+                            <table className="table table-sm align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Runner</th>
+                                        <th className={styles.timeCell}>
+                                            Time
+                                        </th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {preview.data.sampleRuns.map((s) => (
+                                        <tr key={s.runId}>
+                                            <td>{s.runnerName}</td>
+                                            <td className={styles.timeCell}>
+                                                <DurationToFormatted
+                                                    duration={s.timeMs}
+                                                />
+                                            </td>
+                                            <td className="small text-muted">
+                                                {s.currentStatus}
+                                                {' → '}
+                                                {s.newStatus}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+
+                {preview?.kind === 'exclude' &&
+                    preview.data.sampleRuns.length > 0 && (
+                        <ul className={styles.previewList}>
+                            {preview.data.sampleRuns.map((s) => (
+                                <li key={s.runId}>
+                                    {s.runnerName} — {s.categoryName}
+                                    {s.subcategoryKey
+                                        ? ` (${s.subcategoryKey})`
+                                        : ''}{' '}
+                                    {s.time != null && (
+                                        <span className={styles.previewTime}>
+                                            <DurationToFormatted
+                                                duration={s.time}
+                                            />
+                                        </span>
+                                    )}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+
+                <div className="mt-3">
+                    <label
+                        htmlFor="run-action-reason"
+                        className={styles.fieldLabel}
+                    >
+                        Reason — required, min {MIN_REASON} characters,
+                        audit-logged
+                    </label>
+                    <textarea
+                        id="run-action-reason"
+                        className={styles.reasonTextarea}
+                        rows={3}
+                        value={reason}
+                        onChange={(e) => setReason(e.target.value)}
+                        disabled={isConfirming}
+                    />
+                    {!reasonOk && reason.length > 0 && (
+                        <div className={styles.reasonError}>
+                            {MIN_REASON - reason.trim().length} more needed.
+                        </div>
+                    )}
                 </div>
+
+                {error && (
+                    <div className={styles.errorAlert} role="alert">
+                        {error}
+                    </div>
+                )}
             </div>
-        </div>,
-        document.body,
+
+            <div className={styles.footer}>
+                <button
+                    type="button"
+                    className="btn btn-sm btn-outline-secondary"
+                    onClick={requestClose}
+                    disabled={isConfirming}
+                >
+                    Cancel
+                </button>
+                <button
+                    type="button"
+                    className={`btn btn-sm ${verb === 'approve' ? 'btn-success' : 'btn-danger'}`}
+                    onClick={handleConfirm}
+                    disabled={busy || !reasonOk || !!previewError}
+                >
+                    {isConfirming
+                        ? 'Working…'
+                        : `Confirm ${VERB_TITLE[verb].toLowerCase()}`}
+                </button>
+            </div>
+        </BoardDialog>
     );
 }

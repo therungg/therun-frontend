@@ -1,9 +1,10 @@
 'use client';
 
 import moment from 'moment/moment';
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import type { ModActionRow } from '../../../../../../../types/moderation.types';
+import { useDialogBehavior } from '../../../shared/board-dialog';
 import { undoAction } from '../log/actions/undo.action';
 import { loadHistoryAction } from './actions/standards.action';
 
@@ -68,6 +69,7 @@ export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [undone, setUndone] = useState<Set<number>>(new Set());
+    const panelRef = useRef<HTMLDivElement>(null);
 
     // Lazy-load when the drawer first opens.
     useEffect(() => {
@@ -95,15 +97,11 @@ export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
         };
     }, [open, gameSlug, actions, loading]);
 
-    // Close on Escape while open.
-    useEffect(() => {
-        if (!open) return;
-        const onKey = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') onClose();
-        };
-        window.addEventListener('keydown', onKey);
-        return () => window.removeEventListener('keydown', onKey);
-    }, [open, onClose]);
+    // Focus trap + autofocus + restore-on-close + Escape-to-close + scroll
+    // lock — same behavior as BoardDialog, kept here directly since this
+    // drawer keeps its own slide-in-from-the-edge presentation rather than
+    // the centered modal chrome.
+    useDialogBehavior({ open, onClose, panelRef });
 
     const onUndone = (logId: number) =>
         setUndone((prev) => new Set(prev).add(logId));
@@ -125,12 +123,14 @@ export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
             />
             {/* Panel */}
             <div
+                ref={panelRef}
                 className="position-fixed top-0 end-0 h-100 bg-body shadow-lg d-flex flex-column"
                 style={{
                     width: 'min(28rem, 100%)',
                     zIndex: 1046,
                 }}
                 role="dialog"
+                aria-modal="true"
                 aria-label="Moderation history"
             >
                 <div className="d-flex align-items-center justify-content-between p-3 border-bottom">
