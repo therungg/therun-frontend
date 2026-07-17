@@ -55,9 +55,11 @@ tr:focus-within .reveal {
     opacity: 1;
 }
 
+// Coarse pointers (touch) have no hover, so the trigger must be visible
+// at rest instead of hidden — the row-actions kebab is always reachable.
 @media (pointer: coarse) {
     .reveal {
-        display: none;
+        opacity: 1;
     }
 }
 

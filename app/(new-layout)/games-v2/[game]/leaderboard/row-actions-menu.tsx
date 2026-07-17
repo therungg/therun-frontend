@@ -4,6 +4,7 @@ import moment from 'moment';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Dropdown, Form, Modal } from 'react-bootstrap';
+import { ThreeDotsVertical } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import type { ModVerb } from '~app/(new-layout)/games-v2/[game]/manage/moderation/shared/action-model';
 import { RunActionDialog } from '~app/(new-layout)/games-v2/[game]/manage/moderation/shared/run-action-dialog';
@@ -11,11 +12,15 @@ import {
     appealRunAction,
     loadRunHistoryAction,
     reportRunAction,
-    selfRunVerdictAction,
 } from '~src/actions/run-user-actions.action';
 import { describeEvent } from '~src/lib/run-view/describe-event';
 import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
 import type { HistoryEvent } from '../../../../../types/moderation.types';
+import {
+    SelfRunVerdictDialog,
+    useSelfRunVerdict,
+} from '../shared/self-run-verdict';
+import styles from './row-actions-menu.module.scss';
 
 interface Props {
     entry: LeaderboardEntry;
@@ -43,6 +48,7 @@ export function RowActionsMenu({
     const [reason, setReason] = useState('');
     const [history, setHistory] = useState<HistoryEvent[] | null>(null);
     const [pending, startTransition] = useTransition();
+    const selfVerdict = useSelfRunVerdict();
 
     // Manual-time entries have no finished_run to act on.
     if (runId == null) return null;
@@ -95,45 +101,18 @@ export function RowActionsMenu({
         });
     };
 
-    const selfVerdict = (action: 'reject' | 'unreject') => {
-        const verb = action === 'reject' ? 'hide' : 'restore';
-        if (
-            !confirm(
-                `Are you sure you want to ${verb} your run on the leaderboard?`,
-            )
-        ) {
-            return;
-        }
-        startTransition(async () => {
-            const res = await selfRunVerdictAction(runId, action);
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            if (res.noop) {
-                toast.info('No change needed.');
-            } else if (res.applied === 'provisional') {
-                toast.success('Submitted for moderator review.');
-            } else {
-                toast.success(
-                    action === 'reject'
-                        ? 'Your run is now hidden from the leaderboard.'
-                        : 'Your run has been restored.',
-                );
-            }
-            router.refresh();
-        });
-    };
-
     return (
         <>
             <Dropdown align="end">
                 <Dropdown.Toggle
-                    variant="outline-secondary"
-                    size="sm"
+                    as="button"
+                    type="button"
                     id={`run-actions-${runId}`}
+                    className={styles.toggle}
+                    aria-label="Run actions"
+                    title="Run actions"
                 >
-                    Actions
+                    <ThreeDotsVertical aria-hidden size={16} />
                 </Dropdown.Toggle>
                 <Dropdown.Menu popperConfig={{ strategy: 'fixed' }}>
                     <Dropdown.Item
@@ -157,7 +136,9 @@ export function RowActionsMenu({
                             as="button"
                             type="button"
                             className="text-danger"
-                            onClick={() => selfVerdict('reject')}
+                            onClick={() =>
+                                selfVerdict.requestVerdict(runId, 'reject')
+                            }
                         >
                             Hide my run
                         </Dropdown.Item>
@@ -167,7 +148,12 @@ export function RowActionsMenu({
                             <Dropdown.Item
                                 as="button"
                                 type="button"
-                                onClick={() => selfVerdict('unreject')}
+                                onClick={() =>
+                                    selfVerdict.requestVerdict(
+                                        runId,
+                                        'unreject',
+                                    )
+                                }
                             >
                                 Restore my run
                             </Dropdown.Item>
@@ -343,6 +329,13 @@ export function RowActionsMenu({
                     )}
                 </Modal.Body>
             </Modal>
+
+            <SelfRunVerdictDialog
+                confirmState={selfVerdict.confirmState}
+                pending={selfVerdict.pending}
+                onCancel={selfVerdict.cancel}
+                onConfirm={selfVerdict.confirm}
+            />
         </>
     );
 }
