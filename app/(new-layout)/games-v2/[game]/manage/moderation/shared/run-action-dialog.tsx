@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState, useTransition } from 'react';
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type {
@@ -38,6 +38,25 @@ interface Props {
 }
 
 const MIN_REASON = 10;
+
+// approve/restore are fast triage — a note is optional and audit-logged, not
+// gated. remove/ban (and bulk variants of both, which reuse these same verbs)
+// stay gated at MIN_REASON since they're consequential for the runner.
+const REASON_REQUIRED: Record<ModVerb, boolean> = {
+    approve: false,
+    restore: false,
+    remove: true,
+    ban: true,
+};
+
+// Sent when the moderator leaves the note blank on a verb where it's
+// optional. The backend's verdict/exclude endpoints reject an empty reason
+// (see src/lib/moderation/mod-fetch.ts's documented error, "reason is
+// required (min 10 characters)"), so these stand in rather than sending "".
+const DEFAULT_REASON: Partial<Record<ModVerb, string>> = {
+    approve: 'Approved — no issues found.',
+    restore: 'Restored after review.',
+};
 
 type PreviewState =
     | { kind: 'verdict'; data: VerdictPreviewResult }
@@ -136,18 +155,33 @@ export function RunActionDialog({
         setNotify(removeReasonMeta(next).defaultNotify);
     };
 
-    const reasonOk = reason.trim().length >= MIN_REASON;
+    const reasonRequired = REASON_REQUIRED[verb];
+    const reasonOk = reasonRequired ? reason.trim().length >= MIN_REASON : true;
     const busy = isPreviewing || isConfirming;
+
+    // Confirm button ref (approve/restore auto-focus this — reason is
+    // optional, so Confirm is already actionable) and reason field ref
+    // (remove/ban auto-focus this — reason is required).
+    const confirmRef = useRef<HTMLButtonElement>(null);
+    const reasonFieldRef = useRef<HTMLTextAreaElement>(null);
+    const initialFocusRef = reasonRequired ? reasonFieldRef : confirmRef;
 
     const handleConfirm = () => {
         if (!reasonOk) return;
         setError(null);
         startConfirm(async () => {
             const trimmed = reason.trim();
+            // Optional-reason verbs (approve/restore): fall back to a
+            // sensible default rather than sending an empty string the
+            // backend would reject.
+            const finalReason =
+                trimmed.length > 0
+                    ? trimmed
+                    : (DEFAULT_REASON[verb] ?? trimmed);
             if (verb === 'ban' && banRule) {
                 const res = await excludeAction(gameSlug, {
                     rule: banRule,
-                    reason: trimmed,
+                    reason: finalReason,
                 });
                 if ('error' in res) return setError(res.error);
                 toast.success(
@@ -158,7 +192,11 @@ export function RunActionDialog({
                 return onDone();
             }
             if (verb === 'restore') {
-                const res = await restoreRunsAction(gameSlug, runIds, trimmed);
+                const res = await restoreRunsAction(
+                    gameSlug,
+                    runIds,
+                    finalReason,
+                );
                 if ('error' in res) return setError(res.error);
                 toast.success('Restored.');
                 return onDone();
@@ -168,7 +206,7 @@ export function RunActionDialog({
                     gameSlug,
                     confirmVerdictAction,
                     runIds,
-                    trimmed,
+                    finalReason,
                 );
                 if ('error' in res) return setError(res.error);
                 const n = res.result.affectedRunCount;
@@ -179,7 +217,7 @@ export function RunActionDialog({
             }
             const res = await excludeAction(gameSlug, {
                 runIds,
-                reason: trimmed,
+                reason: finalReason,
             });
             if ('error' in res) return setError(res.error);
             toast.success('Removed.');
@@ -205,6 +243,7 @@ export function RunActionDialog({
             labelledBy="run-action-title"
             size="lg"
             closeOnBackdropClick={false}
+            initialFocusRef={initialFocusRef}
         >
             <div className={styles.header}>
                 <h5 className={styles.title} id="run-action-title">
@@ -392,18 +431,20 @@ export function RunActionDialog({
                         htmlFor="run-action-reason"
                         className={styles.fieldLabel}
                     >
-                        Reason — required, min {MIN_REASON} characters,
-                        audit-logged
+                        {reasonRequired
+                            ? `Reason — required, min ${MIN_REASON} characters, audit-logged`
+                            : 'Note — optional, audit-logged'}
                     </label>
                     <textarea
                         id="run-action-reason"
+                        ref={reasonFieldRef}
                         className={styles.reasonTextarea}
                         rows={3}
                         value={reason}
                         onChange={(e) => setReason(e.target.value)}
                         disabled={isConfirming}
                     />
-                    {!reasonOk && reason.length > 0 && (
+                    {reasonRequired && !reasonOk && reason.length > 0 && (
                         <div className={styles.reasonError}>
                             {MIN_REASON - reason.trim().length} more needed.
                         </div>
@@ -428,6 +469,7 @@ export function RunActionDialog({
                 </button>
                 <button
                     type="button"
+                    ref={confirmRef}
                     className={`btn btn-sm ${verb === 'approve' ? 'btn-success' : 'btn-danger'}`}
                     onClick={handleConfirm}
                     disabled={busy || !reasonOk || !!previewError}

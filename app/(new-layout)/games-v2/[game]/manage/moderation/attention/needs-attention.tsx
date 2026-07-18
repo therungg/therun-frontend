@@ -3,7 +3,7 @@
 import clsx from 'clsx';
 import moment from 'moment/moment';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
     CameraVideo,
     CameraVideoOff,
@@ -32,6 +32,14 @@ import {
 } from './attention-model';
 import { ManualTimeVerdictRow } from './manual-time-verdict-row';
 import styles from './needs-attention.module.scss';
+import {
+    isTriageInert,
+    moveSelection,
+    parseTriageKey,
+} from './triage-keyboard';
+
+/** data-triage-card attribute name shared between the selector and the query. */
+const TRIAGE_CARD_ATTR = 'data-triage-card';
 
 type SourceFilter = 'all' | AttentionSource;
 type CategoryFilter = 'any' | number;
@@ -102,6 +110,8 @@ export function NeedsAttention({
         parseKindFilter(searchParams.get('kind')),
     );
     const [runAction, setRunAction] = useState<RunAction | null>(null);
+    const [selectedKey, setSelectedKey] = useState<string | null>(null);
+    const listRef = useRef<HTMLDivElement>(null);
     const isDegraded = degradedSources.length > 0;
     const degradedMessage = `Couldn't load ${formatSourceList(degradedSources)} — the queue may not be empty.`;
 
@@ -145,6 +155,81 @@ export function NeedsAttention({
         const drop = new Set(keys);
         setItems((prev) => prev.filter((it) => !drop.has(it.key)));
     };
+
+    const triggerApprove = (item: AttentionItem) => {
+        if (item.runId == null) return; // self-claims use their own inline verdict row, not this dialog
+        setRunAction({
+            verb: 'approve',
+            target: runsTargetFor(item),
+            affectedKeys: [item.key],
+        });
+    };
+
+    const triggerRemove = (item: AttentionItem) => {
+        if (item.runId == null) return;
+        setRunAction({
+            verb: 'remove',
+            target: runsTargetFor(item),
+            affectedKeys: [item.key],
+        });
+    };
+
+    // Fast triage: j/k (or Arrow Up/Down) move a roving selection between the
+    // currently RENDERED cards (a collapsed runner group's items are simply
+    // absent from the query, so they're skipped rather than requiring an
+    // auto-expand); v opens approve, r opens remove for the selected card.
+    // Inert while a dialog is open or focus sits in a form field — see
+    // triage-keyboard.ts for the pure decision logic.
+    useEffect(() => {
+        const onKeyDown = (e: KeyboardEvent) => {
+            const action = parseTriageKey(e);
+            if (!action) return;
+            const active = document.activeElement as HTMLElement | null;
+            if (
+                isTriageInert({
+                    activeTag: active?.tagName ?? null,
+                    isContentEditable: !!active?.isContentEditable,
+                    dialogOpen: runAction != null,
+                })
+            ) {
+                return;
+            }
+
+            if (action === 'up' || action === 'down') {
+                const keys = Array.from(
+                    listRef.current?.querySelectorAll<HTMLElement>(
+                        `[${TRIAGE_CARD_ATTR}]`,
+                    ) ?? [],
+                ).map((el) => el.getAttribute(TRIAGE_CARD_ATTR) as string);
+                if (keys.length === 0) return;
+                e.preventDefault();
+                setSelectedKey((cur) => moveSelection(keys, cur, action));
+                return;
+            }
+
+            if (selectedKey == null) return;
+            const item = filtered.find((it) => it.key === selectedKey);
+            if (!item) return;
+            e.preventDefault();
+            if (action === 'approve') triggerApprove(item);
+            else triggerRemove(item);
+        };
+        document.addEventListener('keydown', onKeyDown);
+        return () => document.removeEventListener('keydown', onKeyDown);
+        // triggerApprove/triggerRemove close over `item`, not component state
+        // beyond what's already listed — safe to omit.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [runAction, selectedKey, filtered]);
+
+    // Keep the selection ring visibly focused and scrolled into view.
+    useEffect(() => {
+        if (selectedKey == null) return;
+        const el = listRef.current?.querySelector<HTMLElement>(
+            `[${TRIAGE_CARD_ATTR}="${CSS.escape(selectedKey)}"]`,
+        );
+        el?.focus();
+        el?.scrollIntoView({ block: 'nearest' });
+    }, [selectedKey]);
 
     return (
         <div>
@@ -274,7 +359,10 @@ export function NeedsAttention({
                             </button>
                         </div>
                     )}
-                    <div className={styles.stack}>
+                    <p className={styles.hint}>
+                        j/k navigate · v approve · r remove
+                    </p>
+                    <div className={styles.stack} ref={listRef}>
                         {groups.map((g) =>
                             g.items.length > 1 ? (
                                 <RunnerGroupCard
@@ -286,6 +374,7 @@ export function NeedsAttention({
                                     items={g.items}
                                     onAct={setRunAction}
                                     onItemDone={(keys) => removeKeys(keys)}
+                                    selectedKey={selectedKey}
                                 />
                             ) : (
                                 <SingleItemCard
@@ -295,6 +384,7 @@ export function NeedsAttention({
                                     item={g.items[0]}
                                     onAct={setRunAction}
                                     onDone={() => removeKeys([g.items[0].key])}
+                                    selected={g.items[0].key === selectedKey}
                                 />
                             ),
                         )}
@@ -316,6 +406,17 @@ export function NeedsAttention({
             )}
         </div>
     );
+}
+
+/** Build a single-run action target from an item — shared by the card's own
+ * buttons and the keyboard triage shortcuts. */
+function runsTargetFor(item: AttentionItem): RunActionTarget {
+    const runIds = item.runId != null ? [item.runId] : [];
+    return {
+        kind: 'runs',
+        runIds,
+        label: `${item.runnerName} · ${item.categoryName}`,
+    };
 }
 
 /** Build a runner ban target from an item (caller guarantees userId != null). */
@@ -412,6 +513,8 @@ interface SingleItemCardProps {
     item: AttentionItem;
     onAct: (a: RunAction) => void;
     onDone: () => void;
+    /** Whether the keyboard triage selection ring is on this card. */
+    selected?: boolean;
 }
 
 function SingleItemCard({
@@ -420,21 +523,25 @@ function SingleItemCard({
     item,
     onAct,
     onDone,
+    selected = false,
 }: SingleItemCardProps) {
     const isSelfClaim = item.runId == null && item.manualTimeId != null;
 
-    const runIds = item.runId != null ? [item.runId] : [];
-    const runsTarget: RunActionTarget = {
-        kind: 'runs',
-        runIds,
-        label: `${item.runnerName} · ${item.categoryName}`,
-    };
+    const runsTarget = runsTargetFor(item);
 
     const act = (verb: ModVerb, target: RunActionTarget) =>
         onAct({ verb, target, affectedKeys: [item.key] });
 
     return (
-        <div className={clsx(styles.card, SEV_SPINE[item.severity])}>
+        <div
+            className={clsx(
+                styles.card,
+                SEV_SPINE[item.severity],
+                selected && styles.selected,
+            )}
+            data-triage-card={item.key}
+            tabIndex={-1}
+        >
             <div className={styles.cardTop}>
                 <span className={clsx(styles.pill, SEV_PILL[item.severity])}>
                     {item.severity}
@@ -519,6 +626,7 @@ interface RunnerGroupCardProps {
     items: AttentionItem[];
     onAct: (a: RunAction) => void;
     onItemDone: (keys: string[]) => void;
+    selectedKey: string | null;
 }
 
 function RunnerGroupCard({
@@ -529,6 +637,7 @@ function RunnerGroupCard({
     items,
     onAct,
     onItemDone,
+    selectedKey,
 }: RunnerGroupCardProps) {
     const [open, setOpen] = useState(false);
 
@@ -641,6 +750,7 @@ function RunnerGroupCard({
                             item={it}
                             onAct={onAct}
                             onDone={() => onItemDone([it.key])}
+                            selected={it.key === selectedKey}
                         />
                     ))}
                 </div>

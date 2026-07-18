@@ -94,6 +94,15 @@ $rail: 3px;
     }
 }
 
+// ---- Keyboard triage hint ------------------------------------
+// Quiet documentation of the shortcuts, not a banner — sits directly above
+// the list, same weight as the other tiny meta text (.age, .status).
+.hint {
+    font-size: dt.$font-size-2xs;
+    color: var(--bs-tertiary-color);
+    margin-bottom: dt.$spacing-sm;
+}
+
 // ---- Stack of items ----------------------------------------
 .stack {
     display: flex;
@@ -114,6 +123,14 @@ $rail: 3px;
 
     &:hover {
         box-shadow: dt.$shadow-md;
+    }
+
+    // Keyboard triage selection ring (roving tabindex — this is a
+    // programmatic, not native, focus target, so we style it explicitly
+    // rather than relying on :focus-visible heuristics).
+    &.selected {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.6);
+        outline-offset: 2px;
     }
 }
 
