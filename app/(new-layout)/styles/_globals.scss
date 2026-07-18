@@ -17,6 +17,16 @@ body {
   --color-positive-7: rgba(96, 140, 89, 0.12);
   --color-positive-8: rgba(96, 140, 89, 0.09);
   --color-positive-9: rgba(96, 140, 89, 0.06);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-xl: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+[data-bs-theme="dark"] {
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 4px 14px rgba(0, 0, 0, 0.45);
+  --shadow-xl: 0 6px 24px rgba(0, 0, 0, 0.55);
 }
 
 #basic-nav-dropdown {
