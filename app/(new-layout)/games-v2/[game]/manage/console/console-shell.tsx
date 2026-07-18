@@ -23,7 +23,6 @@ import type { GameDetailsData } from './game-details-pane';
 import {
     buildNav,
     sidebarActiveItem as deriveSidebarActiveItem,
-    isLandingPaneId,
     type NavFlags,
     type NavItemId,
     resolveCategoryId,
@@ -96,34 +95,50 @@ export function ConsoleShell({
     // The first run (post-hydration only) additionally consults this
     // viewer's per-game "last pane" memory, but ONLY when the URL carries no
     // `?pane=` at all — a deep link always wins over what they last had
-    // open. Every subsequent run (pane switches, Back/Forward) just syncs to
-    // `initialActive` like before.
-    const checkedStoredPaneRef = useRef(false);
+    // open. When that happens, the resolved pane is written straight back
+    // into the URL via `router.replace` (preserving any other params, e.g.
+    // `?pane=history` never reaches here — see the guard below). That makes
+    // every history entry self-describing: entry #0 becomes `?pane=timing`
+    // instead of staying bare, so browser Back always lands on a URL that
+    // already names its pane instead of silently falling through to the
+    // default and re-clobbering storage. Every subsequent run (pane
+    // switches, Back/Forward) just syncs to `initialActive` — the URL alone
+    // is authoritative once this one-time bootstrap has run.
+    const appliedStoredPaneRef = useRef(false);
     useEffect(() => {
-        if (!checkedStoredPaneRef.current) {
-            checkedStoredPaneRef.current = true;
-            if (!searchParams.get('pane') && typeof window !== 'undefined') {
+        if (!appliedStoredPaneRef.current) {
+            appliedStoredPaneRef.current = true;
+            const urlPane = searchParams.get('pane');
+            if (!urlPane && typeof window !== 'undefined') {
                 const stored = window.localStorage.getItem(
                     `console:${game.id}:lastPane`,
                 );
-                const visible = groups
-                    .flatMap((g) => g.items)
-                    .map((it) => it.id);
-                if (isLandingPaneId(stored, visible)) {
-                    setActiveItem(stored);
-                    return;
+                const resolved = resolveInitialPane(urlPane, stored, groups);
+                setActiveItem(resolved);
+                if (resolved) {
+                    const params = new URLSearchParams(searchParams);
+                    params.set('pane', resolved);
+                    router.replace(`?${params.toString()}`, {
+                        scroll: false,
+                    });
                 }
+                return;
             }
         }
         setActiveItem(initialActive);
-    }, [initialActive, searchParams, groups, game.id]);
+    }, [initialActive, searchParams, groups, game.id, router]);
 
     // Remember this viewer's last pane per game so their next visit lands
     // where they left off instead of always the default — a `?pane=` deep
-    // link still always wins (see the effect above).
+    // link still always wins (see the effect above). Skip the write when
+    // it wouldn't change anything (e.g. the sync effect above re-running
+    // after its own `router.replace`) to avoid a redundant localStorage hit.
     useEffect(() => {
         if (typeof window === 'undefined' || !activeItem) return;
-        window.localStorage.setItem(`console:${game.id}:lastPane`, activeItem);
+        const key = `console:${game.id}:lastPane`;
+        if (window.localStorage.getItem(key) !== activeItem) {
+            window.localStorage.setItem(key, activeItem);
+        }
     }, [activeItem, game.id]);
 
     // Deep links that never land as content: `?pane=roster` sends the viewer
