@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { RunDetail } from '../../../../../../../types/leaderboards.types';
 import { VariablesLine, VerificationBadge } from '../../../run-view/run-badges';
@@ -19,6 +18,7 @@ export function RunCard({ run, gameSlug, canExcludeUsers }: Props) {
     const router = useRouter();
     const [modVerb, setModVerb] = useState<ModVerb | null>(null);
     const isRejected = run.verificationStatus === 'rejected';
+    const isVerified = run.verificationStatus === 'verified';
     const canExcludeThisRunner =
         canExcludeUsers && !run.isGuest && run.userId != null;
 
@@ -79,6 +79,15 @@ export function RunCard({ run, gameSlug, canExcludeUsers }: Props) {
                     </span>
                 )}
                 <div className="d-flex gap-2 justify-content-end ms-auto">
+                    {!isVerified && (
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-success"
+                            onClick={() => setModVerb('approve')}
+                        >
+                            Approve run
+                        </button>
+                    )}
                     {!isRejected && (
                         <button
                             type="button"
@@ -106,12 +115,6 @@ export function RunCard({ run, gameSlug, canExcludeUsers }: Props) {
                             Ban runner…
                         </button>
                     )}
-                    <Link
-                        href={`/games-v2/${gameSlug}`}
-                        className="btn btn-sm btn-outline-secondary"
-                    >
-                        Back to leaderboard
-                    </Link>
                 </div>
             </div>
 

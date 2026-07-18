@@ -48,7 +48,7 @@ export function ManageRunPage({
                         href={`/games-v2/${game.name}`}
                         className="btn btn-sm btn-outline-secondary"
                     >
-                        ← Back to leaderboards
+                        Back to leaderboard
                     </Link>
                 </div>
             </header>
