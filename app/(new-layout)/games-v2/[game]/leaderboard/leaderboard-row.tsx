@@ -10,6 +10,7 @@ import { formatRunDate } from '~src/lib/format-run-date';
 import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
 import { usePopoverFocus } from '../shared/use-popover-focus';
 import { CountryFlag } from './country-flag';
+import type { DisplayRank } from './display-rank';
 import styles from './leaderboard.module.scss';
 import { relativeDate } from './relative-date';
 import { RowActionsMenu } from './row-actions-menu';
@@ -114,6 +115,8 @@ export const YOU_ROW_ID = 'leaderboard-you-row';
 
 interface Props {
     entry: LeaderboardEntry;
+    /** Table-derived rank label (handles ties — see display-rank.ts). */
+    displayRank: DisplayRank;
     isCurrentUser: boolean;
     canManage: boolean;
     gameSlug: string;
@@ -121,10 +124,13 @@ interface Props {
     hideGameTime: boolean;
     primaryTiming: TimingKey;
     sessionUsername: string | null;
+    /** category.showMilliseconds ?? true — precision the board is configured for. */
+    showMilliseconds: boolean;
 }
 
 export function LeaderboardRow({
     entry,
+    displayRank,
     isCurrentUser,
     canManage,
     gameSlug,
@@ -132,6 +138,7 @@ export function LeaderboardRow({
     hideGameTime,
     primaryTiming,
     sessionUsername,
+    showMilliseconds,
 }: Props) {
     const router = useRouter();
     const showManageButton = canManage && entry.runId != null && !entry.isGuest;
@@ -175,10 +182,16 @@ export function LeaderboardRow({
             {value != null ? (
                 detailHref ? (
                     <Link href={detailHref}>
-                        <DurationToFormatted duration={value} />
+                        <DurationToFormatted
+                            duration={value}
+                            withMillis={showMilliseconds}
+                        />
                     </Link>
                 ) : (
-                    <DurationToFormatted duration={value} />
+                    <DurationToFormatted
+                        duration={value}
+                        withMillis={showMilliseconds}
+                    />
                 )
             ) : (
                 '—'
@@ -203,7 +216,17 @@ export function LeaderboardRow({
             className={`${podiumClass} ${isCurrentUser ? styles.youRow : ''} ${detailHref ? styles.rowLink : ''}`}
             onClick={onRowClick}
         >
-            <td className={`${styles.rank} ${rankClass}`}>{entry.rank}</td>
+            <td className={`${styles.rank} ${rankClass}`}>
+                {displayRank.tied && (
+                    <>
+                        <span className="visually-hidden">Tied for rank </span>
+                        <span className={styles.tieMark} aria-hidden="true">
+                            =
+                        </span>
+                    </>
+                )}
+                {displayRank.label.replace(/^=/, '')}
+            </td>
             <td className={styles.runner}>
                 <span className={styles.runnerCell}>
                     <RunnerAvatar
@@ -223,7 +246,7 @@ export function LeaderboardRow({
                 className={`${styles.meta} ${styles.when}`}
                 title={entry.runDate ? formatRunDate(entry.runDate) : undefined}
             >
-                {entry.runDate ? relativeDate(entry.runDate) : ''}
+                {entry.runDate ? relativeDate(entry.runDate) : '—'}
             </td>
             <td className={styles.trailing}>
                 {entry.source === 'manual' && (

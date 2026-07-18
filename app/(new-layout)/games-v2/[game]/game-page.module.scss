@@ -236,6 +236,26 @@
     justify-content: space-between;
     align-items: baseline;
     margin-bottom: dt.$spacing-xs;
+    gap: dt.$spacing-sm;
+
+    // The History trigger keeps its width; the eyebrow gives way and
+    // truncates (see .crownEyebrow below).
+    .quietLink {
+        flex-shrink: 0;
+    }
+}
+
+// Crown-specific eyebrow modifier: truncates a long "World record —
+// Category · Subcategory" scope line with an ellipsis instead of wrapping
+// or overflowing past the History button. Full text still lives in the
+// element's `title`. Scoped here (not on the shared .eyebrow class, which
+// many other short labels across this module reuse).
+.crownEyebrow {
+    display: block;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .crownTimeRow {

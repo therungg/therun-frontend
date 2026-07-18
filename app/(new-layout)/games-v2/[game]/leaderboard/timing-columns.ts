@@ -33,3 +33,11 @@ export function timingColumnHidden(
 ): boolean {
     return key === 'rt' ? hideRealTime : hideGameTime;
 }
+
+/** Reads the timing value for a given column key off any entry-shaped record. */
+export function timingValue(
+    entry: { realTime: number | null; gameTime: number | null },
+    key: TimingKey,
+): number | null {
+    return key === 'rt' ? entry.realTime : entry.gameTime;
+}

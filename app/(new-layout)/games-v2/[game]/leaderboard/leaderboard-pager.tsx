@@ -35,6 +35,8 @@ interface Props {
     variableKeys: string[];
     primaryTiming: TimingKey;
     filtersActive: boolean;
+    /** category.showMilliseconds ?? true — precision the board is configured for. */
+    showMilliseconds: boolean;
 }
 
 // Module-level flag (not state): the parent keys this component by the
@@ -62,6 +64,7 @@ export function LeaderboardPager({
     variableKeys,
     primaryTiming,
     filtersActive,
+    showMilliseconds,
 }: Props) {
     const [pages, setPages] = useState<LeaderboardEntry[][]>([initial.entries]);
     const [minPage, setMinPage] = useState(initial.page);
@@ -323,6 +326,7 @@ export function LeaderboardPager({
                 variableKeys={variableKeys}
                 primaryTiming={primaryTiming}
                 filtersActive={filtersActive}
+                showMilliseconds={showMilliseconds}
             />
             {maxPage < initial.totalPages && (
                 <div className={styles.showMoreBar}>

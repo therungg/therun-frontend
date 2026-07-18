@@ -88,3 +88,20 @@ Checked against the actual `emitNotification` call sites in `../therun` (2026-07
 - Frontend: `src/components/Topbar/notification-copy.ts` (`describe`/`linkFor`) already
   reads these fields opportunistically — typeof-guarded, so nothing to change frontend-side
   once the backend adds them; the links/copy just start appearing.
+
+### 7. Authoritative ties in leaderboard `rank` (W10)
+
+The board's `rank` field doesn't reliably collapse to a shared value when two entries
+have the identical primary time — the frontend currently derives its own tie/`=1` display
+by comparing consecutive primary times within whatever page window happens to be loaded
+client-side, which means a tie that straddles an unloaded page boundary (e.g. rank 25 on
+page 1 and rank 26 on page 2, tied but never rendered adjacently) is never marked.
+
+- Wanted: the leaderboard list endpoint assigns a genuinely shared `rank` to entries with
+  equal primary times (standard competition ranking — ties share the lower rank, the next
+  distinct time skips to `rank + tieCount`), so ties are correct across page boundaries
+  without the client needing the full board loaded.
+- Frontend: `leaderboard/display-rank.ts` (`computeDisplayRanks`) is the pure windowed
+  fallback — call site in `leaderboard/leaderboard-table.tsx`. Once backend ranks are
+  authoritative, this can likely simplify to just detecting `entry.rank === prevRank`
+  instead of re-deriving group membership from time equality.

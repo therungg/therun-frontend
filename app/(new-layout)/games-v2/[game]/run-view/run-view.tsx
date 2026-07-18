@@ -76,7 +76,17 @@ export function RunView({
                         )}{' '}
                         —{' '}
                         {primaryTime != null ? (
-                            <DurationToFormatted duration={primaryTime} />
+                            // The category's showMilliseconds flag isn't
+                            // fetchable from this page's data (RunDetail has
+                            // no category settings join) without an extra
+                            // call — default to ms here since a run page
+                            // showing more precision than configured is
+                            // never wrong, just occasionally more precise
+                            // than the board.
+                            <DurationToFormatted
+                                duration={primaryTime}
+                                withMillis
+                            />
                         ) : (
                             '—'
                         )}
@@ -149,6 +159,7 @@ export function RunView({
                                     {model.realTime != null ? (
                                         <DurationToFormatted
                                             duration={model.realTime}
+                                            withMillis
                                         />
                                     ) : (
                                         '—'
@@ -163,6 +174,7 @@ export function RunView({
                                     {model.gameTime != null ? (
                                         <DurationToFormatted
                                             duration={model.gameTime}
+                                            withMillis
                                         />
                                     ) : (
                                         '—'
