@@ -30,6 +30,7 @@ import {
     previewVerdictsAction,
 } from './actions/verdicts.action';
 import styles from './run-action-dialog.module.scss';
+import { fireUndoToast } from './undo-toast';
 
 interface Props {
     gameSlug: string;
@@ -47,64 +48,6 @@ interface Props {
      * right "resync" behavior (a refetch or router.refresh()).
      */
     onUndoComplete?: () => void;
-}
-
-type UndoResult = { error: string } | { ok: true };
-
-// Toast body for a reversible action's success toast. Owns its own pending
-// state so the Undo button disables the instant it's clicked and stays
-// disabled through the in-flight call — `closeToast()` (called on click,
-// below) triggers an async exit transition, so without this the button
-// would remain clickable (and re-clickable) while the toast fades out.
-function UndoToast({
-    message,
-    undo,
-    onUndone,
-    closeToast,
-}: {
-    message: string;
-    undo: () => Promise<UndoResult>;
-    onUndone: () => void;
-    closeToast: () => void;
-}) {
-    const [isPending, startTransition] = useTransition();
-
-    const handleUndo = () => {
-        closeToast();
-        startTransition(async () => {
-            try {
-                const res = await undo();
-                if ('error' in res) {
-                    toast.error(res.error);
-                    return;
-                }
-                toast.success('Undone.');
-                onUndone();
-            } catch {
-                // Transport-level failure (dropped connection, mid-deploy
-                // RSC error) — the inverse action's `{error}` path only
-                // covers handled failures, so a rejected promise needs its
-                // own surface.
-                toast.error(
-                    "Couldn't undo — check your connection and try again.",
-                );
-            }
-        });
-    };
-
-    return (
-        <div className={styles.toastBody}>
-            <span>{message}</span>
-            <button
-                type="button"
-                className={`btn btn-sm btn-outline-secondary ${styles.toastUndo}`}
-                onClick={handleUndo}
-                disabled={isPending}
-            >
-                {isPending ? 'Undoing…' : 'Undo'}
-            </button>
-        </div>
-    );
 }
 
 const MIN_REASON = 10;
@@ -161,27 +104,9 @@ export function RunActionDialog({
     defaultBanScope,
     onUndoComplete,
 }: Props) {
+    // Undo toasts (approve/remove/restore/ban) hand control back to the pane
+    // via refreshAfterUndo so the card/list reflects the reversal.
     const refreshAfterUndo = onUndoComplete ?? onDone;
-
-    // Fires a success toast with a 10s-live Undo action. Clicking it runs
-    // `undo`, surfaces the result, then hands control back to the pane via
-    // refreshAfterUndo so the card/list reflects the reversal.
-    const fireUndoToast = useCallback(
-        (message: string, undo: () => Promise<UndoResult>) => {
-            toast.success(
-                ({ closeToast }) => (
-                    <UndoToast
-                        message={message}
-                        undo={undo}
-                        onUndone={refreshAfterUndo}
-                        closeToast={closeToast}
-                    />
-                ),
-                { autoClose: 10000 },
-            );
-        },
-        [refreshAfterUndo],
-    );
 
     const [reasonCat, setReasonCat] = useState<RemoveReason>('cheating');
     const [notify, setNotify] = useState<boolean>(
@@ -303,8 +228,15 @@ export function RunActionDialog({
                     isBanUndoable(res.result)
                 ) {
                     const ruleId = res.result.ruleId;
-                    fireUndoToast(message, () =>
-                        deleteRuleAction(gameSlug, ruleId, undoReason(verb)),
+                    fireUndoToast(
+                        message,
+                        () =>
+                            deleteRuleAction(
+                                gameSlug,
+                                ruleId,
+                                undoReason(verb),
+                            ),
+                        refreshAfterUndo,
                     );
                 } else {
                     toast.success(message);
@@ -318,11 +250,14 @@ export function RunActionDialog({
                     finalReason,
                 );
                 if ('error' in res) return setError(res.error);
-                fireUndoToast('Restored.', () =>
-                    excludeAction(gameSlug, {
-                        runIds,
-                        reason: undoReason(verb),
-                    }),
+                fireUndoToast(
+                    'Restored.',
+                    () =>
+                        excludeAction(gameSlug, {
+                            runIds,
+                            reason: undoReason(verb),
+                        }),
+                    refreshAfterUndo,
                 );
                 return onDone();
             }
@@ -337,8 +272,15 @@ export function RunActionDialog({
                 const n = res.result.affectedRunCount;
                 const message = `${VERB_TITLE[verb]} — ${n} run${n === 1 ? '' : 's'} updated.`;
                 if (hasTrueInverse(verb)) {
-                    fireUndoToast(message, () =>
-                        restoreRunsAction(gameSlug, runIds, undoReason(verb)),
+                    fireUndoToast(
+                        message,
+                        () =>
+                            restoreRunsAction(
+                                gameSlug,
+                                runIds,
+                                undoReason(verb),
+                            ),
+                        refreshAfterUndo,
                     );
                 } else {
                     toast.success(message);
@@ -350,8 +292,10 @@ export function RunActionDialog({
                 reason: finalReason,
             });
             if ('error' in res) return setError(res.error);
-            fireUndoToast('Removed.', () =>
-                restoreRunsAction(gameSlug, runIds, undoReason(verb)),
+            fireUndoToast(
+                'Removed.',
+                () => restoreRunsAction(gameSlug, runIds, undoReason(verb)),
+                refreshAfterUndo,
             );
             onDone();
         });

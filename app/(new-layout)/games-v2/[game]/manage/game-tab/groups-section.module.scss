@@ -1,0 +1,17 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+// Targeted fix (Task 18): the delete trigger drops raw `text-danger` for
+// the quiet destructive pattern — board-quiet-link's chrome-free anatomy,
+// tinted $accent-red instead of the default muted color. The rest of this
+// form stays raw Bootstrap (system.md's documented CONFIGURE-forms
+// carve-out) until it gets its own board-vocabulary pass.
+.deleteBtn {
+    @include board.board-quiet-link;
+    font-size: dt.$font-size-sm;
+    color: dt.$accent-red;
+
+    &:hover {
+        color: dt.$accent-red-light;
+    }
+}

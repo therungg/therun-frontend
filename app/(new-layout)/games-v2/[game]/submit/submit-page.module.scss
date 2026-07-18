@@ -1,0 +1,64 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// ============================================================
+// Submit page shell — the wizard's header pattern (cover art + eyebrow +
+// title, see setup.module.scss) and board-surface content shells, replacing
+// `container py-4` + inline maxWidth + `border rounded p-4`.
+// ============================================================
+
+.page {
+    max-width: 40rem;
+    margin: 0 auto;
+    padding: dt.$spacing-2xl dt.$spacing-lg dt.$spacing-3xl;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-lg;
+    margin-bottom: dt.$spacing-lg;
+}
+
+.headerBack {
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.cover {
+    width: 44px;
+    height: 59px;
+    border-radius: dt.$radius-md;
+    object-fit: cover;
+    box-shadow: dt.$shadow-sm;
+    flex-shrink: 0;
+}
+
+.eyebrow {
+    @include board.board-eyebrow;
+}
+
+.title {
+    font-size: dt.$font-size-xl;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.formShell {
+    @include board.board-surface(dt.$spacing-xl);
+}
+
+.card {
+    @include board.board-surface(dt.$spacing-2xl);
+    text-align: center;
+}
+
+.cardBody {
+    margin-bottom: dt.$spacing-lg;
+}
+
+.cardMuted {
+    color: var(--bs-secondary-color);
+}

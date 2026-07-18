@@ -8,6 +8,7 @@ import type { RunDetail } from '../../../../../../../types/leaderboards.types';
 import { VariablesLine, VerificationBadge } from '../../../run-view/run-badges';
 import type { ModVerb } from '../../moderation/shared/action-model';
 import { RunActionDialog } from '../../moderation/shared/run-action-dialog';
+import styles from './run-card.module.scss';
 
 interface Props {
     run: RunDetail;
@@ -24,60 +25,65 @@ export function RunCard({ run, gameSlug, canExcludeUsers }: Props) {
         canExcludeUsers && !run.isGuest && run.userId != null;
 
     return (
-        <section className="border rounded p-3">
-            <div className="d-flex flex-wrap align-items-baseline gap-3 mb-2">
+        <section className={styles.card}>
+            <div className={styles.metaRow}>
                 <div>
-                    <small className="text-muted d-block">Real Time</small>
-                    <strong className="fs-5">
+                    <span className={styles.metaLabel}>Real time</span>
+                    <span className={styles.metaValue}>
                         {run.realTime != null ? (
                             <DurationToFormatted duration={run.realTime} />
                         ) : (
                             '—'
                         )}
-                    </strong>
+                    </span>
                 </div>
                 <div>
-                    <small className="text-muted d-block">Game Time</small>
-                    <strong className="fs-5">
+                    <span className={styles.metaLabel}>Game time</span>
+                    <span className={styles.metaValue}>
                         {run.gameTime != null ? (
                             <DurationToFormatted duration={run.gameTime} />
                         ) : (
                             '—'
                         )}
-                    </strong>
+                    </span>
                 </div>
                 <div>
-                    <small className="text-muted d-block">Run date</small>
-                    <span>
+                    <span className={styles.metaLabel}>Run date</span>
+                    <span className={styles.metaText}>
                         {run.runDate ? formatRunDate(run.runDate) : '—'}
                     </span>
                 </div>
                 <div>
-                    <small className="text-muted d-block">VOD</small>
+                    <span className={styles.metaLabel}>VOD</span>
                     {run.vodUrl ? (
-                        <a href={run.vodUrl} target="_blank" rel="noreferrer">
+                        <a
+                            className={styles.metaText}
+                            href={run.vodUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                        >
                             Link
                         </a>
                     ) : (
-                        '—'
+                        <span className={styles.metaText}>—</span>
                     )}
                 </div>
-                <div className="ms-auto">
+                <div className={styles.badgeSlot}>
                     <VerificationBadge status={run.verificationStatus} />
                 </div>
             </div>
 
             <VariablesLine variables={run.variables} />
 
-            <hr className="my-3" />
+            <hr className={styles.divider} />
 
-            <div className="d-flex flex-wrap align-items-center gap-2">
+            <div className={styles.actionsRow}>
                 {isRejected && (
-                    <span className="text-muted small">
+                    <span className={styles.rejectedNote}>
                         This run has already been rejected.
                     </span>
                 )}
-                <div className="d-flex gap-2 justify-content-end ms-auto">
+                <div className={styles.actions}>
                     {!isVerified && (
                         <button
                             type="button"

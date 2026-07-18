@@ -7,6 +7,7 @@ import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import { BackLink } from '../shared/back-link';
 import { SubmitForm } from './submit-form';
+import styles from './submit-page.module.scss';
 
 interface PageProps {
     params: Promise<{ game: string }>;
@@ -58,13 +59,35 @@ export default async function SubmitRunPage({
             ? session.username
             : null;
 
+    const header = (
+        <header className={styles.header}>
+            {game.image && (
+                <img
+                    src={game.image}
+                    alt={game.display}
+                    width={44}
+                    height={59}
+                    className={styles.cover}
+                />
+            )}
+            <div>
+                <div className={styles.eyebrow}>{game.display}</div>
+                <h1 className={styles.title}>{h1}</h1>
+            </div>
+            <BackLink
+                href={`/games-v2/${game.name}`}
+                label="Back to leaderboard"
+                className={styles.headerBack}
+            />
+        </header>
+    );
+
     if (!sessionUsername) {
         return (
-            <div className="container py-4" style={{ maxWidth: '32rem' }}>
-                <h1 className="h4 mb-1">{h1}</h1>
-                <p className="text-muted mb-4">{game.display}</p>
-                <div className="border rounded p-4 text-center">
-                    <p className="mb-3">
+            <div className={styles.page}>
+                {header}
+                <div className={styles.card}>
+                    <p className={styles.cardBody}>
                         Sign in with Twitch to{' '}
                         {initialMode === 'claim'
                             ? 'claim a time'
@@ -84,34 +107,38 @@ export default async function SubmitRunPage({
 
     if (activeCategories.length === 0) {
         return (
-            <div className="container py-4" style={{ maxWidth: '40rem' }}>
-                <h1 className="h4 mb-1">{h1}</h1>
-                <p className="text-muted mb-4">{game.display}</p>
-                <div className="border rounded p-4 text-center text-muted">
-                    This game has no categories to submit to yet.
+            <div className={styles.page}>
+                {header}
+                <div className={styles.card}>
+                    <p
+                        className={`${styles.cardBody} ${styles.cardMuted} mb-0`}
+                    >
+                        This game has no categories to submit to yet.
+                    </p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="container py-4" style={{ maxWidth: '40rem' }}>
-            <div className="d-flex align-items-center justify-content-between mb-1">
-                <h1 className="h4 mb-0">{h1}</h1>
-                <BackLink
-                    href={`/games-v2/${game.name}`}
-                    label="Back to leaderboard"
+        <div className={styles.page}>
+            {header}
+            <div className={styles.formShell}>
+                <SubmitForm
+                    game={{
+                        id: game.id,
+                        name: game.name,
+                        display: game.display,
+                    }}
+                    categories={activeCategories}
+                    groups={groups}
+                    initialMode={initialMode}
+                    initialCategorySlug={sp.category}
+                    initialSubcategoryValues={extractInitialSubcategoryValues(
+                        sp,
+                    )}
                 />
             </div>
-            <p className="text-muted mb-4">{game.display}</p>
-            <SubmitForm
-                game={{ id: game.id, name: game.name, display: game.display }}
-                categories={activeCategories}
-                groups={groups}
-                initialMode={initialMode}
-                initialCategorySlug={sp.category}
-                initialSubcategoryValues={extractInitialSubcategoryValues(sp)}
-            />
         </div>
     );
 }

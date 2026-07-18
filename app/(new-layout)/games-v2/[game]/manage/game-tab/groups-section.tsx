@@ -9,6 +9,7 @@ import { reorderGroupsAction } from '~src/actions/category-group/reorder-groups.
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
 import { ConfirmDialog } from '../../shared/confirm-dialog';
+import styles from './groups-section.module.scss';
 
 interface Props {
     game: ResolvedGame;
@@ -331,7 +332,7 @@ export function GroupsSection({
                                 )}
                                 <button
                                     type="button"
-                                    className="btn btn-sm btn-link text-danger"
+                                    className={styles.deleteBtn}
                                     onClick={() => submitDelete(g)}
                                     disabled={pending}
                                     aria-label="Delete"
