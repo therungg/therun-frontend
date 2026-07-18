@@ -209,33 +209,24 @@ tr:focus-within .reveal {
     padding: dt.$spacing-xs dt.$spacing-md;
     text-decoration: none;
 
+    // Touch-target pass: bumped from spacing-md to guarantee a ≥44px
+    // hit area (the prior value landed right at the boundary).
     @media (pointer: coarse) {
-        padding: dt.$spacing-md dt.$spacing-lg;
+        padding: dt.$spacing-lg;
     }
 }
 
 // ---- Empty state (calm pattern: icon + title + action) ------
 .empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: dt.$spacing-sm;
-    padding: dt.$spacing-3xl dt.$spacing-lg;
-    color: var(--bs-secondary-color);
+    @include board.board-empty;
 }
 
 .emptyIcon {
-    color: var(--bs-primary);
-    opacity: 0.55;
-    margin-bottom: dt.$spacing-xs;
+    @include board.board-empty-icon;
 }
 
 .emptyTitle {
-    font-size: dt.$font-size-md;
-    font-weight: 600;
-    color: var(--bs-body-color);
-    margin: 0;
+    @include board.board-empty-title;
 }
 
 .emptyAction {
@@ -244,6 +235,10 @@ tr:focus-within .reveal {
     padding: dt.$spacing-xs dt.$spacing-lg;
     text-decoration: none;
     margin-top: dt.$spacing-xs;
+
+    @media (pointer: coarse) {
+        padding: dt.$spacing-lg;
+    }
 }
 
 .setPill {
@@ -270,7 +265,7 @@ tr:focus-within .reveal {
 .infoPopoverPanel {
     @include board.board-surface(dt.$spacing-sm dt.$spacing-md);
     background: var(--bs-body-bg);
-    box-shadow: dt.$shadow-lg;
+    box-shadow: dt.$shadow-md;
     max-width: 18rem;
     font-size: dt.$font-size-sm;
     font-weight: 400;
@@ -293,6 +288,10 @@ tr:focus-within .reveal {
     @include board.control-pill;
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
     padding: dt.$spacing-sm dt.$spacing-2xl;
+
+    @media (pointer: coarse) {
+        padding-block: dt.$spacing-lg;
+    }
 }
 
 // ---- Range indicator + Find me --------------------------------
@@ -319,6 +318,10 @@ tr:focus-within .reveal {
     @include board.control-pill;
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
     padding: dt.$spacing-xs dt.$spacing-lg;
+
+    @media (pointer: coarse) {
+        padding: dt.$spacing-lg;
+    }
 }
 
 .notFoundNote {
@@ -344,6 +347,13 @@ tr:focus-within .reveal {
     &:hover {
         background: transparent;
         color: dt.$accent-red;
+    }
+
+    // Padded hit area on touch without shifting the inline layout
+    // (negative margin compensates for the added padding).
+    @media (pointer: coarse) {
+        padding: dt.$spacing-sm;
+        margin: calc(#{dt.$spacing-sm} * -1);
     }
 }
 
