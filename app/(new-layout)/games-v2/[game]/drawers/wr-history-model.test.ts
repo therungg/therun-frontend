@@ -164,29 +164,60 @@ describe('toWrHistoryRows', () => {
     });
 });
 
-describe('formatDeltaSeconds', () => {
+describe('formatDeltaSeconds — showMilliseconds: true (sub-second precision)', () => {
     it('null delta (first-ever record) renders an em dash', () => {
-        expect(formatDeltaSeconds(null)).toBe('—');
+        expect(formatDeltaSeconds(null, true)).toBe('—');
     });
 
     it('sub-minute improvement: one decimal, minus sign, seconds unit', () => {
-        expect(formatDeltaSeconds(-3_200)).toBe('−3.2s');
+        expect(formatDeltaSeconds(-3_200, true)).toBe('−3.2s');
     });
 
     it('sub-minute regression: plus sign', () => {
-        expect(formatDeltaSeconds(5_000)).toBe('+5.0s');
+        expect(formatDeltaSeconds(5_000, true)).toBe('+5.0s');
     });
 
     it('zero delta renders as 0.0s with no sign', () => {
-        expect(formatDeltaSeconds(0)).toBe('0.0s');
+        expect(formatDeltaSeconds(0, true)).toBe('0.0s');
     });
 
     it('minute-plus improvement: minutes + seconds, no decimal', () => {
-        expect(formatDeltaSeconds(-125_000)).toBe('−2m 5s');
+        expect(formatDeltaSeconds(-125_000, true)).toBe('−2m 5s');
     });
 
     it('exact minute improvement omits a 0s remainder', () => {
-        expect(formatDeltaSeconds(-60_000)).toBe('−1m');
+        expect(formatDeltaSeconds(-60_000, true)).toBe('−1m');
+    });
+});
+
+describe('formatDeltaSeconds — showMilliseconds: false (whole-second precision)', () => {
+    it('null delta (first-ever record) renders an em dash', () => {
+        expect(formatDeltaSeconds(null, false)).toBe('—');
+    });
+
+    it('sub-minute improvement: rounds to whole seconds, no decimal', () => {
+        expect(formatDeltaSeconds(-3_200, false)).toBe('−3s');
+    });
+
+    it('sub-minute regression: rounds to whole seconds, plus sign', () => {
+        expect(formatDeltaSeconds(5_000, false)).toBe('+5s');
+    });
+
+    it('rounds up at the half-second boundary rather than truncating', () => {
+        // 2.6s would truncate to a misleadingly-small "2s" — must round to "3s".
+        expect(formatDeltaSeconds(-2_600, false)).toBe('−3s');
+    });
+
+    it('zero delta renders as 0s with no sign', () => {
+        expect(formatDeltaSeconds(0, false)).toBe('0s');
+    });
+
+    it('minute-plus improvement: unaffected by the ms flag, still minutes + seconds', () => {
+        expect(formatDeltaSeconds(-125_000, false)).toBe('−2m 5s');
+    });
+
+    it('exact minute improvement omits a 0s remainder', () => {
+        expect(formatDeltaSeconds(-60_000, false)).toBe('−1m');
     });
 });
 
