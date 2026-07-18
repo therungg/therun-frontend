@@ -7,6 +7,8 @@ import {
     appealRunAction,
     reportRunAction,
 } from '~src/actions/run-user-actions.action';
+import Link from '~src/components/link';
+import { buildSubmitHref } from '~src/lib/board-url';
 import { isSameRunner } from '../shared/is-same-runner';
 import {
     SelfRunVerdictDialog,
@@ -34,6 +36,9 @@ export function RunActions({
     const canAppeal = isOwnRun && model.verificationStatus === 'rejected';
     const canHide = isOwnRun && model.verificationStatus !== 'rejected';
     const canRestore = isOwnRun && model.verificationStatus === 'rejected';
+    // RunViewModel carries no category slug (only categoryDisplay) — link
+    // mode=claim alone rather than guess at the category from display text.
+    const correctHref = buildSubmitHref(model.game.name, { mode: 'claim' });
 
     const close = () => {
         setModal(null);
@@ -103,6 +108,14 @@ export function RunActions({
                     >
                         Appeal rejection
                     </button>
+                )}
+                {isOwnRun && (
+                    <Link
+                        href={correctHref}
+                        className="btn btn-sm btn-outline-secondary"
+                    >
+                        Correct this time…
+                    </Link>
                 )}
                 {canHide && (
                     <button

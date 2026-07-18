@@ -126,6 +126,10 @@ interface Props {
     sessionUsername: string | null;
     /** category.showMilliseconds ?? true — precision the board is configured for. */
     showMilliseconds: boolean;
+    /** Active category slug — this row's own category (a board is single-category). */
+    categorySlug: string;
+    /** Subcategory-role variable names, for building this row's own subcategory key from `entry.variables`. */
+    subcategoryDefKeys: string[];
 }
 
 export function LeaderboardRow({
@@ -139,6 +143,8 @@ export function LeaderboardRow({
     primaryTiming,
     sessionUsername,
     showMilliseconds,
+    categorySlug,
+    subcategoryDefKeys,
 }: Props) {
     const router = useRouter();
     const showManageButton = canManage && entry.runId != null && !entry.isGuest;
@@ -280,6 +286,8 @@ export function LeaderboardRow({
                         sessionUsername={sessionUsername}
                         canManage={canManage}
                         gameSlug={gameSlug}
+                        categorySlug={categorySlug}
+                        subcategoryDefKeys={subcategoryDefKeys}
                     />
                     {showManageButton && (
                         <Link

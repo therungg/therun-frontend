@@ -6,6 +6,7 @@ import { HourglassSplit } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { buildSubmitHref } from '~src/lib/board-url';
 import { formatRunDate } from '~src/lib/format-run-date';
 import type {
     LeaderboardEntry,
@@ -90,6 +91,12 @@ export function GameHero({
               ? `/games-v2/${game.name}/run/${wr.runId}`
               : null
         : null;
+    // Carries the current board context (category + subcategory) into the
+    // submit form so it preselects both — see submit/page.tsx requirement 1.
+    const submitHref = buildSubmitHref(game.name, {
+        categorySlug: category?.name,
+        subcategoryKey,
+    });
 
     return (
         <header className={styles.hero}>
@@ -138,7 +145,7 @@ export function GameHero({
                                 />
                             )}
                             <Link
-                                href={`/games-v2/${game.name}/submit`}
+                                href={submitHref}
                                 className={styles.primaryAction}
                             >
                                 Submit a run
@@ -232,7 +239,7 @@ export function GameHero({
                         ) : boardIsEmpty ? (
                             <div className={styles.crownEmpty}>
                                 No verified runs yet —{' '}
-                                <Link href={`/games-v2/${game.name}/submit`}>
+                                <Link href={submitHref}>
                                     set the first record
                                 </Link>
                                 .
