@@ -1,0 +1,56 @@
+@use '../../../../styles/design-tokens' as dt;
+@use '../../../../styles/board' as board;
+
+// ============================================================
+// Route-level loading skeleton for the run detail page. Structure
+// reuses run-view.tsx's Bootstrap grid (row g-3 / col-lg-8 /
+// col-lg-4) directly in the markup — these classes only supply
+// the skeleton fill.
+// ============================================================
+
+.cover {
+    @include board.board-skeleton;
+    width: 48px;
+    height: 64px;
+    border-radius: dt.$radius-sm;
+    flex-shrink: 0;
+}
+
+.titleBar {
+    @include board.board-skeleton;
+    height: 1.5rem;
+    width: 16rem;
+    border-radius: dt.$radius-sm;
+    margin-bottom: dt.$spacing-xs;
+}
+
+.badgeRow {
+    display: flex;
+    gap: dt.$spacing-sm;
+}
+
+.badge {
+    @include board.board-skeleton;
+    width: 5rem;
+    height: 1.25rem;
+    border-radius: dt.$badge-radius;
+}
+
+.video {
+    @include board.board-skeleton;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: dt.$radius-md;
+}
+
+.card {
+    @include board.board-skeleton;
+    height: 6rem;
+    border-radius: dt.$radius-md;
+}
+
+.line {
+    @include board.board-skeleton;
+    height: 4rem;
+    border-radius: dt.$radius-md;
+}

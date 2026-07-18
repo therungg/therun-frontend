@@ -500,6 +500,54 @@
     }
 }
 
+// ---- Loading skeleton ----------------------------------------------
+// Route-boundary `loading.tsx` placeholder fill: surface tint + a
+// shimmer sweep. Consumers set their own width/height/border-radius
+// per block (this only supplies background + motion) — see
+// games-v2/[game]/loading.tsx and friends.
+@mixin board-skeleton {
+    position: relative;
+    overflow: hidden;
+    background: color-mix(
+        in srgb,
+        var(--bs-body-bg) 88%,
+        var(--bs-secondary-bg) 12%
+    );
+
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        transform: translateX(-100%);
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(var(--bs-body-color-rgb), 0.06),
+            transparent
+        );
+        animation: board-skeleton-shimmer 1.6s ease-in-out infinite;
+    }
+
+    // Static tint, no sweep — the shimmer is decorative only.
+    @media (prefers-reduced-motion: reduce) {
+        background: color-mix(
+            in srgb,
+            var(--bs-body-bg) 80%,
+            var(--bs-secondary-bg) 20%
+        );
+
+        &::after {
+            content: none;
+        }
+    }
+}
+
+@keyframes board-skeleton-shimmer {
+    to {
+        transform: translateX(100%);
+    }
+}
+
 // ---- Quiet inline link/button ------------------------------------
 // A "History"-style secondary action: no chrome at rest, padded hit
 // area on touch (negative margin keeps the at-rest footprint/layout

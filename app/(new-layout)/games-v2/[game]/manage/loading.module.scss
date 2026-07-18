@@ -1,0 +1,75 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// ============================================================
+// Route-level loading skeleton for the admin console. Geometry
+// mirrors console/console.module.scss's shell — 16rem sidebar
+// column + content grid, see there for the real dimensions.
+// ============================================================
+
+$sidebar-width: 16rem;
+
+.shell {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-2xl;
+    padding: dt.$spacing-2xl;
+    max-width: 1600px;
+    margin-inline: auto;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-lg;
+}
+
+.cover {
+    @include board.board-skeleton;
+    width: 44px;
+    height: 59px;
+    border-radius: dt.$radius-md;
+    flex-shrink: 0;
+}
+
+.titleBar {
+    @include board.board-skeleton;
+    height: dt.$font-size-xl;
+    width: 14rem;
+    border-radius: dt.$radius-sm;
+}
+
+.body {
+    display: grid;
+    grid-template-columns: $sidebar-width minmax(0, 1fr);
+    gap: dt.$spacing-3xl;
+    align-items: start;
+
+    @media (max-width: 768px) {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    padding-right: dt.$spacing-lg;
+    border-right: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+
+    @media (max-width: 768px) {
+        display: none;
+    }
+}
+
+.navItem {
+    @include board.board-skeleton;
+    height: 2.25rem;
+    border-radius: dt.$radius-md;
+}
+
+.content {
+    @include board.board-skeleton;
+    min-height: 28rem;
+    border-radius: dt.$radius-lg;
+}

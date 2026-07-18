@@ -25,6 +25,7 @@ import type {
     BoardClaimRequest,
     GameModerator,
 } from '../../../../../types/board-claims.types';
+import styles from './console/console.module.scss';
 import { ConsoleShell } from './console/console-shell';
 import type { GameDetailsData } from './console/game-details-pane';
 import { loadModDoorClaim, ModDoor } from './mod-door';
@@ -183,7 +184,13 @@ export default async function GameAdminConsolePage({ params }: Props) {
     }
 
     return (
-        <Suspense fallback={null}>
+        <Suspense
+            fallback={
+                <div className={styles.shell}>
+                    <div className={styles.fallback} />
+                </div>
+            }
+        >
             <ConsoleShell
                 game={game}
                 categories={categories}
