@@ -105,6 +105,14 @@
         opacity: 0.6;
         cursor: default;
     }
+
+    // Coarse pointers (touch) need a ≥44px hit area; consumers that set
+    // their own padding should still add their own coarse override since
+    // an unconditional local `padding` shorthand wins the cascade over
+    // this bubbled media rule.
+    @media (pointer: coarse) {
+        padding-block: dt.$spacing-lg;
+    }
 }
 
 @mixin control-pill-active {
@@ -202,4 +210,207 @@
     letter-spacing: 0.02em;
     text-transform: uppercase;
     user-select: none;
+}
+
+// ---- Empty / all-clear state -----------------------------------
+// icon + title over calm padding — from the console's `.empty`
+// (canonical spec; the needs-attention/active-bans variant converges
+// onto this rather than the reverse).
+@mixin board-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-3xl dt.$spacing-lg;
+    color: var(--bs-secondary-color);
+}
+
+@mixin board-empty-icon {
+    color: var(--bs-primary);
+    opacity: 0.55;
+    margin-bottom: dt.$spacing-xs;
+}
+
+@mixin board-empty-title {
+    font-size: dt.$font-size-md;
+    font-weight: 600;
+    color: var(--bs-body-color);
+    margin: 0;
+}
+
+// ---- Numbered stepper ------------------------------------------
+// From the setup wizard's progress stepper (canonical spec); the
+// reassignment wizard's stepper converges onto the shared numeral +
+// current/done states.
+@mixin board-stepper {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+@mixin board-step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    border-radius: 999px;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.8);
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    flex-shrink: 0;
+    transition: background-color dt.$transition-fast,
+        border-color dt.$transition-fast, color dt.$transition-fast;
+}
+
+@mixin board-step-current {
+    color: var(--bs-emphasis-color);
+    font-weight: 600;
+}
+
+@mixin board-step-current-num {
+    background: var(--bs-primary);
+    border-color: var(--bs-primary);
+    color: #fff;
+}
+
+@mixin board-step-done {
+    color: var(--bs-secondary-color);
+}
+
+@mixin board-step-done-num {
+    border-color: var(--bs-primary);
+    color: var(--bs-primary);
+}
+
+// ---- Error alert -------------------------------------------------
+// Triplicated across the moderation dialogs/rows; margins vary by
+// context so consumers add those locally after the include.
+@mixin board-error-alert {
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border-radius: dt.$radius-md;
+    border: 1px solid rgba(dt.$accent-red, 0.3);
+    background: color-mix(in srgb, #{dt.$accent-red} 8%, transparent);
+    color: dt.$accent-red;
+    font-size: dt.$font-size-sm;
+}
+
+// ---- Dialog chrome (board-dialog-chrome) -------------------------
+// Shared header/title/body/footer/field anatomy for every games-v2
+// confirm/prompt/action dialog built on the BoardDialog primitive
+// (games-v2/[game]/shared/board-dialog.module.scss). A single mixin
+// can't emit multiple sibling classes, so this is a family of small
+// mixins consumers compose onto their own local class names.
+@mixin board-dialog-header {
+    padding: dt.$spacing-lg dt.$spacing-xl;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+}
+
+@mixin board-dialog-title {
+    font-size: dt.$font-size-base;
+    font-weight: dt.$heading-font-weight;
+    letter-spacing: dt.$heading-letter-spacing;
+    margin: 0;
+}
+
+@mixin board-dialog-body {
+    padding: dt.$spacing-xl;
+}
+
+@mixin board-dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-md dt.$spacing-xl;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+}
+
+@mixin board-dialog-field-label {
+    display: block;
+    font-size: dt.$font-size-2xs;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+    color: var(--bs-tertiary-color);
+    margin-bottom: dt.$spacing-xs;
+}
+
+@mixin board-dialog-textarea {
+    font-size: dt.$font-size-sm;
+    border-radius: dt.$radius-sm;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
+    background: color-mix(
+        in srgb,
+        var(--bs-body-bg) 90%,
+        var(--bs-secondary-bg) 10%
+    );
+    color: var(--bs-body-color);
+    padding: dt.$spacing-sm;
+    width: 100%;
+    resize: vertical;
+    transition: border-color dt.$transition-fast;
+
+    &:focus-visible {
+        outline: 0;
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.15);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+@mixin board-dialog-field-error {
+    font-size: dt.$font-size-2xs;
+    color: dt.$accent-red;
+    margin-top: dt.$spacing-xs;
+}
+
+// Bootstrap's $danger (#dc3545) doesn't match $accent-red (#ef4444) —
+// destructive dialog actions build off the token directly instead of
+// `btn-danger` / `text-danger`.
+@mixin board-dialog-btn-danger {
+    background: dt.$accent-red;
+    border: 1px solid dt.$accent-red;
+    color: #fff;
+
+    &:hover:not(:disabled) {
+        background: dt.$accent-red-light;
+        border-color: dt.$accent-red-light;
+    }
+
+    &:focus-visible {
+        outline: 0;
+        box-shadow: 0 0 0 3px rgba(dt.$accent-red, 0.3);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
+// ---- Quiet inline link/button ------------------------------------
+// A "History"-style secondary action: no chrome at rest, padded hit
+// area on touch (negative margin keeps the at-rest footprint/layout
+// unchanged — only the coarse-pointer hit target grows).
+@mixin board-quiet-link {
+    background: none;
+    border: 0;
+    padding: 0;
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+    cursor: pointer;
+    transition: color dt.$transition-fast;
+
+    &:hover {
+        color: var(--bs-primary);
+    }
+
+    @media (pointer: coarse) {
+        padding: dt.$spacing-sm;
+        margin: calc(#{dt.$spacing-sm} * -1);
+    }
 }
