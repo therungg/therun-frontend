@@ -1,4 +1,5 @@
 @use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
 
 // ============================================================
 // ConfirmDialog — title + consequence sentence + Cancel/Confirm, on the
@@ -7,19 +8,15 @@
 // chrome vocabulary.
 // ============================================================
 .header {
-    padding: dt.$spacing-lg dt.$spacing-xl;
-    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    @include board.board-dialog-header;
 }
 
 .title {
-    font-size: dt.$font-size-base;
-    font-weight: dt.$heading-font-weight;
-    letter-spacing: dt.$heading-letter-spacing;
-    margin: 0;
+    @include board.board-dialog-title;
 }
 
 .body {
-    padding: dt.$spacing-xl;
+    @include board.board-dialog-body;
 }
 
 .message {
@@ -29,23 +26,13 @@
 }
 
 .errorAlert {
-    padding: dt.$spacing-sm dt.$spacing-md;
-    border-radius: dt.$radius-md;
-    border: 1px solid rgba(dt.$accent-red, 0.3);
-    background: color-mix(in srgb, #{dt.$accent-red} 8%, transparent);
-    color: dt.$accent-red;
-    font-size: dt.$font-size-sm;
+    @include board.board-error-alert;
     margin-top: dt.$spacing-sm;
     margin-bottom: 0;
 }
 
 .footer {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: dt.$spacing-sm;
-    padding: dt.$spacing-md dt.$spacing-xl;
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    @include board.board-dialog-footer;
 }
 
 // ---- Red action style for destructive confirms ---------------
@@ -53,21 +40,5 @@
 // $accent-red (#ef4444) — build the destructive button off the token
 // directly instead of reaching for `btn-danger` / `text-danger`.
 .btnDanger {
-    background: dt.$accent-red;
-    border: 1px solid dt.$accent-red;
-    color: #fff;
-
-    &:hover:not(:disabled) {
-        background: dt.$accent-red-light;
-        border-color: dt.$accent-red-light;
-    }
-
-    &:focus-visible {
-        outline: 0;
-        box-shadow: 0 0 0 3px rgba(dt.$accent-red, 0.3);
-    }
-
-    &:disabled {
-        opacity: 0.6;
-    }
+    @include board.board-dialog-btn-danger;
 }

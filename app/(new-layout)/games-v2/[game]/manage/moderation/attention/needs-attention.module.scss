@@ -1,5 +1,4 @@
 @use '../../../../../styles/design-tokens' as dt;
-@use '../../../../../styles/mixins' as mx;
 @use '../../../../../styles/board' as board;
 
 // ============================================================
@@ -21,7 +20,7 @@ $rail: 3px;
 .field {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: dt.$spacing-xs;
 }
 
 .fieldLabel {
@@ -34,7 +33,7 @@ $rail: 3px;
 
 .select {
     font-size: dt.$font-size-sm;
-    padding: 0.4rem 2rem 0.4rem 0.7rem;
+    padding: dt.$spacing-sm 2rem dt.$spacing-sm dt.$spacing-md;
     border-radius: dt.$radius-md;
     background: color-mix(in srgb, var(--bs-body-bg) 90%, var(--bs-secondary-bg) 10%);
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
@@ -54,7 +53,7 @@ $rail: 3px;
 .count {
     margin-left: auto;
     align-self: center;
-    @include mx.monospace-value;
+    @include board.mono-time;
     font-size: dt.$font-size-sm;
     color: var(--bs-secondary-color);
 }
@@ -63,11 +62,11 @@ $rail: 3px;
 .kindChip {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
+    gap: dt.$spacing-xs;
     align-self: center;
     font-size: dt.$font-size-sm;
     font-weight: 600;
-    padding: 0.3rem dt.$spacing-sm 0.3rem dt.$spacing-md;
+    padding: dt.$spacing-xs dt.$spacing-sm dt.$spacing-xs dt.$spacing-md;
     border-radius: 999px;
     background: rgba(var(--bs-primary-rgb), 0.1);
     color: var(--bs-primary);
@@ -199,7 +198,7 @@ $rail: 3px;
 .timeGroup {
     display: inline-flex;
     align-items: baseline;
-    gap: 0.35rem;
+    gap: dt.$spacing-xs;
 }
 
 .timeLabel {
@@ -210,14 +209,14 @@ $rail: 3px;
 }
 
 .time {
-    @include mx.monospace-value;
+    @include board.mono-time;
     color: var(--bs-emphasis-color);
 }
 
 .vod {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: dt.$spacing-xs;
     color: var(--bs-primary);
     text-decoration: none;
 
@@ -229,7 +228,7 @@ $rail: 3px;
 .noVod {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: dt.$spacing-xs;
     color: var(--bs-tertiary-color);
 }
 
@@ -261,17 +260,11 @@ $rail: 3px;
 }
 
 // ---- Pills (severity + source) -----------------------------
+// Structure from the shared board-pill mixin; amber/red/neutral
+// recipes now match console's (the canonical severity vocabulary)
+// instead of this file's own drifted mix percentages.
 .pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: dt.$font-size-2xs;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    padding: 0.15rem 0.55rem;
-    border-radius: 999px;
-    border: 1px solid transparent;
+    @include board.board-pill;
 }
 
 .sevPillHigh {
@@ -279,18 +272,18 @@ $rail: 3px;
     color: dt.$accent-red;
 }
 .sevPillMedium {
-    background: color-mix(in srgb, #{dt.$accent-amber} 20%, transparent);
-    color: color-mix(in srgb, #{dt.$accent-amber} 75%, var(--bs-emphasis-color));
+    background: color-mix(in srgb, #{dt.$accent-amber} 18%, transparent);
+    color: color-mix(in srgb, #{dt.$accent-amber} 80%, var(--bs-body-color));
 }
 .sevPillLow {
-    background: rgba(var(--bs-secondary-rgb), 0.14);
+    background: rgba(var(--bs-secondary-rgb), 0.12);
     color: var(--bs-secondary-color);
 }
 
 .source {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: dt.$spacing-xs;
     font-size: dt.$font-size-2xs;
     font-weight: 500;
     padding: 0.15rem 0.5rem;
@@ -358,32 +351,26 @@ $rail: 3px;
 }
 
 // ---- Empty state -------------------------------------------
+// Converges onto the console's board-empty spec (gap/icon-opacity/
+// title size now match console + leaderboard instead of this file's
+// own slightly heavier variant).
 .empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: dt.$spacing-xs;
-    padding: dt.$spacing-3xl dt.$spacing-lg;
-    color: var(--bs-secondary-color);
+    @include board.board-empty;
 }
 
 .emptyIcon {
-    color: var(--bs-primary);
-    opacity: 0.6;
-    margin-bottom: dt.$spacing-sm;
+    @include board.board-empty-icon;
 }
 
 .emptyTitle {
-    font-size: dt.$font-size-lg;
-    font-weight: 700;
-    color: var(--bs-body-color);
-    margin: 0;
+    @include board.board-empty-title;
 }
 
 // ---- Degraded state (a source failed to load) ---------------
 // Reuses the empty-state layout with amber replacing the "all clear"
-// green, per the severity-spine amber vocabulary above.
+// green, per the severity-spine amber vocabulary above. Kept as its
+// own recipe (not board-empty-icon/-title) since the amber color and
+// heavier title weight are a deliberate distinct variant, not a clone.
 .emptyIconWarning {
     color: dt.$accent-amber;
     margin-bottom: dt.$spacing-sm;

@@ -1,5 +1,5 @@
 @use '../../../../styles/design-tokens' as dt;
-@use '../../../../styles/mixins' as mx;
+@use '../../../../styles/board' as board;
 
 // ============================================================
 // Reassignment wizards — same control-room vocabulary as the
@@ -7,7 +7,6 @@
 // ============================================================
 
 $rail: 3px;
-$xxs: 0.25rem; // tighter than $spacing-xs for inset chrome
 
 @mixin btn-reset {
     appearance: none;
@@ -30,14 +29,7 @@ $xxs: 0.25rem; // tighter than $spacing-xs for inset chrome
 
 // ---- Surface card ------------------------------------------
 .surface {
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    border-radius: dt.$radius-lg;
-    background: color-mix(
-        in srgb,
-        var(--bs-body-bg) 92%,
-        var(--bs-secondary-bg) 8%
-    );
-    padding: dt.$spacing-2xl;
+    @include board.board-surface;
 }
 
 .header {
@@ -45,12 +37,8 @@ $xxs: 0.25rem; // tighter than $spacing-xs for inset chrome
 }
 
 .eyebrow {
-    font-size: dt.$font-size-2xs;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 700;
-    color: var(--bs-secondary-color);
-    margin-bottom: $xxs;
+    @include board.board-eyebrow;
+    margin-bottom: dt.$spacing-xs;
 }
 
 .title {
@@ -70,8 +58,8 @@ $xxs: 0.25rem; // tighter than $spacing-xs for inset chrome
 // ---- Mode toggle (segmented control) -----------------------
 .modeToggle {
     display: inline-flex;
-    padding: $xxs;
-    gap: $xxs;
+    padding: dt.$spacing-xs;
+    gap: dt.$spacing-xs;
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
     border-radius: dt.$radius-md;
     background: color-mix(
@@ -83,7 +71,7 @@ $xxs: 0.25rem; // tighter than $spacing-xs for inset chrome
 
 .modeButton {
     @include btn-reset;
-    padding: 0.4rem dt.$spacing-lg;
+    padding: dt.$spacing-sm dt.$spacing-lg;
     border-radius: dt.$radius-sm;
     font-size: dt.$font-size-sm;
     font-weight: 500;
@@ -112,11 +100,11 @@ $xxs: 0.25rem; // tighter than $spacing-xs for inset chrome
 }
 
 // ---- Stepper ------------------------------------------------
+// Container + numeral + current/done states converge on the setup
+// wizard's canonical board-stepper spec.
 .stepper {
-    display: flex;
-    align-items: center;
+    @include board.board-stepper;
     gap: dt.$spacing-sm;
-    flex-wrap: wrap;
     margin-bottom: dt.$spacing-xl;
 }
 
@@ -129,36 +117,22 @@ $xxs: 0.25rem; // tighter than $spacing-xs for inset chrome
 }
 
 .stepNum {
-    @include mx.monospace-value;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.4rem;
-    height: 1.4rem;
-    border-radius: 999px;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
-    font-size: dt.$font-size-2xs;
-    font-weight: 700;
+    @include board.board-step-num;
 }
 
 .stepCurrent {
-    color: var(--bs-emphasis-color);
-    font-weight: 600;
+    @include board.board-step-current;
 
     .stepNum {
-        background: var(--bs-primary);
-        border-color: var(--bs-primary);
-        color: #fff;
+        @include board.board-step-current-num;
     }
 }
 
 .stepDone {
-    color: var(--bs-secondary-color);
+    @include board.board-step-done;
 
     .stepNum {
-        background: color-mix(in srgb, #{dt.$accent-green} 18%, transparent);
-        border-color: color-mix(in srgb, #{dt.$accent-green} 40%, transparent);
-        color: dt.$accent-green;
+        @include board.board-step-done-num;
     }
 }
 
@@ -218,7 +192,7 @@ $xxs: 0.25rem; // tighter than $spacing-xs for inset chrome
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: $xxs;
+    gap: dt.$spacing-xs;
     max-width: 420px;
 }
 
@@ -286,7 +260,7 @@ $xxs: 0.25rem; // tighter than $spacing-xs for inset chrome
 
 .rowSelect {
     font-size: dt.$font-size-sm;
-    padding: 0.3rem dt.$spacing-sm;
+    padding: dt.$spacing-xs dt.$spacing-sm;
     border-radius: dt.$radius-sm;
     background: var(--bs-body-bg);
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.6);
@@ -299,7 +273,7 @@ $xxs: 0.25rem; // tighter than $spacing-xs for inset chrome
 }
 
 .cellMono {
-    @include mx.monospace-value;
+    @include board.mono-time;
     color: var(--bs-secondary-color);
 }
 
@@ -338,22 +312,14 @@ $xxs: 0.25rem; // tighter than $spacing-xs for inset chrome
 }
 
 // ---- Pills -------------------------------------------------
+// Converged onto the shared board-pill mixin (was a hand-copied clone).
 .decisionPill {
-    display: inline-flex;
-    align-items: center;
+    @include board.board-pill(var(--bs-primary));
     margin-left: dt.$spacing-sm;
-    padding: 0.1rem dt.$spacing-sm;
-    border-radius: 999px;
-    background: rgba(var(--bs-primary-rgb), 0.14);
-    color: var(--bs-primary);
-    font-size: dt.$font-size-2xs;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
 }
 
 .targetHint {
-    @include mx.monospace-value;
+    @include board.mono-time;
     margin-left: dt.$spacing-sm;
     font-size: dt.$font-size-xs;
     color: var(--bs-tertiary-color);
@@ -371,7 +337,7 @@ $xxs: 0.25rem; // tighter than $spacing-xs for inset chrome
 .statusBadge {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
+    gap: dt.$spacing-xs;
     padding: 0.15rem dt.$spacing-md;
     border-radius: 999px;
     font-size: dt.$font-size-2xs;
@@ -390,9 +356,11 @@ $xxs: 0.25rem; // tighter than $spacing-xs for inset chrome
     color: var(--bs-primary);
 }
 
+// "One green": done/success states use --bs-primary, not $accent-green
+// (see system.md's color-world decision).
 .badgeDone {
-    background: color-mix(in srgb, #{dt.$accent-green} 18%, transparent);
-    color: dt.$accent-green;
+    background: rgba(var(--bs-primary-rgb), 0.16);
+    color: var(--bs-primary);
 }
 
 .badgeFailed {
@@ -417,7 +385,7 @@ $xxs: 0.25rem; // tighter than $spacing-xs for inset chrome
 }
 
 .statMoved {
-    @include mx.monospace-value;
+    @include board.mono-time;
     font-weight: 700;
     color: var(--bs-emphasis-color);
 }
@@ -550,7 +518,7 @@ $xxs: 0.25rem; // tighter than $spacing-xs for inset chrome
 }
 
 .success {
-    color: dt.$accent-green;
+    color: var(--bs-primary);
     font-size: dt.$font-size-sm;
 }
 

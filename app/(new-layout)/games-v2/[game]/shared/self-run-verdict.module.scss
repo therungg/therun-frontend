@@ -1,4 +1,5 @@
 @use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
 
 // ============================================================
 // SelfRunVerdictDialog — content for the hide/restore-my-run
@@ -6,19 +7,15 @@
 // primitive (./board-dialog.module.scss).
 // ============================================================
 .header {
-    padding: dt.$spacing-lg dt.$spacing-xl;
-    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    @include board.board-dialog-header;
 }
 
 .title {
-    font-size: dt.$font-size-base;
-    font-weight: dt.$heading-font-weight;
-    letter-spacing: dt.$heading-letter-spacing;
-    margin: 0;
+    @include board.board-dialog-title;
 }
 
 .body {
-    padding: dt.$spacing-xl;
+    @include board.board-dialog-body;
 }
 
 .message {
@@ -28,9 +25,5 @@
 }
 
 .footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: dt.$spacing-sm;
-    padding: dt.$spacing-md dt.$spacing-xl;
-    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    @include board.board-dialog-footer;
 }
