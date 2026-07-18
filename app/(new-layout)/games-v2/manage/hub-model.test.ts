@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { chunk, formatCountBadge } from './hub-model';
+import {
+    chunk,
+    formatCountBadge,
+    type HubRowOk,
+    settleHubRow,
+} from './hub-model';
 
 describe('chunk', () => {
     it('splits into fixed-size batches, preserving order', () => {
@@ -31,5 +36,37 @@ describe('formatCountBadge', () => {
 
     it('renders "!" instead of "0+" for a degraded zero count', () => {
         expect(formatCountBadge(0, true)).toBe('!');
+    });
+});
+
+describe('settleHubRow', () => {
+    const okRow: HubRowOk = {
+        kind: 'ok',
+        slug: 'celeste',
+        display: 'Celeste',
+        image: null,
+        count: 3,
+        degraded: false,
+    };
+
+    it('passes through a fulfilled row unchanged', () => {
+        expect(
+            settleHubRow('celeste', { status: 'fulfilled', value: okRow }),
+        ).toEqual(okRow);
+    });
+
+    it('drops a fulfilled-null row (clean 404 — the game is gone)', () => {
+        expect(
+            settleHubRow('stale-slug', { status: 'fulfilled', value: null }),
+        ).toBeNull();
+    });
+
+    it('maps a rejection to a failed row carrying the original slug', () => {
+        expect(
+            settleHubRow('flaky-game', {
+                status: 'rejected',
+                reason: new Error('backend 500'),
+            }),
+        ).toEqual({ kind: 'failed', slug: 'flaky-game' });
     });
 });

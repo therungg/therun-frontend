@@ -1,3 +1,44 @@
+/** A successfully resolved + summarized hub row. */
+export interface HubRowOk {
+    kind: 'ok';
+    slug: string;
+    display: string;
+    image: string | null;
+    count: number;
+    degraded: boolean;
+}
+
+/**
+ * A row whose load rejected (resolveGame or the summary fetch threw
+ * something other than a clean 404) — distinct from absence (a 404 means
+ * the game is gone and the row is dropped entirely, see `settleHubRow`).
+ * Rendered with just the raw slug and a "couldn't load" badge; the game's
+ * own console link may still work, so it's kept.
+ */
+export interface HubRowFailed {
+    kind: 'failed';
+    slug: string;
+}
+
+export type HubRow = HubRowOk | HubRowFailed;
+
+/**
+ * Maps one row's settled load outcome to a render-ready `HubRow`, or `null`
+ * to drop the row entirely. Fulfilled-with-null means `resolveGame` hit a
+ * clean 404 (the game is gone) — that's absence, so it's dropped silently.
+ * A rejection means something failed transiently — that's degradation, so
+ * it renders as a `HubRowFailed` rather than sinking the whole hub (see
+ * `loadHubRows` in page.tsx, which awaits each batch with
+ * `Promise.allSettled` and maps every result through this function).
+ */
+export function settleHubRow(
+    slug: string,
+    result: PromiseSettledResult<HubRowOk | null>,
+): HubRow | null {
+    if (result.status === 'fulfilled') return result.value;
+    return { kind: 'failed', slug };
+}
+
 /**
  * Split items into fixed-size batches, preserving order. Used to bound how
  * many moderated games the hub fans out to the backend at once — each
