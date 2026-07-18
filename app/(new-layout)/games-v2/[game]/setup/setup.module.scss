@@ -277,3 +277,16 @@
 .textDanger {
     color: dt.$accent-red;
 }
+
+// One amber: warning text uses $accent-amber, not Bootstrap's $warning —
+// replaces the raw `text-warning` utility class.
+.textWarning {
+    color: dt.$accent-amber;
+}
+
+// One green: "done" text uses --bs-primary (the design system's single
+// success/accent color), not Bootstrap's $success — replaces the raw
+// `text-success` utility class.
+.textSuccess {
+    color: var(--bs-primary);
+}

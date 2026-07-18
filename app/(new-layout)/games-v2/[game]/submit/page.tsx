@@ -38,7 +38,9 @@ export default async function SubmitRunPage({
                 <p className="text-muted mb-4">{game.display}</p>
                 <div className="border rounded p-4 text-center">
                     <p className="mb-3">Sign in with Twitch to submit a run.</p>
-                    <TwitchLoginButton url={`/games-v2/${game.name}/submit`} />
+                    <TwitchLoginButton
+                        url={`/games-v2/${game.name}/submit${initialMode === 'claim' ? '?mode=claim' : ''}`}
+                    />
                 </div>
             </div>
         );

@@ -223,9 +223,9 @@ export function StepFinish({ data }: StepProps) {
                                 s.status === 'blocker'
                                     ? styles.textDanger
                                     : s.status === 'warning'
-                                      ? 'text-warning'
+                                      ? styles.textWarning
                                       : s.status === 'done'
-                                        ? 'text-success'
+                                        ? styles.textSuccess
                                         : 'text-muted'
                             }
                         >

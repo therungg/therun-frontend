@@ -24,6 +24,20 @@
     margin: 0;
 }
 
+.errorAlert {
+    @include board.board-error-alert;
+    margin-top: dt.$spacing-sm;
+    margin-bottom: 0;
+}
+
 .footer {
     @include board.board-dialog-footer;
+}
+
+// ---- Red action style for the destructive "hide my run" confirm ---
+// Bootstrap's $danger (#dc3545) doesn't match the design system's
+// $accent-red (#ef4444) — build the destructive button off the token
+// directly instead of reaching for `btn-danger`.
+.btnDanger {
+    @include board.board-dialog-btn-danger;
 }
