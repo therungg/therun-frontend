@@ -27,7 +27,7 @@ export function StepDefaults({ data, onAdvance }: StepProps) {
             <GameWideVariablesSection data={data} />
             <button
                 type="button"
-                className="btn btn-primary mt-2"
+                className={`${styles.primaryAction} mt-2`}
                 onClick={onAdvance}
             >
                 Continue

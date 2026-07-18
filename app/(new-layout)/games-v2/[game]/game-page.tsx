@@ -61,7 +61,7 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                     </p>
                     <Link
                         href={`/games-v2/${data.game.name}/submit`}
-                        className="btn btn-sm btn-primary mt-3"
+                        className={`${styles.primaryAction} mt-3`}
                     >
                         Submit the first run
                     </Link>

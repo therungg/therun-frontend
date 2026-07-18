@@ -13,6 +13,7 @@ import {
     normalizeVerificationStatus,
     VerificationBadge,
 } from '../../../run-view/run-badges';
+import { BackLink } from '../../../shared/back-link';
 import type { ModVerb, RunActionTarget } from '../shared/action-model';
 import { ManualTimeDialog } from '../shared/manual-time-dialog';
 import { RunActionDialog } from '../shared/run-action-dialog';
@@ -202,12 +203,7 @@ export function RosterView({
         <div className="container py-3">
             <div className="d-flex align-items-center justify-content-between mb-3">
                 <h1 className="h4 mb-0">Browse runs — {gameDisplay}</h1>
-                <Link
-                    href={consoleHref}
-                    className="btn btn-sm btn-outline-secondary"
-                >
-                    Back to console
-                </Link>
+                <BackLink href={consoleHref} label="Back to console" />
             </div>
 
             <div className="border rounded p-3 mb-3">

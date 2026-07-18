@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
-import Link from '~src/components/link';
 import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
+import { BackLink } from '../shared/back-link';
 import { SubmitForm } from './submit-form';
 
 interface PageProps {
@@ -65,12 +65,10 @@ export default async function SubmitRunPage({
         <div className="container py-4" style={{ maxWidth: '40rem' }}>
             <div className="d-flex align-items-center justify-content-between mb-1">
                 <h1 className="h4 mb-0">Submit a run</h1>
-                <Link
+                <BackLink
                     href={`/games-v2/${game.name}`}
-                    className="btn btn-sm btn-outline-secondary"
-                >
-                    Back to leaderboards
-                </Link>
+                    label="Back to leaderboard"
+                />
             </div>
             <p className="text-muted mb-4">{game.display}</p>
             <SubmitForm

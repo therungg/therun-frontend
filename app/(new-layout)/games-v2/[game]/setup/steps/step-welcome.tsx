@@ -59,7 +59,7 @@ export function StepWelcome({ data, onAdvance }: StepProps) {
             </p>
             <button
                 type="button"
-                className="btn btn-primary"
+                className={styles.primaryAction}
                 onClick={onAdvance}
             >
                 Let’s set it up

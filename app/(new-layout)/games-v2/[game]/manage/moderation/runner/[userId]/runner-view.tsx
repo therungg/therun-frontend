@@ -2,13 +2,13 @@
 
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { UserEligibleRunRow } from '../../../../../../../../types/moderation.types';
 import {
     normalizeVerificationStatus,
     VerificationBadge,
 } from '../../../../run-view/run-badges';
+import { BackLink } from '../../../../shared/back-link';
 import type { ModVerb, RunActionTarget } from '../../shared/action-model';
 import { ManualTimeDialog } from '../../shared/manual-time-dialog';
 import { RunActionDialog } from '../../shared/run-action-dialog';
@@ -187,12 +187,7 @@ export function RunnerView({
                             Remove all {visibleRunIds.length} runs
                         </button>
                     )}
-                    <Link
-                        href={consoleHref}
-                        className="btn btn-sm btn-outline-secondary"
-                    >
-                        Back to console
-                    </Link>
+                    <BackLink href={consoleHref} label="Back to console" />
                 </div>
             </div>
 

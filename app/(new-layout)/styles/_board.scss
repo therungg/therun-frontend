@@ -548,6 +548,55 @@
     }
 }
 
+// ---- Primary action button -----------------------------------------
+// The primary-action tier (system.md: primary = board-btn-primary,
+// secondary = control-pill, tertiary = board-quiet-link). Filled
+// brand-green CTA — anatomy (fill/hover/focus-visible/disabled) mirrors
+// board-dialog-btn-danger/-warning, plus its own radius/transition/
+// coarse-pointer hit area since (unlike the dialog buttons) this isn't
+// paired with bootstrap's `.btn` base class — it's self-contained so it
+// composes on both <button> and <Link>/<a>.
+@mixin board-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    border: 1px solid var(--bs-primary);
+    border-radius: dt.$radius-md;
+    background: var(--bs-primary);
+    color: #fff;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color dt.$transition-fast,
+        border-color dt.$transition-fast;
+
+    &:hover:not(:disabled) {
+        background: color-mix(in srgb, var(--bs-primary) 85%, white);
+        border-color: color-mix(in srgb, var(--bs-primary) 85%, white);
+        color: #fff;
+        text-decoration: none;
+    }
+
+    &:focus-visible {
+        outline: 0;
+        box-shadow: 0 0 0 3px rgba(var(--bs-primary-rgb), 0.3);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+
+    // ≥44px hit area on touch (see control-pill's own note: consumers
+    // that set local padding still need their own coarse override).
+    @media (pointer: coarse) {
+        min-height: 44px;
+    }
+}
+
 // ---- Quiet inline link/button ------------------------------------
 // A "History"-style secondary action: no chrome at rest, padded hit
 // area on touch (negative margin keeps the at-rest footprint/layout

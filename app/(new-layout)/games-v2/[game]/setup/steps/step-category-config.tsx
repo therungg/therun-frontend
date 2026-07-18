@@ -74,7 +74,7 @@ export function StepCategoryConfig({ data, onAdvance }: StepProps) {
                 </p>
                 <button
                     type="button"
-                    className="btn btn-primary"
+                    className={styles.primaryAction}
                     onClick={() => {
                         router.replace(
                             `/games-v2/${data.game.name}/setup?step=categories`,
@@ -197,7 +197,7 @@ function CategoryConfigBody({
 
             <button
                 type="button"
-                className="btn btn-primary mt-2"
+                className={`${styles.primaryAction} mt-2`}
                 onClick={handleNext}
             >
                 {isLast

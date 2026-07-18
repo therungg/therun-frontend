@@ -60,7 +60,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                 <div>
                     <button
                         type="button"
-                        className="btn btn-primary mt-3"
+                        className={`${styles.primaryAction} mt-3`}
                         onClick={onAdvance}
                     >
                         Continue
@@ -268,7 +268,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
             {progress && <div className="text-muted small">{progress}</div>}
             <button
                 type="button"
-                className="btn btn-primary mt-2"
+                className={`${styles.primaryAction} mt-2`}
                 disabled={isSaving || !mainOk}
                 onClick={save}
             >

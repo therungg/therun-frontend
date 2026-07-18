@@ -1,12 +1,12 @@
 'use client';
 
-import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import type {
     HistoryEvent,
     RunProvenance,
 } from '../../../../../../../types/moderation.types';
 import { ModProvenancePanel } from '../../../run-view/mod-provenance-panel';
+import { BackLink } from '../../../shared/back-link';
 import { RunCard } from './run-card';
 import type { ManageRunData } from './types';
 
@@ -44,12 +44,10 @@ export function ManageRunPage({
                     <h1 className="mb-0">{game.display}</h1>
                 </div>
                 <div className="ms-auto">
-                    <Link
+                    <BackLink
                         href={`/games-v2/${game.name}`}
-                        className="btn btn-sm btn-outline-secondary"
-                    >
-                        Back to leaderboard
-                    </Link>
+                        label="Back to leaderboard"
+                    />
                 </div>
             </header>
 

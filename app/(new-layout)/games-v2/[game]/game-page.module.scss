@@ -217,6 +217,12 @@
     margin-top: dt.$spacing-lg;
 }
 
+// primary action — the hero's "Submit a run" / the empty-state's
+// "Submit the first run" (system.md's board-btn-primary tier)
+.primaryAction {
+    @include board.board-btn-primary;
+}
+
 // quiet action over the ambience — glass instead of outline
 .glassChip {
     @include board.board-glass;

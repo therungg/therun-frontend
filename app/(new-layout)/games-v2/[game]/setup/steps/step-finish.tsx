@@ -140,16 +140,16 @@ export function StepFinish({ data }: StepProps) {
                 </p>
                 <div className="d-flex gap-2 justify-content-center">
                     <Link
-                        href={`/games-v2/${data.game.name}`}
-                        className="btn btn-primary"
+                        href={`/games-v2/${data.game.name}/manage?pane=attention`}
+                        className={styles.primaryAction}
                     >
-                        View your board
+                        Go to your console
                     </Link>
                     <Link
-                        href={`/games-v2/${data.game.name}/manage`}
-                        className="btn btn-outline-secondary"
+                        href={`/games-v2/${data.game.name}`}
+                        className={styles.secondaryAction}
                     >
-                        Open the management console
+                        View your board
                     </Link>
                 </div>
             </section>
