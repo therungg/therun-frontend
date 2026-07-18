@@ -10,11 +10,17 @@ import { SubmitForm } from './submit-form';
 
 interface PageProps {
     params: Promise<{ game: string }>;
+    searchParams: Promise<{ mode?: string }>;
 }
 
-export default async function SubmitRunPage({ params }: PageProps) {
+export default async function SubmitRunPage({
+    params,
+    searchParams,
+}: PageProps) {
     const { game: slug } = await params;
     if (!slug) notFound();
+    const sp = await searchParams;
+    const initialMode = sp.mode === 'claim' ? 'claim' : 'submit';
 
     const game = await resolveGame(slug);
     if (!game) notFound();
@@ -69,6 +75,7 @@ export default async function SubmitRunPage({ params }: PageProps) {
                 game={{ id: game.id, name: game.name, display: game.display }}
                 categories={activeCategories}
                 groups={groups}
+                initialMode={initialMode}
             />
         </div>
     );

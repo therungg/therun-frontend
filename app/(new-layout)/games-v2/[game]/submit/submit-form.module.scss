@@ -1,0 +1,28 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// ============================================================
+// SubmitForm — the "submit a run" / "claim an existing time" mode
+// switch at the top of the merged submit flow. See .interface-design/system.md.
+// ============================================================
+
+.modeSwitch {
+    display: inline-flex;
+    gap: dt.$spacing-xs;
+    padding: dt.$spacing-xs;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    border-radius: dt.$radius-lg;
+}
+
+.modeButton {
+    @include board.control-pill;
+    padding: dt.$spacing-xs dt.$spacing-md;
+}
+
+.modeButtonActive {
+    @include board.control-pill-active;
+}
+
+.modeHint {
+    color: var(--bs-secondary-color);
+}
