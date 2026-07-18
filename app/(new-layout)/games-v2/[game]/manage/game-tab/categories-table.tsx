@@ -8,7 +8,9 @@ import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import { formatCount, formatHours } from '~src/utils/format-stats';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
 import { PromptDialog } from '../../shared/prompt-dialog';
+import { fireUndoToast } from '../moderation/shared/undo-toast';
 import { updateVisibilityAction } from '../visibility/actions/update-visibility.action';
+import styles from './categories-table.module.scss';
 
 type Filter = 'all' | 'active' | 'archived';
 
@@ -17,6 +19,12 @@ const FILTER_LABEL: Record<Filter, string> = {
     active: 'Current',
     archived: 'Archived',
 };
+
+/** Past-tense label for a Featured/Archived toggle's undo-toast message. */
+function toggleLabel(field: 'isMain' | 'active', value: boolean): string {
+    if (field === 'isMain') return value ? 'featured' : 'unfeatured';
+    return value ? 'restored' : 'archived';
+}
 
 interface Props {
     game: ResolvedGame;
@@ -89,6 +97,22 @@ export function CategoriesTable({
         });
     };
 
+    // Applies a single Featured/Archived toggle via updateVisibilityAction —
+    // shared by the toggle handler below and its Undo (which just calls this
+    // again with the field flipped back to its previous value).
+    const applyVisibility = async (
+        categoryId: number,
+        field: 'isMain' | 'active',
+        value: boolean,
+    ) =>
+        updateVisibilityAction({
+            gameSlug: game.name,
+            gameId: game.id,
+            categoryId,
+            ...(field === 'isMain' ? { isMain: value } : {}),
+            ...(field === 'active' ? { active: value } : {}),
+        });
+
     const toggle = (
         row: ManageCategoryRow,
         field: 'isMain' | 'active',
@@ -98,27 +122,31 @@ export function CategoriesTable({
         setPending(row.id, true);
         onRowChange(row.id, { [field]: value });
         startTransition(async () => {
-            const res = await updateVisibilityAction({
-                gameSlug: game.name,
-                gameId: game.id,
-                categoryId: row.id,
-                ...(field === 'isMain' ? { isMain: value } : {}),
-                ...(field === 'active' ? { active: value } : {}),
-            });
+            const res = await applyVisibility(row.id, field, value);
             setPending(row.id, false);
             if ('error' in res) {
                 toast.error(res.error);
                 onRowChange(row.id, { [field]: prevValue });
                 return;
             }
-            toast.success(
-                field === 'isMain'
-                    ? value
-                        ? `${row.display}: featured`
-                        : `${row.display}: unfeatured`
-                    : value
-                      ? `${row.display}: restored`
-                      : `${row.display}: archived`,
+            // Round-1 UndoToast pattern (Task 18, requirement 8): Undo
+            // re-applies the inverse value and, on success, reverts the row
+            // in local state too.
+            fireUndoToast(
+                `${row.display}: ${toggleLabel(field, value)}.`,
+                async () => {
+                    const undoRes = await applyVisibility(
+                        row.id,
+                        field,
+                        prevValue,
+                    );
+                    if ('error' in undoRes) return { error: undoRes.error };
+                    onRowChange(row.id, { [field]: prevValue });
+                    return { ok: true };
+                },
+                // No extra resync needed on undo — the undo callback above
+                // already reverts the row via onRowChange.
+                () => undefined,
             );
         });
     };
@@ -345,12 +373,7 @@ export function CategoriesTable({
                 <>
                     {selectedIds.size > 0 && (
                         <div
-                            className="d-flex align-items-center gap-2 p-2 mb-2 border rounded bg-body-tertiary"
-                            style={{
-                                position: 'sticky',
-                                top: '0.5rem',
-                                zIndex: 1,
-                            }}
+                            className={`d-flex align-items-center gap-2 p-2 mb-2 border rounded bg-body-tertiary ${styles.selectionBar}`}
                         >
                             <strong>{selectedIds.size} selected</strong>
                             <label className="text-muted small mb-0 ms-2">
@@ -568,7 +591,8 @@ export function CategoriesTable({
                 Tip: only "featured" categories appear on the public game page.
                 If no featured categories are set, the top 5 by playtime show as
                 a fallback. Non-featured categories stay accessible to mods
-                here.
+                here. Archived categories are hidden from the public page along
+                with their boards; runs are kept.
             </p>
             <PromptDialog
                 open={groupPrompt != null}

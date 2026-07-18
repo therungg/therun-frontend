@@ -25,6 +25,7 @@ import {
     type RosterSortState,
     sortRosterRows,
 } from './roster-sort';
+import styles from './roster-view.module.scss';
 
 type VerificationFilter = 'any' | 'unverified' | 'verified' | 'rejected';
 type VodFilter = 'any' | 'true' | 'false';
@@ -634,12 +635,7 @@ export function RosterView({
 
             {selected.size > 0 && (
                 <div
-                    className="border-top bg-body shadow-lg p-2 d-flex flex-wrap align-items-center gap-2"
-                    style={{
-                        position: 'sticky',
-                        bottom: 0,
-                        zIndex: 1020,
-                    }}
+                    className={`border-top bg-body shadow-lg p-2 d-flex flex-wrap align-items-center gap-2 ${styles.bulkBar}`}
                 >
                     <span className="fw-bold">{selected.size} selected</span>
                     {banSubject && (

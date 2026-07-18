@@ -139,18 +139,23 @@ export function ConsoleSidebar({
                                             className={styles.count}
                                             aria-label={
                                                 badgeDegraded
-                                                    ? `${attentionCount} items need attention — some sources didn't load, actual count may be higher`
+                                                    ? attentionCount > 0
+                                                        ? `${attentionCount} items need attention — some sources didn't load, actual count may be higher`
+                                                        : 'Some sources failed to load — counts may be incomplete'
                                                     : `${attentionCount} items need attention`
                                             }
                                             title={
                                                 badgeDegraded
-                                                    ? 'Some sources failed to load — count may be low'
+                                                    ? 'Some sources failed to load — counts may be incomplete'
                                                     : undefined
                                             }
                                         >
-                                            {attentionCount > 99
-                                                ? '99+'
-                                                : `${attentionCount}${badgeDegraded ? '+' : ''}`}
+                                            {badgeDegraded &&
+                                            attentionCount === 0
+                                                ? '!'
+                                                : attentionCount > 99
+                                                  ? '99+'
+                                                  : `${attentionCount}${badgeDegraded ? '+' : ''}`}
                                         </span>
                                     )}
                             </button>

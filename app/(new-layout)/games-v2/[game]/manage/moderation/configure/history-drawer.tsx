@@ -1,8 +1,9 @@
 'use client';
 
 import moment from 'moment/moment';
-import { useEffect, useRef, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
+import Link from '~src/components/link';
 import type { ModActionRow } from '../../../../../../../types/moderation.types';
 import { useDialogBehavior } from '../../../shared/board-dialog';
 import { undoAction } from '../log/actions/undo.action';
@@ -14,6 +15,23 @@ interface Props {
     gameSlug: string;
     open: boolean;
     onClose: () => void;
+}
+
+/** All-actors/all-actions filter sentinel — an empty string never collides
+ * with a real actor name or action label. */
+const ANY_FILTER = '';
+
+/**
+ * A row links to its run's manage page when the backend's own
+ * `listGameModActions` join guarantees `target` is a run id: `entity ===
+ * 'finished_run'` (exclude_run/include_run — the only two RELEVANT_ACTIONS
+ * that target a run rather than an exclusion rule; see
+ * src/services/audit-log.ts). Anything else degrades to plain text — a rule
+ * id or a `delete_exclusion_rule` snapshot target isn't a run.
+ */
+function runIdFor(row: ModActionRow): string | null {
+    if (row.entity !== 'finished_run' || !row.target) return null;
+    return /^\d+$/.test(row.target) ? row.target : null;
 }
 
 // Mirrors the reversible set the undo action enforces server-side.
@@ -71,6 +89,10 @@ export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [undone, setUndone] = useState<Set<number>>(new Set());
+    // Compact filter row (G18) — client-side over the already-loaded 90
+    // days, so switching filters never re-fetches.
+    const [actorFilter, setActorFilter] = useState(ANY_FILTER);
+    const [actionFilter, setActionFilter] = useState(ANY_FILTER);
     const panelRef = useRef<HTMLDivElement>(null);
 
     // Lazy-load when the drawer first opens.
@@ -108,6 +130,30 @@ export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
     const onUndone = (logId: number) =>
         setUndone((prev) => new Set(prev).add(logId));
 
+    // Distinct actor names + action-type buckets (reusing historyActionLabel)
+    // from whatever's already loaded — options only ever grow within a
+    // single 90-day load, never re-fetched per filter change.
+    const actorOptions = useMemo(() => {
+        if (!actions) return [];
+        return Array.from(new Set(actions.map((a) => a.actorName))).sort();
+    }, [actions]);
+    const actionOptions = useMemo(() => {
+        if (!actions) return [];
+        return Array.from(
+            new Set(actions.map((a) => historyActionLabel(a.action))),
+        ).sort();
+    }, [actions]);
+
+    const filteredActions = useMemo(() => {
+        if (!actions) return null;
+        return actions.filter(
+            (a) =>
+                (actorFilter === ANY_FILTER || a.actorName === actorFilter) &&
+                (actionFilter === ANY_FILTER ||
+                    historyActionLabel(a.action) === actionFilter),
+        );
+    }, [actions, actorFilter, actionFilter]);
+
     if (!open) return null;
 
     return (
@@ -137,6 +183,37 @@ export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
                     />
                 </div>
 
+                {actions && actions.length > 0 && (
+                    <div className="d-flex gap-2 p-3 border-bottom">
+                        <select
+                            className="form-select form-select-sm"
+                            aria-label="Filter by moderator"
+                            value={actorFilter}
+                            onChange={(e) => setActorFilter(e.target.value)}
+                        >
+                            <option value={ANY_FILTER}>All moderators</option>
+                            {actorOptions.map((name) => (
+                                <option key={name} value={name}>
+                                    {name}
+                                </option>
+                            ))}
+                        </select>
+                        <select
+                            className="form-select form-select-sm"
+                            aria-label="Filter by action type"
+                            value={actionFilter}
+                            onChange={(e) => setActionFilter(e.target.value)}
+                        >
+                            <option value={ANY_FILTER}>All actions</option>
+                            {actionOptions.map((label) => (
+                                <option key={label} value={label}>
+                                    {label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                )}
+
                 <div className="flex-grow-1 overflow-auto p-3">
                     {loading ? (
                         <p className="text-muted">Loading history…</p>
@@ -148,9 +225,13 @@ export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
                         <p className="text-muted">
                             No moderation actions in the last 90 days.
                         </p>
+                    ) : !filteredActions || filteredActions.length === 0 ? (
+                        <p className="text-muted">
+                            No actions match these filters.
+                        </p>
                     ) : (
                         <ul className="list-unstyled mb-0">
-                            {actions.map((row) => {
+                            {filteredActions.map((row) => {
                                 const ageMs =
                                     Date.now() -
                                     new Date(row.timestamp).getTime();
@@ -158,6 +239,7 @@ export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
                                     REVERSIBLE.has(row.action) &&
                                     ageMs < DAY_MS &&
                                     !undone.has(row.logId);
+                                const runId = runIdFor(row);
                                 return (
                                     <li
                                         key={row.logId}
@@ -174,9 +256,22 @@ export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
                                                             row.action,
                                                         )}
                                                     </span>
-                                                    {row.target
-                                                        ? ` ${row.target}`
-                                                        : ''}
+                                                    {row.target ? (
+                                                        runId ? (
+                                                            <>
+                                                                {' '}
+                                                                <Link
+                                                                    href={`/games-v2/${gameSlug}/manage/run/${runId}`}
+                                                                >
+                                                                    {row.target}
+                                                                </Link>
+                                                            </>
+                                                        ) : (
+                                                            ` ${row.target}`
+                                                        )
+                                                    ) : (
+                                                        ''
+                                                    )}
                                                 </div>
                                                 {row.remark && (
                                                     <div className="text-muted">

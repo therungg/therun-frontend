@@ -12,6 +12,7 @@ import { BackLink } from '../../../../shared/back-link';
 import type { ModVerb, RunActionTarget } from '../../shared/action-model';
 import { ManualTimeDialog } from '../../shared/manual-time-dialog';
 import { RunActionDialog } from '../../shared/run-action-dialog';
+import styles from './runner-view.module.scss';
 
 interface Props {
     gameSlug: string;
@@ -402,8 +403,7 @@ export function RunnerView({
 
             {selected.size > 0 && (
                 <div
-                    className="border-top bg-body shadow-lg p-2 d-flex align-items-center gap-2"
-                    style={{ position: 'sticky', bottom: 0, zIndex: 1020 }}
+                    className={`border-top bg-body shadow-lg p-2 d-flex align-items-center gap-2 ${styles.bulkBar}`}
                 >
                     <span className="fw-bold">{selected.size} selected</span>
                     <div className="ms-auto d-flex gap-2">

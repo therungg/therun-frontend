@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { manualTimeVerdictAction } from '../shared/actions/manual-times.action';
 import styles from './manual-time-verdict-row.module.scss';
@@ -16,6 +16,15 @@ interface Props {
     gameSlug: string;
     manualTimeId: number;
     onDone: () => void;
+    /**
+     * External open request — the triage 'v'/'r' keyboard shortcut wires
+     * onto this row's own verify/reject buttons (there's no separate
+     * RunActionDialog path for self-claims). `openNonce` changing opens (or
+     * re-opens) `openVerdict`; primitives, not an object, so a fresh
+     * reference on every unrelated re-render doesn't re-fire the effect.
+     */
+    openVerdict?: 'verify' | 'reject' | null;
+    openNonce?: number;
 }
 
 /** Verify/Reject control for a pending self-claim manual time. */
@@ -23,11 +32,20 @@ export function ManualTimeVerdictRow({
     gameSlug,
     manualTimeId,
     onDone,
+    openVerdict = null,
+    openNonce = 0,
 }: Props) {
     const [verdict, setVerdict] = useState<'verify' | 'reject' | null>(null);
     const [reason, setReason] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [isWorking, startWork] = useTransition();
+
+    useEffect(() => {
+        if (openNonce > 0 && openVerdict) setVerdict(openVerdict);
+        // Only a fresh `openNonce` (a real keypress) should open/switch the
+        // row — re-reading `openVerdict` here would re-fire on every render.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [openNonce]);
 
     // verify is optional (falls back to DEFAULT_REASON, like approve on the
     // run-action dialog); reject stays required — it's consequential for

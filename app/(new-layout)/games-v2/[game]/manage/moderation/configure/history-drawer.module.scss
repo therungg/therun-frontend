@@ -16,6 +16,8 @@
 
 .panel {
     z-index: dt.$z-drawer;
-    width: min(28rem, 100%);
+    // Widened (Task 18, G18) for the actor/action-type filter row without
+    // cramping the action-log rows.
+    width: min(36rem, 100%);
     @include board.board-overlay-enter(slide-right);
 }

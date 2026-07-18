@@ -1,0 +1,11 @@
+@use '../../../../../styles/design-tokens' as dt;
+
+// Targeted fix (Task 18 ledger): bridge the bulk-action bar's inline
+// `zIndex` onto the shared z-scale ($z-sticky, _design-tokens.scss) instead
+// of an arbitrary Bootstrap-dropdown-tier magic number (1020). The rest of
+// this view stays raw Bootstrap.
+.bulkBar {
+    position: sticky;
+    bottom: 0;
+    z-index: dt.$z-sticky;
+}
