@@ -54,7 +54,12 @@ export function usePopoverFocus({
                 panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR),
             );
             if (focusable.length === 0) {
-                e.preventDefault();
+                // Text-only panel: nothing to trap focus in. Treat Tab as
+                // "leave" — close the popover (for focus-restore parity with
+                // Escape/outside-click) and let Tab proceed naturally from
+                // the trigger, instead of swallowing every Tab press on the
+                // page until Escape/outside-click.
+                onClose();
                 return;
             }
             const target = nextTrapFocusTarget(
