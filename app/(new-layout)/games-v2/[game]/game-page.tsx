@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from '~src/components/link';
+import { buildBoardHref } from '~src/lib/board-url';
 import type { ClaimCtaState } from './claim/claim-cta';
 import { FilterBar } from './filters/filter-bar';
 import { FiltersPopover } from './filters/filters-popover';
@@ -21,17 +22,6 @@ interface Props {
     canManage: boolean;
     canManageRuns: boolean;
     claim?: ClaimCtaState | null;
-}
-
-function parseSubcategoryKey(key: string): Record<string, string> {
-    if (!key) return {};
-    const out: Record<string, string> = {};
-    for (const pair of key.split('|')) {
-        const eq = pair.indexOf('=');
-        if (eq < 0) continue;
-        out[pair.slice(0, eq)] = pair.slice(eq + 1);
-    }
-    return out;
 }
 
 export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
@@ -237,21 +227,18 @@ function InvalidCombinationNotice({
                 this category. Try one of these instead:
             </p>
             <div className="d-flex flex-wrap gap-2 justify-content-center mt-3">
-                {suggestions.slice(0, 12).map((key) => {
-                    const values = parseSubcategoryKey(key);
-                    const sp = new URLSearchParams();
-                    sp.set('category', categorySlug);
-                    for (const [k, v] of Object.entries(values)) sp.set(k, v);
-                    return (
-                        <Link
-                            key={key}
-                            href={`/games-v2/${gameSlug}?${sp.toString()}`}
-                            className={styles.pill}
-                        >
-                            {formatSubcategoryKey(key, defs)}
-                        </Link>
-                    );
-                })}
+                {suggestions.slice(0, 12).map((key) => (
+                    <Link
+                        key={key}
+                        href={buildBoardHref(gameSlug, {
+                            categorySlug,
+                            subcategoryKey: key,
+                        })}
+                        className={styles.pill}
+                    >
+                        {formatSubcategoryKey(key, defs)}
+                    </Link>
+                ))}
             </div>
         </div>
     );

@@ -2,10 +2,12 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { TwitchLoginButton } from '~src/components/twitch/TwitchLoginButton';
+import { buildBoardHref } from '~src/lib/board-url';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import { BackLink } from '../shared/back-link';
+import { buildSubcategoryKey } from './subcategory-key';
 import { SubmitForm } from './submit-form';
 import styles from './submit-page.module.scss';
 
@@ -59,6 +61,17 @@ export default async function SubmitRunPage({
             ? session.username
             : null;
 
+    // Round-trips the board slice this page was reached from — bare params
+    // (no category/subcategory) fall back to the bare game URL.
+    const initialSubcategoryValues = extractInitialSubcategoryValues(sp);
+    const backHref = buildBoardHref(game.name, {
+        categorySlug: sp.category,
+        subcategoryKey:
+            Object.keys(initialSubcategoryValues).length > 0
+                ? buildSubcategoryKey(initialSubcategoryValues)
+                : undefined,
+    });
+
     const header = (
         <header className={styles.header}>
             {game.image && (
@@ -75,7 +88,7 @@ export default async function SubmitRunPage({
                 <h1 className={styles.title}>{h1}</h1>
             </div>
             <BackLink
-                href={`/games-v2/${game.name}`}
+                href={backHref}
                 label="Back to leaderboard"
                 className={styles.headerBack}
             />
@@ -134,9 +147,7 @@ export default async function SubmitRunPage({
                     groups={groups}
                     initialMode={initialMode}
                     initialCategorySlug={sp.category}
-                    initialSubcategoryValues={extractInitialSubcategoryValues(
-                        sp,
-                    )}
+                    initialSubcategoryValues={initialSubcategoryValues}
                 />
             </div>
         </div>
