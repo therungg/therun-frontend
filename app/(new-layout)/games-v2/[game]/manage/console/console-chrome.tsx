@@ -1,7 +1,7 @@
 'use client';
 
 import clsx from 'clsx';
-import { type ReactNode, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { List } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
@@ -58,6 +58,20 @@ export function ConsoleChrome({
         onClose: closeSidebar,
         panelRef: sidebarRef,
     });
+
+    // If the viewport crosses back above the mobile breakpoint while the
+    // drawer is open (window snap, rotation, monitor change), the CSS
+    // reverts to desktop layout but the drawer's scroll lock and Tab trap
+    // would otherwise persist. Close it so useDialogBehavior's own cleanup
+    // unwinds them.
+    useEffect(() => {
+        const mq = window.matchMedia('(max-width: 768px)');
+        const onChange = (e: MediaQueryListEvent) => {
+            if (!e.matches) setSidebarOpen(false);
+        };
+        mq.addEventListener('change', onChange);
+        return () => mq.removeEventListener('change', onChange);
+    }, []);
 
     const handleSelect = (id: NavItemId) => {
         setSidebarOpen(false);
