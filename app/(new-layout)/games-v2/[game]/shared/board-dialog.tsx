@@ -122,12 +122,13 @@ export function useDialogBehavior({
     }, [open, onClose, panelRef]);
 }
 
-export type BoardDialogSize = 'sm' | 'md' | 'lg';
+export type BoardDialogSize = 'sm' | 'md' | 'lg' | 'xl';
 
 const SIZE_CLASS: Record<BoardDialogSize, string> = {
     sm: 'modal-sm',
     md: '',
     lg: 'modal-lg',
+    xl: 'modal-xl',
 };
 
 interface BoardDialogProps {

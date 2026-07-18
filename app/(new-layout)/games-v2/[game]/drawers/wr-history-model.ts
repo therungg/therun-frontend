@@ -71,18 +71,29 @@ export function toWrHistoryRows(
 /**
  * Formats a `deltaMs` (see `WrHistoryRow`) as prose: `null` (the
  * first-ever record) is an em dash; a negative delta (faster/improved) gets
- * a minus sign, positive gets a plus. Sub-minute deltas — the overwhelming
- * majority of WR improvements — render as decimal seconds (`−3.2s`);
- * minute-plus deltas switch to `Xm Ys` (no decimal), dropping a zero-second
+ * a minus sign, positive gets a plus. `showMilliseconds` mirrors the same
+ * flag the adjacent time column renders with (`category.showMilliseconds`)
+ * so the delta's precision never implies more accuracy than the board
+ * actually tracks: sub-minute deltas render as decimal seconds (`−3.2s`)
+ * when `true`, whole seconds (`−3s`) when `false` — rounded, not truncated,
+ * so a 2.6s delta reads as `3s` rather than a misleadingly-small `2s`.
+ * Minute-plus deltas always switch to `Xm Ys` (no decimal either way — a
+ * tenth of a second is noise at that scale), dropping a zero-second
  * remainder (`−1m`, not `−1m 0s`).
  */
-export function formatDeltaSeconds(deltaMs: number | null): string {
+export function formatDeltaSeconds(
+    deltaMs: number | null,
+    showMilliseconds: boolean,
+): string {
     if (deltaMs === null) return '—';
     const sign = deltaMs < 0 ? '−' : deltaMs > 0 ? '+' : '';
     const abs = Math.abs(deltaMs);
 
     if (abs < 60_000) {
-        return `${sign}${(abs / 1000).toFixed(1)}s`;
+        const seconds = showMilliseconds
+            ? (abs / 1000).toFixed(1)
+            : Math.round(abs / 1000).toString();
+        return `${sign}${seconds}s`;
     }
 
     const minutes = Math.floor(abs / 60_000);

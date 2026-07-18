@@ -143,7 +143,7 @@ function WrHistoryListItem({
     showMilliseconds: boolean;
 }) {
     const deltaClass =
-        row.deltaMs == null
+        row.deltaMs == null || row.deltaMs === 0
             ? styles.deltaNeutral
             : row.deltaMs > 0
               ? styles.deltaRegression
@@ -167,7 +167,7 @@ function WrHistoryListItem({
                     />
                 </span>
                 <span className={`${styles.delta} ${deltaClass}`}>
-                    {formatDeltaSeconds(row.deltaMs)}
+                    {formatDeltaSeconds(row.deltaMs, showMilliseconds)}
                 </span>
             </div>
             <div className={styles.held}>

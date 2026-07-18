@@ -1,0 +1,24 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// ============================================================
+// LiveDrawer — chrome swap onto the shared BoardDialog primitive.
+// Content (LiveRunsForGame) and behavior unchanged; replaces the
+// react-bootstrap Modal (round-1 carve-out gate).
+// ============================================================
+
+.header {
+    @include board.board-dialog-header;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+}
+
+.title {
+    @include board.board-dialog-title;
+    flex: 1;
+}
+
+.body {
+    @include board.board-dialog-body;
+}
