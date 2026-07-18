@@ -9,6 +9,10 @@ import type {
     LeaderboardRosterRow,
     RosterFilter,
 } from '../../../../../../../types/moderation.types';
+import {
+    normalizeVerificationStatus,
+    VerificationBadge,
+} from '../../../run-view/run-badges';
 import type { ModVerb, RunActionTarget } from '../shared/action-model';
 import { ManualTimeDialog } from '../shared/manual-time-dialog';
 import { RunActionDialog } from '../shared/run-action-dialog';
@@ -440,10 +444,11 @@ export function RosterView({
                                                     )}
                                                 </td>
                                                 <td className="text-center">
-                                                    {row.verificationStatus ===
-                                                    'verified'
-                                                        ? '✓'
-                                                        : ''}
+                                                    <VerificationBadge
+                                                        status={normalizeVerificationStatus(
+                                                            row.verificationStatus,
+                                                        )}
+                                                    />
                                                 </td>
                                                 <td className="text-center">
                                                     {row.vodUrl ? (

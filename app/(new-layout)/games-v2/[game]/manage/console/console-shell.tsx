@@ -26,6 +26,7 @@ import {
     sidebarActiveItem as deriveSidebarActiveItem,
     type NavFlags,
     type NavItemId,
+    showSetupCard,
 } from './nav-model';
 import { SetupChecklistCard } from './setup-checklist-card';
 
@@ -234,19 +235,20 @@ export function ConsoleShell({
                 selectedCategoryId={selectedCategoryId}
                 onSelectCategory={setSelectedCategoryId}
             >
-                {setupCompleteness &&
-                setupCompleteness.steps.find((s) => s.step === 'finish')
-                    ?.status !== 'done' ? (
-                    <SetupChecklistCard
-                        gameSlug={game.name}
-                        completeness={setupCompleteness}
-                    />
-                ) : boardHealth ? (
-                    <BoardHealthCard
-                        gameSlug={game.name}
-                        health={boardHealth}
-                    />
-                ) : null}
+                {showSetupCard(groups, activeItem) &&
+                    (setupCompleteness &&
+                    setupCompleteness.steps.find((s) => s.step === 'finish')
+                        ?.status !== 'done' ? (
+                        <SetupChecklistCard
+                            gameSlug={game.name}
+                            completeness={setupCompleteness}
+                        />
+                    ) : boardHealth ? (
+                        <BoardHealthCard
+                            gameSlug={game.name}
+                            health={boardHealth}
+                        />
+                    ) : null)}
                 <h2
                     ref={paneHeadingRef}
                     tabIndex={-1}

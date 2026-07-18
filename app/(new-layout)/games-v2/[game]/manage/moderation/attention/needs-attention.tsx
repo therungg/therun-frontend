@@ -22,7 +22,12 @@ import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
 import type { FlagSeverity } from '../../../../../../../types/moderation.types';
 import { formatSubcategoryKey } from '../../../labels';
-import type { ModVerb, RunActionTarget } from '../shared/action-model';
+import type {
+    BanScope,
+    ModVerb,
+    RunActionTarget,
+} from '../shared/action-model';
+import { defaultBanScopeForCategories } from '../shared/action-model';
 import { RunActionDialog } from '../shared/run-action-dialog';
 import {
     type AttentionItem,
@@ -102,6 +107,8 @@ interface RunAction {
     verb: ModVerb;
     target: RunActionTarget;
     affectedKeys: string[];
+    /** Initial ban-dialog scope; only meaningful when verb === 'ban'. */
+    defaultBanScope?: BanScope;
 }
 
 export function NeedsAttention({
@@ -534,6 +541,7 @@ export function NeedsAttention({
                     gameSlug={gameSlug}
                     verb={runAction.verb}
                     target={runAction.target}
+                    defaultBanScope={runAction.defaultBanScope}
                     onDone={() => {
                         removeKeys(runAction.affectedKeys);
                         setRunAction(null);
@@ -830,6 +838,11 @@ function RunnerGroupCard({
         ) {
             return;
         }
+        // The dialog's target still needs A category (the "this category"
+        // scope option acts on it) — firstWithCat's is as good as any. What
+        // matters is the DEFAULT scope: when this group's items span more
+        // than one category, "this category" would silently pick an
+        // arbitrary one of them, so default to "entire game" instead.
         onAct({
             verb: 'ban',
             target: {
@@ -841,6 +854,9 @@ function RunnerGroupCard({
                 gameDisplay,
             },
             affectedKeys: allKeys,
+            defaultBanScope: defaultBanScopeForCategories(
+                items.map((it) => it.categoryId),
+            ),
         });
     };
 

@@ -7,11 +7,22 @@ import { CheckCircleFill, HourglassSplit } from 'react-bootstrap-icons';
 import { formatVariableList, type LabelVariableDef } from '../labels';
 import styles from './run-badges.module.scss';
 
-export function VerificationBadge({
-    status,
-}: {
-    status: 'pending' | 'verified' | 'rejected';
-}) {
+export type VerificationStatus = 'pending' | 'verified' | 'rejected';
+
+/**
+ * Several backend rows (LeaderboardRosterRow, UserEligibleRunRow) type
+ * `verificationStatus` as a loose `string`, not the real 3-value union — so
+ * callers feeding VerificationBadge need to normalize first. Unknown/missing
+ * values fall back to 'pending' rather than silently rendering nothing.
+ */
+export function normalizeVerificationStatus(
+    status: string | null | undefined,
+): VerificationStatus {
+    if (status === 'verified' || status === 'rejected') return status;
+    return 'pending';
+}
+
+export function VerificationBadge({ status }: { status: VerificationStatus }) {
     if (status === 'verified') {
         return (
             <span className={styles.verified} aria-label="verified">
