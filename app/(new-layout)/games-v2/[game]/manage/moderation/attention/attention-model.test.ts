@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
     degradedSourcesOf,
     formatSourceList,
+    parseKindFilter,
     resolveSource,
 } from './attention-model';
 
@@ -61,5 +62,26 @@ describe('formatSourceList', () => {
 
     it('returns an empty string for an empty list', () => {
         expect(formatSourceList([])).toBe('');
+    });
+});
+
+describe('parseKindFilter', () => {
+    it('returns null for a missing param', () => {
+        expect(parseKindFilter(null)).toBeNull();
+    });
+
+    it('returns null for an empty string', () => {
+        expect(parseKindFilter('')).toBeNull();
+    });
+
+    it('returns null for an unrecognized value', () => {
+        expect(parseKindFilter('bogus')).toBeNull();
+    });
+
+    it('accepts each valid attention source', () => {
+        expect(parseKindFilter('flag')).toBe('flag');
+        expect(parseKindFilter('report')).toBe('report');
+        expect(parseKindFilter('appeal')).toBe('appeal');
+        expect(parseKindFilter('self_claim')).toBe('self_claim');
     });
 });

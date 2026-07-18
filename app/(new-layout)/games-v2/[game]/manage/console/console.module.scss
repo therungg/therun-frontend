@@ -235,6 +235,24 @@ $rail: 3px; // severity spine / active accent width
     color: var(--bs-secondary-color);
 }
 
+// A visually-hidden-until-focused pane heading — the focus target + aria-live
+// source for pane switches (see console-shell.tsx). Combined with Bootstrap's
+// `visually-hidden-focusable`, this styles the moment it becomes visible on
+// keyboard focus so it reads like a real heading, not raw unstyled text.
+.paneHeading {
+    &:focus {
+        padding: dt.$spacing-sm dt.$spacing-md;
+        margin-bottom: dt.$spacing-md;
+        font-size: dt.$font-size-lg;
+        font-weight: 700;
+        border-radius: dt.$radius-md;
+        background: rgba(var(--bs-primary-rgb), 0.08);
+        color: var(--bs-primary);
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+    }
+}
+
 // ---- Content wrapper: gently align mounted config forms ----
 // The restyled surfaces (queue, bans, dialog) use their own module classes,
 // so these scoped overrides only reach the not-yet-restyled CONFIGURE forms

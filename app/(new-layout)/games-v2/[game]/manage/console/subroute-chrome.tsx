@@ -11,6 +11,9 @@ interface Props {
     categories: Array<{ id: number; display: string }>;
     flags: NavFlags;
     attentionCount: number;
+    /** True when one or more attention sources failed to load — the badge
+     * count may be an undercount, not a confirmed total. */
+    badgeDegraded?: boolean;
     /** Which sidebar item (if any) represents the current sub-route page. */
     activeItem?: NavItemId | null;
     children: ReactNode;
@@ -27,6 +30,7 @@ export function SubrouteChrome({
     categories,
     flags,
     attentionCount,
+    badgeDegraded = false,
     activeItem = null,
     children,
 }: Props) {
@@ -39,8 +43,13 @@ export function SubrouteChrome({
             router.push(`${base}/moderation/roster`);
             return;
         }
-        // `history` and every content pane resolve back to the main console.
-        router.push(id === 'history' ? base : `${base}?pane=${id}`);
+        if (id === 'reports') {
+            router.push(`${base}?pane=attention&kind=report`);
+            return;
+        }
+        // `history` carries `?pane=history` too, so the console opens the
+        // drawer on arrival instead of just landing on the default pane.
+        router.push(`${base}?pane=${id}`);
     };
 
     return (
@@ -50,6 +59,7 @@ export function SubrouteChrome({
             activeItem={activeItem}
             onNavigate={navigate}
             attentionCount={attentionCount}
+            badgeDegraded={badgeDegraded}
             categories={categories}
             selectedCategoryId={null}
             onSelectCategory={() => {}}

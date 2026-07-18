@@ -1,7 +1,7 @@
 'use client';
 
-import { useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
@@ -16,6 +16,7 @@ import type {
 import type { AttentionItem } from '../moderation/attention/attention-model';
 import { HistoryDrawer } from '../moderation/configure/history-drawer';
 import { BoardHealthCard } from './board-health-card';
+import styles from './console.module.scss';
 import { ConsoleChrome } from './console-chrome';
 import { ContentRouter } from './content-router';
 import type { GameDetailsData } from './game-details-pane';
@@ -63,17 +64,22 @@ export function ConsoleShell({
     moderators,
 }: ConsoleShellProps) {
     const groups = useMemo(() => buildNav(flags), [flags]);
+    const router = useRouter();
     const searchParams = useSearchParams();
 
     // A `?pane=` deep-link (used by sub-route pages navigating back) wins over
     // the default landing pane — but only if it's a pane this viewer can see.
+    // `history` is an overlay, `roster` always leaves for its own route, and
+    // `reports` normalizes into the attention pane — none of the three is
+    // ever a landing content pane (see the effect below).
     const initialActive = useMemo<NavItemId | null>(() => {
         const requested = searchParams.get('pane');
         const visible = groups.flatMap((g) => g.items).map((it) => it.id);
-        // `history` is an overlay, not a content pane — never a landing target.
         if (
             requested &&
             requested !== 'history' &&
+            requested !== 'roster' &&
+            requested !== 'reports' &&
             visible.includes(requested as NavItemId)
         ) {
             return requested as NavItemId;
@@ -86,10 +92,24 @@ export function ConsoleShell({
     );
 
     // Same-page ?pane= links (health card, moderators pane) update the URL
-    // without remounting the shell — sync state to the validated param.
+    // without remounting the shell — sync state to the validated param. This
+    // also fires on browser Back/Forward: Next re-renders `useSearchParams()`
+    // on popstate, which recomputes `initialActive` and lands here.
     useEffect(() => {
         setActiveItem(initialActive);
     }, [initialActive]);
+
+    // Deep links that never land as content: `?pane=roster` sends the viewer
+    // straight to the roster route (the placeholder pane is gone); `?pane=
+    // reports` normalizes to the attention pane pre-filtered to reports.
+    useEffect(() => {
+        const pane = searchParams.get('pane');
+        if (pane === 'roster') {
+            router.replace(`/games-v2/${game.name}/manage/moderation/roster`);
+        } else if (pane === 'reports') {
+            router.replace('?pane=attention&kind=report', { scroll: false });
+        }
+    }, [searchParams, router, game.name]);
 
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
         initialCategoryId,
@@ -98,6 +118,25 @@ export function ConsoleShell({
     const [manageGroups, setManageGroups] =
         useState<ManageGroup[]>(initialGroups);
     const [historyOpen, setHistoryOpen] = useState(false);
+    const [liveAttentionCount, setLiveAttentionCount] = useState(
+        attentionItems.length,
+    );
+
+    // A full page reload (e.g. router.refresh() after a degraded-source
+    // retry) re-sends a fresh server-computed total through this prop —
+    // resync so the badge doesn't stay pinned to a stale, already-triaged
+    // count from before the reload.
+    useEffect(() => {
+        setLiveAttentionCount(attentionItems.length);
+    }, [attentionItems]);
+
+    // `?pane=history` opens the drawer on arrival — from a deep link (the
+    // sub-route sidebar's History item) or from a same-page URL change.
+    useEffect(() => {
+        if (searchParams.get('pane') === 'history') {
+            setHistoryOpen(true);
+        }
+    }, [searchParams]);
 
     const selectedCategory = useMemo<ResolvedCategory | null>(
         () => categories.find((c) => c.id === selectedCategoryId) ?? null,
@@ -113,8 +152,20 @@ export function ConsoleShell({
         [],
     );
 
-    // History is a quick-reference overlay, not a destination pane.
+    // History is a quick-reference overlay, not a destination pane. Roster
+    // always leaves the console for its dedicated route. Reports is a
+    // pre-filtered view of the attention pane, not a pane of its own.
     const handleNavigate = (id: NavItemId) => {
+        if (id === 'roster') {
+            router.push(`/games-v2/${game.name}/manage/moderation/roster`);
+            return;
+        }
+        if (id === 'reports') {
+            router.replace('?pane=attention&kind=report', { scroll: false });
+            setActiveItem('attention');
+            return;
+        }
+        router.replace(`?pane=${id}`, { scroll: false });
         if (id === 'history') {
             setHistoryOpen(true);
             return;
@@ -127,6 +178,29 @@ export function ConsoleShell({
         [categories],
     );
 
+    // Focus + announce the pane heading on every switch after the initial
+    // mount, so keyboard/AT users get the same "you're here now" signal
+    // sighted users get from the highlighted sidebar item. Skipping the
+    // first render matches standard SPA route-change focus management —
+    // full page loads already put focus at the top of the document.
+    const activeLabel = useMemo(() => {
+        const item = groups
+            .flatMap((g) => g.items)
+            .find((it) => it.id === activeItem);
+        return item?.label ?? 'Admin console';
+    }, [groups, activeItem]);
+
+    const paneHeadingRef = useRef<HTMLHeadingElement>(null);
+    const skipFocusRef = useRef(true);
+
+    useEffect(() => {
+        if (skipFocusRef.current) {
+            skipFocusRef.current = false;
+            return;
+        }
+        paneHeadingRef.current?.focus();
+    }, [activeItem]);
+
     return (
         <>
             <ConsoleChrome
@@ -134,7 +208,8 @@ export function ConsoleShell({
                 groups={groups}
                 activeItem={activeItem}
                 onNavigate={handleNavigate}
-                attentionCount={attentionItems.length}
+                attentionCount={liveAttentionCount}
+                badgeDegraded={degradedSources.length > 0}
                 categories={categoryOptions}
                 selectedCategoryId={selectedCategoryId}
                 onSelectCategory={setSelectedCategoryId}
@@ -152,6 +227,16 @@ export function ConsoleShell({
                         health={boardHealth}
                     />
                 ) : null}
+                <h2
+                    ref={paneHeadingRef}
+                    tabIndex={-1}
+                    className={`visually-hidden-focusable ${styles.paneHeading}`}
+                >
+                    {activeLabel}
+                </h2>
+                <div className="visually-hidden" aria-live="polite">
+                    {activeLabel}
+                </div>
                 <ContentRouter
                     activeItem={activeItem}
                     game={game}
@@ -163,6 +248,7 @@ export function ConsoleShell({
                     degradedSources={degradedSources}
                     modApplications={modApplications}
                     moderators={moderators}
+                    onAttentionCountChange={setLiveAttentionCount}
                     initialSlug={initialSlug}
                     initialAbbreviation={initialAbbreviation}
                     rows={rows}
@@ -188,7 +274,14 @@ export function ConsoleShell({
             <HistoryDrawer
                 gameSlug={game.name}
                 open={historyOpen}
-                onClose={() => setHistoryOpen(false)}
+                onClose={() => {
+                    setHistoryOpen(false);
+                    if (activeItem) {
+                        router.replace(`?pane=${activeItem}`, {
+                            scroll: false,
+                        });
+                    }
+                }}
             />
         </>
     );

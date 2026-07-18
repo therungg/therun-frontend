@@ -7,6 +7,26 @@ import type {
 
 export type AttentionSource = 'flag' | 'report' | 'appeal' | 'self_claim';
 
+const ATTENTION_SOURCES: readonly AttentionSource[] = [
+    'flag',
+    'report',
+    'appeal',
+    'self_claim',
+];
+
+/**
+ * Parse a `?kind=` query value (e.g. from the sidebar's Reports shortcut,
+ * `?pane=attention&kind=report`) into a valid attention-source filter, or
+ * `null` if absent/unrecognized. Pure so the URL-driven pre-filter on
+ * NeedsAttention is trivially testable.
+ */
+export function parseKindFilter(raw: string | null): AttentionSource | null {
+    if (raw && (ATTENTION_SOURCES as readonly string[]).includes(raw)) {
+        return raw as AttentionSource;
+    }
+    return null;
+}
+
 export interface SourceOk<T> {
     ok: true;
     data: T;

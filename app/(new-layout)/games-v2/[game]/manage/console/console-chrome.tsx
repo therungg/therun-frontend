@@ -15,6 +15,9 @@ interface Props {
     activeItem: NavItemId | null;
     onNavigate: (id: NavItemId) => void;
     attentionCount: number;
+    /** True when one or more attention sources failed to load — the badge
+     * count may be an undercount, not a confirmed total. */
+    badgeDegraded?: boolean;
     categories: Array<{ id: number; display: string }>;
     selectedCategoryId: number | null;
     onSelectCategory: (id: number) => void;
@@ -33,6 +36,7 @@ export function ConsoleChrome({
     activeItem,
     onNavigate,
     attentionCount,
+    badgeDegraded = false,
     categories,
     selectedCategoryId,
     onSelectCategory,
@@ -96,6 +100,7 @@ export function ConsoleChrome({
                         activeItem={activeItem}
                         onSelect={handleSelect}
                         attentionCount={attentionCount}
+                        badgeDegraded={badgeDegraded}
                         categories={categories}
                         selectedCategoryId={selectedCategoryId}
                         onSelectCategory={onSelectCategory}

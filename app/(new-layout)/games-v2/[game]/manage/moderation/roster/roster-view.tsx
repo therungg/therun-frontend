@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
@@ -113,6 +113,20 @@ export function RosterView({
             setRows(res.rows);
         });
     };
+
+    // Auto-load on mount for the selected category, and re-query whenever a
+    // query-affecting filter changes ("On board" is excluded — it's a
+    // client-only filter over already-loaded rows, no round trip needed).
+    // Debounced uniformly, including the selects, so text typing doesn't
+    // fire a request per keystroke.
+    useEffect(() => {
+        if (categoryId == null) return;
+        const timer = setTimeout(() => {
+            handleLoad();
+        }, 350);
+        return () => clearTimeout(timer);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [categoryId, subcategoryKey, verificationStatus, hasVod, runnerName]);
 
     const allSelected =
         visibleRows != null &&
@@ -325,7 +339,7 @@ export function RosterView({
                         onClick={handleLoad}
                         disabled={isLoading || categoryId == null}
                     >
-                        {isLoading ? 'Loading…' : 'Load'}
+                        {isLoading ? 'Loading…' : 'Refresh'}
                     </button>
                 </div>
             </div>

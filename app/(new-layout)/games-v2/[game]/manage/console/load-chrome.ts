@@ -8,6 +8,7 @@ import { defineAbilityFor } from '~src/rbac/ability';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
 import type { User } from '../../../../../../types/session.types';
 import {
+    degradedSourcesOf,
     mergeAttention,
     resolveSource,
 } from '../moderation/attention/attention-model';
@@ -17,6 +18,10 @@ export interface ConsoleChromeData {
     categories: Array<{ id: number; display: string }>;
     flags: NavFlags;
     attentionCount: number;
+    /** Human-readable names of inbox sources that failed to load — non-empty
+     * means `attentionCount` may be an undercount (see the badge in
+     * console-sidebar.tsx, which shows this honestly rather than silently). */
+    degradedSources: string[];
 }
 
 /**
@@ -56,9 +61,14 @@ export async function loadConsoleChrome(
     ]);
     // A failed source degrades the badge to a lower (possibly zero) count
     // rather than erroring the page — this chrome only ever renders a
-    // number, so there's no "All clear" claim to protect here. Pages that
-    // render NeedsAttention resolve these sources themselves and surface
-    // degradedSources to the UI.
+    // number, so there's no "All clear" claim to protect here. The badge
+    // still surfaces `degradedSources` honestly (a "+" and a tooltip) rather
+    // than silently presenting a possibly-wrong count as final.
+    const degradedSources = degradedSourcesOf([
+        queueRes,
+        reportsRes,
+        manualTimesRes,
+    ]);
     const queueItems = queueRes.ok ? queueRes.data : [];
     const reports = reportsRes.ok ? reportsRes.data : [];
     const manualTimes = manualTimesRes.ok ? manualTimesRes.data : [];
@@ -76,5 +86,6 @@ export async function loadConsoleChrome(
         categories: categories.map((c) => ({ id: c.id, display: c.display })),
         flags,
         attentionCount,
+        degradedSources,
     };
 }

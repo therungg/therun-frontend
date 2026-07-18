@@ -29,6 +29,9 @@ interface Props {
     activeItem: NavItemId | null;
     onSelect: (id: NavItemId) => void;
     attentionCount: number;
+    /** True when one or more attention sources failed to load — the count
+     * shown may be an undercount, not a confirmed total. */
+    badgeDegraded?: boolean;
     categories: Array<{ id: number; display: string }>;
     selectedCategoryId: number | null;
     onSelectCategory: (id: number) => void;
@@ -60,6 +63,7 @@ export function ConsoleSidebar({
     activeItem,
     onSelect,
     attentionCount,
+    badgeDegraded = false,
     categories,
     selectedCategoryId,
     onSelectCategory,
@@ -130,14 +134,23 @@ export function ConsoleSidebar({
                                     <span className={styles.soon}>soon</span>
                                 )}
                                 {item.id === 'attention' &&
-                                    attentionCount > 0 && (
+                                    (attentionCount > 0 || badgeDegraded) && (
                                         <span
                                             className={styles.count}
-                                            aria-label={`${attentionCount} items need attention`}
+                                            aria-label={
+                                                badgeDegraded
+                                                    ? `${attentionCount} items need attention — some sources didn't load, actual count may be higher`
+                                                    : `${attentionCount} items need attention`
+                                            }
+                                            title={
+                                                badgeDegraded
+                                                    ? 'Some sources failed to load — count may be low'
+                                                    : undefined
+                                            }
                                         >
                                             {attentionCount > 99
                                                 ? '99+'
-                                                : attentionCount}
+                                                : `${attentionCount}${badgeDegraded ? '+' : ''}`}
                                         </span>
                                     )}
                             </button>

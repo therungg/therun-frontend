@@ -49,6 +49,7 @@ export default async function RunnerPage({ params }: Props) {
             categories={chrome.categories}
             flags={chrome.flags}
             attentionCount={chrome.attentionCount}
+            badgeDegraded={chrome.degradedSources.length > 0}
         >
             <RunnerView
                 gameSlug={game.name}
