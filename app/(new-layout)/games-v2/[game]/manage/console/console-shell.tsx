@@ -383,7 +383,10 @@ export function ConsoleShell({
             skipFocusRef.current = false;
             return;
         }
-        paneHeadingRef.current?.focus();
+        // preventScroll: a section-anchor scroll inside the new pane (e.g.
+        // GameTab's own scrollIntoView) shouldn't get clobbered back to the
+        // top by this focus call — see game-tab.tsx.
+        paneHeadingRef.current?.focus({ preventScroll: true });
     }, [activeItem]);
 
     return (

@@ -113,6 +113,14 @@ interface RunAction {
     defaultBanScope?: BanScope;
 }
 
+/** A keyboard-triggered open request for a self-claim's inline verdict row
+ * (ManualTimeVerdictRow) — see the 'v'/'r' handler in NeedsAttention. */
+interface ManualTimeOpenRequest {
+    key: string;
+    verdict: 'verify' | 'reject';
+    nonce: number;
+}
+
 export function NeedsAttention({
     gameSlug,
     gameDisplay,
@@ -131,6 +139,12 @@ export function NeedsAttention({
     );
     const [runAction, setRunAction] = useState<RunAction | null>(null);
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
+    // Keyboard 'v'/'r' on a selected self-claim card wires onto that row's
+    // own verify/reject buttons (ManualTimeVerdictRow) rather than a
+    // RunActionDialog, since self-claims have no runId. `nonce` is a fresh
+    // value per keypress so the same verdict pressed twice still re-opens.
+    const [manualTimeOpen, setManualTimeOpen] =
+        useState<ManualTimeOpenRequest | null>(null);
     // Batch checkbox selection — keys of items checked for "Approve selected"
     // / "Remove selected…". Self-claim items (no runId) never appear here:
     // they have no RunActionDialog path (see ManualTimeVerdictRow), so they
@@ -207,6 +221,19 @@ export function NeedsAttention({
         [orderedKeys, selectedKey],
     );
 
+    // Scopes the keyboard hint to what the selected card actually supports:
+    // self-claims wire v/r onto their own verify/reject row buttons (no
+    // batch checkbox, so "x select" doesn't apply either) — see the
+    // keydown handler below.
+    const selectedItem = useMemo(
+        () => filtered.find((it) => it.key === selectedKey) ?? null,
+        [filtered, selectedKey],
+    );
+    const isSelfClaimSelected =
+        selectedItem != null &&
+        selectedItem.runId == null &&
+        selectedItem.manualTimeId != null;
+
     const toggleGroup = (userId: number) => {
         setExpandedGroups((prev) => {
             const next = new Set(prev);
@@ -269,6 +296,20 @@ export function NeedsAttention({
 
     const removeKeys = (keys: string[]) => {
         const drop = new Set(keys);
+        // Keyboard-triggered actions remove the acted-upon card(s) — reselect
+        // the next surviving card at (or before) the same queue position so
+        // the selection ring persists instead of going dark.
+        setSelectedKey((cur) => {
+            if (cur == null || !drop.has(cur)) return cur;
+            const idx = orderedKeys.indexOf(cur);
+            for (let i = idx + 1; i < orderedKeys.length; i++) {
+                if (!drop.has(orderedKeys[i])) return orderedKeys[i];
+            }
+            for (let i = idx - 1; i >= 0; i--) {
+                if (!drop.has(orderedKeys[i])) return orderedKeys[i];
+            }
+            return null;
+        });
         setItems((prev) => prev.filter((it) => !drop.has(it.key)));
         setSelectedForBatch((prev) => setManySelected(prev, keys, false));
     };
@@ -281,8 +322,12 @@ export function NeedsAttention({
         setSelectedForBatch((prev) => setManySelected(prev, keys, select));
     };
 
+    // Both guards below are defensive, not load-bearing: the only caller is
+    // the keydown handler, which already routes self-claims (no runId) to
+    // ManualTimeVerdictRow's own verify/reject via manualTimeOpen before
+    // ever reaching these — see isSelfClaim there.
     const triggerApprove = (item: AttentionItem) => {
-        if (item.runId == null) return; // self-claims use their own inline verdict row, not this dialog
+        if (item.runId == null) return;
         setRunAction({
             verb: 'approve',
             target: runsTargetFor(item),
@@ -341,6 +386,18 @@ export function NeedsAttention({
             }
 
             e.preventDefault();
+            const isSelfClaim = item.runId == null && item.manualTimeId != null;
+            if (isSelfClaim) {
+                // No RunActionDialog path for self-claims — wire v/r onto
+                // the row's own verify/reject buttons instead (their
+                // actions map cleanly: approve≈verify, remove≈reject).
+                setManualTimeOpen({
+                    key: item.key,
+                    verdict: action === 'approve' ? 'verify' : 'reject',
+                    nonce: Date.now(),
+                });
+                return;
+            }
             if (action === 'approve') triggerApprove(item);
             else triggerRemove(item);
         };
@@ -510,7 +567,10 @@ export function NeedsAttention({
                         </div>
                     )}
                     <p className={styles.hint}>
-                        j/k navigate · v approve · r remove · x select
+                        j/k navigate ·{' '}
+                        {isSelfClaimSelected
+                            ? 'v verify · r reject'
+                            : 'v approve · r remove · x select'}
                         {queuePos && (
                             <span className={styles.queuePosition}>
                                 {queuePos.n} of {queuePos.m}
@@ -541,6 +601,7 @@ export function NeedsAttention({
                                         g.userId != null &&
                                         toggleGroup(g.userId)
                                     }
+                                    manualTimeOpen={manualTimeOpen}
                                 />
                             ) : (
                                 <SingleItemCard
@@ -557,6 +618,7 @@ export function NeedsAttention({
                                     onToggleChecked={() =>
                                         toggleBatchKey(g.items[0].key)
                                     }
+                                    manualTimeOpen={manualTimeOpen}
                                 />
                             ),
                         )}
@@ -566,7 +628,7 @@ export function NeedsAttention({
 
             {selectedForBatch.size > 0 && (
                 <div className={styles.bulkBar}>
-                    <span className={styles.bulkCount}>
+                    <span className={styles.bulkCount} aria-live="polite">
                         {selectedForBatch.size} selected
                     </span>
                     <div className={styles.bulkActions}>
@@ -735,6 +797,9 @@ interface SingleItemCardProps {
      * RunActionDialog path, so they never get a checkbox. */
     checked?: boolean;
     onToggleChecked?: () => void;
+    /** A keyboard 'v'/'r' open request — only applied when it targets this
+     * card's own manualTimeId (see ManualTimeVerdictRow's openVerdict). */
+    manualTimeOpen?: ManualTimeOpenRequest | null;
 }
 
 function SingleItemCard({
@@ -746,9 +811,12 @@ function SingleItemCard({
     selected = false,
     checked = false,
     onToggleChecked,
+    manualTimeOpen,
 }: SingleItemCardProps) {
     const isSelfClaim = item.runId == null && item.manualTimeId != null;
     const isBatchable = item.runId != null;
+    const openForThisCard =
+        manualTimeOpen?.key === item.key ? manualTimeOpen : null;
 
     const runsTarget = runsTargetFor(item);
 
@@ -795,6 +863,8 @@ function SingleItemCard({
                     gameSlug={gameSlug}
                     manualTimeId={item.manualTimeId}
                     onDone={onDone}
+                    openVerdict={openForThisCard?.verdict}
+                    openNonce={openForThisCard?.nonce}
                 />
             ) : (
                 <div className={styles.actions}>
@@ -867,6 +937,7 @@ interface RunnerGroupCardProps {
      * order, so this can't stay local component state. */
     open: boolean;
     onToggleOpen: () => void;
+    manualTimeOpen?: ManualTimeOpenRequest | null;
 }
 
 function RunnerGroupCard({
@@ -883,6 +954,7 @@ function RunnerGroupCard({
     onToggleKeys,
     open,
     onToggleOpen,
+    manualTimeOpen,
 }: RunnerGroupCardProps) {
     const allKeys = items.map((it) => it.key);
     const batchableKeys = items
@@ -1021,6 +1093,7 @@ function RunnerGroupCard({
                             selected={it.key === selectedKey}
                             checked={selectedForBatch.has(it.key)}
                             onToggleChecked={() => onToggleKey(it.key)}
+                            manualTimeOpen={manualTimeOpen}
                         />
                     ))}
                 </div>

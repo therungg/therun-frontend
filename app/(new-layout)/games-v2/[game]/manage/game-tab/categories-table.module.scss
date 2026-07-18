@@ -1,0 +1,11 @@
+@use '../../../../styles/design-tokens' as dt;
+
+// Targeted fix (Task 18 ledger): bridge the bulk-selection bar's inline
+// `zIndex` onto the shared z-scale ($z-sticky, _design-tokens.scss) instead
+// of an arbitrary magic number. The rest of this table stays raw Bootstrap
+// (system.md's documented CONFIGURE-forms carve-out).
+.selectionBar {
+    position: sticky;
+    top: dt.$spacing-sm;
+    z-index: dt.$z-sticky;
+}

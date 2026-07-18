@@ -55,19 +55,13 @@ export function GameTab({
     onEditCategory,
 }: Props) {
     // Scroll to the section matching the sidebar item that routed here, on
-    // mount and on every subsequent switch between the three items. Deferred
-    // to the next animation frame: the console shell's own pane-switch effect
-    // focuses the (offscreen) pane heading on every switch, which scrolls the
-    // page to the TOP of the pane — this runs after that settles, so the
-    // deeper section wins instead of getting clobbered back to the top.
+    // mount and on every subsequent switch between the three items. No rAF
+    // deferral needed: the console shell's own pane-switch effect focuses
+    // the (offscreen) pane heading with `preventScroll: true`, so it no
+    // longer fights this scroll for the top of the pane.
     useEffect(() => {
         const anchorId = SECTION_ANCHOR[activeSection];
-        const raf = requestAnimationFrame(() => {
-            document
-                .getElementById(anchorId)
-                ?.scrollIntoView({ block: 'start' });
-        });
-        return () => cancelAnimationFrame(raf);
+        document.getElementById(anchorId)?.scrollIntoView({ block: 'start' });
     }, [activeSection]);
 
     return (
