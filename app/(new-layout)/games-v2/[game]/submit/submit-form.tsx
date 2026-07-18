@@ -4,9 +4,8 @@ import { useEffect, useMemo, useState, useTransition } from 'react';
 import { selfClaimTimeAction } from '~src/actions/self-claim.action';
 import { submitRunAction } from '~src/actions/submit-run.action';
 import Link from '~src/components/link';
+import { formatRunTimeEcho, parseRunTimeInput } from '~src/lib/run-time-input';
 import { describeSubmitWarning } from '~src/lib/run-view/submit-warnings';
-import { formatTimeMs } from '~src/lib/run-view/time-format';
-import { parseTimeInput } from '~src/lib/time-input';
 import type {
     ResolvedCategory,
     ResolvedGroup,
@@ -192,7 +191,7 @@ export function SubmitForm({ game, categories, groups, initialMode }: Props) {
             set({ raw, ms: undefined, error: false });
             return;
         }
-        const ms = parseTimeInput(trimmed);
+        const ms = parseRunTimeInput(trimmed);
         set({ raw, ms, error: ms === undefined });
     };
 
@@ -727,7 +726,7 @@ function TimeInput({
                 inputMode="numeric"
                 className={`form-control ${field.error ? 'is-invalid' : ''}`}
                 value={field.raw}
-                placeholder="h:mm:ss or mm:ss"
+                placeholder="h:mm:ss.ms"
                 required={required}
                 onChange={(e) => onChange(e.target.value)}
                 onBlur={(e) => onChange(e.target.value)}
@@ -735,8 +734,12 @@ function TimeInput({
             {field.error ? (
                 <div className="invalid-feedback">Unrecognized time.</div>
             ) : field.ms !== undefined ? (
-                <div className="form-text">{formatTimeMs(field.ms)}</div>
+                <div className={styles.timeEcho}>
+                    Will be submitted as{' '}
+                    <strong>{formatRunTimeEcho(field.ms)}</strong>
+                </div>
             ) : null}
+            <div className="form-text">A plain number is read as seconds.</div>
         </div>
     );
 }
