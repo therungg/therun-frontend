@@ -1,4 +1,5 @@
 import { subject as caslSubject } from '@casl/ability';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { getGameIdentifiers, getGameMetadata } from '~src/lib/game-mgmt';
@@ -14,6 +15,7 @@ import {
     type SetupStepId,
 } from '~src/lib/setup/completeness';
 import { defineAbilityFor } from '~src/rbac/ability';
+import buildMetadata from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
 import type { WizardData } from './types';
 import { WizardShell } from './wizard-shell';
@@ -26,6 +28,18 @@ interface PageProps {
 }
 
 const WR_FETCH_CAP = 10;
+
+export async function generateMetadata({
+    params,
+}: PageProps): Promise<Metadata> {
+    const { game: gameParam } = await params;
+    const game = await resolveGame(safeDecodeURI(gameParam));
+    const display = game?.display ?? safeDecodeURI(gameParam);
+    return buildMetadata({
+        title: `Set up — ${display}`,
+        description: `Set up the ${display} leaderboard.`,
+    });
+}
 
 export default async function SetupPage({ params, searchParams }: PageProps) {
     const { game: gameParam } = await params;

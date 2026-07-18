@@ -4,6 +4,7 @@ import { notFound, permanentRedirect } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { getMyBoardClaim } from '~src/lib/board-claims';
 import { listGameModerators } from '~src/lib/game-moderators';
+import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { defineAbilityFor } from '~src/rbac/ability';
 import buildMetadata, { getGameImage } from '~src/utils/metadata';
 import { safeDecodeURI } from '~src/utils/uri';
@@ -73,12 +74,26 @@ export default async function GameV2Page({ params, searchParams }: PageProps) {
 
 export async function generateMetadata({
     params,
+    searchParams,
 }: PageProps): Promise<Metadata> {
     const { game } = await params;
     if (!game) return buildMetadata();
-    const display = safeDecodeURI(game);
+    const sp = await searchParams;
+    const resolved = await resolveGame(game);
+    const display = resolved?.display ?? safeDecodeURI(game);
+
+    let categoryDisplay: string | undefined;
+    if (resolved && sp.category) {
+        const { selected } = await resolveCategory(resolved.id, sp.category);
+        categoryDisplay = selected?.display;
+    }
+
+    const title = categoryDisplay
+        ? `${display} ${categoryDisplay} — Leaderboard`
+        : `${display} — Leaderboards`;
+
     return buildMetadata({
-        title: `Statistics for ${display}`,
+        title,
         description: `View statistics for ${display}, including categories, top runners, total run time, and more!`,
         images: await getGameImage(display),
     });

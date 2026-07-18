@@ -1,9 +1,11 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { resolveGame } from '~src/lib/games-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { getRunProvenance } from '~src/lib/moderation/provenance';
 import { getRunHistory } from '~src/lib/moderation/runs';
+import buildMetadata from '~src/utils/metadata';
 import { loadConsoleChrome } from '../../console/load-chrome';
 import { SubrouteChrome } from '../../console/subroute-chrome';
 import { loadManageRunData } from './data';
@@ -11,6 +13,16 @@ import { ManageRunPage } from './manage-run-page';
 
 interface Props {
     params: Promise<{ game: string; runId: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { game: slug } = await params;
+    const game = await resolveGame(slug);
+    const display = game?.display ?? slug;
+    return buildMetadata({
+        title: `Run — ${display}`,
+        description: `Moderate a ${display} run.`,
+    });
 }
 
 export default async function GameRunManagePage({ params }: Props) {
