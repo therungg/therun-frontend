@@ -14,6 +14,7 @@ import {
 } from '~src/actions/run-user-actions.action';
 import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
 import type { HistoryEvent } from '../../../../../types/moderation.types';
+import { isSameRunner } from '../shared/is-same-runner';
 import {
     SelfRunVerdictDialog,
     useSelfRunVerdict,
@@ -39,7 +40,7 @@ export function RowActionsMenu({
     const router = useRouter();
     const runId = entry.runId ?? null;
     const loggedIn = !!sessionUsername;
-    const isOwn = loggedIn && entry.runnerName === sessionUsername;
+    const isOwn = loggedIn && isSameRunner(entry.runnerName, sessionUsername);
     const isRejected = entry.verificationStatus === 'rejected';
 
     const [modal, setModal] = useState<ModalKind>(null);

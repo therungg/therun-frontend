@@ -47,3 +47,19 @@ an existence check, so counts need new queries; `accountCreatedAt` is a trivial 
 - Related: `BoardClaimSignals` (`types/board-claims.types.ts`) already models
   `accountCreatedAt/priorApprovals/priorDenials/runsOnGame/totalRuns` but is wired
   nowhere — consider reusing that shape.
+
+## Round 2
+
+### 5. Numeric session userId for id-based own-run checks (W11)
+
+Own-run/current-user checks (`isCurrentUser`, find-me, `isOwn`, `isOwnRun`) compare
+`sessionUsername` against `entry.runnerName`/`model.runnerName` by string. The frontend
+now compares case-insensitively (`isSameRunner`), but a name-based comparison is still
+fragile long-term — `LeaderboardEntry.userId` already exists and would let these checks
+compare stable numeric ids instead.
+
+- Wanted: a numeric `userId` on the session (alongside `sessionUsername`) so id-based
+  checks are possible.
+- Frontend: `shared/is-same-runner.ts`, and its call sites in
+  `leaderboard/leaderboard-table.tsx`, `leaderboard/leaderboard-pager.tsx`,
+  `leaderboard/row-actions-menu.tsx`, `run-view/run-actions.tsx`.

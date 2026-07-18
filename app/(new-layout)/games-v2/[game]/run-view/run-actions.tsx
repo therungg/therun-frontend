@@ -7,6 +7,7 @@ import {
     appealRunAction,
     reportRunAction,
 } from '~src/actions/run-user-actions.action';
+import { isSameRunner } from '../shared/is-same-runner';
 import {
     SelfRunVerdictDialog,
     useSelfRunVerdict,
@@ -28,7 +29,7 @@ export function RunActions({
     const selfVerdict = useSelfRunVerdict();
 
     const isRun = model.kind === 'run';
-    const isOwnRun = isRun && sessionUsername === model.runnerName;
+    const isOwnRun = isRun && isSameRunner(sessionUsername, model.runnerName);
     const canReport = isRun && sessionUsername != null;
     const canAppeal = isOwnRun && model.verificationStatus === 'rejected';
     const canHide = isOwnRun && model.verificationStatus !== 'rejected';
