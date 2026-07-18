@@ -133,6 +133,17 @@ export function NeedsAttention({
         setKindFilter(parseKindFilter(searchParams.get('kind')));
     }, [searchParams]);
 
+    // items starts from initialItems but is then mutated locally
+    // (removeKeys) as cards are triaged, so it doesn't auto-follow prop
+    // updates. router.refresh() (the degraded-source Retry buttons, and
+    // now Undo) sends a fresh server-computed list through this prop —
+    // resync so a re-added item (undo) or corrected list (retry) actually
+    // shows up, mirroring the same fix already applied to the sidebar
+    // badge count in console-shell.tsx.
+    useEffect(() => {
+        setItems(initialItems);
+    }, [initialItems]);
+
     // The sidebar badge tracks total open items, not the filtered view — so
     // narrowing by source/category/kind never makes the badge jump around,
     // only triaging (approve/remove/restore) does.
@@ -521,6 +532,12 @@ export function NeedsAttention({
                         setRunAction(null);
                     }}
                     onClose={() => setRunAction(null)}
+                    // Undo reverses a removal/restore — the card needs to
+                    // REAPPEAR, which removeKeys can't do (it only drops
+                    // items from local state). router.refresh() re-fetches
+                    // `items` from the server; the resync effect above
+                    // picks up the fresh prop.
+                    onUndoComplete={() => router.refresh()}
                 />
             )}
         </div>

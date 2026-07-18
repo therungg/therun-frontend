@@ -125,6 +125,21 @@
     margin-top: 0.2rem;
 }
 
+// ---- Undo toast -----------------------------------------------
+// Content rendered inside the shared react-toastify container (see
+// (new-layout)/content.tsx) for verbs with a true inverse.
+.toastBody {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: dt.$spacing-md;
+    width: 100%;
+}
+
+.toastUndo {
+    flex-shrink: 0;
+}
+
 // ---- Footer -------------------------------------------------
 .footer {
     display: flex;

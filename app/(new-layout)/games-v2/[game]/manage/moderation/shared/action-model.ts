@@ -50,6 +50,34 @@ export function resolveRemoveMechanism(notify: boolean): 'reject' | 'exclude' {
     return notify ? 'reject' : 'exclude';
 }
 
+/**
+ * Whether a verb has a true backend inverse — a real mutation that reverses
+ * it, not a fabricated "undo" that just hides the toast. `approve` (verify)
+ * has none: there is no un-verify/back-to-pending endpoint today (flagged in
+ * the Backend handoff). `remove` is reversed by restoreRunsAction (include +
+ * unreject, whichever mechanism removal used). `restore` is reversed by
+ * exclude. `ban` is reversed by deleting the exclusion rule it created — see
+ * isBanUndoable for the extra condition that gates it.
+ */
+export function hasTrueInverse(verb: ModVerb): boolean {
+    return verb !== 'approve';
+}
+
+/**
+ * A ban's undo is deleting the exclusion rule it created. If the rule
+ * already existed (this ban just matched a pre-existing one — see
+ * CreateRuleResult.alreadyExists), deleting it would remove a rule outside
+ * this action's scope, not undo this action. So it's not offered.
+ */
+export function isBanUndoable(result: { alreadyExists: boolean }): boolean {
+    return !result.alreadyExists;
+}
+
+/** Audit note attached to an undo mutation. */
+export function undoReason(verb: ModVerb): string {
+    return `Undo of ${verb}`;
+}
+
 export type BanScope = 'category' | 'game';
 
 /** What a dialog instance acts on. `ban` requires a `runner` target; the rest require `runs`. */
