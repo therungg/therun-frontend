@@ -9,47 +9,7 @@ import {
 } from '~src/actions/notifications.action';
 import Link from '~src/components/link';
 import type { NotificationRow } from '../../../types/moderation.types';
-
-function describe(n: NotificationRow): string {
-    const p = (n.payload ?? {}) as Record<string, unknown>;
-    switch (n.type) {
-        case 'manual_time_created':
-            return 'A moderator set a leaderboard time for you.';
-        case 'manual_time_verdict':
-            return p.verdict === 'verified'
-                ? 'Your claimed time was verified.'
-                : 'Your claimed time was rejected.';
-        case 'manual_time_deleted':
-            return 'A moderator removed a leaderboard time set for you.';
-        case 'verdict_applied':
-            if (p.action === 'verify')
-                return 'One of your runs was verified by a moderator.';
-            if (p.action === 'reject')
-                return 'One of your runs was rejected by a moderator.';
-            if (p.action === 'unreject')
-                return 'One of your runs was reinstated by a moderator.';
-            return 'A moderator updated one of your runs.';
-        case 'board_claim_approved':
-            return `Your application to moderate ${p.gameDisplay ?? 'this game'} was approved — set up your board`;
-        case 'board_claim_denied': {
-            const reason =
-                typeof p.reason === 'string' && p.reason
-                    ? ` (${p.reason})`
-                    : '';
-            return `Your application to moderate ${p.gameDisplay ?? 'this game'} was declined${reason}`;
-        }
-        default:
-            return 'You have a new notification.';
-    }
-}
-
-function linkFor(n: NotificationRow): string | null {
-    const p = (n.payload ?? {}) as Record<string, unknown>;
-    if (n.type === 'board_claim_approved' && typeof p.gameSlug === 'string') {
-        return `/games-v2/${p.gameSlug}/setup`;
-    }
-    return null;
-}
+import { describe, linkFor } from './notification-copy';
 
 export function NotificationsBell() {
     const [open, setOpen] = useState(false);
@@ -167,15 +127,9 @@ export function NotificationsBell() {
                                 No notifications.
                             </li>
                         )}
-                        {items.map((n) => (
-                            <li
-                                key={n.id}
-                                className={`list-group-item small ${n.readAt ? '' : 'bg-light-subtle'}`}
-                                style={{
-                                    cursor: n.readAt ? 'default' : 'pointer',
-                                }}
-                                onClick={() => handleRead(n)}
-                            >
+                        {items.map((n) => {
+                            const href = linkFor(n);
+                            const content = (
                                 <div className="d-flex gap-2">
                                     {!n.readAt && (
                                         <span
@@ -186,23 +140,40 @@ export function NotificationsBell() {
                                         </span>
                                     )}
                                     <div className="flex-grow-1">
-                                        {linkFor(n) ? (
-                                            <Link
-                                                href={linkFor(n) as string}
-                                                className="text-decoration-none"
-                                            >
-                                                {describe(n)}
-                                            </Link>
-                                        ) : (
-                                            <div>{describe(n)}</div>
-                                        )}
+                                        <div>{describe(n)}</div>
                                         <small className="text-muted">
                                             {moment(n.createdAt).fromNow()}
                                         </small>
                                     </div>
                                 </div>
-                            </li>
-                        ))}
+                            );
+                            return (
+                                <li
+                                    key={n.id}
+                                    className={`list-group-item small ${n.readAt ? '' : 'bg-light-subtle'}`}
+                                    style={{
+                                        cursor:
+                                            href || !n.readAt
+                                                ? 'pointer'
+                                                : 'default',
+                                    }}
+                                >
+                                    {href ? (
+                                        <Link
+                                            href={href}
+                                            className="d-block text-reset text-decoration-none"
+                                            onClick={() => handleRead(n)}
+                                        >
+                                            {content}
+                                        </Link>
+                                    ) : (
+                                        <div onClick={() => handleRead(n)}>
+                                            {content}
+                                        </div>
+                                    )}
+                                </li>
+                            );
+                        })}
                     </ul>
                 </div>
             )}
