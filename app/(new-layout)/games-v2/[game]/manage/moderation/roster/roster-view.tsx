@@ -495,7 +495,12 @@ export function RosterView({
                                                             row.userId !=
                                                                 null && (
                                                                 <Link
-                                                                    href={`${baseHref}/runner/${row.userId}`}
+                                                                    href={`${baseHref}/runner/${row.userId}?from=roster${
+                                                                        categoryId !=
+                                                                        null
+                                                                            ? `&categoryId=${categoryId}`
+                                                                            : ''
+                                                                    }`}
                                                                     className="btn btn-sm btn-outline-secondary"
                                                                 >
                                                                     View runner

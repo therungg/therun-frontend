@@ -9,10 +9,12 @@ import buildMetadata from '~src/utils/metadata';
 import type { UserEligibleRunRow } from '../../../../../../../../types/moderation.types';
 import { loadConsoleChrome } from '../../../console/load-chrome';
 import { SubrouteChrome } from '../../../console/subroute-chrome';
+import { resolveRunnerBackTarget } from './runner-back-target';
 import { RunnerView } from './runner-view';
 
 interface Props {
     params: Promise<{ game: string; userId: string }>;
+    searchParams: Promise<{ from?: string; categoryId?: string }>;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -25,8 +27,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     });
 }
 
-export default async function RunnerPage({ params }: Props) {
+export default async function RunnerPage({ params, searchParams }: Props) {
     const { game: slug, userId: userIdRaw } = await params;
+    const { from, categoryId } = await searchParams;
     const userId = Number.parseInt(userIdRaw, 10);
     if (!slug || !Number.isFinite(userId)) notFound();
 
@@ -51,6 +54,12 @@ export default async function RunnerPage({ params }: Props) {
     }
 
     const chrome = await loadConsoleChrome(session, game);
+    const backTarget = resolveRunnerBackTarget(
+        game.name,
+        from ?? null,
+        categoryId ?? null,
+        chrome.categories,
+    );
 
     // UserEligibleRunRow carries no runner name and no name-by-id resolver
     // exists in src/lib. Fall back to a stable cosmetic label; the ban still
@@ -69,6 +78,8 @@ export default async function RunnerPage({ params }: Props) {
                 userId={userId}
                 runnerName={`Runner #${userId}`}
                 rows={rows}
+                backHref={backTarget.href}
+                backLabel={backTarget.label}
             />
         </SubrouteChrome>
     );

@@ -19,6 +19,11 @@ interface Props {
     userId: number;
     runnerName: string;
     rows: UserEligibleRunRow[];
+    /** Where "Back" goes — the console's attention pane by default, or back
+     * to roster (with its category restored) when the viewer arrived via
+     * roster's "View runner" link. Resolved server-side in page.tsx. */
+    backHref: string;
+    backLabel: string;
 }
 
 interface Group {
@@ -68,9 +73,10 @@ export function RunnerView({
     userId,
     runnerName,
     rows,
+    backHref,
+    backLabel,
 }: Props) {
     const router = useRouter();
-    const consoleHref = `/games-v2/${gameSlug}/manage?pane=attention`;
     const groups = useMemo(() => groupRows(rows), [rows]);
 
     const distinctCategories = useMemo(() => {
@@ -187,7 +193,7 @@ export function RunnerView({
                             Remove all {visibleRunIds.length} runs
                         </button>
                     )}
-                    <BackLink href={consoleHref} label="Back to console" />
+                    <BackLink href={backHref} label={backLabel} />
                 </div>
             </div>
 

@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
     buildNav,
+    isLandingPaneId,
     type NavFlags,
+    resolveCategoryId,
+    resolveInitialPane,
     showSetupCard,
     sidebarActiveItem,
 } from './nav-model';
@@ -80,5 +83,93 @@ describe('showSetupCard', () => {
         // No 'game' group present at all (only 'moderate') — a non-default,
         // non-game pane must not crash on the missing group.
         expect(showSetupCard(groups, 'roster')).toBe(false);
+    });
+});
+
+describe('isLandingPaneId', () => {
+    const visible = buildNav({ ...NO_FLAGS, canModerate: true })
+        .flatMap((g) => g.items)
+        .map((it) => it.id);
+
+    it('accepts a visible, non-overlay pane id', () => {
+        expect(isLandingPaneId('bans', visible)).toBe(true);
+    });
+
+    it('rejects history, roster, and reports even though they are visible items', () => {
+        expect(isLandingPaneId('history', visible)).toBe(false);
+        expect(isLandingPaneId('roster', visible)).toBe(false);
+        expect(isLandingPaneId('reports', visible)).toBe(false);
+    });
+
+    it('rejects an id not visible to this viewer', () => {
+        expect(isLandingPaneId('game-details', visible)).toBe(false);
+    });
+
+    it('rejects null/undefined/empty', () => {
+        expect(isLandingPaneId(null, visible)).toBe(false);
+        expect(isLandingPaneId(undefined, visible)).toBe(false);
+        expect(isLandingPaneId('', visible)).toBe(false);
+    });
+});
+
+describe('resolveInitialPane', () => {
+    const groups = buildNav({ ...NO_FLAGS, canModerate: true });
+
+    it('a valid ?pane= deep link wins outright', () => {
+        expect(resolveInitialPane('bans', 'attention', groups)).toBe('bans');
+    });
+
+    it('falls back to the stored pane when the URL carries none', () => {
+        expect(resolveInitialPane(null, 'bans', groups)).toBe('bans');
+    });
+
+    it('ignores an invalid stored pane and falls back to the default', () => {
+        expect(resolveInitialPane(null, 'not-a-pane', groups)).toBe(
+            'attention',
+        );
+    });
+
+    it('the URL always wins over a conflicting stored pane', () => {
+        expect(resolveInitialPane('bans', 'attention', groups)).toBe('bans');
+    });
+
+    it('an invalid ?pane= falls through to the default, not the stored pane — storage is only consulted when the URL carries none', () => {
+        expect(resolveInitialPane('not-a-pane', 'bans', groups)).toBe(
+            'attention',
+        );
+    });
+
+    it('rejects overlay/redirect ids from both the URL and storage', () => {
+        expect(resolveInitialPane('history', 'reports', groups)).toBe(
+            'attention',
+        );
+    });
+
+    it('falls back to the default landing pane when nothing is valid', () => {
+        expect(resolveInitialPane(null, null, groups)).toBe('attention');
+    });
+});
+
+describe('resolveCategoryId', () => {
+    const categories = [{ id: 1 }, { id: 2 }, { id: 3 }];
+
+    it('accepts a requested id that exists in the category list', () => {
+        expect(resolveCategoryId('2', categories, 1)).toBe(2);
+    });
+
+    it('falls back when the requested id is absent', () => {
+        expect(resolveCategoryId(null, categories, 1)).toBe(1);
+    });
+
+    it('falls back when the requested id is not a number', () => {
+        expect(resolveCategoryId('not-a-number', categories, 1)).toBe(1);
+    });
+
+    it("falls back when the requested id doesn't belong to this game", () => {
+        expect(resolveCategoryId('999', categories, 1)).toBe(1);
+    });
+
+    it('the fallback may itself be null', () => {
+        expect(resolveCategoryId(null, categories, null)).toBeNull();
     });
 });
