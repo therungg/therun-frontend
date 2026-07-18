@@ -13,7 +13,7 @@ export function Sidebar({ data, claim }: Props) {
     return (
         <>
             <LivePanel gameDisplay={data.game.display} />
-            <RecentPbsPanel pbs={data.recentPbs} />
+            <RecentPbsPanel pbs={data.recentPbs} gameSlug={data.game.name} />
             {claim?.hasModerators && (
                 <div className={styles.sidebarFoot}>
                     <ClaimCta
