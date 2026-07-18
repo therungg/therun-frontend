@@ -89,7 +89,6 @@ export function SubmitForm({ game, categories, groups }: Props) {
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<SubmitRunResult | null>(null);
     const [vodTouched, setVodTouched] = useState(false);
-    const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
     const today = todayISODate();
 
@@ -170,11 +169,9 @@ export function SubmitForm({ game, categories, groups }: Props) {
     const vodInvalid =
         vodUrl.trim().length > 0 && !isValidHttpUrl(vodUrl.trim());
     const vodMissing = vodRequired && vodUrl.trim().length === 0;
-    // Only surface the inline error once the user has interacted with the
-    // field (or tried to submit) — the disabled submit button plus the
-    // passive hint already cover the untouched, pre-interaction state.
-    const vodShowInvalid =
-        (vodTouched || attemptedSubmit) && (vodInvalid || vodMissing);
+    // Only surface the inline error once the user has interacted with the field —
+    // the disabled submit button plus the passive hint already cover the untouched state.
+    const vodShowInvalid = vodTouched && (vodInvalid || vodMissing);
 
     const canSubmit =
         !submitting &&
@@ -193,14 +190,12 @@ export function SubmitForm({ game, categories, groups }: Props) {
         setRunDate(todayISODate());
         setVodUrl('');
         setVodTouched(false);
-        setAttemptedSubmit(false);
         setError(null);
         setResult(null);
     };
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setAttemptedSubmit(true);
         if (!canSubmit) return;
         setSubmitting(true);
         setError(null);
