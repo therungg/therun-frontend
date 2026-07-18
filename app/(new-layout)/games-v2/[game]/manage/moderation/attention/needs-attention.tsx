@@ -463,9 +463,6 @@ export function NeedsAttention({
                         <p className="mb-0">
                             Nothing needs attention right now.
                         </p>
-                        {/* "All your games" hub link lands with Task 17
-                            (/games-v2/manage doesn't exist yet) — add it
-                            here once that route ships. */}
                         <div className={styles.emptyLinks}>
                             <Link
                                 href={`/games-v2/${gameSlug}/manage?pane=history`}
@@ -478,6 +475,12 @@ export function NeedsAttention({
                                 className={styles.emptyLink}
                             >
                                 Browse runs
+                            </Link>
+                            <Link
+                                href="/games-v2/manage"
+                                className={styles.emptyLink}
+                            >
+                                All your games
                             </Link>
                         </div>
                     </div>

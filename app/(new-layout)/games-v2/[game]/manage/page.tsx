@@ -215,6 +215,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
                 }}
                 attentionItems={attentionItems}
                 degradedSources={degradedSources}
+                moderatedGamesCount={session.moderatedGames?.length ?? 0}
                 modApplications={modApplications}
                 initialCategoryId={initialCategory?.id ?? null}
                 initialSlug={identifiers.slug}

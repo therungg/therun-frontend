@@ -59,6 +59,7 @@ export default async function GameRunManagePage({ params }: Props) {
             flags={chrome.flags}
             attentionCount={chrome.attentionCount}
             badgeDegraded={chrome.degradedSources.length > 0}
+            moderatedGamesCount={chrome.moderatedGamesCount}
         >
             <ManageRunPage
                 data={data}

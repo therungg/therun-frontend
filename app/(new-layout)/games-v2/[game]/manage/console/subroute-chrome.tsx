@@ -14,6 +14,9 @@ interface Props {
     /** True when one or more attention sources failed to load — the badge
      * count may be an undercount, not a confirmed total. */
     badgeDegraded?: boolean;
+    /** How many games this viewer moderates — the "All your games" link to
+     * the cross-game hub only shows when there's more than one. */
+    moderatedGamesCount?: number;
     /** Which sidebar item (if any) represents the current sub-route page. */
     activeItem?: NavItemId | null;
     children: ReactNode;
@@ -31,6 +34,7 @@ export function SubrouteChrome({
     flags,
     attentionCount,
     badgeDegraded = false,
+    moderatedGamesCount = 0,
     activeItem = null,
     children,
 }: Props) {
@@ -60,6 +64,7 @@ export function SubrouteChrome({
             onNavigate={navigate}
             attentionCount={attentionCount}
             badgeDegraded={badgeDegraded}
+            moderatedGamesCount={moderatedGamesCount}
             categories={categories}
             selectedCategoryId={null}
             onSelectCategory={() => {}}
