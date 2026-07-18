@@ -2,8 +2,8 @@
 
 import clsx from 'clsx';
 import moment from 'moment/moment';
-import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 import {
     CameraVideo,
     CameraVideoOff,
@@ -15,6 +15,7 @@ import {
     HandIndex,
     Robot,
     ShieldCheck,
+    X,
 } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
@@ -27,12 +28,20 @@ import {
     type AttentionSource,
     formatSourceList,
     groupByRunner,
+    parseKindFilter,
 } from './attention-model';
 import { ManualTimeVerdictRow } from './manual-time-verdict-row';
 import styles from './needs-attention.module.scss';
 
 type SourceFilter = 'all' | AttentionSource;
 type CategoryFilter = 'any' | number;
+
+const KIND_CHIP_LABEL: Record<AttentionSource, string> = {
+    flag: 'Flags',
+    report: 'Reports',
+    appeal: 'Appeals',
+    self_claim: 'Self-claims',
+};
 
 interface Props {
     gameSlug: string;
@@ -43,6 +52,9 @@ interface Props {
      * may be incomplete — never claim "All clear" while this is non-empty. */
     degradedSources: string[];
     categories: Array<{ id: number; display: string }>;
+    /** Reports the current (unfiltered) item count upward so the sidebar
+     * badge can decrement live as items get triaged. */
+    onCountChange?: (count: number) => void;
 }
 
 const SEV_SPINE: Record<FlagSeverity, string> = {
@@ -79,18 +91,45 @@ export function NeedsAttention({
     items: initialItems,
     degradedSources,
     categories,
+    onCountChange,
 }: Props) {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [items, setItems] = useState<AttentionItem[]>(initialItems);
     const [sourceFilter, setSourceFilter] = useState<SourceFilter>('all');
     const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('any');
+    const [kindFilter, setKindFilter] = useState<AttentionSource | null>(() =>
+        parseKindFilter(searchParams.get('kind')),
+    );
     const [runAction, setRunAction] = useState<RunAction | null>(null);
     const isDegraded = degradedSources.length > 0;
     const degradedMessage = `Couldn't load ${formatSourceList(degradedSources)} — the queue may not be empty.`;
 
+    // `?kind=` can change without this component remounting (the sidebar's
+    // "Needs attention" and "Reports" items both land on the same pane) —
+    // stay in sync with the URL rather than only reading it once.
+    useEffect(() => {
+        setKindFilter(parseKindFilter(searchParams.get('kind')));
+    }, [searchParams]);
+
+    // The sidebar badge tracks total open items, not the filtered view — so
+    // narrowing by source/category/kind never makes the badge jump around,
+    // only triaging (approve/remove/restore) does.
+    useEffect(() => {
+        onCountChange?.(items.length);
+    }, [items, onCountChange]);
+
+    const clearKindFilter = () => {
+        setKindFilter(null);
+        router.replace('?pane=attention', { scroll: false });
+    };
+
     const filtered = useMemo(() => {
         return items.filter((it) => {
             if (sourceFilter !== 'all' && !it.sources.includes(sourceFilter)) {
+                return false;
+            }
+            if (kindFilter && !it.sources.includes(kindFilter)) {
                 return false;
             }
             if (categoryFilter !== 'any' && it.categoryId !== categoryFilter) {
@@ -98,7 +137,7 @@ export function NeedsAttention({
             }
             return true;
         });
-    }, [items, sourceFilter, categoryFilter]);
+    }, [items, sourceFilter, kindFilter, categoryFilter]);
 
     const groups = useMemo(() => groupByRunner(filtered), [filtered]);
 
@@ -158,6 +197,19 @@ export function NeedsAttention({
                         ))}
                     </select>
                 </div>
+                {kindFilter && (
+                    <span className={styles.kindChip}>
+                        {KIND_CHIP_LABEL[kindFilter]} only
+                        <button
+                            type="button"
+                            className={styles.kindChipDismiss}
+                            onClick={clearKindFilter}
+                            aria-label={`Clear ${KIND_CHIP_LABEL[kindFilter]} filter`}
+                        >
+                            <X size={12} aria-hidden="true" />
+                        </button>
+                    </span>
+                )}
                 <div className={styles.count}>
                     {filtered.length} item{filtered.length === 1 ? '' : 's'}
                 </div>

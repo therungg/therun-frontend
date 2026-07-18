@@ -1,7 +1,6 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import Link from '~src/components/link';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type {
     BoardClaimRequest,
@@ -39,6 +38,8 @@ export interface ContentRouterProps {
     degradedSources: string[];
     modApplications?: BoardClaimRequest[];
     moderators?: GameModerator[];
+    /** Live item-count reporter from NeedsAttention, forwarded to the sidebar badge. */
+    onAttentionCountChange?: (count: number) => void;
     initialSlug: string | null;
     initialAbbreviation: string | null;
     gameDetails?: GameDetailsData | null;
@@ -103,27 +104,12 @@ export function ContentRouter(props: ContentRouterProps) {
                         items={attentionItems}
                         degradedSources={degradedSources}
                         categories={categories}
+                        onCountChange={props.onAttentionCountChange}
                     />
                 </>
             );
         case 'bans':
             return <ActiveBans gameSlug={game.name} />;
-        case 'roster':
-            return (
-                <Placeholder title="Roster">
-                    <Link
-                        href={`/games-v2/${game.name}/manage/moderation/roster`}
-                    >
-                        Open the roster browser ↗
-                    </Link>
-                </Placeholder>
-            );
-        case 'reports':
-            return (
-                <Placeholder title="Reports">
-                    Reports move here in a later phase.
-                </Placeholder>
-            );
         case 'standards':
             return (
                 <Standards

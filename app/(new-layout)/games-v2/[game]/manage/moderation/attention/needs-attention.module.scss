@@ -58,6 +58,42 @@ $rail: 3px;
     color: var(--bs-secondary-color);
 }
 
+// ---- Dismissible URL-driven kind filter (e.g. arriving via "Reports") --
+.kindChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    align-self: center;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    padding: 0.3rem dt.$spacing-sm 0.3rem dt.$spacing-md;
+    border-radius: 999px;
+    background: rgba(var(--bs-primary-rgb), 0.1);
+    color: var(--bs-primary);
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.3);
+}
+
+.kindChipDismiss {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    padding: 0.15rem;
+    border-radius: 999px;
+    line-height: 0;
+
+    &:hover {
+        background: rgba(var(--bs-primary-rgb), 0.15);
+    }
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+}
+
 // ---- Stack of items ----------------------------------------
 .stack {
     display: flex;

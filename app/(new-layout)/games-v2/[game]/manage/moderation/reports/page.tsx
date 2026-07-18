@@ -6,5 +6,5 @@ export default async function Page({
     params: Promise<{ game: string }>;
 }) {
     const { game } = await params;
-    redirect(`/games-v2/${game}/manage?pane=attention`);
+    redirect(`/games-v2/${game}/manage?pane=attention&kind=report`);
 }
