@@ -229,7 +229,14 @@ export function ConsoleShell({
         let cancelled = false;
         const poll = async () => {
             if (document.hidden) return;
-            const result = await countAttentionAction(game.name);
+            // A failed count poll is invisible — network blips shouldn't
+            // surface as an unhandled rejection in a long-lived tab.
+            let result: Awaited<ReturnType<typeof countAttentionAction>>;
+            try {
+                result = await countAttentionAction(game.name);
+            } catch {
+                return;
+            }
             if (cancelled) return;
             if (result.count > liveAttentionCountRef.current) {
                 setHasNewAttention(true);

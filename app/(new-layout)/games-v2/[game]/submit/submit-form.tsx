@@ -230,6 +230,7 @@ export function SubmitForm({
     // subcategory key mid-category-switch.
     useEffect(() => {
         if (varsLoading) return;
+        setStanding(null);
         let cancelled = false;
         getMyStandingAction(game.name, category.name, subcategoryKey).then(
             (result) => {
