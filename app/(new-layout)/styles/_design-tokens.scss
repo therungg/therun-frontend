@@ -103,3 +103,14 @@ $card-shadow-flat: $shadow-sm;
 $card-shadow-raised: $shadow-md;
 $card-shadow-prominent: $shadow-lg;
 $card-hover-translate: -2px;
+
+// Elevation scale (z-index) — the single stacking-order decision for
+// games-v2 overlays, made once here instead of ad hoc per component.
+// Sticky bars < floating popovers/dropdowns < slide-in drawers < modal
+// dialogs. $z-dialog matches Bootstrap's own `.modal` default (1055) so
+// BoardDialog rides the same value explicitly instead of relying on an
+// unstated Bootstrap constant.
+$z-sticky: 20;
+$z-popover: 30;
+$z-drawer: 40;
+$z-dialog: 1055;

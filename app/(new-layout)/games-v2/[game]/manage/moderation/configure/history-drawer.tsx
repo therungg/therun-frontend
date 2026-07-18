@@ -7,6 +7,7 @@ import type { ModActionRow } from '../../../../../../../types/moderation.types';
 import { useDialogBehavior } from '../../../shared/board-dialog';
 import { undoAction } from '../log/actions/undo.action';
 import { loadHistoryAction } from './actions/standards.action';
+import styles from './history-drawer.module.scss';
 import { historyActionLabel } from './history-labels';
 
 interface Props {
@@ -115,21 +116,13 @@ export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
             <button
                 type="button"
                 aria-label="Close history"
-                className="position-fixed top-0 start-0 w-100 h-100 border-0 p-0"
-                style={{
-                    background: 'rgba(0,0,0,0.4)',
-                    zIndex: 1045,
-                }}
+                className={`position-fixed top-0 start-0 w-100 h-100 border-0 p-0 ${styles.backdrop}`}
                 onClick={onClose}
             />
             {/* Panel */}
             <div
                 ref={panelRef}
-                className="position-fixed top-0 end-0 h-100 bg-body shadow-lg d-flex flex-column"
-                style={{
-                    width: 'min(28rem, 100%)',
-                    zIndex: 1046,
-                }}
+                className={`position-fixed top-0 end-0 h-100 bg-body shadow-lg d-flex flex-column ${styles.panel}`}
                 role="dialog"
                 aria-modal="true"
                 aria-label="Moderation history"

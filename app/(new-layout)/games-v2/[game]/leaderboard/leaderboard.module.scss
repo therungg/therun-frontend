@@ -279,7 +279,8 @@ tr:focus-within .reveal {
     text-transform: none;
     letter-spacing: normal;
     color: var(--bs-emphasis-color);
-    z-index: 1050;
+    z-index: dt.$z-popover;
+    @include board.board-overlay-enter(rise);
 }
 
 // ---- Show more ----------------------------------------------

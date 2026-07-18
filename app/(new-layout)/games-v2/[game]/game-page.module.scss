@@ -23,7 +23,7 @@
     margin-bottom: dt.$spacing-lg;
     position: sticky;
     top: dt.$spacing-sm;
-    z-index: 20;
+    z-index: dt.$z-sticky;
 }
 
 .bandEnd {
@@ -43,13 +43,14 @@
     position: absolute;
     right: 0;
     top: calc(100% + #{dt.$spacing-xs});
-    z-index: 30;
+    z-index: dt.$z-popover;
     background: var(--bs-body-bg);
     box-shadow: dt.$shadow-md;
     min-width: 16rem;
     display: flex;
     flex-direction: column;
     gap: dt.$spacing-sm;
+    @include board.board-overlay-enter(rise);
 }
 
 .filterCount {
@@ -110,11 +111,12 @@
 .dropdownPanel {
     @include board.board-surface(dt.$spacing-sm dt.$spacing-md);
     position: absolute;
-    z-index: 10;
+    z-index: dt.$z-popover;
     margin-top: dt.$spacing-xs;
     box-shadow: dt.$shadow-md;
     background: var(--bs-body-bg);
     min-width: 10rem;
+    @include board.board-overlay-enter(rise);
 }
 
 // invalid-combination / empty notices
