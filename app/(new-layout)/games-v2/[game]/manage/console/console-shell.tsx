@@ -22,10 +22,12 @@ import { ContentRouter } from './content-router';
 import type { GameDetailsData } from './game-details-pane';
 import {
     buildNav,
-    defaultItem,
     sidebarActiveItem as deriveSidebarActiveItem,
+    isLandingPaneId,
     type NavFlags,
     type NavItemId,
+    resolveCategoryId,
+    resolveInitialPane,
     showSetupCard,
 } from './nav-model';
 import { SetupChecklistCard } from './setup-checklist-card';
@@ -73,21 +75,14 @@ export function ConsoleShell({
     // the default landing pane — but only if it's a pane this viewer can see.
     // `history` is an overlay, `roster` always leaves for its own route, and
     // `reports` normalizes into the attention pane — none of the three is
-    // ever a landing content pane (see the effect below).
-    const initialActive = useMemo<NavItemId | null>(() => {
-        const requested = searchParams.get('pane');
-        const visible = groups.flatMap((g) => g.items).map((it) => it.id);
-        if (
-            requested &&
-            requested !== 'history' &&
-            requested !== 'roster' &&
-            requested !== 'reports' &&
-            visible.includes(requested as NavItemId)
-        ) {
-            return requested as NavItemId;
-        }
-        return defaultItem(groups);
-    }, [searchParams, groups]);
+    // ever a landing content pane. Per-game localStorage memory isn't
+    // consulted here — reading it during the initial render would desync
+    // from the server-rendered HTML and trip a hydration mismatch — the
+    // mount effect below applies it once, after hydration, instead.
+    const initialActive = useMemo<NavItemId | null>(
+        () => resolveInitialPane(searchParams.get('pane'), null, groups),
+        [searchParams, groups],
+    );
 
     const [activeItem, setActiveItem] = useState<NavItemId | null>(
         initialActive,
@@ -97,9 +92,39 @@ export function ConsoleShell({
     // without remounting the shell — sync state to the validated param. This
     // also fires on browser Back/Forward: Next re-renders `useSearchParams()`
     // on popstate, which recomputes `initialActive` and lands here.
+    //
+    // The first run (post-hydration only) additionally consults this
+    // viewer's per-game "last pane" memory, but ONLY when the URL carries no
+    // `?pane=` at all — a deep link always wins over what they last had
+    // open. Every subsequent run (pane switches, Back/Forward) just syncs to
+    // `initialActive` like before.
+    const checkedStoredPaneRef = useRef(false);
     useEffect(() => {
+        if (!checkedStoredPaneRef.current) {
+            checkedStoredPaneRef.current = true;
+            if (!searchParams.get('pane') && typeof window !== 'undefined') {
+                const stored = window.localStorage.getItem(
+                    `console:${game.id}:lastPane`,
+                );
+                const visible = groups
+                    .flatMap((g) => g.items)
+                    .map((it) => it.id);
+                if (isLandingPaneId(stored, visible)) {
+                    setActiveItem(stored);
+                    return;
+                }
+            }
+        }
         setActiveItem(initialActive);
-    }, [initialActive]);
+    }, [initialActive, searchParams, groups, game.id]);
+
+    // Remember this viewer's last pane per game so their next visit lands
+    // where they left off instead of always the default — a `?pane=` deep
+    // link still always wins (see the effect above).
+    useEffect(() => {
+        if (typeof window === 'undefined' || !activeItem) return;
+        window.localStorage.setItem(`console:${game.id}:lastPane`, activeItem);
+    }, [activeItem, game.id]);
 
     // Deep links that never land as content: `?pane=roster` sends the viewer
     // straight to the roster route (the placeholder pane is gone); `?pane=
@@ -113,9 +138,36 @@ export function ConsoleShell({
         }
     }, [searchParams, router, game.name]);
 
+    // A valid `?cat=` deep-link seeds the selection on mount (a refresh
+    // mid-edit of, say, "Rules — 100%" returns to 100%, not the server's
+    // computed default); an absent/invalid one falls back to
+    // `initialCategoryId`.
     const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
-        initialCategoryId,
+        () =>
+            resolveCategoryId(
+                searchParams.get('cat'),
+                categories,
+                initialCategoryId,
+            ),
     );
+
+    // Browser Back/Forward (or a fresh `?cat=` deep link) restores the
+    // category a history entry was showing — but only when that entry's URL
+    // actually names one. Category-scoped navigation always writes `cat`
+    // alongside `pane` (see handleNavigate/onSelectCategory/onEditCategory
+    // below), so every history entry for a category-scoped pane carries it;
+    // entries for non-category-scoped panes simply don't, which must NOT be
+    // read as "reset to the default category" — that would blow away the
+    // selection the moment the viewer glances at an unrelated pane like
+    // Moderators.
+    useEffect(() => {
+        const requested = searchParams.get('cat');
+        if (requested == null) return;
+        setSelectedCategoryId((prev) =>
+            resolveCategoryId(requested, categories, prev),
+        );
+    }, [searchParams, categories]);
+
     const [rows, setRows] = useState<ManageCategoryRow[]>(initialRows);
     const [manageGroups, setManageGroups] =
         useState<ManageGroup[]>(initialGroups);
@@ -180,8 +232,36 @@ export function ConsoleShell({
             setHistoryOpen(true);
             return;
         }
-        router.replace(`?pane=${id}`, { scroll: false });
+        // Every other pane switch is a real destination, not a
+        // normalization — push so Back retraces panes one switch at a time
+        // (requirement 2). Category-scoped panes carry the current
+        // selection along as `cat=` so a refresh, share, or Back/Forward
+        // lands on the same category the viewer was editing.
+        const item = groups.flatMap((g) => g.items).find((it) => it.id === id);
+        const params = new URLSearchParams();
+        params.set('pane', id);
+        if (item?.categoryScoped && selectedCategoryId != null) {
+            params.set('cat', String(selectedCategoryId));
+        }
+        router.push(`?${params.toString()}`, { scroll: false });
         setActiveItem(id);
+    };
+
+    // The category picker only renders while a category-scoped pane is
+    // active (console-sidebar.tsx), so `activeItem` here is always that
+    // pane. Kept as `replace` rather than `push`: picking through categories
+    // within the same pane is a filter refinement, not a new destination —
+    // mirrors the roster page's own category select, which is also
+    // `replace` (roster-view.tsx). The pane itself is still push-navigable
+    // via handleNavigate; this only ever rewrites `cat`.
+    const handleSelectCategory = (id: number) => {
+        setSelectedCategoryId(id);
+        if (activeItem) {
+            const params = new URLSearchParams(searchParams);
+            params.set('pane', activeItem);
+            params.set('cat', String(id));
+            router.replace(`?${params.toString()}`, { scroll: false });
+        }
     };
 
     // The sidebar highlight for Reports vs. Needs attention is derived, not
@@ -233,7 +313,7 @@ export function ConsoleShell({
                 badgeDegraded={degradedSources.length > 0}
                 categories={categoryOptions}
                 selectedCategoryId={selectedCategoryId}
-                onSelectCategory={setSelectedCategoryId}
+                onSelectCategory={handleSelectCategory}
             >
                 {showSetupCard(groups, activeItem) &&
                     (setupCompleteness &&
@@ -287,12 +367,17 @@ export function ConsoleShell({
                         )
                     }
                     onEditCategory={(id) => {
-                        // Mirrors handleNavigate: write the pane to the URL
-                        // (not just state) so a refresh doesn't lose place
-                        // and the searchParams sync effect above doesn't
-                        // stomp the editor back to the default pane.
+                        // A deliberate jump to a specific category's
+                        // settings (e.g. an "Edit" click from the
+                        // categories table) — pushed, like handleNavigate,
+                        // so Back returns to the table instead of skipping
+                        // over this stop. `cat` travels with `pane` so a
+                        // refresh doesn't lose place.
                         setSelectedCategoryId(id);
-                        router.replace('?pane=category-settings', {
+                        const params = new URLSearchParams();
+                        params.set('pane', 'category-settings');
+                        params.set('cat', String(id));
+                        router.push(`?${params.toString()}`, {
                             scroll: false,
                         });
                         setActiveItem('category-settings');

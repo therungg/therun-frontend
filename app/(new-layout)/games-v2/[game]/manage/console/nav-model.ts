@@ -180,3 +180,65 @@ export function showSetupCard(
     const gameGroup = groups.find((g) => g.id === 'game');
     return gameGroup?.items.some((it) => it.id === activeItem) ?? false;
 }
+
+/**
+ * `history`, `roster`, and `reports` are never a landing pane — see the
+ * mount-time comment in console-shell.tsx. Both the `?pane=` URL reader and
+ * the per-game localStorage last-pane reader share this same guard so a
+ * stored/URL id from either source is held to the same bar.
+ */
+export function isLandingPaneId(
+    id: string | null | undefined,
+    visible: readonly NavItemId[],
+): id is NavItemId {
+    return (
+        !!id &&
+        id !== 'history' &&
+        id !== 'roster' &&
+        id !== 'reports' &&
+        visible.includes(id as NavItemId)
+    );
+}
+
+/**
+ * Resolves which pane the console should land on: a valid `?pane=` deep link
+ * wins outright; otherwise a valid per-game `localStorage` memory of the last
+ * pane this viewer used; otherwise this viewer's default landing pane.
+ */
+export function resolveInitialPane(
+    requestedPane: string | null,
+    storedPane: string | null,
+    groups: NavGroup[],
+): NavItemId | null {
+    const visible = groups.flatMap((g) => g.items).map((it) => it.id);
+    if (isLandingPaneId(requestedPane, visible)) {
+        return requestedPane;
+    }
+    if (!requestedPane && isLandingPaneId(storedPane, visible)) {
+        return storedPane;
+    }
+    return defaultItem(groups);
+}
+
+/**
+ * Resolves the selected category from a `?cat=` URL value: a valid id (one
+ * that's actually in this game's category list) wins; an absent or invalid
+ * id falls back to the caller-supplied default rather than `null`, so a
+ * malformed `cat` never blanks out the per-category picker.
+ */
+export function resolveCategoryId(
+    requestedCat: string | null,
+    categories: readonly { id: number }[],
+    fallback: number | null,
+): number | null {
+    if (requestedCat) {
+        const parsed = Number.parseInt(requestedCat, 10);
+        if (
+            Number.isFinite(parsed) &&
+            categories.some((c) => c.id === parsed)
+        ) {
+            return parsed;
+        }
+    }
+    return fallback;
+}
