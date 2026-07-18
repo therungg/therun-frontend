@@ -14,6 +14,7 @@ import type {
     ValidCombinations,
     VariableDef,
 } from '../../../../../types/leaderboards.types';
+import { RulesBody, RulesPanel } from '../rules/rules-panel';
 import { loadVariablesAction } from './load-variables.action';
 
 interface Props {
@@ -77,6 +78,7 @@ export function SubmitForm({ game, categories, groups }: Props) {
     const [filters, setFilters] = useState<Record<string, string>>({});
     const [varsLoading, startVarsTransition] = useTransition();
     const [varsError, setVarsError] = useState(false);
+    const [rulesOpen, setRulesOpen] = useState(false);
 
     const [rt, setRt] = useState<TimeField>(EMPTY_TIME);
     const [gt, setGt] = useState<TimeField>(EMPTY_TIME);
@@ -86,8 +88,16 @@ export function SubmitForm({ game, categories, groups }: Props) {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [result, setResult] = useState<SubmitRunResult | null>(null);
+    const [vodTouched, setVodTouched] = useState(false);
+    const [attemptedSubmit, setAttemptedSubmit] = useState(false);
 
     const today = todayISODate();
+
+    // Collapse the rules disclosure whenever the category changes, so
+    // switching categories doesn't carry a stale open panel forward.
+    useEffect(() => {
+        setRulesOpen(false);
+    }, [category.id]);
 
     // Load variables whenever the category changes.
     useEffect(() => {
@@ -156,8 +166,15 @@ export function SubmitForm({ game, categories, groups }: Props) {
         ? rt.ms === undefined
         : gt.ms === undefined;
 
+    const vodRequired = category.requireVideo === true;
     const vodInvalid =
         vodUrl.trim().length > 0 && !isValidHttpUrl(vodUrl.trim());
+    const vodMissing = vodRequired && vodUrl.trim().length === 0;
+    // Only surface the inline error once the user has interacted with the
+    // field (or tried to submit) — the disabled submit button plus the
+    // passive hint already cover the untouched, pre-interaction state.
+    const vodShowInvalid =
+        (vodTouched || attemptedSubmit) && (vodInvalid || vodMissing);
 
     const canSubmit =
         !submitting &&
@@ -167,6 +184,7 @@ export function SubmitForm({ game, categories, groups }: Props) {
         !rt.error &&
         !gt.error &&
         !vodInvalid &&
+        !vodMissing &&
         runDate.length > 0;
 
     const reset = () => {
@@ -174,12 +192,15 @@ export function SubmitForm({ game, categories, groups }: Props) {
         setGt(EMPTY_TIME);
         setRunDate(todayISODate());
         setVodUrl('');
+        setVodTouched(false);
+        setAttemptedSubmit(false);
         setError(null);
         setResult(null);
     };
 
     const onSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setAttemptedSubmit(true);
         if (!canSubmit) return;
         setSubmitting(true);
         setError(null);
@@ -267,6 +288,18 @@ export function SubmitForm({ game, categories, groups }: Props) {
                     {renderCategoryOptions(categories, groups)}
                 </select>
             </div>
+
+            {category.rules && category.rules.trim().length > 0 && (
+                <div>
+                    <RulesPanel
+                        rules={category.rules}
+                        open={rulesOpen}
+                        onToggle={() => setRulesOpen((o) => !o)}
+                        label="Category rules"
+                    />
+                    {rulesOpen && <RulesBody rules={category.rules} />}
+                </div>
+            )}
 
             {varsError && (
                 <div className="alert alert-warning py-2 mb-0" role="alert">
@@ -383,23 +416,36 @@ export function SubmitForm({ game, categories, groups }: Props) {
 
             <div>
                 <label htmlFor="submit-vod" className="form-label">
-                    Video URL{' '}
-                    <span className="text-muted small">(optional)</span>
+                    Video URL
+                    <span className="text-muted small">
+                        {' '}
+                        {vodRequired ? '(required)' : '(optional)'}
+                    </span>
                 </label>
                 <input
                     id="submit-vod"
                     type="url"
-                    className={`form-control ${vodInvalid ? 'is-invalid' : ''}`}
+                    className={`form-control ${vodShowInvalid ? 'is-invalid' : ''}`}
                     value={vodUrl}
-                    onChange={(e) => setVodUrl(e.target.value)}
+                    onChange={(e) => {
+                        setVodUrl(e.target.value);
+                        setVodTouched(true);
+                    }}
+                    onBlur={() => setVodTouched(true)}
                     placeholder="https://..."
+                    required={vodRequired}
                 />
-                {vodInvalid && (
-                    <div className="invalid-feedback">
-                        Enter a valid http(s) URL.
-                    </div>
-                )}
-                {category.requireVideo && (
+                {vodShowInvalid &&
+                    (vodInvalid ? (
+                        <div className="invalid-feedback">
+                            Enter a valid http(s) URL.
+                        </div>
+                    ) : (
+                        <div className="invalid-feedback">
+                            Video URL is required for this category.
+                        </div>
+                    ))}
+                {vodRequired && (
                     <div className="form-text">
                         This category requires video for verification.
                     </div>

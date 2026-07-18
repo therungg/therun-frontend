@@ -18,10 +18,12 @@ export function RulesPanel({
     rules,
     open,
     onToggle,
+    label = 'Rules',
 }: {
     rules: string | null | undefined;
     open: boolean;
     onToggle: () => void;
+    label?: string;
 }) {
     if (!rules || rules.trim().length === 0) return null;
 
@@ -37,7 +39,7 @@ export function RulesPanel({
             ) : (
                 <ChevronRight size={12} aria-hidden />
             )}
-            <strong>Rules</strong>
+            <strong>{label}</strong>
             {!open && (
                 <span className="text-muted small text-truncate">
                     {buildExcerpt(rules)}
