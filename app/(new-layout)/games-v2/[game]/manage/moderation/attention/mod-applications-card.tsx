@@ -7,6 +7,7 @@ import type {
     BoardClaimRequest,
     BoardModRole,
 } from '../../../../../../../types/board-claims.types';
+import { PromptDialog } from '../../../shared/prompt-dialog';
 import styles from '../../console/console.module.scss';
 import {
     approveApplicationAction,
@@ -100,6 +101,7 @@ function ApplicationRow({
     onDeny: (reason: string) => void;
 }) {
     const [role, setRole] = useState<BoardModRole>('game-mod');
+    const [denyOpen, setDenyOpen] = useState(false);
     const s = request.signals;
     return (
         <div className={`${styles.item} ${styles.sevLow} mb-2`}>
@@ -133,15 +135,28 @@ function ApplicationRow({
                     type="button"
                     className="btn btn-sm btn-outline-danger"
                     disabled={disabled}
-                    onClick={() => {
-                        const reason = window.prompt('Reason (optional):');
-                        if (reason === null) return; // Cancel aborts
-                        onDeny(reason);
-                    }}
+                    onClick={() => setDenyOpen(true)}
                 >
                     Deny
                 </button>
             </div>
+            <PromptDialog
+                open={denyOpen}
+                onClose={() => setDenyOpen(false)}
+                onSubmit={(reason) => {
+                    setDenyOpen(false);
+                    onDeny(reason);
+                }}
+                labelledBy={`deny-application-${request.id}-title`}
+                title={`Deny ${request.username}?`}
+                blurb="They can reapply. A reason is optional, but helps if they ask why."
+                fieldLabel="Reason (optional)"
+                placeholder="e.g. Not enough run history on this board yet"
+                multiline
+                submitLabel="Deny application"
+                submitVariant="danger"
+                pending={disabled}
+            />
         </div>
     );
 }

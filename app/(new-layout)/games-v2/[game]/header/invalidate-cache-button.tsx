@@ -3,6 +3,7 @@
 import { useId, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { invalidateGameCacheAction } from '../actions/invalidate-cache.action';
+import { ConfirmDialog } from '../shared/confirm-dialog';
 
 interface Props {
     gameSlug: string;
@@ -12,16 +13,10 @@ interface Props {
 export function InvalidateCacheButton({ gameSlug, gameId }: Props) {
     const [isPending, startTransition] = useTransition();
     const [rebuildAllFlags, setRebuildAllFlags] = useState(false);
+    const [confirmOpen, setConfirmOpen] = useState(false);
     const checkboxId = useId();
 
-    const handleClick = () => {
-        if (
-            !window.confirm(
-                'Clear the leaderboard cache for this game? The next read of each board will re-warm from Postgres.',
-            )
-        ) {
-            return;
-        }
+    const doClear = () => {
         startTransition(async () => {
             const res = await invalidateGameCacheAction({
                 gameSlug,
@@ -41,7 +36,7 @@ export function InvalidateCacheButton({ gameSlug, gameId }: Props) {
             <button
                 type="button"
                 className="btn btn-sm btn-outline-warning"
-                onClick={handleClick}
+                onClick={() => setConfirmOpen(true)}
                 disabled={isPending}
             >
                 {isPending ? 'Clearing…' : 'Clear cache'}
@@ -63,6 +58,20 @@ export function InvalidateCacheButton({ gameSlug, gameId }: Props) {
                     Rebuild all flags
                 </label>
             </div>
+            <ConfirmDialog
+                open={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={() => {
+                    setConfirmOpen(false);
+                    doClear();
+                }}
+                labelledBy="clear-cache-title"
+                title="Clear the leaderboard cache?"
+                message="The next read of each board will re-warm from Postgres. Boards may briefly return slightly stale data while that happens."
+                confirmLabel="Clear cache"
+                variant="warning"
+                pending={isPending}
+            />
         </div>
     );
 }

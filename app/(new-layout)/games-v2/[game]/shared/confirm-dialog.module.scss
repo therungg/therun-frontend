@@ -1,0 +1,62 @@
+@use '../../../styles/design-tokens' as dt;
+
+// ============================================================
+// ConfirmDialog — title + consequence sentence + Cancel/Confirm, on the
+// shared BoardDialog primitive. Replaces the browser's native confirm
+// dialog across the console. Mirrors the claim-cta / run-action-dialog
+// chrome vocabulary.
+// ============================================================
+.header {
+    padding: dt.$spacing-lg dt.$spacing-xl;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+}
+
+.title {
+    font-size: dt.$font-size-base;
+    font-weight: dt.$heading-font-weight;
+    letter-spacing: dt.$heading-letter-spacing;
+    margin: 0;
+}
+
+.body {
+    padding: dt.$spacing-xl;
+}
+
+.message {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0;
+}
+
+.footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-md dt.$spacing-xl;
+    border-top: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+}
+
+// ---- Red action style for destructive confirms ---------------
+// Bootstrap's $danger (#dc3545) doesn't match the design system's
+// $accent-red (#ef4444) — build the destructive button off the token
+// directly instead of reaching for `btn-danger` / `text-danger`.
+.btnDanger {
+    background: dt.$accent-red;
+    border: 1px solid dt.$accent-red;
+    color: #fff;
+
+    &:hover:not(:disabled) {
+        background: dt.$accent-red-light;
+        border-color: dt.$accent-red-light;
+    }
+
+    &:focus-visible {
+        outline: 0;
+        box-shadow: 0 0 0 3px rgba(dt.$accent-red, 0.3);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
