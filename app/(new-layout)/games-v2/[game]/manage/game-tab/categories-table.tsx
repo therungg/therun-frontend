@@ -7,6 +7,7 @@ import { createGroupAction } from '~src/actions/category-group/create-group.acti
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import { formatCount, formatHours } from '~src/utils/format-stats';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
+import { PromptDialog } from '../../shared/prompt-dialog';
 import { updateVisibilityAction } from '../visibility/actions/update-visibility.action';
 
 type Filter = 'all' | 'active' | 'archived';
@@ -49,6 +50,13 @@ export function CategoriesTable({
     const [_isPending, startTransition] = useTransition();
     const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
     const [bulkPending, setBulkPending] = useState(false);
+    const [groupPrompt, setGroupPrompt] = useState<
+        { kind: 'row'; row: ManageCategoryRow } | { kind: 'bulk' } | null
+    >(null);
+    const [groupPromptPending, setGroupPromptPending] = useState(false);
+    const [groupPromptError, setGroupPromptError] = useState<string | null>(
+        null,
+    );
 
     // Clear selection whenever the visible row set changes via filter/search.
     useEffect(() => {
@@ -117,40 +125,7 @@ export function CategoriesTable({
 
     const onChangeGroup = (row: ManageCategoryRow, raw: string) => {
         if (raw === '__create__') {
-            const name = window.prompt('New group name')?.trim();
-            if (!name) return;
-            setPending(row.id, true);
-            startTransition(async () => {
-                const create = await createGroupAction({
-                    gameSlug: game.name,
-                    gameId: game.id,
-                    name,
-                });
-                if ('error' in create) {
-                    setPending(row.id, false);
-                    toast.error(create.error);
-                    return;
-                }
-                const newGroupId = create.result.id;
-                const assign = await assignCategoryGroupAction({
-                    gameSlug: game.name,
-                    gameId: game.id,
-                    categoryId: row.id,
-                    groupId: newGroupId,
-                });
-                setPending(row.id, false);
-                if ('error' in assign) {
-                    toast.error(assign.error);
-                    return;
-                }
-                onRowGroupChange(row.id, newGroupId, name);
-                onGroupCreated({
-                    id: newGroupId,
-                    name,
-                    sortOrder: (groups[groups.length - 1]?.sortOrder ?? 0) + 1,
-                });
-                toast.success(`Created "${name}" and moved ${row.display}`);
-            });
+            setGroupPrompt({ kind: 'row', row });
             return;
         }
 
@@ -201,37 +176,12 @@ export function CategoriesTable({
         setSelectedIds(new Set(visibleRows.map((r) => r.id)));
     };
 
-    const bulkAssign = async (raw: string) => {
-        if (selectedIds.size === 0) return;
-        let groupId: number | null;
-        let groupName: string | null;
-        if (raw === '__create__') {
-            const name = window.prompt('New group name')?.trim();
-            if (!name) return;
-            const create = await createGroupAction({
-                gameSlug: game.name,
-                gameId: game.id,
-                name,
-            });
-            if ('error' in create) {
-                toast.error(create.error);
-                return;
-            }
-            groupId = create.result.id;
-            groupName = name;
-            onGroupCreated({
-                id: groupId,
-                name,
-                sortOrder: (groups[groups.length - 1]?.sortOrder ?? 0) + 1,
-            });
-        } else if (raw === '') {
-            groupId = null;
-            groupName = null;
-        } else {
-            groupId = Number.parseInt(raw, 10);
-            groupName = groups.find((g) => g.id === groupId)?.name ?? null;
-        }
-
+    // Applies groupId/groupName to every currently-selected row — shared by
+    // the direct bulk-move path and the "create group then move" path below.
+    const applyGroupToSelected = async (
+        groupId: number | null,
+        groupName: string | null,
+    ) => {
         const targets = rows.filter((r) => selectedIds.has(r.id));
         const before = targets.map((r) => ({
             id: r.id,
@@ -269,6 +219,71 @@ export function CategoriesTable({
             toast.success(`Moved ${targets.length} categories.`);
         }
         setSelectedIds(new Set());
+    };
+
+    const bulkAssign = async (raw: string) => {
+        if (selectedIds.size === 0) return;
+        if (raw === '__create__') {
+            setGroupPrompt({ kind: 'bulk' });
+            return;
+        }
+        if (raw === '') {
+            await applyGroupToSelected(null, null);
+            return;
+        }
+        const groupId = Number.parseInt(raw, 10);
+        const groupName = groups.find((g) => g.id === groupId)?.name ?? null;
+        await applyGroupToSelected(groupId, groupName);
+    };
+
+    const closeGroupPrompt = () => {
+        setGroupPrompt(null);
+        setGroupPromptError(null);
+    };
+
+    const submitGroupPrompt = async (name: string) => {
+        if (!groupPrompt) return;
+        setGroupPromptPending(true);
+        setGroupPromptError(null);
+        const create = await createGroupAction({
+            gameSlug: game.name,
+            gameId: game.id,
+            name,
+        });
+        if ('error' in create) {
+            setGroupPromptPending(false);
+            setGroupPromptError(create.error);
+            return;
+        }
+        const newGroupId = create.result.id;
+        onGroupCreated({
+            id: newGroupId,
+            name,
+            sortOrder: (groups[groups.length - 1]?.sortOrder ?? 0) + 1,
+        });
+
+        if (groupPrompt.kind === 'row') {
+            const row = groupPrompt.row;
+            setPending(row.id, true);
+            const assign = await assignCategoryGroupAction({
+                gameSlug: game.name,
+                gameId: game.id,
+                categoryId: row.id,
+                groupId: newGroupId,
+            });
+            setPending(row.id, false);
+            if ('error' in assign) {
+                toast.error(assign.error);
+            } else {
+                onRowGroupChange(row.id, newGroupId, name);
+                toast.success(`Created "${name}" and moved ${row.display}`);
+            }
+        } else {
+            await applyGroupToSelected(newGroupId, name);
+        }
+
+        setGroupPromptPending(false);
+        setGroupPrompt(null);
     };
 
     return (
@@ -555,6 +570,24 @@ export function CategoriesTable({
                 a fallback. Non-featured categories stay accessible to mods
                 here.
             </p>
+            <PromptDialog
+                open={groupPrompt != null}
+                onClose={closeGroupPrompt}
+                onSubmit={submitGroupPrompt}
+                labelledBy="create-group-title"
+                title="Create category group"
+                blurb={
+                    groupPrompt?.kind === 'row'
+                        ? `Creates a new group and moves ${groupPrompt.row.display} into it.`
+                        : `Creates a new group and moves ${selectedIds.size} selected categor${selectedIds.size === 1 ? 'y' : 'ies'} into it.`
+                }
+                fieldLabel="Group name"
+                placeholder="e.g. Any% category extensions"
+                minLength={1}
+                submitLabel="Create group"
+                pending={groupPromptPending}
+                error={groupPromptError}
+            />
         </section>
     );
 }

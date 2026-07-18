@@ -17,6 +17,7 @@ import { createPolicyAction } from '../../manage/moderation/policies/actions/pol
 import { updateTimingSettingsAction } from '../../manage/timing/actions/update-timing-settings.action';
 import { createVariableAction } from '../../manage/variables/actions/create-variable.action';
 import { deleteVariableAction } from '../../manage/variables/actions/delete-variable.action';
+import { ConfirmDialog } from '../../shared/confirm-dialog';
 import {
     CategoryLeaderboardPreview,
     type PreviewDraft,
@@ -489,6 +490,9 @@ function VariablesSection({
     const [editor, setEditor] = useState<VariableEditorState | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [isSaving, startSaving] = useTransition();
+    const [confirmDelete, setConfirmDelete] = useState<VariableRow | null>(
+        null,
+    );
 
     const openTemplate = (t: VariableTemplate) =>
         setEditor({
@@ -534,7 +538,10 @@ function VariablesSection({
     };
 
     const removeVariable = (v: VariableRow) => {
-        if (!window.confirm(`Delete variable "${v.name}"?`)) return;
+        setConfirmDelete(v);
+    };
+
+    const doRemoveVariable = (v: VariableRow) => {
         startSaving(async () => {
             const res = await deleteVariableAction({
                 gameSlug: data.game.name,
@@ -695,6 +702,19 @@ function VariablesSection({
                     ))}
                 </ul>
             )}
+            <ConfirmDialog
+                open={confirmDelete != null}
+                onClose={() => setConfirmDelete(null)}
+                onConfirm={() => {
+                    if (confirmDelete) doRemoveVariable(confirmDelete);
+                    setConfirmDelete(null);
+                }}
+                labelledBy={`delete-variable-title-${category.id}`}
+                title="Delete variable?"
+                message={`Delete variable "${confirmDelete?.name}"? Existing finished runs keep their resolved values until a re-resolve worker runs.`}
+                confirmLabel="Delete"
+                pending={isSaving}
+            />
         </section>
     );
 }

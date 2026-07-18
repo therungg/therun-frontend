@@ -8,6 +8,7 @@ import { renameGroupAction } from '~src/actions/category-group/rename-group.acti
 import { reorderGroupsAction } from '~src/actions/category-group/reorder-groups.action';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
+import { ConfirmDialog } from '../../shared/confirm-dialog';
 
 interface Props {
     game: ResolvedGame;
@@ -34,6 +35,8 @@ export function GroupsSection({
     const [pending, setPending] = useState(false);
     const [dragId, setDragId] = useState<number | null>(null);
     const [_isPending, startTransition] = useTransition();
+    const [confirmDeleteGroup, setConfirmDeleteGroup] =
+        useState<ManageGroup | null>(null);
 
     const countByGroupId = useMemo(() => {
         const m = new Map<number, number>();
@@ -117,12 +120,10 @@ export function GroupsSection({
     };
 
     const submitDelete = (g: ManageGroup) => {
-        const count = countByGroupId.get(g.id) ?? 0;
-        const msg =
-            count > 0
-                ? `Delete "${g.name}"? Its ${count} ${count === 1 ? 'category' : 'categories'} will become ungrouped.`
-                : `Delete "${g.name}"?`;
-        if (!window.confirm(msg)) return;
+        setConfirmDeleteGroup(g);
+    };
+
+    const doDelete = (g: ManageGroup) => {
         setPending(true);
         startTransition(async () => {
             const res = await deleteGroupAction({
@@ -335,6 +336,26 @@ export function GroupsSection({
                     })}
                 </ul>
             )}
+            <ConfirmDialog
+                open={confirmDeleteGroup != null}
+                onClose={() => setConfirmDeleteGroup(null)}
+                onConfirm={() => {
+                    if (confirmDeleteGroup) doDelete(confirmDeleteGroup);
+                    setConfirmDeleteGroup(null);
+                }}
+                labelledBy="delete-group-title"
+                title="Delete group?"
+                message={(() => {
+                    if (!confirmDeleteGroup) return '';
+                    const count =
+                        countByGroupId.get(confirmDeleteGroup.id) ?? 0;
+                    return count > 0
+                        ? `Delete "${confirmDeleteGroup.name}"? Its ${count} ${count === 1 ? 'category' : 'categories'} will become ungrouped.`
+                        : `Delete "${confirmDeleteGroup.name}"?`;
+                })()}
+                confirmLabel="Delete"
+                pending={pending}
+            />
         </section>
     );
 }

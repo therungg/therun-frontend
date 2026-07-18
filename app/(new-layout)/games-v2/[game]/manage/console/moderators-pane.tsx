@@ -12,6 +12,7 @@ import {
     addGameModeratorAction,
     removeGameModeratorAction,
 } from '../../setup/actions/manage-moderators.action';
+import { ConfirmDialog } from '../../shared/confirm-dialog';
 import styles from './console.module.scss';
 
 interface Props {
@@ -32,6 +33,9 @@ export function ModeratorsPane({
     const [username, setUsername] = useState('');
     const [role, setRole] = useState<BoardModRole>('game-mod');
     const [isPending, startPending] = useTransition();
+    const [confirmRemove, setConfirmRemove] = useState<GameModerator | null>(
+        null,
+    );
 
     const addMod = () => {
         startPending(async () => {
@@ -68,7 +72,10 @@ export function ModeratorsPane({
             toast.error('A board needs at least one board admin.');
             return;
         }
-        if (!window.confirm(`Remove ${m.username} from the mod team?`)) return;
+        setConfirmRemove(m);
+    };
+
+    const doRemoveMod = (m: GameModerator) => {
         startPending(async () => {
             const res = await removeGameModeratorAction({
                 gameSlug,
@@ -155,6 +162,19 @@ export function ModeratorsPane({
                     Add
                 </button>
             </div>
+            <ConfirmDialog
+                open={confirmRemove != null}
+                onClose={() => setConfirmRemove(null)}
+                onConfirm={() => {
+                    if (confirmRemove) doRemoveMod(confirmRemove);
+                    setConfirmRemove(null);
+                }}
+                labelledBy="remove-mod-title"
+                title="Remove moderator?"
+                message={`Remove ${confirmRemove?.username} from the mod team? They lose all moderator permissions on this board immediately.`}
+                confirmLabel="Remove"
+                pending={isPending}
+            />
         </section>
     );
 }

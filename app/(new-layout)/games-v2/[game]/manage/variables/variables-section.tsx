@@ -6,6 +6,7 @@ import type {
     ResolvedCategory,
     VariableRow as VariableRowData,
 } from '../../../../../../types/leaderboards.types';
+import { ConfirmDialog } from '../../shared/confirm-dialog';
 import { createVariableAction } from './actions/create-variable.action';
 import { deleteVariableAction } from './actions/delete-variable.action';
 import { loadVariablesAction } from './actions/load-variables.action';
@@ -39,6 +40,9 @@ export function VariablesSection({
     const [formError, setFormError] = useState<string | null>(null);
     const [isLoading, startLoadTransition] = useTransition();
     const [isSaving, startSaveTransition] = useTransition();
+    const [confirmDelete, setConfirmDelete] = useState<VariableRowData | null>(
+        null,
+    );
     const busy = isLoading || isSaving;
 
     const refresh = async () => {
@@ -145,13 +149,10 @@ export function VariablesSection({
     };
 
     const handleDelete = (row: VariableRowData) => {
-        if (
-            !window.confirm(
-                `Delete variable "${row.name}"? Existing finished runs keep their resolved values until a re-resolve worker runs.`,
-            )
-        ) {
-            return;
-        }
+        setConfirmDelete(row);
+    };
+
+    const doDelete = (row: VariableRowData) => {
         startSaveTransition(async () => {
             const res = await deleteVariableAction({
                 gameSlug,
@@ -348,6 +349,19 @@ export function VariablesSection({
                     />
                 </>
             )}
+            <ConfirmDialog
+                open={confirmDelete != null}
+                onClose={() => setConfirmDelete(null)}
+                onConfirm={() => {
+                    if (confirmDelete) doDelete(confirmDelete);
+                    setConfirmDelete(null);
+                }}
+                labelledBy="delete-variable-title"
+                title="Delete variable?"
+                message={`Delete variable "${confirmDelete?.name}"? Existing finished runs keep their resolved values until a re-resolve worker runs.`}
+                confirmLabel="Delete"
+                pending={isSaving}
+            />
         </section>
     );
 }
