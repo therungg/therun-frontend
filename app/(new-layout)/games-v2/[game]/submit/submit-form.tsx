@@ -37,6 +37,8 @@ const SUBMIT_MODE_HINT =
     'Submit a new run with your category, time, date, and a video link for verification.';
 const CLAIM_MODE_HINT =
     'Assert or correct your time on this board without a video or splits — for example, to fix an imported time.';
+const TIMING_EXPLAINER =
+    'Real time (RTA) — wall-clock time. Game time (IGT) — the in-game timer.';
 
 function todayISODate(): string {
     // Local date, YYYY-MM-DD — matches the <input type="date"> value format.
@@ -535,6 +537,9 @@ export function SubmitForm({ game, categories, groups, initialMode }: Props) {
                                 onChange={(raw) => parseInto(raw, setGt)}
                             />
                         )}
+                        {showRt && showGt && (
+                            <div className="form-text">{TIMING_EXPLAINER}</div>
+                        )}
 
                         <div>
                             <label htmlFor="submit-date" className="form-label">
@@ -617,6 +622,9 @@ export function SubmitForm({ game, categories, groups, initialMode }: Props) {
                                         Game time (IGT)
                                     </option>
                                 </select>
+                                <div className="form-text">
+                                    {TIMING_EXPLAINER}
+                                </div>
                             </div>
                         )}
 

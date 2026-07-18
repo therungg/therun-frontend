@@ -77,7 +77,7 @@ export function WrHistoryDrawer({
                                 <th>Time</th>
                                 <th>Timing</th>
                                 <th>Set</th>
-                                <th>Superseded</th>
+                                <th>Held until</th>
                                 <th>Held for</th>
                             </tr>
                         </thead>

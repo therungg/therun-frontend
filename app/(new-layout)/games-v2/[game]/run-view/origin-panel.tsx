@@ -26,8 +26,8 @@ export function OriginPanel({ model }: { model: RunViewModel }) {
             </div>
             <div className="text-muted small mt-1">
                 {ingestedAt
-                    ? `Ingested ${new Date(ingestedAt).toLocaleDateString()}`
-                    : 'Ingest date unknown'}
+                    ? `Added ${new Date(ingestedAt).toLocaleDateString()}`
+                    : 'Added date unknown'}
             </div>
             {showSplitsLink && (
                 <div className="mt-2">
