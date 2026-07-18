@@ -296,8 +296,10 @@ export function ConsoleShell({
                 open={historyOpen}
                 onClose={() => {
                     setHistoryOpen(false);
-                    if (activeItem) {
-                        router.replace(`?pane=${activeItem}`, {
+                    if (searchParams.get('pane') === 'history' && activeItem) {
+                        const params = new URLSearchParams(searchParams);
+                        params.set('pane', activeItem);
+                        router.replace(`?${params.toString()}`, {
                             scroll: false,
                         });
                     }
