@@ -36,3 +36,15 @@
 .required {
     color: dt.$accent-red;
 }
+
+// The parsed-time echo is a confirmation the runner should actually read
+// before submitting — not fine print, so it doesn't use the muted
+// `.form-text` treatment.
+.timeEcho {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-body-color);
+
+    strong {
+        font-family: dt.$font-mono;
+    }
+}
