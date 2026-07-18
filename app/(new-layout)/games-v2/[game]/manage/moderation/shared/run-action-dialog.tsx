@@ -51,6 +51,62 @@ interface Props {
 
 type UndoResult = { error: string } | { ok: true };
 
+// Toast body for a reversible action's success toast. Owns its own pending
+// state so the Undo button disables the instant it's clicked and stays
+// disabled through the in-flight call — `closeToast()` (called on click,
+// below) triggers an async exit transition, so without this the button
+// would remain clickable (and re-clickable) while the toast fades out.
+function UndoToast({
+    message,
+    undo,
+    onUndone,
+    closeToast,
+}: {
+    message: string;
+    undo: () => Promise<UndoResult>;
+    onUndone: () => void;
+    closeToast: () => void;
+}) {
+    const [isPending, startTransition] = useTransition();
+
+    const handleUndo = () => {
+        closeToast();
+        startTransition(async () => {
+            try {
+                const res = await undo();
+                if ('error' in res) {
+                    toast.error(res.error);
+                    return;
+                }
+                toast.success('Undone.');
+                onUndone();
+            } catch {
+                // Transport-level failure (dropped connection, mid-deploy
+                // RSC error) — the inverse action's `{error}` path only
+                // covers handled failures, so a rejected promise needs its
+                // own surface.
+                toast.error(
+                    "Couldn't undo — check your connection and try again.",
+                );
+            }
+        });
+    };
+
+    return (
+        <div className={styles.toastBody}>
+            <span>{message}</span>
+            <button
+                type="button"
+                className={`btn btn-sm btn-outline-secondary ${styles.toastUndo}`}
+                onClick={handleUndo}
+                disabled={isPending}
+            >
+                {isPending ? 'Undoing…' : 'Undo'}
+            </button>
+        </div>
+    );
+}
+
 const MIN_REASON = 10;
 
 // approve/restore are fast triage — a note is optional and audit-logged, not
@@ -101,26 +157,12 @@ export function RunActionDialog({
         (message: string, undo: () => Promise<UndoResult>) => {
             toast.success(
                 ({ closeToast }) => (
-                    <div className={styles.toastBody}>
-                        <span>{message}</span>
-                        <button
-                            type="button"
-                            className={`btn btn-sm btn-outline-secondary ${styles.toastUndo}`}
-                            onClick={() => {
-                                closeToast();
-                                undo().then((res) => {
-                                    if ('error' in res) {
-                                        toast.error(res.error);
-                                        return;
-                                    }
-                                    toast.success('Undone.');
-                                    refreshAfterUndo();
-                                });
-                            }}
-                        >
-                            Undo
-                        </button>
-                    </div>
+                    <UndoToast
+                        message={message}
+                        undo={undo}
+                        onUndone={refreshAfterUndo}
+                        closeToast={closeToast}
+                    />
                 ),
                 { autoClose: 10000 },
             );
