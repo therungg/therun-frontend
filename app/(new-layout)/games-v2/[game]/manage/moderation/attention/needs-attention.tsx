@@ -847,6 +847,11 @@ function RunnerGroupCard({
 
     const Caret = open ? ChevronDown : ChevronRight;
 
+    // No runner-trust line (verified-run count, prior rejections, account
+    // age) renders here: none of the upstream payloads (QueueItem,
+    // ModReportRow, ManualTimeRow) carry that data, and fetching it per
+    // group would be an N+1 call — see attention-model.ts groupByRunner
+    // and the Backend handoff in task-18-report-uxfixes.md.
     return (
         <div className={styles.group}>
             <div className={styles.groupHead}>

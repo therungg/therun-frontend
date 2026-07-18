@@ -232,7 +232,19 @@ function shortDetail(details: Record<string, unknown>): string | null {
         .join(' · ');
 }
 
-/** Group consecutive items by non-null userId for the "this runner has many" case. */
+/**
+ * Group consecutive items by non-null userId for the "this runner has many" case.
+ *
+ * Task 18 looked for runner-trust context (verified-run count, prior
+ * rejections, account age) to render on the group header, e.g.
+ * "3 verified runs · first seen Mar 2026". None of the three upstream
+ * payloads (QueueItem, ModReportRow, ManualTimeRow — see
+ * types/moderation.types.ts) carry any such field, and fetching it per
+ * group would be an N+1 call the brief explicitly rules out. So the group
+ * header renders no trust line today; see task-18-report-uxfixes.md for
+ * the exact fields requested from backend (verifiedCount, rejectedCount,
+ * accountCreatedAt).
+ */
 export interface RunnerGroup {
     userId: number | null;
     runnerName: string;
