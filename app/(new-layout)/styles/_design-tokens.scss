@@ -78,19 +78,6 @@ $art-width-lg: 60px;   // 1.67× — game cards
 $art-width-xl: 72px;   // 2× — top/featured cards
 
 // Shadows
-:root {
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-    --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.15);
-    --shadow-xl: 0 6px 20px rgba(0, 0, 0, 0.2);
-}
-[data-bs-theme="dark"] {
-    --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.35);
-    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 4px 14px rgba(0, 0, 0, 0.45);
-    --shadow-xl: 0 6px 24px rgba(0, 0, 0, 0.55);
-}
-
 $shadow-sm: var(--shadow-sm);
 $shadow-md: var(--shadow-md);
 $shadow-lg: var(--shadow-lg);
