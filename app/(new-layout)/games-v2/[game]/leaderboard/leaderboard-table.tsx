@@ -3,12 +3,14 @@ import Link from '~src/components/link';
 import type { LeaderboardResponse } from '../../../../../types/leaderboards.types';
 import { ClearFiltersButton } from '../filters/clear-filters-button';
 import { isSameRunner } from '../shared/is-same-runner';
+import { computeDisplayRanks } from './display-rank';
 import styles from './leaderboard.module.scss';
 import { LeaderboardRow } from './leaderboard-row';
 import {
     type TimingKey,
     timingColumnHidden,
     timingColumns,
+    timingValue,
 } from './timing-columns';
 
 interface Props {
@@ -20,6 +22,8 @@ interface Props {
     primaryTiming: TimingKey;
     /** True when any subcategory / variable / verified filter narrows the board. */
     filtersActive: boolean;
+    /** category.showMilliseconds ?? true — precision the board is configured for. */
+    showMilliseconds: boolean;
 }
 
 export function LeaderboardTable({
@@ -30,6 +34,7 @@ export function LeaderboardTable({
     variableKeys,
     primaryTiming,
     filtersActive,
+    showMilliseconds,
 }: Props) {
     if (leaderboard.entries.length === 0) {
         return (
@@ -71,9 +76,27 @@ export function LeaderboardTable({
     }
 
     const { hideRealTime, hideGameTime } = leaderboard;
-    const hidden = (key: TimingKey) =>
-        timingColumnHidden(key, { hideRealTime, hideGameTime });
     const { primary, secondary } = timingColumns(primaryTiming);
+    // Every entry in the loaded window has no secondary time at all — hide
+    // the column entirely rather than render a wall of dashes. A later page
+    // introducing data re-shows it (recomputed each render, not sticky).
+    const secondaryAllNull = leaderboard.entries.every(
+        (e) => timingValue(e, secondary.key) == null,
+    );
+    const hidden = (key: TimingKey) =>
+        timingColumnHidden(key, { hideRealTime, hideGameTime }) ||
+        (key === secondary.key && secondaryAllNull);
+    const displayRanks = computeDisplayRanks(
+        leaderboard.entries,
+        primaryTiming,
+    );
+    // Row-level hide flags need the all-null override folded into the same
+    // key the secondary column actually is (rt or gt — depends on
+    // primaryTiming), not blanket-applied to gameTime.
+    const rowHideRealTime =
+        hideRealTime || (secondary.key === 'rt' && secondaryAllNull);
+    const rowHideGameTime =
+        hideGameTime || (secondary.key === 'gt' && secondaryAllNull);
 
     return (
         <div className={styles.wrapper}>
@@ -106,23 +129,25 @@ export function LeaderboardTable({
                     </tr>
                 </thead>
                 <tbody>
-                    {leaderboard.entries.map((entry) => (
+                    {leaderboard.entries.map((entry, i) => (
                         <LeaderboardRow
                             key={
                                 entry.runId ??
                                 `${entry.runnerName}-${entry.rank}`
                             }
                             entry={entry}
+                            displayRank={displayRanks[i]}
                             isCurrentUser={isSameRunner(
                                 entry.runnerName,
                                 sessionUsername,
                             )}
                             canManage={canManage}
                             gameSlug={gameSlug}
-                            hideRealTime={hideRealTime}
-                            hideGameTime={hideGameTime}
+                            hideRealTime={rowHideRealTime}
+                            hideGameTime={rowHideGameTime}
                             primaryTiming={primaryTiming}
                             sessionUsername={sessionUsername}
+                            showMilliseconds={showMilliseconds}
                         />
                     ))}
                 </tbody>

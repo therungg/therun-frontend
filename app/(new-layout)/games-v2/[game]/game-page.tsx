@@ -76,15 +76,23 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
               .sort()
               .map((k) => `${k}=${data.activeFilters.subcategoryValues[k]}`)
               .join('|');
+    const subcategoryLabel = formatSubcategoryKey(
+        subcategoryKey,
+        data.variables,
+    );
+    const showMilliseconds = data.selectedCategory.showMilliseconds ?? true;
 
     // Whether the board is narrowed by any user-set filter — drives the empty
     // state copy ("no runs match these filters" vs "no runs on this board
-    // yet"). Mirrors exactly what ClearFiltersButton would clear from the URL.
+    // yet"). Mirrors exactly what ClearFiltersButton would clear from the URL
+    // (page included — a deep link to page 99 of an otherwise-unfiltered
+    // board is still a filtered view, not an honestly-empty one).
     const filtersActive =
         data.activeFilters.verified ||
         data.activeFilters.combined ||
         Object.keys(data.activeFilters.subcategoryValues).length > 0 ||
-        Object.keys(data.activeFilters.varFilters).length > 0;
+        Object.keys(data.activeFilters.varFilters).length > 0 ||
+        data.activeFilters.page > 1;
 
     return (
         <div>
@@ -95,9 +103,11 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                 wrEntry={data.wrEntry}
                 boardIsEmpty={data.boardIsEmpty}
                 subcategoryKey={subcategoryKey}
+                subcategoryLabel={subcategoryLabel}
                 canManage={canManage}
                 canModerate={canManageRuns}
                 claim={claim}
+                showMilliseconds={showMilliseconds}
             />
             <div className={styles.band}>
                 <div className={styles.bandRow}>
@@ -165,6 +175,7 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                             variableKeys={variableKeys}
                             primaryTiming={data.selectedCategory.primaryTiming}
                             filtersActive={filtersActive}
+                            showMilliseconds={showMilliseconds}
                         />
                     )}
                 </div>

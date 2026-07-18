@@ -37,9 +37,29 @@ interface Props {
     /** True only for a genuinely empty (zero-entry) valid board. */
     boardIsEmpty: boolean;
     subcategoryKey: string;
+    /** Pre-formatted subcategory copy (formatSubcategoryKey), e.g. "PC". '' when none active. */
+    subcategoryLabel?: string;
     canManage?: boolean;
     canModerate?: boolean;
     claim?: ClaimCtaState | null;
+    /** category.showMilliseconds ?? true — precision the board is configured for. */
+    showMilliseconds?: boolean;
+}
+
+// The crown claims "World record" only when the crowned entry is actually
+// verified — a pending entry hasn't cleared moderation yet, so the label
+// says only as much as is known ("Fastest time").
+function eyebrowText(
+    categoryDisplay: string,
+    subcategoryLabel: string | undefined,
+    wr: LeaderboardEntry | null,
+): string {
+    const scope = subcategoryLabel
+        ? `${categoryDisplay} · ${subcategoryLabel}`
+        : categoryDisplay;
+    const prefix =
+        wr?.verificationStatus === 'pending' ? 'Fastest time' : 'World record';
+    return `${prefix} — ${scope}`;
 }
 
 export function GameHero({
@@ -49,9 +69,11 @@ export function GameHero({
     wrEntry,
     boardIsEmpty,
     subcategoryKey,
+    subcategoryLabel,
     canManage,
     canModerate,
     claim,
+    showMilliseconds = true,
 }: Props) {
     const [historyOpen, setHistoryOpen] = useState(false);
 
@@ -138,8 +160,19 @@ export function GameHero({
                         key={`${category.id}:${subcategoryKey}`}
                     >
                         <div className={styles.crownHead}>
-                            <span className={styles.eyebrow}>
-                                World record — {category.display}
+                            <span
+                                className={`${styles.eyebrow} ${styles.crownEyebrow}`}
+                                title={eyebrowText(
+                                    category.display,
+                                    subcategoryLabel,
+                                    wr,
+                                )}
+                            >
+                                {eyebrowText(
+                                    category.display,
+                                    subcategoryLabel,
+                                    wr,
+                                )}
                             </span>
                             <button
                                 type="button"
@@ -160,11 +193,15 @@ export function GameHero({
                                             >
                                                 <DurationToFormatted
                                                     duration={wr.time as number}
+                                                    withMillis={
+                                                        showMilliseconds
+                                                    }
                                                 />
                                             </Link>
                                         ) : (
                                             <DurationToFormatted
                                                 duration={wr.time as number}
+                                                withMillis={showMilliseconds}
                                             />
                                         )}
                                     </div>

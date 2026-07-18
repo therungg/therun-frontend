@@ -73,6 +73,13 @@ tr:focus-within .reveal {
     @include board.board-rank;
 }
 
+// Tie marker: muted so the shared numeral (not the "=") reads first.
+.tieMark {
+    color: var(--bs-tertiary-color);
+    font-weight: 400;
+    margin-right: 1px;
+}
+
 .rank1 {
     color: dt.$accent-gold;
 }
