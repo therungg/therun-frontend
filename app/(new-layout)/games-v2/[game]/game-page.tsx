@@ -12,7 +12,6 @@ import { GameHero } from './header/game-hero';
 import { formatSubcategoryKey, type LabelVariableDef } from './labels';
 import { LeaderboardPager } from './leaderboard/leaderboard-pager';
 import { RulesBody, RulesPanel } from './rules/rules-panel';
-import { SelfClaimButton } from './self-claim-button';
 import { Sidebar } from './sidebar/sidebar';
 import type { GamePageData } from './types';
 
@@ -99,18 +98,6 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                 canManage={canManage}
                 canModerate={canManageRuns}
                 claim={claim}
-                selfClaim={
-                    data.sessionUsername ? (
-                        <SelfClaimButton
-                            gameId={data.game.id}
-                            categories={data.categories.map((c) => ({
-                                id: c.id,
-                                display: c.display,
-                            }))}
-                            defaultCategoryId={data.selectedCategory.id}
-                        />
-                    ) : null
-                }
             />
             <div className={styles.band}>
                 <div className={styles.bandRow}>

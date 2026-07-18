@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { type ReactNode, useState } from 'react';
+import { useState } from 'react';
 import { HourglassSplit } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
@@ -39,7 +39,6 @@ interface Props {
     canManage?: boolean;
     canModerate?: boolean;
     claim?: ClaimCtaState | null;
-    selfClaim?: ReactNode;
 }
 
 export function GameHero({
@@ -52,7 +51,6 @@ export function GameHero({
     canManage,
     canModerate,
     claim,
-    selfClaim,
 }: Props) {
     const [historyOpen, setHistoryOpen] = useState(false);
 
@@ -116,7 +114,6 @@ export function GameHero({
                                     gameDisplay={game.display}
                                 />
                             )}
-                            {selfClaim}
                             <Link
                                 href={`/games-v2/${game.name}/submit`}
                                 className="btn btn-sm btn-primary"
