@@ -38,6 +38,7 @@ export function RosterView({
 }: Props) {
     const router = useRouter();
     const baseHref = `/games-v2/${gameSlug}/manage/moderation`;
+    const consoleHref = `/games-v2/${gameSlug}/manage?pane=attention`;
 
     const [categoryId, setCategoryId] = useState<number | null>(
         initialCategoryId,
@@ -184,10 +185,10 @@ export function RosterView({
             <div className="d-flex align-items-center justify-content-between mb-3">
                 <h1 className="h4 mb-0">Roster — {gameDisplay}</h1>
                 <Link
-                    href={baseHref}
+                    href={consoleHref}
                     className="btn btn-sm btn-outline-secondary"
                 >
-                    Back to moderation
+                    Back to console
                 </Link>
             </div>
 
