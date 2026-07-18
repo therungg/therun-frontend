@@ -6,6 +6,7 @@ import { HourglassSplit } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { formatRunDate } from '~src/lib/format-run-date';
 import type {
     LeaderboardEntry,
     QuickStats,
@@ -184,11 +185,7 @@ export function GameHero({
                                     />{' '}
                                     <CountryFlag country={wr.country} />
                                     {wr.runDate && (
-                                        <span
-                                            title={new Date(
-                                                wr.runDate,
-                                            ).toLocaleDateString()}
-                                        >
+                                        <span title={formatRunDate(wr.runDate)}>
                                             {' '}
                                             · {relativeDate(wr.runDate)}
                                         </span>

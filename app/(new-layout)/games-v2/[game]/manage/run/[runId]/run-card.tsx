@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { formatRunDate } from '~src/lib/format-run-date';
 import type { RunDetail } from '../../../../../../../types/leaderboards.types';
 import { VariablesLine, VerificationBadge } from '../../../run-view/run-badges';
 import type { ModVerb } from '../../moderation/shared/action-model';
@@ -48,9 +49,7 @@ export function RunCard({ run, gameSlug, canExcludeUsers }: Props) {
                 <div>
                     <small className="text-muted d-block">Run date</small>
                     <span>
-                        {run.runDate
-                            ? new Date(run.runDate).toLocaleDateString()
-                            : '—'}
+                        {run.runDate ? formatRunDate(run.runDate) : '—'}
                     </span>
                 </div>
                 <div>
