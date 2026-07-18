@@ -67,8 +67,9 @@ export function StepCategoryConfig({ data, onAdvance }: StepProps) {
             <section>
                 <h2 className="h4">Category configuration</h2>
                 <p className="text-muted">
-                    Pick your main categories first — timing, rules, variables,
-                    and standards are configured per main category.
+                    Pick your featured categories first — timing, rules,
+                    variables, and standards are configured per featured
+                    category.
                 </p>
                 <button
                     type="button"
@@ -838,7 +839,7 @@ function StandardsSection({
 
             if (skippedExisting) {
                 toast.info(
-                    'A minimum-time policy already exists for this category — edit it in Manage → Standards.',
+                    'A minimum-time policy already exists for this category — edit it in Manage → Minimum time.',
                 );
             }
             setSaved(true);

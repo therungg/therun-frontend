@@ -213,7 +213,7 @@ export function Standards({
     return (
         <section className="mb-4">
             <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                <h2 className="h5 mb-0">Standards</h2>
+                <h2 className="h5 mb-0">Minimum time</h2>
                 {categories.length > 0 && (
                     <select
                         className="form-select form-select-sm"
@@ -371,13 +371,13 @@ export function Standards({
                                     onClick={handleSave}
                                     disabled={isSaving}
                                 >
-                                    {isSaving ? 'Saving…' : 'Save standards'}
+                                    {isSaving ? 'Saving…' : 'Save minimum time'}
                                 </button>
                             </div>
                         </div>
                     ) : (
                         <p className="text-muted small mt-3 mb-0">
-                            Only board-admins can change standards.
+                            Only board-admins can change the minimum time.
                         </p>
                     )}
                 </div>

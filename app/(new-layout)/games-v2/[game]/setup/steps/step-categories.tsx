@@ -152,8 +152,8 @@ export function StepCategories({ data, onAdvance }: StepProps) {
         <section>
             <h2 className="h4">Categories</h2>
             <div className={styles.infoNote}>
-                Checked categories are your main categories — they appear on the
-                leaderboards. Unchecked categories stay hidden. Checked
+                Checked categories are your featured categories — they appear on
+                the leaderboards. Unchecked categories stay hidden. Checked
                 categories hold {share}% of this board’s finished runs.
             </div>
             {legacyHiddenCount > 0 && (
@@ -166,7 +166,7 @@ export function StepCategories({ data, onAdvance }: StepProps) {
             <table className={styles.table}>
                 <thead>
                     <tr>
-                        <th>Show on board (main)</th>
+                        <th>Show on board (featured)</th>
                         <th>Category</th>
                         <th className="text-end">Runners</th>
                         <th className="text-end">Runs</th>
@@ -259,8 +259,8 @@ export function StepCategories({ data, onAdvance }: StepProps) {
 
             {!mainOk && (
                 <div className={`${styles.warnNote} mt-2`}>
-                    Mark at least one category as main — they’re what visitors
-                    see.
+                    Mark at least one category as featured — they’re what
+                    visitors see.
                 </div>
             )}
             {progress && <div className="text-muted small">{progress}</div>}

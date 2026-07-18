@@ -106,25 +106,25 @@ export function CombinationsSection({
         <section className="border rounded p-3 mb-4">
             <div className="d-flex align-items-center justify-content-between mb-3">
                 <div>
-                    <h2 className="h5 mb-1">Valid combinations</h2>
+                    <h2 className="h5 mb-1">Sub-boards</h2>
                     <p className="text-muted small mb-0">
                         {mode === 'open' ? (
                             <>
                                 <span className="badge text-bg-secondary me-1">
-                                    open mode
+                                    Open
                                 </span>
-                                Every combination is a real leaderboard. Mark
-                                rows invalid below to switch to{' '}
-                                <code>managed</code> mode.
+                                — runners can submit any combination. Every
+                                combination is a real leaderboard; mark rows
+                                invalid below to switch to managed mode.
                             </>
                         ) : (
                             <>
                                 <span className="badge text-bg-primary me-1">
-                                    managed mode
+                                    Managed
                                 </span>
-                                Only the checked combinations are valid
-                                leaderboards. Runs in unchecked combos keep
-                                their stale key until a re-resolve runs.
+                                — only listed sub-boards are valid leaderboards.
+                                Runs in unchecked combos keep their stale key
+                                until a re-resolve runs.
                             </>
                         )}
                     </p>

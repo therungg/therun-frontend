@@ -40,10 +40,11 @@ export function StepWelcome({ data, onAdvance }: StepProps) {
             <ol>
                 <li>Game details — cover, platforms, links</li>
                 <li>
-                    Pick your main categories — choose what shows on the board
+                    Pick your featured categories — choose what shows on the
+                    board
                 </li>
                 <li>
-                    Configure each main category — timing, rules, variables,
+                    Configure each featured category — timing, rules, variables,
                     standards
                 </li>
                 <li>

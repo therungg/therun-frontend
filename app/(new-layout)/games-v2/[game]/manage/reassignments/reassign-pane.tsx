@@ -52,7 +52,7 @@ export function ReassignPane({
                     }`}
                     onClick={() => setMode('game')}
                 >
-                    Reassign game
+                    Merge whole game
                 </button>
                 <button
                     type="button"
@@ -61,7 +61,7 @@ export function ReassignPane({
                     }`}
                     onClick={() => setMode('category')}
                 >
-                    Reassign a category
+                    Merge a category
                 </button>
             </div>
 
@@ -77,9 +77,7 @@ export function ReassignPane({
                 <>
                     <div className={styles.surface}>
                         <div className={styles.header}>
-                            <p className={styles.eyebrow}>
-                                Category reassignment
-                            </p>
+                            <p className={styles.eyebrow}>Category merge</p>
                             <h3 className={styles.title}>
                                 Pick a source category
                             </h3>

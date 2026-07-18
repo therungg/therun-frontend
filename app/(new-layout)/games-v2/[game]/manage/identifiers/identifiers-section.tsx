@@ -85,7 +85,7 @@ export function IdentifiersSection({
                 setError(res.error);
                 return;
             }
-            toast.success('Identifiers saved');
+            toast.success('URL & abbreviation saved');
             const newSlug = slug.trim() === '' ? '' : slugPreview;
             const newAbbr = abbreviation.trim() === '' ? '' : abbrPreview;
             setSlug(newSlug);
@@ -103,7 +103,7 @@ export function IdentifiersSection({
 
     return (
         <section className="border rounded p-3 mb-4">
-            <h2 className="h5 mb-1">Identifiers</h2>
+            <h2 className="h5 mb-1">URL & abbreviation</h2>
             <p className="text-muted small mb-3">
                 URL slug and short abbreviation used to look up this game.
                 Values are normalized to lowercase with non-alphanumerics

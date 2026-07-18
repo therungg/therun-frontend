@@ -102,7 +102,7 @@ export function computeCompleteness(
         steps.push({
             step: 'categories',
             status: 'blocker',
-            summary: 'No categories are marked main (shown on the board)',
+            summary: 'No categories are marked featured (shown on the board)',
         });
     } else {
         steps.push({
@@ -118,7 +118,7 @@ export function computeCompleteness(
         steps.push({
             step: 'category-config',
             status: 'todo',
-            summary: 'Configure categories after choosing mains',
+            summary: 'Configure categories after choosing featured categories',
         });
     } else {
         const mainsWithoutRules = mains.filter((c) => !c.hasRules);
@@ -126,13 +126,13 @@ export function computeCompleteness(
             steps.push({
                 step: 'category-config',
                 status: 'done',
-                summary: `All ${mains.length} main categories configured`,
+                summary: `All ${mains.length} featured categories configured`,
             });
         } else {
             steps.push({
                 step: 'category-config',
                 status: 'warning',
-                summary: `${mainsWithoutRules.length} of ${mains.length} main categories not configured`,
+                summary: `${mainsWithoutRules.length} of ${mains.length} featured categories not configured`,
             });
         }
     }

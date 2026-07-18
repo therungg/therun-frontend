@@ -17,9 +17,10 @@ export function StepDefaults({ data, onAdvance }: StepProps) {
         <section>
             <h2 className="h4">Settings for all categories</h2>
             <p className="text-muted small">
-                Optional bulk pass — apply the same defaults across every main
-                category, set a game-wide review policy, and add variables that
-                aren’t tied to a single category. Nothing here is required.
+                Optional bulk pass — apply the same defaults across every
+                featured category, set a game-wide review policy, and add
+                variables that aren’t tied to a single category. Nothing here is
+                required.
             </p>
             <BulkApplySection data={data} />
             <GameWideVariablesSection data={data} />
@@ -202,7 +203,7 @@ function BulkApplySection({ data }: { data: WizardData }) {
             }
 
             if (Object.keys(newErrors).length === 0 && !policyFailed) {
-                toast.success('Applied to all main categories');
+                toast.success('Applied to all featured categories');
             }
         });
     };
@@ -210,7 +211,7 @@ function BulkApplySection({ data }: { data: WizardData }) {
     return (
         <section className={styles.section}>
             <h3 className="h6">
-                Apply to all {mains.length} main categor
+                Apply to all {mains.length} featured categor
                 {mains.length === 1 ? 'y' : 'ies'}
             </h3>
             <p className="text-muted small mb-2">

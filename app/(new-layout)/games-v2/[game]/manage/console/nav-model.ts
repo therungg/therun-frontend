@@ -56,7 +56,7 @@ const ALL_GROUPS: NavGroup[] = [
                 label: 'Needs attention',
                 categoryScoped: false,
             },
-            { id: 'roster', label: 'Roster', categoryScoped: false },
+            { id: 'roster', label: 'Browse runs', categoryScoped: false },
             { id: 'reports', label: 'Reports', categoryScoped: false },
             { id: 'bans', label: 'Bans', categoryScoped: false },
             { id: 'history', label: 'History', categoryScoped: false },
@@ -82,8 +82,16 @@ const ALL_GROUPS: NavGroup[] = [
                 label: 'Categories & visibility',
                 categoryScoped: false,
             },
-            { id: 'identifiers', label: 'Identifiers', categoryScoped: false },
-            { id: 'reassign', label: 'Reassign', categoryScoped: false },
+            {
+                id: 'identifiers',
+                label: 'URL & abbreviation',
+                categoryScoped: false,
+            },
+            {
+                id: 'reassign',
+                label: 'Merge games & categories',
+                categoryScoped: false,
+            },
         ],
     },
     {
@@ -92,11 +100,11 @@ const ALL_GROUPS: NavGroup[] = [
         items: [
             // Standards self-manages its own category selector, so it is NOT
             // categoryScoped (it ignores the shell's selected category).
-            { id: 'standards', label: 'Standards', categoryScoped: false },
+            { id: 'standards', label: 'Minimum time', categoryScoped: false },
             { id: 'timing', label: 'Timing', categoryScoped: true },
             { id: 'rules', label: 'Rules', categoryScoped: true },
             { id: 'variables', label: 'Variables', categoryScoped: true },
-            { id: 'combinations', label: 'Combinations', categoryScoped: true },
+            { id: 'combinations', label: 'Sub-boards', categoryScoped: true },
             {
                 id: 'category-settings',
                 label: 'Category settings',
