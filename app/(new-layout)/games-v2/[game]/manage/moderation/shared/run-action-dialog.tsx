@@ -109,6 +109,19 @@ function UndoToast({
 
 const MIN_REASON = 10;
 
+// approve/restore are fast triage: Confirm doesn't wait on the preview
+// round-trip — the affected-run summary streams into the body as
+// supporting detail ("Loading preview…" while it's in flight), never
+// blocking the action itself. remove/ban keep the gate: the
+// affected-boards preview IS their safety mechanism before a harder-to-
+// reverse action, so Confirm stays disabled until it resolves.
+const PREVIEW_GATES_CONFIRM: Record<ModVerb, boolean> = {
+    approve: false,
+    restore: false,
+    remove: true,
+    ban: true,
+};
+
 // approve/restore are fast triage — a note is optional and audit-logged, not
 // gated. remove/ban (and bulk variants of both, which reuse these same verbs)
 // stay gated at MIN_REASON since they're consequential for the runner.
@@ -250,7 +263,8 @@ export function RunActionDialog({
 
     const reasonRequired = REASON_REQUIRED[verb];
     const reasonOk = reasonRequired ? reason.trim().length >= MIN_REASON : true;
-    const busy = isPreviewing || isConfirming;
+    const confirmGatedOnPreview = PREVIEW_GATES_CONFIRM[verb] && isPreviewing;
+    const busy = isConfirming || confirmGatedOnPreview;
 
     // Confirm button ref (approve/restore auto-focus this — reason is
     // optional, so Confirm is already actionable) and reason field ref

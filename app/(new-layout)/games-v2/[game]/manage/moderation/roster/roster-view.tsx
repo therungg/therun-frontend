@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
+import { CaretDownFill, CaretUpFill } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
@@ -18,6 +19,12 @@ import type { ModVerb, RunActionTarget } from '../shared/action-model';
 import { ManualTimeDialog } from '../shared/manual-time-dialog';
 import { RunActionDialog } from '../shared/run-action-dialog';
 import { loadRosterAction } from './actions/load-roster.action';
+import {
+    nextRosterSort,
+    type RosterSortKey,
+    type RosterSortState,
+    sortRosterRows,
+} from './roster-sort';
 
 type VerificationFilter = 'any' | 'unverified' | 'verified' | 'rejected';
 type VodFilter = 'any' | 'true' | 'false';
@@ -33,6 +40,49 @@ interface Props {
 /** Whether a roster row currently appears on either board (RT or GT). */
 function isOnBoard(row: LeaderboardRosterRow): boolean {
     return row.isLeaderboardEntry || row.isLeaderboardEntryGt;
+}
+
+/** A clickable, `aria-sort`-carrying column header for the roster table.
+ * Sorting is client-side over already-loaded rows (see roster-sort.ts) —
+ * clicking cycles ascending → descending → back to the default (unsorted,
+ * load) order. */
+function SortableTh({
+    label,
+    sortKey,
+    align = 'start',
+    sort,
+    onSort,
+}: {
+    label: string;
+    sortKey: RosterSortKey;
+    align?: 'start' | 'end' | 'center';
+    sort: RosterSortState | null;
+    onSort: (key: RosterSortKey) => void;
+}) {
+    const active = sort?.key === sortKey;
+    const alignClass =
+        align === 'end'
+            ? 'text-end'
+            : align === 'center'
+              ? 'text-center'
+              : undefined;
+    return (
+        <th className={alignClass} aria-sort={active ? sort.direction : 'none'}>
+            <button
+                type="button"
+                className="btn btn-link btn-sm p-0 text-decoration-none text-body fw-semibold d-inline-flex align-items-center gap-1"
+                onClick={() => onSort(sortKey)}
+            >
+                {label}
+                {active &&
+                    (sort.direction === 'ascending' ? (
+                        <CaretUpFill size={10} aria-hidden="true" />
+                    ) : (
+                        <CaretDownFill size={10} aria-hidden="true" />
+                    ))}
+            </button>
+        </th>
+    );
 }
 
 export function RosterView({
@@ -64,6 +114,9 @@ export function RosterView({
         | null
     >(null);
     const [isLoading, startLoad] = useTransition();
+    // Client-side only — sorts already-loaded rows, no round trip. `null` is
+    // the default/unsorted state (backend load order, unchanged).
+    const [sort, setSort] = useState<RosterSortState | null>(null);
 
     const selectedRunIds = useMemo(() => Array.from(selected), [selected]);
 
@@ -77,6 +130,15 @@ export function RosterView({
             onBoard === 'on' ? isOnBoard(r) : !isOnBoard(r),
         );
     }, [rows, onBoard]);
+
+    const sortedRows = useMemo(
+        () => (visibleRows ? sortRosterRows(visibleRows, sort) : visibleRows),
+        [visibleRows, sort],
+    );
+
+    const toggleSort = (key: RosterSortKey) => {
+        setSort((prev) => nextRosterSort(prev, key));
+    };
 
     // If every selected run belongs to the same registered user, surface a ban
     // affordance: a standing user-exclusion rule covers future runs too.
@@ -97,19 +159,30 @@ export function RosterView({
     const categoryDisplay =
         categories.find((c) => c.id === categoryId)?.display ?? 'this category';
 
-    const handleLoad = () => {
-        if (categoryId == null) return;
+    // Overrides let a <select>'s onChange fire the load in the same tick it
+    // sets state — reading the just-picked value directly rather than the
+    // (not-yet-updated) state closure.
+    const handleLoad = (overrides?: {
+        categoryId?: number;
+        verificationStatus?: VerificationFilter;
+        hasVod?: VodFilter;
+    }) => {
+        const cat = overrides?.categoryId ?? categoryId;
+        if (cat == null) return;
+        const verification =
+            overrides?.verificationStatus ?? verificationStatus;
+        const vod = overrides?.hasVod ?? hasVod;
         setError(null);
         setSelected(new Set());
         const filter: RosterFilter = {
             subcategoryKey: subcategoryKey.trim() || undefined,
             verificationStatus:
-                verificationStatus === 'any' ? undefined : verificationStatus,
-            hasVod: hasVod === 'any' ? undefined : hasVod === 'true',
+                verification === 'any' ? undefined : verification,
+            hasVod: vod === 'any' ? undefined : vod === 'true',
             runnerName: runnerName.trim() || undefined,
         };
         startLoad(async () => {
-            const res = await loadRosterAction(gameSlug, categoryId, filter);
+            const res = await loadRosterAction(gameSlug, cat, filter);
             if ('error' in res) {
                 setError(res.error);
                 setRows(null);
@@ -119,19 +192,31 @@ export function RosterView({
         });
     };
 
-    // Auto-load on mount for the selected category, and re-query whenever a
-    // query-affecting filter changes ("On board" is excluded — it's a
-    // client-only filter over already-loaded rows, no round trip needed).
-    // Debounced uniformly, including the selects, so text typing doesn't
-    // fire a request per keystroke.
+    // Load once on mount for the initial category.
     useEffect(() => {
+        if (categoryId != null) handleLoad();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Category and the two <select> filters (verification, VOD) call
+    // handleLoad() directly from their onChange handlers — a picked option
+    // is a deliberate, discrete choice, not something that benefits from a
+    // debounce. Only the free-text inputs (runner name, subcategory key)
+    // stay debounced here, so typing doesn't fire a request per keystroke.
+    // Skips the mount-time run (the effect above already loaded once).
+    const didMountTextDebounce = useRef(false);
+    useEffect(() => {
+        if (!didMountTextDebounce.current) {
+            didMountTextDebounce.current = true;
+            return;
+        }
         if (categoryId == null) return;
         const timer = setTimeout(() => {
             handleLoad();
         }, 350);
         return () => clearTimeout(timer);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [categoryId, subcategoryKey, verificationStatus, hasVod, runnerName]);
+    }, [subcategoryKey, runnerName]);
 
     const allSelected =
         visibleRows != null &&
@@ -226,6 +311,7 @@ export function RosterView({
                                     router.replace(
                                         `${baseHref}/roster?categoryId=${id}`,
                                     );
+                                    handleLoad({ categoryId: id });
                                 }
                             }}
                         >
@@ -263,11 +349,12 @@ export function RosterView({
                             id="roster-verification"
                             className="form-select form-select-sm"
                             value={verificationStatus}
-                            onChange={(e) =>
-                                setVerificationStatus(
-                                    e.target.value as VerificationFilter,
-                                )
-                            }
+                            onChange={(e) => {
+                                const next = e.target
+                                    .value as VerificationFilter;
+                                setVerificationStatus(next);
+                                handleLoad({ verificationStatus: next });
+                            }}
                         >
                             <option value="any">Any</option>
                             <option value="unverified">Unverified</option>
@@ -286,9 +373,11 @@ export function RosterView({
                             id="roster-vod"
                             className="form-select form-select-sm"
                             value={hasVod}
-                            onChange={(e) =>
-                                setHasVod(e.target.value as VodFilter)
-                            }
+                            onChange={(e) => {
+                                const next = e.target.value as VodFilter;
+                                setHasVod(next);
+                                handleLoad({ hasVod: next });
+                            }}
                         >
                             <option value="any">Any</option>
                             <option value="true">Yes</option>
@@ -336,7 +425,7 @@ export function RosterView({
                     <button
                         type="button"
                         className="btn btn-sm btn-primary"
-                        onClick={handleLoad}
+                        onClick={() => handleLoad()}
                         disabled={isLoading || categoryId == null}
                     >
                         {isLoading ? 'Loading…' : 'Refresh'}
@@ -352,6 +441,10 @@ export function RosterView({
 
             {visibleRows != null && (
                 <>
+                    <p className="text-muted small mb-2">
+                        {visibleRows.length} run
+                        {visibleRows.length === 1 ? '' : 's'}
+                    </p>
                     {visibleRows.length === 0 ? (
                         <p className="text-muted">
                             No runs match these filters.
@@ -370,20 +463,41 @@ export function RosterView({
                                                 onChange={toggleAll}
                                             />
                                         </th>
-                                        <th>Runner</th>
+                                        <SortableTh
+                                            label="Runner"
+                                            sortKey="runner"
+                                            sort={sort}
+                                            onSort={toggleSort}
+                                        />
                                         <th>Subcategory</th>
-                                        <th className="text-end">RT</th>
-                                        <th className="text-end">GT</th>
-                                        <th className="text-center">
-                                            Verified
-                                        </th>
+                                        <SortableTh
+                                            label="RT"
+                                            sortKey="rt"
+                                            align="end"
+                                            sort={sort}
+                                            onSort={toggleSort}
+                                        />
+                                        <SortableTh
+                                            label="GT"
+                                            sortKey="gt"
+                                            align="end"
+                                            sort={sort}
+                                            onSort={toggleSort}
+                                        />
+                                        <SortableTh
+                                            label="Verified"
+                                            sortKey="status"
+                                            align="center"
+                                            sort={sort}
+                                            onSort={toggleSort}
+                                        />
                                         <th className="text-center">VOD</th>
                                         <th className="text-center">Board</th>
                                         <th />
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {visibleRows.map((row) => {
+                                    {sortedRows?.map((row) => {
                                         const isGuest = row.userId == null;
                                         return (
                                             <tr key={row.runId}>

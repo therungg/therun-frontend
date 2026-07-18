@@ -7,6 +7,11 @@ import styles from './manual-time-verdict-row.module.scss';
 
 const MIN_REASON = 10;
 
+// verify mirrors the run-action dialog's approve pattern (T15/T16): a note
+// is optional and audit-logged, not gated. reject stays gated at MIN_REASON
+// — it's consequential for the runner and the reason is shown to them.
+const DEFAULT_REASON = 'Verified — evidence checks out.';
+
 interface Props {
     gameSlug: string;
     manualTimeId: number;
@@ -24,7 +29,11 @@ export function ManualTimeVerdictRow({
     const [error, setError] = useState<string | null>(null);
     const [isWorking, startWork] = useTransition();
 
-    const reasonOk = reason.trim().length >= MIN_REASON;
+    // verify is optional (falls back to DEFAULT_REASON, like approve on the
+    // run-action dialog); reject stays required — it's consequential for
+    // the runner and the reason is shown to them.
+    const reasonRequired = verdict === 'reject';
+    const reasonOk = reasonRequired ? reason.trim().length >= MIN_REASON : true;
 
     if (verdict == null) {
         return (
@@ -34,14 +43,14 @@ export function ManualTimeVerdictRow({
                     className="btn btn-sm btn-success"
                     onClick={() => setVerdict('verify')}
                 >
-                    Verify time
+                    Verify claim
                 </button>
                 <button
                     type="button"
                     className="btn btn-sm btn-outline-danger"
                     onClick={() => setVerdict('reject')}
                 >
-                    Reject time
+                    Reject claim
                 </button>
             </div>
         );
@@ -51,11 +60,18 @@ export function ManualTimeVerdictRow({
         if (!reasonOk) return;
         setError(null);
         startWork(async () => {
+            const trimmed = reason.trim();
+            const finalReason =
+                trimmed.length > 0
+                    ? trimmed
+                    : verdict === 'verify'
+                      ? DEFAULT_REASON
+                      : trimmed;
             const res = await manualTimeVerdictAction(
                 gameSlug,
                 manualTimeId,
                 verdict,
-                reason.trim(),
+                finalReason,
             );
             if ('error' in res) {
                 setError(res.error);
@@ -74,8 +90,9 @@ export function ManualTimeVerdictRow({
                 htmlFor={`mt-verdict-reason-${manualTimeId}`}
                 className={styles.fieldLabel}
             >
-                {verdict === 'verify' ? 'Verify' : 'Reject'} reason — required,
-                min {MIN_REASON} characters, audit-logged
+                {verdict === 'verify'
+                    ? 'Note — optional, audit-logged'
+                    : 'Reject reason — required, shown to the runner'}
             </label>
             <textarea
                 id={`mt-verdict-reason-${manualTimeId}`}
@@ -85,7 +102,7 @@ export function ManualTimeVerdictRow({
                 onChange={(e) => setReason(e.target.value)}
                 disabled={isWorking}
             />
-            {!reasonOk && reason.length > 0 && (
+            {reasonRequired && !reasonOk && reason.length > 0 && (
                 <div className={styles.reasonError}>
                     {MIN_REASON - reason.trim().length} more needed.
                 </div>

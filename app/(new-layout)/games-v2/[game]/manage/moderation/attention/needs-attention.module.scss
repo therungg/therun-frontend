@@ -103,6 +103,12 @@ $rail: 3px;
     margin-bottom: dt.$spacing-sm;
 }
 
+.queuePosition {
+    @include board.mono-time;
+    margin-left: dt.$spacing-md;
+    color: var(--bs-secondary-color);
+}
+
 // ---- Stack of items ----------------------------------------
 .stack {
     display: flex;
@@ -364,6 +370,16 @@ $rail: 3px;
 
 .emptyTitle {
     @include board.board-empty-title;
+}
+
+.emptyLinks {
+    display: flex;
+    gap: dt.$spacing-lg;
+    margin-top: dt.$spacing-md;
+}
+
+.emptyLink {
+    @include board.board-quiet-link;
 }
 
 // ---- Degraded state (a source failed to load) ---------------
