@@ -461,7 +461,7 @@ function BulkApplySection({ data }: { data: WizardData }) {
             >
                 {isApplying
                     ? (progress ?? 'Applying…')
-                    : `Apply to all ${mains.length} main categor${
+                    : `Apply to all ${mains.length} featured categor${
                           mains.length === 1 ? 'y' : 'ies'
                       }`}
             </button>
