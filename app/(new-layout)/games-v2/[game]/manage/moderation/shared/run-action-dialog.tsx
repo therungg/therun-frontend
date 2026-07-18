@@ -10,14 +10,18 @@ import type {
     VerdictPreviewResult,
 } from '../../../../../../../types/moderation.types';
 import { BoardDialog } from '../../../shared/board-dialog';
+import { deleteRuleAction } from '../rules/actions/delete-rule.action';
 import {
     type BanScope,
+    hasTrueInverse,
+    isBanUndoable,
     type ModVerb,
     REMOVE_REASONS,
     type RemoveReason,
     type RunActionTarget,
     removeReasonMeta,
     resolveRemoveMechanism,
+    undoReason,
 } from './action-model';
 import { excludeAction, previewExcludeAction } from './actions/exclude.action';
 import { restoreRunsAction } from './actions/restore.action';
@@ -35,7 +39,17 @@ interface Props {
     onClose: () => void;
     /** Initial ban scope for a `ban` verb (default 'category'). */
     defaultBanScope?: BanScope;
+    /**
+     * Called after a successful Undo mutation completes, instead of onDone.
+     * Some panes' onDone removes the item from local list state (correct for
+     * the original action, wrong for an undo — the item needs to reappear).
+     * Falls back to onDone for panes where re-running it is already the
+     * right "resync" behavior (a refetch or router.refresh()).
+     */
+    onUndoComplete?: () => void;
 }
+
+type UndoResult = { error: string } | { ok: true };
 
 const MIN_REASON = 10;
 
@@ -76,7 +90,44 @@ export function RunActionDialog({
     onDone,
     onClose,
     defaultBanScope,
+    onUndoComplete,
 }: Props) {
+    const refreshAfterUndo = onUndoComplete ?? onDone;
+
+    // Fires a success toast with a 10s-live Undo action. Clicking it runs
+    // `undo`, surfaces the result, then hands control back to the pane via
+    // refreshAfterUndo so the card/list reflects the reversal.
+    const fireUndoToast = useCallback(
+        (message: string, undo: () => Promise<UndoResult>) => {
+            toast.success(
+                ({ closeToast }) => (
+                    <div className={styles.toastBody}>
+                        <span>{message}</span>
+                        <button
+                            type="button"
+                            className={`btn btn-sm btn-outline-secondary ${styles.toastUndo}`}
+                            onClick={() => {
+                                closeToast();
+                                undo().then((res) => {
+                                    if ('error' in res) {
+                                        toast.error(res.error);
+                                        return;
+                                    }
+                                    toast.success('Undone.');
+                                    refreshAfterUndo();
+                                });
+                            }}
+                        >
+                            Undo
+                        </button>
+                    </div>
+                ),
+                { autoClose: 10000 },
+            );
+        },
+        [refreshAfterUndo],
+    );
+
     const [reasonCat, setReasonCat] = useState<RemoveReason>('cheating');
     const [notify, setNotify] = useState<boolean>(
         removeReasonMeta('cheating').defaultNotify,
@@ -184,11 +235,24 @@ export function RunActionDialog({
                     reason: finalReason,
                 });
                 if ('error' in res) return setError(res.error);
-                toast.success(
+                const message =
                     target.kind === 'runner'
                         ? `${target.runnerName} banned from ${scope === 'category' ? target.categoryDisplay : target.gameDisplay}.`
-                        : 'Runner banned.',
-                );
+                        : 'Runner banned.';
+                // A `ban` result is always CreateRuleResult (the branch only
+                // ever calls excludeAction with a rule, never runIds).
+                if (
+                    'ruleId' in res.result &&
+                    hasTrueInverse(verb) &&
+                    isBanUndoable(res.result)
+                ) {
+                    const ruleId = res.result.ruleId;
+                    fireUndoToast(message, () =>
+                        deleteRuleAction(gameSlug, ruleId, undoReason(verb)),
+                    );
+                } else {
+                    toast.success(message);
+                }
                 return onDone();
             }
             if (verb === 'restore') {
@@ -198,7 +262,12 @@ export function RunActionDialog({
                     finalReason,
                 );
                 if ('error' in res) return setError(res.error);
-                toast.success('Restored.');
+                fireUndoToast('Restored.', () =>
+                    excludeAction(gameSlug, {
+                        runIds,
+                        reason: undoReason(verb),
+                    }),
+                );
                 return onDone();
             }
             if (confirmVerdictAction) {
@@ -210,9 +279,14 @@ export function RunActionDialog({
                 );
                 if ('error' in res) return setError(res.error);
                 const n = res.result.affectedRunCount;
-                toast.success(
-                    `${VERB_TITLE[verb]} — ${n} run${n === 1 ? '' : 's'} updated.`,
-                );
+                const message = `${VERB_TITLE[verb]} — ${n} run${n === 1 ? '' : 's'} updated.`;
+                if (hasTrueInverse(verb)) {
+                    fireUndoToast(message, () =>
+                        restoreRunsAction(gameSlug, runIds, undoReason(verb)),
+                    );
+                } else {
+                    toast.success(message);
+                }
                 return onDone();
             }
             const res = await excludeAction(gameSlug, {
@@ -220,7 +294,9 @@ export function RunActionDialog({
                 reason: finalReason,
             });
             if ('error' in res) return setError(res.error);
-            toast.success('Removed.');
+            fireUndoToast('Removed.', () =>
+                restoreRunsAction(gameSlug, runIds, undoReason(verb)),
+            );
             onDone();
         });
     };
