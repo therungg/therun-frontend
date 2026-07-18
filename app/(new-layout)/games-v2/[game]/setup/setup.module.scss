@@ -14,6 +14,12 @@
     gap: dt.$spacing-lg;
 }
 
+// pushes the header's BackLink to the right edge (Task 9, requirement 4)
+.headerBack {
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
 .cover {
     width: 44px;
     height: 59px;
@@ -183,6 +189,39 @@
 
 .spacer {
     flex: 1;
+}
+
+// ---- Action hierarchy (Task 9) --------------------------------
+// primary = board-btn-primary (step Continue/Save actions), secondary =
+// control-pill (nav Back, finish step's "View your board"), tertiary =
+// board-quiet-link (nav Skip). See system.md.
+.primaryAction {
+    @include board.board-btn-primary;
+}
+
+.backAction {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding: dt.$spacing-xs dt.$spacing-lg;
+
+    @media (pointer: coarse) {
+        padding: dt.$spacing-lg;
+    }
+}
+
+.skipAction {
+    @include board.board-quiet-link;
+}
+
+.secondaryAction {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding: dt.$spacing-xs dt.$spacing-lg;
+    text-decoration: none;
+
+    @media (pointer: coarse) {
+        padding: dt.$spacing-lg;
+    }
 }
 
 // ---- Step section anatomy (Tasks 7–8) ----------------------

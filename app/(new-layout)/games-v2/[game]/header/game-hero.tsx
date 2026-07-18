@@ -139,7 +139,7 @@ export function GameHero({
                             )}
                             <Link
                                 href={`/games-v2/${game.name}/submit`}
-                                className="btn btn-sm btn-primary"
+                                className={styles.primaryAction}
                             >
                                 Submit a run
                             </Link>

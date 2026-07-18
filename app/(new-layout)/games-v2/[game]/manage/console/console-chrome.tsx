@@ -3,8 +3,8 @@
 import clsx from 'clsx';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { List } from 'react-bootstrap-icons';
-import Link from '~src/components/link';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
+import { BackLink } from '../../shared/back-link';
 import { useDialogBehavior } from '../../shared/board-dialog';
 import styles from './console.module.scss';
 import { ConsoleSidebar } from './console-sidebar';
@@ -108,12 +108,10 @@ export function ConsoleChrome({
                     <h1 className={styles.title}>{game.display}</h1>
                 </div>
                 <div className={styles.headerActions}>
-                    <Link
+                    <BackLink
                         href={`/games-v2/${game.name}`}
-                        className="btn btn-sm btn-outline-secondary"
-                    >
-                        Back to leaderboards
-                    </Link>
+                        label="Back to leaderboard"
+                    />
                 </div>
             </header>
 

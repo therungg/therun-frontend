@@ -152,7 +152,7 @@ export function GameDetailsForm({
             {error && <div className={`${styles.errorNote} mt-3`}>{error}</div>}
             <button
                 type="button"
-                className="btn btn-primary mt-3"
+                className={`${styles.primaryAction} mt-3`}
                 disabled={isSaving}
                 onClick={save}
             >

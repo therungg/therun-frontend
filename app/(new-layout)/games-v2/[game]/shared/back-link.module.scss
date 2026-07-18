@@ -1,0 +1,18 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// The one up-navigation pattern (Task 9) — quiet-link tier, leading
+// ArrowLeft, board-eyebrow-adjacent sizing. See system.md.
+.link {
+    @include board.board-quiet-link;
+    display: inline-flex;
+    align-items: center;
+    gap: dt.$spacing-xs;
+    font-size: dt.$font-size-2xs;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+        text-decoration: none;
+    }
+}

@@ -7,6 +7,7 @@ import {
     SETUP_STEP_ORDER,
     type SetupStepId,
 } from '~src/lib/setup/completeness';
+import { BackLink } from '../shared/back-link';
 import styles from './setup.module.scss';
 import { StepCategories } from './steps/step-categories';
 import { StepCategoryConfig } from './steps/step-category-config';
@@ -81,6 +82,11 @@ export function WizardShell({ data, initialStep }: Props) {
                         anytime.
                     </div>
                 </div>
+                <BackLink
+                    href={`/games-v2/${data.game.name}/manage`}
+                    label="Back to console"
+                    className={styles.headerBack}
+                />
             </header>
 
             <nav className={styles.stepper} aria-label="Setup steps">
@@ -130,7 +136,7 @@ export function WizardShell({ data, initialStep }: Props) {
                         {stepIndex > 0 && (
                             <button
                                 type="button"
-                                className="btn btn-outline-secondary btn-sm"
+                                className={styles.backAction}
                                 onClick={onBack}
                             >
                                 Back
@@ -140,7 +146,7 @@ export function WizardShell({ data, initialStep }: Props) {
                         {STEPS[stepIndex].skippable && (
                             <button
                                 type="button"
-                                className="btn btn-link btn-sm"
+                                className={styles.skipAction}
                                 onClick={onAdvance}
                             >
                                 Skip this step

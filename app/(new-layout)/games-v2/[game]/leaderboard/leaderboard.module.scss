@@ -237,15 +237,8 @@ tr:focus-within .reveal {
 }
 
 .emptyAction {
-    @include board.control-pill;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
-    padding: dt.$spacing-xs dt.$spacing-lg;
-    text-decoration: none;
+    @include board.board-btn-primary;
     margin-top: dt.$spacing-xs;
-
-    @media (pointer: coarse) {
-        padding: dt.$spacing-lg;
-    }
 }
 
 .setPill {
