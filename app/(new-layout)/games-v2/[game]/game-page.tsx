@@ -81,6 +81,12 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
         data.variables,
     );
     const showMilliseconds = data.selectedCategory.showMilliseconds ?? true;
+    // Restricts an entry's own `variables` map down to subcategory-role
+    // keys, so row-level "Correct this time" links carry that row's own
+    // subcategory rather than any board-level filter/variable noise.
+    const subcategoryDefKeys = data.variables
+        .filter((v) => v.role === 'subcategory')
+        .map((v) => v.nameNormalized);
 
     // Whether the board is narrowed by any user-set filter — drives the empty
     // state copy ("no runs match these filters" vs "no runs on this board
@@ -176,6 +182,9 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                             primaryTiming={data.selectedCategory.primaryTiming}
                             filtersActive={filtersActive}
                             showMilliseconds={showMilliseconds}
+                            categorySlug={data.selectedCategory.name}
+                            subcategoryKey={subcategoryKey}
+                            subcategoryDefKeys={subcategoryDefKeys}
                         />
                     )}
                 </div>

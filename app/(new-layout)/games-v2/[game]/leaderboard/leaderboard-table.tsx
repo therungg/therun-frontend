@@ -1,5 +1,6 @@
 import { Funnel, Trophy } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
+import { buildSubmitHref } from '~src/lib/board-url';
 import type { LeaderboardResponse } from '../../../../../types/leaderboards.types';
 import { ClearFiltersButton } from '../filters/clear-filters-button';
 import { isSameRunner } from '../shared/is-same-runner';
@@ -24,6 +25,12 @@ interface Props {
     filtersActive: boolean;
     /** category.showMilliseconds ?? true — precision the board is configured for. */
     showMilliseconds: boolean;
+    /** Active category slug — carried into the empty-state submit link and each row's "Correct this time" link. */
+    categorySlug: string;
+    /** Active subcategory key — carried into the empty-state submit link. */
+    subcategoryKey: string;
+    /** Subcategory-role variable names, for building a row's own subcategory key from `entry.variables`. */
+    subcategoryDefKeys: string[];
 }
 
 export function LeaderboardTable({
@@ -35,6 +42,9 @@ export function LeaderboardTable({
     primaryTiming,
     filtersActive,
     showMilliseconds,
+    categorySlug,
+    subcategoryKey,
+    subcategoryDefKeys,
 }: Props) {
     if (leaderboard.entries.length === 0) {
         return (
@@ -63,7 +73,10 @@ export function LeaderboardTable({
                                 No runs on this board yet.
                             </p>
                             <Link
-                                href={`/games-v2/${gameSlug}/submit`}
+                                href={buildSubmitHref(gameSlug, {
+                                    categorySlug,
+                                    subcategoryKey,
+                                })}
                                 className={styles.emptyAction}
                             >
                                 Submit the first run
@@ -148,6 +161,8 @@ export function LeaderboardTable({
                             primaryTiming={primaryTiming}
                             sessionUsername={sessionUsername}
                             showMilliseconds={showMilliseconds}
+                            categorySlug={categorySlug}
+                            subcategoryDefKeys={subcategoryDefKeys}
                         />
                     ))}
                 </tbody>

@@ -12,6 +12,8 @@ import {
     loadRunHistoryAction,
     reportRunAction,
 } from '~src/actions/run-user-actions.action';
+import Link from '~src/components/link';
+import { buildSubmitHref } from '~src/lib/board-url';
 import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
 import type { HistoryEvent } from '../../../../../types/moderation.types';
 import { isSameRunner } from '../shared/is-same-runner';
@@ -19,6 +21,7 @@ import {
     SelfRunVerdictDialog,
     useSelfRunVerdict,
 } from '../shared/self-run-verdict';
+import { buildSubcategoryKey } from '../submit/subcategory-key';
 import { HistoryDialog, ReasonDialog } from './row-action-dialogs';
 import styles from './row-actions-menu.module.scss';
 
@@ -27,6 +30,10 @@ interface Props {
     sessionUsername: string | null;
     canManage?: boolean;
     gameSlug: string;
+    /** This row's own category (a board is single-category). */
+    categorySlug: string;
+    /** Subcategory-role variable names, for building this row's own subcategory key from `entry.variables`. */
+    subcategoryDefKeys: string[];
 }
 
 type ModalKind = 'report' | 'appeal' | 'history' | null;
@@ -36,12 +43,28 @@ export function RowActionsMenu({
     sessionUsername,
     canManage,
     gameSlug,
+    categorySlug,
+    subcategoryDefKeys,
 }: Props) {
     const router = useRouter();
     const runId = entry.runId ?? null;
     const loggedIn = !!sessionUsername;
     const isOwn = loggedIn && isSameRunner(entry.runnerName, sessionUsername);
     const isRejected = entry.verificationStatus === 'rejected';
+    // The entry's own subcategory, not the board's active filter — a
+    // "combined" or filtered view can show entries from other slices.
+    const entrySubcategoryKey = buildSubcategoryKey(
+        Object.fromEntries(
+            Object.entries(entry.variables ?? {}).filter(([k]) =>
+                subcategoryDefKeys.includes(k),
+            ),
+        ),
+    );
+    const correctHref = buildSubmitHref(gameSlug, {
+        categorySlug,
+        subcategoryKey: entrySubcategoryKey,
+        mode: 'claim',
+    });
 
     const [modal, setModal] = useState<ModalKind>(null);
     const [modVerb, setModVerb] = useState<ModVerb | null>(null);
@@ -133,6 +156,15 @@ export function RowActionsMenu({
                             onClick={() => setModal('report')}
                         >
                             Report run
+                        </Dropdown.Item>
+                    )}
+                    {isOwn && (
+                        <Dropdown.Item
+                            as={Link}
+                            href={correctHref}
+                            className={styles.item}
+                        >
+                            Correct this time…
                         </Dropdown.Item>
                     )}
                     {isOwn && !isRejected && (

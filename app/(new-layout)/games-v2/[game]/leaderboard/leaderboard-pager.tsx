@@ -37,6 +37,12 @@ interface Props {
     filtersActive: boolean;
     /** category.showMilliseconds ?? true — precision the board is configured for. */
     showMilliseconds: boolean;
+    /** Active category slug — carried into entry-point submit/claim links. */
+    categorySlug: string;
+    /** Active subcategory key — carried into entry-point submit/claim links. */
+    subcategoryKey: string;
+    /** Subcategory-role variable names, for building a row's own subcategory key from `entry.variables`. */
+    subcategoryDefKeys: string[];
 }
 
 // Module-level flag (not state): the parent keys this component by the
@@ -65,6 +71,9 @@ export function LeaderboardPager({
     primaryTiming,
     filtersActive,
     showMilliseconds,
+    categorySlug,
+    subcategoryKey,
+    subcategoryDefKeys,
 }: Props) {
     const [pages, setPages] = useState<LeaderboardEntry[][]>([initial.entries]);
     const [minPage, setMinPage] = useState(initial.page);
@@ -327,6 +336,9 @@ export function LeaderboardPager({
                 primaryTiming={primaryTiming}
                 filtersActive={filtersActive}
                 showMilliseconds={showMilliseconds}
+                categorySlug={categorySlug}
+                subcategoryKey={subcategoryKey}
+                subcategoryDefKeys={subcategoryDefKeys}
             />
             {maxPage < initial.totalPages && (
                 <div className={styles.showMoreBar}>
