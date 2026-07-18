@@ -417,7 +417,7 @@ $rail: 3px;
     @include board.board-glass;
     position: sticky;
     bottom: dt.$spacing-lg;
-    z-index: 20;
+    z-index: dt.$z-sticky;
     display: flex;
     flex-wrap: wrap;
     align-items: center;

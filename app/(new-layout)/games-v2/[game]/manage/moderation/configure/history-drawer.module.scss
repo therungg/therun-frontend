@@ -1,0 +1,21 @@
+@use '../../../../../styles/design-tokens' as dt;
+@use '../../../../../styles/board' as board;
+
+// ============================================================
+// HistoryDrawer — moderation-log side panel. Keeps its own
+// slide-in-from-the-edge presentation (not BoardDialog's centered
+// modal chrome) but shares the same entrance-motion + elevation
+// vocabulary as every other games-v2 overlay.
+// ============================================================
+
+.backdrop {
+    z-index: calc(#{dt.$z-drawer} - 1);
+    background: rgba(0, 0, 0, 0.4);
+    @include board.board-overlay-enter(fade);
+}
+
+.panel {
+    z-index: dt.$z-drawer;
+    width: min(28rem, 100%);
+    @include board.board-overlay-enter(slide-right);
+}

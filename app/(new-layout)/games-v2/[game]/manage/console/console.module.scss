@@ -452,6 +452,10 @@ $rail: 3px; // severity spine / active accent width
     display: none;
 }
 
+.scrim {
+    display: none;
+}
+
 @media (max-width: 768px) {
     .shell {
         padding: dt.$spacing-lg;
@@ -467,15 +471,38 @@ $rail: 3px; // severity spine / active accent width
         display: inline-flex;
     }
 
+    // A real overlay drawer instead of an in-flow display:none flip —
+    // content underneath never moves. Escape/focus-containment/scroll-lock
+    // come from `useDialogBehavior` (see console-chrome.tsx); the
+    // backdrop-click-to-dismiss scrim is `.scrim` below.
     .sidebar {
-        position: static;
-        border-right: 0;
-        border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
-        padding-right: 0;
-        padding-bottom: dt.$spacing-lg;
+        position: fixed;
+        inset-block: 0;
+        left: 0;
+        width: min(20rem, 85vw);
+        z-index: dt.$z-drawer;
+        background: var(--bs-body-bg);
+        border-right: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+        border-bottom: 0;
+        padding: dt.$spacing-lg;
+        padding-right: dt.$spacing-lg;
+        overflow-y: auto;
+        // Mirror of slide-right — this drawer is left-anchored.
+        @include board.board-overlay-enter(slide-left);
     }
 
     .sidebarHidden {
         display: none;
+    }
+
+    .scrim {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: calc(#{dt.$z-drawer} - 1);
+        background: rgba(0, 0, 0, 0.4);
+        border: 0;
+        padding: 0;
+        @include board.board-overlay-enter(fade);
     }
 }

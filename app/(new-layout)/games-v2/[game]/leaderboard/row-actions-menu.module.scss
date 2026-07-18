@@ -38,6 +38,7 @@
     border-radius: dt.$radius-md;
     background: var(--bs-body-bg);
     box-shadow: dt.$shadow-md;
+    @include board.board-overlay-enter(rise);
 }
 
 .item {

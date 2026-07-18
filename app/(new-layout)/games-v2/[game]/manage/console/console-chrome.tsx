@@ -1,10 +1,11 @@
 'use client';
 
 import clsx from 'clsx';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
 import { List } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
+import { useDialogBehavior } from '../../shared/board-dialog';
 import styles from './console.module.scss';
 import { ConsoleSidebar } from './console-sidebar';
 import type { NavGroup, NavItemId } from './nav-model';
@@ -43,6 +44,20 @@ export function ConsoleChrome({
     children,
 }: Props) {
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const sidebarRef = useRef<HTMLElement>(null);
+    const closeSidebar = () => setSidebarOpen(false);
+
+    // Below 768px the sidebar is a real overlay drawer (see
+    // console.module.scss) — Escape, focus containment, background scroll
+    // lock, and focus-restore-on-close all come from the same behavior
+    // BoardDialog uses. Desktop never sets sidebarOpen true (the toggle
+    // button that flips it is display:none there), so this is inert above
+    // the breakpoint.
+    useDialogBehavior({
+        open: sidebarOpen,
+        onClose: closeSidebar,
+        panelRef: sidebarRef,
+    });
 
     const handleSelect = (id: NavItemId) => {
         setSidebarOpen(false);
@@ -89,7 +104,16 @@ export function ConsoleChrome({
             </header>
 
             <div className={styles.body}>
+                {sidebarOpen && (
+                    <button
+                        type="button"
+                        className={styles.scrim}
+                        aria-label="Close navigation"
+                        onClick={closeSidebar}
+                    />
+                )}
                 <aside
+                    ref={sidebarRef}
                     className={clsx(
                         styles.sidebar,
                         !sidebarOpen && styles.sidebarHidden,

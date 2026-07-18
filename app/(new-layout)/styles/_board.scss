@@ -415,6 +415,91 @@
     }
 }
 
+// ---- Overlay entrance motion ---------------------------------------
+// Every overlay (popover, dropdown, drawer, dialog) enters like it came
+// from its trigger; exit stays instant — no exit animation is defined.
+// The reduced-motion guard lives here, once, instead of every consumer
+// module repeating its own `@media (prefers-reduced-motion: reduce)`
+// block for overlay motion.
+//
+// Modes: `rise` (fade + translateY(4px→0), popovers/dropdowns/menus),
+// `scale` (fade + scale(0.98→1), BoardDialog's centered panel), and
+// `slide-right` (translateX(100%→0), right-edge drawers). `fade` and
+// `slide-left` are direct companions the spec also calls for: `fade`
+// for backdrops (BoardDialog's, the history drawer's, the mobile
+// console drawer's scrim), `slide-left` as slide-right's mirror for
+// left-edge overlays (the mobile console drawer itself) — same
+// duration/easing, opposite translateX sign.
+@mixin board-overlay-enter($mode: rise) {
+    @if $mode == rise {
+        animation: board-overlay-rise 160ms cubic-bezier(0.4, 0, 0.2, 1) both;
+    } @else if $mode == scale {
+        animation: board-overlay-scale 160ms cubic-bezier(0.4, 0, 0.2, 1)
+            both;
+    } @else if $mode == slide-right {
+        animation: board-overlay-slide-right 200ms
+            cubic-bezier(0.4, 0, 0.2, 1) both;
+    } @else if $mode == slide-left {
+        animation: board-overlay-slide-left 200ms cubic-bezier(0.4, 0, 0.2, 1)
+            both;
+    } @else if $mode == fade {
+        animation: board-overlay-fade 160ms cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        animation: none;
+    }
+}
+
+@keyframes board-overlay-rise {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes board-overlay-scale {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes board-overlay-slide-right {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes board-overlay-slide-left {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes board-overlay-fade {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
 // ---- Quiet inline link/button ------------------------------------
 // A "History"-style secondary action: no chrome at rest, padded hit
 // area on touch (negative margin keeps the at-rest footprint/layout
