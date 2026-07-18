@@ -55,9 +55,8 @@ export function VariablesLine({
     if (!text) return null;
     return (
         <div
-            className="text-muted small text-truncate"
+            className={`text-muted small text-truncate ${styles.variablesLine}`}
             title={text}
-            style={{ maxWidth: '100%' }}
         >
             {text}
         </div>

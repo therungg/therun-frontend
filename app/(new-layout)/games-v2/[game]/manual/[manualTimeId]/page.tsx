@@ -7,6 +7,7 @@ import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { getManualTimeProvenance } from '~src/lib/moderation/provenance';
 import { formatTimeMs } from '~src/lib/run-view/time-format';
 import buildMetadata from '~src/utils/metadata';
+import { formatSubcategoryKey } from '../../labels';
 import { ModProvenancePanel } from '../../run-view/mod-provenance-panel';
 import { RunView } from '../../run-view/run-view';
 
@@ -32,8 +33,12 @@ export async function generateMetadata({
     const data = await load(game, manualTimeId);
     if (!data) return buildMetadata();
     const time = formatTimeMs(data.mt.timeMs);
+    const subcategoryLabel = formatSubcategoryKey(data.mt.subcategoryKey);
+    const categoryScope = subcategoryLabel
+        ? `${data.mt.categoryDisplay} · ${subcategoryLabel}`
+        : data.mt.categoryDisplay;
     return buildMetadata({
-        title: `${time} by ${data.mt.runnerName} — ${data.mt.gameDisplay} ${data.mt.categoryDisplay}`,
+        title: `${data.mt.runnerName} — ${time} — ${categoryScope} · ${data.mt.gameDisplay}`,
         description: `${data.mt.runnerName}'s ${data.mt.categoryDisplay} manual time of ${data.mt.gameDisplay} in ${time}, on therun.gg leaderboards.`,
     });
 }
@@ -76,6 +81,7 @@ export default async function ManualTimeDetailPage({ params }: PageProps) {
                 origin: mt.origin,
                 verifiedBy: null,
                 rejectionReason: null,
+                boardStanding: null,
             }}
             history={[]}
             sessionUsername={session.username || null}

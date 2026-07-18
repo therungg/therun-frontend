@@ -1,0 +1,190 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// ============================================================
+// Run page as a destination: breadcrumb header + board vocabulary
+// restyle. See .interface-design/system.md and _board.scss.
+// ============================================================
+
+.header {
+    display: flex;
+    align-items: flex-start;
+    gap: dt.$spacing-lg;
+    margin-bottom: dt.$spacing-lg;
+}
+
+// Game cover + display name — the "back to the board" breadcrumb link.
+.gameLink {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    flex-shrink: 0;
+    color: var(--bs-secondary-color);
+    text-decoration: none;
+    font-weight: 600;
+
+    &:hover {
+        color: var(--bs-primary);
+    }
+}
+
+.gameCover {
+    width: 48px;
+    height: 64px;
+    border-radius: dt.$radius-md;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.crumbBody {
+    min-width: 0;
+    flex: 1;
+}
+
+.eyebrow {
+    @include board.board-eyebrow;
+    margin-bottom: dt.$spacing-xs;
+}
+
+.timeRow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-md;
+    margin: 0;
+}
+
+// The star of the page: the run's time, mono/tabular at hero-timer size.
+.time {
+    @include board.mono-time;
+    font-size: dt.$font-size-display;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+// Rank-1-on-the-board treatment (distinct from verification status).
+.timeGold {
+    color: dt.$accent-gold;
+}
+
+.runnerLine {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-xs;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.verifiedByNote {
+    font-weight: 400;
+    color: var(--bs-secondary-color);
+}
+
+.pillRow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-sm;
+}
+
+.pill {
+    @include board.board-pill;
+    text-decoration: none;
+
+    &:hover {
+        color: var(--bs-primary);
+        text-decoration: none;
+    }
+}
+
+// "#N of M on this board" — links to the runner's rank on the live board.
+.rankLine {
+    display: inline-block;
+    margin-top: dt.$spacing-sm;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    text-decoration: none;
+
+    strong {
+        color: var(--bs-emphasis-color);
+    }
+
+    &:hover {
+        color: var(--bs-primary);
+        text-decoration: none;
+    }
+}
+
+.rejectedNotice {
+    @include board.board-error-alert;
+    // Rejected is the "you can still act on this" family — amber, not the
+    // red reserved for destructive/blocking states.
+    border-color: rgba(dt.$accent-amber, 0.3);
+    background: color-mix(in srgb, #{dt.$accent-amber} 8%, transparent);
+    color: dt.$accent-amber;
+    margin-bottom: dt.$spacing-lg;
+}
+
+// "What now?" line under a rejected self-claim's own page (requirement 5).
+// The VerificationBadge pill in the header already flags "Rejected" — this
+// is the actionable next step, not another alert box.
+.whatNow {
+    margin: 0 0 dt.$spacing-lg;
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+
+    a {
+        color: inherit;
+        font-weight: 600;
+        text-decoration: underline;
+    }
+}
+
+// ---- Media column --------------------------------------------
+.vodWrap {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+}
+
+.mediaPlaceholder {
+    @include board.board-surface(0);
+    aspect-ratio: 16 / 9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bs-tertiary-color);
+
+    a {
+        color: inherit;
+    }
+}
+
+// ---- Side rail --------------------------------------------------
+.surface {
+    @include board.board-surface(dt.$spacing-lg);
+}
+
+.statLabel {
+    @include board.board-eyebrow;
+    display: block;
+}
+
+.statValue {
+    @include board.mono-time;
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+}
+
+// Shared "self-reported · unverified" pill (also used by origin-panel.tsx).
+.warnPill {
+    @include board.board-pill(dt.$accent-amber);
+}
+
+// Copy link / report / appeal / correct — the share affordance and its
+// siblings sit with the breadcrumb header, not buried in the side rail.
+.headerActions {
+    margin-top: dt.$spacing-md;
+}
