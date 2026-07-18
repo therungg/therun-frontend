@@ -1,5 +1,5 @@
 @use '../../../../../styles/design-tokens' as dt;
-@use '../../../../../styles/mixins' as mx;
+@use '../../../../../styles/board' as board;
 
 // ============================================================
 // Active Bans — standing exclusions list.
@@ -60,7 +60,7 @@ $rail: 3px;
 .cardMeta {
     display: flex;
     flex-direction: column;
-    gap: 0.2rem;
+    gap: dt.$spacing-xs;
     font-size: dt.$font-size-sm;
 }
 
@@ -74,7 +74,7 @@ $rail: 3px;
 }
 
 .metaDate {
-    @include mx.monospace-value;
+    @include board.mono-time;
     font-size: dt.$font-size-2xs;
     color: var(--bs-tertiary-color);
 }
@@ -133,33 +133,17 @@ $rail: 3px;
 }
 
 .empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: dt.$spacing-xs;
-    padding: dt.$spacing-3xl dt.$spacing-lg;
-    color: var(--bs-secondary-color);
+    @include board.board-empty;
 }
 
 .emptyIcon {
-    color: var(--bs-primary);
-    opacity: 0.6;
-    margin-bottom: dt.$spacing-sm;
+    @include board.board-empty-icon;
 }
 
 .emptyTitle {
-    font-size: dt.$font-size-lg;
-    font-weight: 700;
-    color: var(--bs-body-color);
-    margin: 0;
+    @include board.board-empty-title;
 }
 
 .errorAlert {
-    padding: dt.$spacing-sm dt.$spacing-md;
-    border-radius: dt.$radius-md;
-    border: 1px solid rgba(dt.$accent-red, 0.3);
-    background: color-mix(in srgb, #{dt.$accent-red} 8%, transparent);
-    color: dt.$accent-red;
-    font-size: dt.$font-size-sm;
+    @include board.board-error-alert;
 }

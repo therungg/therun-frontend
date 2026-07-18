@@ -18,17 +18,7 @@
 }
 
 .quietLink {
-    background: none;
-    border: 0;
-    padding: 0;
-    font-size: dt.$font-size-xs;
-    color: var(--bs-secondary-color);
-    cursor: pointer;
-    transition: color dt.$transition-fast;
-
-    &:hover {
-        color: var(--bs-primary);
-    }
+    @include board.board-quiet-link;
 }
 
 // the "now" element gets the glass material

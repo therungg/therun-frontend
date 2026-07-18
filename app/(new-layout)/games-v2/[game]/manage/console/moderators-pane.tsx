@@ -120,9 +120,7 @@ export function ModeratorsPane({
                 {mods.map((m) => (
                     <div key={m.assignmentId} className={styles.modRow}>
                         <strong>{m.username}</strong>
-                        <span
-                            className={`${styles.pill} ${styles.pillNeutral}`}
-                        >
+                        <span className={styles.pill}>
                             {m.role === 'game-admin'
                                 ? 'board admin'
                                 : 'moderator'}

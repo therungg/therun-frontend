@@ -45,7 +45,7 @@
     top: calc(100% + #{dt.$spacing-xs});
     z-index: 30;
     background: var(--bs-body-bg);
-    box-shadow: dt.$shadow-lg;
+    box-shadow: dt.$shadow-md;
     min-width: 16rem;
     display: flex;
     flex-direction: column;
@@ -57,7 +57,7 @@
     font-size: dt.$font-size-2xs;
     background: rgba(var(--bs-primary-rgb), 0.15);
     border-radius: 999px;
-    padding: 0 0.4rem;
+    padding: 0 dt.$spacing-sm;
 }
 
 .bandRow {
@@ -74,7 +74,7 @@
 
     .pill {
         font-size: dt.$font-size-xs;
-        padding: 0.2rem 0.6rem;
+        padding: dt.$spacing-xs 0.6rem;
     }
 }
 
@@ -173,6 +173,10 @@
     min-width: 0;
 }
 
+// Exception to the popover-shadow-md unification: this is a large
+// (96×128px) piece of game art sitting directly over the ambient hero
+// backdrop, not a popover — it needs the heavier lift to read as a
+// distinct object over the blurred art behind it. See system.md.
 .heroCover {
     width: 96px;
     height: 128px;
@@ -283,17 +287,7 @@
 }
 
 .quietLink {
-    background: none;
-    border: 0;
-    padding: 0;
-    font-size: dt.$font-size-xs;
-    color: var(--bs-secondary-color);
-    cursor: pointer;
-    transition: color dt.$transition-fast;
-
-    &:hover {
-        color: var(--bs-primary);
-    }
+    @include board.board-quiet-link;
 }
 
 @keyframes heroEnter {

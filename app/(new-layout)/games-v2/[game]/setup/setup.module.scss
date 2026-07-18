@@ -41,10 +41,10 @@
 }
 
 // ---- Progress rail -----------------------------------------
+// Canonical board-stepper spec — the reassignment wizard converges
+// onto this (see reassignments.module.scss).
 .stepper {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
+    @include board.board-stepper;
     gap: 2px;
     margin: dt.$spacing-xl 0 dt.$spacing-2xl;
 }
@@ -52,7 +52,7 @@
 .stepNode {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
+    gap: dt.$spacing-sm;
     font-size: dt.$font-size-xs;
     font-weight: 500;
     color: var(--bs-tertiary-color);
@@ -70,18 +70,7 @@
 }
 
 .stepNum {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.35rem;
-    height: 1.35rem;
-    border-radius: 50%;
-    border: 1px solid rgba(var(--bs-border-color-rgb), 0.8);
-    font-size: dt.$font-size-2xs;
-    font-weight: 600;
-    flex-shrink: 0;
-    transition: background-color dt.$transition-fast,
-        border-color dt.$transition-fast, color dt.$transition-fast;
+    @include board.board-step-num;
 }
 
 .stepConnector {
@@ -92,22 +81,18 @@
 }
 
 .stepCurrent {
-    color: var(--bs-emphasis-color);
-    font-weight: 600;
+    @include board.board-step-current;
 
     .stepNum {
-        background: var(--bs-primary);
-        border-color: var(--bs-primary);
-        color: #fff;
+        @include board.board-step-current-num;
     }
 }
 
 .stepDone {
-    color: var(--bs-secondary-color);
+    @include board.board-step-done;
 
     .stepNum {
-        border-color: var(--bs-primary);
-        color: var(--bs-primary);
+        @include board.board-step-done-num;
     }
 }
 
@@ -144,7 +129,7 @@
         font-weight: 700;
         display: flex;
         align-items: center;
-        gap: 0.4rem;
+        gap: dt.$spacing-sm;
         margin-bottom: dt.$spacing-md;
     }
 }
@@ -169,7 +154,7 @@
 .railRow {
     display: flex;
     align-items: baseline;
-    gap: 0.45rem;
+    gap: dt.$spacing-sm;
     padding-block: 2px;
     color: var(--bs-secondary-color);
     font-size: dt.$font-size-xs;
@@ -285,4 +270,10 @@
 
 .heldRow td {
     opacity: 0.55;
+}
+
+// One red: severity/destructive text uses $accent-red, not Bootstrap's
+// $danger (#dc3545) — replaces the raw `text-danger` utility class.
+.textDanger {
+    color: dt.$accent-red;
 }
