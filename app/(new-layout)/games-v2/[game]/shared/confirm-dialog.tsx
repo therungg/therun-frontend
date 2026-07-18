@@ -25,6 +25,8 @@ interface ConfirmDialogProps {
     /** 'danger' for destructive/irreversible actions (the default). */
     variant?: ConfirmVariant;
     pending: boolean;
+    /** Server-side error from the last confirm attempt, if any. */
+    error?: string | null;
 }
 
 /**
@@ -44,6 +46,7 @@ export function ConfirmDialog({
     cancelLabel = 'Cancel',
     variant = 'danger',
     pending,
+    error = null,
 }: ConfirmDialogProps) {
     const cancelRef = useRef<HTMLButtonElement>(null);
 
@@ -67,6 +70,11 @@ export function ConfirmDialog({
             </div>
             <div className={styles.body}>
                 <p className={styles.message}>{message}</p>
+                {error && (
+                    <div className={styles.errorAlert} role="alert">
+                        {error}
+                    </div>
+                )}
             </div>
             <div className={styles.footer}>
                 <button
