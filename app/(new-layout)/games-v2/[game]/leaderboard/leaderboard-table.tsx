@@ -2,6 +2,7 @@ import { Funnel, Trophy } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import type { LeaderboardResponse } from '../../../../../types/leaderboards.types';
 import { ClearFiltersButton } from '../filters/clear-filters-button';
+import { isSameRunner } from '../shared/is-same-runner';
 import styles from './leaderboard.module.scss';
 import { LeaderboardRow } from './leaderboard-row';
 import {
@@ -112,10 +113,10 @@ export function LeaderboardTable({
                                 `${entry.runnerName}-${entry.rank}`
                             }
                             entry={entry}
-                            isCurrentUser={
-                                sessionUsername !== null &&
-                                entry.runnerName === sessionUsername
-                            }
+                            isCurrentUser={isSameRunner(
+                                entry.runnerName,
+                                sessionUsername,
+                            )}
                             canManage={canManage}
                             gameSlug={gameSlug}
                             hideRealTime={hideRealTime}

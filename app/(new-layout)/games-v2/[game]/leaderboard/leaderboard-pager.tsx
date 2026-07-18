@@ -7,6 +7,7 @@ import type {
     LeaderboardResponse,
 } from '../../../../../types/leaderboards.types';
 import { fetchLeaderboardPage } from '../actions/fetch-page.action';
+import { isSameRunner } from '../shared/is-same-runner';
 import { computeBoardRange } from './board-range';
 import { planFindMeSearch } from './find-me-plan';
 import styles from './leaderboard.module.scss';
@@ -134,7 +135,7 @@ export function LeaderboardPager({
     const merged = mergeEntries(pages);
     const isCurrentUserVisible =
         sessionUsername !== null &&
-        merged.some((e) => e.runnerName === sessionUsername);
+        merged.some((e) => isSameRunner(e.runnerName, sessionUsername));
     const showFindMe =
         sessionUsername !== null &&
         !isCurrentUserVisible &&
@@ -180,7 +181,11 @@ export function LeaderboardPager({
                     backwardPages.push(res.entries);
                     newMinPage = page;
                 }
-                if (res.entries.some((e) => e.runnerName === sessionUsername)) {
+                if (
+                    res.entries.some((e) =>
+                        isSameRunner(e.runnerName, sessionUsername),
+                    )
+                ) {
                     found = true;
                     break;
                 }
