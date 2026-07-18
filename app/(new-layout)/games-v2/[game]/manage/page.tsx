@@ -27,6 +27,7 @@ import type {
 } from '../../../../../types/board-claims.types';
 import { ConsoleShell } from './console/console-shell';
 import type { GameDetailsData } from './console/game-details-pane';
+import { loadModDoorClaim, ModDoor } from './mod-door';
 import {
     degradedSourcesOf,
     mergeAttention,
@@ -39,11 +40,14 @@ interface Props {
 
 export default async function GameAdminConsolePage({ params }: Props) {
     const { game: slug } = await params;
-    const session = await getSession();
-    if (!session?.username || !session.id) notFound();
 
     const game = await resolveGame(slug);
     if (!game) notFound();
+
+    const session = await getSession();
+    if (!session?.username || !session.id) {
+        return <ModDoor game={game} claim={null} />;
+    }
 
     const ability = defineAbilityFor(session);
     const canModerate = canModerateGame(session, game.name);
@@ -57,7 +61,14 @@ export default async function GameAdminConsolePage({ params }: Props) {
         'edit',
         caslSubject('moderators', { game: game.name }),
     );
-    if (!canModerate && !canConfigure) notFound();
+    if (!canModerate && !canConfigure) {
+        return (
+            <ModDoor
+                game={game}
+                claim={await loadModDoorClaim(session.id, game.id)}
+            />
+        );
+    }
 
     const sessionId = session.id;
     const { categories } = await resolveCategory(game.id);
