@@ -1,10 +1,9 @@
-import { subject as caslSubject } from '@casl/ability';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { resolveGame } from '~src/lib/games-v1';
+import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { getRunProvenance } from '~src/lib/moderation/provenance';
 import { getRunHistory } from '~src/lib/moderation/runs';
-import { defineAbilityFor } from '~src/rbac/ability';
 import { loadConsoleChrome } from '../../console/load-chrome';
 import { SubrouteChrome } from '../../console/subroute-chrome';
 import { loadManageRunData } from './data';
@@ -25,13 +24,7 @@ export default async function GameRunManagePage({ params }: Props) {
     const data = await loadManageRunData(slug, runId);
     if (!data) notFound();
 
-    const ability = defineAbilityFor(session);
-    if (
-        !ability.can(
-            'edit',
-            caslSubject('leaderboard', { game: data.game.name }),
-        )
-    ) {
+    if (!canModerateGame(session, data.game.name)) {
         notFound();
     }
 
