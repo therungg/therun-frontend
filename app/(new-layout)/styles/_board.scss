@@ -392,6 +392,29 @@
     }
 }
 
+// Bootstrap's $warning (#ffc107) doesn't match $accent-amber (#f59e0b) —
+// non-destructive-but-cautionary dialog actions build off the token
+// directly instead of `btn-warning`.
+@mixin board-dialog-btn-warning {
+    background: dt.$accent-amber;
+    border: 1px solid dt.$accent-amber;
+    color: #fff;
+
+    &:hover:not(:disabled) {
+        background: color-mix(in srgb, #{dt.$accent-amber} 85%, white);
+        border-color: color-mix(in srgb, #{dt.$accent-amber} 85%, white);
+    }
+
+    &:focus-visible {
+        outline: 0;
+        box-shadow: 0 0 0 3px rgba(dt.$accent-amber, 0.3);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+    }
+}
+
 // ---- Quiet inline link/button ------------------------------------
 // A "History"-style secondary action: no chrome at rest, padded hit
 // area on touch (negative margin keeps the at-rest footprint/layout

@@ -42,24 +42,30 @@ export function useSelfRunVerdict() {
     const [confirmState, setConfirmState] = useState<PendingConfirm | null>(
         null,
     );
+    const [error, setError] = useState<string | null>(null);
     const [pending, startTransition] = useTransition();
 
-    const requestVerdict = (runId: number, verdict: Verdict) =>
+    const requestVerdict = (runId: number, verdict: Verdict) => {
+        setError(null);
         setConfirmState({ runId, verdict });
+    };
 
     const cancel = () => {
         if (pending) return;
         setConfirmState(null);
+        setError(null);
     };
 
     const confirm = () => {
         if (!confirmState) return;
         const { runId, verdict } = confirmState;
+        setError(null);
         startTransition(async () => {
             const res = await selfRunVerdictAction(runId, verdict);
             if ('error' in res) {
-                toast.error(res.error);
-                setConfirmState(null);
+                // Stay open with the failure surfaced inline — matches every
+                // other confirm dialog's convention. Only success closes it.
+                setError(res.error);
                 return;
             }
             if (res.noop) {
@@ -78,17 +84,19 @@ export function useSelfRunVerdict() {
         });
     };
 
-    return { confirmState, pending, requestVerdict, cancel, confirm };
+    return { confirmState, pending, error, requestVerdict, cancel, confirm };
 }
 
 export function SelfRunVerdictDialog({
     confirmState,
     pending,
+    error = null,
     onCancel,
     onConfirm,
 }: {
     confirmState: PendingConfirm | null;
     pending: boolean;
+    error?: string | null;
     onCancel: () => void;
     onConfirm: () => void;
 }) {
@@ -111,6 +119,11 @@ export function SelfRunVerdictDialog({
             </div>
             <div className={styles.body}>
                 <p className={styles.message}>{copy.body}</p>
+                {error && (
+                    <div className={styles.errorAlert} role="alert">
+                        {error}
+                    </div>
+                )}
             </div>
             <div className={styles.footer}>
                 <button
@@ -124,7 +137,7 @@ export function SelfRunVerdictDialog({
                 </button>
                 <button
                     type="button"
-                    className={`btn btn-sm ${confirmState?.verdict === 'reject' ? 'btn-danger' : 'btn-primary'}`}
+                    className={`btn btn-sm ${confirmState?.verdict === 'reject' ? styles.btnDanger : 'btn-primary'}`}
                     onClick={onConfirm}
                     disabled={pending}
                 >

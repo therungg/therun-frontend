@@ -8,7 +8,7 @@ export type ConfirmVariant = 'danger' | 'warning' | 'primary';
 
 const VARIANT_CLASS: Record<ConfirmVariant, string> = {
     danger: styles.btnDanger,
-    warning: 'btn-warning',
+    warning: styles.btnWarning,
     primary: 'btn-primary',
 };
 

@@ -206,6 +206,7 @@ export function RunActions({
             <SelfRunVerdictDialog
                 confirmState={selfVerdict.confirmState}
                 pending={selfVerdict.pending}
+                error={selfVerdict.error}
                 onCancel={selfVerdict.cancel}
                 onConfirm={selfVerdict.confirm}
             />

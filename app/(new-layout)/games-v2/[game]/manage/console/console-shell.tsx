@@ -287,7 +287,14 @@ export function ConsoleShell({
                         )
                     }
                     onEditCategory={(id) => {
+                        // Mirrors handleNavigate: write the pane to the URL
+                        // (not just state) so a refresh doesn't lose place
+                        // and the searchParams sync effect above doesn't
+                        // stomp the editor back to the default pane.
                         setSelectedCategoryId(id);
+                        router.replace('?pane=category-settings', {
+                            scroll: false,
+                        });
                         setActiveItem('category-settings');
                     }}
                 />

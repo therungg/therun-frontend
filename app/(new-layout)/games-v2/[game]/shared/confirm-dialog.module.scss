@@ -42,3 +42,11 @@
 .btnDanger {
     @include board.board-dialog-btn-danger;
 }
+
+// ---- Amber action style for cautionary (non-destructive) confirms ---
+// Bootstrap's $warning (#ffc107) doesn't match the design system's
+// $accent-amber (#f59e0b) — build off the token directly instead of
+// reaching for `btn-warning`.
+.btnWarning {
+    @include board.board-dialog-btn-warning;
+}
