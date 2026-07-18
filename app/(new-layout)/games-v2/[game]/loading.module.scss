@@ -1,0 +1,172 @@
+@use '../../styles/design-tokens' as dt;
+@use '../../styles/board' as board;
+
+// ============================================================
+// Route-level loading skeleton for the board page. Geometry
+// mirrors game-page.module.scss's hero/band/grid — see there for
+// the real dimensions this predicts (96×128 hero cover, the
+// main+340px rail grid, board-table rows).
+// ============================================================
+
+// ---- Hero -----------------------------------------------------
+.hero {
+    @include board.board-page-columns;
+    position: relative;
+    border-radius: dt.$radius-xl;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    margin-bottom: dt.$spacing-lg;
+    padding: dt.$spacing-3xl;
+
+    @media (max-width: 991.98px) {
+        padding: dt.$spacing-xl;
+        row-gap: dt.$spacing-xl;
+    }
+}
+
+.heroMain {
+    display: flex;
+    gap: dt.$spacing-xl;
+    align-items: flex-start;
+    min-width: 0;
+}
+
+.cover {
+    @include board.board-skeleton;
+    width: 96px;
+    height: 128px;
+    border-radius: dt.$radius-lg;
+    flex-shrink: 0;
+
+    @media (max-width: 991.98px) {
+        width: 60px;
+        height: 80px;
+    }
+}
+
+.heroText {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.titleBar {
+    @include board.board-skeleton;
+    height: dt.$font-size-hero-title;
+    width: 60%;
+    border-radius: dt.$radius-sm;
+}
+
+.metaBar {
+    @include board.board-skeleton;
+    height: dt.$font-size-sm;
+    width: 40%;
+    border-radius: dt.$radius-sm;
+}
+
+.actionsRow {
+    display: flex;
+    gap: dt.$spacing-sm;
+    margin-top: dt.$spacing-md;
+}
+
+.actionChip {
+    @include board.board-skeleton;
+    width: 7rem;
+    height: 2rem;
+    border-radius: dt.$badge-radius;
+}
+
+.crown {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+
+    @media (max-width: 991.98px) {
+        display: none;
+    }
+}
+
+.eyebrowBar {
+    @include board.board-skeleton;
+    height: dt.$font-size-2xs;
+    width: 70%;
+    border-radius: dt.$radius-sm;
+}
+
+.crownTimeBar {
+    @include board.board-skeleton;
+    height: dt.$font-size-hero-time;
+    width: 55%;
+    border-radius: dt.$radius-sm;
+}
+
+// ---- Control band -----------------------------------------
+.band {
+    @include board.board-skeleton;
+    height: 2.75rem;
+    border-radius: dt.$radius-lg;
+    margin-bottom: dt.$spacing-lg;
+}
+
+// ---- Page grid ----------------------------------------------
+.grid {
+    @include board.board-page-columns;
+}
+
+// ---- Board table ---------------------------------------------
+.table {
+    @include board.board-surface(0);
+    overflow: hidden;
+}
+
+.tableHead {
+    @include board.board-skeleton;
+    height: 2.25rem;
+}
+
+.row {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-lg;
+    padding: dt.$spacing-md dt.$spacing-lg;
+    border-bottom: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+
+    &:last-child {
+        border-bottom: 0;
+    }
+}
+
+.rankChip {
+    @include board.board-skeleton;
+    width: 1.75rem;
+    height: 1.1rem;
+    border-radius: dt.$radius-sm;
+    flex-shrink: 0;
+}
+
+.runnerBar {
+    @include board.board-skeleton;
+    flex: 1;
+    max-width: 12rem;
+    height: 1.1rem;
+    border-radius: dt.$radius-sm;
+}
+
+.timeBar {
+    @include board.board-skeleton;
+    width: 5rem;
+    height: 1.1rem;
+    border-radius: dt.$radius-sm;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+// ---- Rail -----------------------------------------------------
+.railPanel {
+    @include board.board-skeleton;
+    height: 10rem;
+    border-radius: dt.$radius-lg;
+    margin-bottom: dt.$spacing-lg;
+}

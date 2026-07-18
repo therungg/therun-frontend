@@ -213,6 +213,16 @@ $rail: 3px; // severity spine / active accent width
     @include board.board-surface;
 }
 
+// Minimal Suspense fallback for the shell mount in manage/page.tsx — the
+// full geometry-matched skeleton lives in manage/loading.tsx; this is
+// just one placeholder block for the momentary gap before ConsoleShell
+// mounts.
+.fallback {
+    @include board.board-skeleton;
+    min-height: 32rem;
+    border-radius: dt.$radius-lg;
+}
+
 .paneHeader {
     display: flex;
     align-items: baseline;
