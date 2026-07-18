@@ -7,17 +7,18 @@ import { usePopoverFocus } from '../shared/use-popover-focus';
 
 interface Props {
     categories: ResolvedCategory[];
-    isPending: boolean;
     onSelect: (name: string) => void;
 }
 
 /**
  * Quiet trailing pill revealing non-featured active categories the band
  * doesn't render directly (see `computeCategoryVisibility`'s `overflow`).
- * Selecting one navigates exactly like a featured pill click; the panel
- * itself follows the same focus-management pattern as `FiltersPopover`.
+ * Selecting one navigates exactly like a featured pill click (through the
+ * shared `useBoardNav`, which self-guards re-clicks while pending — see
+ * category-pills.tsx); the panel itself follows the same focus-management
+ * pattern as `FiltersPopover`.
  */
-export function CategoryOverflow({ categories, isPending, onSelect }: Props) {
+export function CategoryOverflow({ categories, onSelect }: Props) {
     const [open, setOpen] = useState(false);
     const rootRef = useRef<HTMLDivElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
@@ -61,7 +62,6 @@ export function CategoryOverflow({ categories, isPending, onSelect }: Props) {
                             <button
                                 key={c.id}
                                 type="button"
-                                disabled={isPending}
                                 onClick={() => {
                                     onSelect(c.name);
                                     close();

@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { PlayBtn } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
@@ -146,7 +145,6 @@ export function LeaderboardRow({
     categorySlug,
     subcategoryDefKeys,
 }: Props) {
-    const router = useRouter();
     const showManageButton = canManage && entry.runId != null && !entry.isGuest;
     const detailHref =
         entry.source === 'manual' && entry.manualTimeId != null
@@ -172,22 +170,25 @@ export function LeaderboardRow({
                 ? styles.rank3
                 : '';
 
-    // The whole row opens the run detail; real links/buttons inside
-    // keep working (we ignore clicks that land on them).
-    const onRowClick = (e: React.MouseEvent<HTMLTableRowElement>) => {
-        if (!detailHref) return;
-        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-        const target = e.target as HTMLElement;
-        if (target.closest('a, button, input, [role="menu"], [role="dialog"]'))
-            return;
-        router.push(detailHref);
-    };
-
-    const time = (value: number | null, dimmed: boolean) => (
+    // The primary time cell's anchor is a real stretched link (Bootstrap's
+    // `.stretched-link`, ::after inset:0 against the row's `position:
+    // relative` — see `.row` in leaderboard.module.scss) — the whole row is
+    // a genuine <a>, not a synthetic click handler, so status-bar preview,
+    // cmd/ctrl-click, middle-click and long-press all work natively. Other
+    // interactive cells (runner link, VOD link, kebab/manage) sit above it
+    // via z-index — see leaderboard.module.scss.
+    const time = (
+        value: number | null,
+        dimmed: boolean,
+        stretched: boolean,
+    ) => (
         <td className={dimmed ? styles.timeSecondary : styles.time}>
             {value != null ? (
                 detailHref ? (
-                    <Link href={detailHref}>
+                    <Link
+                        href={detailHref}
+                        className={stretched ? 'stretched-link' : undefined}
+                    >
                         <DurationToFormatted
                             duration={value}
                             withMillis={showMilliseconds}
@@ -212,6 +213,11 @@ export function LeaderboardRow({
         key === 'rt' ? entry.realTime : entry.gameTime;
     const timingHidden = (key: TimingKey) =>
         timingColumnHidden(key, { hideRealTime, hideGameTime });
+    // The stretch normally lands on the primary (ranked) time cell; if a
+    // category's configured to hide that column, fall back to the
+    // secondary one so the row link never silently disappears.
+    const primaryVisible = !timingHidden(primary.key);
+    const secondaryVisible = !timingHidden(secondary.key);
 
     return (
         <tr
@@ -219,8 +225,7 @@ export function LeaderboardRow({
             // -1: focusable programmatically (Find me scrolls here and
             // focuses it) without joining the natural tab order.
             tabIndex={isCurrentUser ? -1 : undefined}
-            className={`${podiumClass} ${isCurrentUser ? styles.youRow : ''} ${detailHref ? styles.rowLink : ''}`}
-            onClick={onRowClick}
+            className={`${styles.row} ${podiumClass} ${isCurrentUser ? styles.youRow : ''}`}
         >
             <td className={`${styles.rank} ${rankClass}`}>
                 {displayRank.tied && (
@@ -244,10 +249,9 @@ export function LeaderboardRow({
                     <CountryFlag country={entry.country} />
                 </span>
             </td>
-            {!timingHidden(primary.key) &&
-                time(timingValue(primary.key), false)}
-            {!timingHidden(secondary.key) &&
-                time(timingValue(secondary.key), true)}
+            {primaryVisible && time(timingValue(primary.key), false, true)}
+            {secondaryVisible &&
+                time(timingValue(secondary.key), true, !primaryVisible)}
             <td
                 className={`${styles.meta} ${styles.when}`}
                 title={entry.runDate ? formatRunDate(entry.runDate) : undefined}
@@ -265,7 +269,11 @@ export function LeaderboardRow({
                     entry.verificationStatus === 'pending' && (
                         <InfoPill
                             label="pending"
-                            explanation="Awaiting moderator verification"
+                            explanation={
+                                isCurrentUser
+                                    ? "Your run is awaiting verification — you'll be notified."
+                                    : 'Awaiting moderator verification'
+                            }
                         />
                     )}
                 {entry.vodUrl && (

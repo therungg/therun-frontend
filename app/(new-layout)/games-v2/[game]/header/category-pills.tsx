@@ -1,14 +1,17 @@
 'use client';
 
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useMemo, useTransition } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { useMemo } from 'react';
 import type {
     ResolvedCategory,
     ResolvedGroup,
 } from '../../../../../types/leaderboards.types';
+import { useBoardNav } from '../filters/use-board-nav';
 import styles from '../game-page.module.scss';
 import { CategoryOverflow } from './category-overflow';
 import { computeCategoryVisibility } from './category-visibility';
+
+const PENDING_PREFIX = 'category:';
 
 interface Props {
     categories: ResolvedCategory[];
@@ -23,10 +26,9 @@ export function CategoryPills({
     selectedCategoryName,
     variableKeys,
 }: Props) {
-    const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const [isPending, startTransition] = useTransition();
+    const { navigate, isPending, pendingKey } = useBoardNav();
 
     const onSelect = (name: string) => {
         const sp = new URLSearchParams(searchParams.toString());
@@ -34,19 +36,24 @@ export function CategoryPills({
         sp.delete('page');
         sp.delete('combined');
         for (const k of variableKeys) sp.delete(k);
-        startTransition(() => {
-            router.push(`${pathname}?${sp.toString()}`);
-        });
+        navigate(`${pathname}?${sp.toString()}`, `${PENDING_PREFIX}${name}`);
     };
 
+    // Optimistic selection: while a category nav is in flight, the clicked
+    // pill renders active immediately instead of waiting for the URL/RSC
+    // payload to land.
+    const optimisticSelectedName =
+        isPending && pendingKey?.startsWith(PENDING_PREFIX)
+            ? pendingKey.slice(PENDING_PREFIX.length)
+            : selectedCategoryName;
+
     const renderPill = (c: ResolvedCategory) => {
-        const active = c.name === selectedCategoryName;
+        const active = c.name === optimisticSelectedName;
         return (
             <button
                 key={c.id}
                 type="button"
                 onClick={() => onSelect(c.name)}
-                disabled={isPending}
                 aria-pressed={active}
                 className={`${styles.pill} ${active ? styles.pillActive : ''}`}
             >
@@ -71,7 +78,7 @@ export function CategoryPills({
     }
 
     return (
-        <nav aria-label="Category">
+        <nav aria-label="Category" aria-busy={isPending || undefined}>
             {sections.map((section, idx) => {
                 const isLast = idx === sections.length - 1;
                 return (
@@ -94,7 +101,6 @@ export function CategoryPills({
                         {isLast && (
                             <CategoryOverflow
                                 categories={overflow}
-                                isPending={isPending}
                                 onSelect={onSelect}
                             />
                         )}

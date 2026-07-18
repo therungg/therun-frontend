@@ -352,6 +352,15 @@
 
 .colMain {
     min-width: 0;
+    transition: opacity dt.$transition-fast;
+}
+
+// Stale-board dim: any in-flight board nav (category/subcategory/verified/
+// filter — see useBoardNav) dims and locks the board region rather than
+// leaving the previous page's rows looking live while a new URL resolves.
+.colMainPending {
+    opacity: 0.55;
+    pointer-events: none;
 }
 
 .rail {
