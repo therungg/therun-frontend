@@ -13,21 +13,42 @@ export interface BoardLinkContext {
     categorySlug?: string | null;
     /** Canonical `name=value|name=value` subcategory key. Omitted/falsy -> no subcategory params. */
     subcategoryKey?: string | null;
+    /** 1-based board page. Omitted/1 -> no `page` param (page 1 is the board's default). */
+    page?: number | null;
+}
+
+// Matches data.ts's `DEFAULT_PAGE_SIZE` — the board page size a rank is
+// translated against. Kept as a local constant (not imported) since
+// data.ts is a server-only page-data module and this file is pure/shared
+// with client components.
+const DEFAULT_BOARD_PAGE_SIZE = 25;
+
+/**
+ * Which 1-based board page a given rank falls on, at the board's page size
+ * (25 — see games-v2/[game]/data.ts `DEFAULT_PAGE_SIZE`). Pure.
+ */
+export function rankToPage(
+    rank: number,
+    pageSize: number = DEFAULT_BOARD_PAGE_SIZE,
+): number {
+    return Math.max(1, Math.ceil(rank / pageSize));
 }
 
 /**
  * Builds the query params a board URL carries for a given category +
- * subcategory. Pure — no path, no leading `?`.
+ * subcategory (+ optional page). Pure — no path, no leading `?`.
  */
 export function buildBoardQuery({
     categorySlug,
     subcategoryKey,
+    page,
 }: BoardLinkContext): URLSearchParams {
     const sp = new URLSearchParams();
     if (categorySlug) sp.set('category', categorySlug);
     for (const { name, value } of parseSubcategoryKey(subcategoryKey ?? '')) {
         if (name && value) sp.set(name, value);
     }
+    if (page && page > 1) sp.set('page', String(page));
     return sp;
 }
 

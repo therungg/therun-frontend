@@ -14,3 +14,7 @@
 .rejected {
     @include board.board-pill;
 }
+
+.variablesLine {
+    max-width: 100%;
+}

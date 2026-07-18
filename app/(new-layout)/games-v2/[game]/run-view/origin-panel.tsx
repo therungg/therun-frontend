@@ -2,6 +2,7 @@ import Link from '~src/components/link';
 import { originSummary } from '~src/lib/run-view/origin-summary';
 import { safeEncodeURI } from '~src/utils/uri';
 import type { RunViewModel } from './run-view';
+import styles from './run-view.module.scss';
 
 export function OriginPanel({ model }: { model: RunViewModel }) {
     const summary = originSummary(model.origin, model.runnerName);
@@ -15,11 +16,11 @@ export function OriginPanel({ model }: { model: RunViewModel }) {
         model.verificationStatus === 'pending';
 
     return (
-        <div className="border rounded p-3">
+        <div className={styles.surface}>
             <div className="d-flex flex-wrap align-items-center gap-2">
                 <span>{summary.line}</span>
                 {pendingSelfClaim && (
-                    <span className="badge text-bg-warning">
+                    <span className={styles.warnPill}>
                         Self-reported · unverified
                     </span>
                 )}

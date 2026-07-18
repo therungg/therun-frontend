@@ -36,9 +36,16 @@ export function RunActions({
     const canAppeal = isOwnRun && model.verificationStatus === 'rejected';
     const canHide = isOwnRun && model.verificationStatus !== 'rejected';
     const canRestore = isOwnRun && model.verificationStatus === 'rejected';
-    // RunViewModel carries no category slug (only categoryDisplay) — link
-    // mode=claim alone rather than guess at the category from display text.
-    const correctHref = buildSubmitHref(model.game.name, { mode: 'claim' });
+    // RunViewModel carries no category slug of its own (only
+    // categoryDisplay), but a matched board standing (requirement 1's
+    // getUserRankingsByName lookup, `run` kind only) does — use it when
+    // present rather than guessing at the category from display text;
+    // falls back to mode=claim alone otherwise.
+    const correctHref = buildSubmitHref(model.game.name, {
+        mode: 'claim',
+        categorySlug: model.boardStanding?.categorySlug,
+        subcategoryKey: model.boardStanding?.subcategoryKey,
+    });
 
     const close = () => {
         setModal(null);
