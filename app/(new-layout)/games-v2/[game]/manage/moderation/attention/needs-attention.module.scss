@@ -1,5 +1,6 @@
 @use '../../../../../styles/design-tokens' as dt;
 @use '../../../../../styles/mixins' as mx;
+@use '../../../../../styles/board' as board;
 
 // ============================================================
 // Needs Attention — the moderator triage queue.
@@ -150,6 +151,20 @@ $rail: 3px;
     align-items: center;
     gap: dt.$spacing-sm;
     margin-bottom: dt.$spacing-md;
+}
+
+// ---- Batch-selection checkbox (card + group select-all) -----
+.checkbox {
+    width: 1rem;
+    height: 1rem;
+    accent-color: var(--bs-primary);
+    cursor: pointer;
+    flex-shrink: 0;
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+    }
 }
 
 .age {
@@ -406,6 +421,38 @@ $rail: 3px;
 .degradedText {
     font-size: dt.$font-size-sm;
     color: color-mix(in srgb, #{dt.$accent-amber} 75%, var(--bs-emphasis-color));
+}
+
+// ---- Sticky batch-selection bar ------------------------------
+// Glass per the design system's "sticky control band" allowance — sits above
+// whatever's scrolled beneath it without competing with card surfaces.
+.bulkBar {
+    @include board.board-glass;
+    position: sticky;
+    bottom: dt.$spacing-lg;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-lg;
+    margin-top: dt.$spacing-lg;
+    padding: dt.$spacing-md dt.$spacing-xl;
+    border-radius: dt.$radius-lg;
+    box-shadow: dt.$shadow-lg;
+}
+
+.bulkCount {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.bulkActions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-left: auto;
 }
 
 .degradedRetry {
