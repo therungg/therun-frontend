@@ -53,6 +53,13 @@ export interface RecentPb {
     gameTime?: number | null;
     endedAt: string;
     isPb: boolean;
+    // Optional: the same /v1/finished-runs endpoint's parallel shape
+    // (FinishedRunPB, src/lib/highlights.ts) always carries `runId`, but
+    // getRecentPbs casts the raw response straight to RecentPb[] with no
+    // mapping, so runtime presence here is unproven. Keep optional so a
+    // backend omission doesn't break the type — consumers must fall back
+    // when it's missing.
+    runId?: number | null;
 }
 
 // Variable definition shared between the admin CRUD endpoint and the public
