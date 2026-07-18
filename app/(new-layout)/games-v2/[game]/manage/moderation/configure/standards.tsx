@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState, useTransition } from 'react';
 import { toast } from 'react-toastify';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import type { ResolvedCategory } from '../../../../../../../types/leaderboards.types';
 import type {
     BoardPolicyRow,
     CreatePolicyInput,
@@ -21,7 +22,7 @@ import { msToInput, parseTime } from './time-input';
 interface Props {
     gameSlug: string;
     gameDisplay: string;
-    categories: Array<{ id: number; display: string }>;
+    category: ResolvedCategory;
     canEdit: boolean;
 }
 
@@ -63,18 +64,13 @@ function gtInputFromPolicies(
     return msToInput(min ? (num(min.value.minGameTimeMs) ?? null) : null);
 }
 
-export function Standards({
-    gameSlug,
-    gameDisplay,
-    categories,
-    canEdit,
-}: Props) {
-    const [categoryId, setCategoryId] = useState<number | null>(
-        categories[0]?.id ?? null,
-    );
+export function Standards({ gameSlug, gameDisplay, category, canEdit }: Props) {
+    const categoryId = category.id;
     const [policies, setPolicies] = useState<BoardPolicyRow[]>([]);
     const [minInput, setMinInput] = useState('');
+    const [originalMinInput, setOriginalMinInput] = useState('');
     const [gtInput, setGtInput] = useState('');
+    const [originalGtInput, setOriginalGtInput] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [isSaving, startSaving] = useTransition();
@@ -94,8 +90,12 @@ export function Standards({
                 return;
             }
             setPolicies(res.policies);
-            setMinInput(minInputFromPolicies(res.policies, catId));
-            setGtInput(gtInputFromPolicies(res.policies, catId));
+            const min = minInputFromPolicies(res.policies, catId);
+            const gt = gtInputFromPolicies(res.policies, catId);
+            setMinInput(min);
+            setOriginalMinInput(min);
+            setGtInput(gt);
+            setOriginalGtInput(gt);
             setLoading(false);
         },
         [gameSlug],
@@ -103,7 +103,6 @@ export function Standards({
 
     // Load policies + roster whenever the selected category changes.
     useEffect(() => {
-        if (categoryId == null) return;
         void loadForCategory(categoryId);
         startRosterLoad(async () => {
             const res = await loadRosterAction(gameSlug, categoryId, {});
@@ -111,8 +110,15 @@ export function Standards({
         });
     }, [categoryId, gameSlug, loadForCategory]);
 
+    const dirty = minInput !== originalMinInput || gtInput !== originalGtInput;
+
+    const handleReset = () => {
+        setMinInput(originalMinInput);
+        setGtInput(originalGtInput);
+        setError(null);
+    };
+
     const handleSave = () => {
-        if (categoryId == null) return;
         setError(null);
 
         const minRt = parseTime(minInput);
@@ -212,37 +218,13 @@ export function Standards({
 
     return (
         <section className="mb-4">
-            <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                <h2 className="h5 mb-0">Minimum time</h2>
-                {categories.length > 0 && (
-                    <select
-                        className="form-select form-select-sm"
-                        style={{ maxWidth: '16rem' }}
-                        aria-label="Category for standards"
-                        value={categoryId ?? ''}
-                        onChange={(e) => {
-                            const id = Number.parseInt(e.target.value, 10);
-                            setCategoryId(Number.isFinite(id) ? id : null);
-                        }}
-                        disabled={isSaving}
-                    >
-                        {categories.map((c) => (
-                            <option key={c.id} value={c.id}>
-                                {c.display}
-                            </option>
-                        ))}
-                    </select>
-                )}
-            </div>
-
-            <p className="text-muted small">
-                Set the minimum time for this category of {gameDisplay}. Changes
-                apply once you save.
+            <h2 className="h5 mb-1">Minimum time</h2>
+            <p className="text-muted small mb-3">
+                Set the minimum time for <strong>{category.display}</strong> in{' '}
+                {gameDisplay}. Changes apply once you save.
             </p>
 
-            {categoryId == null ? (
-                <p className="text-muted">This game has no categories.</p>
-            ) : loading ? (
+            {loading ? (
                 <p className="text-muted">Loading standards…</p>
             ) : (
                 <div className="border rounded p-3 bg-light-subtle">
@@ -359,21 +341,29 @@ export function Standards({
                     {/* ── Save / read-only note ────────────────────────── */}
                     {canEdit ? (
                         <div className="mt-3">
+                            <div className="d-flex gap-2">
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-primary"
+                                    onClick={handleSave}
+                                    disabled={isSaving || !dirty}
+                                >
+                                    {isSaving ? 'Saving…' : 'Save'}
+                                </button>
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-secondary"
+                                    onClick={handleReset}
+                                    disabled={isSaving || !dirty}
+                                >
+                                    Reset
+                                </button>
+                            </div>
                             {error && (
                                 <div className="alert alert-danger mt-2 mb-0 py-2">
                                     {error}
                                 </div>
                             )}
-                            <div className="d-flex justify-content-end mt-2">
-                                <button
-                                    type="button"
-                                    className="btn btn-sm btn-primary"
-                                    onClick={handleSave}
-                                    disabled={isSaving}
-                                >
-                                    {isSaving ? 'Saving…' : 'Save minimum time'}
-                                </button>
-                            </div>
                         </div>
                     ) : (
                         <p className="text-muted small mt-3 mb-0">

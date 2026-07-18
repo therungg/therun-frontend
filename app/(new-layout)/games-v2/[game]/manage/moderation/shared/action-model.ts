@@ -80,6 +80,23 @@ export function undoReason(verb: ModVerb): string {
 
 export type BanScope = 'category' | 'game';
 
+/**
+ * Default ban-dialog scope for banning every item in a group (e.g. a
+ * runner-group card's "Ban runner…" action). Picking "this category" when
+ * the group's items actually span several categories would be an arbitrary
+ * choice of one of them — default to "entire game" instead, which covers
+ * everything the moderator is looking at. A group confined to one category
+ * keeps the more surgical "this category" default.
+ */
+export function defaultBanScopeForCategories(
+    categoryIds: Array<number | null>,
+): BanScope {
+    const distinct = new Set(
+        categoryIds.filter((id): id is number => id != null),
+    );
+    return distinct.size > 1 ? 'game' : 'category';
+}
+
 /** What a dialog instance acts on. `ban` requires a `runner` target; the rest require `runs`. */
 export type RunActionTarget =
     | { kind: 'runs'; runIds: number[]; label: string }

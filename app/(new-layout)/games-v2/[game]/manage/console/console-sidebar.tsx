@@ -69,7 +69,7 @@ export function ConsoleSidebar({
     onSelectCategory,
 }: Props) {
     // The per-category picker only matters when a category-scoped pane is
-    // open (Standards self-manages its own category, so it isn't one).
+    // open — every per-category pane (including Minimum time) shares it.
     const activeIsCategoryScoped =
         groups.flatMap((g) => g.items).find((it) => it.id === activeItem)
             ?.categoryScoped ?? false;

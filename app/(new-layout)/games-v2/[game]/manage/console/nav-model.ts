@@ -98,9 +98,7 @@ const ALL_GROUPS: NavGroup[] = [
         id: 'per-category',
         label: 'Per category',
         items: [
-            // Standards self-manages its own category selector, so it is NOT
-            // categoryScoped (it ignores the shell's selected category).
-            { id: 'standards', label: 'Minimum time', categoryScoped: false },
+            { id: 'standards', label: 'Minimum time', categoryScoped: true },
             { id: 'timing', label: 'Timing', categoryScoped: true },
             { id: 'rules', label: 'Rules', categoryScoped: true },
             { id: 'variables', label: 'Variables', categoryScoped: true },
@@ -161,4 +159,24 @@ export function sidebarActiveItem(
         return 'reports';
     }
     return activeItem;
+}
+
+/**
+ * The setup-nudge slot (SetupChecklistCard while setup is incomplete,
+ * BoardHealthCard once it's done) belongs above Game-group panes — where a
+ * board admin is already in a "configure this board" mindset — and on
+ * whichever pane is this viewer's actual console landing page, so newcomers
+ * see it on arrival regardless of which group happens to be first for their
+ * permission set. It has no business sitting above triage panes (Needs
+ * attention, Roster, Bans...): a moderator mid-queue doesn't need a "finish
+ * setup" nag competing for their attention.
+ */
+export function showSetupCard(
+    groups: NavGroup[],
+    activeItem: NavItemId | null,
+): boolean {
+    if (activeItem == null) return true;
+    if (activeItem === defaultItem(groups)) return true;
+    const gameGroup = groups.find((g) => g.id === 'game');
+    return gameGroup?.items.some((it) => it.id === activeItem) ?? false;
 }

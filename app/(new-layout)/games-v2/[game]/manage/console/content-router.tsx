@@ -111,13 +111,15 @@ export function ContentRouter(props: ContentRouterProps) {
         case 'bans':
             return <ActiveBans gameSlug={game.name} />;
         case 'standards':
-            return (
+            return selectedCategory ? (
                 <Standards
                     gameSlug={game.name}
                     gameDisplay={game.display}
-                    categories={categories}
+                    category={selectedCategory}
                     canEdit={canEditStandards}
                 />
+            ) : (
+                <Placeholder title="Minimum time">Pick a category.</Placeholder>
             );
         case 'timing':
             return selectedCategory ? (
@@ -171,13 +173,15 @@ export function ContentRouter(props: ContentRouterProps) {
                     Pick a category.
                 </Placeholder>
             );
-        // All three items live inside the single GameTab component.
+        // All three items live inside the single GameTab component — it
+        // scrolls to the matching section rather than remounting.
         case 'groups':
         case 'categories-visibility':
         case 'identifiers':
             return (
                 <GameTab
                     game={game}
+                    activeSection={activeItem}
                     initialSlug={props.initialSlug}
                     initialAbbreviation={props.initialAbbreviation}
                     rows={props.rows}
