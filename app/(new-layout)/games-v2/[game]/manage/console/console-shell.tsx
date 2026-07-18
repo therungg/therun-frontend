@@ -23,6 +23,7 @@ import type { GameDetailsData } from './game-details-pane';
 import {
     buildNav,
     defaultItem,
+    sidebarActiveItem as deriveSidebarActiveItem,
     type NavFlags,
     type NavItemId,
 } from './nav-model';
@@ -165,13 +166,32 @@ export function ConsoleShell({
             setActiveItem('attention');
             return;
         }
-        router.replace(`?pane=${id}`, { scroll: false });
+        // Opening History from the sidebar is an overlay, not a navigation —
+        // it must NOT touch the URL or activeItem. Writing `?pane=history`
+        // here would make `initialActive` (which excludes `history` as a
+        // landing pane) recompute to the default pane, and the sync effect
+        // above would then overwrite activeItem out from under the open
+        // drawer, silently dropping the current pane AND any `?kind=` filter.
+        // Deep-linked opens (`?pane=history` in the URL on arrival) are
+        // handled separately by the mount effect above, which never routes
+        // through here.
         if (id === 'history') {
             setHistoryOpen(true);
             return;
         }
+        router.replace(`?pane=${id}`, { scroll: false });
         setActiveItem(id);
     };
+
+    // The sidebar highlight for Reports vs. Needs attention is derived, not
+    // stored — see `sidebarActiveItem` in nav-model.ts. Deriving from
+    // searchParams means dismissing the kind chip in NeedsAttention (which
+    // updates the URL itself) automatically flips the highlight back without
+    // the shell needing to know about it.
+    const activeSidebarItem = useMemo(
+        () => deriveSidebarActiveItem(activeItem, searchParams.get('kind')),
+        [activeItem, searchParams],
+    );
 
     const categoryOptions = useMemo(
         () => categories.map((c) => ({ id: c.id, display: c.display })),
@@ -206,7 +226,7 @@ export function ConsoleShell({
             <ConsoleChrome
                 game={game}
                 groups={groups}
-                activeItem={activeItem}
+                activeItem={activeSidebarItem}
                 onNavigate={handleNavigate}
                 attentionCount={liveAttentionCount}
                 badgeDegraded={degradedSources.length > 0}

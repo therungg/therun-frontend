@@ -136,3 +136,21 @@ export function buildNav(flags: NavFlags): NavGroup[] {
 export function defaultItem(groups: NavGroup[]): NavItemId | null {
     return groups[0]?.items[0]?.id ?? null;
 }
+
+/**
+ * Reports isn't a real pane — `handleNavigate('reports')` lands on the
+ * `attention` pane pre-filtered by `?kind=report`, so `activeItem` is always
+ * `'attention'` whether the viewer got there via "Needs attention" or
+ * "Reports". The sidebar highlight has to be derived from the `kind` query
+ * param (not stored) so it stays correct when NeedsAttention's own kind-chip
+ * dismiss button rewrites the URL out from under the shell.
+ */
+export function sidebarActiveItem(
+    activeItem: NavItemId | null,
+    kind: string | null,
+): NavItemId | null {
+    if (activeItem === 'attention' && kind === 'report') {
+        return 'reports';
+    }
+    return activeItem;
+}
