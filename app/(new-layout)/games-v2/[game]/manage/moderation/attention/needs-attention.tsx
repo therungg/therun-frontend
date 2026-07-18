@@ -40,10 +40,12 @@ import { ManualTimeVerdictRow } from './manual-time-verdict-row';
 import styles from './needs-attention.module.scss';
 import {
     allKeysSelected,
+    flattenTriageOrder,
     intersectSelected,
     isTriageInert,
     moveSelection,
     parseTriageKey,
+    queuePosition,
     setManySelected,
     toggleSelected,
 } from './triage-keyboard';
@@ -136,6 +138,13 @@ export function NeedsAttention({
     const [selectedForBatch, setSelectedForBatch] = useState<Set<string>>(
         new Set(),
     );
+    // Runner-group disclosure state, lifted out of RunnerGroupCard (which
+    // used to own it locally) so the roving keyboard selection and the
+    // "{n} of {m}" queue indicator can compute the true rendered card order
+    // without a DOM query — see flattenTriageOrder below.
+    const [expandedGroups, setExpandedGroups] = useState<Set<number>>(
+        new Set(),
+    );
     const listRef = useRef<HTMLDivElement>(null);
     const isDegraded = degradedSources.length > 0;
     const degradedMessage = `Couldn't load ${formatSourceList(degradedSources)} — the queue may not be empty.`;
@@ -186,6 +195,26 @@ export function NeedsAttention({
     }, [items, sourceFilter, kindFilter, categoryFilter]);
 
     const groups = useMemo(() => groupByRunner(filtered), [filtered]);
+
+    // The exact key order cards render in — respects collapsed runner
+    // groups, shared by the roving j/k handler and the queue-position badge.
+    const orderedKeys = useMemo(
+        () => flattenTriageOrder(groups, expandedGroups),
+        [groups, expandedGroups],
+    );
+    const queuePos = useMemo(
+        () => queuePosition(orderedKeys, selectedKey),
+        [orderedKeys, selectedKey],
+    );
+
+    const toggleGroup = (userId: number) => {
+        setExpandedGroups((prev) => {
+            const next = new Set(prev);
+            if (next.has(userId)) next.delete(userId);
+            else next.add(userId);
+            return next;
+        });
+    };
 
     // A source/category filter can hide items that were previously checked —
     // keep the bulk bar honest by dropping selections that fall out of view,
@@ -292,14 +321,11 @@ export function NeedsAttention({
             }
 
             if (action === 'up' || action === 'down') {
-                const keys = Array.from(
-                    listRef.current?.querySelectorAll<HTMLElement>(
-                        `[${TRIAGE_CARD_ATTR}]`,
-                    ) ?? [],
-                ).map((el) => el.getAttribute(TRIAGE_CARD_ATTR) as string);
-                if (keys.length === 0) return;
+                if (orderedKeys.length === 0) return;
                 e.preventDefault();
-                setSelectedKey((cur) => moveSelection(keys, cur, action));
+                setSelectedKey((cur) =>
+                    moveSelection(orderedKeys, cur, action),
+                );
                 return;
             }
 
@@ -323,7 +349,7 @@ export function NeedsAttention({
         // triggerApprove/triggerRemove/toggleBatchKey close over `item`/setState,
         // not component state beyond what's already listed — safe to omit.
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [runAction, selectedKey, filtered]);
+    }, [runAction, selectedKey, filtered, orderedKeys]);
 
     // Keep the selection ring visibly focused and scrolled into view.
     useEffect(() => {
@@ -437,6 +463,23 @@ export function NeedsAttention({
                         <p className="mb-0">
                             Nothing needs attention right now.
                         </p>
+                        {/* "All your games" hub link lands with Task 17
+                            (/games-v2/manage doesn't exist yet) — add it
+                            here once that route ships. */}
+                        <div className={styles.emptyLinks}>
+                            <Link
+                                href={`/games-v2/${gameSlug}/manage?pane=history`}
+                                className={styles.emptyLink}
+                            >
+                                Review history
+                            </Link>
+                            <Link
+                                href={`/games-v2/${gameSlug}/manage/moderation/roster`}
+                                className={styles.emptyLink}
+                            >
+                                Browse runs
+                            </Link>
+                        </div>
                     </div>
                 )
             ) : (
@@ -465,6 +508,11 @@ export function NeedsAttention({
                     )}
                     <p className={styles.hint}>
                         j/k navigate · v approve · r remove · x select
+                        {queuePos && (
+                            <span className={styles.queuePosition}>
+                                {queuePos.n} of {queuePos.m}
+                            </span>
+                        )}
                     </p>
                     <div className={styles.stack} ref={listRef}>
                         {groups.map((g) =>
@@ -482,6 +530,14 @@ export function NeedsAttention({
                                     selectedForBatch={selectedForBatch}
                                     onToggleKey={toggleBatchKey}
                                     onToggleKeys={toggleBatchKeys}
+                                    open={
+                                        g.userId != null &&
+                                        expandedGroups.has(g.userId)
+                                    }
+                                    onToggleOpen={() =>
+                                        g.userId != null &&
+                                        toggleGroup(g.userId)
+                                    }
                                 />
                             ) : (
                                 <SingleItemCard
@@ -803,6 +859,11 @@ interface RunnerGroupCardProps {
     selectedForBatch: Set<string>;
     onToggleKey: (key: string) => void;
     onToggleKeys: (keys: string[], select: boolean) => void;
+    /** Disclosure state, lifted to the parent — flattenTriageOrder needs to
+     * know which groups are expanded to compute the true rendered card
+     * order, so this can't stay local component state. */
+    open: boolean;
+    onToggleOpen: () => void;
 }
 
 function RunnerGroupCard({
@@ -817,9 +878,9 @@ function RunnerGroupCard({
     selectedForBatch,
     onToggleKey,
     onToggleKeys,
+    open,
+    onToggleOpen,
 }: RunnerGroupCardProps) {
-    const [open, setOpen] = useState(false);
-
     const allKeys = items.map((it) => it.key);
     const batchableKeys = items
         .filter((it) => it.runId != null)
@@ -897,7 +958,7 @@ function RunnerGroupCard({
                 <button
                     type="button"
                     className={styles.disclosure}
-                    onClick={() => setOpen((v) => !v)}
+                    onClick={onToggleOpen}
                     aria-expanded={open}
                 >
                     <Caret

@@ -149,3 +149,54 @@ export function intersectSelected(
     }
     return next;
 }
+
+// ---- Ordered card keys (roving selection + queue position) -------------
+
+/** The minimal group shape flattenTriageOrder needs — mirrors RunnerGroup
+ * from attention-model.ts without importing it into this pure module. */
+export interface TriageGroupLike {
+    userId: number | null;
+    items: readonly { key: string }[];
+}
+
+/**
+ * Flatten grouped attention items into the exact key order the cards render
+ * in — the same array previously re-derived per keydown via a
+ * `[data-triage-card]` DOM query. A single-item group always contributes its
+ * one key. A multi-item runner group only contributes its items' keys while
+ * expanded (a collapsed group renders nothing selectable, mirroring the
+ * DOM — see needs-attention.tsx's RunnerGroupCard). Shared by the roving
+ * j/k handler and the "{n} of {m}" queue-position indicator so both agree on
+ * what's actually on screen.
+ */
+export function flattenTriageOrder(
+    groups: readonly TriageGroupLike[],
+    expandedGroups: ReadonlySet<number>,
+): string[] {
+    const keys: string[] = [];
+    for (const g of groups) {
+        if (g.items.length > 1) {
+            if (g.userId != null && expandedGroups.has(g.userId)) {
+                for (const it of g.items) keys.push(it.key);
+            }
+            continue;
+        }
+        for (const it of g.items) keys.push(it.key);
+    }
+    return keys;
+}
+
+/**
+ * 1-based position of `selectedKey` within the ordered card keys, for the
+ * "{n} of {m}" indicator — `null` when nothing is selected or the selected
+ * key isn't currently rendered (e.g. its group just got collapsed).
+ */
+export function queuePosition(
+    orderedKeys: readonly string[],
+    selectedKey: string | null,
+): { n: number; m: number } | null {
+    if (selectedKey == null) return null;
+    const idx = orderedKeys.indexOf(selectedKey);
+    if (idx === -1) return null;
+    return { n: idx + 1, m: orderedKeys.length };
+}
