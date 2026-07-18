@@ -4,6 +4,7 @@ import type { UserRanking } from 'types/leaderboards.types';
 import { VerificationBadge } from '~app/(new-layout)/games-v2/[game]/run-view/run-badges';
 import Link from '~src/components/link';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { formatRunDate } from '~src/lib/format-run-date';
 import { parseSubcategoryKey } from '~src/lib/run-view/parse-subcategory-key';
 
 interface Props {
@@ -75,9 +76,7 @@ export function LeaderboardPbs({ rankings }: Props) {
                                     status={row.verificationStatus}
                                 />
                             </td>
-                            <td>
-                                {new Date(row.runDate).toLocaleDateString()}
-                            </td>
+                            <td>{formatRunDate(row.runDate)}</td>
                         </tr>
                     );
                 })}

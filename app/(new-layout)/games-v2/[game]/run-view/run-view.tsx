@@ -2,6 +2,7 @@ import type React from 'react';
 import { UserLink } from '~src/components/links/links';
 import { Vod, youtubeParser } from '~src/components/run/dashboard/vod';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { formatRunDate } from '~src/lib/format-run-date';
 import type {
     ResolvedGame,
     RunOrigin,
@@ -173,11 +174,7 @@ export function RunView({
                                     <small className="text-muted d-block">
                                         Run date
                                     </small>
-                                    <span>
-                                        {new Date(
-                                            model.runDate,
-                                        ).toLocaleDateString()}
-                                    </span>
+                                    <span>{formatRunDate(model.runDate)}</span>
                                 </div>
                             )}
                         </div>

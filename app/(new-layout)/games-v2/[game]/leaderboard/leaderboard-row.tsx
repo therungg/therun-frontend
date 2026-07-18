@@ -6,6 +6,7 @@ import { PlayBtn } from 'react-bootstrap-icons';
 import Link from '~src/components/link';
 import { UserLink } from '~src/components/links/links';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { formatRunDate } from '~src/lib/format-run-date';
 import type { LeaderboardEntry } from '../../../../../types/leaderboards.types';
 import { usePopoverFocus } from '../shared/use-popover-focus';
 import { CountryFlag } from './country-flag';
@@ -220,11 +221,7 @@ export function LeaderboardRow({
                 time(timingValue(secondary.key), true)}
             <td
                 className={`${styles.meta} ${styles.when}`}
-                title={
-                    entry.runDate
-                        ? new Date(entry.runDate).toLocaleDateString()
-                        : undefined
-                }
+                title={entry.runDate ? formatRunDate(entry.runDate) : undefined}
             >
                 {entry.runDate ? relativeDate(entry.runDate) : ''}
             </td>
