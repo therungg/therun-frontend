@@ -7,6 +7,7 @@ import type { ModActionRow } from '../../../../../../../types/moderation.types';
 import { useDialogBehavior } from '../../../shared/board-dialog';
 import { undoAction } from '../log/actions/undo.action';
 import { loadHistoryAction } from './actions/standards.action';
+import { historyActionLabel } from './history-labels';
 
 interface Props {
     gameSlug: string;
@@ -175,7 +176,11 @@ export function HistoryDrawer({ gameSlug, open, onClose }: Props) {
                                                     <strong>
                                                         {row.actorName}
                                                     </strong>{' '}
-                                                    <code>{row.action}</code>
+                                                    <span title={row.action}>
+                                                        {historyActionLabel(
+                                                            row.action,
+                                                        )}
+                                                    </span>
                                                     {row.target
                                                         ? ` ${row.target}`
                                                         : ''}

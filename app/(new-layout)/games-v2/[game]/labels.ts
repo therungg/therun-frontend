@@ -15,7 +15,7 @@ const REAL_TIME_KEYS = new Set(['rt', 'realtime', 'rta']);
 const GAME_TIME_KEYS = new Set(['gt', 'gametime', 'igt']);
 
 /** Title-cases a raw token: splits camelCase/snake_case/kebab-case/whitespace. */
-function humanizeWord(raw: string): string {
+export function humanizeWord(raw: string): string {
     if (!raw) return '';
     const spaced = raw
         .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
