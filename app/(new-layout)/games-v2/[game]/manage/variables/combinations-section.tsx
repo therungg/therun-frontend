@@ -33,9 +33,9 @@ export function CombinationsSection({
     selectedCategory,
 }: Props) {
     const [combos, setCombos] = useState<Combo[]>([]);
+    const [original, setOriginal] = useState<Combo[]>([]);
     const [mode, setMode] = useState<'open' | 'managed'>('open');
     const [loadError, setLoadError] = useState<string | null>(null);
-    const [pristine, setPristine] = useState(true);
     const [isLoading, startLoadTransition] = useTransition();
     const [isSaving, startSaveTransition] = useTransition();
     const busy = isLoading || isSaving;
@@ -50,13 +50,14 @@ export function CombinationsSection({
         if ('error' in res) {
             setLoadError(res.error);
             setCombos([]);
+            setOriginal([]);
             setMode('open');
         } else {
             setLoadError(null);
             setCombos(res.result.combinations);
+            setOriginal(res.result.combinations);
             setMode(res.result.mode);
         }
-        setPristine(true);
     };
 
     useEffect(() => {
@@ -64,16 +65,22 @@ export function CombinationsSection({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [gameId, categoryId]);
 
+    const pristine =
+        combos.length === original.length &&
+        combos.every((c, i) => c.valid === original[i]?.valid);
+
     const toggle = (idx: number) => {
         setCombos((prev) =>
             prev.map((c, i) => (i === idx ? { ...c, valid: !c.valid } : c)),
         );
-        setPristine(false);
     };
 
     const setAll = (valid: boolean) => {
         setCombos((prev) => prev.map((c) => ({ ...c, valid })));
-        setPristine(false);
+    };
+
+    const handleReset = () => {
+        setCombos(original);
     };
 
     const handleSave = () => {
@@ -146,14 +153,6 @@ export function CombinationsSection({
                     >
                         Uncheck all
                     </button>
-                    <button
-                        type="button"
-                        className="btn btn-sm btn-primary"
-                        onClick={handleSave}
-                        disabled={busy || pristine}
-                    >
-                        {isSaving ? 'Saving…' : 'Save'}
-                    </button>
                 </div>
             </div>
 
@@ -213,6 +212,24 @@ export function CombinationsSection({
                                 })}
                             </tbody>
                         </table>
+                    </div>
+                    <div className="d-flex gap-2">
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-primary"
+                            onClick={handleSave}
+                            disabled={busy || pristine}
+                        >
+                            {isSaving ? 'Saving...' : 'Save'}
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={handleReset}
+                            disabled={busy || pristine}
+                        >
+                            Reset
+                        </button>
                     </div>
                 </>
             )}
