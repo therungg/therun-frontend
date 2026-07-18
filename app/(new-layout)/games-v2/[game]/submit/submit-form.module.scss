@@ -17,6 +17,10 @@
 .modeButton {
     @include board.control-pill;
     padding: dt.$spacing-xs dt.$spacing-md;
+
+    @media (pointer: coarse) {
+        padding: dt.$spacing-lg dt.$spacing-md;
+    }
 }
 
 .modeButtonActive {
@@ -25,4 +29,10 @@
 
 .modeHint {
     color: var(--bs-secondary-color);
+}
+
+// One red: required-field marker uses $accent-red, not Bootstrap's
+// `text-danger` utility.
+.required {
+    color: dt.$accent-red;
 }

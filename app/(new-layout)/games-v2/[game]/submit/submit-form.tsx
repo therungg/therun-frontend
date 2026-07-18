@@ -719,7 +719,7 @@ function TimeInput({
         <div>
             <label htmlFor={id} className="form-label">
                 {label}
-                {required && <span className="text-danger"> *</span>}
+                {required && <span className={styles.required}> *</span>}
             </label>
             <input
                 id={id}
