@@ -96,7 +96,7 @@ export function ReassignmentStatus<
             {data.status === 'failed' && (
                 <>
                     <div className={`${styles.callout} ${styles.calloutError}`}>
-                        {data.statusMessage ?? 'Reassignment failed.'}
+                        {data.statusMessage ?? 'Merge failed.'}
                     </div>
                     {onRestart && (
                         <div className={styles.actions}>

@@ -36,9 +36,9 @@ export function CategoryWizard({
         return (
             <div className={styles.surface}>
                 <div className={styles.header}>
-                    <p className={styles.eyebrow}>Category reassignment</p>
+                    <p className={styles.eyebrow}>Category merge</p>
                     <h3 className={styles.title}>
-                        Reassigning {sourceCategory.display}
+                        Merging {sourceCategory.display}
                     </h3>
                 </div>
                 <ReassignmentStatus
@@ -75,9 +75,9 @@ export function CategoryWizard({
     return (
         <div className={styles.surface}>
             <div className={styles.header}>
-                <p className={styles.eyebrow}>Category reassignment</p>
+                <p className={styles.eyebrow}>Category merge</p>
                 <h3 className={styles.title}>
-                    Reassign category: {sourceCategory.display}
+                    Merge category: {sourceCategory.display}
                 </h3>
                 <p className={styles.subtitle}>
                     Merge this category's runs into another category in the same
@@ -132,7 +132,7 @@ export function CategoryWizard({
                         targetId === null || !acknowledged || isSubmitting
                     }
                 >
-                    {isSubmitting ? 'Starting…' : 'Confirm reassignment'}
+                    {isSubmitting ? 'Starting…' : 'Confirm merge'}
                 </button>
             </div>
         </div>

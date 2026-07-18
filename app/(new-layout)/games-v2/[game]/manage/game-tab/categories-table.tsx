@@ -11,6 +11,12 @@ import { updateVisibilityAction } from '../visibility/actions/update-visibility.
 
 type Filter = 'all' | 'active' | 'archived';
 
+const FILTER_LABEL: Record<Filter, string> = {
+    all: 'All',
+    active: 'Current',
+    archived: 'Archived',
+};
+
 interface Props {
     game: ResolvedGame;
     rows: ManageCategoryRow[];
@@ -100,10 +106,10 @@ export function CategoriesTable({
             toast.success(
                 field === 'isMain'
                     ? value
-                        ? `${row.display}: marked main`
-                        : `${row.display}: unmarked main`
+                        ? `${row.display}: featured`
+                        : `${row.display}: unfeatured`
                     : value
-                      ? `${row.display}: activated`
+                      ? `${row.display}: restored`
                       : `${row.display}: archived`,
             );
         });
@@ -269,8 +275,8 @@ export function CategoriesTable({
         <section className="mb-4">
             <h2 className="h5 mb-2">Categories</h2>
             <p className="text-muted small mb-2">
-                Bulk-manage which categories are visible and which are marked
-                main. Use "Edit" to open a category for detailed settings.
+                Bulk-manage which categories are visible and which are featured.
+                Use "Edit" to open a category for detailed settings.
             </p>
 
             <div className="d-flex flex-wrap gap-2 align-items-center mb-3">
@@ -294,7 +300,7 @@ export function CategoriesTable({
                         }`}
                         onClick={() => setFilter(f)}
                     >
-                        {f.charAt(0).toUpperCase() + f.slice(1)}
+                        {FILTER_LABEL[f]}
                     </button>
                 ))}
                 <span className="ms-auto text-muted small">
@@ -408,8 +414,8 @@ export function CategoriesTable({
                                     <th className="text-end">Runs</th>
                                     <th className="text-end">Runners</th>
                                     <th className="text-end">Playtime</th>
-                                    <th className="text-center">Main</th>
-                                    <th className="text-center">Active</th>
+                                    <th className="text-center">Featured</th>
+                                    <th className="text-center">Archived</th>
                                     <th />
                                 </tr>
                             </thead>
@@ -504,23 +510,23 @@ export function CategoriesTable({
                                                             e.target.checked,
                                                         )
                                                     }
-                                                    aria-label={`Main: ${row.display}`}
+                                                    aria-label={`Featured: ${row.display}`}
                                                 />
                                             </td>
                                             <td className="text-center">
                                                 <input
                                                     type="checkbox"
                                                     className="form-check-input"
-                                                    checked={row.active}
+                                                    checked={!row.active}
                                                     disabled={isPending}
                                                     onChange={(e) =>
                                                         toggle(
                                                             row,
                                                             'active',
-                                                            e.target.checked,
+                                                            !e.target.checked,
                                                         )
                                                     }
-                                                    aria-label={`Active: ${row.display}`}
+                                                    aria-label={`Archived: ${row.display}`}
                                                 />
                                             </td>
                                             <td className="text-end">
@@ -544,9 +550,10 @@ export function CategoriesTable({
             )}
 
             <p className="text-muted small mb-0">
-                Tip: only "main" categories appear on the public game page. If
-                no main categories are set, the top 5 by playtime show as a
-                fallback. Non-main categories stay accessible to mods here.
+                Tip: only "featured" categories appear on the public game page.
+                If no featured categories are set, the top 5 by playtime show as
+                a fallback. Non-featured categories stay accessible to mods
+                here.
             </p>
         </section>
     );

@@ -62,17 +62,17 @@ describe('computeCompleteness', () => {
         const cats = c.steps.find((s) => s.step === 'categories');
         expect(cats?.status).toBe('blocker');
         expect(cats?.summary).toBe(
-            'No categories are marked main (shown on the board)',
+            'No categories are marked featured (shown on the board)',
         );
         expect(c.blockers).toContain(
-            'No categories are marked main (shown on the board)',
+            'No categories are marked featured (shown on the board)',
         );
         expect(c.firstIncomplete).toBe('categories');
 
         const config = c.steps.find((s) => s.step === 'category-config');
         expect(config?.status).toBe('todo');
         expect(config?.summary).toBe(
-            'Configure categories after choosing mains',
+            'Configure categories after choosing featured categories',
         );
     });
 
@@ -174,8 +174,12 @@ describe('computeCompleteness', () => {
         );
         const config = c.steps.find((s) => s.step === 'category-config');
         expect(config?.status).toBe('warning');
-        expect(config?.summary).toBe('1 of 2 main categories not configured');
-        expect(c.warnings).toContain('1 of 2 main categories not configured');
+        expect(config?.summary).toBe(
+            '1 of 2 featured categories not configured',
+        );
+        expect(c.warnings).toContain(
+            '1 of 2 featured categories not configured',
+        );
     });
 
     it('marks category-config done when all mains have rules', () => {
@@ -201,7 +205,7 @@ describe('computeCompleteness', () => {
         );
         const config = c.steps.find((s) => s.step === 'category-config');
         expect(config?.status).toBe('done');
-        expect(config?.summary).toBe('All 2 main categories configured');
+        expect(config?.summary).toBe('All 2 featured categories configured');
     });
 
     it('always marks defaults done, with a summary reflecting bulk settings state', () => {

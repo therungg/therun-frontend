@@ -157,7 +157,7 @@ export function ContentRouter(props: ContentRouterProps) {
                     selectedCategory={selectedCategory}
                 />
             ) : (
-                <Placeholder title="Combinations">Pick a category.</Placeholder>
+                <Placeholder title="Sub-boards">Pick a category.</Placeholder>
             );
         case 'category-settings':
             return selectedCategory ? (

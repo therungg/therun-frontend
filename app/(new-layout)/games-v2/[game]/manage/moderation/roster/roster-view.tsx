@@ -197,7 +197,7 @@ export function RosterView({
     return (
         <div className="container py-3">
             <div className="d-flex align-items-center justify-content-between mb-3">
-                <h1 className="h4 mb-0">Roster — {gameDisplay}</h1>
+                <h1 className="h4 mb-0">Browse runs — {gameDisplay}</h1>
                 <Link
                     href={consoleHref}
                     className="btn btn-sm btn-outline-secondary"

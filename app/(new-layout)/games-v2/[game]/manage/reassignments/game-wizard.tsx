@@ -130,9 +130,9 @@ export function GameWizard({
     return (
         <div className={styles.surface}>
             <div className={styles.header}>
-                <p className={styles.eyebrow}>Game reassignment</p>
+                <p className={styles.eyebrow}>Game merge</p>
                 <h3 className={styles.title}>
-                    Reassign game: {sourceGameDisplay}
+                    Merge game: {sourceGameDisplay}
                 </h3>
                 <p className={styles.subtitle}>
                     Merge this entire game — its runs and categories — into
@@ -397,7 +397,7 @@ export function GameWizard({
                             disabled={isPending}
                             onClick={submit}
                         >
-                            {isPending ? 'Starting…' : 'Confirm reassignment'}
+                            {isPending ? 'Starting…' : 'Confirm merge'}
                         </button>
                     </div>
                 </>
