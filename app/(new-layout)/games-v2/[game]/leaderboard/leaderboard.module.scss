@@ -249,6 +249,35 @@ tr:focus-within .reveal {
 .setPill {
     @include board.board-pill;
     text-transform: none;
+    border: 0;
+    cursor: pointer;
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+}
+
+// Info popover anchored to a .setPill trigger (set time / pending). The
+// panel is `position: fixed`, coordinates computed from the trigger's
+// bounding rect on open — this escapes .wrapper's overflow-y: hidden
+// (see .wrapper above), which an absolutely-positioned panel would get
+// clipped by for rows near the bottom of a tall table.
+.infoPopoverWrap {
+    display: inline-flex;
+}
+
+.infoPopoverPanel {
+    @include board.board-surface(dt.$spacing-sm dt.$spacing-md);
+    background: var(--bs-body-bg);
+    box-shadow: dt.$shadow-lg;
+    max-width: 18rem;
+    font-size: dt.$font-size-sm;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: normal;
+    color: var(--bs-emphasis-color);
+    z-index: 1050;
 }
 
 // ---- Show more ----------------------------------------------
