@@ -1,0 +1,13 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// Origin-panel's own module — previously imported the sibling run-view.tsx's
+// module.scss for just these two classes (Task 18 ledger cleanup).
+
+.surface {
+    @include board.board-surface(dt.$spacing-lg);
+}
+
+.warnPill {
+    @include board.board-pill(dt.$accent-amber);
+}

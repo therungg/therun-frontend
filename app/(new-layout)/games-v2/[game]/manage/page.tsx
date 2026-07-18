@@ -9,7 +9,10 @@ import { getGameIdentifiers, getGameMetadata } from '~src/lib/game-mgmt';
 import { listGameModerators } from '~src/lib/game-moderators';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { listGameVariables } from '~src/lib/leaderboard-variables';
-import { canModerateGame } from '~src/lib/moderation/can-moderate';
+import {
+    canConfigureGame,
+    canModerateGame,
+} from '~src/lib/moderation/can-moderate';
 import { listManualTimes } from '~src/lib/moderation/manual-times';
 import { listPolicies } from '~src/lib/moderation/policies';
 import { listGameReports } from '~src/lib/moderation/reports';
@@ -64,10 +67,7 @@ export default async function GameAdminConsolePage({ params }: Props) {
 
     const ability = defineAbilityFor(session);
     const canModerate = canModerateGame(session, game.name);
-    const canConfigure = ability.can(
-        'edit',
-        caslSubject('category-settings', { game: game.name }),
-    );
+    const canConfigure = canConfigureGame(session, game.name);
     const canEditStandards = ability.can('edit', 'moderators');
     const canReassign = ability.can('reassign', 'reassignment');
     const canEditMods = ability.can(

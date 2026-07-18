@@ -1,8 +1,8 @@
 import Link from '~src/components/link';
 import { originSummary } from '~src/lib/run-view/origin-summary';
 import { safeEncodeURI } from '~src/utils/uri';
+import styles from './origin-panel.module.scss';
 import type { RunViewModel } from './run-view';
-import styles from './run-view.module.scss';
 
 export function OriginPanel({ model }: { model: RunViewModel }) {
     const summary = originSummary(model.origin, model.runnerName);

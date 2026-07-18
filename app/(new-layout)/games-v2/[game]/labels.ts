@@ -14,13 +14,29 @@ export type LabelVariableDef = Pick<
 const REAL_TIME_KEYS = new Set(['rt', 'realtime', 'rta']);
 const GAME_TIME_KEYS = new Set(['gt', 'gametime', 'igt']);
 
-/** Title-cases a raw token: splits camelCase/snake_case/kebab-case/whitespace. */
-export function humanizeWord(raw: string): string {
+/**
+ * Splits a raw camelCase/snake_case/kebab-case/whitespace token into
+ * space-separated words, trimmed. The shared primitive behind both
+ * `humanizeWord` (below — title-cases every word, for subcategory/variable
+ * pill copy) and the moderation history drawer's sentence-case action-label
+ * fallback (history-labels.ts) — those two independently duplicated this
+ * regex before Task 18. Each site still owns its own final casing: pill
+ * copy is a tested Title Case contract (labels.test.ts), while log-line
+ * copy follows the project's sentence-case convention — collapsing that
+ * distinction into one shared output would have broken the former without
+ * fixing anything for the latter.
+ */
+export function splitHumanizedWords(raw: string): string {
     if (!raw) return '';
-    const spaced = raw
+    return raw
         .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
         .replace(/[_-]+/g, ' ')
         .trim();
+}
+
+/** Title-cases a raw token: splits camelCase/snake_case/kebab-case/whitespace. */
+export function humanizeWord(raw: string): string {
+    const spaced = splitHumanizedWords(raw);
     if (!spaced) return '';
     return spaced
         .split(/\s+/)

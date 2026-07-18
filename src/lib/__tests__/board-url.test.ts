@@ -67,6 +67,30 @@ describe('buildBoardQuery', () => {
             }).toString(),
         ).toBe('platform=pc&page=2');
     });
+
+    it('percent-encodes an `&` in a subcategory value so it cannot be read as an extra param', () => {
+        const sp = buildBoardQuery({ subcategoryKey: 'notes=a&b' });
+        expect(sp.toString()).toBe('notes=a%26b');
+        expect(sp.get('notes')).toBe('a&b');
+        expect(sp.get('b')).toBeNull();
+    });
+
+    it('percent-encodes a space in a subcategory value (not a literal `+`)', () => {
+        const sp = buildBoardQuery({ subcategoryKey: 'notes=no damage' });
+        expect(sp.toString()).toBe('notes=no+damage');
+        expect(sp.get('notes')).toBe('no damage');
+    });
+
+    it('round-trips a literal `+` and `%` in a subcategory value', () => {
+        const sp = buildBoardQuery({ subcategoryKey: 'notes=100%+' });
+        expect(sp.get('notes')).toBe('100%+');
+    });
+
+    it('round-trips a `#` in a category slug without truncating the query', () => {
+        expect(
+            buildBoardQuery({ categorySlug: 'any%#glitchless' }).toString(),
+        ).toBe('category=any%25%23glitchless');
+    });
 });
 
 describe('rankToPage', () => {
