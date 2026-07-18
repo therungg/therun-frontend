@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { selfClaimTimeAction } from '~src/actions/self-claim.action';
 import { submitRunAction } from '~src/actions/submit-run.action';
+import { getMyStandingAction } from '~src/actions/user-standing.action';
 import Link from '~src/components/link';
+import { buildBoardHref } from '~src/lib/board-url';
 import { formatRunTimeEcho, parseRunTimeInput } from '~src/lib/run-time-input';
 import { describeSubmitWarning } from '~src/lib/run-view/submit-warnings';
 import type {
@@ -11,6 +13,7 @@ import type {
     ResolvedGroup,
     SubmitRunInput,
     SubmitRunResult,
+    UserRanking,
     ValidCombinations,
     VariableDef,
 } from '../../../../../types/leaderboards.types';
@@ -19,9 +22,12 @@ import type {
     SelfManualTimeResult,
 } from '../../../../../types/moderation.types';
 import { RulesBody, RulesPanel } from '../rules/rules-panel';
+import { ClaimFields } from './claim-fields';
 import { loadVariablesAction } from './load-variables.action';
+import { RunFields } from './run-fields';
 import { buildSubcategoryKey } from './subcategory-key';
 import styles from './submit-form.module.scss';
+import { EMPTY_TIME, type TimeField } from './time-input';
 
 export type SubmitFormMode = 'submit' | 'claim';
 
@@ -30,14 +36,16 @@ interface Props {
     categories: ResolvedCategory[];
     groups: ResolvedGroup[];
     initialMode?: SubmitFormMode;
+    /** Category slug from the board URL that sent the runner here (e.g. `?category=any%`). Unknown/blank -> ignored silently. */
+    initialCategorySlug?: string;
+    /** Subcategory variable params from the board URL (same param names the board uses). Matched against the resolved category's variables once they load; unmatched keys are ignored silently. */
+    initialSubcategoryValues?: Record<string, string>;
 }
 
 const SUBMIT_MODE_HINT =
     'Submit a new run with your category, time, date, and a video link for verification.';
 const CLAIM_MODE_HINT =
     'Assert or correct your time on this board without a video or splits — for example, to fix an imported time.';
-const TIMING_EXPLAINER =
-    'Real time (RTA) — wall-clock time. Game time (IGT) — the in-game timer.';
 
 function todayISODate(): string {
     // Local date, YYYY-MM-DD — matches the <input type="date"> value format.
@@ -53,6 +61,14 @@ function canonicalDefault(def: VariableDef): string {
     return def.values[idx]?.[0] ?? def.values[0]?.[0] ?? '';
 }
 
+/** Resolves `raw` against a subcategory def's value buckets (case-insensitive), or null if it doesn't match any. */
+function canonicalMatch(def: VariableDef, raw: string): string | null {
+    const bucket = def.values.find((aliases) =>
+        aliases.some((alias) => alias.toLowerCase() === raw.toLowerCase()),
+    );
+    return bucket?.[0] ?? null;
+}
+
 function isValidHttpUrl(raw: string): boolean {
     try {
         const u = new URL(raw);
@@ -62,17 +78,25 @@ function isValidHttpUrl(raw: string): boolean {
     }
 }
 
-interface TimeField {
-    raw: string;
-    ms?: number;
-    error: boolean;
-}
-
-const EMPTY_TIME: TimeField = { raw: '', ms: undefined, error: false };
-
-export function SubmitForm({ game, categories, groups, initialMode }: Props) {
+export function SubmitForm({
+    game,
+    categories,
+    groups,
+    initialMode,
+    initialCategorySlug,
+    initialSubcategoryValues,
+}: Props) {
     const [mode, setMode] = useState<SubmitFormMode>(initialMode ?? 'submit');
-    const [categoryId, setCategoryId] = useState<number>(categories[0].id);
+    const [categoryId, setCategoryId] = useState<number>(() => {
+        if (initialCategorySlug) {
+            const match = categories.find(
+                (c) =>
+                    c.name.toLowerCase() === initialCategorySlug.toLowerCase(),
+            );
+            if (match) return match.id;
+        }
+        return categories[0].id;
+    });
     const category = useMemo(
         () => categories.find((c) => c.id === categoryId) ?? categories[0],
         [categories, categoryId],
@@ -86,6 +110,10 @@ export function SubmitForm({ game, categories, groups, initialMode }: Props) {
     const [varsLoading, startVarsTransition] = useTransition();
     const [varsError, setVarsError] = useState(false);
     const [rulesOpen, setRulesOpen] = useState(false);
+
+    // The URL's subcategory params apply once, to whichever category's
+    // variables load first — not on every later category switch.
+    const appliedInitialSubcategory = useRef(false);
 
     // Run-submit fields.
     const [rt, setRt] = useState<TimeField>(EMPTY_TIME);
@@ -107,6 +135,10 @@ export function SubmitForm({ game, categories, groups, initialMode }: Props) {
     const [claimResult, setClaimResult] = useState<SelfManualTimeResult | null>(
         null,
     );
+
+    // Current standing on the selected board — quiet context, no line when
+    // there's no match (signed out never reaches this form; see submit/page.tsx).
+    const [standing, setStanding] = useState<UserRanking | null>(null);
 
     const today = todayISODate();
 
@@ -142,9 +174,26 @@ export function SubmitForm({ game, categories, groups, initialMode }: Props) {
                 const sub: Record<string, string> = {};
                 for (const def of resp.variables) {
                     if (def.role === 'subcategory') {
-                        sub[def.nameNormalized] = canonicalDefault(def);
+                        let matched: string | null = null;
+                        if (
+                            !appliedInitialSubcategory.current &&
+                            initialSubcategoryValues
+                        ) {
+                            const rawEntry = Object.entries(
+                                initialSubcategoryValues,
+                            ).find(
+                                ([k]) =>
+                                    k.toLowerCase() ===
+                                    def.nameNormalized.toLowerCase(),
+                            );
+                            if (rawEntry)
+                                matched = canonicalMatch(def, rawEntry[1]);
+                        }
+                        sub[def.nameNormalized] =
+                            matched ?? canonicalDefault(def);
                     }
                 }
+                appliedInitialSubcategory.current = true;
                 setSubcategory(sub);
                 setFilters({});
             } catch {
@@ -159,6 +208,7 @@ export function SubmitForm({ game, categories, groups, initialMode }: Props) {
         return () => {
             cancelled = true;
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [game.name, category.name]);
 
     const subcatDefs = variables.filter((v) => v.role === 'subcategory');
@@ -174,6 +224,22 @@ export function SubmitForm({ game, categories, groups, initialMode }: Props) {
     const combinationInvalid =
         validCombinations.mode === 'managed' &&
         !validCombinations.keys.includes(subcategoryKey);
+
+    // Current standing on the board this exact selection resolves to.
+    // Waits for variables to settle so it doesn't fire on a stale
+    // subcategory key mid-category-switch.
+    useEffect(() => {
+        if (varsLoading) return;
+        let cancelled = false;
+        getMyStandingAction(game.name, category.name, subcategoryKey).then(
+            (result) => {
+                if (!cancelled) setStanding(result);
+            },
+        );
+        return () => {
+            cancelled = true;
+        };
+    }, [game.name, category.name, subcategoryKey, varsLoading]);
 
     const showRt = !category.hideRealTime;
     const showGt = !category.hideGameTime;
@@ -231,6 +297,12 @@ export function SubmitForm({ game, categories, groups, initialMode }: Props) {
         !evidenceInvalid;
 
     const canSubmit = mode === 'submit' ? canSubmitRun : canSubmitClaim;
+
+    // The entered primary time (submit: RT or GT depending on the category's
+    // primary timing; claim: the single asserted time), for the "slower than
+    // your current best" comparison against `standing`.
+    const enteredMs =
+        mode === 'submit' ? (primaryIsRt ? rt.ms : gt.ms) : claimTime.ms;
 
     const reset = () => {
         setRt(EMPTY_TIME);
@@ -317,11 +389,21 @@ export function SubmitForm({ game, categories, groups, initialMode }: Props) {
         const warningMessages = runResult.warnings
             .map((w) => describeSubmitWarning(w, displayNames))
             .filter((m): m is string => m !== null);
+        const boardHref = buildBoardHref(game.name, {
+            categorySlug: category.name,
+            subcategoryKey: runResult.subcategoryKey,
+        });
 
         return (
             <div className="border rounded p-4">
                 <h2 className="h5 mb-2">Run submitted</h2>
                 <p className="mb-3">{statusLine}</p>
+                {runResult.applied !== 'instant' && (
+                    <p className="small text-muted mb-3">
+                        You'll get a notification here when a moderator reviews
+                        it.
+                    </p>
+                )}
                 {warningMessages.length > 0 && (
                     <ul className="small text-warning-emphasis mb-3">
                         {warningMessages.map((m) => (
@@ -330,9 +412,12 @@ export function SubmitForm({ game, categories, groups, initialMode }: Props) {
                     </ul>
                 )}
                 <div className="d-flex gap-2">
+                    <Link href={boardHref} className="btn btn-sm btn-primary">
+                        See it on the board
+                    </Link>
                     <Link
                         href={`/games-v2/${game.name}/run/${runResult.id}`}
-                        className="btn btn-sm btn-primary"
+                        className="btn btn-sm btn-outline-secondary"
                     >
                         View your run
                     </Link>
@@ -353,15 +438,28 @@ export function SubmitForm({ game, categories, groups, initialMode }: Props) {
             claimResult.applied === 'instant'
                 ? 'Your time is on the board.'
                 : 'Your time is submitted and awaiting verification — it appears on the board marked unverified.';
+        const boardHref = buildBoardHref(game.name, {
+            categorySlug: category.name,
+            subcategoryKey,
+        });
 
         return (
             <div className="border rounded p-4">
                 <h2 className="h5 mb-2">Time submitted</h2>
                 <p className="mb-3">{statusLine}</p>
+                {claimResult.applied !== 'instant' && (
+                    <p className="small text-muted mb-3">
+                        You'll get a notification here when a moderator reviews
+                        it.
+                    </p>
+                )}
                 <div className="d-flex gap-2">
+                    <Link href={boardHref} className="btn btn-sm btn-primary">
+                        See it on the board
+                    </Link>
                     <Link
                         href={`/games-v2/${game.name}/manual/${claimResult.manualTimeId}`}
-                        className="btn btn-sm btn-primary"
+                        className="btn btn-sm btn-outline-secondary"
                     >
                         View your time
                     </Link>
@@ -437,9 +535,12 @@ export function SubmitForm({ game, categories, groups, initialMode }: Props) {
                 {varsError && (
                     <div className="alert alert-warning py-2 mb-0" role="alert">
                         Could not load variables for this category. You can
-                        still submit; variables will use their defaults.
+                        still {mode === 'submit' ? 'submit' : 'claim'};
+                        variables will use their defaults.
                     </div>
                 )}
+
+                <StandingLine standing={standing} enteredMs={enteredMs} />
 
                 {subcatDefs.map((def) => (
                     <div key={def.nameNormalized}>
@@ -473,42 +574,6 @@ export function SubmitForm({ game, categories, groups, initialMode }: Props) {
                     </div>
                 ))}
 
-                {mode === 'submit' &&
-                    filterDefs.map((def) => (
-                        <div key={def.nameNormalized}>
-                            <label
-                                htmlFor={`filter-${def.nameNormalized}`}
-                                className="form-label"
-                            >
-                                {def.name}{' '}
-                                <span className="text-muted small">
-                                    (optional)
-                                </span>
-                            </label>
-                            <select
-                                id={`filter-${def.nameNormalized}`}
-                                className="form-select"
-                                value={filters[def.nameNormalized] ?? ''}
-                                onChange={(e) =>
-                                    setFilters((prev) => ({
-                                        ...prev,
-                                        [def.nameNormalized]: e.target.value,
-                                    }))
-                                }
-                            >
-                                <option value="">—</option>
-                                {def.values.map((bucket, idx) => (
-                                    <option
-                                        key={`${def.nameNormalized}-${idx}`}
-                                        value={bucket[0]}
-                                    >
-                                        {bucket[0]}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    ))}
-
                 {combinationInvalid && (
                     <div className="alert alert-warning py-2 mb-0" role="alert">
                         This combination has no leaderboard. Pick a different
@@ -517,164 +582,51 @@ export function SubmitForm({ game, categories, groups, initialMode }: Props) {
                 )}
 
                 {mode === 'submit' ? (
-                    <>
-                        {showRt && (
-                            <TimeInput
-                                id="submit-rt"
-                                label="Real time (RTA)"
-                                required={primaryIsRt}
-                                field={rt}
-                                onChange={(raw) => parseInto(raw, setRt)}
-                            />
-                        )}
-                        {showGt && (
-                            <TimeInput
-                                id="submit-gt"
-                                label="Game time (IGT)"
-                                required={!primaryIsRt}
-                                field={gt}
-                                onChange={(raw) => parseInto(raw, setGt)}
-                            />
-                        )}
-                        {showRt && showGt && (
-                            <div className="form-text">{TIMING_EXPLAINER}</div>
-                        )}
-
-                        <div>
-                            <label htmlFor="submit-date" className="form-label">
-                                Date achieved
-                            </label>
-                            <input
-                                id="submit-date"
-                                type="date"
-                                className="form-control"
-                                value={runDate}
-                                max={today}
-                                onChange={(e) => setRunDate(e.target.value)}
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="submit-vod" className="form-label">
-                                Video URL
-                                <span className="text-muted small">
-                                    {' '}
-                                    {vodRequired ? '(required)' : '(optional)'}
-                                </span>
-                            </label>
-                            <input
-                                id="submit-vod"
-                                type="url"
-                                className={`form-control ${vodShowInvalid ? 'is-invalid' : ''}`}
-                                value={vodUrl}
-                                onChange={(e) => {
-                                    setVodUrl(e.target.value);
-                                    setVodTouched(true);
-                                }}
-                                onBlur={() => setVodTouched(true)}
-                                placeholder="https://..."
-                                required={vodRequired}
-                            />
-                            {vodShowInvalid &&
-                                (vodInvalid ? (
-                                    <div className="invalid-feedback">
-                                        Enter a valid http(s) URL.
-                                    </div>
-                                ) : (
-                                    <div className="invalid-feedback">
-                                        Video URL is required for this category.
-                                    </div>
-                                ))}
-                            {vodRequired && (
-                                <div className="form-text">
-                                    This category requires video for
-                                    verification.
-                                </div>
-                            )}
-                        </div>
-                    </>
+                    <RunFields
+                        filterDefs={filterDefs}
+                        filters={filters}
+                        onFilterChange={(name, value) =>
+                            setFilters((prev) => ({ ...prev, [name]: value }))
+                        }
+                        showRt={showRt}
+                        showGt={showGt}
+                        primaryIsRt={primaryIsRt}
+                        rt={rt}
+                        gt={gt}
+                        onChangeRt={(raw) => parseInto(raw, setRt)}
+                        onChangeGt={(raw) => parseInto(raw, setGt)}
+                        runDate={runDate}
+                        today={today}
+                        onChangeRunDate={setRunDate}
+                        vodUrl={vodUrl}
+                        vodRequired={vodRequired}
+                        vodInvalid={vodInvalid}
+                        vodMissing={vodMissing}
+                        vodShowInvalid={vodShowInvalid}
+                        onVodChange={(v) => {
+                            setVodUrl(v);
+                            setVodTouched(true);
+                        }}
+                        onVodBlur={() => setVodTouched(true)}
+                    />
                 ) : (
-                    <>
-                        {claimTimingChoice && (
-                            <div>
-                                <label
-                                    htmlFor="claim-timing"
-                                    className="form-label"
-                                >
-                                    Timing
-                                </label>
-                                <select
-                                    id="claim-timing"
-                                    className="form-select"
-                                    value={claimTiming}
-                                    onChange={(e) =>
-                                        setClaimTiming(
-                                            e.target.value as ModTiming,
-                                        )
-                                    }
-                                >
-                                    <option value="realtime">
-                                        Real time (RTA)
-                                    </option>
-                                    <option value="gametime">
-                                        Game time (IGT)
-                                    </option>
-                                </select>
-                                <div className="form-text">
-                                    {TIMING_EXPLAINER}
-                                </div>
-                            </div>
-                        )}
-
-                        <TimeInput
-                            id="claim-time"
-                            label={
-                                effectiveClaimTiming === 'realtime'
-                                    ? 'Real time (RTA)'
-                                    : 'Game time (IGT)'
-                            }
-                            required
-                            field={claimTime}
-                            onChange={(raw) => parseInto(raw, setClaimTime)}
-                        />
-
-                        <div>
-                            <label
-                                htmlFor="claim-evidence"
-                                className="form-label"
-                            >
-                                Evidence URL
-                                <span className="text-muted small">
-                                    {' '}
-                                    (optional)
-                                </span>
-                            </label>
-                            <input
-                                id="claim-evidence"
-                                type="url"
-                                className={`form-control ${evidenceShowInvalid ? 'is-invalid' : ''}`}
-                                value={evidenceUrl}
-                                onChange={(e) => {
-                                    setEvidenceUrl(e.target.value);
-                                    setEvidenceTouched(true);
-                                }}
-                                onBlur={() => setEvidenceTouched(true)}
-                                placeholder="https://... (VOD or proof, if you have it)"
-                            />
-                            {evidenceShowInvalid && (
-                                <div className="invalid-feedback">
-                                    Enter a valid http(s) URL.
-                                </div>
-                            )}
-                            <div className="form-text">
-                                No video needed — a faster legitimate run
-                                replaces this automatically. A time that beats
-                                your current standing is reviewed by a moderator
-                                first.
-                            </div>
-                        </div>
-                    </>
+                    <ClaimFields
+                        claimTimingChoice={claimTimingChoice}
+                        claimTiming={claimTiming}
+                        onClaimTimingChange={setClaimTiming}
+                        effectiveClaimTiming={effectiveClaimTiming}
+                        claimTime={claimTime}
+                        onChangeClaimTime={(raw) =>
+                            parseInto(raw, setClaimTime)
+                        }
+                        evidenceUrl={evidenceUrl}
+                        evidenceShowInvalid={evidenceShowInvalid}
+                        onEvidenceChange={(v) => {
+                            setEvidenceUrl(v);
+                            setEvidenceTouched(true);
+                        }}
+                        onEvidenceBlur={() => setEvidenceTouched(true)}
+                    />
                 )}
 
                 {error && (
@@ -701,45 +653,41 @@ export function SubmitForm({ game, categories, groups, initialMode }: Props) {
     );
 }
 
-function TimeInput({
-    id,
-    label,
-    required,
-    field,
-    onChange,
+/**
+ * Quiet context line for the signed-in runner's current standing on the
+ * selected board. Silent when there's no standing to show.
+ */
+function StandingLine({
+    standing,
+    enteredMs,
 }: {
-    id: string;
-    label: string;
-    required: boolean;
-    field: TimeField;
-    onChange: (raw: string) => void;
+    standing: UserRanking | null;
+    enteredMs: number | undefined;
 }) {
+    if (!standing) return null;
+    const bestMs =
+        standing.primaryTiming === 'gt'
+            ? (standing.gameTime ?? standing.time)
+            : standing.time;
+    const rankLabel =
+        standing.rank != null
+            ? ` (#${standing.rank} of ${standing.totalRunners})`
+            : '';
+    const isSlower = enteredMs !== undefined && enteredMs > bestMs;
+
     return (
-        <div>
-            <label htmlFor={id} className="form-label">
-                {label}
-                {required && <span className={styles.required}> *</span>}
-            </label>
-            <input
-                id={id}
-                type="text"
-                inputMode="numeric"
-                className={`form-control ${field.error ? 'is-invalid' : ''}`}
-                value={field.raw}
-                placeholder="h:mm:ss.ms"
-                required={required}
-                onChange={(e) => onChange(e.target.value)}
-                onBlur={(e) => onChange(e.target.value)}
-            />
-            {field.error ? (
-                <div className="invalid-feedback">Unrecognized time.</div>
-            ) : field.ms !== undefined ? (
-                <div className={styles.timeEcho}>
-                    Will be submitted as{' '}
-                    <strong>{formatRunTimeEcho(field.ms)}</strong>
+        <div className="small text-muted">
+            <div>
+                Your current best on this board:{' '}
+                <strong>{formatRunTimeEcho(bestMs)}</strong>
+                {rankLabel}. A faster time replaces it.
+            </div>
+            {isSlower && (
+                <div>
+                    This is slower than your current best — it won't replace
+                    your board entry.
                 </div>
-            ) : null}
-            <div className="form-text">A plain number is read as seconds.</div>
+            )}
         </div>
     );
 }
