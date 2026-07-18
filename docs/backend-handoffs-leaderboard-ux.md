@@ -63,3 +63,28 @@ compare stable numeric ids instead.
 - Frontend: `shared/is-same-runner.ts`, and its call sites in
   `leaderboard/leaderboard-table.tsx`, `leaderboard/leaderboard-pager.tsx`,
   `leaderboard/row-actions-menu.tsx`, `run-view/run-actions.tsx`.
+
+### 6. Notification payload field guarantees (W4)
+
+The notifications bell can only link a row to its subject, and only names the game/category
+in the copy, when the payload happens to carry `gameSlug`/`gameDisplay`/`categoryDisplay`.
+Checked against the actual `emitNotification` call sites in `../therun` (2026-07-18):
+
+- `verdict_applied` (`src/leaderboards/verdicts/bulk-verdicts.ts`) emits
+  `{ gameId, categoryId, runId, action }` — no `gameSlug`, `gameDisplay`, or
+  `categoryDisplay`. Today this notification **never links** and never gets the enriched
+  "Your Any% run of Celeste was rejected" copy; it silently falls back to the generic
+  "One of your runs was rejected by a moderator."
+- `manual_time_created` / `manual_time_verdict` (`src/api/leaderboards/mod-manual-times-handler.ts`)
+  emit `{ gameId, categoryId, manualTimeId, ... }` — same gap, no slug/display names.
+- `manual_time_deleted` emits `{ gameId, categoryId, timeMs }` — no `manualTimeId` at all,
+  so it can never link even with a slug.
+- `board_claim_approved` / `board_claim_denied` (`src/services/board-claims-service.ts`)
+  already emit `gameSlug` and `gameDisplay` — these two already link and enrich correctly.
+
+- Wanted: add `gameSlug`, `gameDisplay`, and `categoryDisplay` to the `verdict_applied`,
+  `manual_time_created`, `manual_time_verdict`, and `manual_time_deleted` payloads (plus
+  `manualTimeId` on the delete emission, if a post-delete detail page is worth linking to).
+- Frontend: `src/components/Topbar/notification-copy.ts` (`describe`/`linkFor`) already
+  reads these fields opportunistically — typeof-guarded, so nothing to change frontend-side
+  once the backend adds them; the links/copy just start appearing.
