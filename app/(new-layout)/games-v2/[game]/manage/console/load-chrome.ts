@@ -22,6 +22,9 @@ export interface ConsoleChromeData {
      * means `attentionCount` may be an undercount (see the badge in
      * console-sidebar.tsx, which shows this honestly rather than silently). */
     degradedSources: string[];
+    /** How many games this viewer moderates — the chrome only shows an "All
+     * your games" link to the cross-game hub when there's more than one. */
+    moderatedGamesCount: number;
 }
 
 /**
@@ -87,5 +90,6 @@ export async function loadConsoleChrome(
         flags,
         attentionCount,
         degradedSources,
+        moderatedGamesCount: session.moderatedGames?.length ?? 0,
     };
 }

@@ -1,0 +1,155 @@
+@use '../../styles/design-tokens' as dt;
+@use '../../styles/board' as board;
+
+// ============================================================
+// Cross-game moderation hub (/games-v2/manage) — "which of my
+// games has work?" answered in one calm, scannable list.
+// ============================================================
+
+.shell {
+    max-width: 42rem;
+    margin-inline: auto;
+    padding: dt.$spacing-2xl dt.$spacing-lg;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xl;
+}
+
+.header {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+}
+
+.eyebrow {
+    @include board.board-eyebrow;
+}
+
+.title {
+    font-size: dt.$font-size-xl;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+}
+
+.row {
+    @include board.board-surface(dt.$spacing-md dt.$spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-lg;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color dt.$transition-fast, box-shadow dt.$transition-base;
+
+    &:hover {
+        box-shadow: dt.$shadow-md;
+        color: inherit;
+        text-decoration: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 2px;
+    }
+}
+
+.cover {
+    width: 36px;
+    height: 48px; // 3:4
+    border-radius: dt.$radius-sm;
+    object-fit: cover;
+    box-shadow: dt.$shadow-sm;
+    flex-shrink: 0;
+}
+
+.coverPlaceholder {
+    @extend .cover;
+    background: var(--bs-tertiary-bg);
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+}
+
+.info {
+    flex: 1;
+    min-width: 0;
+}
+
+.name {
+    font-size: dt.$font-size-md;
+    font-weight: 600;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.status {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-secondary-color);
+}
+
+.badge {
+    @include board.mono-time;
+    font-size: dt.$font-size-2xs;
+    font-weight: 700;
+    min-width: 1.75rem;
+    text-align: center;
+    padding: dt.$spacing-xs dt.$spacing-sm;
+    border-radius: 999px;
+    background: dt.$accent-red;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.badgeClear {
+    background: rgba(var(--bs-secondary-rgb), 0.12);
+    color: var(--bs-secondary-color);
+}
+
+.openLink {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding: dt.$spacing-xs dt.$spacing-md;
+    flex-shrink: 0;
+}
+
+// ---- Empty / sign-in gate ------------------------------------
+.wrap {
+    display: flex;
+    justify-content: center;
+    padding: dt.$spacing-3xl dt.$spacing-lg;
+}
+
+.panel {
+    @include board.board-surface(dt.$spacing-2xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: dt.$spacing-sm;
+    max-width: 28rem;
+    width: 100%;
+}
+
+.icon {
+    @include board.board-empty-icon;
+}
+
+.panelTitle {
+    @include board.board-empty-title;
+}
+
+.blurb {
+    font-size: dt.$font-size-sm;
+    color: var(--bs-secondary-color);
+    margin: 0;
+}
+
+.emptyLink {
+    @include board.board-quiet-link;
+}

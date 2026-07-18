@@ -2,6 +2,8 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowClockwise } from 'react-bootstrap-icons';
+import { countAttentionAction } from '~src/actions/count-attention.action';
 import type { ManageCategoryRow, ManageGroup } from '~src/lib/category-mgmt';
 import type { BoardCompleteness } from '~src/lib/setup/completeness';
 import type { BoardHealth } from '~src/lib/setup/health';
@@ -37,6 +39,9 @@ export interface ConsoleShellProps {
     flags: NavFlags;
     attentionItems: AttentionItem[];
     degradedSources: string[];
+    /** How many games this viewer moderates — the "All your games" link to
+     * the cross-game hub only shows when there's more than one. */
+    moderatedGamesCount?: number;
     modApplications?: BoardClaimRequest[];
     initialCategoryId: number | null;
     initialSlug: string | null;
@@ -55,6 +60,7 @@ export function ConsoleShell({
     flags,
     attentionItems,
     degradedSources,
+    moderatedGamesCount = 0,
     modApplications,
     initialCategoryId,
     initialSlug,
@@ -194,10 +200,73 @@ export function ConsoleShell({
     // A full page reload (e.g. router.refresh() after a degraded-source
     // retry) re-sends a fresh server-computed total through this prop —
     // resync so the badge doesn't stay pinned to a stale, already-triaged
-    // count from before the reload.
+    // count from before the reload. Also clears any stale "new items"
+    // banner — the refresh it just served IS the fresh load.
     useEffect(() => {
         setLiveAttentionCount(attentionItems.length);
+        setHasNewAttention(false);
     }, [attentionItems]);
+
+    // Live poll: notice new flags/reports/self-claims without a manual
+    // reload. Mirrors NotificationsBell's visibility-aware interval
+    // (src/components/Topbar/NotificationsBell.tsx) plus a focus-triggered
+    // refresh, since coming back to the tab is the moment staleness is
+    // most likely to be visible.
+    //
+    // A HIGHER fetched count never mutates `rows`/`attentionItems`
+    // mid-triage — it only flips a banner so the moderator finishes what
+    // they're doing before pulling in new cards. A LOWER count (their own
+    // triage already landing server-side, or another mod acting
+    // concurrently) just updates the badge silently — nothing to warn
+    // about, the console already reflects reality.
+    const [hasNewAttention, setHasNewAttention] = useState(false);
+    const liveAttentionCountRef = useRef(liveAttentionCount);
+    useEffect(() => {
+        liveAttentionCountRef.current = liveAttentionCount;
+    }, [liveAttentionCount]);
+
+    useEffect(() => {
+        let cancelled = false;
+        const poll = async () => {
+            if (document.hidden) return;
+            const result = await countAttentionAction(game.name);
+            if (cancelled) return;
+            if (result.count > liveAttentionCountRef.current) {
+                setHasNewAttention(true);
+            } else {
+                setLiveAttentionCount(result.count);
+            }
+        };
+        const interval = setInterval(poll, 90_000);
+        window.addEventListener('focus', poll);
+        return () => {
+            cancelled = true;
+            clearInterval(interval);
+            window.removeEventListener('focus', poll);
+        };
+    }, [game.name]);
+
+    // Tab title mirrors the live count while the console is mounted, e.g.
+    // "(3) Manage — Celeste" — no "(0)" prefix when clear. Restores
+    // whatever the browser tab's title was before this component mounted.
+    const originalTitleRef = useRef<string | null>(null);
+    useEffect(() => {
+        if (originalTitleRef.current === null) {
+            originalTitleRef.current = document.title;
+        }
+        document.title =
+            liveAttentionCount > 0
+                ? `(${liveAttentionCount}) Manage — ${game.display}`
+                : `Manage — ${game.display}`;
+    }, [liveAttentionCount, game.display]);
+
+    useEffect(() => {
+        return () => {
+            if (originalTitleRef.current !== null) {
+                document.title = originalTitleRef.current;
+            }
+        };
+    }, []);
 
     // `?pane=history` opens the drawer on arrival — from a deep link (the
     // sub-route sidebar's History item) or from a same-page URL change.
@@ -326,10 +395,24 @@ export function ConsoleShell({
                 onNavigate={handleNavigate}
                 attentionCount={liveAttentionCount}
                 badgeDegraded={degradedSources.length > 0}
+                moderatedGamesCount={moderatedGamesCount}
                 categories={categoryOptions}
                 selectedCategoryId={selectedCategoryId}
                 onSelectCategory={handleSelectCategory}
             >
+                {hasNewAttention && (
+                    <div className={styles.liveBanner} role="status">
+                        <span>New items — refresh to load</span>
+                        <button
+                            type="button"
+                            className={styles.liveBannerRefresh}
+                            onClick={() => router.refresh()}
+                        >
+                            <ArrowClockwise size={14} aria-hidden="true" />
+                            Refresh
+                        </button>
+                    </div>
+                )}
                 {showSetupCard(groups, activeItem) &&
                     (setupCompleteness &&
                     setupCompleteness.steps.find((s) => s.step === 'finish')

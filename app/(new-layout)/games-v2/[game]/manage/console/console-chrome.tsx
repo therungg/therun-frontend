@@ -3,6 +3,7 @@
 import clsx from 'clsx';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { List } from 'react-bootstrap-icons';
+import Link from '~src/components/link';
 import type { ResolvedGame } from '../../../../../../types/leaderboards.types';
 import { BackLink } from '../../shared/back-link';
 import { useDialogBehavior } from '../../shared/board-dialog';
@@ -19,6 +20,9 @@ interface Props {
     /** True when one or more attention sources failed to load — the badge
      * count may be an undercount, not a confirmed total. */
     badgeDegraded?: boolean;
+    /** How many games this viewer moderates — the "All your games" link to
+     * the cross-game hub only shows when there's more than one. */
+    moderatedGamesCount?: number;
     categories: Array<{ id: number; display: string }>;
     selectedCategoryId: number | null;
     onSelectCategory: (id: number) => void;
@@ -38,6 +42,7 @@ export function ConsoleChrome({
     onNavigate,
     attentionCount,
     badgeDegraded = false,
+    moderatedGamesCount = 0,
     categories,
     selectedCategoryId,
     onSelectCategory,
@@ -108,6 +113,14 @@ export function ConsoleChrome({
                     <h1 className={styles.title}>{game.display}</h1>
                 </div>
                 <div className={styles.headerActions}>
+                    {moderatedGamesCount > 1 && (
+                        <Link
+                            href="/games-v2/manage"
+                            className={styles.allGamesLink}
+                        >
+                            All your games
+                        </Link>
+                    )}
                     <BackLink
                         href={`/games-v2/${game.name}`}
                         label="Back to leaderboard"

@@ -51,7 +51,11 @@ $rail: 3px; // severity spine / active accent width
     margin-left: auto;
     display: flex;
     align-items: center;
-    gap: dt.$spacing-sm;
+    gap: dt.$spacing-lg;
+}
+
+.allGamesLink {
+    @include board.board-quiet-link;
 }
 
 .body {
@@ -445,6 +449,30 @@ $rail: 3px; // severity spine / active accent width
     flex-wrap: wrap;
     font-size: dt.$font-size-sm;
     margin-bottom: dt.$spacing-xs;
+}
+
+// ---- Live-poll "new items" banner ---------------------------
+// Informational, not a warning — new triage work arrived while the console
+// was open. Quiet primary tint, never the amber caution used for degraded
+// sources (needs-attention.module.scss's .degradedBanner).
+.liveBanner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: dt.$spacing-sm;
+    margin-bottom: dt.$spacing-lg;
+    padding: dt.$spacing-sm dt.$spacing-lg;
+    border: 1px solid rgba(var(--bs-primary-rgb), 0.3);
+    border-radius: dt.$radius-md;
+    background: rgba(var(--bs-primary-rgb), 0.08);
+    font-size: dt.$font-size-sm;
+    color: var(--bs-emphasis-color);
+}
+
+.liveBannerRefresh {
+    @include board.control-pill;
+    margin-left: auto;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
 }
 
 .noteInfo {
