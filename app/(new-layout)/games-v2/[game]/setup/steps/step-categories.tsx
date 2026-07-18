@@ -189,7 +189,9 @@ export function StepCategories({ data, onAdvance }: StepProps) {
                             <td>
                                 {r.display}
                                 {r.error && (
-                                    <div className="text-danger small">
+                                    <div
+                                        className={`${styles.textDanger} small`}
+                                    >
                                         {r.error}
                                     </div>
                                 )}

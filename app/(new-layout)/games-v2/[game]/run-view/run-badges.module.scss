@@ -1,8 +1,10 @@
 @use '../../../styles/design-tokens' as dt;
 @use '../../../styles/board' as board;
 
+// "One green": verified/done states use --bs-primary, not $accent-green
+// (see system.md's color-world decision).
 .verified {
-    @include board.board-pill(dt.$accent-green);
+    @include board.board-pill(var(--bs-primary));
 }
 
 .pending {

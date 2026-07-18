@@ -221,7 +221,7 @@ export function StepFinish({ data }: StepProps) {
                         <span
                             className={
                                 s.status === 'blocker'
-                                    ? 'text-danger'
+                                    ? styles.textDanger
                                     : s.status === 'warning'
                                       ? 'text-warning'
                                       : s.status === 'done'
