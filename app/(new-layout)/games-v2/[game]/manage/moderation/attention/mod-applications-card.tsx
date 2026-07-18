@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState, useTransition } from 'react';
+import { useState } from 'react';
 import { toast } from 'react-toastify';
 import type {
     BoardClaimRequest,
@@ -22,26 +22,23 @@ interface Props {
 export function ModApplicationsCard({ gameSlug, applications }: Props) {
     const router = useRouter();
     const [decided, setDecided] = useState<Set<number>>(new Set());
-    const [isPending, startPending] = useTransition();
 
     const remaining = applications.filter((a) => !decided.has(a.id));
     if (remaining.length === 0) return null;
 
-    const decide = (
+    // Awaited by each row so it can manage its own pending/error state
+    // (e.g. the deny dialog) rather than sharing one list-wide pending flag.
+    const decide = async (
         id: number,
         action: () => Promise<{ ok: true } | { error: string }>,
         msg: string,
-    ) => {
-        startPending(async () => {
-            const res = await action();
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            toast.success(msg);
-            setDecided((prev) => new Set(prev).add(id));
-            router.refresh();
-        });
+    ): Promise<{ ok: true } | { error: string }> => {
+        const res = await action();
+        if ('error' in res) return res;
+        toast.success(msg);
+        setDecided((prev) => new Set(prev).add(id));
+        router.refresh();
+        return res;
     };
 
     return (
@@ -57,7 +54,6 @@ export function ModApplicationsCard({ gameSlug, applications }: Props) {
                     <ApplicationRow
                         key={r.id}
                         request={r}
-                        disabled={isPending}
                         onApprove={(role) =>
                             decide(
                                 r.id,
@@ -91,18 +87,50 @@ export function ModApplicationsCard({ gameSlug, applications }: Props) {
 
 function ApplicationRow({
     request,
-    disabled,
     onApprove,
     onDeny,
 }: {
     request: BoardClaimRequest;
-    disabled: boolean;
-    onApprove: (role: BoardModRole) => void;
-    onDeny: (reason: string) => void;
+    onApprove: (
+        role: BoardModRole,
+    ) => Promise<{ ok: true } | { error: string }>;
+    onDeny: (reason: string) => Promise<{ ok: true } | { error: string }>;
 }) {
     const [role, setRole] = useState<BoardModRole>('game-mod');
     const [denyOpen, setDenyOpen] = useState(false);
+    const [approvePending, setApprovePending] = useState(false);
+    const [denyPending, setDenyPending] = useState(false);
+    const [denyError, setDenyError] = useState<string | null>(null);
+    // Local to this row — approving or denying one application shouldn't
+    // disable another row's buttons.
+    const busy = approvePending || denyPending;
     const s = request.signals;
+
+    const handleApprove = async () => {
+        setApprovePending(true);
+        const res = await onApprove(role);
+        setApprovePending(false);
+        if ('error' in res) toast.error(res.error);
+    };
+
+    const closeDeny = () => {
+        setDenyOpen(false);
+        setDenyError(null);
+    };
+
+    const submitDeny = async (reason: string) => {
+        setDenyPending(true);
+        setDenyError(null);
+        const res = await onDeny(reason);
+        if ('error' in res) {
+            setDenyPending(false);
+            setDenyError(res.error);
+            return;
+        }
+        setDenyPending(false);
+        setDenyOpen(false);
+    };
+
     return (
         <div className={`${styles.item} ${styles.sevLow} mb-2`}>
             <div className={styles.itemTop}>
@@ -126,15 +154,15 @@ function ApplicationRow({
                 <button
                     type="button"
                     className="btn btn-sm btn-primary"
-                    disabled={disabled}
-                    onClick={() => onApprove(role)}
+                    disabled={busy}
+                    onClick={handleApprove}
                 >
-                    Approve
+                    {approvePending ? 'Approving…' : 'Approve'}
                 </button>
                 <button
                     type="button"
                     className="btn btn-sm btn-outline-danger"
-                    disabled={disabled}
+                    disabled={busy}
                     onClick={() => setDenyOpen(true)}
                 >
                     Deny
@@ -142,11 +170,8 @@ function ApplicationRow({
             </div>
             <PromptDialog
                 open={denyOpen}
-                onClose={() => setDenyOpen(false)}
-                onSubmit={(reason) => {
-                    setDenyOpen(false);
-                    onDeny(reason);
-                }}
+                onClose={closeDeny}
+                onSubmit={submitDeny}
                 labelledBy={`deny-application-${request.id}-title`}
                 title={`Deny ${request.username}?`}
                 blurb="They can reapply. A reason is optional, but helps if they ask why."
@@ -155,7 +180,8 @@ function ApplicationRow({
                 multiline
                 submitLabel="Deny application"
                 submitVariant="danger"
-                pending={disabled}
+                pending={denyPending}
+                error={denyError}
             />
         </div>
     );

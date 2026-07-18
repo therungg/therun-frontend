@@ -14,20 +14,28 @@ export function InvalidateCacheButton({ gameSlug, gameId }: Props) {
     const [isPending, startTransition] = useTransition();
     const [rebuildAllFlags, setRebuildAllFlags] = useState(false);
     const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmError, setConfirmError] = useState<string | null>(null);
     const checkboxId = useId();
+
+    const closeConfirm = () => {
+        setConfirmOpen(false);
+        setConfirmError(null);
+    };
 
     const doClear = () => {
         startTransition(async () => {
+            setConfirmError(null);
             const res = await invalidateGameCacheAction({
                 gameSlug,
                 gameId,
                 rebuildAllFlags,
             });
             if ('error' in res) {
-                toast.error(res.error);
+                setConfirmError(res.error);
                 return;
             }
             toast.success('Leaderboard cache cleared for this game');
+            setConfirmOpen(false);
         });
     };
 
@@ -60,17 +68,15 @@ export function InvalidateCacheButton({ gameSlug, gameId }: Props) {
             </div>
             <ConfirmDialog
                 open={confirmOpen}
-                onClose={() => setConfirmOpen(false)}
-                onConfirm={() => {
-                    setConfirmOpen(false);
-                    doClear();
-                }}
+                onClose={closeConfirm}
+                onConfirm={doClear}
                 labelledBy="clear-cache-title"
                 title="Clear the leaderboard cache?"
                 message="The next read of each board will re-warm from Postgres. Boards may briefly return slightly stale data while that happens."
                 confirmLabel="Clear cache"
                 variant="warning"
                 pending={isPending}
+                error={confirmError}
             />
         </div>
     );

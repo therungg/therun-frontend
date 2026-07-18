@@ -28,6 +28,17 @@
     margin: 0;
 }
 
+.errorAlert {
+    padding: dt.$spacing-sm dt.$spacing-md;
+    border-radius: dt.$radius-md;
+    border: 1px solid rgba(dt.$accent-red, 0.3);
+    background: color-mix(in srgb, #{dt.$accent-red} 8%, transparent);
+    color: dt.$accent-red;
+    font-size: dt.$font-size-sm;
+    margin-top: dt.$spacing-sm;
+    margin-bottom: 0;
+}
+
 .footer {
     display: flex;
     justify-content: flex-end;

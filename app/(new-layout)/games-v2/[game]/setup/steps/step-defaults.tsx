@@ -522,6 +522,7 @@ function GameWideVariablesSection({ data }: { data: WizardData }) {
     const [confirmDelete, setConfirmDelete] = useState<VariableRow | null>(
         null,
     );
+    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     const openTemplate = (t: VariableTemplate) =>
         setEditor({
@@ -571,8 +572,14 @@ function GameWideVariablesSection({ data }: { data: WizardData }) {
         setConfirmDelete(v);
     };
 
+    const closeConfirmDelete = () => {
+        setConfirmDelete(null);
+        setDeleteError(null);
+    };
+
     const doRemoveVariable = (v: VariableRow) => {
         startSaving(async () => {
+            setDeleteError(null);
             const res = await deleteVariableAction({
                 gameSlug: data.game.name,
                 gameId: data.game.id,
@@ -580,11 +587,12 @@ function GameWideVariablesSection({ data }: { data: WizardData }) {
                 name: v.name,
             });
             if ('error' in res) {
-                toast.error(res.error);
+                setDeleteError(res.error);
                 return;
             }
             setVariables((vs) => vs.filter((x) => x.id !== v.id));
             // No router.refresh() — see saveVariable.
+            setConfirmDelete(null);
         });
     };
 
@@ -753,16 +761,16 @@ function GameWideVariablesSection({ data }: { data: WizardData }) {
             )}
             <ConfirmDialog
                 open={confirmDelete != null}
-                onClose={() => setConfirmDelete(null)}
+                onClose={closeConfirmDelete}
                 onConfirm={() => {
                     if (confirmDelete) doRemoveVariable(confirmDelete);
-                    setConfirmDelete(null);
                 }}
                 labelledBy="delete-gamewide-variable-title"
                 title="Delete variable?"
                 message={`Delete variable "${confirmDelete?.name}"? Existing finished runs keep their resolved values until a re-resolve worker runs.`}
                 confirmLabel="Delete"
                 pending={isSaving}
+                error={deleteError}
             />
         </section>
     );

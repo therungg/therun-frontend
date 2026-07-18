@@ -36,6 +36,8 @@ export function ModeratorsPane({
     const [confirmRemove, setConfirmRemove] = useState<GameModerator | null>(
         null,
     );
+    const [removePending, setRemovePending] = useState(false);
+    const [removeError, setRemoveError] = useState<string | null>(null);
 
     const addMod = () => {
         startPending(async () => {
@@ -75,22 +77,28 @@ export function ModeratorsPane({
         setConfirmRemove(m);
     };
 
-    const doRemoveMod = (m: GameModerator) => {
-        startPending(async () => {
-            const res = await removeGameModeratorAction({
-                gameSlug,
-                gameId,
-                assignmentId: m.assignmentId,
-            });
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            setMods((ms) =>
-                ms.filter((x) => x.assignmentId !== m.assignmentId),
-            );
-            router.refresh();
+    const closeConfirmRemove = () => {
+        setConfirmRemove(null);
+        setRemoveError(null);
+    };
+
+    const doRemoveMod = async (m: GameModerator) => {
+        setRemovePending(true);
+        setRemoveError(null);
+        const res = await removeGameModeratorAction({
+            gameSlug,
+            gameId,
+            assignmentId: m.assignmentId,
         });
+        if ('error' in res) {
+            setRemovePending(false);
+            setRemoveError(res.error);
+            return;
+        }
+        setMods((ms) => ms.filter((x) => x.assignmentId !== m.assignmentId));
+        router.refresh();
+        setRemovePending(false);
+        setConfirmRemove(null);
     };
 
     return (
@@ -164,16 +172,16 @@ export function ModeratorsPane({
             </div>
             <ConfirmDialog
                 open={confirmRemove != null}
-                onClose={() => setConfirmRemove(null)}
+                onClose={closeConfirmRemove}
                 onConfirm={() => {
                     if (confirmRemove) doRemoveMod(confirmRemove);
-                    setConfirmRemove(null);
                 }}
                 labelledBy="remove-mod-title"
                 title="Remove moderator?"
                 message={`Remove ${confirmRemove?.username} from the mod team? They lose all moderator permissions on this board immediately.`}
                 confirmLabel="Remove"
-                pending={isPending}
+                pending={removePending}
+                error={removeError}
             />
         </section>
     );

@@ -43,6 +43,7 @@ export function VariablesSection({
     const [confirmDelete, setConfirmDelete] = useState<VariableRowData | null>(
         null,
     );
+    const [deleteError, setDeleteError] = useState<string | null>(null);
     const busy = isLoading || isSaving;
 
     const refresh = async () => {
@@ -152,8 +153,14 @@ export function VariablesSection({
         setConfirmDelete(row);
     };
 
+    const closeConfirmDelete = () => {
+        setConfirmDelete(null);
+        setDeleteError(null);
+    };
+
     const doDelete = (row: VariableRowData) => {
         startSaveTransition(async () => {
+            setDeleteError(null);
             const res = await deleteVariableAction({
                 gameSlug,
                 gameId,
@@ -161,11 +168,12 @@ export function VariablesSection({
                 name: row.name,
             });
             if ('error' in res) {
-                toast.error(res.error);
+                setDeleteError(res.error);
                 return;
             }
             toast.success(`Deleted "${row.name}"`);
             await refresh();
+            setConfirmDelete(null);
         });
     };
 
@@ -351,16 +359,16 @@ export function VariablesSection({
             )}
             <ConfirmDialog
                 open={confirmDelete != null}
-                onClose={() => setConfirmDelete(null)}
+                onClose={closeConfirmDelete}
                 onConfirm={() => {
                     if (confirmDelete) doDelete(confirmDelete);
-                    setConfirmDelete(null);
                 }}
                 labelledBy="delete-variable-title"
                 title="Delete variable?"
                 message={`Delete variable "${confirmDelete?.name}"? Existing finished runs keep their resolved values until a re-resolve worker runs.`}
                 confirmLabel="Delete"
                 pending={isSaving}
+                error={deleteError}
             />
         </section>
     );

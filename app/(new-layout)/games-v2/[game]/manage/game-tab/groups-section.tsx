@@ -37,6 +37,7 @@ export function GroupsSection({
     const [_isPending, startTransition] = useTransition();
     const [confirmDeleteGroup, setConfirmDeleteGroup] =
         useState<ManageGroup | null>(null);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
 
     const countByGroupId = useMemo(() => {
         const m = new Map<number, number>();
@@ -123,27 +124,33 @@ export function GroupsSection({
         setConfirmDeleteGroup(g);
     };
 
-    const doDelete = (g: ManageGroup) => {
+    const closeConfirmDeleteGroup = () => {
+        setConfirmDeleteGroup(null);
+        setDeleteError(null);
+    };
+
+    const doDelete = async (g: ManageGroup) => {
         setPending(true);
-        startTransition(async () => {
-            const res = await deleteGroupAction({
-                gameSlug: game.name,
-                gameId: game.id,
-                groupId: g.id,
-            });
-            setPending(false);
-            if ('error' in res) {
-                toast.error(res.error);
-                return;
-            }
-            onGroupsChange(groups.filter((x) => x.id !== g.id));
-            for (const r of rows) {
-                if (r.groupId === g.id) {
-                    onRowGroupChange(r.id, null, null);
-                }
-            }
-            toast.success(`Deleted "${g.name}"`);
+        setDeleteError(null);
+        const res = await deleteGroupAction({
+            gameSlug: game.name,
+            gameId: game.id,
+            groupId: g.id,
         });
+        if ('error' in res) {
+            setPending(false);
+            setDeleteError(res.error);
+            return;
+        }
+        onGroupsChange(groups.filter((x) => x.id !== g.id));
+        for (const r of rows) {
+            if (r.groupId === g.id) {
+                onRowGroupChange(r.id, null, null);
+            }
+        }
+        toast.success(`Deleted "${g.name}"`);
+        setPending(false);
+        setConfirmDeleteGroup(null);
     };
 
     const commitReorder = (next: ManageGroup[]) => {
@@ -338,10 +345,9 @@ export function GroupsSection({
             )}
             <ConfirmDialog
                 open={confirmDeleteGroup != null}
-                onClose={() => setConfirmDeleteGroup(null)}
+                onClose={closeConfirmDeleteGroup}
                 onConfirm={() => {
                     if (confirmDeleteGroup) doDelete(confirmDeleteGroup);
-                    setConfirmDeleteGroup(null);
                 }}
                 labelledBy="delete-group-title"
                 title="Delete group?"
@@ -355,6 +361,7 @@ export function GroupsSection({
                 })()}
                 confirmLabel="Delete"
                 pending={pending}
+                error={deleteError}
             />
         </section>
     );
