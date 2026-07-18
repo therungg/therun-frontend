@@ -105,3 +105,17 @@ page 1 and rank 26 on page 2, tied but never rendered adjacently) is never marke
   fallback — call site in `leaderboard/leaderboard-table.tsx`. Once backend ranks are
   authoritative, this can likely simplify to just detecting `entry.rank === prevRank`
   instead of re-deriving group membership from time equality.
+
+### 8. `runId`/`country` on WR history entries (W2)
+
+The WR history drawer's narrative list can't link a past record to its run page or show a
+country flag — `WrHistoryEntry` (`types/leaderboards.types.ts`) carries only `runnerName`,
+`time`, `timingMethod`, `setAt`, `supersededAt`; no `runId`/`manualTimeId` and no `country`,
+unlike `LeaderboardEntry` which has both.
+
+- Wanted: `runId` (or `manualTimeId`) and `country` on each WR history entry, so past records
+  can deep-link to their run page and show the runner's flag like the current-record crown
+  and the leaderboard rows already do.
+- Frontend: `drawers/wr-history-drawer.tsx` renders a plain runner name with no flag and no
+  link for every row; `drawers/wr-history-model.ts`'s `WrHistoryRow` has no field to carry
+  either through — degrades honestly rather than guessing at a link.

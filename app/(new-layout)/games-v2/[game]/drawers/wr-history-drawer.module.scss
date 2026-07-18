@@ -1,0 +1,163 @@
+@use '../../../styles/design-tokens' as dt;
+@use '../../../styles/board' as board;
+
+// ============================================================
+// WrHistoryDrawer — the crown's History drawer as a narrative list on the
+// shared BoardDialog primitive: newest-first, current record pinned + gold,
+// per-row improvement deltas, "Held for" as the strongest secondary signal.
+// Replaces the old react-bootstrap Modal + Table (round-1 carve-out).
+// ============================================================
+
+.header {
+    @include board.board-dialog-header;
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-md;
+}
+
+.title {
+    @include board.board-dialog-title;
+    flex: 1;
+}
+
+.body {
+    @include board.board-dialog-body;
+}
+
+.errorAlert {
+    @include board.board-error-alert;
+}
+
+// ---- List ----------------------------------------------------
+.list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-md;
+}
+
+.row {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-xs;
+    padding: dt.$spacing-lg;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.4);
+    border-radius: dt.$radius-md;
+}
+
+// Current record: gold left edge (the rank-1 treatment from the public
+// board) + tinted surface — unmissable at the top of a newest-first list.
+.rowCurrent {
+    border-color: rgba(dt.$accent-gold, 0.4);
+    background: color-mix(in srgb, #{dt.$accent-gold} 6%, transparent);
+    box-shadow: inset 3px 0 0 dt.$accent-gold;
+}
+
+.rowTop {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-sm;
+}
+
+.runner {
+    font-weight: 600;
+    color: var(--bs-emphasis-color);
+}
+
+.currentPill {
+    @include board.board-pill(dt.$accent-gold);
+}
+
+.rowTimeLine {
+    display: flex;
+    align-items: baseline;
+    gap: dt.$spacing-md;
+}
+
+.time {
+    @include board.mono-time;
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+}
+
+.rowCurrent .time {
+    color: dt.$accent-gold;
+}
+
+.delta {
+    @include board.mono-time;
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+}
+
+// "One green" (system.md): improvement uses the app's brand green, not a
+// second accent-green — matches the verified/affirmative convention.
+.deltaImprovement {
+    color: var(--bs-primary);
+}
+
+.deltaRegression {
+    color: dt.$accent-red;
+}
+
+.deltaNeutral {
+    color: var(--bs-secondary-color);
+}
+
+// "Held for" — the strongest secondary signal per the brief: bolder and
+// larger than the trailing relative date.
+.held {
+    font-size: dt.$font-size-sm;
+    font-weight: 600;
+    color: var(--bs-body-color);
+}
+
+.when {
+    font-size: dt.$font-size-xs;
+    color: var(--bs-tertiary-color);
+}
+
+// ---- Loading skeleton -----------------------------------------
+.skeletonRow {
+    display: flex;
+    flex-direction: column;
+    gap: dt.$spacing-sm;
+    padding: dt.$spacing-lg;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.2);
+    border-radius: dt.$radius-md;
+}
+
+.skeletonBar {
+    @include board.board-skeleton;
+    height: dt.$font-size-sm;
+    border-radius: dt.$radius-sm;
+}
+
+.skeletonName {
+    width: 40%;
+}
+
+.skeletonTime {
+    width: 30%;
+    height: dt.$font-size-lg;
+}
+
+.skeletonMeta {
+    width: 60%;
+}
+
+// ---- Empty state ------------------------------------------------
+.empty {
+    @include board.board-empty;
+}
+
+.emptyIcon {
+    @include board.board-empty-icon;
+}
+
+.emptyTitle {
+    @include board.board-empty-title;
+}

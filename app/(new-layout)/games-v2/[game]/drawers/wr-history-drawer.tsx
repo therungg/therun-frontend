@@ -1,10 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Modal, Table } from 'react-bootstrap';
+import { Trophy } from 'react-bootstrap-icons';
 import { DurationToFormatted } from '~src/components/util/datetime';
+import { formatRunDate } from '~src/lib/format-run-date';
 import type { WrHistoryEntry } from '../../../../../types/leaderboards.types';
-import { timingMethodLabel } from '../labels';
+import { relativeDate } from '../leaderboard/relative-date';
+import { BoardDialog } from '../shared/board-dialog';
+import styles from './wr-history-drawer.module.scss';
+import {
+    formatDeltaSeconds,
+    formatHeldDuration,
+    toWrHistoryRows,
+    type WrHistoryRow,
+} from './wr-history-model';
 
 interface Props {
     show: boolean;
@@ -13,7 +22,11 @@ interface Props {
     categorySlug: string;
     categoryDisplay: string;
     subcategoryKey: string;
+    /** category.showMilliseconds ?? true — precision the board is configured for. */
+    showMilliseconds?: boolean;
 }
+
+const SKELETON_ROWS = 5;
 
 export function WrHistoryDrawer({
     show,
@@ -22,6 +35,7 @@ export function WrHistoryDrawer({
     categorySlug,
     categoryDisplay,
     subcategoryKey,
+    showMilliseconds = true,
 }: Props) {
     const [history, setHistory] = useState<WrHistoryEntry[] | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -50,75 +64,119 @@ export function WrHistoryDrawer({
         };
     }, [show, gameSlug, categorySlug, subcategoryKey]);
 
+    const rows = history ? toWrHistoryRows(history) : null;
+
     return (
-        <Modal show={show} onHide={onHide} size="xl">
-            <Modal.Header closeButton>
-                <Modal.Title>
+        <BoardDialog
+            open={show}
+            onClose={onHide}
+            labelledBy="wr-history-title"
+            size="lg"
+        >
+            <div className={styles.header}>
+                <h5 className={styles.title} id="wr-history-title">
                     World record history — {categoryDisplay}
-                </Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
+                </h5>
+                <button
+                    type="button"
+                    className="btn-close"
+                    aria-label="Close"
+                    onClick={onHide}
+                />
+            </div>
+            <div className={styles.body}>
                 {error && (
-                    <p className="text-danger">
+                    <div className={styles.errorAlert} role="alert">
                         Failed to load WR history: {error}
-                    </p>
+                    </div>
                 )}
-                {!error && history === null && (
-                    <p className="text-muted">Loading…</p>
+                {!error && rows === null && (
+                    <ul className={styles.list} aria-hidden="true">
+                        {Array.from({ length: SKELETON_ROWS }, (_, i) => (
+                            <li key={i} className={styles.skeletonRow}>
+                                <span
+                                    className={`${styles.skeletonBar} ${styles.skeletonName}`}
+                                />
+                                <span
+                                    className={`${styles.skeletonBar} ${styles.skeletonTime}`}
+                                />
+                                <span
+                                    className={`${styles.skeletonBar} ${styles.skeletonMeta}`}
+                                />
+                            </li>
+                        ))}
+                    </ul>
                 )}
-                {history !== null && history.length === 0 && (
-                    <p className="text-muted">No world record history yet.</p>
+                {!error && rows !== null && rows.length === 0 && (
+                    <div className={styles.empty}>
+                        <Trophy
+                            size={28}
+                            className={styles.emptyIcon}
+                            aria-hidden
+                        />
+                        <p className={styles.emptyTitle}>
+                            No world record history yet.
+                        </p>
+                    </div>
                 )}
-                {history !== null && history.length > 0 && (
-                    <Table hover responsive>
-                        <thead>
-                            <tr>
-                                <th>Runner</th>
-                                <th>Time</th>
-                                <th>Timing</th>
-                                <th>Set</th>
-                                <th>Held until</th>
-                                <th>Held for</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {history.map((wr) => {
-                                const setAt = new Date(wr.setAt);
-                                const supersededAt = wr.supersededAt
-                                    ? new Date(wr.supersededAt)
-                                    : null;
-                                const heldMs =
-                                    (supersededAt ?? new Date()).getTime() -
-                                    setAt.getTime();
-                                return (
-                                    <tr key={`${wr.runnerName}-${wr.setAt}`}>
-                                        <td>{wr.runnerName}</td>
-                                        <td>
-                                            <DurationToFormatted
-                                                duration={wr.time}
-                                            />
-                                        </td>
-                                        <td>
-                                            {timingMethodLabel(wr.timingMethod)}
-                                        </td>
-                                        <td>{setAt.toLocaleDateString()}</td>
-                                        <td>
-                                            {supersededAt
-                                                ? supersededAt.toLocaleDateString()
-                                                : '—'}
-                                        </td>
-                                        <td>
-                                            <DurationToFormatted
-                                                duration={heldMs}
-                                            />
-                                        </td>
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </Table>
+                {!error && rows !== null && rows.length > 0 && (
+                    <ul className={styles.list}>
+                        {rows.map((row) => (
+                            <WrHistoryListItem
+                                key={row.key}
+                                row={row}
+                                showMilliseconds={showMilliseconds}
+                            />
+                        ))}
+                    </ul>
                 )}
-            </Modal.Body>
-        </Modal>
+            </div>
+        </BoardDialog>
+    );
+}
+
+function WrHistoryListItem({
+    row,
+    showMilliseconds,
+}: {
+    row: WrHistoryRow;
+    showMilliseconds: boolean;
+}) {
+    const deltaClass =
+        row.deltaMs == null
+            ? styles.deltaNeutral
+            : row.deltaMs > 0
+              ? styles.deltaRegression
+              : styles.deltaImprovement;
+
+    return (
+        <li
+            className={`${styles.row} ${row.isCurrent ? styles.rowCurrent : ''}`}
+        >
+            <div className={styles.rowTop}>
+                <span className={styles.runner}>{row.runnerName}</span>
+                {row.isCurrent && (
+                    <span className={styles.currentPill}>Current</span>
+                )}
+            </div>
+            <div className={styles.rowTimeLine}>
+                <span className={styles.time}>
+                    <DurationToFormatted
+                        duration={row.time}
+                        withMillis={showMilliseconds}
+                    />
+                </span>
+                <span className={`${styles.delta} ${deltaClass}`}>
+                    {formatDeltaSeconds(row.deltaMs)}
+                </span>
+            </div>
+            <div className={styles.held}>
+                Held for {formatHeldDuration(row.heldMs)}
+                {row.isCurrent && ' — and counting'}
+            </div>
+            <div className={styles.when} title={formatRunDate(row.setAt)}>
+                {relativeDate(row.setAt)}
+            </div>
+        </li>
     );
 }

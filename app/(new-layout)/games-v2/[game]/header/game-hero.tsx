@@ -260,6 +260,7 @@ export function GameHero({
                     categorySlug={category.name}
                     categoryDisplay={category.display}
                     subcategoryKey={subcategoryKey}
+                    showMilliseconds={showMilliseconds}
                 />
             )}
         </header>
