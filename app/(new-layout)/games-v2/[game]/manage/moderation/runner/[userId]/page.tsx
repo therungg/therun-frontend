@@ -1,9 +1,11 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { resolveGame } from '~src/lib/games-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
 import { getUserEligibleRuns } from '~src/lib/moderation/mass-mgmt';
 import { ModError } from '~src/lib/moderation/mod-fetch';
+import buildMetadata from '~src/utils/metadata';
 import type { UserEligibleRunRow } from '../../../../../../../../types/moderation.types';
 import { loadConsoleChrome } from '../../../console/load-chrome';
 import { SubrouteChrome } from '../../../console/subroute-chrome';
@@ -11,6 +13,16 @@ import { RunnerView } from './runner-view';
 
 interface Props {
     params: Promise<{ game: string; userId: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { game: slug } = await params;
+    const game = await resolveGame(slug);
+    const display = game?.display ?? slug;
+    return buildMetadata({
+        title: `Runner — ${display}`,
+        description: `Moderate a runner's ${display} runs.`,
+    });
 }
 
 export default async function RunnerPage({ params }: Props) {

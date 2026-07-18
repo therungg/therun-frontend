@@ -1,7 +1,9 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { resolveCategory, resolveGame } from '~src/lib/games-v1';
 import { canModerateGame } from '~src/lib/moderation/can-moderate';
+import buildMetadata from '~src/utils/metadata';
 import { loadConsoleChrome } from '../../console/load-chrome';
 import { SubrouteChrome } from '../../console/subroute-chrome';
 import { RosterView } from './roster-view';
@@ -9,6 +11,16 @@ import { RosterView } from './roster-view';
 interface Props {
     params: Promise<{ game: string }>;
     searchParams: Promise<{ categoryId?: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { game: slug } = await params;
+    const game = await resolveGame(slug);
+    const display = game?.display ?? slug;
+    return buildMetadata({
+        title: `Runs — ${display}`,
+        description: `Moderate runs for ${display}.`,
+    });
 }
 
 export default async function RosterPage({ params, searchParams }: Props) {

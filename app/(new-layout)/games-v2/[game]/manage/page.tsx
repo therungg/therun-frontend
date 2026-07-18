@@ -1,4 +1,5 @@
 import { subject as caslSubject } from '@casl/ability';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { Suspense } from 'react';
 import { getSession } from '~src/actions/session.action';
@@ -21,6 +22,7 @@ import {
 import { type BoardHealth, computeBoardHealth } from '~src/lib/setup/health';
 import { defineAbilityFor } from '~src/rbac/ability';
 import { isLowActivityCategory } from '~src/utils/format-stats';
+import buildMetadata from '~src/utils/metadata';
 import type {
     BoardClaimRequest,
     GameModerator,
@@ -37,6 +39,16 @@ import {
 
 interface Props {
     params: Promise<{ game: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { game: slug } = await params;
+    const game = await resolveGame(slug);
+    const display = game?.display ?? slug;
+    return buildMetadata({
+        title: `Manage — ${display}`,
+        description: `Manage the ${display} leaderboard.`,
+    });
 }
 
 export default async function GameAdminConsolePage({ params }: Props) {
