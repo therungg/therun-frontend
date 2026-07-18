@@ -46,6 +46,10 @@
     @include board.control-pill;
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
     padding: dt.$spacing-xs dt.$spacing-lg;
+
+    @media (pointer: coarse) {
+        padding: dt.$spacing-lg;
+    }
 }
 
 .signIn {

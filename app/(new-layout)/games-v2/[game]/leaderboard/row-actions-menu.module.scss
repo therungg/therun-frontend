@@ -37,7 +37,7 @@
     border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
     border-radius: dt.$radius-md;
     background: var(--bs-body-bg);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    box-shadow: dt.$shadow-md;
 }
 
 .item {
