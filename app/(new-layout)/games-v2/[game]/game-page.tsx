@@ -161,6 +161,14 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
                 <div className={styles.grid}>
                     <div
                         className={`${styles.colMain} ${boardNav.isPending ? styles.colMainPending : ''}`}
+                        // `pointer-events: none` (colMainPending) only stops
+                        // pointer input — keyboard/AT users could still tab
+                        // into the stale pager controls mid-navigation.
+                        // `inert` (React 19) removes the whole region from
+                        // the tab order and AT tree while a nav is pending;
+                        // the controls inside are stale during the pend
+                        // regardless, so going inert is harmless.
+                        inert={boardNav.isPending}
                     >
                         {data.invalidCombination ? (
                             <InvalidCombinationNotice

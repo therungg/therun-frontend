@@ -614,6 +614,14 @@
         color: var(--bs-primary);
     }
 
+    // The system's standard ring (matches control-pill's) — every consumer
+    // (BackLink ×5 + the wizard's Skip action + other quiet links) inherits
+    // it from here rather than repeating it per module.
+    &:focus-visible {
+        outline: 2px solid rgba(var(--bs-primary-rgb), 0.5);
+        outline-offset: 1px;
+    }
+
     @media (pointer: coarse) {
         padding: dt.$spacing-sm;
         margin: calc(#{dt.$spacing-sm} * -1);

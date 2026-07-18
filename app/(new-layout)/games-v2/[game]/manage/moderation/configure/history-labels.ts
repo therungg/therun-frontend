@@ -9,6 +9,8 @@
 // code itself stays available via a `title` attribute on the caller's
 // element for auditability.
 
+import { splitHumanizedWords } from '../../../labels';
+
 const KNOWN_ACTIONS: Record<string, string> = {
     exclude_run: 'Excluded this run from the leaderboard',
     include_run: 'Restored this run to the leaderboard',
@@ -19,9 +21,15 @@ const KNOWN_ACTIONS: Record<string, string> = {
     unreject: 'Restored a rejected run',
 };
 
-/** Title-cases a raw snake_case/kebab-case action code as a last resort. */
+/**
+ * Sentence-cases a raw snake_case/kebab-case action code as a last resort —
+ * shares its word-splitting with `humanizeWord` (labels.ts's title-case
+ * primitive) via `splitHumanizedWords`, but caps only the first letter of
+ * the whole string (sentence case, this project's copy convention for log
+ * lines) rather than every word.
+ */
 function humanizeAction(raw: string): string {
-    const spaced = raw.replace(/[_-]+/g, ' ').trim();
+    const spaced = splitHumanizedWords(raw);
     if (!spaced) return 'Unknown action';
     return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }

@@ -19,3 +19,22 @@ export function canModerateGame(
         caslSubject('leaderboard', { game: gameName }),
     );
 }
+
+/**
+ * Gate for the CONFIGURE half of the console (categories/groups/variables/
+ * standards), distinct from canModerateGame's triage gate — a viewer can
+ * hold either, both, or neither. Duplicated verbatim across
+ * `manage/page.tsx` and `manage/moderation/page.tsx` before Task 18;
+ * collapsed here so both pages' `!canModerate && !canConfigure` door check
+ * stays in sync.
+ */
+export function canConfigureGame(
+    user: User | undefined,
+    gameName: string,
+): boolean {
+    if (!user?.username) return false;
+    return defineAbilityFor(user).can(
+        'edit',
+        caslSubject('category-settings', { game: gameName }),
+    );
+}

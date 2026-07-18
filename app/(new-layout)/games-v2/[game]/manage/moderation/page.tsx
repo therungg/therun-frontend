@@ -1,9 +1,10 @@
-import { subject as caslSubject } from '@casl/ability';
 import { notFound, redirect } from 'next/navigation';
 import { getSession } from '~src/actions/session.action';
 import { resolveGame } from '~src/lib/games-v1';
-import { canModerateGame } from '~src/lib/moderation/can-moderate';
-import { defineAbilityFor } from '~src/rbac/ability';
+import {
+    canConfigureGame,
+    canModerateGame,
+} from '~src/lib/moderation/can-moderate';
 import { loadModDoorClaim, ModDoor } from '../mod-door';
 
 interface Props {
@@ -25,12 +26,8 @@ export default async function ModerationPage({ params }: Props) {
         return <ModDoor game={game} claim={null} />;
     }
 
-    const ability = defineAbilityFor(session);
     const canModerate = canModerateGame(session, game.name);
-    const canConfigure = ability.can(
-        'edit',
-        caslSubject('category-settings', { game: game.name }),
-    );
+    const canConfigure = canConfigureGame(session, game.name);
     if (!canModerate && !canConfigure) {
         return (
             <ModDoor
