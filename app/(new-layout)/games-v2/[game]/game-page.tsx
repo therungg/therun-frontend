@@ -5,6 +5,7 @@ import Link from '~src/components/link';
 import type { ClaimCtaState } from './claim/claim-cta';
 import { FilterBar } from './filters/filter-bar';
 import { FiltersPopover } from './filters/filters-popover';
+import { BoardNavProvider, useBoardNavState } from './filters/use-board-nav';
 import { VerifiedToggle } from './filters/verified-toggle';
 import styles from './game-page.module.scss';
 import { CategoryPills } from './header/category-pills';
@@ -40,6 +41,11 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
     );
     const [rulesOpen, setRulesOpen] = useState(false);
     useEffect(() => setRulesOpen(false), [data.selectedCategory.id]);
+    // Single owner of every board-URL-push transition (category/subcategory
+    // pills, verified toggle, Filters popover) — see use-board-nav.ts.
+    // Hooks run unconditionally, so this is created even on the
+    // no-categories-yet branch below, where nothing consumes it.
+    const boardNav = useBoardNavState();
 
     if (data.categories.length === 0) {
         return (
@@ -101,98 +107,106 @@ export function GamePage({ data, canManage, canManageRuns, claim }: Props) {
         data.activeFilters.page > 1;
 
     return (
-        <div>
-            <GameHero
-                game={data.game}
-                stats={data.quickStats}
-                category={data.selectedCategory}
-                wrEntry={data.wrEntry}
-                boardIsEmpty={data.boardIsEmpty}
-                subcategoryKey={subcategoryKey}
-                subcategoryLabel={subcategoryLabel}
-                canManage={canManage}
-                canModerate={canManageRuns}
-                claim={claim}
-                showMilliseconds={showMilliseconds}
-            />
-            <div className={styles.band}>
-                <div className={styles.bandRow}>
-                    <CategoryPills
-                        categories={data.categories}
-                        groups={data.groups}
-                        selectedCategoryName={data.selectedCategory.name}
-                        variableKeys={variableKeys}
-                    />
-                    <div className={styles.bandEnd}>
-                        <VerifiedToggle
-                            verified={data.activeFilters.verified}
-                        />
-                        <FiltersPopover
-                            defs={data.variables}
-                            selectedVarFilters={data.activeFilters.varFilters}
-                        />
-                        <RulesPanel
-                            rules={data.selectedCategory.rules}
-                            open={rulesOpen}
-                            onToggle={() => setRulesOpen((o) => !o)}
-                        />
-                    </div>
-                </div>
-                <FilterBar
-                    defs={data.variables}
-                    selectedSubcategoryValues={
-                        data.activeFilters.subcategoryValues
-                    }
-                    selectedVarFilters={data.activeFilters.varFilters}
+        <BoardNavProvider value={boardNav}>
+            <div>
+                <GameHero
+                    game={data.game}
+                    stats={data.quickStats}
+                    category={data.selectedCategory}
+                    wrEntry={data.wrEntry}
+                    boardIsEmpty={data.boardIsEmpty}
+                    subcategoryKey={subcategoryKey}
+                    subcategoryLabel={subcategoryLabel}
+                    canManage={canManage}
+                    canModerate={canManageRuns}
+                    claim={claim}
+                    showMilliseconds={showMilliseconds}
                 />
-            </div>
-            {rulesOpen && data.selectedCategory.rules && (
-                <RulesBody rules={data.selectedCategory.rules} />
-            )}
-            <div className={styles.grid}>
-                <div className={styles.colMain}>
-                    {data.invalidCombination ? (
-                        <InvalidCombinationNotice
-                            gameSlug={data.game.name}
-                            categorySlug={data.selectedCategory.name}
-                            suggestions={
-                                data.invalidCombination.validCombinations
-                            }
-                            defs={data.variables}
-                        />
-                    ) : (
-                        <LeaderboardPager
-                            key={`${data.selectedCategory.id}|${subcategoryKey}|${JSON.stringify(data.activeFilters.varFilters)}|${data.activeFilters.combined}|${data.activeFilters.verified}`}
-                            initial={data.leaderboard}
-                            query={{
-                                gameSlug: data.game.name,
-                                categorySlug: data.selectedCategory.name,
-                                timing: data.selectedCategory.primaryTiming,
-                                subcategoryValues:
-                                    data.activeFilters.subcategoryValues,
-                                combined: data.activeFilters.combined,
-                                varFilters: data.activeFilters.varFilters,
-                                verified: data.activeFilters.verified,
-                                pageSize: data.activeFilters.pageSize,
-                            }}
-                            sessionUsername={data.sessionUsername}
-                            canManage={canManageRuns}
-                            gameSlug={data.game.name}
+                <div className={styles.band}>
+                    <div className={styles.bandRow}>
+                        <CategoryPills
+                            categories={data.categories}
+                            groups={data.groups}
+                            selectedCategoryName={data.selectedCategory.name}
                             variableKeys={variableKeys}
-                            primaryTiming={data.selectedCategory.primaryTiming}
-                            filtersActive={filtersActive}
-                            showMilliseconds={showMilliseconds}
-                            categorySlug={data.selectedCategory.name}
-                            subcategoryKey={subcategoryKey}
-                            subcategoryDefKeys={subcategoryDefKeys}
                         />
-                    )}
+                        <div className={styles.bandEnd}>
+                            <VerifiedToggle
+                                verified={data.activeFilters.verified}
+                            />
+                            <FiltersPopover
+                                defs={data.variables}
+                                selectedVarFilters={
+                                    data.activeFilters.varFilters
+                                }
+                            />
+                            <RulesPanel
+                                rules={data.selectedCategory.rules}
+                                open={rulesOpen}
+                                onToggle={() => setRulesOpen((o) => !o)}
+                            />
+                        </div>
+                    </div>
+                    <FilterBar
+                        defs={data.variables}
+                        selectedSubcategoryValues={
+                            data.activeFilters.subcategoryValues
+                        }
+                        selectedVarFilters={data.activeFilters.varFilters}
+                    />
                 </div>
-                <aside className={styles.rail}>
-                    <Sidebar data={data} claim={claim} />
-                </aside>
+                {rulesOpen && data.selectedCategory.rules && (
+                    <RulesBody rules={data.selectedCategory.rules} />
+                )}
+                <div className={styles.grid}>
+                    <div
+                        className={`${styles.colMain} ${boardNav.isPending ? styles.colMainPending : ''}`}
+                    >
+                        {data.invalidCombination ? (
+                            <InvalidCombinationNotice
+                                gameSlug={data.game.name}
+                                categorySlug={data.selectedCategory.name}
+                                suggestions={
+                                    data.invalidCombination.validCombinations
+                                }
+                                defs={data.variables}
+                            />
+                        ) : (
+                            <LeaderboardPager
+                                key={`${data.selectedCategory.id}|${subcategoryKey}|${JSON.stringify(data.activeFilters.varFilters)}|${data.activeFilters.combined}|${data.activeFilters.verified}`}
+                                initial={data.leaderboard}
+                                query={{
+                                    gameSlug: data.game.name,
+                                    categorySlug: data.selectedCategory.name,
+                                    timing: data.selectedCategory.primaryTiming,
+                                    subcategoryValues:
+                                        data.activeFilters.subcategoryValues,
+                                    combined: data.activeFilters.combined,
+                                    varFilters: data.activeFilters.varFilters,
+                                    verified: data.activeFilters.verified,
+                                    pageSize: data.activeFilters.pageSize,
+                                }}
+                                sessionUsername={data.sessionUsername}
+                                canManage={canManageRuns}
+                                gameSlug={data.game.name}
+                                variableKeys={variableKeys}
+                                primaryTiming={
+                                    data.selectedCategory.primaryTiming
+                                }
+                                filtersActive={filtersActive}
+                                showMilliseconds={showMilliseconds}
+                                categorySlug={data.selectedCategory.name}
+                                subcategoryKey={subcategoryKey}
+                                subcategoryDefKeys={subcategoryDefKeys}
+                            />
+                        )}
+                    </div>
+                    <aside className={styles.rail}>
+                        <Sidebar data={data} claim={claim} />
+                    </aside>
+                </div>
             </div>
-        </div>
+        </BoardNavProvider>
     );
 }
 

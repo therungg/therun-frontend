@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useTransition } from 'react';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import type { LeaderboardQuery } from '~src/lib/leaderboards-v1';
 import type {
     LeaderboardEntry,
@@ -78,6 +78,12 @@ export function LeaderboardPager({
     const [pages, setPages] = useState<LeaderboardEntry[][]>([initial.entries]);
     const [minPage, setMinPage] = useState(initial.page);
     const [maxPage, setMaxPage] = useState(initial.page);
+    // Board's top edge — a deep link straight to page N > 1 only has that
+    // page's rows loaded, so on mount we scroll this into view instead of
+    // trusting the browser's scroll restoration, which could otherwise
+    // leave the viewport pointed at nothing above the loaded window. The
+    // range indicator ("Showing 51–75 of …") orients the rest.
+    const boardTopRef = useRef<HTMLDivElement>(null);
     const [isPending, startTransition] = useTransition();
     // Which direction's fetch last failed, if any — drives the inline
     // error under that direction's bar and lets Retry redo the same load.
@@ -255,6 +261,18 @@ export function LeaderboardPager({
         return () => clearTimeout(timer);
     }, [highlightToken]);
 
+    // Deep-link scroll anchor (G17): a fresh page load at ?page=N > 1 only
+    // has that page's window loaded — jump the board's top edge into view
+    // on mount so scroll restoration never strands the viewport above an
+    // absent page 1. Mount-only; "Show previous"/"Show more" never re-fire
+    // this (empty deps).
+    useEffect(() => {
+        if (initial.page > 1) {
+            boardTopRef.current?.scrollIntoView({ block: 'start' });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const range = computeBoardRange(
         minPage,
         initial.pageSize,
@@ -263,7 +281,7 @@ export function LeaderboardPager({
     );
 
     return (
-        <div className={entryClass}>
+        <div className={entryClass} ref={boardTopRef}>
             {minPage > 1 && (
                 <div className={styles.showMoreBar}>
                     <button
@@ -317,7 +335,9 @@ export function LeaderboardPager({
                     )}
                     {findMeStatus === 'not-found' && (
                         <span className={styles.notFoundNote}>
-                            Not on this board yet
+                            {query.verified
+                                ? 'Not on this board — pending runs are hidden by the Verified filter.'
+                                : 'Not on this board yet'}
                         </span>
                     )}
                     {findMeStatus === 'partial-miss' && (

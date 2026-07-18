@@ -25,14 +25,24 @@
     }
 }
 
-.rowLink {
-    cursor: pointer;
+// Local stacking context for the row's stretched link (primary time cell's
+// <a class="stretched-link">, ::after inset:0 — Bootstrap's helper,
+// z-index: 1 by default). `position: relative` makes the row the pseudo's
+// containing block, so it stretches to the row's full width/height instead
+// of just its cell. Every other interactive cell (runner link, VOD link,
+// kebab/manage) needs `position: relative` + a z-index above the stretched
+// link's 1 or it'd be visually and pointer-event-wise buried under it —
+// see the elevated classes below.
+.row {
+    position: relative;
 }
 
 .runnerCell {
     display: inline-flex;
     align-items: center;
     gap: dt.$spacing-sm;
+    position: relative;
+    z-index: 2;
 }
 
 .when {
@@ -53,6 +63,8 @@
     display: inline-flex;
     gap: dt.$spacing-xs;
     opacity: 0;
+    position: relative;
+    z-index: 2;
     transition: opacity dt.$transition-fast;
 }
 
@@ -200,6 +212,8 @@ tr:focus-within .reveal {
 .iconLink {
     display: inline-flex;
     align-items: center;
+    position: relative;
+    z-index: 2;
     color: var(--bs-secondary-color);
     transition: color dt.$transition-fast;
 
@@ -260,6 +274,8 @@ tr:focus-within .reveal {
 // clipped by for rows near the bottom of a tall table.
 .infoPopoverWrap {
     display: inline-flex;
+    position: relative;
+    z-index: 2;
 }
 
 .infoPopoverPanel {
