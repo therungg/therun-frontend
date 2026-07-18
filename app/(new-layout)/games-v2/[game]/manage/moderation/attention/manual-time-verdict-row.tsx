@@ -134,8 +134,8 @@ export function ManualTimeVerdictRow({
                     {isWorking
                         ? 'Working…'
                         : verdict === 'verify'
-                          ? 'Confirm verify'
-                          : 'Confirm reject'}
+                          ? 'Verify claim'
+                          : 'Reject claim'}
                 </button>
             </div>
         </div>
