@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+    allKeysSelected,
+    intersectSelected,
     isTriageInert,
     moveSelection,
     parseTriageKey,
+    setManySelected,
+    toggleSelected,
 } from './triage-keyboard';
 
 describe('parseTriageKey', () => {
@@ -26,8 +30,12 @@ describe('parseTriageKey', () => {
         expect(parseTriageKey({ key: 'r', ...noMods })).toBe('remove');
     });
 
+    it('maps x to "toggle"', () => {
+        expect(parseTriageKey({ key: 'x', ...noMods })).toBe('toggle');
+    });
+
     it('returns null for an unrelated key', () => {
-        expect(parseTriageKey({ key: 'x', ...noMods })).toBeNull();
+        expect(parseTriageKey({ key: 'q', ...noMods })).toBeNull();
         expect(parseTriageKey({ key: 'Enter', ...noMods })).toBeNull();
     });
 
@@ -148,5 +156,88 @@ describe('moveSelection', () => {
     it('falls back to the first/last key when the current selection is no longer in the list', () => {
         expect(moveSelection(['a', 'b', 'c'], 'gone', 'down')).toBe('a');
         expect(moveSelection(['a', 'b', 'c'], 'gone', 'up')).toBe('c');
+    });
+});
+
+describe('toggleSelected', () => {
+    it('adds a key that is not yet selected', () => {
+        const result = toggleSelected(new Set(), 'a');
+        expect(Array.from(result)).toEqual(['a']);
+    });
+
+    it('removes a key that is already selected', () => {
+        const result = toggleSelected(new Set(['a', 'b']), 'a');
+        expect(Array.from(result)).toEqual(['b']);
+    });
+
+    it('does not mutate the input set', () => {
+        const input = new Set(['a']);
+        toggleSelected(input, 'a');
+        expect(Array.from(input)).toEqual(['a']);
+    });
+});
+
+describe('setManySelected', () => {
+    it('adds every given key when select is true', () => {
+        const result = setManySelected(new Set(['a']), ['b', 'c'], true);
+        expect(Array.from(result).sort()).toEqual(['a', 'b', 'c']);
+    });
+
+    it('removes every given key when select is false', () => {
+        const result = setManySelected(
+            new Set(['a', 'b', 'c']),
+            ['b', 'c'],
+            false,
+        );
+        expect(Array.from(result)).toEqual(['a']);
+    });
+
+    it('is a no-op for keys not present when deselecting', () => {
+        const result = setManySelected(new Set(['a']), ['x', 'y'], false);
+        expect(Array.from(result)).toEqual(['a']);
+    });
+
+    it('does not mutate the input set', () => {
+        const input = new Set(['a']);
+        setManySelected(input, ['b'], true);
+        expect(Array.from(input)).toEqual(['a']);
+    });
+});
+
+describe('allKeysSelected', () => {
+    it('is true when every key is selected', () => {
+        expect(allKeysSelected(new Set(['a', 'b', 'c']), ['a', 'b'])).toBe(
+            true,
+        );
+    });
+
+    it('is false when some keys are missing', () => {
+        expect(allKeysSelected(new Set(['a']), ['a', 'b'])).toBe(false);
+    });
+
+    it('is false for an empty key list — nothing to vacuously select all of', () => {
+        expect(allKeysSelected(new Set(['a']), [])).toBe(false);
+    });
+});
+
+describe('intersectSelected', () => {
+    it('keeps only selected keys that are still present', () => {
+        const result = intersectSelected(new Set(['a', 'b', 'c']), [
+            'b',
+            'c',
+            'd',
+        ]);
+        expect(Array.from(result).sort()).toEqual(['b', 'c']);
+    });
+
+    it('returns an empty set when nothing overlaps', () => {
+        const result = intersectSelected(new Set(['a']), ['b']);
+        expect(result.size).toBe(0);
+    });
+
+    it('does not mutate the input set', () => {
+        const input = new Set(['a', 'b']);
+        intersectSelected(input, ['a']);
+        expect(Array.from(input).sort()).toEqual(['a', 'b']);
     });
 });

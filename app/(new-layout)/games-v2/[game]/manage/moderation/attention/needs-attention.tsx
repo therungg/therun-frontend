@@ -33,9 +33,13 @@ import {
 import { ManualTimeVerdictRow } from './manual-time-verdict-row';
 import styles from './needs-attention.module.scss';
 import {
+    allKeysSelected,
+    intersectSelected,
     isTriageInert,
     moveSelection,
     parseTriageKey,
+    setManySelected,
+    toggleSelected,
 } from './triage-keyboard';
 
 /** data-triage-card attribute name shared between the selector and the query. */
@@ -111,6 +115,13 @@ export function NeedsAttention({
     );
     const [runAction, setRunAction] = useState<RunAction | null>(null);
     const [selectedKey, setSelectedKey] = useState<string | null>(null);
+    // Batch checkbox selection — keys of items checked for "Approve selected"
+    // / "Remove selected…". Self-claim items (no runId) never appear here:
+    // they have no RunActionDialog path (see ManualTimeVerdictRow), so they
+    // get no checkbox at all rather than a disabled one.
+    const [selectedForBatch, setSelectedForBatch] = useState<Set<string>>(
+        new Set(),
+    );
     const listRef = useRef<HTMLDivElement>(null);
     const isDegraded = degradedSources.length > 0;
     const degradedMessage = `Couldn't load ${formatSourceList(degradedSources)} — the queue may not be empty.`;
@@ -151,9 +162,69 @@ export function NeedsAttention({
 
     const groups = useMemo(() => groupByRunner(filtered), [filtered]);
 
+    // A source/category filter can hide items that were previously checked —
+    // keep the bulk bar honest by dropping selections that fall out of view,
+    // rather than silently batch-acting on something the moderator can no
+    // longer see.
+    useEffect(() => {
+        setSelectedForBatch((prev) =>
+            intersectSelected(
+                prev,
+                filtered.map((it) => it.key),
+            ),
+        );
+    }, [filtered]);
+
+    const selectedItems = useMemo(
+        () => filtered.filter((it) => selectedForBatch.has(it.key)),
+        [filtered, selectedForBatch],
+    );
+    const selectedRunIds = useMemo(
+        () =>
+            selectedItems
+                .map((it) => it.runId)
+                .filter((id): id is number => id != null),
+        [selectedItems],
+    );
+
+    const triggerBatchApprove = () => {
+        if (selectedRunIds.length === 0) return;
+        setRunAction({
+            verb: 'approve',
+            target: {
+                kind: 'runs',
+                runIds: selectedRunIds,
+                label: `${selectedRunIds.length} selected run${selectedRunIds.length === 1 ? '' : 's'}`,
+            },
+            affectedKeys: selectedItems.map((it) => it.key),
+        });
+    };
+
+    const triggerBatchRemove = () => {
+        if (selectedRunIds.length === 0) return;
+        setRunAction({
+            verb: 'remove',
+            target: {
+                kind: 'runs',
+                runIds: selectedRunIds,
+                label: `${selectedRunIds.length} selected run${selectedRunIds.length === 1 ? '' : 's'}`,
+            },
+            affectedKeys: selectedItems.map((it) => it.key),
+        });
+    };
+
     const removeKeys = (keys: string[]) => {
         const drop = new Set(keys);
         setItems((prev) => prev.filter((it) => !drop.has(it.key)));
+        setSelectedForBatch((prev) => setManySelected(prev, keys, false));
+    };
+
+    const toggleBatchKey = (key: string) => {
+        setSelectedForBatch((prev) => toggleSelected(prev, key));
+    };
+
+    const toggleBatchKeys = (keys: string[], select: boolean) => {
+        setSelectedForBatch((prev) => setManySelected(prev, keys, select));
     };
 
     const triggerApprove = (item: AttentionItem) => {
@@ -210,14 +281,22 @@ export function NeedsAttention({
             if (selectedKey == null) return;
             const item = filtered.find((it) => it.key === selectedKey);
             if (!item) return;
+
+            if (action === 'toggle') {
+                if (item.runId == null) return; // self-claims aren't batchable
+                e.preventDefault();
+                toggleBatchKey(selectedKey);
+                return;
+            }
+
             e.preventDefault();
             if (action === 'approve') triggerApprove(item);
             else triggerRemove(item);
         };
         document.addEventListener('keydown', onKeyDown);
         return () => document.removeEventListener('keydown', onKeyDown);
-        // triggerApprove/triggerRemove close over `item`, not component state
-        // beyond what's already listed — safe to omit.
+        // triggerApprove/triggerRemove/toggleBatchKey close over `item`/setState,
+        // not component state beyond what's already listed — safe to omit.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [runAction, selectedKey, filtered]);
 
@@ -360,7 +439,7 @@ export function NeedsAttention({
                         </div>
                     )}
                     <p className={styles.hint}>
-                        j/k navigate · v approve · r remove
+                        j/k navigate · v approve · r remove · x select
                     </p>
                     <div className={styles.stack} ref={listRef}>
                         {groups.map((g) =>
@@ -375,6 +454,9 @@ export function NeedsAttention({
                                     onAct={setRunAction}
                                     onItemDone={(keys) => removeKeys(keys)}
                                     selectedKey={selectedKey}
+                                    selectedForBatch={selectedForBatch}
+                                    onToggleKey={toggleBatchKey}
+                                    onToggleKeys={toggleBatchKeys}
                                 />
                             ) : (
                                 <SingleItemCard
@@ -385,11 +467,48 @@ export function NeedsAttention({
                                     onAct={setRunAction}
                                     onDone={() => removeKeys([g.items[0].key])}
                                     selected={g.items[0].key === selectedKey}
+                                    checked={selectedForBatch.has(
+                                        g.items[0].key,
+                                    )}
+                                    onToggleChecked={() =>
+                                        toggleBatchKey(g.items[0].key)
+                                    }
                                 />
                             ),
                         )}
                     </div>
                 </>
+            )}
+
+            {selectedForBatch.size > 0 && (
+                <div className={styles.bulkBar}>
+                    <span className={styles.bulkCount}>
+                        {selectedForBatch.size} selected
+                    </span>
+                    <div className={styles.bulkActions}>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-success"
+                            onClick={triggerBatchApprove}
+                        >
+                            Approve selected
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={triggerBatchRemove}
+                        >
+                            Remove selected…
+                        </button>
+                        <button
+                            type="button"
+                            className="btn btn-sm btn-outline-secondary"
+                            onClick={() => setSelectedForBatch(new Set())}
+                        >
+                            Clear
+                        </button>
+                    </div>
+                </div>
             )}
 
             {runAction && (
@@ -515,6 +634,11 @@ interface SingleItemCardProps {
     onDone: () => void;
     /** Whether the keyboard triage selection ring is on this card. */
     selected?: boolean;
+    /** Whether this card is checked for batch approve/remove. Only rendered
+     * (and only meaningful) for cards with a runId — self-claims have no
+     * RunActionDialog path, so they never get a checkbox. */
+    checked?: boolean;
+    onToggleChecked?: () => void;
 }
 
 function SingleItemCard({
@@ -524,8 +648,11 @@ function SingleItemCard({
     onAct,
     onDone,
     selected = false,
+    checked = false,
+    onToggleChecked,
 }: SingleItemCardProps) {
     const isSelfClaim = item.runId == null && item.manualTimeId != null;
+    const isBatchable = item.runId != null;
 
     const runsTarget = runsTargetFor(item);
 
@@ -543,6 +670,15 @@ function SingleItemCard({
             tabIndex={-1}
         >
             <div className={styles.cardTop}>
+                {isBatchable && (
+                    <input
+                        type="checkbox"
+                        className={styles.checkbox}
+                        checked={checked}
+                        onChange={onToggleChecked}
+                        aria-label={`Select ${item.runnerName}'s ${item.categoryName} run for batch action`}
+                    />
+                )}
                 <span className={clsx(styles.pill, SEV_PILL[item.severity])}>
                     {item.severity}
                 </span>
@@ -627,6 +763,9 @@ interface RunnerGroupCardProps {
     onAct: (a: RunAction) => void;
     onItemDone: (keys: string[]) => void;
     selectedKey: string | null;
+    selectedForBatch: Set<string>;
+    onToggleKey: (key: string) => void;
+    onToggleKeys: (keys: string[], select: boolean) => void;
 }
 
 function RunnerGroupCard({
@@ -638,14 +777,21 @@ function RunnerGroupCard({
     onAct,
     onItemDone,
     selectedKey,
+    selectedForBatch,
+    onToggleKey,
+    onToggleKeys,
 }: RunnerGroupCardProps) {
     const [open, setOpen] = useState(false);
 
     const allKeys = items.map((it) => it.key);
+    const batchableKeys = items
+        .filter((it) => it.runId != null)
+        .map((it) => it.key);
     const runIds = items
         .map((it) => it.runId)
         .filter((id): id is number => id != null);
     const firstWithCat = items.find((it) => it.categoryId != null);
+    const groupAllSelected = allKeysSelected(selectedForBatch, batchableKeys);
 
     const banAll = () => {
         if (
@@ -671,9 +817,6 @@ function RunnerGroupCard({
 
     const removeAll = () => {
         if (runIds.length === 0) return;
-        const runKeys = items
-            .filter((it) => it.runId != null)
-            .map((it) => it.key);
         onAct({
             verb: 'remove',
             target: {
@@ -681,7 +824,7 @@ function RunnerGroupCard({
                 runIds,
                 label: `${runnerName} · ${runIds.length} runs`,
             },
-            affectedKeys: runKeys,
+            affectedKeys: batchableKeys,
         });
     };
 
@@ -690,6 +833,17 @@ function RunnerGroupCard({
     return (
         <div className={styles.group}>
             <div className={styles.groupHead}>
+                {batchableKeys.length > 0 && (
+                    <input
+                        type="checkbox"
+                        className={styles.checkbox}
+                        checked={groupAllSelected}
+                        onChange={() =>
+                            onToggleKeys(batchableKeys, !groupAllSelected)
+                        }
+                        aria-label={`Select all of ${runnerName}'s runs for batch action`}
+                    />
+                )}
                 <button
                     type="button"
                     className={styles.disclosure}
@@ -751,6 +905,8 @@ function RunnerGroupCard({
                             onAct={onAct}
                             onDone={() => onItemDone([it.key])}
                             selected={it.key === selectedKey}
+                            checked={selectedForBatch.has(it.key)}
+                            onToggleChecked={() => onToggleKey(it.key)}
                         />
                     ))}
                 </div>

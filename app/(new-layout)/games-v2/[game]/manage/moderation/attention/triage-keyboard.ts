@@ -3,7 +3,7 @@
 // lives in needs-attention.tsx — this module only maps raw inputs to
 // decisions so the behavior is trivially testable.
 
-export type TriageAction = 'up' | 'down' | 'approve' | 'remove';
+export type TriageAction = 'up' | 'down' | 'approve' | 'remove' | 'toggle';
 
 interface TriageKeyInput {
     key: string;
@@ -31,6 +31,8 @@ export function parseTriageKey(e: TriageKeyInput): TriageAction | null {
             return 'approve';
         case 'r':
             return 'remove';
+        case 'x':
+            return 'toggle';
         default:
             return null;
     }
@@ -79,4 +81,71 @@ export function moveSelection(
         return direction === 'down' ? keys[0] : keys[keys.length - 1];
     const next = direction === 'down' ? idx + 1 : idx - 1;
     return keys[Math.max(0, Math.min(keys.length - 1, next))];
+}
+
+// ---- Batch selection (checkbox multi-select) ---------------------------
+// Pure Set operations backing the per-card checkbox, the `x` keyboard
+// toggle, and a runner group's "select all" checkbox. Every function
+// returns a new Set rather than mutating its input, matching moveSelection's
+// style above and keeping React state updates straightforward.
+
+/**
+ * Toggle one key's membership in a selection set — backs the `x` keyboard
+ * shortcut and a single card's own checkbox.
+ */
+export function toggleSelected(
+    selected: ReadonlySet<string>,
+    key: string,
+): Set<string> {
+    const next = new Set(selected);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    return next;
+}
+
+/**
+ * Add (`select: true`) or remove (`select: false`) a whole batch of keys in
+ * one step — backs a runner group's "select all" checkbox.
+ */
+export function setManySelected(
+    selected: ReadonlySet<string>,
+    keys: readonly string[],
+    select: boolean,
+): Set<string> {
+    const next = new Set(selected);
+    for (const key of keys) {
+        if (select) next.add(key);
+        else next.delete(key);
+    }
+    return next;
+}
+
+/**
+ * Whether every one of `keys` is already selected — drives a runner group's
+ * select-all checkbox checked state. An empty `keys` list reads as `false`
+ * (there's nothing to select all of), not vacuously true.
+ */
+export function allKeysSelected(
+    selected: ReadonlySet<string>,
+    keys: readonly string[],
+): boolean {
+    return keys.length > 0 && keys.every((key) => selected.has(key));
+}
+
+/**
+ * Narrow a selection down to only the keys still present in `keys` — used
+ * when the rendered/filtered card set shrinks (a filter narrows the list, or
+ * a triaged item leaves) so the bulk bar never claims something is selected
+ * that's no longer visible or no longer exists.
+ */
+export function intersectSelected(
+    selected: ReadonlySet<string>,
+    keys: readonly string[],
+): Set<string> {
+    const keep = new Set(keys);
+    const next = new Set<string>();
+    for (const key of selected) {
+        if (keep.has(key)) next.add(key);
+    }
+    return next;
 }
