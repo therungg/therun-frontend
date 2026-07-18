@@ -1,0 +1,62 @@
+@use '../../styles/design-tokens' as dt;
+@use '../../styles/board' as board;
+
+// ============================================================
+// Route-level error boundary for /games-v2/manage — render errors land
+// here instead of ejecting the shared layout. Mirrors
+// [game]/error.module.scss (board-error-alert tint, full-page centered
+// panel).
+// ============================================================
+
+.wrap {
+    display: flex;
+    justify-content: center;
+    padding: dt.$spacing-3xl dt.$spacing-lg;
+}
+
+.panel {
+    @include board.board-error-alert;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: dt.$spacing-sm;
+    max-width: 28rem;
+    width: 100%;
+    padding: dt.$spacing-2xl;
+    color: var(--bs-body-color);
+}
+
+.icon {
+    color: dt.$accent-red;
+    margin-bottom: dt.$spacing-xs;
+}
+
+.title {
+    font-size: dt.$font-size-lg;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0;
+    color: var(--bs-body-color);
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: dt.$spacing-lg;
+    margin-top: dt.$spacing-sm;
+}
+
+.retry {
+    @include board.control-pill;
+    border: 1px solid rgba(var(--bs-border-color-rgb), 0.5);
+    padding: dt.$spacing-xs dt.$spacing-lg;
+
+    @media (pointer: coarse) {
+        padding: dt.$spacing-lg;
+    }
+}
+
+.quiet {
+    @include board.board-quiet-link;
+}
